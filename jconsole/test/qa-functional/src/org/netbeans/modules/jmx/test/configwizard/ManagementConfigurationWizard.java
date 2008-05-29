@@ -241,7 +241,8 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         // either "/" (UNIX systems) or "\" (WINDOWS systems).
         // BUT the generated properties file will contain only "UNIX like" path values.
         // So we update the returned path replacing "\" with "/".
-        path = path.replace("\\", "/");
+        //path = path.replace("\\", "/");
+        path = path.replace(File.separatorChar, '/') ;
         nfnlso.next();
 
         // Enable RMI wizard
@@ -318,7 +319,8 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         // either "/" (UNIX systems) or "\" (WINDOWS systems).
         // BUT the generated properties file will contain only "UNIX like" path values.
         // So we update the returned path replacing "\" with "/".
-        path = path.replace("\\", "/");
+        //path = path.replace("\\", "/");
+        path = path.replace(File.separatorChar, '/') ;
         nfnlso.next();
 
         // Enable RMI wizard
@@ -496,7 +498,8 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         // either "/" (UNIX systems) or "\" (WINDOWS systems).
         // BUT the generated properties file will contain only "UNIX like" path values.
         // So we update the returned path replacing "\" with "/".
-        path = path.replace("\\", "/");
+        //path = path.replace("\\", "/");
+        path = path.replace(File.separatorChar, '/') ;
         nfnlso.next();
 
         // Enable RMI wizard
@@ -638,7 +641,8 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         // either "/" (UNIX systems) or "\" (WINDOWS systems).
         // BUT the generated properties file will contain only "UNIX like" path values.
         // So we update the returned path replacing "\" with "/".
-        path = path.replace("\\", "/");
+        //path = path.replace("\\", "/");
+        path = path.replace(File.separatorChar, '/') ;
         nfnlso.next();
 
         // Enable RMI wizard

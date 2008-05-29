@@ -1,4 +1,4 @@
-/*
+/* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
@@ -43,13 +43,8 @@
 
 package org.netbeans.modules.uml.ui.swing.propertyeditor;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -59,32 +54,22 @@ import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeMap;
-import java.util.StringTokenizer;
 import java.util.Vector;
-
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
-import javax.swing.JMenu;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.JToolTip;
 import javax.swing.JTree;
-import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellEditor;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-
 import org.dom4j.Node;
-
 import org.netbeans.modules.uml.common.ETSystem;
 import org.netbeans.modules.uml.core.IApplication;
 import org.netbeans.modules.uml.core.configstringframework.ConfigStringHelper;
@@ -92,38 +77,18 @@ import org.netbeans.modules.uml.core.configstringframework.ConfigStringTranslato
 import org.netbeans.modules.uml.core.configstringframework.IConfigStringTranslator;
 import org.netbeans.modules.uml.core.coreapplication.CoreProductManager;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
-import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
-import org.netbeans.modules.uml.core.eventframework.EventDispatchNameKeeper;
-import org.netbeans.modules.uml.core.eventframework.EventDispatchRetriever;
-import org.netbeans.modules.uml.core.eventframework.IEventPayload;
-//import org.netbeans.modules.uml.core.coreapplication.CoreProductManager;
-//import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
-//import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.ConfigManager;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.CreationFactory;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IConfigManager;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IElementLifeTimeEventDispatcher;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IReference;
-//import org.netbeans.modules.uml.core.metamodel.core.foundation.IConfigManager;
-//import org.netbeans.modules.uml.core.metamodel.core.foundation.ICreationFactory;
-//import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-//import org.netbeans.modules.uml.core.metamodel.core.foundation.INameCollisionHandler;
-//import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
-//import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-//import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.preferenceframework.IPreferenceAccessor;
 import org.netbeans.modules.uml.core.preferenceframework.PreferenceAccessor;
-//import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguage;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguage;
 import org.netbeans.modules.uml.core.support.umlsupport.ICustomValidator;
 import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
 import org.netbeans.modules.uml.core.support.umlsupport.IStrings;
-//import org.netbeans.modules.uml.core.support.umlsupport.IStrings;
-//import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.EnumTranslator;
@@ -139,7 +104,6 @@ import org.netbeans.modules.uml.core.support.umlutils.PropertyDefinitionFilter;
 import org.netbeans.modules.uml.core.support.umlutils.PropertyElementManager;
 import org.netbeans.modules.uml.core.workspacemanagement.IWSProject;
 import org.netbeans.modules.uml.core.workspacemanagement.IWorkspace;
-//import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature;
@@ -168,11 +132,7 @@ import org.netbeans.modules.uml.ui.swing.treetable.JDescribeComboBox;
 import org.netbeans.modules.uml.ui.swing.treetable.JPropertyTreeTable;
 import org.netbeans.modules.uml.ui.swing.treetable.JTreeTable;
 import org.netbeans.modules.uml.ui.swing.treetable.PropertyTreeTableModel;
-import org.netbeans.modules.uml.ui.swing.treetable.TreeTableCellEditor;
-//import org.netbeans.modules.uml.core.workspacemanagement.IWorkspace;
-//import org.netbeans.modules.uml.core.workspacemanagement.IWSProject;
 import org.netbeans.modules.uml.ui.support.drawingproperties.IColorProperty;
-import org.netbeans.modules.uml.ui.support.drawingproperties.IDrawingPropertyProvider;
 import org.netbeans.modules.uml.ui.support.drawingproperties.IFontProperty;
 import org.netbeans.modules.uml.ui.support.drawingproperties.IPropertyContainer;
 import org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager;
@@ -181,7 +141,7 @@ import org.netbeans.modules.uml.ui.support.finddialog.FindController;
 import org.netbeans.modules.uml.ui.support.finddialog.IFindController;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeFolder;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
+//import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
 
 /**
  * @author sumitabhk
@@ -1388,9 +1348,9 @@ public class PropertyEditor extends JPanel implements IPropertyEditor, ActionLis
 				//Register for events
 				helper.registerForWorkspaceEvents(m_EventsSink);
 				helper.registerForLifeTimeEvents( m_EventsSink );
-				helper.registerDrawingAreaSelectionEvents(m_EventsSink);
-				helper.registerDrawingAreaEvents(m_EventsSink);
-				helper.registerDrawingAreaCompartmentEvents(m_EventsSink);
+//				helper.registerDrawingAreaSelectionEvents(m_EventsSink);
+//				helper.registerDrawingAreaEvents(m_EventsSink);
+//				helper.registerDrawingAreaCompartmentEvents(m_EventsSink);
 				helper.registerProjectTreeEvents(m_EventsSink);
 				helper.registerForTransformEvents(m_EventsSink);
 				helper.registerForAttributeEvents(m_EventsSink);
@@ -1409,9 +1369,9 @@ public class PropertyEditor extends JPanel implements IPropertyEditor, ActionLis
 		{
 			try
 			{
-				helper.revokeDrawingAreaSelectionSink(m_EventsSink);
-				helper.revokeDrawingAreaSink(m_EventsSink);
-				helper.revokeDrawingAreaCompartmentSink(m_EventsSink);
+//				helper.revokeDrawingAreaSelectionSink(m_EventsSink);
+//				helper.revokeDrawingAreaSink(m_EventsSink);
+//				helper.revokeDrawingAreaCompartmentSink(m_EventsSink);
 				helper.revokeProjectTreeSink(m_EventsSink);
 				helper.revokeLifeTimeSink( m_EventsSink );
 				helper.revokeTransformSink(m_EventsSink);
@@ -2956,7 +2916,7 @@ public class PropertyEditor extends JPanel implements IPropertyEditor, ActionLis
 						if (pDisp != null && pDisp instanceof IDiagram)
 						{
 							IDiagram pDiag = (IDiagram)pDisp;
-							String kind = pDiag.getDiagramKind2();
+							String kind = pDiag.getDiagramKindAsString();
 							if (kind != null)
 							{
 								name = kind.trim();
@@ -3099,58 +3059,59 @@ public class PropertyEditor extends JPanel implements IPropertyEditor, ActionLis
 	 * @return HRESULT
 	 *
 	 */
-	public void onCompartmentSelect(final ICompartment selectedItem)
-	{
-		//we want the focusLost to do the work, but we need to set the lastCell
-		//to be the m_CurRow
-		m_LastRow = m_CurRow;
-		
-		try {
-			if (PropertyEditorBlocker.inProcess() == false)
-			{
-				//When the last cell was being edited and user clicked on some other component which
-				//makes property editor to refresh, we need to process last row.
-				handleSave(false, null);
-				clear();
-				
-				//
-				// the property editor is loaded by creating property definitions(which
-				// represent the structure of the data) and property elements(which represent
-				// the actual data)
-				//
-				Vector<IPropertyDefinition> propDefs = new Vector<IPropertyDefinition>();
-				Vector<IPropertyElement> propEles = new Vector<IPropertyElement>();
-				
-				if (selectedItem != null)
-				{
-					// what we have selected from the drawing area is a compartment
-					// so ask it for its model element
-					IElement pModelElement = selectedItem.getModelElement();
-					if (pModelElement != null)
-					{
-						// more processing to create the property element
-						IPropertyElement pEle = processSelectedItem("", propDefs, pModelElement); //$NON-NLS-1$
-						if (pEle != null)
-						{
-							// since we are coming from the drawing area, we will also want the
-							// capability of showing the presentation information, so store the
-							// presentation element on the property element
-							//_VH(pEle->put_Element(pPresentationElement));
-							// we also want to present the presentation section
-							processSelectedPresentationItem(pEle, selectedItem);
-							propEles.add(pEle);
-						}
-					}
-				}
-				setPropertyDefinitions(propDefs);
-				setPropertyElements(propEles);
-			}
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-	}
+        // TODO: meteora
+//	public void onCompartmentSelect(final ICompartment selectedItem)
+//	{
+//		//we want the focusLost to do the work, but we need to set the lastCell
+//		//to be the m_CurRow
+//		m_LastRow = m_CurRow;
+//		
+//		try {
+//			if (PropertyEditorBlocker.inProcess() == false)
+//			{
+//				//When the last cell was being edited and user clicked on some other component which
+//				//makes property editor to refresh, we need to process last row.
+//				handleSave(false, null);
+//				clear();
+//				
+//				//
+//				// the property editor is loaded by creating property definitions(which
+//				// represent the structure of the data) and property elements(which represent
+//				// the actual data)
+//				//
+//				Vector<IPropertyDefinition> propDefs = new Vector<IPropertyDefinition>();
+//				Vector<IPropertyElement> propEles = new Vector<IPropertyElement>();
+//				
+//				if (selectedItem != null)
+//				{
+//					// what we have selected from the drawing area is a compartment
+//					// so ask it for its model element
+//					IElement pModelElement = selectedItem.getModelElement();
+//					if (pModelElement != null)
+//					{
+//						// more processing to create the property element
+//						IPropertyElement pEle = processSelectedItem("", propDefs, pModelElement); //$NON-NLS-1$
+//						if (pEle != null)
+//						{
+//							// since we are coming from the drawing area, we will also want the
+//							// capability of showing the presentation information, so store the
+//							// presentation element on the property element
+//							//_VH(pEle->put_Element(pPresentationElement));
+//							// we also want to present the presentation section
+//							processSelectedPresentationItem(pEle, selectedItem);
+//							propEles.add(pEle);
+//						}
+//					}
+//				}
+//				setPropertyDefinitions(propDefs);
+//				setPropertyElements(propEles);
+//			}
+//		}
+//		catch (Exception e)
+//		{
+//			e.printStackTrace();
+//		}
+//	}
 
 	/**
 	 * Called when something is selected on the drawing area
@@ -4115,6 +4076,7 @@ public class PropertyEditor extends JPanel implements IPropertyEditor, ActionLis
 	 * Called when the create popup menu is clicked upon
 	 *
 	 * @param[in] wNotifyCode
+
 	 * @param[in] wID
 	 * @param[in] hWndCtrl
 	 * @param[out] bHandled

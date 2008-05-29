@@ -226,7 +226,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             throw t;
         }
 
-        SvnClientExceptionHandler eh = new SvnClientExceptionHandler((SVNClientException) t, adapter, client, handledExceptions);        
+        SvnClientExceptionHandler eh = new SvnClientExceptionHandler((SVNClientException) t, adapter, client, desc, handledExceptions);        
         return eh.handleException();        
     }
     

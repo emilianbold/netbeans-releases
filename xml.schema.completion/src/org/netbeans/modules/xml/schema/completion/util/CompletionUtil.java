@@ -378,7 +378,7 @@ public class CompletionUtil {
     /**
      * Returns the appropriate AXIOM element for a given context.
      */
-    private static Element findAXIElementAtContext(
+    public static Element findAXIElementAtContext(
             CompletionContextImpl context) {
         List<QName> path = context.getPathFromRoot();
         if(path == null || path.size() == 0)

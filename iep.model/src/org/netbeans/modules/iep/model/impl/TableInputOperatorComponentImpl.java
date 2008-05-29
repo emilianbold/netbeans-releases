@@ -59,6 +59,30 @@ public class TableInputOperatorComponentImpl extends OperatorComponentImpl imple
         super(model);
     }
 
+    public void setGlobalId(String globalId) {
+        Property p = super.getProperty(PROP_GLOBALID);
+        if(p == null) {
+            p = getModel().getFactory().createProperty(getModel());
+            p.setName(PROP_GLOBALID);
+            addProperty(p);
+        }
+        
+        p.setValue(globalId);
+    }
+
+    @Override
+    public String getGlobalId() {
+        String globalId = null;
+        
+        Property p = super.getProperty(PROP_GLOBALID);
+        if(p != null) {
+            globalId = p.getValue();
+        }
+
+        return globalId;
+    }
+
+    
     public void setDatabaseJndiName(String databaseJndiName) {
         Property p = super.getProperty(PROP_DATABASE_JNDI_NAME);
         if(p == null) {

@@ -52,8 +52,6 @@ import org.netbeans.modules.uml.core.coreapplication.CoreProduct;
 import org.netbeans.modules.uml.core.coreapplication.ICoreMessenger;
 import org.netbeans.modules.uml.core.coreapplication.IDiagramCleanupManager;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchNameKeeper;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.ICreationFactory;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.roundtripframework.codegeneration.ICodeGeneration;
@@ -62,9 +60,6 @@ import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.IPropertyElement;
 import org.netbeans.modules.uml.core.support.umlutils.InvalidArguments;
-import org.netbeans.modules.uml.ui.controls.drawingarea.DrawingAreaEventDispatcherImpl;
-import org.netbeans.modules.uml.ui.controls.drawingarea.IDrawingAreaEventDispatcher;
-import org.netbeans.modules.uml.ui.controls.drawingarea.IUIDiagram;
 import org.netbeans.modules.uml.ui.controls.editcontrol.EditControlEventDispatcher;
 import org.netbeans.modules.uml.ui.controls.editcontrol.IEditControlEventDispatcher;
 import org.netbeans.modules.uml.ui.controls.filter.IProjectTreeFilterDialogEventDispatcher;
@@ -79,8 +74,6 @@ import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.QuestionResponse;
 import org.netbeans.modules.uml.ui.support.applicationmanager.AcceleratorManager;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IAcceleratorManager;
-import org.netbeans.modules.uml.ui.support.applicationmanager.IPresentationResourceMgr;
-import org.netbeans.modules.uml.ui.support.applicationmanager.IPresentationTypesMgr;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProductDiagramManager;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProductProjectManager;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProgressCtrl;
@@ -101,8 +94,9 @@ import org.netbeans.modules.uml.core.scm.ISCMEventDispatcher;
 import org.netbeans.modules.uml.core.scm.ISCMIntegrator;
 import org.netbeans.modules.uml.core.scm.SCMObjectCreator;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeModel;
+import org.netbeans.modules.uml.ui.support.diagramsupport.DrawingAreaEventDispatcherImpl;
+import org.netbeans.modules.uml.ui.support.diagramsupport.IDrawingAreaEventDispatcher;
 import org.netbeans.modules.uml.ui.swing.commondialogs.SwingQuestionDialogImpl;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
 import org.netbeans.modules.uml.ui.swing.propertyeditor.IPropertyEditor;
 import org.openide.ErrorManager;
 
@@ -183,10 +177,7 @@ public class ADProduct extends CoreProduct implements IADProduct
     
     /// The vba integrator
     private Object m_VBAIntegrator = null;
-    
-    private IPresentationTypesMgr m_PresentationTypesMgr = null;
-    
-    private IPresentationResourceMgr m_PresentationResourceMgr = null;
+  
     
     /**
      *
@@ -477,23 +468,15 @@ public class ADProduct extends CoreProduct implements IADProduct
     {
         if (pDiagram != null)
         {
-            if (pDiagram instanceof IUIDiagram)
-            {
-                IUIDiagram diag = (IUIDiagram)pDiagram;
-                IDrawingAreaControl control = diag.getDrawingArea();
-                if (control != null)
+            String fileName = pDiagram.getFilename();
+            if (fileName != null && fileName.length() > 0)
+            {        
+                removeDiagram(pDiagram);
+                String id = getDiagramFileID(fileName);
+                IDiagram existingDia = getDiagram(id);
+                if (existingDia == null)
                 {
-                    String fileName = control.getFilename();
-                    if (fileName != null && fileName.length() > 0)
-                    {        
-                        removeDiagram(pDiagram);
-                        String id = getDiagramFileID(fileName);
-                        IDiagram existingDia = getDiagram(id);
-                        if (existingDia == null)
-                        {
-                            m_Diagrams.put(id, pDiagram);
-                        }
-                    }
+                    m_Diagrams.put(id, pDiagram);
                 }
             }
         }
@@ -524,23 +507,14 @@ public class ADProduct extends CoreProduct implements IADProduct
     {
         if (pDiagram != null)
         {
-            if (pDiagram instanceof IUIDiagram)
+            String fileName = pDiagram.getFilename();
+            if (fileName != null && fileName.length() > 0)
             {
-                IUIDiagram diag = (IUIDiagram)pDiagram;
-                IDrawingAreaControl control = diag.getDrawingArea();
-                
-                if (control != null)
+                String id = getDiagramFileID(fileName);
+                Object obj = m_Diagrams.get(id);
+                if (obj != null)
                 {
-                    String fileName = control.getFilename();
-                    if (fileName != null && fileName.length() > 0)
-                    {
-                        String id = getDiagramFileID(fileName);
-                        Object obj = m_Diagrams.get(id);
-                        if (obj != null)
-                        {
-                            m_Diagrams.remove(id);
-                        }
-                    }
+                    m_Diagrams.remove(id);
                 }
             }
         }
@@ -1129,22 +1103,23 @@ public class ADProduct extends CoreProduct implements IADProduct
                     
                     if (!readOnly)
                     {
+                        // TODO: meteora
                         // Notify the diagram of the changes
-                        IDrawingAreaControl pDrawingAreaControl = null;
-                        if (pDiagram instanceof IUIDiagram)
-                        {
-                            pDrawingAreaControl = ((IUIDiagram)pDiagram).getDrawingArea();
-                        }
-                        if (pDrawingAreaControl != null)
-                        {
-                            IPropertyElement[] elements = new IPropertyElement[pElements.size()];
-                            for (int i = 0; i < pElements.size(); i++)
-                            {
-                                elements[i] = pElements.get(i);
-                            }
-                            
-                            pDrawingAreaControl.preferencesChanged(elements);
-                        }
+//                        IDrawingAreaControl pDrawingAreaControl = null;
+//                        if (pDiagram instanceof IUIDiagram)
+//                        {
+//                            pDrawingAreaControl = ((IUIDiagram)pDiagram).getDrawingArea();
+//                        }
+//                        if (pDrawingAreaControl != null)
+//                        {
+//                            IPropertyElement[] elements = new IPropertyElement[pElements.size()];
+//                            for (int i = 0; i < pElements.size(); i++)
+//                            {
+//                                elements[i] = pElements.get(i);
+//                            }
+//                            
+//                            pDrawingAreaControl.preferencesChanged(elements);
+//                        }
                     }
                 }
             }
@@ -1200,43 +1175,43 @@ public class ADProduct extends CoreProduct implements IADProduct
         return ProxyDiagramManager.instance();
     }
     
-    public IPresentationTypesMgr getPresentationTypesMgr()
-    {
-        if (m_PresentationTypesMgr == null)
-        {
-            ICreationFactory pCreationFactory = FactoryRetriever.instance().getCreationFactory();
-            if (pCreationFactory != null)
-            {
-                Object value = pCreationFactory.retrieveEmptyMetaType("PresentationTypes", "PresentationTypesMgr", null);
-                
-                if (value instanceof IPresentationTypesMgr)
-                {
-                    m_PresentationTypesMgr = (IPresentationTypesMgr)value;
-                }
-            }
-        }
-        
-        return m_PresentationTypesMgr;
-    }
+//    public IPresentationTypesMgr getPresentationTypesMgr()
+//    {
+//        if (m_PresentationTypesMgr == null)
+//        {
+//            ICreationFactory pCreationFactory = FactoryRetriever.instance().getCreationFactory();
+//            if (pCreationFactory != null)
+//            {
+//                Object value = pCreationFactory.retrieveEmptyMetaType("PresentationTypes", "PresentationTypesMgr", null);
+//                
+//                if (value instanceof IPresentationTypesMgr)
+//                {
+//                    m_PresentationTypesMgr = (IPresentationTypesMgr)value;
+//                }
+//            }
+//        }
+//        
+//        return m_PresentationTypesMgr;
+//    }
     
-    public IPresentationResourceMgr getPresentationResourceMgr()
-    {
-        if (m_PresentationResourceMgr == null)
-        {
-            ICreationFactory pCreationFactory = FactoryRetriever.instance().getCreationFactory();
-            
-            if (pCreationFactory != null)
-            {
-                Object value = pCreationFactory.retrieveEmptyMetaType("PresentationTypes", "PresentationResourceMgr", null);
-                
-                if (value instanceof IPresentationResourceMgr)
-                {
-                    m_PresentationResourceMgr = (IPresentationResourceMgr)value;
-                }
-            }
-        }
-        return m_PresentationResourceMgr;
-    }
+//    public IPresentationResourceMgr getPresentationResourceMgr()
+//    {
+//        if (m_PresentationResourceMgr == null)
+//        {
+//            ICreationFactory pCreationFactory = FactoryRetriever.instance().getCreationFactory();
+//            
+//            if (pCreationFactory != null)
+//            {
+//                Object value = pCreationFactory.retrieveEmptyMetaType("PresentationTypes", "PresentationResourceMgr", null);
+//                
+//                if (value instanceof IPresentationResourceMgr)
+//                {
+//                    m_PresentationResourceMgr = (IPresentationResourceMgr)value;
+//                }
+//            }
+//        }
+//        return m_PresentationResourceMgr;
+//    }
 }
 
 

@@ -56,7 +56,6 @@ import java.util.Enumeration;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.SwingUtilities;
 
 import org.openide.actions.OpenAction;
 import org.openide.cookies.OpenCookie;
@@ -70,8 +69,10 @@ import org.openide.util.actions.SystemAction;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
+import org.netbeans.modules.uml.core.metamodel.diagrams.TSDiagramDetails;
 import org.netbeans.modules.uml.core.scm.ISCMIntegrator;
 import org.netbeans.modules.uml.core.scm.SCMFeatureKind;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeEventDispatcher;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
 import org.netbeans.modules.uml.ui.controls.projecttree.ProjectTreeItemImpl;
@@ -204,23 +205,23 @@ public class UMLElementNode extends AbstractModelElementNode
 	
 	public String getName()
 	{
-            IElement element = getModelElement();
+		IElement element = getModelElement();
 		
-            if (element instanceof INamedElement)
+        if (element instanceof INamedElement)
+		{
+			// return unformatted name for attributes and operations, so that
+			// rename action on those nodes will display the bare name without
+			// visibility modifier and type information, since we only support 
+			// rename the name part of these two types of elements from project
+			// tree
+			if (element.getElementType().equals(ELEMENT_TYPE_ATTRIBUTE) ||
+				element.getElementType().equals(ELEMENT_TYPE_OPERATION))
             {
-                // return unformatted name for attributes and operations, so that
-                // rename action on those nodes will display the bare name without
-                // visibility modifier and type information, since we only support 
-                // rename the name part of these two types of elements from project
-                // tree
-                if (element.getElementType().equals(ELEMENT_TYPE_ATTRIBUTE) ||
-                        element.getElementType().equals(ELEMENT_TYPE_OPERATION))
-                {
-                    return (((INamedElement)element).getName());
-                }
+				return (((INamedElement)element).getName());
             }
+		}
         
-            return super.getName();
+		return super.getName();
 	}
 
     
@@ -278,7 +279,7 @@ public class UMLElementNode extends AbstractModelElementNode
     public String getDisplayedName()
     {
         return getDisplayName();
-    }
+	}
 	
 	
 	
@@ -479,7 +480,7 @@ public class UMLElementNode extends AbstractModelElementNode
 			Children children = getChildren();
 			
 			if (children != null)
-                            children.remove(node);
+				children.remove(node);
 		}
 	}
 	
@@ -635,106 +636,123 @@ public class UMLElementNode extends AbstractModelElementNode
 		return SystemAction.get(OpenAction.class);
 	}
 	
-        public Image getIcon(int type)
+    @Override
+    public Image getIcon(int type)
+    {
+        Image retVal = null;
+        //	if(icon!=null) return icon;
+
+        ITreeItem item = this;
+        IProjectTreeItem data = item.getData();
+
+        if (icon!=null)
         {
-            Image retVal = null;
-            //	if(icon!=null) return icon;
-            
-            ITreeItem item = this;
-            IProjectTreeItem data = item.getData();
-            
-            if (icon!=null)
+            retVal = icon;
+        }
+
+        else
+        {
+
+            if (item instanceof ITreeFolder)
             {
-                retVal = icon;
+                CommonResourceManager resource =
+                    CommonResourceManager.instance();
+
+                retVal = createImage(resource
+                    .getIconDetailsForElementType(item.getName()));
             }
-            
-            else
+
+            else if (item instanceof ITreeDiagram)
             {
-                
-                if (item instanceof ITreeFolder)
+                ITreeDiagram diagram = (ITreeDiagram)item;
+
+                CommonResourceManager resource =
+                    CommonResourceManager.instance();
+
+                retVal = createImage(resource
+                    .getIconDetailsForElementType(diagram.getDiagramType()));
+
+                if (diagram.getDiagram().getDiagramDetails() 
+                    instanceof TSDiagramDetails)
                 {
-                    CommonResourceManager resource =
-                        CommonResourceManager.instance();
-                    
-                    retVal = createImage(resource
-                        .getIconDetailsForElementType(item.getName()));
+                    // this is an old TS diagram; when opened, it needs
+                    // to be converted to new Meteora diagram.
+                    // this code will badge the diagram icon with a
+                    // yellow triangle with an exclamation point to 
+                    // visually indicate the diagram's state
+                    retVal = Utilities.mergeImages(
+                        retVal, createImage(ICON_BADGE_EXCLAMATION), 0, 0);
                 }
-                
-                else if (item instanceof ITreeDiagram)
-                {
-                    ITreeDiagram diagram = (ITreeDiagram)item;
-                    
-                    CommonResourceManager resource =
-                        CommonResourceManager.instance();
-                    
-                    retVal = createImage(resource
-                        .getIconDetailsForElementType(diagram.getDiagramType()));
-                }
-                
-                else if (data.getModelElement() != null)
-                {
-                    if (data.getModelElement() instanceof IProject)
-                        retVal = super.getIcon(type);
-                    
-                    else
-                    {
-                        CommonResourceManager resource =
-                            CommonResourceManager.instance();
-                        
-                        retVal = createImage(
-                            resource.getIconDetailsForDisp(data.getModelElement()));
-                    }
-                }
-                
-                else if (data.isProject())
-                {
-                    // CommonResourceManager resource = 
-                    //     CommonResourceManager.instance();
-                    // retVal = createImage(
-                    //     resource.getIconDetailsForElementType("WSProject"));
-                    
+            }
+
+            else if (data.getModelElement() != null)
+            {
+                if (data.getModelElement() instanceof IProject)
                     retVal = super.getIcon(type);
-                }
-                
-                else if (data.isWorkspace())
-                {
-                    CommonResourceManager resource = CommonResourceManager.instance();
-                    // special case for design pattern catalog
-                    
-                    if (data.getItemText().equals("DesignPatternCatalog")) // NOI18N
-                    {
-                        retVal = createImage(
-                            resource.getIconDetailsForElementType(
-                            "DesignPatternCatalog")); // NOI18N
-                    }
-                    
-                    else
-                    {
-                        retVal = createImage(resource
-                            .getIconDetailsForElementType("Workspace")); // NOI18N
-                    }
-                }
-                
+
                 else
                 {
-                    CommonResourceManager resource = 
+                    CommonResourceManager resource =
                         CommonResourceManager.instance();
-                    
-                    retVal = createImage(
-                        resource.getIconDetailsForElementType(item.getName()));
+
+                    retVal = createImage(resource
+                        .getIconDetailsForDisp(data.getModelElement()));
                 }
             }
-            
-            if (retVal == null)
+
+            else if (data.isProject())
+            {
+                // CommonResourceManager resource = 
+                //     CommonResourceManager.instance();
+                // retVal = createImage(
+                //     resource.getIconDetailsForElementType("WSProject"));
+
                 retVal = super.getIcon(type);
-            
-            //return getIconWithOverlay(retVal, this);
-            retVal=getIconWithOverlay(retVal, this);
-            
-            icon=retVal;
-            return icon;
+            }
+
+            else if (data.isWorkspace())
+            {
+                CommonResourceManager resource = CommonResourceManager.instance();
+                // special case for design pattern catalog
+
+                if (data.getItemText().equals("DesignPatternCatalog")) // NOI18N
+                {
+                    retVal = createImage(
+                        resource.getIconDetailsForElementType(
+                        "DesignPatternCatalog")); // NOI18N
+                }
+
+                else
+                {
+                    retVal = createImage(resource
+                        .getIconDetailsForElementType("Workspace")); // NOI18N
+                }
+            }
+
+            else
+            {
+                CommonResourceManager resource = 
+                    CommonResourceManager.instance();
+
+                retVal = createImage(
+                    resource.getIconDetailsForElementType(item.getName()));
+            }
         }
+
+        if (retVal == null)
+            retVal = super.getIcon(type);
+
+        //return getIconWithOverlay(retVal, this);
+        retVal=getIconWithOverlay(retVal, this);
+
+        icon=retVal;
+        return icon;
+    }
+    
+    public final static String ICON_BADGE_EXCLAMATION = 
+        ImageUtil.IMAGE_FOLDER + "broken-project-badge.gif";
 	
+    @Override
 	public Image getOpenedIcon(int type)
 	{
 		return getIcon(type);

@@ -56,6 +56,8 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.vmd.componentssupport.ui.wizard.CustomComponentWizardIterator;
 import org.netbeans.modules.vmd.componentssupport.ui.wizard.NewComponentDescriptor;
 import org.netbeans.modules.vmd.componentssupport.ui.wizard.PaletteCategory;
@@ -88,6 +90,8 @@ public abstract class CustomComponentHelper extends BaseHelper {
     public abstract Set<FileObject> instantiate() throws IOException ;
     
     public abstract String getCodeNameBase();
+    
+    public abstract String getProjectName();
     
     /**
      * creates path to ComponentDescriptor java file
@@ -131,15 +135,32 @@ public abstract class CustomComponentHelper extends BaseHelper {
             myMainWizard = mainWizard;
             myComponentWizard = componentWizard;
         }
+
+        @Override
+        public String getProjectName() {
+            return (String)myMainWizard.getProperty( 
+                    CustomComponentWizardIterator.PROJECT_NAME);
+        }
+        
         
         @Override
         public String getCDPath() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            String dotCodeNameBase = getCodeNameBase();
+            String name = getCDClassName();
+
+            String codeNameBase = dotCodeNameBase.replace('.', '/'); // NOI18N
+        
+            return SRC + createProducerPath(codeNameBase, name);
         }
 
         @Override
         public String getProducerPath() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            String dotCodeNameBase = getCodeNameBase();
+            String name = getProducerClassName();
+
+            String codeNameBase = dotCodeNameBase.replace('.', '/'); // NOI18N
+        
+            return SRC + createProducerPath(codeNameBase, name);
         }
 
         /**
@@ -177,6 +198,16 @@ public abstract class CustomComponentHelper extends BaseHelper {
             return codeNameBase;
         }
 
+        private String getCDClassName() {
+            return (String) myComponentWizard.getProperty(
+                    NewComponentDescriptor.CD_CLASS_NAME);
+        }
+        
+        private String getProducerClassName() {
+            return (String) myComponentWizard.getProperty(
+                    NewComponentDescriptor.CP_CLASS_NAME);
+        }
+
         private WizardDescriptor myComponentWizard;
         private WizardDescriptor myMainWizard;
     }
@@ -201,11 +232,24 @@ public abstract class CustomComponentHelper extends BaseHelper {
         private static final String VALIDITY_TOKEN_VALUE_PLATFORM = "platform";//NOI18N
         private static final String VALIDITY_TOKEN_VALUE_CUSTOM = "custom";//NOI18N
         
+        /**
+         * this CustomComponentHelper implementation helps to preview expected changes 
+         * and instantiate custom component as real files in existing project.
+         * @param project where to store custom component
+         * @param Map with custom component data. Map returned by
+         * wizardDescriptor.getProperties() is expected.
+         */
         public RealInstantiationHelper(Project project, Map<String, Object> component){
             myProject = project;
             myComponent = component;
         }
 
+        @Override
+        public String getProjectName() {
+            return ProjectUtils.getInformation(myProject).getDisplayName();
+        }
+
+        
         @Override
         public Set<FileObject> instantiate() throws IOException {
             Set<FileObject> result = new LinkedHashSet<FileObject>();

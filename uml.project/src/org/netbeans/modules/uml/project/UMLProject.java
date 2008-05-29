@@ -53,7 +53,6 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -82,7 +81,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -639,11 +637,14 @@ public class UMLProject implements Project, AntProjectListener
             
             if (dobj != null)
             {
+                try
+                {
                 Project currentUMLProj = FileOwnerQuery.getOwner(dobj);
                 String filename = dobj.getPath();
                 if(filename!=null && filename.length()>0)
                 {
-                    filename = normalizeFile(FileUtil.toFile(dobj).getPath());
+                    filename = FileUtil.toFile(dobj).getCanonicalPath();
+//                    filename = normalizeFile(FileUtil.toFile(dobj).getPath());
                 }
                 org.netbeans.modules.uml.core.metamodel.structure.Project.PROJ_BASE_DIR = filename;
                 
@@ -656,10 +657,8 @@ public class UMLProject implements Project, AntProjectListener
                     ((org.netbeans.modules.uml.core.metamodel.structure.Project)project).
                             addPropertyChangeListener( listener);
                 }
-                try
-                {
-                    File prjFile = new File(project.getProject().getFileName());
-                    FileObject fobj = FileUtil.toFileObject(new File(prjFile.getCanonicalPath()));
+                
+                    FileObject fobj = FileUtil.toFileObject(new File(project.getProject().getFileName()));
                     obj = DataObject.find(fobj);
                     if (project.getDirty())
                     {

@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.soa.mappercore;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -36,8 +37,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -252,44 +255,82 @@ public class LeftTree extends JTree implements
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        Set<TreePath> edgeTreePathes = getConnectedTreePathes();
+        Map<TreePath, Set<Link>> edgeTreePathes = getConnectedTreePathes();
 
         if (!edgeTreePathes.isEmpty()) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setPaint(MapperStyle.LINK_COLOR_SELECTED_NODE);
-            
+                       
             Object[][] edgePathes = new Object[edgeTreePathes.size()][];
 
             int x2 = getWidth() - 1;
 
             int edgePathIndex = 0;
 
-            for (TreePath edgeTreePath : edgeTreePathes) {
+            for (TreePath edgeTreePath : edgeTreePathes.keySet()) {
                 edgePathes[edgePathIndex++] = edgeTreePath.getPath();
             }
-
+            
+            SelectionModel selectionModel = getMapper().getSelectionModel();
+            TreePath rightTreePath = selectionModel.getSelectedPath();
+            
             int rowCount = getRowCount();
 
             for (int row = 0; row < rowCount; row++) {
-                int connectedEdges = connectedEdges(row, getPathForRow(row),
+                Set<Link> connectedEdges = connectedEdges(row, getPathForRow(row),
                         edgeTreePathes, edgePathes);
 
-                if (connectedEdges != 0) {
+                if (connectedEdges != null && connectedEdges.size() > 0) {
                     Rectangle rowBounds = getRowBounds(row);
 
                     int x1 = rowBounds.x + rowBounds.width;
                     int y = rowBounds.y + rowBounds.height / 2;
+                    
+                    Set<Link> linksForTreePath = edgeTreePathes.get(getPathForRow(row));
+                    Color linkColor = MapperStyle.LINK_COLOR_UNSELECTED_NODE;
+                    boolean hasSelectedLink = false;
+                    
+                    for (Link link : connectedEdges) {
+                        if (selectionModel.isSelected(rightTreePath, link) &&
+                                mapper.getNode(rightTreePath, true).isVisibleGraph()) {
+                            linkColor = MapperStyle.SELECTION_COLOR;
+                            hasSelectedLink = true;
+                            break;
+                        }
+                        
+                        if (linkColor != MapperStyle.LINK_COLOR_SELECTED_NODE) {
+                            if (selectionModel.getSelectedGraph() == link.getGraph() 
+                                    || parentPathIsSelected(mapper.
+                                    getRightTreePathForLink(link).getParentPath()))  
+                            {
+                                linkColor = MapperStyle.LINK_COLOR_SELECTED_NODE;
+                             
+                                linkColor = MapperStyle.LINK_COLOR_SELECTED_NODE;
+                            }
+                        }
+                        
+                    }
+                    
+                    g2.setPaint(linkColor);
+                    Stroke oldStroke = g2.getStroke();
+                    if (linksForTreePath == null ||
+                            connectedEdges.size() > linksForTreePath.size()) {
 
-                    if (connectedEdges >= 2) {
-                        Stroke oldStroke = g2.getStroke();
-                        g2.setStroke(Mapper.DASHED_STROKE);
+                        if (hasSelectedLink) {
+                            g2.setStroke(Mapper.DASHED_SELECTED_STROKE);
+                        } else {
+                            g2.setStroke(Mapper.DASHED_STROKE);
+                        }
                         g2.drawLine(x1, y, x2, y);
-                        g2.setStroke(oldStroke);
+
                     } else {
+                        if (hasSelectedLink) {
+                            g2.setStroke(MapperStyle.SELECTION_STROKE);
+                        }
                         g2.drawLine(x1, y, x2, y);
                     }
+                    g2.setStroke(oldStroke);
                 }
             }
 
@@ -329,28 +370,50 @@ public class LeftTree extends JTree implements
         this.printMode = printMode;
     }
 
-    private int connectedEdges(int row, TreePath treePath,
-            Set<TreePath> edgeTreePathes, Object[][] edgePathes) {
+    private Set<Link> connectedEdges(int row, TreePath treePath,
+            Map<TreePath, Set<Link>> edgeTreePathes, Object[][] edgePathes) {
         if (getModel().isLeaf(treePath.getLastPathComponent()) || isExpanded(row)) {
-            return (edgeTreePathes.contains(treePath)) ? EDGE_CONNECTED : 0;
+            return edgeTreePathes.get(treePath);
         }
 
-        int result = 0;
-        int treePathLength = treePath.getPathCount();
+        Set<Link> result = new HashSet<Link>();
+        if (edgeTreePathes.get(treePath) != null) {
+            result.addAll(edgeTreePathes.get(treePath));
+        }
+        
+//        int treePathLength = treePath.getPathCount();
 
-        for (int i = edgePathes.length - 1; i >= 0; i--) {
-            if (pathStartsWith(edgePathes[i], treePath, treePathLength)) {
-                result |= (edgePathes[i].length == treePathLength)
-                        ? EDGE_CONNECTED
-                        : EDGE_CONNECTED_TO_CHILD;
-            }
+//        for (int i = edgePathes.length - 1; i >= 0; i--) {
+//            if (pathStartsWith(edgePathes[i], treePath, treePathLength)) {
+//                result |= (edgePathes[i].length == treePathLength)
+//                        ? EDGE_CONNECTED
+//                        : EDGE_CONNECTED_TO_CHILD;
+//               
+//            }
 
-            if (result == 3) {
-                return 3;
+//            if (result == 3) {
+//                return 3;
+//            }
+//        }
+        
+        for (TreePath childTreePath : edgeTreePathes.keySet()) {
+            if (treePath.isDescendant(childTreePath)) {
+                result.addAll(edgeTreePathes.get(childTreePath));
             }
         }
-
+        
         return result;
+    }
+
+    private boolean parentPathIsSelected(TreePath rightTreePath) {
+        if (rightTreePath.getParentPath() == null) return false;
+        
+        MapperNode node = mapper.getNode(rightTreePath, true);
+        
+        if (node.isExpanded()) return false;
+        if (node.isSelected()) return true;
+        
+        return parentPathIsSelected(rightTreePath.getParentPath());
     }
 
     private boolean pathStartsWith(Object[] path, TreePath treePath,
@@ -372,11 +435,11 @@ public class LeftTree extends JTree implements
         return true;
     }
 
-    public  Set<TreePath> getConnectedTreePathes() {
+    public Map<TreePath, Set<Link>> getConnectedTreePathes() {
         MapperNode root = getRoot();
         MapperModel model = getMapperModel();
 
-        Set<TreePath> treePathes = new HashSet<TreePath>();
+        Map<TreePath, Set<Link>> treePathes = new HashMap<TreePath, Set<Link>>();
 
         if (root != null && model != null) {
             Set<Graph> connectedGraphs = getRoot().getChildGraphs();
@@ -395,7 +458,14 @@ public class LeftTree extends JTree implements
                     for (int j = edges.size() - 1; j >= 0; j--) {
                         Link edge = edges.get(j);
                         TreePath treePath = ((TreeSourcePin) edge.getSource()).getTreePath();
-                        treePathes.add(treePath);
+                        Set<Link> links = treePathes.get(treePath);
+                        if (links != null) {
+                            treePathes.get(treePath).add(edge);
+                        } else {
+                            links = new HashSet<Link>();
+                            links.add(edge);
+                            treePathes.put(treePath, links);
+                        }
                     }
 
                     edges.clear();

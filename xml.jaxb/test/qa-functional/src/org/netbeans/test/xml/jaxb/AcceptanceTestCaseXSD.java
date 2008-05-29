@@ -132,13 +132,6 @@ public class AcceptanceTestCaseXSD extends AcceptanceTestCase {
         return testSuite;
     }
     
-    public void Dummy( )
-    {
-        startTest( );
-        
-        endTest( );
-    }
-    
     public void CreateJavaApplication( )
     {
         startTest( );
