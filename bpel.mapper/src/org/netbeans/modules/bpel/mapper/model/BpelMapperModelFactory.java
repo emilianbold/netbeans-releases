@@ -218,7 +218,7 @@ public class BpelMapperModelFactory implements MapperModelFactory {
                             timeEH, castList);
                 } else if (timeEvent instanceof DeadlineExpression) {
                     DeadlineExpression expr = (DeadlineExpression)timeEvent;
-                    BpelEntityCasts castList = editorExtProcessor.getCastList(expr);
+                    BpelEntityCasts castList = editorExtProcessor.getCastList(bpelEntity);
                     editorExtProcessor.registerCasts(castList);
                     addExpressionGraph(expr, newMapperModel, 
                             DateValueTreeModel.DEADLINE_CONDITION, 
@@ -279,8 +279,8 @@ public class BpelMapperModelFactory implements MapperModelFactory {
             //
             // Add Graphs
             Expression expr = forEach.getStartCounterValue();
+            BpelEntityCasts castList = editorExtProcessor.getCastList(bpelEntity);
             if (expr != null) {
-                BpelEntityCasts castList = editorExtProcessor.getCastList(expr);
                 editorExtProcessor.registerCasts(castList);
                 addExpressionGraph(expr, newMapperModel, 
                         ForEachConditionsTreeModel.START_VALUE, 
@@ -289,7 +289,6 @@ public class BpelMapperModelFactory implements MapperModelFactory {
             //
             expr = forEach.getFinalCounterValue();
             if (expr != null) {
-                BpelEntityCasts castList = editorExtProcessor.getCastList(expr);
                 addExpressionGraph(expr, newMapperModel, 
                         ForEachConditionsTreeModel.FINAL_VALUE, 
                         forEach, castList);
@@ -299,7 +298,6 @@ public class BpelMapperModelFactory implements MapperModelFactory {
             if (cc != null) {
                 expr = cc.getBranches();
                 if (expr != null) {
-                    BpelEntityCasts castList = editorExtProcessor.getCastList(expr);
                     addExpressionGraph(expr, newMapperModel, 
                             ForEachConditionsTreeModel.COMPLETION_CONDITION, 
                             forEach, castList);
