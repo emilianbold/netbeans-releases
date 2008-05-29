@@ -230,27 +230,26 @@ public abstract class Command {
         return utils;
     }
 
-    private static OutputWriter getOutputWriter(String outTabTitle) {
+    private static OutputWriter getOutputWriter(String outTabTitle, boolean error, boolean clearOutput) {
         InputOutput io = IOProvider.getDefault().getIO(outTabTitle, false);
         io.select();
-        OutputWriter writer = io.getOut();
-        return writer;
+        if (clearOutput) {
+            try {
+                io.getOut().reset();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return error ? io.getErr() : io.getOut();
     }
 
     protected final BufferedReader reader(InputStream is, Charset encoding) {
         return new BufferedReader(new InputStreamReader(is, encoding));
     }
 
-    protected final BufferedWriter outputTabWriter(File scriptFile, boolean clearOutput) {
+    protected final BufferedWriter outputTabWriter(File scriptFile, boolean error, boolean clearOutput) {
         String outputTitle = getOutputTabTitle(scriptFile);
-        OutputWriter outputWriter = getOutputWriter(outputTitle);
-        if (clearOutput) {
-            try {
-                outputWriter.reset();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
+        OutputWriter outputWriter = getOutputWriter(outputTitle, error, clearOutput);
         return new BufferedWriter(outputWriter);
     }
 

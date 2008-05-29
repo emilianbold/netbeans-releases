@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -54,7 +55,7 @@ import org.openide.util.NbBundle;
  */
 public class RunLocalCommand extends Command implements Displayable {
 
-    public static final String ID = "run.local"; //NOI18N
+    public static final String ID = "run.local"; // NOI18N
 
     public RunLocalCommand(PhpProject project) {
         super(project);
@@ -74,36 +75,35 @@ public class RunLocalCommand extends Command implements Displayable {
         Charset encoding = FileEncodingQuery.getDefaultEncoding();
         encoding = FileEncodingQuery.getEncoding(scriptFo);
 
-        //prepare & start external process                        
-        ArrayList<String> commandList = new ArrayList<String>();//NOI18N
+        //prepare & start external process
+        List<String> commandList = new ArrayList<String>();
         commandList.addAll(Arrays.asList(new String[]{command, scriptFile.getAbsolutePath()}));
-        String argProperty = getProperty(PhpProjectProperties.ARGS);        
+        String argProperty = getProperty(PhpProjectProperties.ARGS);
         if (argProperty != null && argProperty.length() > 0) {
-            commandList.addAll(Arrays.asList(argProperty.split(" ")));//NOI18N
-        }        
+            commandList.addAll(Arrays.asList(argProperty.split(" "))); // NOI18N
+        }
         ProcessBuilder processBuilder = new ProcessBuilder(commandList);
         processBuilder.directory(scriptFile.getParentFile());
         initProcessBuilder(processBuilder);
         try {
             Process process = processBuilder.start();
+            int exitValue = process.waitFor();
             File outputTmpFile = processOutput(process, scriptFile, encoding);
-            processError(process, scriptFile, encoding);
-            if (process.waitFor() == 0/*OK*/) {
-                PhpOptions options = PhpOptions.getInstance();
-                if (options.isOpenResultInBrowser()) {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(outputTmpFile.toURL());
-                }
-                if (options.isOpenResultInEditor()) {
-                    FileObject fo = FileUtil.toFileObject(outputTmpFile);
-                    DataObject dobj = DataObject.find(fo);
-                    EditorCookie ec = dobj.getCookie(EditorCookie.class);
-                    ec.open();
-                }
-                if (options.isOpenResultInOutputWindow()) {
-                    BufferedReader reader = reader(new FileInputStream(outputTmpFile), encoding);
-                    BufferedWriter writer = outputTabWriter(scriptFile, true);
-                    rewriteAndClose(reader, writer, null);
-                }
+
+            PhpOptions options = PhpOptions.getInstance();
+            if (options.isOpenResultInBrowser()) {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(outputTmpFile.toURL());
+            }
+            if (options.isOpenResultInEditor()) {
+                FileObject fo = FileUtil.toFileObject(outputTmpFile);
+                DataObject dobj = DataObject.find(fo);
+                EditorCookie ec = dobj.getCookie(EditorCookie.class);
+                ec.open();
+            }
+            if (options.isOpenResultInOutputWindow()) {
+                BufferedReader reader = reader(new FileInputStream(outputTmpFile), encoding);
+                BufferedWriter writer = outputTabWriter(scriptFile, exitValue != 0, true);
+                rewriteAndClose(reader, writer, null);
             }
         } catch (IOException ex) {
             //TODO missing error handling
@@ -132,16 +132,15 @@ public class RunLocalCommand extends Command implements Displayable {
     protected  void initProcessBuilder(ProcessBuilder processBuilder) {
     }
 
-    private void processError(Process process, File scriptFile, Charset encoding) throws IOException {
-        BufferedReader errorReader = reader(process.getErrorStream(), encoding);
-        BufferedWriter outputWriter = outputTabWriter(scriptFile, true);
-        rewriteAndClose(errorReader, outputWriter, new StringConvertor() {
-
-            public String convert(String text) {
-                return NbBundle.getMessage(RunLocalCommand.class, "LBL_ExecErrorMsg", text);
-            }
-        });
-    }
+//    private void processError(Process process, File scriptFile, Charset encoding) throws IOException {
+//        BufferedReader errorReader = reader(process.getErrorStream(), encoding);
+//        BufferedWriter outputWriter = outputTabWriter(scriptFile, true);
+//        rewriteAndClose(errorReader, outputWriter, new StringConvertor() {
+//            public String convert(String text) {
+//                return NbBundle.getMessage(RunLocalCommand.class, "LBL_ExecErrorMsg", text);
+//            }
+//        });
+//    }
 
     private File processOutput(Process process, File scriptFile, Charset encoding) throws IOException {
         final File retval = tempFileForScript(scriptFile);
