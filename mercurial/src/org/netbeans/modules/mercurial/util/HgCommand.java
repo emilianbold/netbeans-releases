@@ -140,10 +140,11 @@ public class HgCommand {
     private static final String HG_LOG_TEMPLATE_LONG_CMD = "--template={rev}\\n{desc}\\n{date|hgdate}\\n{node|short}\\n"; // NOI18N
 
     private static final String HG_LOG_NO_MERGES_CMD = "-M";
-    private static final String HG_LOG_DEBUG_CMD = "--debug";  
+    private static final String HG_LOG_DEBUG_CMD = "--debug"; 
+    // Note: files_adds, file_dels and file_copies taken from cmdutil.py, need to use --debug to get this info
     private static final String HG_LOG_TEMPLATE_HISTORY_CMD = 
             "--template=rev:{rev}\\nauth:{author}\\ndesc:{desc}\\ndate:{date|hgdate}\\nid:{node|short}\\nparents:{parents}\\n" + // NOI18N
-            "file_mods:{files}\\nfile_adds:{file_adds}\\nfile_dels:{file_dels}\\nfile_copies:\\nendCS:\\n"; // NOI18N
+            "file_mods:{files}\\nfile_adds:{file_adds}\\nfile_dels:{file_dels}\\nfile_copies:{file_copies}\\nendCS:\\n"; // NOI18N
     private static final String HG_LOG_TEMPLATE_HISTORY_NO_FILEINFO_CMD = 
             "--template=rev:{rev}\\nauth:{author}\\ndesc:{desc}\\ndate:{date|hgdate}\\nid:{node|short}\\n" + // NOI18N
             "\\nendCS:\\n"; // NOI18N
