@@ -215,8 +215,9 @@ public class WebServicePersistenceManager implements ExceptionListener {
         
         if (!websvcDir.exists())websvcDir.mkdirs();
         if (websvcRefFile.exists()) websvcRefFile.delete();
+        XMLEncoder encoder = null;
         try{
-            XMLEncoder encoder = new XMLEncoder(new BufferedOutputStream(new FileOutputStream(websvcRefFile)));
+            encoder = new XMLEncoder(new BufferedOutputStream(new FileOutputStream(websvcRefFile)));
             encoder.setExceptionListener(this);
             
             DefaultPersistenceDelegate delegate = new WebServiceDataPersistenceDelegate();
@@ -243,11 +244,8 @@ public class WebServicePersistenceManager implements ExceptionListener {
                 }
             }
             
-            try {
-                encoder.flush();
-            } finally {
-                encoder.close();
-            }
+            encoder.flush();
+
             delegate = new DefaultPersistenceDelegate();
             encoder.setPersistenceDelegate(WsdlService.class, delegate);
             encoder.setPersistenceDelegate(WebServiceDescriptor.class, delegate);
@@ -259,7 +257,9 @@ public class WebServicePersistenceManager implements ExceptionListener {
             }
         } catch(Exception exc){
             ErrorManager.getDefault().notify(exc);
-            return;
+        } finally {
+            if(encoder != null)
+                encoder.close();
         }
     }
     
