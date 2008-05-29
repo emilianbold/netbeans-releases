@@ -45,7 +45,7 @@ import org.netbeans.api.lexer.TokenSequence;
  *
  * @author petr
  */
-public class PHPLexerTest extends TestCase {
+public class PHPLexerTest extends PHPLexerTestPerformer {
 
     public PHPLexerTest(String testName) {
         super(testName);
@@ -290,35 +290,11 @@ public class PHPLexerTest extends TestCase {
     }
     
     public void testHeroDoc() throws Exception {
-        TokenSequence<?> ts = PHPLexerUtils.seqForText("<?\n$name=\"Petr\";\n$age=10;\necho <<<HEREDOC\nName: $name<br>\nMy age is: $age<br>\nHEREDOC;\n$name=\"Honza\";?>", PHPTokenId.language());
-        PHPLexerUtils.printTokenSequence(ts, "testInlineHtml"); ts.moveStart();
-        PHPLexerUtils.next(ts, PHPTokenId.PHP_OPENTAG, "<?");
-        PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, "\n");
-        PHPLexerUtils.next(ts, PHPTokenId.PHP_VARIABLE, "$name");
-        PHPLexerUtils.next(ts, PHPTokenId.PHP_TOKEN, "=");
-        PHPLexerUtils.next(ts, PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, "\"Petr\"");
-        PHPLexerUtils.next(ts, PHPTokenId.PHP_SEMICOLON, ";");
-        PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, "\n");
-        PHPLexerUtils.next(ts, PHPTokenId.PHP_VARIABLE, "$age");
-        PHPLexerUtils.next(ts, PHPTokenId.PHP_TOKEN, "=");
-        PHPLexerUtils.next(ts, PHPTokenId.PHP_NUMBER, "10");
-        PHPLexerUtils.next(ts, PHPTokenId.PHP_SEMICOLON, ";");
-        PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, "\n");
-        PHPLexerUtils.next(ts, PHPTokenId.PHP_ECHO, "echo");
-        PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, " ");
-        PHPLexerUtils.next(ts, PHPTokenId.PHP_HEREDOC_TAG, "<<<HEREDOC\n");
-        PHPLexerUtils.next(ts, PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE, "Name: ");
-        PHPLexerUtils.next(ts, PHPTokenId.PHP_VARIABLE, "$name");
-        PHPLexerUtils.next(ts, PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE, "<br>\nMy age is: ");
-        PHPLexerUtils.next(ts, PHPTokenId.PHP_VARIABLE, "$age");
-        PHPLexerUtils.next(ts, PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, "<br>\nHEREDOC;");
-        PHPLexerUtils.next(ts, PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, "\n");
-        PHPLexerUtils.next(ts, PHPTokenId.PHP_VARIABLE, "$name");
-        PHPLexerUtils.next(ts, PHPTokenId.PHP_TOKEN, "=");
-        PHPLexerUtils.next(ts, PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, "\"Honza\"");
+        clearNewResultFiles();
+        performFileLexerTest("heredoc00");
+        performFileLexerTest("heredoc01");
+        checkNewResultFiles();
     }
-    
-    
 
        
     
