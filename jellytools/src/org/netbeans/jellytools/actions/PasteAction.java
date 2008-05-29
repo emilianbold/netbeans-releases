@@ -51,7 +51,7 @@ import org.netbeans.jellytools.Bundle;
 public class PasteAction extends Action {
 
     protected static final String POPUP = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Paste");
-    protected static final String MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Edit")
+    protected static final String MENU = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Edit")
                                             + "|" + POPUP;
     protected static final KeyStroke KEYSTROKE = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
             KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.META_MASK) :

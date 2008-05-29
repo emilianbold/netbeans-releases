@@ -77,7 +77,7 @@ public class PluginsOperator extends NbDialogOperator {
             "PluginManager_Panel_Name");
     // "Tools"
     private static final String TOOLS_ITEM = Bundle.getStringTrimmed(
-            "org.netbeans.core.Bundle", "Menu/Tools");
+            "org.netbeans.core.ui.resources.Bundle", "Menu/Tools");
     // "Plugins"
     private static final String PLUGINS_ITEM = Bundle.getStringTrimmed(
             "org.netbeans.modules.autoupdate.ui.actions.Bundle",
