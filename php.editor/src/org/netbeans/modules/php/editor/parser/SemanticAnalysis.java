@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.editor.parser;
 
 import java.util.HashMap;
+import java.util.Set;
 import java.util.Map;
 import org.netbeans.modules.gsf.api.ColoringAttributes;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -60,13 +61,13 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 public class SemanticAnalysis implements SemanticAnalyzer {
 
     private boolean cancelled;
-    private Map<OffsetRange, ColoringAttributes> semanticHighlights;
+    private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
     
     public SemanticAnalysis () {
         semanticHighlights = null;
     }
     
-    public Map<OffsetRange, ColoringAttributes> getHighlights() {
+    public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
         return semanticHighlights;
     }
 
@@ -82,8 +83,8 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         }
         
         PHPParseResult result = getParseResult(compilationInfo);
-        Map<OffsetRange, ColoringAttributes> highlights =
-            new HashMap<OffsetRange, ColoringAttributes>(100);
+        Map<OffsetRange, Set<ColoringAttributes>> highlights =
+            new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
         
         if (result.getProgram() != null) {
             result.getProgram().accept(new SemanticHighlightVisitor(highlights));
@@ -116,9 +117,9 @@ public class SemanticAnalysis implements SemanticAnalyzer {
     }
     
     private class SemanticHighlightVisitor extends DefaultVisitor {
-        Map<OffsetRange, ColoringAttributes> highlights;
+        Map<OffsetRange, Set<ColoringAttributes>> highlights;
         
-        public SemanticHighlightVisitor(Map<OffsetRange, ColoringAttributes> highlights) {
+        public SemanticHighlightVisitor(Map<OffsetRange, Set<ColoringAttributes>> highlights) {
             this.highlights = highlights;
         }
         
@@ -132,16 +133,15 @@ public class SemanticAnalysis implements SemanticAnalyzer {
                 return;
             Identifier name = cldec.getName();
             OffsetRange or = new OffsetRange(name.getStartOffset(), name.getEndOffset());
-            highlights.put(or, ColoringAttributes.CLASS);
+            highlights.put(or, ColoringAttributes.CLASS_SET);
             cldec.getBody().accept(this);
         }
         
         @Override
         public void visit(MethodDeclaration md) {
             Identifier name = md.getFunction().getFunctionName();
-            highlights.put(createOffsetRange(name), ColoringAttributes.METHOD);
+            highlights.put(createOffsetRange(name), ColoringAttributes.METHOD_SET);
         }
 
     }
-    
 }

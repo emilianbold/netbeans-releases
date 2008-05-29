@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,32 +31,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.api.server.output;
+package org.netbeans.modules.gsfret.editor.semantic;
+
+import junit.framework.TestCase;
+import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.api.ColoringAttributes.Coloring;
+import org.netbeans.modules.gsf.api.OffsetRange;
 
 /**
- * Process the lines fetched by {@link LineReader}.
- * <p>
- * When the implementation is used just by single {@link LineReader} it
- * does not have to be thread safe.
  *
- * @author Petr Hejl
- * @see LineReader
+ * @author Tor Norbye
  */
-public interface LineProcessor {
+public class SequenceElementTest extends TestCase {
+    
+    public SequenceElementTest(String testName) {
+        super(testName);
+    }            
 
-    /**
-     * Processes the line. One line can be processed multiple times as
-     * described in {@link LineReader#readLines(LineProcessor, boolean)}.
-     *
-     * @param line the line to process, can be <code>null</code>
-     */
-    void processLine(String line);
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
 
-    /**
-     * Notifies the processor that it should reset its state.
-     */
-    void reset();
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
 
+    public void testCompareTo() {
+        SequenceElement s1 = new SequenceElement(null, new OffsetRange(2,5),null);
+        SequenceElement s2 = new SequenceElement(null, new OffsetRange(5,7),null);
+        assertTrue(s1.compareTo(s2) < 0);
+        assertTrue(s2.compareTo(s1) > 0);
+        s2 = new SequenceElement(null, new OffsetRange(2,5),null);
+        assertTrue(s1.compareTo(s2) == 0);
+        assertTrue(s2.compareTo(s1) == 0);
+        
+        s1 = new SequenceElement.ComparisonItem(1);
+        s2 = new SequenceElement.ComparisonItem(2);
+        assertTrue(s1.compareTo(s2) < 0);
+        assertTrue(s2.compareTo(s1) > 0);
+
+        s2 = new SequenceElement(null, new OffsetRange(2,5),null);
+        assertTrue(s1.compareTo(s2) < 0);
+        assertTrue(s2.compareTo(s1) > 0);
+    }
 }
