@@ -106,7 +106,6 @@ public class NestedLocal extends RubyAstRule {
             // Check the children and see if we have a LocalAsgnNode; tbese are the
             // loop variables which are NOT local to the for block; if found, go and see
             // if it's a reuse!
-            @SuppressWarnings(value = "unchecked")
             List<Node> list = node.childNodes();
 
             for (Node child : list) {
@@ -149,10 +148,12 @@ public class NestedLocal extends RubyAstRule {
             }
         }
 
-        @SuppressWarnings(value = "unchecked")
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             boolean found = isUsed(child, name, target, done);
             
             if (found) {
@@ -231,10 +232,12 @@ public class NestedLocal extends RubyAstRule {
                 }
             }
 
-            @SuppressWarnings(value = "unchecked")
             List<Node> list = node.childNodes();
 
             for (Node child : list) {
+                if (child.isInvisible()) {
+                    continue;
+                }
 
                 // Skip inline method defs
                 if (child instanceof MethodDefNode) {

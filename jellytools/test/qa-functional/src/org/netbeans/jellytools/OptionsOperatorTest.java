@@ -50,20 +50,20 @@ public class OptionsOperatorTest extends JellyTestCase {
 
     // "IDE Configuration"
     private static final String ideConfLabel =
-        Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration");
+        Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration");
     // "IDE Configuration|System|File Types|HTML and XHTML files"
     private static final String path1 = ideConfLabel+"|"+
-        Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration/System")+"|"+
+        Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration/System")+"|"+
         Bundle.getString("org.netbeans.core.Bundle", "Services/MIMEResolver")+"|"+
         Bundle.getString("org.netbeans.modules.html.Bundle", "Services/MIMEResolver/html.xml");
     // "IDE Configuration|System|Print Settings"
     private static final String path2 = ideConfLabel+"|"+
-        Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration/System")+"|"+
-        Bundle.getString("org.netbeans.core.Bundle", "Services/org-openide-text-PrintSettings.settings");
+        Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration/System")+"|"+
+        Bundle.getString("org.netbeans.core.ui.resources.Bundle", "Services/org-openide-text-PrintSettings.settings");
     // "IDE Configuration|Look and Feel|Toolbars"
     private static final String path3 = ideConfLabel+"|"+
-        Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration/LookAndFeel")+"|"+
-        Bundle.getString("org.netbeans.core.Bundle", "Toolbars");
+        Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration/LookAndFeel")+"|"+
+        Bundle.getString("org.netbeans.core.ui.resources.Bundle", "Toolbars");
 
     /** Use for internal test execution inside IDE
      * @param args command line arguments

@@ -37,8 +37,8 @@
         <delete dir="${unpatched_source}/jruby-${jruby_src_version}/share/ri"/>
         <delete dir="${unpatched_source}/jruby-${jruby_src_version}/lib/ruby/gems/1.8/doc/rake-0.8.1/rdoc"/>
         <delete dir="${unpatched_source}/jruby-${jruby_src_version}/lib/ruby/gems/1.8/doc/rake-0.8.1/ri"/>
-        <delete dir="${unpatched_source}/jruby-${jruby_src_version}/lib/ruby/gems/1.8/doc/rspec-1.1.3/rdoc"/>
-        <delete dir="${unpatched_source}/jruby-${jruby_src_version}/lib/ruby/gems/1.8/doc/rspec-1.1.3/ri"/>
+        <delete dir="${unpatched_source}/jruby-${jruby_src_version}/lib/ruby/gems/1.8/doc/rspec-1.1.4/rdoc"/>
+        <delete dir="${unpatched_source}/jruby-${jruby_src_version}/lib/ruby/gems/1.8/doc/rspec-1.1.4/ri"/>
 
         <!-- Patch build.xml to modify gem behavior: install locally -->
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" overwrite="true">
@@ -47,7 +47,7 @@
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/rake-0.8.1.gem"/>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/ruby-debug-base-0.10.0-java.gem"/>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/ruby-debug-ide-0.1.10.gem"/>
-        <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/rspec-1.1.3.zip"/>
+        <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/rspec-1.1.4.zip"/>
         <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/jdbc-activerecord-jdbc-adapter-0.8.zip"/>
         <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/rails-gems-2.0.2.zip"/>
         <!-- Run dist-bin target in JRuby's own build.xml file -->
