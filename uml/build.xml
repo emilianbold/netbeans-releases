@@ -55,7 +55,8 @@ made subject to such option by the copyright holder.
         </zip>
     </target>
     --> 
-
+    <!-- Test string 123 -->
+    
     <target name="jar-prep" depends="init">
         <mkdir dir="${cluster}/${module.jar.dir}"/>
         <tstamp>
@@ -79,11 +80,6 @@ made subject to such option by the copyright holder.
         <!--
         <echo file="../../nbbuild/netbeans/etc/netbeans.clusters" message="${cluster.dir.name}${line.separator}" append="true"/>
         -->
-    </target>
-
-    <target name="release">
-        <ant dir="../uml.tomsawyer" target="common-init"/>
-        <antcall target="projectized.release"/>
     </target>
     
     <property name="doors.integration.files" value="${basedir}/lib/DoorsIntegrationFiles.zip"/>

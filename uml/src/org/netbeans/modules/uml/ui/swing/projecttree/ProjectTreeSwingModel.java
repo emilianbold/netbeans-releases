@@ -948,16 +948,17 @@ public class ProjectTreeSwingModel extends ProductProjectTreeModel
       }
    }
 
-    public void fireItemExpanding(ITreeItem item) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     public ITreeItem getDiagramsRootNode(IProject project)
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public boolean isDiagramsRootNode(ITreeItem node)
+    public ITreeItem getModelRootNode(ITreeItem node)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void fireItemExpanding(ITreeItem item)
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
