@@ -41,6 +41,7 @@
 package org.openide.explorer.view;
 
 import org.openide.nodes.*;
+
 import java.util.*;
 
 
@@ -50,112 +51,31 @@ import java.util.*;
 * @author Jaroslav Tulach
 */
 final class VisualizerChildren extends Object {
-    /** empty visualizer children for any leaf */
-    public static final VisualizerChildren EMPTY = new VisualizerChildren();   
-    
     /** parent visualizer */
     public final VisualizerNode parent;
 
-    /** visualizer nodes (children) */
-    private final List<VisualizerNode> visNodes;
+    /** list of all objects here (VisualizerNode) */
+public final List<VisualizerNode> list = new ArrayList<VisualizerNode>();
 
-    /** Empty VisualizerChildren. */
-    private VisualizerChildren () {
-        visNodes = Collections.EMPTY_LIST;
-        parent = null;
-    }    
-    
     /** Creates new VisualizerChildren.
-     * Can be called only from EventQueue.
-     */
-    public VisualizerChildren(VisualizerNode parent, int size) {
+    * Can be called only from EventQueue.
+    */
+    public VisualizerChildren(VisualizerNode parent, Node[] nodes) {
         this.parent = parent;
-        visNodes = new ArrayList<VisualizerNode>(size);
-        for (int i = 0; i < size; i++) {
-            visNodes.add(null);
+
+        int s = nodes.length;
+
+        for (int i = 0; i < s; i++) {
+            VisualizerNode v = VisualizerNode.getVisualizer(this, nodes[i]);
+            list.add(v);
         }
     }
 
-    /** recomputes indexes for all nodes.
-     * @param tn tree node that we are looking for
-     * @return true if there is non-null object inside
-     */
-    private final boolean recomputeIndexes(VisualizerNode tn) {
-        assert tn == null || this.parent == tn.getParent() : "tn must be our child!"; // NOI18N
-
-        boolean isNonNull = false;
-        for (int i = 0; i < visNodes.size(); i++) {
-            VisualizerNode node = (VisualizerNode) visNodes.get(i);
-            if (node != null) {
-                node.indexOf = i;
-                isNonNull = true;
-            }
-        }
-
-        if (tn != null && tn.indexOf == -1) {
-            // not computed => force computation
-            for (int i = 0; i < visNodes.size(); i++) {
-                VisualizerNode visNode = (VisualizerNode) getChildAt(i);
-                visNode.indexOf = i;
-                if (visNode == tn) {
-                    return isNonNull;
-                }
-            }
-        }
-        return isNonNull;
-    }  
-    
-    public javax.swing.tree.TreeNode getChildAt(int pos) {
-        VisualizerNode visNode = visNodes.get(pos);
-        if (visNode == null) {
-            Node node = parent.node.getChildren().getNodeAt(pos);
-            visNode = VisualizerNode.getVisualizer(this, node);
-            visNode.indexOf = pos;
-            visNodes.set(pos, visNode);
-        }
-        return visNode;
-    }
-    
-    public int getChildCount() {
-        return visNodes.size();
-    }
-
-    public java.util.Enumeration children() {
-        return new java.util.Enumeration() {
-
-            private int index;
-
-            public boolean hasMoreElements() {
-                return index < visNodes.size();
-            }
-
-            public Object nextElement() {
-                return getChildAt(index++);
-            }
-        };
-    }
-
-    /** Delegated to us from VisualizerNode
-     * 
-     */
-    public int getIndex(final javax.swing.tree.TreeNode p1) {
-        VisualizerNode visNode = (VisualizerNode) p1;
-        if (visNode.getParent() != this.parent) {
-            return -1;
-        }
-
-        if (visNode.indexOf == -1) {
-            recomputeIndexes(visNode);
-        }
-        assert visNode.indexOf != -1 : "Index of v has been computed by recomputeIndexes"; // NOI18N
-        return visNode.indexOf;
-    }  
-    
     /** Notification of children addded event. Modifies the list of nodes
-     * and fires info to all listeners.
-     */
+    * and fires info to all listeners.
+    */
     public void added(VisualizerEvent.Added ev) {
-        ListIterator<VisualizerNode> it = visNodes.listIterator();
+        ListIterator<VisualizerNode> it = list.listIterator();
         boolean empty = !it.hasNext();
 
         int[] indxs = ev.getArray();
@@ -168,32 +88,47 @@ final class VisualizerChildren extends Object {
             while (current++ < indxs[inIndxs]) {
                 it.next();
             }
-            it.add(null);
+
+            it.add(VisualizerNode.getVisualizer(this, nodes[inIndxs]));
             inIndxs++;
         }
 
-        boolean isNonNull = recomputeIndexes(null);
-
         VisualizerNode parent = this.parent;
+
         while (parent != null) {
             Object[] listeners = parent.getListenerList();
+
             for (int i = listeners.length - 1; i >= 0; i -= 2) {
                 ((NodeModel) listeners[i]).added(ev);
             }
+
             parent = (VisualizerNode) parent.getParent();
         }
+
         if (empty) {
             // change of state
-            this.parent.notifyVisualizerChildrenChange(isNonNull, this);
+            this.parent.notifyVisualizerChildrenChange(list.size(), this);
         }
     }
 
+    private static boolean sameContains(List l, Object elem) {
+        for (Iterator it = l.iterator(); it.hasNext();) {
+            if (it.next() == elem) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /** Notification that children has been removed. Modifies the list of nodes
-     * and fires info to all listeners.
-     */
+    * and fires info to all listeners.
+    */
     public void removed(VisualizerEvent.Removed ev) {
         List remList = Arrays.asList(ev.getRemovedNodes());
-        Iterator it = visNodes.iterator();
+
+        Iterator it = list.iterator();
+
         VisualizerNode vis;
 
         int[] indx = new int[remList.size()];
@@ -205,32 +140,37 @@ final class VisualizerChildren extends Object {
             vis = (VisualizerNode) it.next();
 
             // check if it will removed
-            if (remList.contains(vis.node)) {
+            if (sameContains(remList, vis.node)) {
                 indx[remSize++] = count;
+
                 // remove this VisualizerNode from children
                 it.remove();
+
                 // bugfix #36389, add the removed node to VisualizerEvent
                 ev.removed.add(vis);
             }
+
             count++;
         }
 
         // notify event about changed indexes
         ev.setRemovedIndicies(indx);
-        recomputeIndexes(null);
 
         VisualizerNode parent = this.parent;
+
         while (parent != null) {
             Object[] listeners = parent.getListenerList();
+
             for (int i = listeners.length - 1; i >= 0; i -= 2) {
                 ((NodeModel) listeners[i]).removed(ev);
             }
+
             parent = (VisualizerNode) parent.getParent();
         }
 
-        if (visNodes.isEmpty()) {
+        if (list.isEmpty()) {
             // now is empty
-            this.parent.notifyVisualizerChildrenChange(true, this);
+            this.parent.notifyVisualizerChildrenChange(0, this);
         }
     }
 
@@ -240,31 +180,35 @@ final class VisualizerChildren extends Object {
      * which may be in an inconsistent state.
      */
     private int[] reorderByComparator(Comparator<VisualizerNode> c) {
-        VisualizerNode[] old = visNodes.toArray(new VisualizerNode[visNodes.size()]);
+        VisualizerNode[] old = list.toArray(new VisualizerNode[list.size()]);
         Arrays.sort(old, c);
 
         int[] idxs = new int[old.length];
+
         for (int i = 0; i < idxs.length; i++) {
-            idxs[i] = visNodes.indexOf(old[i]);
+            idxs[i] = list.indexOf(old[i]);
         }
 
-        visNodes.clear();
-        visNodes.addAll(Arrays.asList(old));
+        list.clear();
+        list.addAll(Arrays.asList(old));
+
         return idxs;
     }
 
     /** Notification that children has been reordered. Modifies the list of nodes
-     * and fires info to all listeners.
-     */
+    * and fires info to all listeners.
+    */
     public void reordered(VisualizerEvent.Reordered ev) {
         if (ev.getComparator() != null) {
             //#37802
             ev.array = reorderByComparator(ev.getComparator());
         } else {
             int[] indxs = ev.getArray();
-            VisualizerNode[] old = visNodes.toArray(new VisualizerNode[visNodes.size()]);
+            VisualizerNode[] old = list.toArray(new VisualizerNode[list.size()]);
             VisualizerNode[] arr = new VisualizerNode[old.length];
+
             int s = indxs.length;
+
             try {
                 for (int i = 0; i < s; i++) {
                     // arr[indxs[i]] = old[i];
@@ -300,20 +244,21 @@ final class VisualizerChildren extends Object {
             }
 
             assert !Arrays.asList(arr).contains(null) : "Null element in reorderer list " + Arrays.asList(arr) +
-            "; list=" + visNodes + " indxs=" + Arrays.asList(org.openide.util.Utilities.toObjectArray(indxs));
-            visNodes.clear();
-            visNodes.addAll(Arrays.asList(arr));
-            assert !visNodes.contains(null);
+            "; list=" + list + " indxs=" + Arrays.asList(org.openide.util.Utilities.toObjectArray(indxs));
+            list.clear();
+            list.addAll(Arrays.asList(arr));
+            assert !list.contains(null);
         }
-        recomputeIndexes(null);
 
         VisualizerNode parent = this.parent;
 
         while (parent != null) {
             Object[] listeners = parent.getListenerList();
+
             for (int i = listeners.length - 1; i >= 0; i -= 2) {
                 ((NodeModel) listeners[i]).reordered(ev);
             }
+
             parent = (VisualizerNode) parent.getParent();
         }
     }
