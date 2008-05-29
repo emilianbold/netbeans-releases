@@ -55,7 +55,7 @@ import org.netbeans.performance.languages.Projects;
  * @author mkhramov@netbeans.org
  */
 public class ScriptingProjectNodePopup extends  PerformanceTestCase {
-
+    public static final String suiteName="Scripting UI Responsiveness Menus suite";
     protected static Node dataObjectNode;
     protected static ProjectsTabOperator projectsTab = null;
     

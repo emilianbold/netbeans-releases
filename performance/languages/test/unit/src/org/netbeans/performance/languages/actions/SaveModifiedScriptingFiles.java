@@ -58,7 +58,7 @@ import org.netbeans.performance.languages.ScriptingUtilities;
  * @author mkhramov@netbeans.org
  */
 public class SaveModifiedScriptingFiles extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-    
+    public static final String suiteName="Scripting UI Responsiveness Actions suite";
     /** Editor with opened file */
     public static EditorOperator editorOperator;
     

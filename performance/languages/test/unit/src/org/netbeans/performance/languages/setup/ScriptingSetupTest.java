@@ -55,8 +55,8 @@ import org.netbeans.performance.languages.ScriptingUtilities;
  * @author mkhramov@netbeans.org
  */
 public class ScriptingSetupTest extends JellyTestCase {
-    
-	private String workdir;
+    public static final String suiteName="Scripting UI Responsiveness Setup suite";
+    private String workdir;
     
     public ScriptingSetupTest(String testName) {
         super(testName);

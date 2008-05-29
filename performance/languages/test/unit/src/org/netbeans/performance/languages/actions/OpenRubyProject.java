@@ -56,7 +56,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  * @author mkhramov@netbeans.org
  */
 public class OpenRubyProject extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-
+    public static final String suiteName="Scripting UI Responsiveness Actions suite";
     private static String projectName; 
     private JButtonOperator openButton;
     private String workdir;    

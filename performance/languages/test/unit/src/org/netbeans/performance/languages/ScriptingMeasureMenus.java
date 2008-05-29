@@ -43,6 +43,7 @@ package org.netbeans.performance.languages;
 
 
 
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.performance.languages.menus.ScriptingNodePopup;
 import org.netbeans.performance.languages.menus.ScriptingProjectNodePopup;
@@ -53,21 +54,10 @@ import org.netbeans.performance.languages.menus.ScriptingProjectNodePopup;
  */
 public class ScriptingMeasureMenus {
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
+        NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Menus suite");
         
-        suite.addTest(new ScriptingProjectNodePopup("testRubyProjectNodePopupMenu","Ruby Project node popup test"));
-        suite.addTest(new ScriptingProjectNodePopup("testRubyProjectNodePopupMenu","Rails Project node popup test"));        
-
-        suite.addTest(new ScriptingNodePopup("test_RB_NodePopup"," Ruby file node popup test"));
-        suite.addTest(new ScriptingNodePopup("test_RHTML_NodePopup","RHTML file node popup test"));
-        suite.addTest(new ScriptingNodePopup("test_JS_NodePopup","Java Script file node popup test"));        
-//        suite.addTest(new ScriptingNodePopup("test_YML_NodePopup","YML file node popup test"));        
-//        suite.addTest(new ScriptingNodePopup("test_JSON_NodePopup","JSON file node popup test"));
-//        suite.addTest(new ScriptingNodePopup("test_CSS_NodePopup","CSS file node popup test"));
-//        suite.addTest(new ScriptingNodePopup("test_BAT_NodePopup","Batch script file node popup test"));
-//        suite.addTest(new ScriptingNodePopup("test_DIFF_NodePopup","Diff file node popup test"));
-//        suite.addTest(new ScriptingNodePopup("test_MANIFEST_NodePopup","Manifest file node popup test"));
-//        suite.addTest(new ScriptingNodePopup("test_SH_NodePopup","Shell Script file node popup test"));
+        suite.addTest(NbModuleSuite.create(ScriptingProjectNodePopup.class, ".*", ".*"));       
+        suite.addTest(NbModuleSuite.create(ScriptingNodePopup.class, ".*", ".*"));
         
         return suite;
     }

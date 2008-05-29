@@ -57,7 +57,7 @@ import org.netbeans.performance.languages.actions.TypingInScriptingEditor;
  */
 public class ScriptingMeasureActions {
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
+        NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Actions suite");
 
         suite.addTest(NbModuleSuite.create(CreateRubyProject.class, ".*", ".*"));                
         suite.addTest(NbModuleSuite.create(ScriptingExpandFolder.class, ".*", ".*"));           

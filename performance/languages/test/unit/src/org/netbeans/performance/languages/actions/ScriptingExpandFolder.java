@@ -58,7 +58,7 @@ import org.netbeans.performance.languages.ScriptingUtilities;
  * @author mkhramov@netbeans.org
  */
 public class ScriptingExpandFolder extends PerformanceTestCase {
-
+    public static final String suiteName="Scripting UI Responsiveness Actions suite";
     /** Name of the folder which test creates and expands */
     protected String project;
     

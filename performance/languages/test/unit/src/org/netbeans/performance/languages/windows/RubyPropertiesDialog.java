@@ -55,7 +55,7 @@ import org.netbeans.performance.languages.Projects;
  * @author mkhramov@netbeans.org
  */
 public class RubyPropertiesDialog  extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-
+    public static final String suiteName="Scripting UI Responsiveness Dialogs suite";
     private Node testNode;
     private String TITLE, projectName;
     

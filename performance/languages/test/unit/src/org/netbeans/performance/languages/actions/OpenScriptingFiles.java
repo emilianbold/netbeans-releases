@@ -63,7 +63,7 @@ import org.netbeans.performance.languages.ScriptingUtilities;
  * @author mkhramov@netbeans.org
  */
 public class OpenScriptingFiles extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-
+    public static final String suiteName="Scripting UI Responsiveness Actions suite";
     private static final Object EDITOR_REFS = new Object();
     
     /** Node to be opened/edited */

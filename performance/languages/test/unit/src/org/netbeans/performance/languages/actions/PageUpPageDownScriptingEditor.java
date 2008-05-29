@@ -25,7 +25,7 @@ import org.netbeans.performance.languages.ScriptingUtilities;
  * @author Administrator
  */
 public class PageUpPageDownScriptingEditor extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-    
+    public static final String suiteName="Scripting UI Responsiveness Actions suite";
     private boolean pgup;
     private EditorOperator editorOperator;
     protected static ProjectsTabOperator projectsTab = null;    

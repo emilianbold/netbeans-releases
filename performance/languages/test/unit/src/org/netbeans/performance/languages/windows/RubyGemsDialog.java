@@ -55,7 +55,7 @@ import org.netbeans.modules.performance.guitracker.LoggingRepaintManager.RegionF
  * @author mkhramov@netbeans.org
  */
 public class RubyGemsDialog extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-
+    public static final String suiteName="Scripting UI Responsiveness Dialogs suite";
     protected String MENU, TITLE;
     
     public RubyGemsDialog(String testName) {

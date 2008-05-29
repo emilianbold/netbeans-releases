@@ -56,7 +56,7 @@ import org.netbeans.modules.performance.utilities.CommonUtilities;
  * @author mkhramov@netbeans.org
  */
 public class CreateRubyProject  extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-    
+    public static final String suiteName="Scripting UI Responsiveness Actions suite";
     private NewProjectNameLocationStepOperator wizard_location;
     
     public String category, project, project_name, project_type,  editor_name;

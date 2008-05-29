@@ -60,7 +60,7 @@ import org.netbeans.performance.languages.ScriptingUtilities;
  */
 
 public class EditorMenuPopup extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-
+    public static final String suiteName="Scripting UI Responsiveness Actions suite";
     protected Node fileToBeOpened;
     protected String testProject;
     protected String docName; 

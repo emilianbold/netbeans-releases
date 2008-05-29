@@ -59,7 +59,7 @@ import org.netbeans.performance.languages.ScriptingUtilities;
  * @author Administrator
  */
 public class TypingInScriptingEditor extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-    
+    public static final String suiteName="Scripting UI Responsiveness Actions suite";
     protected Node fileToBeOpened;
     protected String testProject;
     protected String fileName; 
