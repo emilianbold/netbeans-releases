@@ -117,8 +117,8 @@ public class NestedLocal extends RubyAstRule {
                         List<HintFix> fixList = new ArrayList<HintFix>(2);
                         Node root = AstUtilities.getRoot(info);
                         AstPath childPath = new AstPath(root, child);
-                        fixList.add(new RenameVarFix(info, childPath, node, false));
-                        fixList.add(new RenameVarFix(info, childPath, node, true));
+                        fixList.add(new RenameVarFix(context, childPath, node, false));
+                        fixList.add(new RenameVarFix(context, childPath, node, true));
 
                         // TODO - add a hint to turn off this hint?
                         // Should be a utility or infrastructure option!
@@ -170,15 +170,13 @@ public class NestedLocal extends RubyAstRule {
 
     private static class RenameVarFix implements PreviewableFix {
 
-        private CompilationInfo info;
+        private final RubyRuleContext context;
+        private final AstPath path;
+        private final Node target;
+        private final boolean renameOuter;
 
-        private AstPath path;
-        private Node target;
-
-        private boolean renameOuter;
-
-        RenameVarFix(CompilationInfo info, AstPath path, Node target, boolean renameOuter) {
-            this.info = info;
+        RenameVarFix(RubyRuleContext context, AstPath path, Node target, boolean renameOuter) {
+            this.context = context;
             this.target = target;
             this.path = path;
             this.renameOuter = renameOuter;
@@ -193,7 +191,7 @@ public class NestedLocal extends RubyAstRule {
         }
 
         public EditList getEditList() throws Exception {
-            BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = context.doc;
             EditList edits = new EditList(doc);
             Set<OffsetRange> ranges = findRegionsToEdit();
             String oldName = ((INameNode)path.leaf()).getName();
@@ -220,13 +218,13 @@ public class NestedLocal extends RubyAstRule {
             }
 
             // Initiate synchronous editing:
-            EditRegions.getInstance().edit(info.getFileObject(), ranges, caretOffset);
+            EditRegions.getInstance().edit(context.compilationInfo.getFileObject(), ranges, caretOffset);
         }
 
         private void addNonBlockRefs(Node node, String name, Set<OffsetRange> ranges) {
             if (((node instanceof LocalAsgnNode) || (node instanceof LocalVarNode)) && name.equals(((INameNode)node).getName())) {
                 OffsetRange range = AstUtilities.getNameRange(node);
-                range = LexUtilities.getLexerOffsets(info, range);
+                range = LexUtilities.getLexerOffsets(context.compilationInfo, range);
                 if (range != OffsetRange.NONE) {
                     ranges.add(range);
                 }

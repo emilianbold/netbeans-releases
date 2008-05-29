@@ -103,7 +103,7 @@ public class IntroduceHint extends RubySelectionRule {
         assert start < end;
 
         try {
-            BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = context.doc;
             if (end > doc.getLength()) {
                 return;
             }
@@ -183,7 +183,7 @@ public class IntroduceHint extends RubySelectionRule {
             }
             
             for (IntroduceKind kind : kinds) {
-                IntroduceFix fix = new IntroduceFix(info, nodes, lexOffsets, astOffsets, kind);
+                IntroduceFix fix = new IntroduceFix(context, nodes, lexOffsets, astOffsets, kind);
                 List<HintFix> fixList = new ArrayList<HintFix>(1);
                 fixList.add(fix);
                 String displayName = fix.getDescription();
@@ -192,8 +192,6 @@ public class IntroduceHint extends RubySelectionRule {
                 result.add(desc);
             }
         } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
     }

@@ -41,13 +41,13 @@ import org.jruby.ast.NodeType;
 import org.jruby.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.EditList;
 import org.netbeans.modules.gsf.api.HintFix;
 import org.netbeans.modules.gsf.api.HintSeverity;
 import org.netbeans.modules.gsf.api.PreviewableFix;
 import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
@@ -106,9 +106,9 @@ public class CamelCaseNames extends RubyAstRule {
                     Node root = AstUtilities.getRoot(info);
                     AstPath childPath = new AstPath(root, node); // TODO - make a simple clone method to clone AstPath path
                     if (node.nodeId == NodeType.LOCALASGNNODE) {
-                        fixList.add(new RenameFix(info, childPath, RubyUtils.camelToUnderlinedName(name)));
+                        fixList.add(new RenameFix(context, childPath, RubyUtils.camelToUnderlinedName(name)));
                     }
-                    fixList.add(new RenameFix(info, childPath, null));
+                    fixList.add(new RenameFix(context, childPath, null));
                     Hint desc = new Hint(this, displayName, info.getFileObject(), range, fixList, 1500);
                     result.add(desc);
                 }
@@ -147,12 +147,12 @@ public class CamelCaseNames extends RubyAstRule {
     
     private static class RenameFix implements PreviewableFix, Runnable {
 
-        private CompilationInfo info;
-        private AstPath path;
-        private String newName;
+        private final RubyRuleContext context;
+        private final AstPath path;
+        private final String newName;
 
-        RenameFix(CompilationInfo info, AstPath path, String newName) {
-            this.info = info;
+        RenameFix(RubyRuleContext context, AstPath path, String newName) {
+            this.context = context;
             this.path = path;
             this.newName = newName;
         }
@@ -184,12 +184,12 @@ public class CamelCaseNames extends RubyAstRule {
             return oldName;
         }
         
-        private EditList getEditList(String name) throws Exception {
+        @CheckForNull
+        private EditList getEditList(String name) {
             int oldLength = getOldName().length();
             Set<OffsetRange> ranges = getRanges();
 
-            BaseDocument doc = (BaseDocument) info.getDocument();
-            EditList edits = new EditList(doc);
+            EditList edits = new EditList(context.doc);
 
             for (OffsetRange range : ranges) {
                 edits.replace(range.getStart(), oldLength, name, false, 0);
@@ -225,7 +225,7 @@ public class CamelCaseNames extends RubyAstRule {
             // Full rename - can only be done from the event dispatch thread
             // (because the RefactoringActionsProvider calls getOpenedPanes on CloneableEditorSupport)
             try {
-                DataObject od = DataObject.find(info.getFileObject());
+                DataObject od = DataObject.find(context.compilationInfo.getFileObject());
                 EditorCookie ec = od.getCookie(EditorCookie.class);
                 org.openide.nodes.Node n = od.getNodeDelegate();
                 InstanceContent ic = new InstanceContent();
@@ -244,7 +244,7 @@ public class CamelCaseNames extends RubyAstRule {
         private void addLocalRegions(Node node, String name, Set<OffsetRange> ranges) {
             if ((node.nodeId == NodeType.LOCALASGNNODE || node.nodeId == NodeType.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
                 OffsetRange range = AstUtilities.getNameRange(node);
-                range = LexUtilities.getLexerOffsets(info, range);
+                range = LexUtilities.getLexerOffsets(context.compilationInfo, range);
                 if (range != OffsetRange.NONE) {
                     ranges.add(range);
                 }

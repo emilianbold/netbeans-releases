@@ -73,7 +73,6 @@ import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.modules.groovy.editor.elements.KeywordElement;
 import org.netbeans.modules.groovy.editor.parser.GroovyParser;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.codehaus.groovy.ast.AnnotatedNode;
@@ -447,11 +446,8 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         anchor = lexOffset - prefix.length();
 
-        final Document document;
-        try {
-            document = info.getDocument();
-        } catch (Exception e) {
-            Exceptions.printStackTrace(e);
+        final Document document = info.getDocument();
+        if (document == null) {
             return CodeCompletionResult.NONE;
         }
 

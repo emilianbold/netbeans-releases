@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
@@ -239,6 +238,9 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
         // Is this a require-statement? If so, jump to the required file
         try {
             Document document = info.getDocument();
+            if (document == null) {
+                return DeclarationLocation.NONE;
+            }
             TokenHierarchy<Document> th = TokenHierarchy.get(document);
             BaseDocument doc = (BaseDocument)document;
 
@@ -585,8 +587,6 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
                     }
                 }
             }
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
         }
@@ -1020,37 +1020,33 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
     
     private DeclarationLocation getClassDeclaration(CompilationInfo info, Set<IndexedClass> classes, 
             AstPath path, Node closest, RubyIndex index) {
-        try {
-            final IndexedClass candidate =
-                findBestClassMatch(classes, (BaseDocument)info.getDocument(), path, closest, index);
+        final IndexedClass candidate =
+            findBestClassMatch(classes, path, closest, index);
 
-            if (candidate != null) {
-                IndexedElement com = candidate;
-                Node node = AstUtilities.getForeignNode(com, null);
+        if (candidate != null) {
+            IndexedElement com = candidate;
+            Node node = AstUtilities.getForeignNode(com, null);
 
-                DeclarationLocation loc = new DeclarationLocation(com.getFile().getFileObject(),
-                    node.getPosition().getStartOffset(), com);
-                
-                if (!CHOOSE_ONE_DECLARATION && classes.size() > 1) {
-                    // Could the :nodoc: alternatives: if there is only one nodoc'ed alternative
-                    // don't ask user!
-                    int not_nodoced = 0;
-                    for (final IndexedClass clz : classes) {
-                        if (!clz.isNoDoc()) {
-                            not_nodoced++;
-                        }
-                    }
-                    if (not_nodoced >= 2) {
-                        for (final IndexedClass clz : classes) {
-                            loc.addAlternative(new RubyAltLocation(clz, clz == candidate));
-                        }
+            DeclarationLocation loc = new DeclarationLocation(com.getFile().getFileObject(),
+                node.getPosition().getStartOffset(), com);
+
+            if (!CHOOSE_ONE_DECLARATION && classes.size() > 1) {
+                // Could the :nodoc: alternatives: if there is only one nodoc'ed alternative
+                // don't ask user!
+                int not_nodoced = 0;
+                for (final IndexedClass clz : classes) {
+                    if (!clz.isNoDoc()) {
+                        not_nodoced++;
                     }
                 }
-                
-                return loc;
+                if (not_nodoced >= 2) {
+                    for (final IndexedClass clz : classes) {
+                        loc.addAlternative(new RubyAltLocation(clz, clz == candidate));
+                    }
+                }
             }
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+
+            return loc;
         }
      
         return DeclarationLocation.NONE;
@@ -1058,43 +1054,44 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
     
     private DeclarationLocation getMethodDeclaration(CompilationInfo info, String name, Set<IndexedMethod> methods, 
             AstPath path, Node closest, RubyIndex index, int astOffset, int lexOffset) {
-        try {
-            IndexedMethod candidate =
-                findBestMethodMatch(name, methods, (BaseDocument)info.getDocument(),
-                    astOffset, lexOffset, path, closest, index);
+        BaseDocument doc = (BaseDocument)info.getDocument();
+        if (doc == null) {
+            return DeclarationLocation.NONE;
+        }
 
-            if (candidate != null) {
-                FileObject fileObject = candidate.getFile().getFileObject();
-                if (fileObject == null) {
-                    return DeclarationLocation.NONE;
-                }
+        IndexedMethod candidate =
+            findBestMethodMatch(name, methods, doc,
+                astOffset, lexOffset, path, closest, index);
 
-                Node node = AstUtilities.getForeignNode(candidate, null);
-                int nodeOffset = node != null ? node.getPosition().getStartOffset() : 0;
-                
-                DeclarationLocation loc = new DeclarationLocation(
-                    fileObject, nodeOffset, candidate);
-
-                if (!CHOOSE_ONE_DECLARATION && methods.size() > 1) {
-                    // Could the :nodoc: alternatives: if there is only one nodoc'ed alternative
-                    // don't ask user!
-                    int not_nodoced = 0;
-                    for (final IndexedMethod mtd : methods) {
-                        if (!mtd.isNoDoc()) {
-                            not_nodoced++;
-                        }
-                    }
-                    if (not_nodoced >= 2) {
-                        for (final IndexedMethod mtd : methods) {
-                            loc.addAlternative(new RubyAltLocation(mtd, mtd == candidate));
-                        }
-                    }
-                }
-
-                return loc;
+        if (candidate != null) {
+            FileObject fileObject = candidate.getFile().getFileObject();
+            if (fileObject == null) {
+                return DeclarationLocation.NONE;
             }
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+
+            Node node = AstUtilities.getForeignNode(candidate, null);
+            int nodeOffset = node != null ? node.getPosition().getStartOffset() : 0;
+
+            DeclarationLocation loc = new DeclarationLocation(
+                fileObject, nodeOffset, candidate);
+
+            if (!CHOOSE_ONE_DECLARATION && methods.size() > 1) {
+                // Could the :nodoc: alternatives: if there is only one nodoc'ed alternative
+                // don't ask user!
+                int not_nodoced = 0;
+                for (final IndexedMethod mtd : methods) {
+                    if (!mtd.isNoDoc()) {
+                        not_nodoced++;
+                    }
+                }
+                if (not_nodoced >= 2) {
+                    for (final IndexedMethod mtd : methods) {
+                        loc.addAlternative(new RubyAltLocation(mtd, mtd == candidate));
+                    }
+                }
+            }
+
+            return loc;
         }
      
         return DeclarationLocation.NONE;
@@ -1108,6 +1105,9 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
         // Is this a require-statement? If so, jump to the required file
         try {
             Document doc = info.getDocument();
+            if (doc == null) {
+                return null;
+            }
 
             // Determine the bias (if the caret is between two tokens, did we
             // click on a link for the left or the right?
@@ -1143,18 +1143,13 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
                     // A method?
                     Set<IndexedMethod> methods = index.getMethods(text, null, NameKind.EXACT_NAME);
 
-                    try {
-                        IndexedMethod candidate =
-                            findBestMethodMatch(text, methods, (BaseDocument)info.getDocument(),
-                                astOffset, lexOffset, null, null, index);
+                    BaseDocument bdoc = (BaseDocument)doc;
+                    IndexedMethod candidate =
+                        findBestMethodMatch(text, methods, bdoc,
+                            astOffset, lexOffset, null, null, index);
 
-                        return candidate;
-                    } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
-                    }
+                    return candidate;
                 } // TODO: @ - field?
-
-                return null;
             }
 
             RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
@@ -1235,20 +1230,14 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
                 methods.addAll(initializeMethods);
             }
 
-            try {
-                IndexedMethod candidate =
-                    findBestMethodMatch(name, methods, (BaseDocument)info.getDocument(),
-                        astOffset, lexOffset, path, callNode, index);
+            IndexedMethod candidate =
+                findBestMethodMatch(name, methods, (BaseDocument)doc,
+                    astOffset, lexOffset, path, callNode, index);
 
-                if (alternativesHolder != null) {
-                    alternativesHolder[0] = methods;
-                }
-                return candidate;
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
+            if (alternativesHolder != null) {
+                alternativesHolder[0] = methods;
             }
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+            return candidate;
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
         }
@@ -1397,14 +1386,14 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
         return DeclarationLocation.NONE;
     }
 
-    IndexedClass findBestClassMatch(Set<IndexedClass> classSet, BaseDocument doc,
+    IndexedClass findBestClassMatch(Set<IndexedClass> classSet,
         AstPath path, Node reference, RubyIndex index) {
         // Make sure that the best fit method actually has a corresponding valid source location
         // and parse tree
         Set<IndexedClass> classes = new HashSet<IndexedClass>(classSet);
         
         while (!classes.isEmpty()) {
-            IndexedClass clz = findBestClassMatchHelper(classes, doc, path, reference, index);
+            IndexedClass clz = findBestClassMatchHelper(classes, path, reference, index);
             Node node = AstUtilities.getForeignNode(clz, null);
 
             if (node != null) {
@@ -1426,7 +1415,7 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
 
     // Now that I have a common RubyObject superclass, can I combine this and findBestMethodMatchHelper
     // since there's a lot of code duplication that could be shared by just operating on RubyObjects ?
-    private IndexedClass findBestClassMatchHelper(Set<IndexedClass> classes, BaseDocument doc,
+    private IndexedClass findBestClassMatchHelper(Set<IndexedClass> classes,
         AstPath path, Node reference, RubyIndex index) {
         // 1. First see if the reference is fully qualified. If so the job should
         //   be easier: prune the result set down
