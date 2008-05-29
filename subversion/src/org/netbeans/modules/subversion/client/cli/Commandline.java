@@ -110,15 +110,14 @@ class Commandline {
         
         Subversion.LOG.fine("cli: Creating process...");        
         command.commandStarted();
-        
-        cli = Runtime.getRuntime().exec(command.getCliArguments(executable), getEnvVar());
+        try {        
+            cli = Runtime.getRuntime().exec(command.getCliArguments(executable), getEnvVar());
 
-        ctOutput = new BufferedReader(new InputStreamReader(cli.getInputStream()));
-        ctError = new BufferedReader(new InputStreamReader(cli.getErrorStream()));
+            ctOutput = new BufferedReader(new InputStreamReader(cli.getInputStream()));
+            ctError = new BufferedReader(new InputStreamReader(cli.getErrorStream()));
 
-        Subversion.LOG.fine("cli: process created");
+            Subversion.LOG.fine("cli: process created");
 
-        try {
             String line = null;                
             if(command.hasBinaryOutput()) {
                 ByteArrayOutputStream b = new ByteArrayOutputStream();
