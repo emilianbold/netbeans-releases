@@ -44,7 +44,7 @@
  * provides classes for automated processing of such inputs. The processing
  * is byte or line based.
  *
- * @see org.netbeans.modules.languages.execution.api.input.InputReaderTask
+ * @see org.netbeans.modules.extexecution.api.input.InputReaderTask
  */
 package org.netbeans.modules.extexecution.api.input;
 

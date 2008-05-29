@@ -145,6 +145,8 @@ public class InputProcessorsTest extends NbTestCase {
         assertEquals(0, writer.getResetsProcessed());
         processor.reset();
         assertEquals(1, writer.getResetsProcessed());
+        
+        processor.processInput(TEST_CHARSET.encode("\n").array());
     }
 
     private static <T> void assertEquals(byte[] expected, byte[] value) {
