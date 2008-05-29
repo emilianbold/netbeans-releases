@@ -101,7 +101,7 @@ public class RunLocalCommand extends Command implements Displayable {
                 }
                 if (options.isOpenResultInOutputWindow()) {
                     BufferedReader reader = reader(new FileInputStream(outputTmpFile), encoding);
-                    BufferedWriter writer = outputTabWriter(scriptFile);
+                    BufferedWriter writer = outputTabWriter(scriptFile, true);
                     rewriteAndClose(reader, writer, null);
                 }
             }
@@ -134,7 +134,7 @@ public class RunLocalCommand extends Command implements Displayable {
 
     private void processError(Process process, File scriptFile, Charset encoding) throws IOException {
         BufferedReader errorReader = reader(process.getErrorStream(), encoding);
-        BufferedWriter outputWriter = outputTabWriter(scriptFile);
+        BufferedWriter outputWriter = outputTabWriter(scriptFile, true);
         rewriteAndClose(errorReader, outputWriter, new StringConvertor() {
 
             public String convert(String text) {

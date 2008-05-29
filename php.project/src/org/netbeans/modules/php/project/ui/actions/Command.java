@@ -61,6 +61,7 @@ import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -240,10 +241,17 @@ public abstract class Command {
         return new BufferedReader(new InputStreamReader(is, encoding));
     }
 
-    protected final BufferedWriter outputTabWriter(File scriptFile) {
+    protected final BufferedWriter outputTabWriter(File scriptFile, boolean clearOutput) {
         String outputTitle = getOutputTabTitle(scriptFile);
-        BufferedWriter outputWriter = new BufferedWriter(getOutputWriter(outputTitle));
-        return outputWriter;
+        OutputWriter outputWriter = getOutputWriter(outputTitle);
+        if (clearOutput) {
+            try {
+                outputWriter.reset();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return new BufferedWriter(outputWriter);
     }
 
     protected final String getOutputTabTitle(File scriptFile) {
