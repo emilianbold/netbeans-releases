@@ -39,74 +39,47 @@
 
 package org.netbeans.modules.gsfret.editor.semantic;
 
+import junit.framework.TestCase;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.api.ColoringAttributes.Coloring;
 import org.netbeans.modules.gsf.api.OffsetRange;
 
 /**
- * Each SequeneceElement represents a OffsetRange/Coloring/Language tuple that
- * is managed for semantic highlighting purposes. They are comparable since they
- * are maintained in a TreeSet (sorted by the OffsetRanges). This sorted treeset
- * is used to manage the various subsequences etc. needed by the highlight sequences.
- * There is a special subclass of ElementSequence, ComparisonItem, which is used
- * as comparison bounds (keys) passed into the TreeSet when generating subsequences.
  *
  * @author Tor Norbye
  */
-class SequenceElement implements Comparable<SequenceElement> {
-    public final Language language;
-    public final OffsetRange range;
-    public final Coloring coloring;
+public class SequenceElementTest extends TestCase {
     
-    private SequenceElement() {
-        language = null;
-        range = null;
-        coloring = null;
-    }
+    public SequenceElementTest(String testName) {
+        super(testName);
+    }            
 
-    public SequenceElement(Language language, OffsetRange range, Coloring coloring) {
-        this.language = language;
-        this.range = range;
-        this.coloring = coloring;
-    }
-    
-    public int compareTo(SequenceElement o) {
-        if (o.range == null) {
-            assert o instanceof ComparisonItem;
-            return range.getStart() - ((ComparisonItem)o).start;
-        }
-        return range.compareTo(o.range);
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof SequenceElement)) {
-            return false;
-        }
-        SequenceElement other = (SequenceElement)obj;
-
-        return range.equals(other.range);
+    protected void tearDown() throws Exception {
+        super.tearDown();
     }
 
-    @Override
-    public int hashCode() {
-        return range.hashCode();
-    }
-    
-    // This class is used only for key comparison when creating subsets
-    static class ComparisonItem extends SequenceElement {
-        private int start;
+    public void testCompareTo() {
+        SequenceElement s1 = new SequenceElement(null, new OffsetRange(2,5),null);
+        SequenceElement s2 = new SequenceElement(null, new OffsetRange(5,7),null);
+        assertTrue(s1.compareTo(s2) < 0);
+        assertTrue(s2.compareTo(s1) > 0);
+        s2 = new SequenceElement(null, new OffsetRange(2,5),null);
+        assertTrue(s1.compareTo(s2) == 0);
+        assertTrue(s2.compareTo(s1) == 0);
         
-        ComparisonItem(int start) {
-            this.start = start;
-        }
+        s1 = new SequenceElement.ComparisonItem(1);
+        s2 = new SequenceElement.ComparisonItem(2);
+        assertTrue(s1.compareTo(s2) < 0);
+        assertTrue(s2.compareTo(s1) > 0);
 
-        @Override
-        public int compareTo(SequenceElement o) {
-            if (o instanceof ComparisonItem) {
-                return start - ((ComparisonItem)o).start;
-            }
-            return start - o.range.getStart();
-        }
+        s2 = new SequenceElement(null, new OffsetRange(2,5),null);
+        assertTrue(s1.compareTo(s2) < 0);
+        assertTrue(s2.compareTo(s1) > 0);
     }
 }

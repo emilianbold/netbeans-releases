@@ -88,6 +88,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.ls.DOMImplementationLS;
@@ -131,15 +132,37 @@ public class CatalogModelImpl implements CatalogModel {
         this.catalogFileObject = FileUtil.createData(fo, fileName);
     }
     
+    /**
+     * This method is used by code completion only.
+     * Check if the URI conveys control information.
+     * CC adds special query strings into the URI that must be cleared.
+     */
+    private URI extractRealURI(URI locationURI) throws URISyntaxException {
+        URI realURI = locationURI;
+        String queryString = locationURI.getQuery();
+        if(queryString != null &&
+           queryString.indexOf("fetch=") != -1 && //NOI18N
+           queryString.indexOf("sync=") != -1) { //NOI18N
+            int index = queryString.indexOf("fetch="); //NOI18N
+            String temp = queryString.substring(index);
+            String queries[] = temp.split("&&"); //NOI18N
+            doFetch = Boolean.valueOf(queries[0].split("=")[1]); //NOI18N
+            fetchSynchronous = Boolean.valueOf(queries[1].split("=")[1]); //NOI18N
+            realURI = new URI(locationURI.toString().substring(
+                    0, locationURI.toString().lastIndexOf("fetch=")-1)); //NOI18N
+        }
+        return realURI;
+    }
+    
     private boolean doFetch = true;
     private boolean fetchSynchronous = false;
-    public synchronized ModelSource getModelSourceSynchronous(URI locationURI,
-        ModelSource modelSourceOfSourceDocument, boolean fetch) throws CatalogModelException {
+    public synchronized ModelSource getModelSource(URI locationURI,
+        ModelSource modelSourceOfSourceDocument) throws CatalogModelException {
         ModelSource ms = null;
-        doFetch = fetch;
-        fetchSynchronous = true;
         try {
-            ms = getModelSource(locationURI, modelSourceOfSourceDocument);
+            ms = doGetModelSource(extractRealURI(locationURI), modelSourceOfSourceDocument);
+        } catch (URISyntaxException ex) {
+            throw new CatalogModelException(ex);
         } catch (CatalogModelException ex) {
             throw ex;
         } finally {
@@ -149,9 +172,8 @@ public class CatalogModelImpl implements CatalogModel {
         }
         return ms;
     }
-
-    
-    public synchronized ModelSource getModelSource(URI locationURI,
+        
+    private synchronized ModelSource doGetModelSource(URI locationURI,
             ModelSource modelSourceOfSourceDocument) throws CatalogModelException {
         logger.entering("CatalogModelImpl", "getModelSource", locationURI);
         Exception exn = null;
