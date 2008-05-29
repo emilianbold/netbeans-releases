@@ -77,9 +77,9 @@ public class AcceptanceTestCase extends JellyTestCase {
         "createNewSchema",
                 "createSchemaComponents",
                 "customizeSchema"
-//                "checkSourceCRC",
-//                "refactorComplexType",
-//                "applyDesignPattern"
+                "checkSourceCRC",
+                "refactorComplexType",
+                "applyDesignPattern"
     };
     
     static final String TEST_SCHEMA_NAME = "testSchema";
@@ -205,7 +205,7 @@ public class AcceptanceTestCase extends JellyTestCase {
     public void checkSourceCRC() {
         startTest();
         
-        final long goldenCRC32 = 2295334600L;
+        final long goldenCRC32 = 227031766L;
         
         SchemaMultiView opMultiView = new SchemaMultiView(TEST_SCHEMA_NAME);
         opMultiView.switchToSource();
@@ -215,7 +215,7 @@ public class AcceptanceTestCase extends JellyTestCase {
         
         opMultiView.switchToSchema();
         
-        strText = strText.replaceAll("[  [\t\f\r]]", "");
+        strText = strText.replaceAll("[ \t\f\r]", "");
         Helpers.writeJemmyLog("{" + strText + "}");
         
         CRC32 crc32 = new CRC32();
@@ -223,7 +223,7 @@ public class AcceptanceTestCase extends JellyTestCase {
         long checkSum = crc32.getValue();
         Helpers.writeJemmyLog("CRC32=" + checkSum);
         if ( checkSum != goldenCRC32) {
-            fail("Schema source check sum doesn't match golden value");
+            fail("Schema source check sum doesn't match golden value. Required: " + goldenCRC32 + ", calculated: " + checkSum );
         }
         
         endTest();
