@@ -68,6 +68,7 @@ public class NodeInfo
     private Color foreground;
     private Font font;
     private ArrayList nodeLabels=new ArrayList();
+    private ArrayList<String> deviders=new ArrayList<String>();//used in combined fragment and may be in partitions/states
 
     public NodeInfo()
     {
@@ -177,6 +178,16 @@ public class NodeInfo
     public ArrayList getLabels()
     {
         return nodeLabels;
+    }
+    public int addDeviderOffset(String offset)
+    {
+        deviders.add(offset);
+        return deviders.size();
+    }
+    
+    public ArrayList<String> getDevidersOffests()
+    {
+        return deviders;
     }
     //it's not so simple as get(ResourceValue.BGCOLOR), keys are more complex then usual keys and need special handling
     //--

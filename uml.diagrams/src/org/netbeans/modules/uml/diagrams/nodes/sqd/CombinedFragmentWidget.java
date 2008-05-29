@@ -45,6 +45,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import org.netbeans.api.visual.action.ActionFactory;
@@ -69,6 +70,7 @@ import org.netbeans.modules.uml.drawingarea.actions.WidgetContext;
 import org.netbeans.modules.uml.drawingarea.actions.WidgetContextFactory;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
+import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import java.util.TreeSet;
 import org.netbeans.api.visual.model.ObjectScene;
@@ -810,4 +812,23 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
             }
          }
     }
+
+    @Override
+    public void load(NodeInfo nodeReader) {
+        super.load(nodeReader);
+        ArrayList<String> offsetsStr=nodeReader.getDevidersOffests();//currently deviders are used from ts import only, may be will be used in 6.5 loading later
+        for(int i=0;i<offsetsStr.size();i++)
+        {
+            int offset=Integer.parseInt(offsetsStr.get(i));
+            if(operandsContainer.getChildren().size()>(i+1))
+            {
+                Widget opW=operandsContainer.getChildren().get(i+1);//1st operand do not count
+                Point opWLoc=opW.getPreferredLocation();
+                opWLoc.y=offset;
+                opW.setPreferredLocation(opWLoc);
+            }
+        }
+    }
+    
+    
 }

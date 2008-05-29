@@ -976,10 +976,16 @@ public class TSDiagramConverter
             String startWith = readerPres.getLocalName();
             //we need to go deeper and exit on the same node, or can exit before on place we found necessary info
             while (readerPres.hasNext() && !(readerPres.isEndElement() && readerPres.getLocalName().equals(startWith))) {
-                if(readerPres.isStartElement() && readerPres.getLocalName().equals("engine"))
+                if(readerPres.isStartElement())
                 {
-                    ninfo.setProperty(ENGINE, readerPres.getAttributeValue(null, "name"));
-                    return            (String) ninfo.getProperty(ENGINE);
+                    if(readerPres.getLocalName().equals("engine"))
+                    {
+                        ninfo.setProperty(ENGINE, readerPres.getAttributeValue(null, "name"));
+                    }
+                    else if(readerPres.getLocalName().equals("Divider"))
+                    {
+                        ninfo.addDeviderOffset(readerPres.getAttributeValue(null, "offset"));
+                    }
                 }
                 readerPres.next();
             }
@@ -987,7 +993,7 @@ public class TSDiagramConverter
             Exceptions.printStackTrace(ex);
         }
         //
-        return null;
+        return            (String) ninfo.getProperty(ENGINE);
     }
     private String getEngineFromPres(XMLStreamReader readerPres, EdgeInfo einfo) {
         try {
