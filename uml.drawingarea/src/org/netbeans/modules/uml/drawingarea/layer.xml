@@ -110,7 +110,7 @@ made subject to such option by the copyright holder.
     </folder>
 
     <folder name="Templates">
-        <folder name="Other">
+        <folder name="UML">
             <!--
             <file name="ContextPaletteTemplate.context_palette_item" url="resources/ContextPaletteTemplate.context_palette_item">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.drawingarea.Bundle"/>
