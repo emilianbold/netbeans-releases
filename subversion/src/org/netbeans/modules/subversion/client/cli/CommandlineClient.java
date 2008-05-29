@@ -719,10 +719,6 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
             config(cmd);
             cli.exec(cmd);
         } catch (IOException ex) {
-            String msg = ex.getMessage();
-            if(msg != null && msg.trim().toLowerCase().indexOf("cannot run program") > -1) {
-                throw new SVNClientException(ERR_CLI_NOT_AVALABLE);
-            }            
             Subversion.LOG.log(Level.WARNING, null, ex);
             throw new SVNClientException(ex);
         }
