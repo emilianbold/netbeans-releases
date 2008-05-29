@@ -43,7 +43,6 @@ package org.netbeans.modules.projectimport.eclipse.core;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -54,8 +53,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor;
 import org.netbeans.modules.java.j2seplatform.wizard.NewJ2SEPlatform;
@@ -182,15 +179,9 @@ final class Importer {
         nOfProcessed++;
         progressInfo = NbBundle.getMessage(Importer.class,
                 "MSG_Progress_ProcessingProject", eclProject.getName()); // NOI18N
-        FileObject sourceRoot = FileUtil.toFileObject(srcFiles[0]);
-        // Make sure PCPM knows who owns this (J2SEProject will do the same later on anyway):
-        FileOwnerQuery.markExternalOwner(sourceRoot, nbProject, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         
         ProjectImportModel model = new ProjectImportModel(eclProject, destination, getJavaPlatform(eclProject));
         Project p = eclProject.getProjectTypeFactory().createProject(model, importProblems);
-                ProjectClassPathModifier.addRoots(
-                        new URL[] {FileUtil.urlForArchiveOrDir(eclLib)},sourceRoot,
-                        org.netbeans.api.java.classpath.ClassPath.COMPILE);
         
         if (eclProject.getProjectTypeFactory() instanceof ProjectTypeUpdater) {
             ProjectTypeUpdater updater = (ProjectTypeUpdater)eclProject.getProjectTypeFactory();
@@ -199,13 +190,6 @@ final class Importer {
                     eclProject.getDirectory().getAbsolutePath(), 
                     eclProject.getWorkspace().getDirectory().getAbsolutePath(), "0", key);
             EclipseProjectReference.write(p, ref);
-                    List<URI> elements = new ArrayList<URI>();
-                    for (AntArtifact art : artifact) {
-                        elements.addAll(Arrays.asList(art.getArtifactLocations()));
-                    }
-                    ProjectClassPathModifier.addAntArtifacts(artifact,
-                            elements.toArray(new URI[elements.size()]),sourceRoot,
-                        org.netbeans.api.java.classpath.ClassPath.COMPILE);
         }
         return p;
     }
