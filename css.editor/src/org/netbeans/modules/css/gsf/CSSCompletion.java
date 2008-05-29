@@ -38,12 +38,18 @@
  */
 package org.netbeans.modules.css.gsf;
 
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -65,6 +71,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.css.editor.Css;
+import org.netbeans.modules.css.editor.CssHelpResolver;
 import org.netbeans.modules.css.editor.LexerUtils;
 import org.netbeans.modules.css.editor.Property;
 import org.netbeans.modules.css.editor.PropertyModel;
@@ -148,7 +155,7 @@ public class CSSCompletion implements CodeCompletionHandler {
 
                 if (hasNext && "@".equals(ts.token().text().toString())) {
                     //complete rules
-                    return wrapValues(AT_RULES, CompletionItemKind.VALUE, ts.offset(), formatter);
+                    return wrapRAWValues(AT_RULES, CompletionItemKind.VALUE, ts.offset(), formatter);
                 }
 
                 return CodeCompletionResult.NONE; //no parse tree, just quit
@@ -176,13 +183,13 @@ public class CSSCompletion implements CodeCompletionHandler {
             //
             if (node.kind() == CSSParserTreeConstants.JJTSTYLESHEETRULELIST) {
                 //complete at keywords without prefix
-                return wrapValues(AT_RULES, CompletionItemKind.VALUE, caretOffset, formatter);
+                return wrapRAWValues(AT_RULES, CompletionItemKind.VALUE, caretOffset, formatter);
             } else if (node.kind() == CSSParserTreeConstants.JJTSKIP) {
                 //complete at keywords with prefix - parse tree broken
                 SimpleNode parent = (SimpleNode) node.jjtGetParent();
                 if (parent != null && parent.kind() == CSSParserTreeConstants.JJTUNKNOWNRULE) {  //test the parent node
-                    Collection<String> possibleValues = filterValues(AT_RULES, prefix);
-                    return wrapValues(possibleValues, CompletionItemKind.VALUE, AstUtils.documentPosition(parent.startOffset(), source), formatter);
+                    Collection<String> possibleValues = filterStrings(AT_RULES, prefix);
+                    return wrapRAWValues(possibleValues, CompletionItemKind.VALUE, AstUtils.documentPosition(parent.startOffset(), source), formatter);
                 }
             } else if (node.kind() == CSSParserTreeConstants.JJTIMPORTRULE || node.kind() == CSSParserTreeConstants.JJTMEDIARULE || node.kind() == CSSParserTreeConstants.JJTPAGERULE || node.kind() == CSSParserTreeConstants.JJTCHARSETRULE || node.kind() == CSSParserTreeConstants.JJTFONTFACERULE) {
                 //complete at keywords with prefix - parse tree OK
@@ -190,8 +197,8 @@ public class CSSCompletion implements CodeCompletionHandler {
                 if (id == CSSTokenId.IMPORT_SYM || id == CSSTokenId.MEDIA_SYM || id == CSSTokenId.PAGE_SYM || id == CSSTokenId.CHARSET_SYM || id == CSSTokenId.FONT_FACE_SYM) {
                     //we are on the right place in the node
 
-                    Collection<String> possibleValues = filterValues(AT_RULES, prefix);
-                    return wrapValues(possibleValues, CompletionItemKind.VALUE, AstUtils.documentPosition(node.startOffset(), source), formatter);
+                    Collection<String> possibleValues = filterStrings(AT_RULES, prefix);
+                    return wrapRAWValues(possibleValues, CompletionItemKind.VALUE, AstUtils.documentPosition(node.startOffset(), source), formatter);
                 }
 
             } else if (node.kind() == CSSParserTreeConstants.JJTPROPERTY && (prefix.length() > 0 || astCaretOffset == node.startOffset())) {
@@ -223,7 +230,7 @@ public class CSSCompletion implements CodeCompletionHandler {
                 if (prop != null) {
                     //known property
                     Collection<String> values = prop.values();
-                    return wrapValues(values, CompletionItemKind.VALUE, caretOffset, formatter);
+                    return wrapPropertyValues(prop, values, CompletionItemKind.VALUE, caretOffset, formatter);
                 }
 
             //Why we need the (prefix.length() > 0 || astCaretOffset == node.startOffset())???
@@ -266,7 +273,7 @@ public class CSSCompletion implements CodeCompletionHandler {
                 }
 
                 Collection<String> values = prop.values();
-                return wrapValues(filterValues(values, prefix), CompletionItemKind.VALUE, AstUtils.documentPosition(node.startOffset(), source), formatter);
+                return wrapPropertyValues(prop, filterStrings(values, prefix), CompletionItemKind.VALUE, AstUtils.documentPosition(node.startOffset(), source), formatter);
 
 
             }
@@ -280,21 +287,31 @@ public class CSSCompletion implements CodeCompletionHandler {
         return CodeCompletionResult.NONE;
     }
 
-    private CodeCompletionResult wrapValues(Collection<String> props, CompletionItemKind kind, int anchor, HtmlFormatter formatter) {
+    private CodeCompletionResult wrapRAWValues(Collection<String> props, CompletionItemKind kind, int anchor, HtmlFormatter formatter) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
-         for (String value : props) {
-             CSSElement handle = new CSSElement(value);
-             CompletionProposal proposal = new CSSCompletionItem(handle, value, kind, anchor, formatter);
+        for (String value : props) {
+            CSSElement handle = new CSSElement(value);
+            CompletionProposal proposal = createCompletionItem(handle, value, kind, anchor, formatter);
             proposals.add(proposal);
         }
         return new DefaultCompletionResult(proposals, false);
     }
 
-    private Collection<String> filterValues(Collection<String> props, String propertyNamePrefix) {
+    private CodeCompletionResult wrapPropertyValues(Property property, Collection<String> props, CompletionItemKind kind, int anchor, HtmlFormatter formatter) {
+        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
+        for (String value : props) {
+            CSSElement handle = new CssValueElement(property, value);
+            CompletionProposal proposal = createCompletionItem(handle, value, kind, anchor, formatter);
+            proposals.add(proposal);
+        }
+        return new DefaultCompletionResult(proposals, false);
+    }
+
+    private Collection<String> filterStrings(Collection<String> values, String propertyNamePrefix) {
         List<String> filtered = new ArrayList<String>();
-        for (String p : props) {
-            if (p.startsWith(propertyNamePrefix)) {
-                filtered.add(p);
+        for (String value : values) {
+            if (value.startsWith(propertyNamePrefix)) {
+                filtered.add(value);
             }
         }
         return filtered;
@@ -303,8 +320,8 @@ public class CSSCompletion implements CodeCompletionHandler {
     private CodeCompletionResult wrapProperties(Collection<Property> props, CompletionItemKind kind, int anchor, HtmlFormatter formatter) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
         for (Property p : props) {
-             CSSElement handle = new CSSElement(p.name());
-             CompletionProposal proposal = new CSSCompletionItem(handle, p.name(), kind, anchor, formatter);
+            CSSElement handle = new CssPropertyElement(p);
+            CompletionProposal proposal = createCompletionItem(handle, p.name(), kind, anchor, formatter);
             proposals.add(proposal);
         }
         return new DefaultCompletionResult(proposals, false);
@@ -321,13 +338,24 @@ public class CSSCompletion implements CodeCompletionHandler {
     }
 
     public String document(CompilationInfo info, ElementHandle element) {
-        return "doc not supported yet";
-    }
+        if (element instanceof CssValueElement) {
+            CssValueElement e = (CssValueElement) element;
 
-    public ElementHandle resolveLink(String link, ElementHandle originalHandle) {
+//            System.out.println("property = " + e.property().name() + "\n value = " + e.value());
+            return CssHelpResolver.instance().getPropertyHelp(e.property().name());
+
+        } else if (element instanceof CssPropertyElement) {
+            CssPropertyElement e = (CssPropertyElement) element;
+//            System.out.println("property = " + e.property().name());
+            return CssHelpResolver.instance().getPropertyHelp(e.property().name());
+        }
         return null;
     }
-
+   
+    public ElementHandle resolveLink(String link, ElementHandle elementHandle) {
+        return new ElementHandle.UrlHandle(CssHelpResolver.HELP_URL + link);
+    }
+    
     public String getPrefix(CompilationInfo info, int caretOffset, boolean upToOffset) {
         try {
             TokenSequence ts = LexerUtils.getCssTokenSequence(info.getDocument(), caretOffset);
@@ -394,8 +422,111 @@ public class CSSCompletion implements CodeCompletionHandler {
     }
 
     private static enum CompletionItemKind {
-
         PROPERTY, VALUE;
+    }
+
+    private CSSCompletionItem createCompletionItem(CSSElement element, String value, CompletionItemKind kind, int anchorOffset, HtmlFormatter formatter) {
+        if (element instanceof CssValueElement) {
+            CssValueElement valueElement = (CssValueElement) element;
+            Property owningProperty = valueElement.property();
+            String propertyName = owningProperty.name();
+            if ("color".equals(propertyName) || "background-color".equals(propertyName)) {
+                return new ColorCompletionItem(element, value, kind, anchorOffset, formatter);
+            }
+            
+            return new ValueCompletionItem(element, value, kind, anchorOffset, formatter);
+        }
+
+        //default
+        return new CSSCompletionItem(element, value, kind, anchorOffset, formatter);
+    }
+    private final HashMap<String, String> colors = new HashMap<String, String>(20);
+
+    
+    //TODO add support for non w3c standart colors, CSS3 seems to be more vague in checking the color values
+    private synchronized HashMap<String, String> colors() {
+        if (colors.isEmpty()) {
+            //init default html4.0 colors
+            //http://www.w3.org/TR/html4/types.html#type-color
+            
+            colors.put("red", "ff0000");
+            colors.put("black", "000000");
+            colors.put("green", "00ff00");
+            colors.put("blue", "0000ff");
+            colors.put("silver", "C0C0C0");
+            colors.put("gray", "808080");
+            colors.put("white", "ffffff");
+            colors.put("maroon", "800000");
+            colors.put("purple", "800080");
+            colors.put("fuchsia", "ff00ff");
+            colors.put("lime", "00ff00");
+            colors.put("olive", "808000");
+            colors.put("yellow", "ffff00");
+            colors.put("navy", "000080");
+            colors.put("teal", "008080");
+            colors.put("aqua", "00ffff");
+        }
+        return colors;
+    }
+
+    private class ValueCompletionItem extends CSSCompletionItem {
+        
+        private ValueCompletionItem(
+                CSSElement element, String value, CompletionItemKind kind, int anchorOffset, HtmlFormatter formatter) {
+                super(element, value, kind, anchorOffset, formatter);
+        }
+        
+        @Override
+        public String getLhsHtml() {
+            Property owningProperty = ((CssValueElement)getElement()).property();
+            String initialValue = owningProperty.initialValue();
+            if(initialValue != null && initialValue.equals(getName())) {
+                //initial value
+                return "<i>" + super.getLhsHtml() + "</i>";
+            }
+            
+            return super.getLhsHtml();
+        }
+        
+    }
+    
+    private class ColorCompletionItem extends ValueCompletionItem {
+
+        final byte COLOR_ICON_SIZE = 12; //px
+        
+        private ColorCompletionItem(
+                CSSElement element, String value, CompletionItemKind kind, int anchorOffset, HtmlFormatter formatter) {
+                super(element, value, kind, anchorOffset, formatter);
+        }
+        
+//        @Override
+//        public String getLhsHtml() {
+//            formatter.reset();
+//            String colorCode = colors().get(getName());
+//            if(colorCode != null) {
+//                formatter.appendHtml("<font color=\"" + colorCode + "\">" + getName() + "</font>");
+//            } else {
+//                //unknown color
+//                formatter.appendHtml(getName());
+//            }
+//            return formatter.getText();
+//
+//        }
+        
+        public ImageIcon getIcon() {
+            BufferedImage i = new BufferedImage(COLOR_ICON_SIZE, COLOR_ICON_SIZE, BufferedImage.TYPE_INT_RGB);
+            Graphics g = i.createGraphics();
+            String colorCode = colors().get(getName());
+            
+            if(colorCode == null) {
+                return  null; //unknown colo code
+            }
+            
+            g.setColor(Color.decode("0x"+colorCode));
+            g.fillRect(0,0,COLOR_ICON_SIZE, COLOR_ICON_SIZE);
+            
+            return new ImageIcon(i);
+        }
     }
 
     /**
@@ -406,12 +537,15 @@ public class CSSCompletion implements CodeCompletionHandler {
 
         private static final String CSS_PROPERTY = "org/netbeans/modules/css/resources/methodPublic.png"; //NOI18N
         private static final String CSS_VALUE = "org/netbeans/modules/css/resources/fieldPublic.png"; //NOI18N
-        private ImageIcon propertyIcon,  valueIcon;
+        private  ImageIcon propertyIcon,   valueIcon ;
         private int anchorOffset;
         private String value;
-        private HtmlFormatter formatter;
-        private CompletionItemKind kind;
+        protected HtmlFormatter formatter;
+        protected CompletionItemKind kind;
         private CSSElement element;
+
+        private CSSCompletionItem() {
+        }
 
         private CSSCompletionItem(
                 CSSElement element, String value, CompletionItemKind kind, int anchorOffset, HtmlFormatter formatter) {
