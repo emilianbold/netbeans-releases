@@ -37,62 +37,31 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.vmd.componentssupport.ui;
+package org.netbeans.modules.css.gsf;
 
-import java.util.StringTokenizer;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.Utilities;
+import org.netbeans.modules.css.editor.Property;
 
 /**
+ * Represents CSS property value. Just one item in case of multivalues e.g. background: red 1px; 
  *
- * @author avk
+ * @author marekfukala
  */
-public class UIUtils {
-
-    /**
-     * Returns a string suitable for text areas respresenting content of {@link
-     * CreatedModifiedFiles} <em>paths</em>.
-     *
-     * @param relPaths should be either
-     *        {@link CreatedModifiedFiles#getCreatedPaths()} or
-     *        {@link CreatedModifiedFiles#getModifiedPaths()}.
-     */
-    public static String generateTextAreaContent(String[] relPaths) {
-        StringBuffer sb = new StringBuffer();
-        if (relPaths.length > 0) {
-            for (int i = 0; i < relPaths.length; i++) {
-                if (i > 0) {
-                    sb.append('\n'); // NOI18N
-                }
-                sb.append(relPaths[i]);
-            }
-        }
-        return sb.toString();
-    }
+public class CssValueElement extends CssPropertyElement {
     
-    public static boolean isValidJavaFQN(String name) {
-        if (name.length() == 0) {
-            return false;
-        }
-        StringTokenizer tk = new StringTokenizer(name,".",true); //NOI18N
-        boolean delimExpected = false;
-        while (tk.hasMoreTokens()) {
-            String namePart = tk.nextToken();
-            if (delimExpected ^ namePart.equals(".")) { // NOI18N
-                return false;
-            }
-            if (!delimExpected && !Utilities.isJavaIdentifier(namePart)) {
-                return false;
-            }
-            delimExpected = !delimExpected;
-        }
-        return delimExpected;
+    private String value; 
+    
+    public CssValueElement(Property property, String value) {
+        super(property);
+        this.value = value;
     }
 
-    public static boolean userConfirmOkCancel(String title, String msg) {
-        NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, title, NotifyDescriptor.OK_CANCEL_OPTION);
-        return DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION;
+    public String value() {
+        return value;
     }
     
+    @Override
+    public String getName() {
+        return value();
+    }
+
 }
