@@ -75,7 +75,7 @@ public class DatabaseTableDrop extends org.netbeans.modules.performance.utilitie
     
     private static final String DBRootName = "jdbc:derby://localhost:1527/travel [travel on TRAVEL]";
     private static final String DBTableName = "Tables"+"|"+"TRIP";
-    
+    public static final String suiteName="UI Responsiveness VisualWeb Actions suite";
     /** Creates a new instance of DatabaseTableDrop
      * @param testName
      */

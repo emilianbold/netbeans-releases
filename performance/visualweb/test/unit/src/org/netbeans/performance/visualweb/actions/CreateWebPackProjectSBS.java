@@ -65,7 +65,7 @@ public class CreateWebPackProjectSBS extends org.netbeans.modules.performance.ut
     private String category, project, project_name, project_type;
     
     
-    
+    public static final String suiteName="UI Responsiveness VisualWeb Actions suite";
     /**
      * Creates a new instance of CreateWebPackProject
      * @param testName the name of the test

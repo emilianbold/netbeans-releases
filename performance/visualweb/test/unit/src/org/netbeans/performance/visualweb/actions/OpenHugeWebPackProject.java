@@ -57,7 +57,7 @@ public class OpenHugeWebPackProject extends org.netbeans.modules.performance.uti
     
     JButtonOperator openButton;
     private static String projectName = "HugeApp";
-    
+    public static final String suiteName="UI Responsiveness VisualWeb Actions suite";
     /**
      * Creates a new instance of OpenHugeWebPackProject
      * @param testName the name of the test

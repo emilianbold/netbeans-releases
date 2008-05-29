@@ -58,7 +58,7 @@ public class AddXMLandDTDSchemaCatalog extends org.netbeans.modules.performance.
 
     private String BUNDLE, MENU, TITLE;
     private Node thenode;
-
+    public static final String suiteName="UI Responsiveness VisualWeb Dialogs suite";
     /**
      * Creates a new instance of AddXMLandDTDSchemaCatalog
      */
@@ -75,6 +75,7 @@ public class AddXMLandDTDSchemaCatalog extends org.netbeans.modules.performance.
         expectedTime = WINDOW_OPEN;
     }
     
+    @Override
     public void initialize() {
         BUNDLE = "org.netbeans.modules.xml.catalog.Bundle";
         MENU = Bundle.getStringTrimmed(BUNDLE,"LBL_mount");
@@ -82,6 +83,10 @@ public class AddXMLandDTDSchemaCatalog extends org.netbeans.modules.performance.
         // show Runtime tab and select XML Entity Catalogs node
         thenode = new Node (RuntimeTabOperator.invoke().getRootNode(), Bundle.getStringTrimmed(BUNDLE,"TEXT_catalog_root"));
         thenode.select();
+    }
+    
+    public void testAddXMLandDTDSchemaCatalog() {
+        doMeasurement();
     }
     
     public void prepare() {

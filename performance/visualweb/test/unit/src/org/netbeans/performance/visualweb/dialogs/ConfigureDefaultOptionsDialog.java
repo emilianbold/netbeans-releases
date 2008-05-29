@@ -50,7 +50,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  * @author mkhramov@netbeans.org, mmirilovic@netbeans.org
  */
 public class ConfigureDefaultOptionsDialog extends JSFComponentOptionsDialog {
-    
+    public static final String suiteName="UI Responsiveness VisualWeb Dialogs suite";
     /** Creates a new instance of ConfigureDefaultOptionsDialog */
     public ConfigureDefaultOptionsDialog(String testName) {
         super(testName);

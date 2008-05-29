@@ -66,7 +66,7 @@ import org.netbeans.modules.performance.utilities.CommonUtilities;
  * @author  mkhramov@netbeans.org, mmirilovic@netbeans.org
  */
 public class WebSetupTest extends JellyTestCase  {
-    
+    public static final String suiteName="UI Responsiveness Setup suite for Visual Web Pack";
     private RuntimeTabOperator rto = null;
     private String workdir;
 

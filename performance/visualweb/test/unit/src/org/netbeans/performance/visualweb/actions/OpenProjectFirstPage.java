@@ -65,7 +65,7 @@ public class OpenProjectFirstPage extends org.netbeans.modules.performance.utili
     private ProjectsTabOperator pto;
     
     protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
-    
+    public static final String suiteName="UI Responsiveness VisualWeb Actions suite";
     /** Creates a new instance of OpenProjectFirstPage */
     public OpenProjectFirstPage(String testName) {
         super(testName);

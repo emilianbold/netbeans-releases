@@ -64,7 +64,7 @@ public class ComponentAddTest extends org.netbeans.modules.performance.utilities
     private WebFormDesignerOperator surface;
     private String categoryName;
     private String componentName;
-    
+    public static final String suiteName="UI Responsiveness VisualWeb Actions suite";
     /**
      * Creates a new instance of ComponentAddTest
      * 

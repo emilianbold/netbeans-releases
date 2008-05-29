@@ -63,7 +63,7 @@ public class OpenNavigationPage extends org.netbeans.modules.performance.utiliti
     
     protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
     private TopComponentOperator navPage;
-    
+    public static final String suiteName="UI Responsiveness VisualWeb Actions suite";
     /** Creates a new instance of OpenNavigationPage */
     public OpenNavigationPage(String testName) {
         super(testName);

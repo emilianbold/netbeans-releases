@@ -56,7 +56,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 public class AddComponentLibraryDialog extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
     
     private Node openNode;
-    
+    public static final String suiteName="UI Responsiveness VisualWeb Dialogs suite";
     /** Creates a new instance of AddComponentLibraryDialog */
     public AddComponentLibraryDialog(String testName) {
         super(testName);

@@ -65,7 +65,7 @@ public class PageFragmentBoxDialog extends org.netbeans.modules.performance.util
     private TopComponentOperator navigator;
     
     private static String dlgName, menuCmd;
-    
+    public static final String suiteName="UI Responsiveness VisualWeb Dialogs suite";
     /** Creates a new instance of PageFragmentBoxDialog 
      * 
      * @param testName 

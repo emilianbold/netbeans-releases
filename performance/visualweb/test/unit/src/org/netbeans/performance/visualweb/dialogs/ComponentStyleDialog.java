@@ -59,7 +59,7 @@ public class ComponentStyleDialog extends JSFComponentOptionsDialog {
     private Property property;
     private NbDialogOperator styleDialog;
     private String componentID;
-    
+    public static final String suiteName="UI Responsiveness VisualWeb Dialogs suite";
     /**
      * @param testName
      */

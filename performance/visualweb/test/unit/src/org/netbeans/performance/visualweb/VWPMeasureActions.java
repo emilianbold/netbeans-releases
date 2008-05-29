@@ -64,7 +64,7 @@ import org.netbeans.performance.visualweb.windows.DatabaseTableDrop;
  */
 public class VWPMeasureActions  {
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness VisualWeb Actions suite");
 	
 //TODO do Open project through UI	suite.addTest(new OpenWebPackProject("measureTime","Open Small Web Project"));
 //TODO do Open project through UI        suite.addTest(new OpenHugeWebPackProject("testOpenWebPackProject","Open Huge Web Project"));

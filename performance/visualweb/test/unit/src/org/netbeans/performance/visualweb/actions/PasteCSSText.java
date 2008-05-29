@@ -69,7 +69,7 @@ public class PasteCSSText  extends  org.netbeans.modules.performance.utilities.P
     private int caretBlinkRate;    
     
     private static final String CONFIG_NODE = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_Node_Config");
-
+    public static final String suiteName="UI Responsiveness VisualWeb Actions suite";
     /** Creates a new instance of PasteCSSText */
     public PasteCSSText(String testName) {
         super(testName);

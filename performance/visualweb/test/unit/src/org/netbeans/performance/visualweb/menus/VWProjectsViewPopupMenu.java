@@ -60,7 +60,7 @@ public class VWProjectsViewPopupMenu  extends PerformanceTestCase {
 
     protected static Node dataObjectNode;
     protected static ProjectsTabOperator projectsTab = null;
-    
+    public static final String suiteName="UI Responsiveness VisualWeb Menus suite";
     /** Creates a new instance of ProjectsViewPopupMenu */
     public VWProjectsViewPopupMenu(String testName) {
         super(testName);

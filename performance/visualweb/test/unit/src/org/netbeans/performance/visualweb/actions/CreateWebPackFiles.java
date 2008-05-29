@@ -71,7 +71,7 @@ public class CreateWebPackFiles extends org.netbeans.modules.performance.utiliti
     private static final String project_name = "VisualWebProject";
     private ProjectsTabOperator pto;
     private Node projectRoot;
-    
+    public static final String suiteName="UI Responsiveness VisualWeb Actions suite";
     /**
      * Creates a new instance of CreateWebPackFiles
      * @param testName the name of the test

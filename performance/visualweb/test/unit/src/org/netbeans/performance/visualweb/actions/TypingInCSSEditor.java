@@ -61,7 +61,7 @@ public class TypingInCSSEditor extends  org.netbeans.modules.performance.utiliti
     private EditorOperator editorOperator;
     private int caretBlinkRate;
     private Font font;
-    
+    public static final String suiteName="UI Responsiveness VisualWeb Actions suite";
     /** Creates a new instance of TypingInCSSEditor */
     public TypingInCSSEditor(String testName) {
         super(testName);

@@ -62,7 +62,7 @@ public class PageSwitchTest extends org.netbeans.modules.performance.utilities.P
     private String[] pagesToOpen = new String[] {"Page1", "Page1_1"};
     private WebFormDesignerOperator page1Op;
     private WebFormDesignerOperator page2Op;
-    
+    public static final String suiteName="UI Responsiveness VisualWeb Actions suite";
     public PageSwitchTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;

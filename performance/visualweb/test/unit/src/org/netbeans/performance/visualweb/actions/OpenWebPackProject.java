@@ -58,7 +58,7 @@ public class OpenWebPackProject extends org.netbeans.modules.performance.utiliti
     
     JButtonOperator openButton;
     private static String projectName = "VisualWebProject";
-    
+    public static final String suiteName="UI Responsiveness VisualWeb Actions suite";
     /**
      * Creates a new instance of OpenWebPackProject
      * @param testName the name of the test
@@ -80,6 +80,7 @@ public class OpenWebPackProject extends org.netbeans.modules.performance.utiliti
         WAIT_AFTER_OPEN=20000;
     }
     
+    @Override
     public void initialize(){
         log("::initialize::");
     }
@@ -95,12 +96,13 @@ public class OpenWebPackProject extends org.netbeans.modules.performance.utiliti
         openButton.pushNoBlock();
         return null;
     }
-    
+    @Override    
     public void close(){
         log("::close");
         ProjectSupport.closeProject(projectName);
         new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
+    @Override    
     protected void shutdown() {
         log("::shutdown");
     }    

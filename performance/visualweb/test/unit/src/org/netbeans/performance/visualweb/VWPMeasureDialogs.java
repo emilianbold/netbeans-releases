@@ -64,7 +64,7 @@ import org.netbeans.junit.NbTestSuite;
 
 public class VWPMeasureDialogs {
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness VisualWeb Dialogs suite");
         
         suite.addTest(NbModuleSuite.create(AddComponentLibraryDialog.class, ".*", ".*"));
         suite.addTest(NbModuleSuite.create(PageStyleSheetDialog.class, ".*", ".*"));

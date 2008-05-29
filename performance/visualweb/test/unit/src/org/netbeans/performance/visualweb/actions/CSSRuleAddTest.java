@@ -62,6 +62,8 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
  */
 public class CSSRuleAddTest  extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
 
+    public static final String suiteName="UI Responsiveness VisualWeb Actions suite";
+    
     private String fileName;
     private String projectName = "VisualWebProject";    
     private String styledocfolder = VWPUtilities.WEB_PAGES+"|"+"resources"; // NOI18N

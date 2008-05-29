@@ -53,7 +53,7 @@ import org.netbeans.jemmy.operators.JButtonOperator;
  * @author mkhramov@netbeans.org, mmirilovic@netbeans.org
  */
 public class ManageComponentLibrariesDialog  extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
-    
+    public static final String suiteName="UI Responsiveness VisualWeb Dialogs suite";
     private NbDialogOperator parent, dialog;
     private JButtonOperator manageComponentLibsButton;
     

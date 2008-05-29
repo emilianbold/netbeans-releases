@@ -54,7 +54,7 @@ public class VirtualFormsDialog extends org.netbeans.modules.performance.utiliti
     
     private WebFormDesignerOperator surface;
     private NbDialogOperator forms;
-    
+    public static final String suiteName="UI Responsiveness VisualWeb Dialogs suite";
     /** Creates a new instance of VirtualFormsDialog */
     public VirtualFormsDialog(String testName) {
         super(testName);

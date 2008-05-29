@@ -65,7 +65,7 @@ public class ViewSwitchTest extends org.netbeans.modules.performance.utilities.P
     private WebFormDesignerOperator testPage;
     private EditorOperator editorOperator;
     private int caretBlinkRate;   
-    
+    public static final String suiteName="UI Responsiveness VisualWeb Actions suite";
     public ViewSwitchTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;

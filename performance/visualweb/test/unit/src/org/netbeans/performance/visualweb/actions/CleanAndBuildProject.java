@@ -65,6 +65,7 @@ public class CleanAndBuildProject extends org.netbeans.modules.performance.utili
     private JPopupMenuOperator projectMenu;
     private ProjectsTabOperator pto;
     private String[] pagesToOpen;
+    public static final String suiteName="UI Responsiveness VisualWeb Actions suite";
     
     public CleanAndBuildProject(String testName) {
         super(testName);

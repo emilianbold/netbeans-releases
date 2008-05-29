@@ -54,7 +54,7 @@ import org.netbeans.junit.NbTestSuite;
 public class VWPMeasureMenus  {
 
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness VisualWeb Menus suite");
         suite.addTest(NbModuleSuite.create(VWProjectsViewPopupMenu.class, ".*", ".*"));        
         return suite;
     }

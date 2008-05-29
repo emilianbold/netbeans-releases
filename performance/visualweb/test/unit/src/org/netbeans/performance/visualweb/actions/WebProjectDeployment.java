@@ -59,6 +59,7 @@ public class WebProjectDeployment extends org.netbeans.modules.performance.utili
     private Node proj;
     private JPopupMenuOperator projectMenu;
     
+    public static final String suiteName="UI Responsiveness VisualWeb Actions suite";    
     /**
      * Creates a new instance of WebProjectDeployment
      */

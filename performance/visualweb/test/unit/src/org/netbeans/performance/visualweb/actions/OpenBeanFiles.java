@@ -61,7 +61,7 @@ public class OpenBeanFiles  extends org.netbeans.modules.performance.utilities.P
     public static Node openNode ;
     
     protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
-    
+    public static final String suiteName="UI Responsiveness VisualWeb Actions suite";
     /** Creates a new instance of OpenBeanFiles */
     public OpenBeanFiles(String testName) {
         super(testName);

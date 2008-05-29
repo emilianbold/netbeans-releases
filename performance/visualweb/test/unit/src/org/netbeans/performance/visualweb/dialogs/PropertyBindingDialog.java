@@ -50,6 +50,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  * @author mkhramov@netbeans.org, mmirilovic@netbeans.org
  */
 public class PropertyBindingDialog extends JSFComponentOptionsDialog {
+    public static final String suiteName="UI Responsiveness VisualWeb Dialogs suite";
     /** Creates a new instance of PropertyBindingDialog */
     public PropertyBindingDialog(String testName) {
         super(testName);

@@ -49,7 +49,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  * @author mkhramov@netbeans.org
  */
 public class DataBindingDialog extends JSFComponentOptionsDialog {
-    
+    public static final String suiteName="UI Responsiveness VisualWeb Dialogs suite";
     /** Creates a new instance of DataBindingDialog */
     public DataBindingDialog(String testName) {
         super(testName);

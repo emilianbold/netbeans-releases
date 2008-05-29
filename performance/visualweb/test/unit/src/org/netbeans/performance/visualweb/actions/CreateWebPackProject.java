@@ -51,7 +51,6 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 
 /**
@@ -66,7 +65,7 @@ public class CreateWebPackProject extends org.netbeans.modules.performance.utili
     private String category, project, project_name, project_type;
     
     
-    
+    public static final String suiteName="UI Responsiveness VisualWeb Actions suite";
     /**
      * Creates a new instance of CreateWebPackProject
      * @param testName the name of the test

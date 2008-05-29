@@ -59,7 +59,7 @@ public class PageStyleSheetDialog extends org.netbeans.modules.performance.utili
     private PropertySheetOperator pto;
     private Property property;
     private JDialogOperator styleDialog;
-    
+    public static final String suiteName="UI Responsiveness VisualWeb Dialogs suite";
     /**
      * 
      * @param testName 

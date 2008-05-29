@@ -50,7 +50,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  * @author mkhramov@netbeans.org, mmirilovic@netbeans.org
  */
 public class TableLayoutOptionsDialog extends JSFComponentOptionsDialog {
-    
+    public static final String suiteName="UI Responsiveness VisualWeb Dialogs suite";
     /** Creates a new instance of TableLayoutOptionsDialog */
     public TableLayoutOptionsDialog(String testName) {
         super(testName);
