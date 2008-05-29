@@ -79,7 +79,7 @@ public class ActionsSearchProvider implements SearchProvider, CategoryDescriptio
     public List<SearchResult> evaluate(String pattern) {
         List<SearchResult> result = new ArrayList<SearchResult>();
         for (ShortcutAction a:getActions()) {
-            if (a.getDisplayName().toLowerCase().indexOf(pattern) != -1) {
+            if (a.getDisplayName().toLowerCase().indexOf(pattern.toLowerCase()) != -1) {
                 result.add(new ActionResult(a));
             }
         }
