@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
 
 /**
@@ -67,7 +68,7 @@ public class NodeInfo
     private Paint background;
     private Color foreground;
     private Font font;
-    private ArrayList nodeLabels=new ArrayList();
+    private ArrayList<NodeLabel> nodeLabels=new ArrayList<NodeLabel>();
     private ArrayList<String> deviders=new ArrayList<String>();//used in combined fragment and may be in partitions/states
 
     public NodeInfo()
@@ -163,19 +164,22 @@ public class NodeInfo
         return size;
     }
     
-    public int addNodeLabel(Object label)
+    public int addNodeLabel(NodeLabel label)
     {
         nodeLabels.add(label);
         return nodeLabels.size();
     }
     
-    public int addNodeLabels(ArrayList labels)
+    public int addNodeLabels(ArrayList<NodeLabel> labels)
     {
-        nodeLabels.add(labels);
+        for(int i=0;i<labels.size();i++)
+        {
+            nodeLabels.add(labels.get(i));
+        }
         return nodeLabels.size();
     }
     
-    public ArrayList getLabels()
+    public ArrayList<NodeLabel> getLabels()
     {
         return nodeLabels;
     }
@@ -233,5 +237,67 @@ public class NodeInfo
         buff.append(", PEID=" + getPEID())
             .append(", MEID=" + getMEID());            
         return buff.toString();
+    }
+    //
+    //
+    public static class NodeLabel
+    {
+
+        private String label;
+        private Point position;
+        private Dimension size;
+        private IElement element;
+        private String peid;
+
+        public NodeLabel()
+        {
+        }
+
+        public String getLabel()
+        {
+            return label;
+        }
+
+        public void setLabel(String label)
+        {
+            this.label = label;
+        }
+
+        public Point getPosition()
+        {
+            return position;
+        }
+
+        public void setPEID(String peid) {
+            this.peid=peid;
+        }
+
+        public String getPEID()
+        {
+            return peid;
+        }
+        
+        public void setPosition(Point position)
+        {
+            this.position = position;
+        }
+
+        public Dimension getSize()
+        {
+            return size;
+        }
+
+        public void setSize(Dimension size)
+        {
+            this.size = size;
+        }
+
+        public IElement getElement() {
+            return element;
+        }
+
+        public void setElement(IElement element) {
+            this.element = element;
+        }
     }
 }

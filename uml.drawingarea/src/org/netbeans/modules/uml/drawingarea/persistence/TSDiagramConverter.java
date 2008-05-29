@@ -89,6 +89,7 @@ import org.netbeans.modules.uml.drawingarea.actions.SQDMessageConnectProvider;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeReader;
 import org.netbeans.modules.uml.drawingarea.persistence.data.EdgeInfo;
+import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo.NodeLabel;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.drawingarea.util.Util;
@@ -149,7 +150,9 @@ public class TSDiagramConverter
     private Map<String, ETPairT<String, String>> dataConnIdMap = 
         new HashMap<String, ETPairT<String, String>>(); 
     
-    private HashMap<String,HashMap<String,Object>> peidToLabelMap=new HashMap<String,HashMap<String,Object>>();
+    private Map<String,NodeInfo.NodeLabel> peidToNodeLabels=new HashMap<String,NodeInfo.NodeLabel>();
+    
+    private HashMap<String,HashMap<String,Object>> peidToEdgeLabelMap=new HashMap<String,HashMap<String,Object>>();
     
     // PEID -> NodeInfo
     private Map<String, NodeInfo> presIdNodeInfoMap = 
@@ -196,7 +199,7 @@ public class TSDiagramConverter
         //
         createNodesPresentationElements();
         findEdgesElements();
-        handleLabelsInfo(peidToLabelMap);
+        handleLabelsInfo(peidToEdgeLabelMap);
         if(diagramDetails.getDiagramType() == IDiagramKind.DK_SEQUENCE_DIAGRAM)
         {
             normalizeSQDDiagram();
@@ -205,7 +208,7 @@ public class TSDiagramConverter
         return topComponent;
     }
 
-
+ 
 
 
 
@@ -910,10 +913,14 @@ public class TSDiagramConverter
                     getEngineFromPres(readerPres,einfo);
                     presIdEdgeInfoMap.put(PEID, einfo);
                 }
-                else if(peidToLabelMap.get(PEID)!=null)
+                else if(peidToEdgeLabelMap.get(PEID)!=null)
                 {
                     //label
-                    getLabelInfoFromPres(readerPres, peidToLabelMap.get(PEID));
+                    getEdgeLabelInfoFromPres(readerPres, peidToEdgeLabelMap.get(PEID));
+                }
+                else if(peidToNodeLabels.get(PEID)!=null)
+                {
+                    getNodeLabalInfoFromPres(readerPres,peidToNodeLabels.get(PEID));
                 }
             }
         }
@@ -962,7 +969,37 @@ public class TSDiagramConverter
                 if(readerData.isStartElement() && readerData.getLocalName().equals("nodeLabel"))
                 {
                     //node label here, need to handle and show later
-                    nodeLabels.add(new Object());
+                    NodeInfo.NodeLabel nL=new NodeInfo.NodeLabel();
+                    handleNodeLabel(readerData,nL);
+                    nodeLabels.add(nL);
+                }
+                readerData.next();
+            }
+        } catch (XMLStreamException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    private void handleNodeLabel(XMLStreamReader readerData,NodeInfo.NodeLabel nL)
+    {
+        try {
+            String startWith = readerData.getLocalName();
+            //we need to go deeper and exit on the same node, or can exit before on place we found necessary info
+            while (readerData.hasNext() && !(readerData.isEndElement() && readerData.getLocalName().equals(startWith))) {
+                if(readerData.isStartElement())
+                {
+                    if(readerData.getLocalName().equals("name"))
+                    {
+                        nL.setLabel(readerData.getAttributeValue(null, "value"));
+                    }
+                    else if(readerData.getLocalName().equals("proportionalOffset"))
+                    {
+                        //need to be converted to new coordinates if support will be required
+                    }
+                    else if(readerData.getLocalName().equals("PEID"))
+                    {
+                        nL.setPEID(readerData.getAttributeValue(null, "value"));
+                        peidToNodeLabels.put(nL.getPEID(), nL);
+                    }
                 }
                 readerData.next();
             }
@@ -1016,7 +1053,7 @@ public class TSDiagramConverter
         return null;
     }
     
-    private void getLabelInfoFromPres(XMLStreamReader readerPres,HashMap<String,Object> labelInfo)
+    private void getEdgeLabelInfoFromPres(XMLStreamReader readerPres,HashMap<String,Object> labelInfo)
     {
         String startWith = readerPres.getLocalName();
         //we need to go deeper and exit on the same node, or can exit before on place we found necessary info
@@ -1025,6 +1062,14 @@ public class TSDiagramConverter
         labelInfo.put( TSLABELTYPE,type);
         labelInfo.put( TSLABELPLACEMENT,placement);
     }
+    
+    private void getNodeLabalInfoFromPres(XMLStreamReader readerPres, NodeLabel nL) {
+        String meid=readerPres.getAttributeValue(null, "MEID");
+        //find model
+        IElement el=getElement(project, meid);
+        if(el!=null)nL.setElement(el);
+    }
+
     
     /**
      * should add all labels info to edges info
@@ -1249,7 +1294,7 @@ public class TSDiagramConverter
         Dimension size = null;
         String PEID = null;
         String graphicsType=null;
-        ArrayList nodeLabels=new ArrayList();
+        ArrayList<NodeInfo.NodeLabel> nodeLabels=new ArrayList<NodeInfo.NodeLabel>();
         try
         {
             nodeId = readerData.getAttributeValue(null, "id");
@@ -1521,7 +1566,7 @@ public class TSDiagramConverter
                 }
                 else if (readerData.isEndElement() && readerData.getName().getLocalPart().equalsIgnoreCase("edgeLabel"))
                 {
-                    peidToLabelMap.put((String) labelInfo.get("PEID"),labelInfo);
+                    peidToEdgeLabelMap.put((String) labelInfo.get("PEID"),labelInfo);
                     return;
                 }
             }

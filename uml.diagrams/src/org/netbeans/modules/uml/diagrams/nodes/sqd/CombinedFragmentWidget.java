@@ -828,6 +828,20 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
                 opW.setPreferredLocation(opWLoc);
             }
         }
+        ArrayList<NodeInfo.NodeLabel> nodeLabels=nodeReader.getLabels();
+        ArrayList<IElement> shownElements=new ArrayList<IElement>();
+        for(int i=0;i<nodeLabels.size();i++)
+        {
+            NodeInfo.NodeLabel nL=nodeLabels.get(i);
+            shownElements.add(nL.getElement());
+        }
+        for(IInteractionOperand io:operands.keySet())
+        {
+            if(shownElements.contains(io.getGuard().getSpecification()))
+            {
+                operands.get(io).show(LabeledWidget.TYPE.BODY);
+            }
+        }
     }
     
     
