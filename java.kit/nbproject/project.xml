@@ -56,7 +56,7 @@
                     <code-name-base>org.netbeans.modules.java.editor</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>2.12.0</specification-version>
+                        <specification-version>2.12.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -126,7 +126,7 @@
                     <code-name-base>org.netbeans.modules.java.project</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.12</specification-version>
+                        <specification-version>1.16.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
