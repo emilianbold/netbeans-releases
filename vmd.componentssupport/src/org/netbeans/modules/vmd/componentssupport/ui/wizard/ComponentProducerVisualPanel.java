@@ -83,7 +83,10 @@ final class ComponentProducerVisualPanel extends JPanel {
     private static final String TXT_NONE    = "TXT_NONE";                   // NOI18N 
     
     private static final String NONE    = getMessage(TXT_NONE);
-    
+    private static final int ICON_LARGE_W = 32;
+    private static final int ICON_LARGE_H = 32;
+    private static final int ICON_SMALL_W = 16;
+    private static final int ICON_SMALL_H = 16;
 
     /** Creates new NameAndLocationPanel */
     ComponentProducerVisualPanel(ComponentProducerWizardPanel panel) {
@@ -292,12 +295,13 @@ final class ComponentProducerVisualPanel extends JPanel {
     private boolean isCPSmallIconValid(){
         String path = getSmallIconValue();
         if (path.length() == 0) {
-            setWarning(IconUtils.getNoIconMessage(16, 16));
+            setWarning(IconUtils.getNoIconMessage(ICON_SMALL_W, ICON_SMALL_H));
         } else if (!isFileExist(path)){
             setError(getMessage(MSG_ERR_SMALL_NOT_EXIST));
             return false;
-        } else if (!IconUtils.isValidIcon(new File(path),16,16)) {
-            setWarning(IconUtils.getIconDimensionMessage(new File(path), 16, 16));
+        } else if (!IconUtils.isValidIcon(new File(path),ICON_SMALL_W, ICON_SMALL_H)) {
+            setWarning(IconUtils.getIconDimensionMessage(
+                    new File(path), ICON_SMALL_W, ICON_SMALL_H));
         }
         return true;
     }
@@ -305,12 +309,13 @@ final class ComponentProducerVisualPanel extends JPanel {
     private boolean isCPLargeIconValid(){
         String path = getLargeIconValue();
         if (path.length() == 0) {
-            setWarning(IconUtils.getNoIconMessage(24, 24));
+            setWarning(IconUtils.getNoIconMessage(ICON_LARGE_W, ICON_LARGE_H));
         } else if (!isFileExist(path)){
             setError(getMessage(MSG_ERR_LARGE_NOT_EXIST));
             return false;
-        } else if (!IconUtils.isValidIcon(new File(path), 24, 24)) {
-            setWarning(IconUtils.getIconDimensionMessage(new File(path), 24, 24));
+        } else if (!IconUtils.isValidIcon(new File(path), ICON_LARGE_W, ICON_LARGE_H)) {
+            setWarning(IconUtils.getIconDimensionMessage(
+                    new File(path), ICON_LARGE_W, ICON_LARGE_H));
         }
         return true;
     }
@@ -765,7 +770,8 @@ private void myCPSmallIconPathButtonActionPerformed(java.awt.event.ActionEvent e
 
         File secondIcon = getAnotherIconPath(iconFile);
         if (secondIcon != null) {
-            boolean isIconSmall = IconUtils.isValidIcon(iconFile, 16, 16);
+            boolean isIconSmall = IconUtils.isValidIcon(iconFile, 
+                                                    ICON_SMALL_W, ICON_SMALL_H);
             String small = (isIconSmall) ? iconFile.getAbsolutePath() 
                     : secondIcon.getAbsolutePath();
             String large = (isIconSmall) ? secondIcon.getAbsolutePath() 
@@ -792,7 +798,8 @@ private void myCPLargeIconPathButtonActionPerformed(java.awt.event.ActionEvent e
 
         File secondIcon = getAnotherIconPath(iconFile);
         if (secondIcon != null) {
-            boolean isIconSmall = IconUtils.isValidIcon(iconFile, 16, 16);
+            boolean isIconSmall = IconUtils.isValidIcon(iconFile, 
+                                                    ICON_SMALL_W, ICON_SMALL_H);
             String small = (isIconSmall) ? iconFile.getAbsolutePath() 
                     : secondIcon.getAbsolutePath();
             String large = (isIconSmall) ? secondIcon.getAbsolutePath() 
@@ -824,8 +831,8 @@ private void myCPLargeIconPathButtonActionPerformed(java.awt.event.ActionEvent e
         for (Iterator<File> it = allFiles.iterator(); it.hasNext() && !isSecondIconSmall;) {
             File f = it.next();
             isSecondIconSmall = (isIconSmall) 
-                    ? IconUtils.isValidIcon(f, 24, 24) 
-                    : IconUtils.isValidIcon(f, 16, 16);
+                    ? IconUtils.isValidIcon(f, ICON_LARGE_W, ICON_LARGE_H) 
+                    : IconUtils.isValidIcon(f, ICON_SMALL_W, ICON_SMALL_H);
             if (isSecondIconSmall) {
                 secondIcon = f;
                 break;
