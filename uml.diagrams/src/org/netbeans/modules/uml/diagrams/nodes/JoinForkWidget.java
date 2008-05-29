@@ -61,7 +61,6 @@ public class JoinForkWidget extends UMLLabelNodeWidget
     private int width;
     private int height;
     private CustomizableWidget mainView;
-    //private UMLLabelWidget labelWidget;
     private Scene scene;
     private String contextPalettePath;
     protected static ResourceBundle bundle = NbBundle.getBundle(JoinForkWidget.class);
@@ -119,7 +118,6 @@ public class JoinForkWidget extends UMLLabelNodeWidget
             //create a  join/fork node
             mainView = new CustomizableWidget(scene, 
                     getWidgetID(), bundle.getString("LBL_body"));
-            //mainView.setPreferredBounds(rect);
     
             mainView.setCustomizableResourceTypes(
                     new ResourceType [] {ResourceType.BACKGROUND} );
@@ -129,10 +127,9 @@ public class JoinForkWidget extends UMLLabelNodeWidget
         }
     }
     
-    public void rotate(IPresentationElement presentation)
+    public void rotate()
     {
         Rectangle bounds = this.getPreferredBounds();
-        //System.out.println("oldbounds="+ bounds.toString());
         
         // UML resize provider tampers with the minimum size of the widget,
         // which causes the preferred bounds being miscalculated. I have to reset the 
@@ -140,14 +137,13 @@ public class JoinForkWidget extends UMLLabelNodeWidget
         //setMinimumSize(new Dimension(10,10));
         setMinimumSize(null);
         Rectangle newBounds = new Rectangle (bounds.x, bounds.y, bounds.height, bounds.width);
-        //System.out.println("newbounds="+ newBounds.toString());
         
         scene.getSceneAnimator().animatePreferredBounds(this, bounds);    // start bound
         scene.getSceneAnimator().animatePreferredBounds(this, newBounds);   // end bounds
         scene.revalidate();
     }
     
-    public void setDimesion (Dimension dim)
+    public void setDimension (Dimension dim)
     {
         if (dim != null)
         {
@@ -156,7 +152,7 @@ public class JoinForkWidget extends UMLLabelNodeWidget
         }
     }
     
-    public Dimension getDimesion ()
+    public Dimension getDimension ()
     {
        return new Dimension(this.width, this.height);
     }
@@ -166,62 +162,4 @@ public class JoinForkWidget extends UMLLabelNodeWidget
         return UMLWidgetIDString.FORKWIDGET.toString();
     }
     
-    // I have to override this method inorder not to set the widget minimum size.
-    // The parent method set the minimum size to to 40 which causes the 
-    // the preferred bounds of the widget being miscalculated.
-//    private static int RESIZE_SIZE = 5;
-//     @Override
-//    protected void notifyStateChanged(ObjectState previousState, ObjectState state)
-//    {
-//        boolean select = state.isSelected();
-//        boolean wasSelected = previousState.isSelected();
-//
-//        if (select && !wasSelected)
-//        {
-//            System.out.println("ADD resize action");
-//            // Allow subclasses to change the resize strategy and provider.
-//            ResizeStrategyProvider stratProv=getResizeStrategyProvider();
-//            getActions().addAction(0, ActionFactory.createResizeAction(stratProv,
-//                                                                       stratProv));
-//
-//            setBorder(new ResizeBorder(RESIZE_SIZE, Color.BLACK, getResizeControlPoints()));
-//
-//            if (isPreferredBoundsSet())
-//            {
-//                Rectangle bnd = getPreferredBounds();
-//                bnd.width += 2 * RESIZE_SIZE;
-//                bnd.height += 2 * RESIZE_SIZE;
-//                
-//                setPreferredBounds(bnd);
-//                Point loc = getPreferredLocation();
-//                loc.translate(-RESIZE_SIZE, -RESIZE_SIZE);
-//                setPreferredLocation(loc);
-//            }
-//        }
-//        else if (!select && wasSelected)
-//        {
-//            //Do not have access to the class to recheck, will consider if was selected is here
-//            //TBD add some additional possibility to check
-//            //if(getActions().getActions().get(0) instanceof ResizeAction)
-//            {
-//                System.out.println("remove resize action");
-//                getActions().removeAction(0);
-//                setBorder(BorderFactory.createEmptyBorder());
-//                if (isPreferredBoundsSet())
-//                {
-//                    Rectangle bnd = getPreferredBounds();
-//                    bnd.width -= 2 * RESIZE_SIZE;
-//                    bnd.height -= 2 * RESIZE_SIZE;    
-//                    setPreferredBounds(bnd);
-//                    Point loc = getPreferredLocation();
-//                    loc.translate(RESIZE_SIZE, RESIZE_SIZE);
-//                    setPreferredLocation(loc);
-//                }
-//            }
-//        }
-//
-////        System.out.println("NOTIFYSTATECHANGE - bounds="+ this.getBounds() + 
-////                " \npreferredBounds="+this.getPreferredBounds() +
-////                " \nmin size="+this.getMinimumSize() );
-//    }
 }

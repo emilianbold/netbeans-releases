@@ -36,58 +36,35 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.uml.diagrams.nodes.activity;
 
-import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
+import javax.swing.Action;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IJoinForkNode;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.diagrams.nodes.JoinForkWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
+import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
+import org.netbeans.modules.uml.drawingarea.view.WidgetViewManager;
 
 /**
  *
- * @author thuy
+ * @author Thuy
  */
-public class ActivityJoinForkWidget extends JoinForkWidget 
+public class ActivityJoinForkWidget extends JoinForkWidget implements WidgetViewManager
 {
+
     public ActivityJoinForkWidget(Scene scene)
     {
-        super(scene, DEFAULT_WIDTH, DEFAULT_HEIGHT,  "UML/context-palette/ActivityFork");
+        super(scene, DEFAULT_WIDTH, DEFAULT_HEIGHT,
+              "UML/context-palette/ActivityFork");
+        addToLookup(this);
     }
-    
-     @Override
-    public void initializeNode(IPresentationElement presentation)
-    {
-        if ( presentation != null ) 
-        {
-             IJoinForkNode element = (IJoinForkNode) presentation.getFirstSubject();
-             int  orientation = element.getOrientation();
-             if (orientation == element.VERTICAL)
-             {
-                 setDimesion(new Dimension(DEFAULT_HEIGHT, DEFAULT_WIDTH));
-             }
-             super.initializeNode(presentation); 
-        }
-     }
-     
+
+
     @Override
-     public void rotate(IPresentationElement presentation)
-    {
-          if ( presentation != null ) 
-        {
-             IJoinForkNode element = (IJoinForkNode) presentation.getFirstSubject();
-             byte  orientation = element.getOrientation();
-             element.setOrientation( (byte)(orientation ^ 1));  // bitwise exclusive OR
-             super.rotate(presentation);
-          }
-    }
-    
-     @Override
     public void propertyChange(PropertyChangeEvent event)
     {
         IElement element = getObject().getFirstSubject();
@@ -96,11 +73,26 @@ public class ActivityJoinForkWidget extends JoinForkWidget
         {
             String label = ((INamedElement) element).getNameWithAlias();
             labelWidget.setLabel(label);
-            if ( label != null && label.trim().length() > 0 && !labelWidget.isVisible())
+            if (label != null && label.trim().length() > 0 && !labelWidget.isVisible())
             {
                 labelWidget.setVisible(true);
             }
         }
         super.propertyChange(event);
+    }
+
+    public Action[] getViewActions()
+    {
+        return new Action[0];
+    }
+
+    public void switchViewTo(String view)
+    {
+        Rectangle rect =
+                (UMLWidget.Orientation.VERTICAL.toString().equals(view) ?
+                    new Rectangle(DEFAULT_HEIGHT, DEFAULT_WIDTH) : 
+                    new Rectangle(DEFAULT_WIDTH, DEFAULT_HEIGHT));
+
+        setPreferredBounds(rect);
     }
 }
