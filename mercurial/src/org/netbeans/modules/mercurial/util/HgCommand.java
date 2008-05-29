@@ -529,6 +529,7 @@ public class HgCommand {
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
+        command.add(HG_VERBOSE_CMD);
         command.add(HG_PULL_CMD);
         command.add(HG_UPDATE_CMD);
         command.add(HG_OPT_REPOSITORY);
@@ -571,6 +572,7 @@ public class HgCommand {
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
+        command.add(HG_VERBOSE_CMD);
         command.add(HG_UNBUNDLE_CMD);
         command.add(HG_UPDATE_CMD);
         command.add(HG_OPT_REPOSITORY);
