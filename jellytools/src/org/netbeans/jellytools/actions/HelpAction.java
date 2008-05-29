@@ -53,7 +53,7 @@ public class HelpAction extends Action {
 
     // String used in property sheets
     private static final String popupPath = Bundle.getString("org.openide.explorer.propertysheet.Bundle", "CTL_Help");
-    private static final String helpMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Help")
+    private static final String helpMenu = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Help")
                                          + "|" 
                                          + Bundle.getStringTrimmed("org.netbeans.modules.usersguide.Bundle", "Menu/Help/org-netbeans-modules-usersguide-master.xml");
     private static final KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0);
