@@ -88,7 +88,6 @@ public class HgLogMessage {
             if(pathsStrings != null){
                 pathsStrings.add(path);
             }
-            logCopied(path);
         } else {
             for (String fileSP : filesShortPaths) {
                 if (path.equals(fileSP) || path.startsWith(fileSP)) {
@@ -96,7 +95,6 @@ public class HgLogMessage {
                     if(pathsStrings != null){
                         pathsStrings.add(path);
                     }
-                    logCopied(path);
                     break;
                 }
             }
@@ -131,22 +129,26 @@ public class HgLogMessage {
         List<String> apathsStrings = new ArrayList<String>();
         List<String> dpathsStrings = new ArrayList<String>();
         List<String> cpathsStrings = new ArrayList<String>();
+        
+        // Mercurial Bug: Currently not seeing any file_copies coming back from Mercurial
+        if (fc != null && !fc.equals("")) {
+            splits = fc.split(" ");
+            for (String s : splits) {
+                updatePaths(this.cpaths, cpathsStrings, s, filesShortPaths, HgCopyStatus);
+            }
+        }
         if (fa != null && !fa.equals("")) {
             splits = fa.split(" ");
             for (String s : splits) {
-                updatePaths(this.apaths, apathsStrings, s, filesShortPaths, HgAddStatus);
+                if(!cpathsStrings.contains(s)){
+                    updatePaths(this.apaths, apathsStrings, s, filesShortPaths, HgAddStatus);
+                }
             }
         }
         if (fd != null && !fd.equals("")) {
             splits = fd.split(" ");
             for (String s : splits) {
                 updatePaths(this.dpaths, dpathsStrings, s, filesShortPaths, HgDelStatus);
-            }
-        }
-        if (fc != null && !fc.equals("")) {
-            splits = fc.split(" ");
-            for (String s : splits) {
-                updatePaths(this.cpaths, cpathsStrings, s, filesShortPaths, HgCopyStatus);
             }
         }
         if (fm != null && !fm.equals("")) {
@@ -160,7 +162,7 @@ public class HgLogMessage {
         }
     }
 
-    private void logCopied(String s){
+    private void debugLogCopied(String s){
         File file = new File(s);
         FileInformation fi = Mercurial.getInstance().getFileStatusCache().getStatus(file);
         FileStatus fs = fi != null? fi.getStatus(file): null;

@@ -53,7 +53,7 @@ import org.netbeans.modules.gsf.api.OffsetRange;
  *
  * @author Tor Norbye
  */
-public class SequenceElement implements Comparable<SequenceElement> {
+class SequenceElement implements Comparable<SequenceElement> {
     public final Language language;
     public final OffsetRange range;
     public final Coloring coloring;
@@ -71,6 +71,10 @@ public class SequenceElement implements Comparable<SequenceElement> {
     }
     
     public int compareTo(SequenceElement o) {
+        if (o.range == null) {
+            assert o instanceof ComparisonItem;
+            return range.getStart() - ((ComparisonItem)o).start;
+        }
         return range.compareTo(o.range);
     }
 
