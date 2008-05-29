@@ -51,6 +51,14 @@ import org.netbeans.modules.editor.NbEditorDocument;
  */
 public class JavaDocument extends NbEditorDocument {
 
+    /**
+     * This is here only for backwards compatibility.
+     * @deprecated Use {@link #JavaDocument(String)}
+     */
+    public JavaDocument(Class kitClass) {
+        super(kitClass);
+    }
+    
     public JavaDocument(String mimeType) {
         super(mimeType);
     }
