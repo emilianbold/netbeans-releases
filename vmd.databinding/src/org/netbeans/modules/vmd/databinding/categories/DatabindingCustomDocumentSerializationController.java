@@ -49,11 +49,10 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 
 import java.util.Collection;
 import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
-import org.netbeans.modules.vmd.databinding.categories.DatabindingCategoryCD;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 
 /**
- * @author David Kaspar
+ * @author Karol Harezlak
  */
 public class DatabindingCustomDocumentSerializationController extends DocumentSerializationController {
 

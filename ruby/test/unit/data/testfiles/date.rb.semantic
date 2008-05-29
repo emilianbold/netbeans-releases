@@ -288,7 +288,7 @@ class Date
   # month.  +sg+ specifies the Day of Calendar Reform.
   #
   # Returns the corresponding Julian Day Number.
-  def self.|>METHOD:civil_to_jd<|(|>PARAMETER:y<|, |>PARAMETER:m<|, |>PARAMETER:d<|, |>PARAMETER:sg<|=GREGORIAN<|)
+  def self.|>METHOD:civil_to_jd<|(|>PARAMETER:y<|, |>PARAMETER:m<|, |>PARAMETER:d<|, |>PARAMETER:sg<|=GREGORIAN)
     if |>PARAMETER:m<| <= 2
       |>PARAMETER:y<| -= 1
       |>PARAMETER:m<| += 12
@@ -310,7 +310,7 @@ class Date
   #
   # Returns the corresponding [year, month, day_of_month]
   # as a three-element array.
-  def self.|>METHOD:jd_to_civil<|(|>PARAMETER:jd<|, |>PARAMETER:sg<|=GREGORIAN<|)
+  def self.|>METHOD:jd_to_civil<|(|>PARAMETER:jd<|, |>PARAMETER:sg<|=GREGORIAN)
     if |>METHOD:os?<|(|>PARAMETER:jd<|, |>PARAMETER:sg<|)
       a = |>PARAMETER:jd<|
     else
@@ -338,7 +338,7 @@ class Date
   # +sg+ specifies the Day of Calendar Reform.
   #
   # Returns the corresponding Julian Day Number.
-  def self.|>METHOD:ordinal_to_jd<|(|>PARAMETER:y<|, |>PARAMETER:d<|, |>PARAMETER:sg<|=GREGORIAN<|)
+  def self.|>METHOD:ordinal_to_jd<|(|>PARAMETER:y<|, |>PARAMETER:d<|, |>PARAMETER:sg<|=GREGORIAN)
     |>METHOD:civil_to_jd<|(|>PARAMETER:y<|, 1, |>PARAMETER:d<|, |>PARAMETER:sg<|)
   end
 
@@ -349,7 +349,7 @@ class Date
   #
   # Returns the corresponding Ordinal Date as
   # [year, day_of_year]
-  def self.|>METHOD:jd_to_ordinal<|(|>PARAMETER:jd<|, |>PARAMETER:sg<|=GREGORIAN<|)
+  def self.|>METHOD:jd_to_ordinal<|(|>PARAMETER:jd<|, |>PARAMETER:sg<|=GREGORIAN)
     y = |>METHOD:jd_to_civil<|(|>PARAMETER:jd<|, |>PARAMETER:sg<|)[0]
     doy = |>PARAMETER:jd<| - |>METHOD:civil_to_jd<|(y - 1, 12, 31, |>METHOD:ns?<|(|>PARAMETER:jd<|, |>PARAMETER:sg<|))
     return y, doy
@@ -362,7 +362,7 @@ class Date
   #
   # Returns the corresponding Commercial Date as
   # [commercial_year, week_of_year, day_of_week]
-  def self.|>METHOD:jd_to_commercial<|(|>PARAMETER:jd<|, |>PARAMETER:sg<|=GREGORIAN<|)
+  def self.|>METHOD:jd_to_commercial<|(|>PARAMETER:jd<|, |>PARAMETER:sg<|=GREGORIAN)
     ns = |>METHOD:ns?<|(|>PARAMETER:jd<|, |>PARAMETER:sg<|)
     a = |>METHOD:jd_to_civil<|(|>PARAMETER:jd<| - 3, ns)[0]
     y = if |>PARAMETER:jd<| >= |>METHOD:commercial_to_jd<|(a + 1, 1, 1, ns) then a + 1 else a end
@@ -377,7 +377,7 @@ class Date
   # +y+, +w+, and +d+ are the (commercial) year, week of the year,
   # and day of the week of the Commercial Date to convert.
   # +sg+ specifies the Day of Calendar Reform.
-  def self.|>METHOD:commercial_to_jd<|(|>PARAMETER:y<|, |>PARAMETER:w<|, |>PARAMETER:d<|, |>PARAMETER:ns<|=GREGORIAN<|)
+  def self.|>METHOD:commercial_to_jd<|(|>PARAMETER:y<|, |>PARAMETER:w<|, |>PARAMETER:d<|, |>PARAMETER:ns<|=GREGORIAN)
     jd = |>METHOD:civil_to_jd<|(|>PARAMETER:y<|, 1, 4, |>PARAMETER:ns<|)
     (jd - (((jd - 1) + 1) % 7)) +
       7 * (|>PARAMETER:w<| - 1) +
@@ -406,7 +406,7 @@ class Date
   #
   # Returns the (civil) Julian Day Number as [day_number,
   # fraction] where +fraction+ is always 1/2.
-  def self.|>METHOD:ajd_to_jd<|(|>PARAMETER:ajd<|, |>PARAMETER:of<|=0<|) |>METHOD:clfloor<|(|>PARAMETER:ajd<| + |>PARAMETER:of<| + 1.to_r/2) end
+  def self.|>METHOD:ajd_to_jd<|(|>PARAMETER:ajd<|, |>PARAMETER:of<|=0) |>METHOD:clfloor<|(|>PARAMETER:ajd<| + |>PARAMETER:of<| + 1.to_r/2) end
 
   # Convert a (civil) Julian Day Number to an Astronomical Julian
   # Day Number.
@@ -417,7 +417,7 @@ class Date
   #
   # Returns the Astronomical Julian Day Number as a single
   # numeric value.
-  def self.|>METHOD:jd_to_ajd<|(|>PARAMETER:jd<|, |>PARAMETER:fr<|, |>PARAMETER:of<|=0<|) |>PARAMETER:jd<| + |>PARAMETER:fr<| - |>PARAMETER:of<| - 1.to_r/2 end
+  def self.|>METHOD:jd_to_ajd<|(|>PARAMETER:jd<|, |>PARAMETER:fr<|, |>PARAMETER:of<|=0) |>PARAMETER:jd<| + |>PARAMETER:fr<| - |>PARAMETER:of<| - 1.to_r/2 end
 
   # Convert a fractional day +fr+ to [hours, minutes, seconds,
   # fraction_of_a_second]
@@ -481,7 +481,7 @@ class Date
   #
   # If it is, returns it.  In fact, any value is treated as a valid
   # Julian Day Number.
-  def self.|>METHOD:valid_jd?<| (|>PARAMETER:jd<|, |>UNUSED:sg<|=ITALY<|) |>PARAMETER:jd<| end
+  def self.|>METHOD:valid_jd?<| (|>PARAMETER:jd<|, |>UNUSED:sg<|=ITALY) |>PARAMETER:jd<| end
 
   # Create a new Date object from a Julian Day Number.
   #
@@ -506,7 +506,7 @@ class Date
   # adjustment is not valid.
   #
   # +sg+ specifies the Day of Calendar Reform.
-  def self.|>METHOD:valid_ordinal?<| (|>PARAMETER:y<|, |>PARAMETER:d<|, |>PARAMETER:sg<|=ITALY<|)
+  def self.|>METHOD:valid_ordinal?<| (|>PARAMETER:y<|, |>PARAMETER:d<|, |>PARAMETER:sg<|=ITALY)
     if |>PARAMETER:d<| < 0
       ny, = |>METHOD:clfloor<|(|>PARAMETER:y<| + 1, 1)
       jd = |>METHOD:ordinal_to_jd<|(ny, |>PARAMETER:d<| + 1, |>PARAMETER:sg<|)
@@ -549,7 +549,7 @@ class Date
   # Reform adjustment is not valid.
   #
   # +sg+ specifies the Day of Calendar Reform.
-  def self.|>METHOD:valid_civil?<| (|>PARAMETER:y<|, |>PARAMETER:m<|, |>PARAMETER:d<|, |>PARAMETER:sg<|=ITALY<|)
+  def self.|>METHOD:valid_civil?<| (|>PARAMETER:y<|, |>PARAMETER:m<|, |>PARAMETER:d<|, |>PARAMETER:sg<|=ITALY)
     if |>PARAMETER:m<| < 0
       |>PARAMETER:m<| += 13
     end
@@ -605,7 +605,7 @@ class Date
   # Reform adjustment is not valid.
   #
   # +sg+ specifies the Day of Calendar Reform.
-  def self.|>METHOD:valid_commercial?<| (|>PARAMETER:y<|, |>PARAMETER:w<|, |>PARAMETER:d<|, |>PARAMETER:sg<|=ITALY<|)
+  def self.|>METHOD:valid_commercial?<| (|>PARAMETER:y<|, |>PARAMETER:w<|, |>PARAMETER:d<|, |>PARAMETER:sg<|=ITALY)
     if |>PARAMETER:d<| < 0
       |>PARAMETER:d<| += 8
     end
