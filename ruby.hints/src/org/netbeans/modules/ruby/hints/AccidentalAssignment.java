@@ -105,7 +105,7 @@ public class AccidentalAssignment extends RubyAstRule {
                 range = LexUtilities.getLexerOffsets(info, range);
                 if (range != OffsetRange.NONE) {
                     List<HintFix> fixList = new ArrayList<HintFix>(2);
-                    fixList.add(new ConvertAssignmentFix(info, condition));
+                    fixList.add(new ConvertAssignmentFix(context, condition));
                     Hint desc = new Hint(this, displayName, info.getFileObject(),
                             range, fixList, 600);
                     result.add(desc);
@@ -156,11 +156,11 @@ public class AccidentalAssignment extends RubyAstRule {
 
     private static class ConvertAssignmentFix implements PreviewableFix {
 
-        private CompilationInfo info;
-        private Node assignment;
+        private final RubyRuleContext context;
+        private final Node assignment;
 
-        public ConvertAssignmentFix(CompilationInfo info, Node assignment) {
-            this.info = info;
+        public ConvertAssignmentFix(RubyRuleContext context, Node assignment) {
+            this.context = context;
             this.assignment = assignment;
         }
 
@@ -176,7 +176,7 @@ public class AccidentalAssignment extends RubyAstRule {
         }
 
         public EditList getEditList() throws Exception {
-            BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = context.doc;
             OffsetRange range = AstUtilities.getNameRange(assignment);
             int endOffset = range.getEnd();
             if (assignment.nodeId == NodeType.ATTRASSIGNNODE) {

@@ -88,7 +88,7 @@ public class CommonSyntaxErrors extends RubyErrorRule {
             if ((lexOffset < doc.getLength()-"begin".length()) && // NOI18N
                     "begin".equals(doc.getText(lexOffset, "begin".length()))) { // NOI18N
                 OffsetRange range = new OffsetRange(lexOffset-1, lexOffset+"=begin".length());
-                HintFix fix = new FixDocIndent(info, lexOffset-1);
+                HintFix fix = new FixDocIndent(context, lexOffset-1);
                 List<HintFix> fixList = Collections.singletonList(fix);
                 String displayName = NbBundle.getMessage(CommonSyntaxErrors.class, "DontIndentDocs");
                 Hint desc = new Hint(this, displayName, info.getFileObject(), range, fixList, 500);
@@ -108,11 +108,11 @@ public class CommonSyntaxErrors extends RubyErrorRule {
     }
 
     private class FixDocIndent implements PreviewableFix {
-        private CompilationInfo info;
-        private int equalOffset;
+        private final RubyRuleContext context;
+        private final int equalOffset;
         
-        private FixDocIndent(CompilationInfo info, int equalOffset) {
-            this.info = info;
+        private FixDocIndent(RubyRuleContext context, int equalOffset) {
+            this.context = context;
             this.equalOffset = equalOffset;
         }
 
@@ -125,8 +125,7 @@ public class CommonSyntaxErrors extends RubyErrorRule {
         }
         
         public EditList getEditList() throws Exception {
-            // Move code - but I've gotta make sure I create a new line if necessary
-            BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = context.doc;
 
             if (equalOffset > doc.getLength()) {
                 return null; // recent edits

@@ -352,22 +352,17 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
     }
 
     public static int boundCaretOffset(CompilationInfo info, int caretOffset) {
-        Document doc = null;
+        Document doc = info.getDocument();
+        if (doc != null) {
+            // If you invoke code completion while indexing is in progress, the
+            // completion job (which stores the caret offset) will be delayed until
+            // indexing is complete - potentially minutes later. When the job
+            // is finally run we need to make sure the caret position is still valid.
+            int length = doc.getLength();
 
-        try {
-            doc = info.getDocument();
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
-        }
-
-        // If you invoke code completion while indexing is in progress, the
-        // completion job (which stores the caret offset) will be delayed until
-        // indexing is complete - potentially minutes later. When the job
-        // is finally run we need to make sure the caret position is still valid.
-        int length = doc.getLength();
-
-        if (caretOffset > length) {
-            caretOffset = length;
+            if (caretOffset > length) {
+                caretOffset = length;
+            }
         }
 
         return caretOffset;
@@ -1648,17 +1643,17 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                             // The latter isn't very likely, but the former can
                             // happen, so let's check the method bodies at the
                             // end of the current line
-                            try {
-                                BaseDocument doc = (BaseDocument)info.getDocument();
-                                int endOffset = Utilities.getRowEnd(doc, offset);
+                            BaseDocument doc = (BaseDocument)info.getDocument();
+                            if (doc != null) {
+                                try {
+                                    int endOffset = Utilities.getRowEnd(doc, offset);
 
-                                if (endOffset != offset) {
-                                    method = AstUtilities.findMethodAtOffset(root, endOffset);
+                                    if (endOffset != offset) {
+                                        method = AstUtilities.findMethodAtOffset(root, endOffset);
+                                    }
+                                } catch (BadLocationException ble) {
+                                    Exceptions.printStackTrace(ble);
                                 }
-                            } catch (BadLocationException ble) {
-                                Exceptions.printStackTrace(ble);
-                            } catch (IOException ioe) {
-                                Exceptions.printStackTrace(ioe);
                             }
                         }
 

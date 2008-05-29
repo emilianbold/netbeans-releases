@@ -130,7 +130,7 @@ public class ExpandSameLineDef extends RubyAstRule {
                     if (path.leaf() != node) {
                         path = new AstPath(root, node);
                     }
-                    List<HintFix> fixList = Collections.<HintFix>singletonList(new ExpandLineFix(info, path));
+                    List<HintFix> fixList = Collections.<HintFix>singletonList(new ExpandLineFix(context, path));
 
                     OffsetRange range = new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
                     Hint desc = new Hint(this, getDisplayName(), info.getFileObject(), range, fixList, 150);
@@ -165,12 +165,11 @@ public class ExpandSameLineDef extends RubyAstRule {
 
     private static class ExpandLineFix implements PreviewableFix {
 
-        private CompilationInfo info;
+        private final RubyRuleContext context;
+        private final AstPath path;
 
-        private AstPath path;
-
-        ExpandLineFix(CompilationInfo info, AstPath path) {
-            this.info = info;
+        ExpandLineFix(RubyRuleContext context, AstPath path) {
+            this.context = context;
             this.path = path;
         }
 
@@ -211,7 +210,7 @@ public class ExpandSameLineDef extends RubyAstRule {
         }
 
         public EditList getEditList() throws Exception {
-            BaseDocument doc = (BaseDocument)info.getDocument();
+            BaseDocument doc = context.doc;
             ISourcePosition pos = path.leaf().getPosition();
             int startOffset = pos.getStartOffset();
             int endOffset = pos.getEndOffset();
