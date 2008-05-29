@@ -142,7 +142,7 @@ public class NodeTest extends JellyTestCase {
                                                              "LBL_SafeDel"); // NOI18N
 
     // "Runtime"
-    private static final String runtimeLabel = Bundle.getString("org.netbeans.core.Bundle",
+    private static final String runtimeLabel = Bundle.getString("org.netbeans.core.ide.resources.Bundle",
                                                                 "UI/Runtime"); // NOI18N
     
     /** Test constructor  */
@@ -203,7 +203,7 @@ public class NodeTest extends JellyTestCase {
     /** Test performMenuAction */
     public void testPerformMenuAction() {
         // Window|Properties
-        String propertiesPath = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window")+
+        String propertiesPath = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window")+
                                 "|"+
                                 Bundle.getStringTrimmed("org.openide.actions.Bundle", "Properties");
         sampleClass1Node.performMenuAction(propertiesPath);
@@ -212,7 +212,7 @@ public class NodeTest extends JellyTestCase {
     
     /** Test performMenuActionNoBlock */
     public void testPerformMenuActionNoBlock() {
-        String helpItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Help");
+        String helpItem = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Help");
         String aboutItem = Bundle.getStringTrimmed("org.netbeans.core.actions.Bundle", "About");
         sourcePackagesNode.performMenuActionNoBlock(helpItem+"|"+aboutItem);    // NOI18N
         String aboutTitle = Bundle.getString("org.netbeans.core.startup.Bundle", "CTL_About_Title");

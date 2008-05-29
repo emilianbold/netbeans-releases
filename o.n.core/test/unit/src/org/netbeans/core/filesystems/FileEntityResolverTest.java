@@ -48,14 +48,11 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.jar.Attributes;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.core.LoaderPoolNode;
 import org.netbeans.core.startup.ManifestSection;
 import org.openide.ErrorManager;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
@@ -88,6 +85,7 @@ implements LookupListener, ChangeListener {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         clearWorkDir();
         
@@ -112,12 +110,13 @@ implements LookupListener, ChangeListener {
         ls = (ManifestSection.LoaderSection)ManifestSection.create(name, at, null);
         LoaderPoolNode.add(ls);
         
-        loader = (Lenka) Lenka.getLoader(Lenka.class);
+        loader = Lenka.getLoader(Lenka.class);
         
         mimeResolvers = Lookup.getDefault().lookupResult(MIMEResolver.class);
         mimeResolvers.addLookupListener(this);
     }
 
+    @Override
     protected void tearDown() throws Exception {
         LoaderPoolNode.remove(loader);
     }
@@ -192,7 +191,7 @@ implements LookupListener, ChangeListener {
     }
 
     public void resultChanged(LookupEvent ev) {
-        Logger.global.log(Level.WARNING, null, new Exception("change in lookup"));
+        //Logger.global.log(Level.WARNING, null, new Exception("change in lookup"));
         change++;
     }
 
@@ -209,11 +208,13 @@ implements LookupListener, ChangeListener {
             return new MultiDataObject(primaryFile, this);
         }
 
+        @Override
         protected void initialize() {
             getExtensions().addMimeType("hodna/lenka");
             super.initialize();
         }
 
+        @Override
         protected FileObject findPrimaryFile(FileObject fo) {
             err.log("findPrimaryFile: " + fo + " with mime: " + fo.getMIMEType());
             FileObject retValue;

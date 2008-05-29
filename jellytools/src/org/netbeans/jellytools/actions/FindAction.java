@@ -52,7 +52,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class FindAction extends ActionNoBlock {
     private static final String findPopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Find");
-    private static final String findMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Edit")
+    private static final String findMenu = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Edit")
                                             + "|"
                                             + findPopup;
     private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
