@@ -1,6 +1,6 @@
-Name: rubystubs
-Version: 6.1
-Description: Documentation for Ruby libraries processed into Ruby stub libraries for use from code completion etc
+Name: JRuby
+Version: 1.1.2
+Description: The Java-based implementation of Ruby
 License: LGPL-2.1
 OSR: 6419
 Origin: http://jruby.codehaus.org/

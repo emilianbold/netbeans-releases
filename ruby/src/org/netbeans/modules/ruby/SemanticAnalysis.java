@@ -253,13 +253,15 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             path.descend(child);
             annotate(child, highlights, path, parameters, isParameter);
             path.ascend();
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void annotateParameters(MethodDefNode node,
         Map<OffsetRange, Set<ColoringAttributes>> highlights, List<String> usedParameterNames) {
         List<Node> nodes = (List<Node>)node.childNodes();
@@ -325,7 +327,6 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void annotateUnusedParameters(MethodDefNode node,
         Map<OffsetRange, Set<ColoringAttributes>> highlights, List<String> names) {
         List<Node> nodes = (List<Node>)node.childNodes();
@@ -380,7 +381,6 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private boolean isUsedInMethod(Node node, String targetName, boolean isParameter) {
         switch (node.nodeId) {
         case LOCALVARNODE: {
@@ -431,6 +431,9 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             // The "outer" foo here is unused - we shouldn't
             // recurse into method bodies when doing unused detection
             // foo = 1; def bar; foo = 2; print foo; end;
@@ -448,7 +451,6 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         return false;
     }
 
-    @SuppressWarnings("unchecked")
     private void highlightMethodName(Node node, Map<OffsetRange, Set<ColoringAttributes>> highlights) {
         OffsetRange range = AstUtilities.getFunctionNameRange(node);
 

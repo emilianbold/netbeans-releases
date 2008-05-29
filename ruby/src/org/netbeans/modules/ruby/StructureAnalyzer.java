@@ -671,15 +671,12 @@ public class StructureAnalyzer implements StructureScanner {
         }
         }
 
-        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
-        // This was a temporary bug in JRuby that has been fixed
-        if (list == null) {
-            return;
-        }
-
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             path.descend(child);
             scan(child, path, in, includes, parent);
             path.ascend();
@@ -757,10 +754,12 @@ public class StructureAnalyzer implements StructureScanner {
             }
         }
         
-        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             CallNode call = findExtendCall(child);
             
             if (call != null) {
@@ -787,7 +786,6 @@ public class StructureAnalyzer implements StructureScanner {
         RubyParserResult r = result.getJRubyResult();
 
         // REALLY slow implementation
-        @SuppressWarnings("unchecked")
         List<CommentNode> comments = r.getCommentNodes();
 
         for (CommentNode comment : comments) {
@@ -802,7 +800,6 @@ public class StructureAnalyzer implements StructureScanner {
     }
 
     private Node findClosest(Node node, int start, int end) {
-        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
         ISourcePosition pos = node.getPosition();
@@ -816,6 +813,9 @@ public class StructureAnalyzer implements StructureScanner {
         }
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             Node closest = findClosest(child, start, end);
 
             if (closest != null) {

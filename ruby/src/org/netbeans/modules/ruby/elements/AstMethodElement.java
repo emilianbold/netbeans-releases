@@ -23,7 +23,6 @@ public class AstMethodElement extends AstElement implements MethodElement {
         super(info, node);
     }
 
-    @SuppressWarnings("unchecked")
     public List<String> getParameters() {
         if (parameters == null) {
             parameters = AstUtilities.getDefArgs((MethodDefNode)node, false);

@@ -91,7 +91,6 @@ public class AccidentalAssignment extends RubyAstRule {
         Node condition = ifNode.getCondition();
         if (condition != null) {
             if (condition.nodeId == NodeType.NEWLINENODE) {
-                @SuppressWarnings("unchecked")
                 List<Node> children = condition.childNodes();
                 if (children.size() == 0) {
                     return;

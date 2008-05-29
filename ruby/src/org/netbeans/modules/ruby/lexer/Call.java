@@ -142,7 +142,6 @@ public class Call {
      * This method will also try to be smart such that if you have a block or array
      * call, it will return the relevant classnames (e.g. for [1,2].x| it returns "Array").
      */
-    @SuppressWarnings("unchecked")
     @NonNull
     public static Call getCallType(BaseDocument doc, TokenHierarchy<Document> th, int offset) {
         TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(th, offset);
