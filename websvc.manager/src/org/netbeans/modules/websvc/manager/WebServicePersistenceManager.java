@@ -243,8 +243,11 @@ public class WebServicePersistenceManager implements ExceptionListener {
                 }
             }
             
-            encoder.close();
-            encoder.flush();
+            try {
+                encoder.flush();
+            } finally {
+                encoder.close();
+            }
             delegate = new DefaultPersistenceDelegate();
             encoder.setPersistenceDelegate(WsdlService.class, delegate);
             encoder.setPersistenceDelegate(WebServiceDescriptor.class, delegate);
