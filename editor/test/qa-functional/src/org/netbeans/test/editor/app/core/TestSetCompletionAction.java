@@ -40,16 +40,15 @@
  */
 package org.netbeans.test.editor.app.core;
 
-import org.netbeans.modules.java.editor.options.JavaOptions;
+import java.util.prefs.Preferences;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.modules.editor.java.JavaKit;
 import org.w3c.dom.Element;
-import javax.swing.text.Document;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.test.editor.app.core.properties.BadPropertyNameException;
 import org.netbeans.test.editor.app.core.properties.BooleanProperty;
 import org.netbeans.test.editor.app.core.properties.Properties;
-import org.netbeans.test.editor.app.gui.actions.TestDeleteAction;
-import org.netbeans.test.editor.app.gui.tree.ActionsCache;
 import org.netbeans.test.editor.app.util.ParsingUtils;
-import org.openide.options.SystemOption;
 
 /**
  *
@@ -165,9 +164,10 @@ public class TestSetCompletionAction extends TestSetAction {
     
     public void perform() {
         super.perform();
-        JavaOptions opts = (JavaOptions)(SystemOption.findObject(JavaOptions.class));
-        opts.setCompletionCaseSensitive(caseSensitive);
-        opts.setCompletionInstantSubstitution(instantSubstitution);
-        opts.setCompletionNaturalSort(naturalSort);
+        
+        Preferences prefs = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
+        prefs.putBoolean(SimpleValueNames.COMPLETION_CASE_SENSITIVE, caseSensitive);
+        prefs.putBoolean(SimpleValueNames.COMPLETION_INSTANT_SUBSTITUTION, instantSubstitution);
+        prefs.putBoolean(SimpleValueNames.COMPLETION_NATURAL_SORT, naturalSort);
     }
 }

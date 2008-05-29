@@ -41,7 +41,7 @@
 
 package org.netbeans.test.editor.app;
 
-import org.netbeans.modules.java.editor.options.JavaOptions;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.test.editor.app.core.*;
 import org.netbeans.test.editor.app.util.*;
 import org.netbeans.test.editor.app.gui.actions.*;
@@ -59,11 +59,14 @@ import java.io.*;
 import java.net.URL;
 import javax.swing.SwingUtilities;
 import java.util.*;
+import java.util.prefs.Preferences;
 import javax.xml.parsers.*;  //!!!
 
 import org.w3c.dom.*;
 import org.w3c.dom.Document;
 import org.apache.xerces.parsers.DOMParser;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.options.BaseOptions;
@@ -93,6 +96,7 @@ public class Main extends java.lang.Object {
     
     private static boolean debug = true;
     
+    private static Preferences javaPrefs;
     private static boolean compAutoPopup;
     private static boolean docAutoPopup;
     private static boolean htmlAutoPopup;
@@ -173,21 +177,19 @@ public class Main extends java.lang.Object {
         System.setErr(log);
         Main.log("Setting log file finished.");
         
-        JavaOptions opts = (JavaOptions)(SystemOption.findObject(JavaOptions.class));
-        if (opts == null) {
-            System.err.println("Didn't find Java options from SystemOptions. Try Lookup for Base Options...");
-            BaseOptions bo;
-            bo=(BaseOptions)(Lookup.getDefault().lookup(BaseOptions.class));
-            opts = (JavaOptions)(bo.getOptions(JavaKit.class));
-            if (opts == null) {
-                System.err.println("Base Options don't contain JavaKit Options.");
+        javaPrefs = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
+        if (javaPrefs == null) {
+            System.err.println("Didn't find Java editor preferences. Try Lookup for All editors...");
+            javaPrefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+            if (javaPrefs == null) {
+                System.err.println("No preferences even for All editors. Giving up.");
                 return;
             }
         }
-        compAutoPopup = opts.getCompletionAutoPopup();
-        opts.setCompletionAutoPopup(false);
-        docAutoPopup = opts.getJavaDocAutoPopup();
-        opts.setJavaDocAutoPopup(false);
+        compAutoPopup = javaPrefs.getBoolean(SimpleValueNames.COMPLETION_AUTO_POPUP, true);
+        javaPrefs.putBoolean(SimpleValueNames.COMPLETION_AUTO_POPUP, false);
+        docAutoPopup = javaPrefs.getBoolean(SimpleValueNames.JAVADOC_AUTO_POPUP, false);
+        javaPrefs.putBoolean(SimpleValueNames.JAVADOC_AUTO_POPUP, false);
         
         HTMLOptions hopts = (HTMLOptions)(SystemOption.findObject(HTMLOptions.class));
         if (hopts == null) {
@@ -418,9 +420,10 @@ public class Main extends java.lang.Object {
     }
     
     public static boolean finish() {
-        JavaOptions opts = (JavaOptions)(SystemOption.findObject(JavaOptions.class));
-        opts.setCompletionAutoPopup(compAutoPopup);
-        opts.setJavaDocAutoPopup(docAutoPopup);
+        if (javaPrefs != null) {
+            javaPrefs.putBoolean(SimpleValueNames.COMPLETION_AUTO_POPUP, compAutoPopup);
+            javaPrefs.putBoolean(SimpleValueNames.JAVADOC_AUTO_POPUP, docAutoPopup);
+        }
         HTMLOptions hopts = (HTMLOptions)(SystemOption.findObject(HTMLOptions.class));
         hopts.setCompletionAutoPopup(htmlAutoPopup);
         

@@ -40,7 +40,6 @@
  */
 package org.netbeans.test.editor.app.core;
 
-import org.netbeans.modules.java.editor.options.JavaOptions;
 import org.netbeans.test.editor.app.gui.*;
 import javax.swing.text.EditorKit;
 import javax.swing.JEditorPane;

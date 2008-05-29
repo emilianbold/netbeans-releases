@@ -6,8 +6,11 @@
 
 package org.netbeans.test.editor.app.core;
 
+import java.io.IOException;
 import java.util.Map;
-import org.netbeans.modules.java.editor.options.JavaOptions;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.CodeTemplateDescription;
+import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
 import org.netbeans.test.editor.app.core.properties.BadPropertyNameException;
 import org.netbeans.test.editor.app.core.properties.MultiLineStringProperty;
 import org.netbeans.test.editor.app.core.properties.Properties;
@@ -98,10 +101,17 @@ public class TestAddAbbreviationAction extends TestAddAction {
             System.err.println("Error performing Add Abbreviation Action: abbreviation name is empty.");
             return;
         }
-        JavaOptions opts = (JavaOptions)(SystemOption.findObject(JavaOptions.class));
-        Map map=opts.getAbbrevMap();
-        map.put(abbrevName, abbrevContent);
-        opts.setAbbrevMap(map);
+        
+        try {
+            EditorSettingsStorage<String, CodeTemplateDescription> ess = EditorSettingsStorage.<String, CodeTemplateDescription>find("CodeTemplates");
+            MimePath javaMimePath = MimePath.parse("text/x-java");
+            Map<String, CodeTemplateDescription> map = ess.load(javaMimePath, null, false);
+            map.put(abbrevName, new CodeTemplateDescription(abbrevName, null, abbrevContent));
+            ess.save(javaMimePath, null, false, map);
+        } catch (IOException ioe) {
+            // XXX: no idea how to report problems in these tests
+            throw new IllegalStateException("Code templates are broken", ioe);
+        }
     }
     
     /** Getter for property abbrevName.
