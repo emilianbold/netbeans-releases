@@ -76,10 +76,10 @@ public class AcceptanceTestCase extends JellyTestCase {
     static final String [] m_aTestMethods = {
         "createNewSchema",
                 "createSchemaComponents",
-                "customizeSchema",
-                "checkSourceCRC",
-                "refactorComplexType",
-                "applyDesignPattern"
+                "customizeSchema"
+                //"checkSourceCRC",
+                //"refactorComplexType",
+                //"applyDesignPattern"
     };
     
     static final String TEST_SCHEMA_NAME = "testSchema";
