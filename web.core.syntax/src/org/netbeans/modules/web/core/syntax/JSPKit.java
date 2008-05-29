@@ -293,7 +293,6 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         LanguagePath jspLP = LanguagePath.get(JspTokenId.language());
         LanguagePath htmlLP = LanguagePath.get(jspLP, HTMLTokenId.language());
         
-        doc.getDocumentProperties().put(NbEditorDocument.MIME_TYPE_PROP, "text/x-java"); //NOI18N
         SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(new EmbeddingUpdater(doc));
         //initialize JSP embedding updater
         //just a prototype - better disable it for 6.0
