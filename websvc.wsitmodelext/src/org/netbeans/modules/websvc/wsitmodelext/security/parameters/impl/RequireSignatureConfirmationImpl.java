@@ -41,11 +41,9 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.parameters.impl;
 
-import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.impl.SecurityPolicyComponentImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.parameters.RequireSignatureConfirmation;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -61,13 +59,4 @@ public class RequireSignatureConfirmationImpl extends SecurityPolicyComponentImp
         super(model, e);
     }
     
-    public RequireSignatureConfirmationImpl(WSDLModel model){
-        this(model, createPrefixedElement(SecurityPolicyQName.REQUIRESIGNATURECONFIRMATION.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
 }

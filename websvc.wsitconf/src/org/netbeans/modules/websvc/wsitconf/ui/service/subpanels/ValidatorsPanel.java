@@ -51,6 +51,7 @@ import javax.swing.*;
 import java.util.Set;
 import org.netbeans.modules.websvc.wsitconf.ui.ClassDialog;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
 /**
  *
@@ -64,12 +65,15 @@ public class ValidatorsPanel extends JPanel {
     
     private boolean inSync = false;
     private String profile;
+    
+    private ConfigVersion cfgVersion = null;
         
-    public ValidatorsPanel(WSDLComponent comp, Project p, String profile) {
+    public ValidatorsPanel(WSDLComponent comp, Project p, String profile, ConfigVersion cfgVersion) {
         super();
         this.comp = comp;
         this.p = p;
         this.profile = profile;
+        this.cfgVersion = cfgVersion;
         
         initComponents();
 
@@ -100,7 +104,7 @@ public class ValidatorsPanel extends JPanel {
         if (Validator.SAML_VALIDATOR.equals(type)) this.samlValidatorTextField.setText(validator);
     }
     
-    public void sync() {
+    private void sync() {
         inSync = true;
                 
         String usernameValidator = ProprietarySecurityPolicyModelHelper.getValidator(comp, Validator.USERNAME_VALIDATOR);
@@ -167,48 +171,6 @@ public class ValidatorsPanel extends JPanel {
         certificateValidatorButton.setEnabled(certRequired);
         certificateValidatorLabel.setEnabled(certRequired);
         certificateValidatorTextField.setEnabled(certRequired);
-    }
-    
-    public void setValue(javax.swing.JComponent source, Object value) {
-        if (source.equals(usernameValidatorTextField)) {
-            String validator = getValidator(Validator.USERNAME_VALIDATOR);
-            if ((validator != null) && (validator.length() == 0)) {
-                ProprietarySecurityPolicyModelHelper.setValidator(comp, Validator.USERNAME_VALIDATOR, null, false);
-            } else {
-                ProprietarySecurityPolicyModelHelper.setValidator(comp, Validator.USERNAME_VALIDATOR, validator, false);
-            }
-            return;
-        }
-
-        if (source.equals(timestampValidatorTextField)) {
-            String validator = getValidator(Validator.TIMESTAMP_VALIDATOR);
-            if ((validator != null) && (validator.length() == 0)) {
-                ProprietarySecurityPolicyModelHelper.setValidator(comp, Validator.TIMESTAMP_VALIDATOR, null, false);
-            } else {
-                ProprietarySecurityPolicyModelHelper.setValidator(comp, Validator.TIMESTAMP_VALIDATOR, validator, false);
-            }
-            return;
-        }
-
-        if (source.equals(certificateValidatorTextField)) {
-            String validator = getValidator(Validator.CERTIFICATE_VALIDATOR);
-            if ((validator != null) && (validator.length() == 0)) {
-                ProprietarySecurityPolicyModelHelper.setValidator(comp, Validator.CERTIFICATE_VALIDATOR, null, false);
-            } else {
-                ProprietarySecurityPolicyModelHelper.setValidator(comp, Validator.CERTIFICATE_VALIDATOR,validator, false);
-            }
-            return;
-        }
-
-        if (source.equals(samlValidatorTextField)) {
-            String validator = getValidator(Validator.SAML_VALIDATOR);
-            if ((validator != null) && (validator.length() == 0)) {
-                ProprietarySecurityPolicyModelHelper.setValidator(comp, Validator.SAML_VALIDATOR, null, false);
-            } else {
-                ProprietarySecurityPolicyModelHelper.setValidator(comp, Validator.SAML_VALIDATOR, validator, false);
-            }
-            return;
-        }
     }
     
     public void storeState() {

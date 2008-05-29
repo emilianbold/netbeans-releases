@@ -59,9 +59,6 @@ public class RMSunClientFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(RMSunClientQName.ACKREQUESTINTERVAL.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new AckRequestIntervalImpl(context.getModel()));
-        }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new AckRequestIntervalImpl(context.getModel(), element);
@@ -73,9 +70,6 @@ public class RMSunClientFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(RMSunClientQName.RESENDINTERVAL.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new ResendIntervalImpl(context.getModel()));
-        }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new ResendIntervalImpl(context.getModel(), element);
@@ -86,9 +80,6 @@ public class RMSunClientFactories {
         @Override
         public Set<QName> getElementQNames() {
             return Collections.singleton(RMSunClientQName.CLOSETIMEOUT.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new CloseTimeoutImpl(context.getModel()));
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {

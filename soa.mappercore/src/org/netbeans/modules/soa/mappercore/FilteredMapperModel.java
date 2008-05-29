@@ -176,6 +176,10 @@ public class FilteredMapperModel extends FilteredTreeModel
         return mapperModel.canEditInplace(vItem);
     }
     
+    public void delete(TreePath currentTreePath, GraphSubset graphGroup) {
+        mapperModel.delete(currentTreePath, graphGroup);
+    }
+    
     private void collectGraphs(MapperModel mapperModel, 
             TreePath currentTreePath, 
             Map<TreePath, Graph> resultMap, 

@@ -195,6 +195,38 @@ public class LexUtilities {
         return ts;
     }
 
+    public static TokenSequence<?extends GroovyTokenId> getPositionedSequence(BaseDocument doc, int offset) {
+        return getPositionedSequence(doc, offset, true);
+    }
+    
+    public static TokenSequence<?extends GroovyTokenId> getPositionedSequence(BaseDocument doc, int offset, boolean lookBack) {
+        TokenSequence<?extends GroovyTokenId> ts = getGroovyTokenSequence(doc, offset);
+
+        if (ts != null) {
+            try {
+                ts.move(offset);
+            } catch (AssertionError e) {
+                DataObject dobj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
+
+                if (dobj != null) {
+                    Exceptions.attachMessage(e, FileUtil.getFileDisplayName(dobj.getPrimaryFile()));
+                }
+
+                throw e;
+            }
+
+            if (!lookBack && !ts.moveNext()) {
+                return null;
+            } else if (lookBack && !ts.moveNext() && !ts.movePrevious()) {
+                return null;
+            }
+            
+            return ts;
+        }
+
+        return null;
+    }
+
     public static Token<?extends GroovyTokenId> getToken(BaseDocument doc, int offset) {
         TokenSequence<?extends GroovyTokenId> ts = getGroovyTokenSequence(doc, offset);
 

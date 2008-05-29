@@ -64,11 +64,12 @@ public class ProjectInfo {
     public static final int EJB_PROJECT_TYPE = 2;
     public static final int CAR_PROJECT_TYPE = 3;
     
-    
     private boolean jwsdpSupported = false;
     private boolean jsr109Supported = false;
     private boolean jsr109oldSupported = false;
     private boolean jaxWsInJ2ee14Supported = false;
+    private boolean wsgenSupported = false;
+    private boolean wsimportSupported = false;
     
     /** Creates a new instance of ProjectInfo */
     
@@ -84,6 +85,8 @@ public class ProjectInfo {
                     jwsdpSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_JWSDP);
                     jsr109Supported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
                     jsr109oldSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE);
+                    wsgenSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSGEN);
+                    wsimportSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT);
                     jaxWsInJ2ee14Supported = j2eePlatform.isToolSupported("JaxWs-in-j2ee14-supported");
                 }
             }
@@ -121,6 +124,14 @@ public class ProjectInfo {
     }
     public boolean isJaxWsInJ2ee14Supported() {
         return jaxWsInJ2ee14Supported;
+    }
+    
+    public boolean isWsgenSupported() {
+        return wsgenSupported;
+    }
+    
+    public boolean isWsimportSupported() {
+        return wsimportSupported;
     }
 }
 

@@ -588,7 +588,7 @@ public class Utilities {
                     // skip this module because it has own problems already
                     continue;
                 }
-                Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies (affectedModule.getDependencies (), limitedModules);
+                Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies (affectedModule.getDependencies (), extendedModules);
                 if (! brokenDeps.isEmpty ()) {
                     getLogger ().log (Level.FINEST, "Module " + affectedModule + " has broken dependecies " + brokenDeps);
                     UpdateUnit affectedUnit = UpdateManagerImpl.getInstance ().getUpdateUnit (affectedModule.getCodeNameBase ());

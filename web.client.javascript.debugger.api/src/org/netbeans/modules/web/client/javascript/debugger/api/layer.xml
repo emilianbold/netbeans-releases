@@ -57,6 +57,7 @@ made subject to such option by the copyright holder.
                 <folder name="GlyphGutterActions">
                     <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file>
                 </folder>
                 <folder name="Popup">
@@ -82,6 +83,7 @@ made subject to such option by the copyright holder.
                 <folder name="GlyphGutterActions">
                     <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file>
                 </folder>
                  <folder name="Popup">
@@ -104,7 +106,7 @@ made subject to such option by the copyright holder.
 
     <folder name="Menu">
         <folder name="RunProject">
-       <!--     <file name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow">
+            <file name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
                 <attr name="position" intvalue="700"/>
             </file>
@@ -112,10 +114,19 @@ made subject to such option by the copyright holder.
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 <attr name="position" intvalue="800"/>
             </file>
+            <file name="org-netbeans-modules-debugger-ui-actions-PauseAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-PauseAction.instance"/>
+                <attr name="position" intvalue="900"/>
+            </file>
             <file name="org-netbeans-modules-debugger-ui-actions-ContinueAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
                 <attr name="position" intvalue="1000"/>
             </file>
+            <file name="Separator2.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="1100"/>
+            </file>
+
             <file name="org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOverAction.instance"/>
                 <attr name="position" intvalue="1200"/>
@@ -131,7 +142,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance"/>
                 <attr name="position" intvalue="1600"/>
-            </file>-->
+            </file>
             <file name="Separator3.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 <attr name="position" intvalue="1800"/>
@@ -168,13 +179,16 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
-<!--
     <folder name="Toolbars">
         <folder name="Debug">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.debugger.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.client.javascript.debugger.api.Bundle"/>
             <file name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
                 <attr name="position" intvalue="100"/>
+            </file>
+            <file name="org-netbeans-modules-debugger-ui-actions-PauseAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-PauseAction.instance"/>
+                <attr name="position" intvalue="200"/>
             </file>
             <file name="org-netbeans-modules-debugger-ui-actions-ContinueAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
@@ -197,7 +211,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="800"/>
             </file>
         </folder>
-    </folder>-->
+    </folder>
     <folder name="Windows2">
         <folder name="Components">
             <file name="HttpMonitorTopComponent.settings" url="../http/ui/HttpMonitorTopComponentSettings.xml"/>
