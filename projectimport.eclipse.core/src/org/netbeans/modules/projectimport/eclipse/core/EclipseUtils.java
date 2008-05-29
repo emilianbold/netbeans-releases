@@ -132,4 +132,16 @@ public class EclipseUtils {
         return properties;
     }
     
+    /**
+     * Splits Eclipse variable into variable and path, eg. MAVEN/commons/1.jar
+     * is split into MAVEN and /commons/1.jar.
+     */
+    public static String[] splitVariable(String v) {
+        int i = v.replace('\\', '/').indexOf('/');
+        if (i == -1) {
+            i = v.length();
+        }
+        return new String[]{v.substring(0, i), v.substring(i)};
+    }        
+
 }

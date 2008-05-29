@@ -42,7 +42,7 @@
         <Component class="javax.swing.JButton" name="chooseDestButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/projectimport/eclipse/wizard/Bundle.properties" key="CTL_BrowseButton_B" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/projectimport/eclipse/core/wizard/Bundle.properties" key="CTL_BrowseButton_B" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <Events>
@@ -60,7 +60,7 @@
               <ComponentRef name="destination"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/projectimport/eclipse/wizard/Bundle.properties" key="LBL_LocationOfNBProjects" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/projectimport/eclipse/core/wizard/Bundle.properties" key="LBL_LocationOfNBProjects" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <Constraints>
@@ -86,7 +86,7 @@
               <ComponentRef name="projectTable"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/projectimport/eclipse/wizard/Bundle.properties" key="LBL_ProjectsToImport" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/projectimport/eclipse/core/wizard/Bundle.properties" key="LBL_ProjectsToImport" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
             <Property name="verticalTextPosition" type="int" value="1"/>
           </Properties>

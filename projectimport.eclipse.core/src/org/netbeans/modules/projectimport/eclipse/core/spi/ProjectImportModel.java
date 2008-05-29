@@ -113,9 +113,10 @@ public final class ProjectImportModel {
         // TODO: could be useful for client to fork their import of needed
         return null;
     }
-    
-    // TODO: 
-    //  * add getOutput
+
+    public DotClassPathEntry getOuput() {
+        return project.getOutput();
+    }
 
     private static File[] convertToFileArray(List<DotClassPathEntry> entries) {
         List<File> res = new ArrayList<File>();

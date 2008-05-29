@@ -42,27 +42,11 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC '-//NetBeans//DTD Filesystem 1.1//EN' 'http://www.netbeans.org/dtds/filesystem-1_1.dtd'>
 <filesystem>
-    <folder name="Menu">
-        <folder name="File">
-            <folder name="Import">
-                <attr name="position" intvalue="1426"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.projectimport.eclipse.core.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif" />
-                <file name="org-netbeans-modules-projectimport-eclipse-core-ImportProjectAction.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.projectimport.eclipse.core.ImportProjectAction" />
-                </file>
-            </folder>
-            <file name="ImporterSeparator1.instance">
-                <attr name="position" intvalue="1430"/>
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-            </file>
-        </folder>
-    </folder>
     <folder name="Projects">
-        <folder name="Actions">
-            <file name="org-netbeans-modules-projectimport-eclipse-core-UpdateProjectAction.instance">
-                <attr name="position" intvalue="234"/> <!-- clarify position -->
-            </file>
+        <folder name="org-netbeans-modules-web-project">
+            <folder name="Lookup">
+                <file name="org-netbeans-modules-projectimport-eclipse-core-spi-UpgradableProjectLookupProvider.instance"/>
+            </folder>
         </folder>
     </folder>
 </filesystem>

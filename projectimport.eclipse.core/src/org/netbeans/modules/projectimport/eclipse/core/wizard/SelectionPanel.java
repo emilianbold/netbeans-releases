@@ -312,7 +312,7 @@ final class SelectionPanel extends JPanel {
 
         wsDescription.setEditable(false);
         wsDescription.setLineWrap(true);
-        wsDescription.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/projectimport/eclipse/wizard/Bundle").getString("LBL_SpecifyWorkspaceDescription"));
+        wsDescription.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/projectimport/eclipse/core/wizard/Bundle").getString("LBL_SpecifyWorkspaceDescription"));
         wsDescription.setWrapStyleWord(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -324,7 +324,7 @@ final class SelectionPanel extends JPanel {
 
         note.setEditable(false);
         note.setLineWrap(true);
-        note.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/projectimport/eclipse/wizard/Bundle").getString("LBL_NoteAboutWorkspaceAdvantage"));
+        note.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/projectimport/eclipse/core/wizard/Bundle").getString("LBL_NoteAboutWorkspaceAdvantage"));
         note.setWrapStyleWord(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

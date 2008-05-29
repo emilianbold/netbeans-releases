@@ -183,6 +183,16 @@ public final class EclipseProject implements Comparable {
      * Can this Eclipse project be converted to NetBeans or not?
      */
     public boolean isImportSupported() {
+        performRecognitionIfNeeded();
+        return importSupported.booleanValue();
+    }
+    
+    ProjectTypeFactory getProjectTypeFactory() {
+        performRecognitionIfNeeded();
+        return projectFactory;
+    }
+    
+    private void performRecognitionIfNeeded() {
         if (importSupported == null) {
             importSupported = Boolean.FALSE;
             for (ProjectTypeFactory factory : projectTypeFactories.allInstances()) {
@@ -193,11 +203,6 @@ public final class EclipseProject implements Comparable {
                 }
             }
         }
-        return importSupported.booleanValue();
-    }
-    
-    ProjectTypeFactory getProjectTypeFactory() {
-        return projectFactory;
     }
     
     /**
@@ -268,11 +273,10 @@ public final class EclipseProject implements Comparable {
             if (entry.getKind() != DotClassPathEntry.Kind.VARIABLE) {
                 continue;
             }
-            String s = entry.getRawPath();
-            int index = s.indexOf('/');
-            s = s.substring(0,index);
+            String s = EclipseUtils.splitVariable(entry.getRawPath())[0];
             for (Variable v : workspace.getVariables()) {
                 if (v.getName().equals(s)) {
+                    s = "var."+PropertyUtils.getUsablePropertyName(s);
                     if (ep.getProperty(s) == null) {
                         ep.setProperty(s, v.getLocation());
                         changed = true;
@@ -294,6 +298,10 @@ public final class EclipseProject implements Comparable {
             setAbsolutePathForEntry(entry);
         }
         setAbsolutePathForEntry(cp.getOutput());
+    }
+    
+    public DotClassPathEntry getOutput() {
+        return cp.getOutput();
     }
     
     /**

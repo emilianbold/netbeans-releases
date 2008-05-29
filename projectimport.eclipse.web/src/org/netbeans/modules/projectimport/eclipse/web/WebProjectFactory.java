@@ -41,6 +41,7 @@ package org.netbeans.modules.projectimport.eclipse.web;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -49,22 +50,28 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectFactorySupport;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
-import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory;
+import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
+import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+// TODO: current detection of whether NB project is uptodate with Eclipse or not
+// is based just on .classpath/.project. For web support file
+// ".settings/org.eclipse.wst.common.component" should be checked as well.
+
 /**
  *
  */
-public class WebProjectFactory implements ProjectTypeFactory {
+public class WebProjectFactory implements ProjectTypeUpdater {
 
     private static final String WEB_NATURE = "org.eclipse.wst.common.modulecore.ModuleCoreNature"; // NOI18N
     
@@ -167,5 +174,31 @@ public class WebProjectFactory implements ProjectTypeFactory {
     private static class WebContentData {
         private String contextRoot;
         private String webRoot;
+    }
+
+    public String calculateKey(ProjectImportModel model) {
+        WebContentData webData;
+        try {
+            webData = parseWebContent(model.getEclipseProjectFolder());
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            webData = new WebContentData();
+            webData.contextRoot = "??";
+            webData.webRoot = "??";
+        }
+        return ProjectFactorySupport.calculateKey(model) + "web=" + webData.webRoot + ";" + "context=" + webData.contextRoot + ";";
+    }
+
+    public void update(Project project, ProjectImportModel model, String oldKey) throws IOException {
+        String newKey = calculateKey(model);
+        
+        // update project classpath
+        ProjectFactorySupport.synchronizeProjectClassPath(project, ((WebProject)project).getAntProjectHelper(), model, oldKey, newKey, new ArrayList<String>());
+        
+        // TODO:
+        // update source roots and platform and server and web root and context
+        
+        // save project
+        ProjectManager.getDefault().saveProject(project);
     }
 }

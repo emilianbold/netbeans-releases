@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -40,29 +40,20 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC '-//NetBeans//DTD Filesystem 1.1//EN' 'http://www.netbeans.org/dtds/filesystem-1_1.dtd'>
-<filesystem>
-    <folder name="Menu">
-        <folder name="File">
-            <folder name="Import">
-                <attr name="position" intvalue="1426"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.projectimport.eclipse.core.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif" />
-                <file name="org-netbeans-modules-projectimport-eclipse-core-ImportProjectAction.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.projectimport.eclipse.core.ImportProjectAction" />
-                </file>
-            </folder>
-            <file name="ImporterSeparator1.instance">
-                <attr name="position" intvalue="1430"/>
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-            </file>
-        </folder>
-    </folder>
-    <folder name="Projects">
-        <folder name="Actions">
-            <file name="org-netbeans-modules-projectimport-eclipse-core-UpdateProjectAction.instance">
-                <attr name="position" intvalue="234"/> <!-- clarify position -->
-            </file>
-        </folder>
-    </folder>
-</filesystem>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://www.netbeans.org/ns/eclipse-reference/1"
+            xmlns="http://www.netbeans.org/ns/eclipse-reference/1"
+            elementFormDefault="qualified">
+    <xsd:element name="eclipse">
+        <xsd:complexType>
+            <xsd:sequence>
+                <!-- fix data types: -->
+                <xsd:element name="project" type="xsd:token"/>
+                <xsd:element name="workspace" type="xsd:token"/>
+                <xsd:element name="timestamp" type="xsd:token"/>
+                <xsd:element name="key" type="xsd:token"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    
+</xsd:schema>

@@ -39,39 +39,26 @@
 
 package org.netbeans.modules.projectimport.eclipse.core.spi;
 
-import java.io.IOException;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.projectimport.eclipse.core.ProjectOpenHookImpl;
+import org.netbeans.modules.projectimport.eclipse.core.UpgradableProject;
+import org.netbeans.spi.project.LookupProvider;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
+ *
+ * @author david
  */
-public interface ProjectTypeUpdater extends ProjectTypeFactory {
+final public class UpgradableProjectLookupProvider implements LookupProvider {
 
-    /**
-     * Returns identifier uniquely identifying data in given ProjectImportModel 
-     * instance. Identifier will be used for comparison of different versions of
-     * ProjectImportModel data and equality of identifier will mean that project
-     * is up to data and does not require update. Identifier should also contain
-     * enough data to calculate difference between ProjectImportModel it represents
-     * and any given ProjectImportModel.
-     * 
-     * <p>Example of identifier could be: 
-     * "src=src;con=org.eclipse.jdt.launching.JRE_CONTAINER;var=MAVEN_REPO/commons-lang-2.3.jar;output=bin"
-     */
-    String calculateKey(ProjectImportModel model);
+    public Lookup createAdditionalLookup(Lookup baseContext) {
+        Project p = baseContext.lookup(Project.class);
+        assert p != null;
+        UpgradableProject up = new UpgradableProject(p);
+        return Lookups.fixed(
+            up,
+            new ProjectOpenHookImpl(p, up));
+    }
 
-    // TODO: should update has also: List<String> importProblems ?
-    /**
-     * Update given project.
-     * 
-     * <p>This method is permited to show blocking UI.
-     * 
-     * <p>Always called under project write mutex.
-     * 
-     * 
-     * @param project
-     * @param model
-     * @param oldKey
-     */
-    void update(Project project, ProjectImportModel model, String oldKey) throws IOException;
-    
 }

@@ -41,6 +41,7 @@ package org.netbeans.modules.projectimport.eclipse.j2se;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -105,9 +106,6 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
             setExplicitJavaPlatform(helper, model);
         }
 
-        // store data for project update:
-        ProjectFactorySupport.persistEclipseLink(nbProject, calculateKey(model), model);
-                
         // save project
         ProjectManager.getDefault().saveProject(nbProject);
         return nbProject;
@@ -135,9 +133,14 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
     public void update(Project project, ProjectImportModel model, String oldKey) throws IOException {
         String newKey = calculateKey(model);
         
-        // compare newKey with old one and perform NB project update and optionally eclipse project update
+        // update project classpath
+        ProjectFactorySupport.synchronizeProjectClassPath(project, ((J2SEProject)project).getAntProjectHelper(), model, oldKey, newKey, new ArrayList<String>());
         
-        ProjectFactorySupport.persistEclipseLink(project, newKey, model);
+        // TODO:
+        // update source roots and platform
+        
+        // save project
+        ProjectManager.getDefault().saveProject(project);
     }
     
 }

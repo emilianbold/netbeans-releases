@@ -37,41 +37,66 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.projectimport.eclipse.core.spi;
+package org.netbeans.modules.projectimport.eclipse.core;
 
 import java.io.IOException;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.openide.util.Exceptions;
+import org.openide.util.Mutex.ExceptionAction;
+import org.openide.util.MutexException;
 
 /**
+ *
+ * @author david
  */
-public interface ProjectTypeUpdater extends ProjectTypeFactory {
+final public class UpgradableProject {
 
-    /**
-     * Returns identifier uniquely identifying data in given ProjectImportModel 
-     * instance. Identifier will be used for comparison of different versions of
-     * ProjectImportModel data and equality of identifier will mean that project
-     * is up to data and does not require update. Identifier should also contain
-     * enough data to calculate difference between ProjectImportModel it represents
-     * and any given ProjectImportModel.
-     * 
-     * <p>Example of identifier could be: 
-     * "src=src;con=org.eclipse.jdt.launching.JRE_CONTAINER;var=MAVEN_REPO/commons-lang-2.3.jar;output=bin"
-     */
-    String calculateKey(ProjectImportModel model);
-
-    // TODO: should update has also: List<String> importProblems ?
-    /**
-     * Update given project.
-     * 
-     * <p>This method is permited to show blocking UI.
-     * 
-     * <p>Always called under project write mutex.
-     * 
-     * 
-     * @param project
-     * @param model
-     * @param oldKey
-     */
-    void update(Project project, ProjectImportModel model, String oldKey) throws IOException;
+    private Project project;
+    private EclipseProjectReference reference;
+    private boolean initialized;
     
+    public UpgradableProject(Project project) {
+        this.project = project;
+    }
+    
+    public boolean isEclipseProjectReachable() {
+        if (!isUpgradable()) {
+            return false;
+        }
+        return getEclipse().isEclipseProjectReachable();
+    }
+    
+    public boolean isUpgradable() {
+        return getEclipse() != null;
+    }
+    
+    public boolean isUpToDate() {
+        assert isUpgradable() && isEclipseProjectReachable();
+        return getEclipse().isUpToDate();
+    }
+    
+    public void update() throws IOException {
+        try {
+            ProjectManager.mutex().writeAccess(new ExceptionAction<Void>() {
+
+                public Void run() throws Exception {
+                    getEclipse().update();
+                    return null;
+                }
+            });
+        } catch (MutexException ex) {
+            IOException ioe = new IOException();
+            ioe.initCause(ex.getCause());
+            throw ioe;
+        }
+    }
+    
+    private EclipseProjectReference getEclipse() {
+        if (!initialized) {
+            reference = EclipseProjectReference.read(project);
+            initialized = true;
+        }
+        return reference;
+    }
 }

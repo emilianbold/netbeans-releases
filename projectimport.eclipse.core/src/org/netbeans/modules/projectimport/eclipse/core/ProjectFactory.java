@@ -81,7 +81,12 @@ public final class ProjectFactory {
      */
     public EclipseProject load(File projectDir) throws
             ProjectImporterException {
-        Workspace workspace = Workspace.createWorkspace(projectDir.getParentFile());
+        return load(projectDir, projectDir.getParentFile());
+    }
+    
+    public EclipseProject load(File projectDir, File workspaceDir) throws
+            ProjectImporterException {
+        Workspace workspace = Workspace.createWorkspace(workspaceDir);
         if (workspace != null) {
             WorkspaceParser parser = new WorkspaceParser(workspace);
             parser.parse();

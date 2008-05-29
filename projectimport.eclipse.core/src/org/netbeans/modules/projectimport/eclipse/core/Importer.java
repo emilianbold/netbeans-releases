@@ -57,6 +57,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor;
 import org.netbeans.modules.java.j2seplatform.wizard.NewJ2SEPlatform;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
+import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -179,8 +180,18 @@ final class Importer {
         progressInfo = NbBundle.getMessage(Importer.class,
                 "MSG_Progress_ProcessingProject", eclProject.getName()); // NOI18N
         
-        return eclProject.getProjectTypeFactory().createProject(
-                new ProjectImportModel(eclProject, destination, getJavaPlatform(eclProject)), importProblems);
+        ProjectImportModel model = new ProjectImportModel(eclProject, destination, getJavaPlatform(eclProject));
+        Project p = eclProject.getProjectTypeFactory().createProject(model, importProblems);
+        
+        if (eclProject.getProjectTypeFactory() instanceof ProjectTypeUpdater) {
+            ProjectTypeUpdater updater = (ProjectTypeUpdater)eclProject.getProjectTypeFactory();
+            String key = updater.calculateKey(model);
+            EclipseProjectReference ref = new EclipseProjectReference(p, 
+                    eclProject.getDirectory().getAbsolutePath(), 
+                    eclProject.getWorkspace().getDirectory().getAbsolutePath(), "0", key);
+            EclipseProjectReference.write(p, ref);
+        }
+        return p;
     }
     
     /** Sets <code>JavaPlatform</code> for the given project */
