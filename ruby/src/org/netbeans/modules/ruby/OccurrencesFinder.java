@@ -476,12 +476,14 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void highlightExits(MethodDefNode node,
         Map<OffsetRange, ColoringAttributes> highlights, CompilationInfo info) {
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             highlightExitPoints(child, highlights, info);
         }
 
@@ -541,7 +543,6 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void highlightExitPoints(Node node, Map<OffsetRange, ColoringAttributes> highlights,
         CompilationInfo info) {
         if (node.nodeId == NodeType.RETURNNODE) {
@@ -590,11 +591,13 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             highlightExitPoints(child, highlights, info);
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void highlightLocal(Node node, String name,
         Map<OffsetRange, ColoringAttributes> highlights) {
         if (node instanceof LocalVarNode) {
@@ -673,11 +676,13 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             highlightLocal(child, name, highlights);
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void highlightDynamnic(Node node, String name,
         Map<OffsetRange, ColoringAttributes> highlights) {
         switch (node.nodeId) {
@@ -712,6 +717,9 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             switch (child.nodeId) {
             case ITERNODE:
             //case BLOCKNODE:
@@ -727,7 +735,6 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void highlightInstance(Node node, String name,
         Map<OffsetRange, ColoringAttributes> highlights) {
         if (node instanceof InstVarNode) {
@@ -772,11 +779,13 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             highlightInstance(child, name, highlights);
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void highlightClassVar(Node node, String name,
         Map<OffsetRange, ColoringAttributes> highlights) {
         if (node instanceof ClassVarNode) {
@@ -828,11 +837,13 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             highlightClassVar(child, name, highlights);
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void highlightGlobal(Node node, String name,
         Map<OffsetRange, ColoringAttributes> highlights) {
         if (node instanceof GlobalVarNode) {
@@ -867,11 +878,13 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             highlightGlobal(child, name, highlights);
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void highlightMethod(Node node, String name, List<Arity> arities,
         Map<OffsetRange, ColoringAttributes> highlights) {
         // Recursively search for methods or method calls that match the name and arity
@@ -916,12 +929,14 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             highlightMethod(child, name, arities, highlights);
         }
     }
 
     /** Find the definition arity that matches a given call arity */
-    @SuppressWarnings("unchecked")
     private void findDefArities(List<Arity> defArities, Node node, String name, Arity callArity) {
         // Recursively search for methods or method calls that match the name and arity
         if (node instanceof MethodDefNode && ((MethodDefNode)node).getName().equals(name)) {
@@ -934,14 +949,14 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
 
         List<Node> list = node.childNodes();
 
-        Arity combinedArity = null;
-
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             findDefArities(defArities, child, name, callArity);
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void highlightClass(Node node, String name,
         Map<OffsetRange, ColoringAttributes> highlights) {
         if (node instanceof ConstNode) {
@@ -979,6 +994,9 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             highlightClass(child, name, highlights);
         }
     }

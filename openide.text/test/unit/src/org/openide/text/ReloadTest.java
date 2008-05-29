@@ -41,7 +41,6 @@
 
 package org.openide.text;
 
-
 import java.beans.*;
 import java.io.*;
 import java.util.Date;
@@ -75,7 +74,6 @@ implements CloneableEditorSupport.Env {
     private transient VetoableChangeListener vetoL;
 
     private Logger err;
-    private CharSequence log;
     
     public ReloadTest (String s) {
         super(s);
@@ -86,27 +84,22 @@ implements CloneableEditorSupport.Env {
         return null;
     }
     
-    
-    protected boolean runInEQ() {
-        return false;
-    }
-
-    protected Level logLevel() {
+    protected @Override Level logLevel() {
         return Level.ALL;
     }
     
-    
-    protected void setUp () {
+    protected @Override void setUp() {
         support = new CES (this, Lookup.EMPTY);
-
-        log = Log.enable("", Level.ALL);
-
-        
+        Log.enable("", Level.ALL);
         err = Logger.getLogger(getName());
     }
     
 
     public void testRefreshProblem46885 () throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return; // NB-Core-Build #670
+        }
+
         StyledDocument doc = support.openDocument ();
         
         doc.insertString (0, "A text", null);
@@ -179,7 +172,7 @@ implements CloneableEditorSupport.Env {
     }
     public OutputStream outputStream() throws IOException {
         class ContentStream extends ByteArrayOutputStream {
-            public void close () throws IOException {
+            public @Override void close() throws IOException {
                 super.close ();
                 content = new String (toByteArray ());
             }
@@ -200,7 +193,7 @@ implements CloneableEditorSupport.Env {
         if (cannotBeModified != null) {
             final String notify = cannotBeModified;
             IOException e = new IOException () {
-                public String getLocalizedMessage () {
+                public @Override String getLocalizedMessage() {
                     return notify;
                 }
             };
@@ -245,7 +238,7 @@ implements CloneableEditorSupport.Env {
             return "ToolTip";
         }
 
-        protected EditorKit createEditorKit () {
+        protected @Override EditorKit createEditorKit() {
             EditorKit retValue = ReloadTest.this.createEditorKit ();
             if (retValue == null) {
                 retValue = super.createEditorKit();

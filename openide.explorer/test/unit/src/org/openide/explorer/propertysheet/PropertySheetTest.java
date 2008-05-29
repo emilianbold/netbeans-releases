@@ -93,27 +93,18 @@ public class PropertySheetTest extends NbTestCase {
         jf.getContentPane().add(ps, BorderLayout.CENTER);
         jf.setLocation(30,30);
         jf.setSize(500,500);
+        final Node[] nodes = new Node[]{tn};
         
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
-                ps.setNodes(new Node[] {tn});
-                //ps.setCurrentNode(tn);
+                ps.setNodes(nodes);
                 jf.show();
             }
         });
         
-        //      ps.setNodes(new Node[] {tn});
         
         jf.show();
         new ExtTestCase.WaitWindow(jf);
-        
-        
-        try {
-            //            Thread.currentThread().sleep(500);
-            
-        } catch (Exception e) {
-            
-        }
         
         System.err.println("Current node set ");
         try {
