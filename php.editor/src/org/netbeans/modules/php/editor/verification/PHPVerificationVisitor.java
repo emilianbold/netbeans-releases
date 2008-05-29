@@ -57,15 +57,16 @@ import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
-class PHPVerificationVisitor extends DefaultVisitor {
+class PHPVerificationVisitor extends DefaultTreePathVisitor {
 
     private PHPRuleContext context;
     private Collection<PHPRule> rules;
@@ -76,6 +77,7 @@ class PHPVerificationVisitor extends DefaultVisitor {
     public PHPVerificationVisitor(PHPRuleContext context, Collection rules) {
         this.context = context;
         context.variableStack = varStack;
+        context.path = getPath();
         this.rules = rules;
     }
 
@@ -172,6 +174,18 @@ class PHPVerificationVisitor extends DefaultVisitor {
         varStack.blockEnd();
     }
 
+    @Override
+    public void visit(Variable node) {
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }
+        
+        super.visit(node);
+    }
+    
     @Override
     public void visit(MethodDeclaration node) {
         varStack.blockStart(VariableStack.BlockType.FUNCTION);
@@ -273,6 +287,12 @@ class PHPVerificationVisitor extends DefaultVisitor {
                 
                 if (formalParameter.getParameterName() instanceof Variable) {
                     variable = (Variable) formalParameter.getParameterName();
+                } else if (formalParameter.getParameterName() instanceof Reference) {
+                    Reference reference = (Reference) formalParameter.getParameterName();
+                    
+                    if (reference.getExpression() instanceof Variable) {
+                        variable = (Variable) reference.getExpression();   
+                    }
                 }
             }
             
@@ -308,6 +328,10 @@ class PHPVerificationVisitor extends DefaultVisitor {
             }
             
             return false;
+        }
+        
+        public List<ASTNode> getUnreferencedVars(){
+            return unreferencesVars;
         }
     }
 }
