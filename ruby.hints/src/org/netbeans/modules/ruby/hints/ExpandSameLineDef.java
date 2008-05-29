@@ -183,12 +183,10 @@ public class ExpandSameLineDef extends RubyAstRule {
             if (node.nodeId == NodeType.NEWLINENODE) {
                 offsets.add(node.getPosition().getStartOffset());
             }
+            @SuppressWarnings(value = "unchecked")
             List<Node> list = node.childNodes();
 
             for (Node child : list) {
-                if (child.isInvisible()) {
-                    continue;
-                }
                 findLineBreaks(child, offsets);
             }
         }

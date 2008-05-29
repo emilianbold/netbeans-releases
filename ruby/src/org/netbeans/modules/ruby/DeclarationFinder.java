@@ -735,6 +735,7 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
      * @return A string[2] where string[0] is the controller or null, and string[1] is the
      *   action or null
      */
+    @SuppressWarnings("unchecked")
     private String[] findControllerAction(CompilationInfo info, int lexOffset, int astOffset) {
         String[] result = new String[2];
         
@@ -1903,6 +1904,7 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
         }
     }
 
+    @SuppressWarnings("unchecked")
     private DeclarationLocation findLocal(CompilationInfo info, Node node, String name) {
         if (node instanceof LocalAsgnNode) {
             if (((INameNode)node).getName().equals(name)) {
@@ -1959,9 +1961,6 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             DeclarationLocation location = findLocal(info, child, name);
 
             if (location != DeclarationLocation.NONE) {
@@ -1983,12 +1982,10 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
             }
         }
 
+        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             DeclarationLocation location = findDynamic(info, child, name);
 
             if (location != DeclarationLocation.NONE) {
@@ -2020,12 +2017,10 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
             }
         }
 
+        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             DeclarationLocation location = findInstance(info, child, name);
 
             if (location != DeclarationLocation.NONE) {
@@ -2059,12 +2054,10 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
             //            }
         }
 
+        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             DeclarationLocation location = findClassVar(info, child, name);
 
             if (location != DeclarationLocation.NONE) {
@@ -2107,12 +2100,10 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
             }
         }
 
+        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             DeclarationLocation location = findGlobal(info, child, name);
 
             if (location != DeclarationLocation.NONE) {
@@ -2137,12 +2128,10 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
             }
         }
 
+        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             DeclarationLocation location = findMethod(info, child, name, arity);
 
             if (location != DeclarationLocation.NONE) {
@@ -2170,12 +2159,10 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
             }
         }
 
+        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             Node match = findClass(child, name);
 
             if (match != null) {

@@ -650,7 +650,9 @@ public final class RubyParser implements Parser {
 
     private static Node find(Node oldRoot, Node oldObject, Node newRoot) {
         // Walk down the tree to locate oldObject, and in the process, pick the same child for newRoot
+        @SuppressWarnings("unchecked")
         List<?extends Node> oldChildren = oldRoot.childNodes();
+        @SuppressWarnings("unchecked")
         List<?extends Node> newChildren = newRoot.childNodes();
         Iterator<?extends Node> itOld = oldChildren.iterator();
         Iterator<?extends Node> itNew = newChildren.iterator();

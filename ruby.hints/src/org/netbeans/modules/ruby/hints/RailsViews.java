@@ -113,12 +113,10 @@ public class RailsViews extends RubyAstRule {
             }
         }
         
+        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             boolean result = shouldHaveView(info, child);
             
             if (!result) {

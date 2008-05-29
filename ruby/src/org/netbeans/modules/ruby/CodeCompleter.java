@@ -2188,12 +2188,10 @@ public class CodeCompleter implements CodeCompletionHandler {
                 
                 Node method = AstUtilities.findLocalScope(closest, path);
 
+                @SuppressWarnings("unchecked")
                 List<Node> list2 = method.childNodes();
 
                 for (Node child : list2) {
-                    if (child.isInvisible()) {
-                        continue;
-                    }
                     addLocals(child, variables);
                 }
             }
@@ -2231,12 +2229,10 @@ public class CodeCompleter implements CodeCompletionHandler {
 
             // $ is neither upper nor lower 
             if ((prefix.length() == 0) || (first == '$') || showSymbols) {
+                @SuppressWarnings("unchecked")
                 List<Node> list = root.childNodes();
 
                 for (Node child : list) {
-                    if (child.isInvisible()) {
-                        continue;
-                    }
                     addGlobals(child, globals);
                 }
             }
@@ -2672,6 +2668,7 @@ public class CodeCompleter implements CodeCompletionHandler {
     //        return true;
     //    }
 
+    @SuppressWarnings("unchecked")
     static void addLocals(Node node, Map<String, Node> variables) {
         switch (node.nodeId) {
         case LOCALASGNNODE: {
@@ -2740,9 +2737,6 @@ public class CodeCompleter implements CodeCompletionHandler {
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             switch (child.nodeId) {
             case DEFNNODE:
             case DEFSNODE:
@@ -2801,12 +2795,10 @@ public class CodeCompleter implements CodeCompletionHandler {
             //            }
         }
 
+        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             switch (child.nodeId) {
             case ITERNODE:
             //case BLOCKNODE:
@@ -2831,12 +2823,10 @@ public class CodeCompleter implements CodeCompletionHandler {
             }
         }
 
+        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             addGlobals(child, globals);
         }
     }
@@ -2846,12 +2836,10 @@ public class CodeCompleter implements CodeCompletionHandler {
             constants.put(((INameNode)node).getName(), node);
         }
 
+        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             addConstants(child, constants);
         }
     }

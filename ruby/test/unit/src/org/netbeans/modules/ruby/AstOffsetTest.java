@@ -114,9 +114,6 @@ public class AstOffsetTest extends RubyTestBase {
         List<Node> children = node.childNodes();
         if (children.size() > 0) {
             for (Node child : children) {
-                if (child.isInvisible()) {
-                    continue;
-                }
                 assert child != null;
                 initialize(child, validNodes, invalidNodes, positions, doc);
             }

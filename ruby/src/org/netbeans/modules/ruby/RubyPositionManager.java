@@ -75,6 +75,7 @@ public class RubyPositionManager implements PositionManager {
      * passed in path list.
      * @todo Build up an AstPath instead!
      */
+    @SuppressWarnings("unchecked")
     public static Node findPathTo(Node node, List<Node> path, int offset) {
         Node result = find(node, path, offset);
         path.add(node);
@@ -82,6 +83,7 @@ public class RubyPositionManager implements PositionManager {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     private static Node find(Node node, List<Node> path, int offset) {
         ISourcePosition pos = node.getPosition();
         int begin = pos.getStartOffset();
@@ -91,9 +93,6 @@ public class RubyPositionManager implements PositionManager {
             List<Node> children = (List<Node>)node.childNodes();
 
             for (Node child : children) {
-                if (child.isInvisible()) {
-                    continue;
-                }
                 Node found = find(child, path, offset);
 
                 if (found != null) {
@@ -108,9 +107,6 @@ public class RubyPositionManager implements PositionManager {
             List<Node> children = (List<Node>)node.childNodes();
 
             for (Node child : children) {
-                if (child.isInvisible()) {
-                    continue;
-                }
                 Node found = find(child, path, offset);
 
                 if (found != null) {
@@ -127,6 +123,7 @@ public class RubyPositionManager implements PositionManager {
     /**
      * Find the path to the given node in the AST
      */
+    @SuppressWarnings("unchecked")
     public static boolean find(Node node, List<Node> path, Node target) {
         if (node == target) {
             return true;
@@ -135,9 +132,6 @@ public class RubyPositionManager implements PositionManager {
         List<Node> children = (List<Node>)node.childNodes();
 
         for (Node child : children) {
-            if (child.isInvisible()) {
-                continue;
-            }
             boolean found = find(child, path, target);
 
             if (found) {

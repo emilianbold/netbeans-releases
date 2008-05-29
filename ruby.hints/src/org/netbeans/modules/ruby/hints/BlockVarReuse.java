@@ -104,6 +104,7 @@ public class BlockVarReuse extends RubyAstRule {
         if (node.nodeId == NodeType.ITERNODE) {
             // Check the children and see if we have a LocalAsgnNode; these are going
             // to be local variable reuses
+            @SuppressWarnings(value = "unchecked")
             List<Node> list = node.childNodes();
 
             for (Node child : list) {
@@ -175,12 +176,10 @@ public class BlockVarReuse extends RubyAstRule {
                 }
             }
 
+            @SuppressWarnings(value = "unchecked")
             List<Node> list = node.childNodes();
 
             for (Node child : list) {
-                if (child.isInvisible()) {
-                    continue;
-                }
 
                 // Skip inline method defs
                 if (child.nodeId == NodeType.DEFNNODE || child.nodeId == NodeType.DEFSNODE) {

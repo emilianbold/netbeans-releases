@@ -142,10 +142,12 @@ class InputOutputVarFinder implements ParseTreeVisitor {
             ArgsNode an = (ArgsNode)node;
 
             if (an.getRequiredArgsCount() > 0) {
+                @SuppressWarnings("unchecked")
                 List<Node> args = (List<Node>)an.childNodes();
 
                 for (Node arg : args) {
                     if (arg instanceof ListNode) {
+                        @SuppressWarnings("unchecked")
                         List<Node> args2 = (List<Node>)arg.childNodes();
 
                         for (Node arg2 : args2) {

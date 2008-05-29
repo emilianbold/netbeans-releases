@@ -97,6 +97,7 @@ public abstract class AstElement extends RubyElement {
         return getName();
     }
 
+    @SuppressWarnings("unchecked")
     public List<AstElement> getChildren() {
         //        if (children == null) {
         //            children = new ArrayList<AstElement>();

@@ -215,12 +215,10 @@ public class RailsDeprecations extends RubyAstRule {
             }
         }
 
+        @SuppressWarnings(value = "unchecked")
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
             scan(info, child, result);
         }
     }

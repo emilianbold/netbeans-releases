@@ -3,8 +3,6 @@
 <project basedir="." default="jar" name="JRuby">
   <description>JRuby is a pure Java implementation of a Ruby interpreter.</description>
 
-  <property name="base.dir" location="${basedir}"/>
-
   <!-- First try to load machine-specific properties. -->
   <property file="build.properties"/>
   <!-- Load revision number for the ruby specs, in a known good state.
@@ -81,6 +79,17 @@
     <mkdir dir="${api.docs.dir}"/>
   </target>
 
+  <target name="ragel" description="Standalone target that generates all our ragel based source files. Requires ragel and rlgen-java to be on the classpath">
+    <exec executable="ragel" output="__ragel_out">
+      <arg line="-J"/>
+      <arg line="${src.dir}/org/jvyamlb/resolver_scanner.rl"/>
+    </exec>
+    <exec executable="rlgen-java" input="__ragel_out">
+      <arg line="-o ${src.dir}/org/jvyamlb/ResolverScanner.java"/>
+    </exec>
+    <delete file="__ragel_out" quiet="true"/>
+  </target>
+
   <!-- Checks if specific libs and versions are avaiable -->
   <target name="check-for-optional-java4-packages"
           depends="init">
@@ -103,7 +112,7 @@
   </target>
 
   <!-- Builds the Ant tasks that we need later on in the build -->
-  <target name="compile-tasks" depends="prepare">
+  <target name="compile.tasks" depends="prepare">
     <copy todir="${jruby.classes.dir}">
         <fileset dir="${src.dir}">
             <include name="**/*.rb"/>
@@ -132,29 +141,12 @@
     </copy>
   </target>
 
-  <target name="compile-annotation-binder">
-    <mkdir dir="${basedir}/src_gen"/>
-        
-    <javac destdir="${jruby.classes.dir}" debug="true" srcdir="${src.dir}" sourcepath="" classpathref="build.classpath" source="${javac.version}" target="${javac.version}" deprecation="true" encoding="UTF-8">
-        <include name="org/jruby/anno/FrameField.java"/>
-        <include name="org/jruby/anno/AnnotationBinder.java"/>
-        <include name="org/jruby/anno/JRubyMethod.java"/>
-        <include name="org/jruby/anno/FrameField.java"/>
-        <include name="org/jruby/CompatVersion.java"/>
-        <include name="org/jruby/runtime/Visibility.java"/>
-        <include name="org/jruby/util/CodegenUtils.java"/>
+  <target name="compile-jruby" depends="compile.tasks, check-for-optional-packages">
+    <javac destdir="${jruby.classes.dir}" debug="true" source="${javac.version}" target="${javac.version}" deprecation="true" encoding="UTF-8">
+       <classpath refid="build.classpath"/>
+       <src path="${src.dir}"/>
+       <patternset refid="java.src.pattern"/>
     </javac>
-  </target>
-
-  <target name="compile-jruby" depends="compile-tasks, compile-annotation-binder, check-for-optional-packages">
-    <!-- Generate binding logic ahead of time -->
-    <apt factory="org.jruby.anno.AnnotationBinder" destdir="${jruby.classes.dir}" debug="true" source="${javac.version}" target="${javac.version}" deprecation="true" encoding="UTF-8">
-      <classpath refid="build.classpath"/>
-      <classpath path="${jruby.classes.dir}"/>
-      <src path="${src.dir}"/>
-      <patternset refid="java.src.pattern"/>
-      <compilerarg line="-XDignore.symbol.file=true"/>
-    </apt>
   </target>
 
   <target name="compile" depends="compile-jruby"
@@ -162,21 +154,27 @@
   </target>
 
   <target name="generate-method-classes" depends="compile">
-    <echo message="Generating invokers..."/>
-    <java classname="org.jruby.anno.InvokerGenerator" fork="true" failonerror="true">
+    <touch file="${build.dir}/__empty.rb"/>
+    <!-- individual invokers -->
+    <java classname="org.jruby.Main" fork="true" failonerror="true">
       <classpath refid="build.classpath"/>
       <classpath path="${jruby.classes.dir}"/>
-      <arg value="src_gen/annotated_classes.txt"/>
-      <arg value="${jruby.classes.dir}"/>
+      <sysproperty key="jruby.dump_invocations" value="${jruby.classes.dir}"/>
+      <arg value="-rjava"/>
+      <arg value="${build.dir}/__empty.rb"/>
     </java>
-    
-    <echo message="Compiling populators..."/>
-    <javac destdir="${jruby.classes.dir}" debug="true" source="${javac.version}" target="${javac.version}" deprecation="true" encoding="UTF-8">
-       <classpath refid="build.classpath"/>
-       <classpath path="${jruby.classes.dir}"/>
-       <src path="src_gen"/>
-       <patternset refid="java.src.pattern"/>
-    </javac>
+    <!-- indexed invokers -->
+    <!--
+    <java classname="org.jruby.Main" fork="true" failonerror="true">
+      <classpath refid="build.classpath"/>
+      <classpath path="${jruby.classes.dir}"/>
+      <sysproperty key="jruby.dump_invocations" value="${jruby.classes.dir}"/>
+      <sysproperty key="jruby.indexed.methods" value="true"/>
+      <arg value="-rjava"/>
+      <arg value="${build.dir}/__empty.rb"/>
+    </java>
+    -->
+    <delete file="${build.dir}/__empty.rb" quiet="true"/>
   </target>
 
   <target name="jar-jruby" unless="jar-up-to-date">
@@ -191,11 +189,8 @@
         <zipfileset src="${build.lib.dir}/asm-util-3.0.jar"/>
         <zipfileset src="${build.lib.dir}/asm-analysis-3.0.jar"/>
         <zipfileset src="${build.lib.dir}/asm-tree-3.0.jar"/>
-        <zipfileset src="${build.lib.dir}/bytelist-0.1.jar"/>
-        <zipfileset src="${build.lib.dir}/jvyamlb-0.1.4.jar"/>
         <zipfileset src="${build.lib.dir}/jline-0.9.93.jar"/>
         <zipfileset src="${build.lib.dir}/joni.jar"/>
-        <zipfileset src="${build.lib.dir}/jna-posix.jar"/>
         <zipfileset src="${build.lib.dir}/jna.jar"/>
         <zipfileset src="${build.lib.dir}/joda-time-1.5.1.jar"/>
         <rule pattern="org.objectweb.asm.**" result="jruby.objectweb.asm.@1"/>
@@ -248,60 +243,37 @@
       <property name="mainclass" value="org.jruby.Main"/>
       <property name="filename" value="jruby-complete.jar"/>
       <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${build.lib.dir}/jarjar-1.0rc7.jar"/>
-      <property name="jar-complete-home" value="${build.dir}/jar-complete/META-INF/jruby.home"/>
-      <mkdir dir="${jar-complete-home}"/>
-      <copy todir="${jar-complete-home}">
-        <fileset dir="${basedir}">
-          <patternset refid="dist.bindir.files"/>
-          <patternset refid="dist.lib.files"/>
-        </fileset>
-      </copy>
-      <copy todir="${build.dir}/jar-complete">
-        <fileset dir="lib/ruby/1.8" includes="**/*"/>
-      </copy>
-
-      <java classname="${mainclass}" fork="true" maxmemory="${jruby.launch.memory}" failonerror="true">
-        <classpath>
-          <pathelement location="${jruby.classes.dir}"/>
-          <pathelement location="${build.dir}/jar-complete"/>
-          <path refid="build.classpath"/>
-        </classpath>
-        <sysproperty key="jruby.home" value="${build.dir}/jar-complete/META-INF/jruby.home"/>
-        <arg value="-S"/>
-        <arg value="gem"/>
-        <arg value="install"/>
-        <arg value="rspec"/>
-        <arg value="rake"/>
-        <arg value="--no-ri"/>
-        <arg value="--no-rdoc"/>
-        <arg value="--env-shebang"/>
-      </java>
       <jarjar destfile="${lib.dir}/${filename}">
         <fileset dir="${jruby.classes.dir}">
           <exclude name="org/jruby/util/ant/**/*.class"/>
         </fileset>
-        <fileset dir="${build.dir}/jar-complete">
-          <exclude name="META-INF/jruby.home/lib/ruby/1.8/**"/>
+        <fileset dir="${basedir}/lib/ruby/1.8">
+          <include name="**/*.rb"/>
         </fileset>
         <zipfileset src="${build.lib.dir}/asm-3.0.jar"/>
         <zipfileset src="${build.lib.dir}/asm-commons-3.0.jar"/>
         <zipfileset src="${build.lib.dir}/asm-util-3.0.jar"/>
         <zipfileset src="${build.lib.dir}/asm-analysis-3.0.jar"/>
         <zipfileset src="${build.lib.dir}/asm-tree-3.0.jar"/>
-        <zipfileset src="${build.lib.dir}/bytelist-0.1.jar"/>
-        <zipfileset src="${build.lib.dir}/jvyamlb-0.1.4.jar"/>
         <zipfileset src="${build.lib.dir}/jline-0.9.93.jar"/>
         <zipfileset src="${build.lib.dir}/joni.jar"/>
-        <zipfileset src="${build.lib.dir}/jna-posix.jar"/>
         <zipfileset src="${build.lib.dir}/jna.jar"/>
         <zipfileset src="${build.lib.dir}/joda-time-1.5.1.jar"/>
         <rule pattern="org.objectweb.asm.**" result="jruby.objectweb.asm.@1"/>
+        <zipfileset dir="${basedir}" prefix="META-INF/jruby.home">
+          <include name="bin/*"/>
+          <include name="lib/ruby/gems/1.8/cache/sources*.gem"/>
+          <include name="lib/ruby/gems/1.8/gems/sources*/**/*"/>
+          <include name="lib/ruby/gems/1.8/specifications/sources*.gemspec"/>
+          <include name="lib/ruby/site_ruby/**/*"/>
+        </zipfileset>
         <manifest>
           <attribute name="Built-By" value="${user.name}"/>
           <attribute name="Main-Class" value="${mainclass}"/>
         </manifest>
       </jarjar>
     </target>
+
 
     <target name="jar-console" depends="generate-method-classes" description="Create the jruby graphical console jar">
           <antcall target="jar-complete">
@@ -323,7 +295,6 @@
         <pathelement path="${lib.dir}/jruby.jar"/>
       </classpath>
       <src path="${test.dir}"/>
-      <src path="${spec.dir}"/>
       <patternset refid="java.src.pattern"/>
     </javac>
   </target>
@@ -606,6 +577,8 @@
 	  <test name="org.jruby.test.MRITestSuite" todir="${test.results.dir}" unless="test"/>
 	  <test name="org.jruby.test.RubiconTestSuite" todir="${test.results.dir}" unless="test"/>
 	  <test name="org.jruby.test.RubyTestTestSuite" todir="${test.results.dir}" unless="test"/>
+	  <test name="org.jvyamlb.YAMLLoadTest" todir="${test.results.dir}" unless="test"/>
+	  <test name="org.jvyamlb.YAMLDumpTest" todir="${test.results.dir}" unless="test"/>
 	</junit-tests>
       </run-junit>
     </sequential>
@@ -649,59 +622,30 @@
   </target>
 
   <target name="detect-stable-specs-need-update">
-    <property file="${spec.dir}/rubyspecs.current.revision"/>
+    <property file="${build.dir}/rubyspecs.current.revision"/>
     <condition property="stable-specs-need-update">
       <or>
-        <not> <available file="${rubyspec.dir}"/> </not>
-        <not> <available file="${mspec.dir}"/> </not>
+        <not><available file="${build.dir}/rubyspec"/></not>
         <not>
           <equals
             arg1="${rubyspecs.revision}"
             arg2="${rubyspecs.current.revision}"/>
-        </not>
-        <not>
-          <equals
-            arg1="${mspec.revision}"
-            arg2="${mspec.current.revision}"/>
         </not>
       </or>
     </condition>
   </target>
 
   <target name="fetch-stable-specs" depends="prepare, detect-stable-specs-need-update" if="stable-specs-need-update">
-    <echo message="Downlodaing stable mspec..."/>
-    <get src="http://github.com/brixen/mspec/tarball/${mspec.revision}" dest="${build.dir}/mspec.tgz"/>
-    <echo message="Downlodaing stable rubyspecs..."/>
-    <get src="http://github.com/brixen/rubyspec/tarball/${rubyspecs.revision}" dest="${build.dir}/rubyspec.tgz"/>
-
-    <!-- Wipe the old mspec/rubyspecs, if any, and exctract new ones -->
-
-    <delete dir="${mspec.dir}"/>
-    <mkdir dir="${mspec.dir}"/>
-    <!-- TODO: We use 'tar' binary since Ant doesn't understand tarballs from GitHub,
-         at least in cases when long file names are present
-    <untar src="${build.dir}/mspec.tgz" dest="${mspec.dir}" compression="gzip">
-      <globmapper from="brixen-mspec-${mspec.revision}/*" to="*"/>
-    </untar> -->
-    <exec executable="tar" dir="${mspec.dir}" failonerror="true">
-      <arg line="-xzf ${build.dir}/mspec.tgz --strip-components=1"/>
-    </exec>
-    <chmod file="${mspec.dir}/bin/mspec" perm="755"/>
-
-    <delete dir="${rubyspec.dir}"/>
-    <mkdir dir="${rubyspec.dir}"/>
-    <!-- TODO: disabled 'untar' due to problem, see comment above
-    <untar src="${build.dir}/rubyspec.tgz" dest="${rubyspec.dir}" compression="gzip">
-        <globmapper from="brixen-rubyspec-${rubyspecs.revision}/*" to="*"/>
-    </untar> -->
-    <exec executable="tar" dir="${rubyspec.dir}" failonerror="true">
-      <arg line="-xzf ${build.dir}/rubyspec.tgz --strip-components=1"/>
-    </exec>
-
+  	<echo message="Downlodaing stable rubyspecs..."/>
+  	<get src="http://git.rubini.us/?p=code;a=snapshot;h=${rubyspecs.revision};sf=tgz" dest="${build.dir}/rubyspec.tgz"/>
+  	<!-- Wipe the old specs, if any -->
+  	<delete dir="${build.dir}/rubyspec"/>
+  	<mkdir dir="${build.dir}/rubyspec"/>
+  	<untar src="${build.dir}/rubyspec.tgz" dest="${build.dir}/rubyspec" compression="gzip"/>
+  	
   	<!-- Write down the revision of downloaded specs -->
-    <propertyfile file="${spec.dir}/rubyspecs.current.revision" comment="Revision of downloaded specs.">
+    <propertyfile file="${build.dir}/rubyspecs.current.revision" comment="Revision of downloaded specs.">
       <entry key="rubyspecs.current.revision" value="${rubyspecs.revision}"/>
-      <entry key="mspec.current.revision" value="${mspec.revision}"/>
     </propertyfile>
   </target>
 
@@ -727,51 +671,41 @@
   
   <target name="fetch-specs">
       <condition property="rubyspec-repo-exists">
-          <available file="${rubyspec.dir}/.git"/>
+          <available file="${build.dir}/rubyspec/code/.git"/>
       </condition>
       
       <antcall target="do-fetch-specs"/>
       <antcall target="do-update-specs"/>
   </target>
-
+  
+  <target name="download-specs" description="Download the specs as a tgz snapshot and unpack to build/rubyspec/code">
+      <get src="http://git.rubini.us/?p=code;a=snapshot;sf=tgz" dest="${build.dir}/rubyspec.tgz"/>
+      
+      <mkdir dir="${build.dir}/rubyspec"/>
+      <untar src="${build.dir}/rubyspec.tgz" dest="${build.dir}/rubyspec" compression="gzip"/>
+  </target>
+  
   <target name="do-fetch-specs" unless="rubyspec-repo-exists">
       <!-- Stable specs might exist, so delete them -->
       <antcall target="clear-specs" inheritall="false"/>
-
-      <echo message="Cloning rubyspec repo to: ${rubyspec.dir}"/>
-      <exec dir="${spec.dir}" executable="git">
+      <exec dir="${build.dir}" executable="git">
           <arg value="clone"/>
           <arg value="--depth"/><arg value="1"/>
-          <arg value="git://github.com/brixen/rubyspec.git"/>
-          <arg value="${rubyspec.dir}"/>
-      </exec>
-
-      <echo message="Cloning mspec repo to: ${mspec.dir}"/>
-      <exec dir="${spec.dir}" executable="git">
-                <arg value="clone"/>
-                <arg value="--depth"/><arg value="1"/>
-                <arg value="git://github.com/brixen/mspec.git"/>
-                <arg value="${mspec.dir}"/>
+          <arg value="git://git.rubini.us/code"/>
+          <arg value="rubyspec/code"/>
       </exec>
   </target>
-
+  
   <target name="do-update-specs" if="rubyspec-repo-exists">
-      <echo message="Updading rubyspec repo -- ${rubyspec.dir}"/>
-      <exec dir="${rubyspec.dir}" executable="git">
-        <arg value="pull"/>
-      </exec>
-      <echo message="Updading mspec repo -- ${mspec.dir}"/>
-      <exec dir="${mspec.dir}" executable="git">
-        <arg value="pull"/>
+      <exec dir="${build.dir}/rubyspec/code" executable="git">
+          <arg value="pull"/>
       </exec>
   </target>
-
+  
   <target name="clear-specs">
-      <delete dir="${rubyspec.dir}"/>
-      <delete dir="${mspec.dir}"/>
+      <delete dir="${build.dir}/rubyspec"/>
       <delete file="${build.dir}/rubyspec.tgz"/>
-      <delete file="${build.dir}/mspec.tgz"/>
-      <delete file="${spec.dir}/rubyspecs.current.revision"/>
+      <delete file="${build.dir}/rubyspecs.current.revision"/>
   </target>
   
   <target name="run-specs" depends="jar">
@@ -786,17 +720,17 @@
   <target name="run-specs-interpreted"><_run_specs_internal/></target>
   
   <target name="update-excludes">
-    <java classname="org.jruby.Main" fork="true" maxmemory="${jruby.launch.memory}" failonerror="false" dir="${spec.dir}">
+    <java classname="org.jruby.Main" fork="true" maxmemory="${jruby.launch.memory}" failonerror="false" dir="${build.dir}/rubyspec/code">
       <classpath refid="build.classpath"/>
       <classpath path="${jruby.classes.dir}"/>
       <sysproperty key="jruby.home" value="${basedir}"/>
       <sysproperty key="jruby.launch.inproc" value="false"/>
       
-      <arg line="${mspec.dir}/bin/mspec tag"/>
+      <arg line="bin/mspec tag"/>
       <arg line="-t ${basedir}/bin/jruby"/>
       <arg line="--add fails --fail"/>
-      <arg line="-X ${spec.tags.dir}"/>
-      <arg value="${rubyspec.dir}/1.8"/>
+      <arg line="-X ${basedir}/test/spec_excludes"/>
+      <arg value="spec/ruby/1.8"/>
     </java>
   </target>
 
@@ -804,20 +738,20 @@
     description="Prints out all currently excluded rubyspecs.">
 
     <available property="mspec-available"
-      file="${mspec.dir}/bin/mspec"/>
+      file="${build.dir}/rubyspec/code/bin/mspec"/>
     <fail unless="mspec-available"
       message="No rubyspecs found. Download them via 'ant spec'."/>
 
-    <java classname="org.jruby.Main" fork="true" maxmemory="${jruby.launch.memory}" failonerror="false" dir="${spec.dir}">
+    <java classname="org.jruby.Main" fork="true" maxmemory="${jruby.launch.memory}" failonerror="false" dir="${build.dir}/rubyspec/code">
       <classpath refid="build.classpath"/>
       <classpath path="${jruby.classes.dir}"/>
       <sysproperty key="jruby.home" value="${basedir}"/>
       <sysproperty key="jruby.launch.inproc" value="false"/>
-      <arg line="${mspec.dir}/bin/mspec"/>
+      <arg line="bin/mspec"/>
       <arg line="-t ${basedir}/bin/jruby"/>
       <arg line="-f s -g fails --dry-run"/>
-      <arg line="-X ${spec.tags.dir}"/>
-      <arg value="${rubyspec.dir}/1.8"/>
+      <arg line="-X ${basedir}/test/spec_excludes"/>
+      <arg value="spec/ruby/1.8"/>
     </java>
   </target>
 
@@ -833,7 +767,7 @@
     <sequential>
       <echo message="compile=@{compile.mode}, threshold=@{jit.threshold}, objectspace=@{objectspace.enabled} threadpool=@{thread.pooling} reflection=@{reflection}"/>
     
-      <java classname="org.jruby.Main" fork="true" maxmemory="${jruby.launch.memory}" failonerror="true" dir="${base.dir}">
+      <java classname="org.jruby.Main" fork="true" maxmemory="${jruby.launch.memory}" failonerror="true" dir="${build.dir}/rubyspec/code">
 	<classpath refid="build.classpath"/>
 	<classpath path="${jruby.classes.dir}"/>
       
@@ -849,14 +783,14 @@
 	<sysproperty key="jruby.objectspace.enabled" value="@{objectspace.enabled}"/>
 	<sysproperty key="jruby.thread.pool.enabled" value="@{thread.pooling}"/>
 	<sysproperty key="jruby.reflection" value="@{reflection}"/>
-
-	<arg line="${mspec.dir}/bin/mspec ci"/>
+      
+	<arg line="bin/mspec ci"/>
 	<arg value="-t"/><arg value="${basedir}/bin/jruby"/>
 	<arg line="-T -J-ea"/>
 	<arg value="-f"/><arg value="m"/>
 	<extra-args/>
 
-	<arg value="-B ${spec.dir}/default.mspec"/>
+	<arg value="spec/ruby/1.8"/>
       </java>
     </sequential>
   </macrodef>
@@ -866,10 +800,9 @@
     <attribute name="jit.threshold" default="20"/>
 
     <sequential>
-      <echo message="Excludes: ${spec.tags.dir}"/>
       <run-specs compile.mode="@{compile.mode}" jit.threshold="@{jit.threshold}">
 	<extra-args>
-	  <arg value="-X"/><arg value="${spec.tags.dir}"/>
+	  <arg value="-X"/><arg value="${basedir}/test/spec_excludes"/>
 	</extra-args>
       </run-specs>
     </sequential>
@@ -930,6 +863,7 @@
     <include name="docs/**"/>
     <include name="COPYING*"/>
     <include name="README"/>
+    <include name="share/**"/>
     <exclude name="lib/ruby/**"/>
   </patternset>
 
@@ -939,17 +873,13 @@
     <exclude name="lib/emma_ant.jar"/>
     <exclude name="lib/junit.jar"/>
     <exclude name="lib/jarjar-1.0rc7.jar"/>
-    <exclude name="docs/rdocs.tar.gz"/>
-    <include name="share/**"/>
   </patternset>
 
   <patternset id="dist.src.files">
     <patternset refid="dist.files"/>
-    <exclude name="share/**"/>
     <include name="src/**"/>
     <include name="test/**"/>
     <include name="build_lib/**"/>
-    <include name="Rakefile"/>
     <include name="build.xml"/>
     <include name="build-config.xml"/>
     <include name="nbproject/*"/>
@@ -1034,16 +964,16 @@
   <target name="dist-snapshot" depends="jar">
     <exec executable="${basedir}/bin/jruby" dir="${basedir}">
       <arg value="tool/snapshot.rb"/>
-      <arg value="${jruby.classes.dir}/org/jruby/jruby.properties"/>
+      <arg value="${jruby.classes.dir}/jruby.properties"/>
     </exec>
     <jar destfile="${lib.dir}/jruby.jar" update="true">
       <fileset dir="${jruby.classes.dir}">
-        <include name="org/jruby/jruby.properties"/>
+        <include name="jruby.properties"/>
       </fileset>
     </jar>
     <property name="jar-up-to-date" value="true"/>
     <antcall target="dist-bin">
-      <param file="${jruby.classes.dir}/org/jruby/jruby.properties"/>
+      <param file="${jruby.classes.dir}/jruby.properties"/>
     </antcall>
   </target>
 
@@ -1060,7 +990,7 @@
 
   <target name="dist-snapshot-install" depends="dist-snapshot" if="snapshot.install.dir">
     <antcall target="dist-snapshot-install-stuff">
-      <param file="${jruby.classes.dir}/org/jruby/jruby.properties"/>
+      <param file="${jruby.classes.dir}/jruby.properties"/>
     </antcall>
   </target>
 
@@ -1077,16 +1007,18 @@
   </target>
 
   <target name="clean" depends="init" description="Cleans almost everything, leaves downloaded specs">
-    <delete dir="${build.dir}"/>
+    <delete includeemptydirs="true" quiet="true">
+        <fileset dir="${build.dir}" excludes="rubyspec**"/>
+    </delete>
     <delete dir="${dist.dir}"/>
     <delete quiet="false">
         <fileset dir="${lib.dir}" includes="jruby*.jar"/>
     </delete>
     <delete dir="${api.docs.dir}"/>
-    <delete dir="src_gen"/>
   </target>
 
-  <target name="clean-all" depends="clean, clear-specs" description="Cleans everything, including downloaded specs">
+  <target name="clean-all" depends="clean" description="Cleans everything, including downloaded specs">
+  	<delete dir="${build.dir}"/>
   </target>
 
   <property name="nailgun.home" value="${basedir}/tool/nailgun"/>
@@ -1123,11 +1055,8 @@
       <zipfileset src="${build.lib.dir}/asm-util-3.0.jar"/>
       <zipfileset src="${build.lib.dir}/asm-analysis-3.0.jar"/>
       <zipfileset src="${build.lib.dir}/asm-tree-3.0.jar"/>
-      <zipfileset src="${build.lib.dir}/bytelist-0.1.jar"/>
-      <zipfileset src="${build.lib.dir}/jvyamlb-0.1.4.jar"/>
       <zipfileset src="${build.lib.dir}/jline-0.9.93.jar"/>
       <zipfileset src="${build.lib.dir}/joni.jar"/>
-      <zipfileset src="${build.lib.dir}/jna-posix.jar"/>
       <zipfileset src="${build.lib.dir}/jna.jar"/>
       <zipfileset src="${build.lib.dir}/joda-time-1.5.1.jar"/>
       <zipfileset src="${nailgun.home}/nailgun-0.7.1.jar"/>
