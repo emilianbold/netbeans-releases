@@ -65,7 +65,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
 
     /** unique ID of <code>TopComponent</code> (singleton) */
     private static final String ID = "debugging"; //NOI18N
-    private static final int CLICKABLE_ICON_WIDTH = 16;
+    private static final int CLICKABLE_ICON_WIDTH = 24;
     private static final int BAR_WIDTH = 8;
     
     static final Color hitsColor = new Color(255, 255, 178);
@@ -132,10 +132,11 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         mainPanel.add(treeView, BorderLayout.CENTER);
         
         leftPanel = new JPanel();
-        leftPanel.setPreferredSize(new Dimension(8, 0));
+        leftPanel.setBackground(treeBackgroundColor);
+        leftPanel.setPreferredSize(new Dimension(BAR_WIDTH, 0));
         leftPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
         rightPanel = new ZebraPanel(treeView);
-        rightPanel.setPreferredSize(new Dimension(24, 0));
+        rightPanel.setPreferredSize(new Dimension(CLICKABLE_ICON_WIDTH, 0));
         rightPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
         
         mainPanel.add(leftPanel, BorderLayout.WEST);

@@ -44,6 +44,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.SwingConstants;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.openide.util.NbBundle;
 
@@ -82,6 +83,9 @@ class ClickableIcon extends JLabel implements MouseListener {
         
         isThreadSupended = jpdaThread.isSuspended();
         this.jpdaThread = jpdaThread;
+        
+        setHorizontalAlignment(SwingConstants.CENTER);
+        setVerticalAlignment(SwingConstants.CENTER);
     }
 
     void initializeState(int sx, int sy, int width, int height) {
