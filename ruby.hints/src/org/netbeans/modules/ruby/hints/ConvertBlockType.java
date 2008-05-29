@@ -389,7 +389,6 @@ public class ConvertBlockType extends RubyAstRule {
                     min = start;
                 }
 
-                @SuppressWarnings(value = "unchecked")
                 List<Node> list = node.childNodes();
 
                 if (list != null && list.size() > 0) {
@@ -408,10 +407,12 @@ public class ConvertBlockType extends RubyAstRule {
                 offsets.add(start);
             }
 
-            @SuppressWarnings(value = "unchecked")
             List<Node> list = node.childNodes();
 
             for (Node child : list) {
+                if (child.isInvisible()) {
+                    continue;
+                }
                 if (child.nodeId == NodeType.EVSTRNODE) {
                     // Don't linebreak inside a #{} expression
                     continue;

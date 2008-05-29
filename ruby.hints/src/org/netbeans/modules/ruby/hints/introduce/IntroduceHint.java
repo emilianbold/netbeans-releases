@@ -275,10 +275,12 @@ public class IntroduceHint extends RubySelectionRule {
      * is invalid, or NODESEARCH_NOT_FOUND if no matches were found.
      */
     private void findApplicableNodes(Node node, int start, int end, Map<Integer,List<Node>> result, int depth) {
-        @SuppressWarnings(value = "unchecked")
         List<Node> list = node.childNodes();
         
         for ( Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             if (child.nodeId == NodeType.NEWLINENODE || child.nodeId == NodeType.HASHNODE) {
                 // Newlines and hasnodes have incorrect offsets, so always search their children
                 // instead of applying below search pruning logic

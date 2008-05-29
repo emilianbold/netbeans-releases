@@ -63,6 +63,8 @@
                 <include name="jna*.jar"/>
                 <include name="joda*.jar"/>
                 <include name="jline*.jar"/>
+                <include name="jvyamlb*.jar"/>
+                <include name="bytelist*.jar"/>
             </fileset>
         </copy>
     </target>
