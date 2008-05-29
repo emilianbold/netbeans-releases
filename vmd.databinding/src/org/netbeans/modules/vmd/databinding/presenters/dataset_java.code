@@ -1,0 +1,41 @@
+ __start_guardedblock__   
+    __instancename__ = new DataSet() {  
+        public Class getType(String arg0) throws DataBindingException {
+        __stop_guardedblock__
+            throw new IllegalStateException("Not implemented yet");
+        __start_guardedblock__
+        }
+        __stop_guardedblock__
+        
+        __start_guardedblock__
+        public Object getValue(String arg0) throws DataBindingException {
+        __stop_guardedblock__
+            throw new IllegalStateException("Not implemented yet");
+        __start_guardedblock__
+        }
+        __stop_guardedblock__
+
+        __start_guardedblock__
+        public void setValue(String arg0, Object arg1) throws DataBindingException {
+        __stop_guardedblock__
+            throw new IllegalStateException("Not implemented yet");
+        __start_guardedblock__
+        }
+        __stop_guardedblock__
+
+        __start_guardedblock__
+        public void setAsString(String arg0, String arg1) throws DataBindingException {
+            throw new IllegalStateException("Not implemented yet");
+        }
+        __stop_guardedblock__
+
+        __start_guardedblock__
+        public boolean isReadOnly(String arg0) throws DataBindingException {
+         __stop_guardedblock__
+            throw new IllegalStateException("Not implemented yet");
+        __start_guardedblock__
+        }
+        __stop_guardedblock__
+
+__start_guardedblock__
+    };

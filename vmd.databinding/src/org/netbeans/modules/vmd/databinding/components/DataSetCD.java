@@ -41,6 +41,7 @@ package org.netbeans.modules.vmd.databinding.components;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.Presenter;
@@ -49,6 +50,8 @@ import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
 import org.netbeans.modules.vmd.databinding.categories.DatabindingCategoryCD;
+import org.netbeans.modules.vmd.databinding.presenters.DataSetBodyCodeGeneration;
+import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
@@ -75,7 +78,7 @@ public class DataSetCD extends ComponentDescriptor {
 
     @Override
     public VersionDescriptor getVersionDescriptor() {
-        return MidpVersionDescriptor.FOREVER;
+        return MidpVersionDescriptor.MIDP_2;
     }
 
     @Override
@@ -92,14 +95,12 @@ public class DataSetCD extends ComponentDescriptor {
     @Override
     protected List<? extends Presenter> createPresenters() {
         
-        //return Arrays.asList(
+        return Arrays.asList(
                 // code
-                //MidpCodePresenterSupport.createAddImportPresenter("org.netbeans.microedition.databinding.DataBindingException"),
-                //new DataSetBodyCodeGeneration(""),
+                MidpCodePresenterSupport.createAddImportPresenter("org.netbeans.microedition.databinding.DataBindingException"), //NOI18N
+                new DataSetBodyCodeGeneration("/org/netbeans/modules/vmd/databinding/presenters/dataset_java.code"), //NOI18N
                 //inspector
-                //new InspectorFolderComponentPresenter(true),
-        //        InspectorPositionPresenter.create(InspectorPositionControllerSupport.createHierarchical(DatabindingCategoryCD.TYPEID)));
-        return null;
-         
+                new InspectorFolderComponentPresenter(true),
+                InspectorPositionPresenter.create(InspectorPositionControllerSupport.createHierarchical(DatabindingCategoryCD.TYPEID)));   
     }
 }
