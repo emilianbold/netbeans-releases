@@ -118,9 +118,6 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     /** the VisualizerChildren that contains this VisualizerNode or null */
     private VisualizerChildren parent;
 
-    /** index in parent */
-    int indexOf = -1;
-    
     /** cached name */
     private String name;
 
@@ -238,10 +235,13 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     /** Getter for list of children of this visualizer.
     * @return list of VisualizerNode objects
     */
-    public VisualizerChildren getChildren() {
+    public List<VisualizerNode> getChildren() {
         VisualizerChildren ch = children.get();
 
         if ((ch == null) && !node.isLeaf()) {
+            // initialize the nodes children before we enter
+            // the readAccess section
+            Node[] tmpInit = node.getChildren().getNodes();
 
             // go into lock to ensure that no childrenAdded, childrenRemoved,
             // childrenReordered notifications occures and that is why we do
@@ -249,22 +249,29 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             ch = Children.MUTEX.readAccess(
                     new Mutex.Action<VisualizerChildren>() {
                         public VisualizerChildren run() {
-                            int nodesCount = node.getChildren().getNodesCount();
-                            VisualizerChildren vc = new VisualizerChildren(VisualizerNode.this, nodesCount);
-                            notifyVisualizerChildrenChange(true, vc);
+                            Node[] nodes = node.getChildren().getNodes();
+                            VisualizerChildren vc = new VisualizerChildren(VisualizerNode.this, nodes);
+                            notifyVisualizerChildrenChange(nodes.length, vc);
+
                             return vc;
                         }
                     }
                 );
         }
-        return ch == null ? VisualizerChildren.EMPTY : ch;
+
+        if (LOG.isLoggable(Level.FINER)) {
+            // this assert is too expensive during the performance tests:
+            assert (ch == null) || !ch.list.contains(null) : ch.list + " from " + node; 
+        }
+
+        return (ch == null) ? Collections.<VisualizerNode>emptyList() : ch.list;
     }
 
     //
     // TreeNode interface (callable only from AWT-Event-Queue)
     //
     public int getIndex(final javax.swing.tree.TreeNode p1) {
-        return getChildren().getIndex(p1);
+        return getChildren().indexOf(p1);
     }
 
     public boolean getAllowsChildren() {
@@ -272,15 +279,22 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     }
 
     public javax.swing.tree.TreeNode getChildAt(int p1) {
-        return getChildren().getChildAt(p1);
+        List ch = getChildren();
+        VisualizerNode vn = (VisualizerNode) ch.get(p1);
+        assert vn != null : "Null child in " + ch + " from " + node;
+
+        return vn;
     }
 
     public int getChildCount() {
-        return getChildren().getChildCount();
+        return getChildren().size();
     }
 
     public java.util.Enumeration<VisualizerNode> children() {
-        return getChildren().children();
+        List<VisualizerNode> l = getChildren();
+        assert !l.contains(null) : "Null child in " + l + " from " + node;
+
+        return java.util.Collections.enumeration(l);
     }
 
     public boolean isLeaf() {
@@ -465,8 +479,8 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     * @param size amount of children
     * @param ch the children
     */
-    void notifyVisualizerChildrenChange(boolean strongly, VisualizerChildren ch) {
-        if (strongly) {
+    void notifyVisualizerChildrenChange(int size, VisualizerChildren ch) {
+        if (size == 0) {
             // hold the children hard
             children = new StrongReference<VisualizerChildren>(ch);
         } else {
