@@ -498,7 +498,7 @@ public final class ModuleActions implements ActionProvider {
         
         if (toRun != null) {
             try {
-                ProjectRunner.test(JavaPlatform.getDefault(), Collections.singletonList(toRun));
+                ProjectRunner.execute(ProjectRunner.QUICK_TEST_SINGLE, new Properties(), Collections.singletonList(toRun));
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

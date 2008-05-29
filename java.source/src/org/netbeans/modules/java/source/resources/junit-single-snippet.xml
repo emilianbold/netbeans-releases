@@ -40,9 +40,16 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<antlib>
-<!--    <taskdef name="java" classname="org.netbeans.modules.java.source.ant.JavaTask"/>-->
-    <taskdef name="javac" classname="org.netbeans.modules.java.source.ant.JavacTask"/>
-<!--    <taskdef name="depend" classname="org.netbeans.modules.java.source.ant.DependTask"/>-->
-    <taskdef name="translate-classpath" classname="org.netbeans.modules.java.source.ant.TranslateClassPath"/>
-</antlib>
+<project name="changeme" default="execute" basedir=".">
+    <target name="execute">
+        <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
+        <junit showoutput="true" fork="true">
+            <test name="${classname}" />
+            <classpath path="${classpath-translated}" />
+<!--            <syspropertyset refid="test.unit.properties"/>-->
+            <jvmarg value="-ea"/>
+            <formatter type="brief" usefile="false"/>
+            <formatter type="xml"/>
+        </junit>
+    </target>
+</project>

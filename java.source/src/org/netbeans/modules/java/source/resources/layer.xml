@@ -202,4 +202,9 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
                 
+    <folder name="executor-snippets">
+        <file name="run.xml" url="run-snippet.xml" />
+        <file name="junit-single.xml" url="junit-single-snippet.xml" />
+    </folder>
+    
 </filesystem>

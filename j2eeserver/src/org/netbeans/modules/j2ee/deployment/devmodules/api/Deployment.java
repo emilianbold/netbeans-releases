@@ -527,7 +527,7 @@ public final class Deployment {
                     FileObject object = URLMapper.findFileObject(binary);
                     if (object != null) {
                         BuildArtifactMapper.addArtifactsUpdatedListener(file.getURL(), new ArtifactsUpdatedListenerImpl(provider));
-                        BuildArtifactMapper.ensureBuilt(file.getURL());
+//                        BuildArtifactMapper.ensureBuilt(file.getURL());
                     }
                 }
             } catch (IOException ex) {

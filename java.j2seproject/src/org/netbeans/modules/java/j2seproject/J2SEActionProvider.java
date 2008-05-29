@@ -330,9 +330,8 @@ class J2SEActionProvider implements ActionProvider {
                 }
                 if (COMMAND_TEST_SINGLE.equals(command)) {
                     FileObject[] files = findSources(context);
-                    final String activePlatformId = J2SEActionProvider.this.project.evaluator().getProperty("platform.active"); //NOI18N
                     try {
-                        ProjectRunner.test(J2SEProjectUtil.getActivePlatform(activePlatformId), Arrays.asList(files));
+                        ProjectRunner.execute(ProjectRunner.QUICK_TEST_SINGLE, new Properties(), Arrays.asList(files));
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -940,9 +939,9 @@ class J2SEActionProvider implements ActionProvider {
         final String activePlatformId = J2SEActionProvider.this.project.evaluator().getProperty("platform.active"); //NOI18N
         try {
             if (run) {
-                ProjectRunner.run(J2SEProjectUtil.getActivePlatform(activePlatformId), p, toRun);
+                ProjectRunner.execute(ProjectRunner.QUICK_RUN, p, Collections.singletonList(toRun));
             } else {
-                ProjectRunner.test(J2SEProjectUtil.getActivePlatform(activePlatformId), Collections.singletonList(toRun));
+                ProjectRunner.execute(ProjectRunner.QUICK_TEST_SINGLE, new Properties(), Collections.singletonList(toRun));
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

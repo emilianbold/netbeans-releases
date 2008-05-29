@@ -38,39 +38,132 @@
  */
 
 package org.netbeans.api.java.project.runner;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.spi.java.project.runner.ProjectRunnerImplementation;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
-import org.openide.windows.InputOutput;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Jan Lahoda
  */
 public final class ProjectRunner {
+    
+    public static final String QUICK_RUN = "run";
+    public static final String QUICK_TEST_SINGLE = "junit-single";
 
-    public static void run(JavaPlatform p, Properties props, FileObject toRun) throws IOException {
-        ProjectRunnerImplementation pri = Lookup.getDefault().lookup(ProjectRunnerImplementation.class);
-        
-        if (pri == null) {
-            throw new IOException("No project runner");
-        }
-        
-        pri.run(p, props, toRun);
+    private static final Logger LOG = Logger.getLogger(ProjectRunner.class.getName());
+    
+    public static boolean isSupported(String command) {
+        return buildScript(command) != null;
     }
     
-    public static void test(JavaPlatform p, List<FileObject> files) throws IOException {
-        ProjectRunnerImplementation pri = Lookup.getDefault().lookup(ProjectRunnerImplementation.class);
-        
-        if (pri == null) {
-            throw new IOException("No project runner");
+    public static void execute(String command, Properties props, List<FileObject> toRun) throws IOException {
+        if (toRun.isEmpty()) {
+            throw new IllegalArgumentException("toRun is empty");
         }
         
-        pri.test(p, files);
+        FileObject main = toRun.iterator().next();
+        String jvmArgs = props.getProperty("run.jvmargs");
+        String args = props.getProperty("application.args");
+
+        ClassPath exec = ClassPath.getClassPath(main, ClassPath.EXECUTE);
+        ClassPath source = ClassPath.getClassPath(main, ClassPath.SOURCE);
+
+        LOG.log(Level.FINE, "execute classpath={0}", exec);
+
+        String cp = toString(exec);
+        
+        Properties antProps = new Properties();
+        
+        antProps.setProperty("jvmargs", jvmArgs != null ? jvmArgs : "");
+        antProps.setProperty("args", args != null ? args : "");
+        antProps.setProperty("classpath", cp);
+        antProps.setProperty("classname", source.getResourceName(main, '.', false));
+        
+        ActionUtils.runTarget(buildScript(command), new String[] {"execute"}, antProps);
     }
     
+    private static String toString(ClassPath exec) {
+        StringBuilder cp = new StringBuilder();
+        boolean first = true;
+
+        for (Entry e : exec.entries()) {
+            if (!first) {
+                cp.append(File.pathSeparatorChar);
+            }
+            
+            File f = FileUtil.archiveOrDirForURL(e.getURL());
+
+            if (f != null) {
+                cp.append(f.getAbsolutePath());
+                first = false;
+            }
+        }
+
+        return cp.toString();
+    }
+    
+    private static FileObject buildScript(String actionName) {
+        FileObject script = Repository.getDefault().getDefaultFileSystem().findResource("executor-snippets/" + actionName + ".xml");
+        
+        if (script == null) {
+            return null;
+        }
+        
+        File scriptFile = new File(getCacheFolder(), actionName + ".xml");
+        
+        if (!scriptFile.canRead() || script.lastModified().getTime() > scriptFile.lastModified()) {
+            try {
+                scriptFile.delete();
+                
+                FileObject parent = FileUtil.createFolder(scriptFile.getParentFile());
+
+                return FileUtil.copyFile(script, parent, actionName);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+        }
+        
+        return FileUtil.toFileObject(scriptFile);
+    }
+
+    private static final String NB_USER_DIR = "netbeans.user";   //NOI18N
+    private static final String SNIPPETS_CACHE_DIR = "var"+File.separatorChar+"cache"+File.separatorChar+"executor-snippets";    //NOI18N
+
+    
+    private static String getNbUserDir () {
+        final String nbUserProp = System.getProperty(NB_USER_DIR);
+        return nbUserProp;
+    }
+    
+    private static File cacheFolder;
+    
+    private static synchronized File getCacheFolder () {
+        if (cacheFolder == null) {
+            final String nbUserDirProp = getNbUserDir();
+            assert nbUserDirProp != null;
+            final File nbUserDir = new File (nbUserDirProp);
+            cacheFolder = FileUtil.normalizeFile(new File (nbUserDir, SNIPPETS_CACHE_DIR));
+            if (!cacheFolder.exists()) {
+                boolean created = cacheFolder.mkdirs();                
+                assert created : "Cannot create cache folder";  //NOI18N
+            }
+            else {
+                assert cacheFolder.isDirectory() && cacheFolder.canRead() && cacheFolder.canWrite();
+            }
+        }
+        return cacheFolder;
+    }
 }

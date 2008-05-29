@@ -41,9 +41,13 @@
 
 package org.netbeans.modules.java.source.ant;
 
+import java.io.File;
+import java.io.IOException;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Javac;
+import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 /**
  *
@@ -53,14 +57,23 @@ public class JavacTask extends Javac {
 
     @Override
     public void execute() throws BuildException {
-        getProject().log("Overridden Javac task called", Project.MSG_DEBUG);
-        //XXX: check whether the classpath matches the IDE's idea of the classpath, the same
-        //for the output path, and execute ordinary javac task when a mismatch is found
-        //XXX: fasttrack probably should be used only for "run" commands (run, debug, run-single, debug-single, etc.):
-        //(might also copy the classfiles into the output folder to allow other commands work too):
-        boolean fasttrack = true;
+        Project p = getProject();
         
-        if (!fasttrack) {
+        p.log("Overridden Javac task called", Project.MSG_DEBUG);
+        
+        String ensureBuilt = p.getProperty("ensure.built.source.roots");
+        
+        if (ensureBuilt != null) {
+            for (String path : PropertyUtils.tokenizePath(ensureBuilt)) {
+                File f = new File(path);
+                
+                try {
+                    BuildArtifactMapperImpl.ensureBuilt(f.toURI().toURL());
+                } catch (IOException ex) {
+                    throw new BuildException(ex);
+                }
+            }
+        } else {
             super.execute();
         }
     }

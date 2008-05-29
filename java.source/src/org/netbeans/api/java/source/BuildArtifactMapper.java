@@ -40,7 +40,6 @@
 package org.netbeans.api.java.source;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
 
@@ -50,10 +49,6 @@ import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
  */
 public class BuildArtifactMapper {
 
-    public static boolean ensureBuilt(URL sourceRoot) throws IOException {
-        return BuildArtifactMapperImpl.ensureBuilt(sourceRoot);
-    }
-    
     public static void addArtifactsUpdatedListener(URL sourceRoot, ArtifactsUpdated listener) {
         BuildArtifactMapperImpl.addArtifactsUpdatedListener(sourceRoot, listener);
     }
