@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -49,12 +48,12 @@ import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.vmd.componentssupport.ui.UIUtils;
 import org.netbeans.modules.vmd.componentssupport.ui.helpers.JavaMELibsConfigurationHelper;
 import org.netbeans.modules.vmd.componentssupport.ui.helpers.JavaMELibsPreviewHelper;
+import org.netbeans.modules.vmd.componentssupport.ui.helpers.JavaMELibsPreviewHelper.LibraryParsingException;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -73,12 +72,9 @@ final class NameAndLocationVisualPanel extends JPanel {
                                               = "MSG_LibraryExists";             // NOI18N 
     
     /** Creates new NameAndLocationPanel */
-    NameAndLocationVisualPanel(LibNameAndLocationPanel panel) {
+    NameAndLocationVisualPanel(NameAndLocationWizardPanel panel) {
         myPanel = panel;
         initComponents();
-        initAccessibility();
-        putClientProperty("NewFileWizard_Title",// NOI18N
-                NbBundle.getMessage(NameAndLocationVisualPanel.class,"LBL_LibraryWizardTitle")); // NOI18N
         
         DocumentListener dListener = new DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
@@ -93,34 +89,6 @@ final class NameAndLocationVisualPanel extends JPanel {
     
     private static String getMessage(String key, Object... args) {
         return NbBundle.getMessage(NameAndLocationVisualPanel.class, key, args);
-    }
-    
-    private void initAccessibility() {
-        getAccessibleContext().setAccessibleDescription(
-                getMessage("ACS_NameIconLocationPanel")); // NOI18N
-        createdFilesValue.getAccessibleContext().setAccessibleDescription(
-                getMessage("ACS_LBL_CreatedFiles")); // NOI18N
-        modifiedFilesValue.getAccessibleContext().setAccessibleDescription(
-                getMessage("ACS_LBL_ModifiedFiles")); // NOI18N
-        libraryDisplayNameValue.getAccessibleContext().setAccessibleDescription(
-                getMessage("ACS_LBL_DisplayName")); // NOI18N
-        libraryNameValue.getAccessibleContext().setAccessibleDescription(
-                getMessage("ACS_LBL_Name")); // NOI18N
-        projectNameValue.getAccessibleContext().setAccessibleDescription(
-                getMessage("ACS_LBL_ProjectName")); // NOI18N
-        
-        getAccessibleContext().setAccessibleName(
-                getMessage("ACS_NameIconLocationPanel")); // NOI18N
-        createdFilesValue.getAccessibleContext().setAccessibleName(
-                getMessage("ACS_LBL_CreatedFiles")); // NOI18N
-        modifiedFilesValue.getAccessibleContext().setAccessibleName(
-                getMessage("ACS_LBL_ModifiedFiles")); // NOI18N
-        libraryDisplayNameValue.getAccessibleContext().setAccessibleName(
-                getMessage("ACS_LBL_DisplayName")); // NOI18N
-        libraryNameValue.getAccessibleContext().setAccessibleName(
-                getMessage("ACS_LBL_Name")); // NOI18N
-        projectNameValue.getAccessibleContext().setAccessibleName(
-                getMessage("ACS_LBL_ProjectName")); // NOI18N
     }
     
     protected void storeData(WizardDescriptor descriptor) {
@@ -154,28 +122,32 @@ final class NameAndLocationVisualPanel extends JPanel {
         addBundleToList(created, modified);
 
         // publish
-            createdFilesValue.setText(generateTextAreaContent(
+            createdFilesValue.setText(UIUtils.generateTextAreaContent(
                     created.toArray(new String[]{})));
-            modifiedFilesValue.setText(generateTextAreaContent(
+            modifiedFilesValue.setText(UIUtils.generateTextAreaContent(
                     modified.toArray(new String[]{})));
 
         
     }
     
     private void addLibJarToList(List<String> created, List<String> modified){
-        List<String> existingArchives = getExistingArchives(
-                getExistingLibraries(), getExistingLibraryNames() );
+        List<String> existingArchives = getExistingArchives(getExistingLibraries(), getExistingLibraryNames());
 
-        // add archibes from new lib if are not added yet
-        Library library = (Library)mySettings.getProperty( 
-                    NewLibraryDescriptor.LIBRARY );
+        libraryErrors.clear();
         
-        List<String> archives = 
-                JavaMELibsPreviewHelper.extractLibraryJarsPaths(library, getLibNameValue());
-        for (String arch : archives){
-            if (!existingArchives.contains(arch)){
-                created.add(arch);
+        // add archibes from new lib if are not added yet
+        Library library = (Library) mySettings.getProperty(
+                NewLibraryDescriptor.LIBRARY);
+
+        try {
+            List<String> archives = JavaMELibsPreviewHelper.extractLibraryJarsPaths(library, getLibNameValue());
+            for (String arch : archives) {
+                if (!existingArchives.contains(arch)) {
+                    created.add(arch);
+                }
             }
+        } catch (LibraryParsingException ex) {
+            libraryErrors.add(ex.getMessage());
         }
     }
 
@@ -194,8 +166,12 @@ final class NameAndLocationVisualPanel extends JPanel {
             Library library = itLib.next();
             String name = itName.next();
 
+            try{
             existingArchives.addAll(
                     JavaMELibsPreviewHelper.extractLibraryJarsPaths(library, name) );
+            } catch (LibraryParsingException ex){
+                // nothing to do. archives stored in main wizard should correct
+            }
         }
         return existingArchives;
     }
@@ -273,13 +249,12 @@ final class NameAndLocationVisualPanel extends JPanel {
         return libraryNameValue.getText();
     }
     
-    private String getPanelName() {
-        return NbBundle.getMessage(NameAndLocationVisualPanel.class,"LBL_NameAndLocation_Title"); // NOI18N
-    }
-
     private boolean checkValidity(){
-        // TODO add library verification ( e.g.: was not added yet )
-        if (!isValidLibraryName()){
+        
+        if (!libraryErrors.isEmpty()){
+            setError(libraryErrors.get(0));
+            return false;
+        } else if (!isValidLibraryName()){
             setError( getMessage(MSG_EMPTY_LIB_NAME) );
             return false;
         } else if (!isValidLibraryDisplayName()){
@@ -372,28 +347,6 @@ final class NameAndLocationVisualPanel extends JPanel {
         checkValidity();
     }
     
-    /**
-     * Returns a string suitable for text areas respresenting content of {@link
-     * CreatedModifiedFiles} <em>paths</em>.
-     *
-     * @param relPaths should be either
-     *        {@link CreatedModifiedFiles#getCreatedPaths()} or
-     *        {@link CreatedModifiedFiles#getModifiedPaths()}.
-     */
-    private static String generateTextAreaContent(String[] relPaths) {
-        StringBuffer sb = new StringBuffer();
-        if (relPaths.length > 0) {
-            for (int i = 0; i < relPaths.length; i++) {
-                if (i > 0) {
-                    sb.append('\n'); // NOI18N
-                }
-                sb.append(relPaths[i]);
-            }
-        }
-        return sb.toString();
-    }
-    
-    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -427,6 +380,9 @@ final class NameAndLocationVisualPanel extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(1, 0, 6, 12);
         add(libraryName, gridBagConstraints);
+        libraryName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_LBL_Name")); // NOI18N
+        libraryName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_LBL_Name")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -443,6 +399,9 @@ final class NameAndLocationVisualPanel extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(libraryDisplayName, gridBagConstraints);
+        libraryDisplayName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_LBL_DisplayName")); // NOI18N
+        libraryDisplayName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_LBL_DisplayName")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -451,13 +410,15 @@ final class NameAndLocationVisualPanel extends JPanel {
         add(libraryDisplayNameValue, gridBagConstraints);
 
         projectName.setLabelFor(projectNameValue);
-        org.openide.awt.Mnemonics.setLocalizedText(projectName, bundle.getString("LBL_ProjectName")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(projectName, bundle.getString("LBL_LibraryProjectName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 6, 12);
         add(projectName, gridBagConstraints);
+        projectName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_LBL_LibraryProjectName")); // NOI18N
+        projectName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_LBL_LibraryProjectName")); // NOI18N
 
         projectNameValue.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -476,6 +437,8 @@ final class NameAndLocationVisualPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(36, 0, 6, 12);
         add(createdFiles, gridBagConstraints);
+        createdFiles.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_LBL_CreatedFiles")); // NOI18N
+        createdFiles.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_LBL_CreatedFiles")); // NOI18N
 
         modifiedFiles.setLabelFor(modifiedFilesValue);
         org.openide.awt.Mnemonics.setLocalizedText(modifiedFiles, bundle.getString("LBL_ModifiedFiles")); // NOI18N
@@ -485,11 +448,14 @@ final class NameAndLocationVisualPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(modifiedFiles, gridBagConstraints);
+        modifiedFiles.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_LBL_ModifiedFiles")); // NOI18N
+        modifiedFiles.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_LBL_ModifiedFiles")); // NOI18N
 
         createdFilesValue.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
         createdFilesValue.setColumns(20);
         createdFilesValue.setEditable(false);
         createdFilesValue.setRows(5);
+        createdFilesValue.setToolTipText(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "LBL_CreatedFilesTip")); // NOI18N
         createdFilesValue.setBorder(null);
         createdFilesValueS.setViewportView(createdFilesValue);
 
@@ -505,7 +471,7 @@ final class NameAndLocationVisualPanel extends JPanel {
         modifiedFilesValue.setColumns(20);
         modifiedFilesValue.setEditable(false);
         modifiedFilesValue.setRows(5);
-        modifiedFilesValue.setToolTipText("modifiedFilesValue");
+        modifiedFilesValue.setToolTipText(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "LBL_ModifiedFilesTip")); // NOI18N
         modifiedFilesValue.setBorder(null);
         modifiedFilesValueS.setViewportView(modifiedFilesValue);
 
@@ -513,7 +479,11 @@ final class NameAndLocationVisualPanel extends JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
         add(modifiedFilesValueS, gridBagConstraints);
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_NameLocationPanel")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_NameLocationPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -532,6 +502,7 @@ final class NameAndLocationVisualPanel extends JPanel {
     // End of variables declaration//GEN-END:variables
     
     private WizardDescriptor mySettings;
-    private LibNameAndLocationPanel myPanel;
+    private NameAndLocationWizardPanel myPanel;
+    private List<String> libraryErrors = new ArrayList<String>();
     
 }

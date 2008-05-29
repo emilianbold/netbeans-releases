@@ -43,12 +43,13 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
+import org.netbeans.modules.iep.model.IEPComponentFactory;
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.SchemaAttribute;
 
 /**
  *
@@ -502,4 +503,38 @@ public class DatabaseMetaDataHelper {
     	
     	return table;
     }
+    
+    public static SchemaAttribute createSchemaAttributeFromColumnInfo(ColumnInfo column, 
+                                                               String attrName,
+                                                               IEPModel model) {
+            IEPComponentFactory factory = model.getFactory();
+            SchemaAttribute sa = factory.createSchemaAttribute(model);
+            
+            sa.setAttributeName(attrName);
+            String dataType = column.getColumnDataType();
+            sa.setAttributeType(dataType);
+
+            int precision = column.getPrecision();
+            int scale = column.getScale();
+            sa.setAttributeSize("");
+            sa.setAttributeScale("");
+
+            if(dataType.equalsIgnoreCase("CHAR")
+               || dataType.equalsIgnoreCase("VARCHAR")
+               || dataType.equalsIgnoreCase("DECIMAL") 
+               || dataType.equalsIgnoreCase("FLOAT")
+               ) {
+                if(precision != 0) {
+                    sa.setAttributeSize(""+column.getPrecision());
+                } 
+            }
+
+            if(dataType.equalsIgnoreCase("DECIMAL")) {
+                if(scale != 0) {
+                    sa.setAttributeScale(""+column.getScale());
+                } 
+            }
+            
+            return sa;
+        }
 }

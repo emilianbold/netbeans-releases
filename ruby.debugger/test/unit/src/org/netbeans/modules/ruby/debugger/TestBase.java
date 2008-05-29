@@ -47,6 +47,9 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.Stack;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -67,6 +70,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.text.Line;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.Lookups;
 import org.rubyforge.debugcommons.RubyDebugEvent;
 import org.rubyforge.debugcommons.RubyDebugEventListener;
@@ -114,9 +118,15 @@ public abstract class TestBase extends RubyTestBase {
         doCleanUp();
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        doCleanUp();
+    }
+
     private void doCleanUp() {
         for (RubyBreakpoint bp : RubyBreakpointManager.getBreakpoints()) {
-            RubyBreakpointManager.removeBreakpoint(bp);
+            DebuggerManager.getDebuggerManager().addBreakpoint(bp);
         }
         DebuggerManager.getDebuggerManager().finishAllSessions();
     }
@@ -248,7 +258,26 @@ public abstract class TestBase extends RubyTestBase {
             }
         });
     }
-    
+
+    protected void waitFor(final Process p) throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    p.waitFor();
+                    latch.countDown();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }).start();
+        latch.await(10, TimeUnit.SECONDS);
+        if (latch.getCount() > 0) {
+            fail("Process " + p + " was not finished.");
+            p.destroy();
+        }
+    }
+
     protected void waitForEvents(RubyDebuggerProxy proxy, int n, Runnable block) throws InterruptedException {
         final CountDownLatch events = new CountDownLatch(n);
         RubyDebugEventListener listener = new RubyDebugEventListener() {

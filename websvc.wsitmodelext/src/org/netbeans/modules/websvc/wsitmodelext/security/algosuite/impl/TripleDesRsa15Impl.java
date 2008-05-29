@@ -41,17 +41,16 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.algosuite.impl;
 
-import org.netbeans.modules.websvc.wsitmodelext.security.algosuite.AlgorithmSuiteQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.algosuite.TripleDesRsa15;
+import org.netbeans.modules.websvc.wsitmodelext.security.impl.SecurityPolicyComponentImpl;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author Martin Grebac
  */
-public class TripleDesRsa15Impl extends AlgorithmSuiteComponentImpl implements TripleDesRsa15 {
+public class TripleDesRsa15Impl extends SecurityPolicyComponentImpl implements TripleDesRsa15 {
     
     /**
      * Creates a new instance of TripleDesRsa15Impl
@@ -60,13 +59,4 @@ public class TripleDesRsa15Impl extends AlgorithmSuiteComponentImpl implements T
         super(model, e);
     }
     
-    public TripleDesRsa15Impl(WSDLModel model){
-        this(model, createPrefixedElement(AlgorithmSuiteQName.TRIPLEDESRSA15.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
 }

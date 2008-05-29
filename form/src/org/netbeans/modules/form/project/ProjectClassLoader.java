@@ -102,7 +102,17 @@ class ProjectClassLoader extends ClassLoader {
             // possible to load such a class from project. If we find a case
             // when the project class needs to be preferred over the system,
             // we'll need an additional category to SYSTEM_CLASS.]
-            c = systemClassLoader.loadClass(name);
+            try {
+                // See issue 135745, the classes that form module classloader
+                // is able to load should be the same as the one loaded
+                // by systemClassLoader, but there shouldn't be clash
+                // with a copy of GroupLayout hacked by libs.ppawtlayout module.
+                // The classes that cannot be loaded by form module classloader
+                // will be handled by systemClassLoader as before.
+                c = getClass().getClassLoader().loadClass(name);
+            } catch (ClassNotFoundException cnfe) {
+                c = systemClassLoader.loadClass(name);
+            }
         } else {
             String filename = name.replace('.', '/').concat(".class"); // NOI18N
             URL url = projectClassLoaderDelegate.getResource(filename);

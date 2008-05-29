@@ -47,32 +47,32 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.groovy.editor.GroovyCompilerErrorID;
-import org.netbeans.modules.groovy.editor.hints.spi.Description;
-import org.netbeans.modules.groovy.editor.hints.spi.ErrorRule;
-import org.netbeans.modules.groovy.editor.hints.spi.HintSeverity;
-import org.netbeans.modules.groovy.editor.hints.spi.RuleContext;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.groovy.editor.actions.FixImportsHelper;
 import org.netbeans.modules.groovy.editor.actions.FixImportsHelper.ImportCandidate;
-import org.netbeans.modules.groovy.editor.hints.spi.Fix;
+import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyErrorRule;
+import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyRuleContext;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.groovy.editor.parser.GroovyParser.GroovyError;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.HintFix;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author schmidtm
  */
-public class ClassNotFoundRule implements ErrorRule {
+public class ClassNotFoundRule extends GroovyErrorRule {
 
     public static final Logger LOG = Logger.getLogger(ClassNotFoundRule.class.getName()); // NOI18N
     private final String DESC = NbBundle.getMessage(ClassNotFoundRule.class, "FixImportsHintDescription");
     private final FixImportsHelper helper = new FixImportsHelper();
-    private final Map<String, Set<Integer>> notfoundMap = new HashMap();
+    private final Map<String,Set<Integer>> notfoundMap = new HashMap<String,Set<Integer>>();
     private int lastCompilationRun = 0;
 
     public ClassNotFoundRule() {
@@ -87,7 +87,7 @@ public class ClassNotFoundRule implements ErrorRule {
         return result;
     }
 
-    public void run(RuleContext context, GroovyError error, List<Description> result) {
+    public void run(GroovyRuleContext context, GroovyError error, List<Hint> result) {
         LOG.log(Level.FINEST, "run()");
 
         String desc = error.getDescription();
@@ -135,7 +135,7 @@ public class ClassNotFoundRule implements ErrorRule {
             // get line number
             Integer lineno = new Integer(Utilities.getLineOffset(context.doc, error.getStartPosition()));
 
-            if (hasBeenMarkedBofore(missingClassName, lineno)) {
+            if (hasBeenMarkedBefore(missingClassName, lineno)) {
                 return;
             }
 
@@ -150,12 +150,12 @@ public class ClassNotFoundRule implements ErrorRule {
         OffsetRange range = new OffsetRange(lineStart, lineEnd);
 
         for (ImportCandidate candidate : importCandidates) {
-            List<Fix> fixList = new ArrayList<Fix>(1);
+            List<HintFix> fixList = new ArrayList<HintFix>(1);
             String fqn = candidate.getFqnName();
-            Fix fixToApply = new AddImportFix(fo, fqn);
+            HintFix fixToApply = new AddImportFix(fo, fqn);
             fixList.add(fixToApply);
 
-            Description descriptor = new Description(this, fixToApply.getDescription(), fo, range,
+            Hint descriptor = new Hint(this, fixToApply.getDescription(), fo, range,
                     fixList, DEFAULT_PRIORITY);
 
             result.add(descriptor);
@@ -164,7 +164,7 @@ public class ClassNotFoundRule implements ErrorRule {
         return;
     }
 
-    boolean hasBeenMarkedBofore(String missingClassName, Integer lineno) {
+    boolean hasBeenMarkedBefore(String missingClassName, Integer lineno) {
 
         // FIXME: test whether this combination is in the Map:
         // This could be done in one go ...
@@ -197,7 +197,7 @@ public class ClassNotFoundRule implements ErrorRule {
 
     }
 
-    public boolean appliesTo(CompilationInfo compilationInfo) {
+    public boolean appliesTo(RuleContext context) {
         return true;
     }
 
@@ -213,7 +213,7 @@ public class ClassNotFoundRule implements ErrorRule {
         return HintSeverity.ERROR;
     }
 
-    private class AddImportFix implements Fix {
+    private class AddImportFix implements HintFix {
 
         String HINT_PREFIX = NbBundle.getMessage(ClassNotFoundRule.class, "ClassNotFoundRuleHintDescription");
         FileObject fo;

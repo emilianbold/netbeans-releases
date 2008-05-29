@@ -62,11 +62,21 @@ public class TestSession {
         this.fileLocator = fileLocator;
     }
 
+    /**
+     * Sets the name of the currently running suite.
+     * 
+     * @param suiteName the name of the suite.
+     */ 
     void setSuiteName(String suiteName) {
         this.testCases.clear();
         this.suiteName = suiteName;
     }
 
+    /**
+     * Add a test case to the currently running test suite.
+     * 
+     * @param testCase the test case to add.
+     */
     void addTestCase(Report.Testcase testCase) {
         for (Report.Testcase each : testCases) {
             if (testCase.className.equals(each.className) 
@@ -77,6 +87,11 @@ public class TestSession {
         testCases.add(testCase);
     }
 
+    /**
+     * Builds a report for the suite of this session.
+     * 
+     * @return
+     */
     Report getReport() {
         Report report = new Report(suiteName, fileLocator);
         for (Report.Testcase testcase : testCases) {

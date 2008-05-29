@@ -379,6 +379,17 @@ public class ReformatterImpl {
                 }
                 case NOT: //("!", "operator"),
                 case TILDE: //("~", "operator"),
+                {
+                    if (doFormat()) {
+                        if (isOperator()) {
+                            spaceBefore(previous, false);
+                            spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen());
+                        } else {
+                            spaceAfter(current, codeStyle.spaceAroundUnaryOps());
+                        }
+                    }
+                    break;
+                }
                 case PLUSPLUS: //("++", "operator"),
                 case MINUSMINUS: //("--","operator"),
                 {
@@ -387,14 +398,11 @@ public class ReformatterImpl {
                             spaceBefore(previous, false);
                             spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen());
                         } else {
-                            Token<CppTokenId> prev = ts.lookPreviousImportant();
-                            if (prev != null && 
-                               (prev.id() == SEMICOLON || prev.id() == COMMA)){
-                               // do nothing because already formated
-                            } else {
+                            if (ts.isPrefixOperator(current)){
+                                spaceAfter(current, codeStyle.spaceAroundUnaryOps());
+                            } else if (ts.isPostfixOperator(current)){
                                 spaceBefore(previous, codeStyle.spaceAroundUnaryOps());
                             }
-                            spaceAfter(current, codeStyle.spaceAroundUnaryOps());
                         }
                     }
                     break;
@@ -412,13 +420,6 @@ public class ReformatterImpl {
                                 spaceBefore(previous, codeStyle.spaceAroundBinaryOps());
                                 spaceAfter(current, codeStyle.spaceAroundBinaryOps());
                             } else if (kind == OperatorKind.UNARY){
-                                Token<CppTokenId> prev = ts.lookPreviousImportant();
-                                if (prev != null && 
-                                   (prev.id() == SEMICOLON || prev.id() == COMMA)){
-                                   // do nothing because already formated
-                                } else {
-                                    spaceBefore(previous, codeStyle.spaceAroundUnaryOps());
-                                }
                                 spaceAfter(current, codeStyle.spaceAroundUnaryOps());
                             }
                         }
@@ -437,6 +438,8 @@ public class ReformatterImpl {
                             if (kind == OperatorKind.BINARY){
                                 spaceBefore(previous, codeStyle.spaceAroundBinaryOps());
                                 spaceAfter(current, codeStyle.spaceAroundBinaryOps());
+                            } else if (kind == OperatorKind.UNARY){
+                                spaceAfter(current, codeStyle.spaceAroundUnaryOps());
                             } else if (kind == OperatorKind.TYPE_MODIFIER){
                                 //TODO style of type declaration
                             }
@@ -1812,6 +1815,9 @@ public class ReformatterImpl {
             if (OPERATOR_CATEGORY.equals(currCategory)) {
                 if (curr == GT && (prev == STAR || prev == AMP)){
                     return true;
+                } else if (prev == QUESTION || prev == COLON ||
+                           curr == QUESTION || curr == COLON){
+                    return true;
                 }
                 return false;
             }
@@ -1828,7 +1834,7 @@ public class ReformatterImpl {
     }
 
     private boolean canRemoveSpaceAfter(Token<CppTokenId> current){
-        Token<CppTokenId> next = ts.lookPrevious();
+        Token<CppTokenId> next = ts.lookNext();
         if (next == null) {
             return false;
         }
@@ -1854,13 +1860,7 @@ public class ReformatterImpl {
                 }
             } else if (canRemoveSpaceAfter(current)){
                 if (next.id() == WHITESPACE) {
-                    Token<CppTokenId> n2 = ts.lookNext(2);
-                    if (n2 == null ||
-                        SEPARATOR_CATEGORY.equals(current.id().primaryCategory()) ||
-                        !OPERATOR_CATEGORY.equals(n2.id().primaryCategory()) ||
-                        (KEYWORD_CATEGORY.equals(current.id().primaryCategory()) && n2.id() == LT)){
-                        ts.replaceNext(current, next, 0, 0, false);
-                    }
+                    ts.replaceNext(current, next, 0, 0, false);
                 }
             }
         }
@@ -1936,7 +1936,6 @@ public class ReformatterImpl {
                        (KEYWORD_CATEGORY.equals(p.id().primaryCategory()) ||
                         KEYWORD_DIRECTIVE_CATEGORY.equals(p.id().primaryCategory()))){
                 switch (p.id()) {
-                    case RETURN:
                     case SIZEOF:
                     case TYPEID:
                     case TYPEOF:
@@ -1955,6 +1954,13 @@ public class ReformatterImpl {
                     case _STDCALL:
                     case __STDCALL:
                         spaceBefore(previous, codeStyle.spaceBeforeKeywordParen());
+                        return;
+                    case RETURN:
+                        spaceBefore(previous, codeStyle.spaceBeforeKeywordParen());
+                        if (ts.isTypeCast()) {
+                            spaceAfter(current, codeStyle.spaceWithinTypeCastParens());
+                        }
+                        return;
                 }
                 return;
             } else if (ts.isTypeCast()){

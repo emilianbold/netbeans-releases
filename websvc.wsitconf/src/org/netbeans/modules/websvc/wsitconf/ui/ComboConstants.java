@@ -185,6 +185,7 @@ public interface ComboConstants {
     String ISSUED_KEYTYPE_PUBLIC_POLICYSTR = NbBundle.getMessage(ComboConstants.class, "COMBO_Issued_KeyType_Public_PolicyStr");         //NOI18N
     String ISSUED_KEYTYPE_NOPROOF = NbBundle.getMessage(ComboConstants.class, "COMBO_Issued_KeyType_NoProof");         //NOI18N
     String ISSUED_KEYTYPE_NOPROOF_POLICYSTR = NbBundle.getMessage(ComboConstants.class, "COMBO_Issued_KeyType_NoProof_PolicyStr");         //NOI18N
+    String ISSUED_KEYTYPE_NOPROOF13_POLICYSTR = NbBundle.getMessage(ComboConstants.class, "COMBO_Issued_KeyType_NoProof13_PolicyStr");         //NOI18N
 
     String ISSUED_KEYSIZE_128 = NbBundle.getMessage(ComboConstants.class, "COMBO_Issued_KeySize_128");         //NOI18N
     String ISSUED_KEYSIZE_192 = NbBundle.getMessage(ComboConstants.class, "COMBO_Issued_KeySize_192");         //NOI18N

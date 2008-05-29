@@ -183,9 +183,9 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
             LOG.log(Level.FINEST, "found: ConstantExpression"); //NOI18N
             Object o = ((ConstantExpression) closest).getValue();
             LOG.log(Level.FINEST, "ConstantExpression.getValue() : {0}", o); //NOI18N
-            LOG.log(Level.FINEST, "ConstantExpression.getClas() : {0}", o.getClass()); //NOI18N
+            LOG.log(Level.FINEST, "ConstantExpression.getClass() : {0}", o == null ? null : o.getClass()); //NOI18N
 
-            if (o.getClass() == String.class) {
+            if (o != null && o.getClass() == String.class) {
                 ASTNode node = path.leafParent();
 
                 if (node instanceof MethodCallExpression) {
@@ -194,7 +194,7 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
                 }
             }
 
-            ClassNode cn = ((ConstantExpression) closest).getType();
+            ClassNode cn = closest == null ? null : ((ConstantExpression) closest).getType();
             LOG.log(Level.FINEST, "ClassNode : {0}", cn); //NOI18N
         } else {
             return;
