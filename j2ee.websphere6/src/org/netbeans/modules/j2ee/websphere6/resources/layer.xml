@@ -182,6 +182,9 @@ made subject to such option by the copyright holder.
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-appbnd+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-j2ee-websphere6-dd-loaders-appbnd-WSAppBndDataLoader.instance"/>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">
                         <attr name="position" intvalue="100"/>
@@ -229,6 +232,9 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
             <folder name="x-appext+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-j2ee-websphere6-dd-loaders-appext-WSAppExtDataLoader.instance"/>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">
                         <attr name="position" intvalue="100"/>
@@ -276,6 +282,9 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
             <folder name="x-ejbbnd+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-j2ee-websphere6-dd-loaders-ejbbnd-WSEjbBndDataLoader.instance"/>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">
                         <attr name="position" intvalue="100"/>
@@ -323,6 +332,9 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
             <folder name="x-ejbext+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-j2ee-websphere6-dd-loaders-ejbext-WSEjbExtDataLoader.instance"/>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">
                         <attr name="position" intvalue="100"/>
@@ -370,6 +382,9 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
             <folder name="x-webbnd+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-j2ee-websphere6-dd-loaders-webbnd-WSWebBndDataLoader.instance"/>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">
                         <attr name="position" intvalue="100"/>
@@ -417,6 +432,9 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
             <folder name="x-webext+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-j2ee-websphere6-dd-loaders-webext-WSWebExtDataLoader.instance"/>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">
                         <attr name="position" intvalue="100"/>

@@ -63,5 +63,6 @@ public interface SetName {
      * @param name 
      */
     public void setName(ComponentOperator component, int x, int y, String name);
-    
+    public void setName(DiagramOperator dia, String newName, String oldName);
+    public void setName(DiagramOperator dia, String newName);
 }

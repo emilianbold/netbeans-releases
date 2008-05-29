@@ -175,6 +175,7 @@ public abstract class Validator implements org.netbeans.modules.xml.xam.spi.Vali
       return null;
     }
     String name;
+
     if (component instanceof Named) {
       name = ((Named) component).getName();
 

@@ -454,16 +454,16 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
             hierarchy = ch;
             hierarchy.attachTo(Node.this);
 
-            if (wasLeaf != (hierarchy == Children.LEAF)) {
-                fireOwnPropertyChange(PROP_LEAF, wasLeaf, hierarchy == Children.LEAF);
-            }
-
             if ((oldNodes != null) && !wasLeaf) {
                 fireSubNodesChange(false, oldNodes, oldNodes);
                 Node[] arr = hierarchy.getNodes();
                 if (arr.length > 0) {
                     fireSubNodesChange(true, arr, null);
                 }
+            }
+
+            if (wasLeaf != (hierarchy == Children.LEAF)) {
+                fireOwnPropertyChange(PROP_LEAF, wasLeaf, hierarchy == Children.LEAF);
             }
         }});
     }

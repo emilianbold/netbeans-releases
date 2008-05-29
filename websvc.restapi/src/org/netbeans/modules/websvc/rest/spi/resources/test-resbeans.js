@@ -241,13 +241,17 @@ TestSupport.prototype = {
         var paramRep = "";
         var req = this.getDisplayUri(uri);
         var paths = req.split('/');
-        for(var i=0;i<paths.length;i++) {
+        for(var i in paths) {
             var path = paths[i];
-            if(path.indexOf('{') > -1) {
-                var pname = path.substring(1, path.length-1);
-                paramRep += '<tr><td valign="top"><span id="j_id14"><label for="tparams" class="LblLev2Txt_sun4">';
-                paramRep += '<span>'+pname+': </span></label></span></td>';
-                paramRep += '<td><span id="j_id14"><input id=tparams name="'+pname+'" type=text value="" size=40 title="'+pname+'" class="TxtFld_sun4 TxtFldVld_sun4"/></span></td></tr>';
+            var compositeIds = path.split(',');
+            for(var j in compositeIds) {
+              var compositeId = compositeIds[j];
+              if(compositeId.indexOf('{') > -1) {
+                  var pname = compositeId.substring(1, compositeId.length-1);
+                  paramRep += '<tr><td valign="top"><span id="j_id14"><label for="tparams" class="LblLev2Txt_sun4">';
+                  paramRep += '<span>'+pname+': </span></label></span></td>';
+                  paramRep += '<td><span id="j_id14"><input id=tparams name="'+pname+'" type=text value="" size=40 title="'+pname+'" class="TxtFld_sun4 TxtFldVld_sun4"/></span></td></tr>';
+              }
             }
         }
         if(paramRep != "") {

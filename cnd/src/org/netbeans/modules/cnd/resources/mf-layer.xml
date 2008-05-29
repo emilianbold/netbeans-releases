@@ -377,6 +377,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="cpp-types"/>
             </file>
             <file name="class.h" url="templates/cpp/class-h.template">
+                <attr name="position" intvalue="10"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="hidden"/>
             </file>
@@ -794,6 +795,37 @@ made subject to such option by the copyright holder.
                 </folder> <!-- Actions -->
             </folder> <!-- x-shell -->
         </folder> <!-- text -->
+        
+        <folder name="content">
+            <folder name="unknown">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-ExeLoader.instance">
+                        <attr name="position" intvalue="107"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-loaders-CDataLoader.instance">
+                        <attr name="position" intvalue="207"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-loaders-CCDataLoader.instance">
+                        <attr name="position" intvalue="307"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-loaders-HDataLoader.instance">
+                        <attr name="position" intvalue="407"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-loaders-ShellDataLoader.instance">
+                        <attr name="position" intvalue="507"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-loaders-AsmDataLoader.instance">
+                        <attr name="position" intvalue="607"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-loaders-FortranDataLoader.instance">
+                        <attr name="position" intvalue="707"/>
+                    </file>
+                    <file name="org-netbeans-modules-cnd-loaders-MakefileDataLoader.instance">
+                        <attr name="position" intvalue="807"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
     </folder> <!-- Loaders -->
     
     <folder name="Actions">

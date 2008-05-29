@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -61,7 +60,6 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.ruby.platform.RubyInstallation;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
@@ -1794,6 +1792,9 @@ public class BracketCompleter implements org.netbeans.modules.gsf.api.KeystrokeH
         // leaf "node" which contains the comment line and then comment block
         try {
             BaseDocument doc = (BaseDocument)info.getDocument();
+            if (doc == null) {
+                return ranges;
+            }
             length = doc.getLength();
 
             if (RubyUtils.isRhtmlDocument(doc)) {
@@ -1876,9 +1877,6 @@ public class BracketCompleter implements org.netbeans.modules.gsf.api.KeystrokeH
             }
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
-            return ranges;
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
             return ranges;
         }
 

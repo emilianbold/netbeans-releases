@@ -45,9 +45,9 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.TestCatalogModel;
 import org.netbeans.modules.websvc.wsitconf.util.TestUtil;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
 /**
@@ -73,7 +73,6 @@ public class ProfileTest extends NbTestCase {
     public void testWrite() throws Exception {
         TestCatalogModel.getDefault().setDocumentPooling(true);
         WSDLModel model = TestUtil.loadWSDLModel("../wsdlmodelext/resources/policy.xml");
-        WSDLComponentFactory fact = model.getFactory();
         
         Definitions d = model.getDefinitions();
         Binding b = (Binding) d.getBindings().toArray()[0];
@@ -98,20 +97,22 @@ public class ProfileTest extends NbTestCase {
         for (int i=1; i<profiles.length; i++) {
             String profile = profiles[i];
 
+            ConfigVersion cfgVersion = ConfigVersion.CONFIG_1_0;
+            
             //default profile set
-            ProfilesModelHelper.setSecurityProfile(b, profile, false);
+            ProfilesModelHelper.getInstance(cfgVersion).setSecurityProfile(b, profile, false);
 
             File profDefaultFile = new File(getWorkDirPath() + File.separator + i + profile + ".wsdl");
             TestUtil.dumpToFile(model.getBaseDocument(), profDefaultFile);
 //            assertFile(profDefaultFile, TestUtil.getGoldenFile(getDataDir(), "Profile"+ i + "Test", "testDefault"));
 
-            ProfilesModelHelper.enableSecureConversation(b, true);     // enable SC
+            ProfilesModelHelper.getInstance(cfgVersion).enableSecureConversation(b, true);     // enable SC
 
             File profSCFile = new File(getWorkDirPath() + File.separator + i + profile + "-SecureConversation.wsdl");
             TestUtil.dumpToFile(model.getBaseDocument(), profSCFile);
 //            assertFile(profSCFile, TestUtil.getGoldenFile(getDataDir(), "Profile"+ i + "Test", "testSecureConversation"));            
 
-            ProfilesModelHelper.enableSecureConversation(b, false);     // disable SC
+            ProfilesModelHelper.getInstance(cfgVersion).enableSecureConversation(b, false);     // disable SC
 
             File profAfterSCFile = new File(getWorkDirPath() + File.separator + i + profile + "-After.wsdl");
             TestUtil.dumpToFile(model.getBaseDocument(), profAfterSCFile);

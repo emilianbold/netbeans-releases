@@ -343,13 +343,4 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         
         return bag;
     }
-
-    public static final class HLFactory implements HighlightsLayerFactory {
-        public HighlightsLayer[] createLayers(Context context) {
-            return new HighlightsLayer[] {
-                //"above" mark occurrences, "below" search layers:
-                HighlightsLayer.create(InstantRenamePerformer.class.getName(), ZOrder.CARET_RACK.forPosition(75), false, getHighlightsBag(context.getDocument())),
-            };
-        }
-    } // End of HLFactory class
 }

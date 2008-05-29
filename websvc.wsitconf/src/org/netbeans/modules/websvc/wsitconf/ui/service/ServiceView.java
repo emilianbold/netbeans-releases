@@ -45,7 +45,7 @@ import java.util.HashSet;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingFaultNode;
 import org.netbeans.modules.websvc.wsitconf.ui.nodes.OperationNode;
-import org.netbeans.modules.websvc.wsitconf.ui.nodes.ServiceNode;
+import org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingNode;
 import org.netbeans.modules.websvc.wsitconf.ui.nodes.OperationContainerServiceNode;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.xml.multiview.ui.*;
@@ -103,6 +103,7 @@ public class ServiceView extends SectionView {
         // if there's only one binding, make the dialog simpler
         Node root = new AbstractNode(rootChildren);
         setRoot(root);
+
         if (bindingNodes.length > 1) {
             int i = 0;
             for (Binding binding : bindings) {
@@ -132,20 +133,21 @@ public class ServiceView extends SectionView {
             }
             
             ArrayList<Node> nodes = initOperationView(null, b, serviceOnly);
-            rootChildren.add(nodes.toArray(new Node[nodes.size()]));            
+            rootChildren.add(nodes.toArray(new Node[nodes.size()]));
         }
+        
     }
         
     private ArrayList<Node> initOperationView(SectionContainer bindingCont, Binding binding, boolean serviceOnly) {
         ArrayList<Node> nodes = new ArrayList<Node>();
 
-        Node serviceNode = new ServiceNode(binding);
-        nodes.add(serviceNode);
-        SectionPanel servicePanel = new SectionPanel(this, serviceNode, binding, true);
+        Node bindingNode = new BindingNode(binding);
+        nodes.add(bindingNode);
+        SectionPanel bindingPanel = new SectionPanel(this, bindingNode, binding, true);
         if (bindingCont != null) {
-            bindingCont.addSection(servicePanel, false);
+            bindingCont.addSection(bindingPanel, false);
         } else {
-            addSection(servicePanel, false);
+            addSection(bindingPanel, false);
         }
         
         if (!serviceOnly) {
@@ -192,7 +194,7 @@ public class ServiceView extends SectionView {
                 nodes.add(opNodeContainer);
             }
         }
-        servicePanel.open();
+        //bindingPanel.open();
         return nodes;
-    } 
+    }
 }

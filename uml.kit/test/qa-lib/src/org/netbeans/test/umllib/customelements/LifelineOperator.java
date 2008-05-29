@@ -42,22 +42,17 @@
 
 
 package org.netbeans.test.umllib.customelements;
-import java.util.ArrayList;
-import java.util.Iterator;
-import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.products.ad.compartments.sequencediagram.ETLifelineNameCompartment;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
+
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.test.umllib.DiagramElementChooser;
 import org.netbeans.test.umllib.DiagramElementOperator;
 import org.netbeans.test.umllib.DiagramOperator;
-import org.netbeans.test.umllib.ElementTypes;
 import org.netbeans.test.umllib.exceptions.NotFoundException;
 
 public class LifelineOperator extends DiagramElementOperator{
     
     
-    public LifelineOperator(DiagramOperator diagramOperator, IETGraphObject graphObject) throws NotFoundException {
+    public LifelineOperator(DiagramOperator diagramOperator,  Widget graphObject) throws NotFoundException {
         super(diagramOperator, graphObject);
     }
     
@@ -118,32 +113,32 @@ public class LifelineOperator extends DiagramElementOperator{
          *
          * @param graphObject
          * @return
-         */
-        public boolean checkElement(IETGraphObject graphObject) {
-            
-            if ( !graphObject.getEngine().getElementType().equals(ElementTypes.LIFELINE.toString())){
-                return false;
-            }
-            
-            ETList<ICompartment> compartments = graphObject.getEngine().getCompartments();
-            if(compartments == null){
-                return false;
-            }
-            
-            Iterator<ICompartment> it = compartments.iterator();
-            ArrayList<ICompartment> compartmentsFound = new ArrayList<ICompartment>();
-            while(it.hasNext()) {
-                ICompartment co = it.next();
-                if (co instanceof ETLifelineNameCompartment){
-                    String name = co.getName();
-                    if(name.equals(lineName+" : "+classifierName)){
-                        return true;
-                    } else{
-                        return false;
-                    }
-                }
-            }
-            return false;
+         */ 
+        public boolean checkElement(Widget graphObject) {
+//           TODO: Need to understand lifeline layout
+//            if ( !graphObject.getEngine().getElementType().equals(ElementTypes.LIFELINE.toString())){
+//                return false;
+//            }
+//            
+//            ETList<ICompartment> compartments = graphObject.getEngine().getCompartments();
+//            if(compartments == null){
+//                return false;
+//            }
+//            
+//            Iterator<ICompartment> it = compartments.iterator();
+//            ArrayList<ICompartment> compartmentsFound = new ArrayList<ICompartment>();
+//            while(it.hasNext()) {
+//                ICompartment co = it.next();
+//                if (co instanceof ETLifelineNameCompartment){
+//                    String name = co.getName();
+//                    if(name.equals(lineName+" : "+classifierName)){
+//                        return true;
+//                    } else{
+//                        return false;
+//                    }
+//                }
+//6.0            }
+            return true;
         }
         
         /**
@@ -152,10 +147,6 @@ public class LifelineOperator extends DiagramElementOperator{
          */
         public String getDescription() {
             return "Chooser for description:"+lineName+" : "+classifierName;
-        }
-        
-        
+        }     
     }
-    
-    
 }

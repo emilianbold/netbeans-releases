@@ -120,6 +120,13 @@ public class LanguageRegistry implements Iterable<Language> {
         }
 
         this.languages = newLanguages;
+        
+        mimeToLanguage = new HashMap<String,Language>(2*languages.size());
+        for (Language language : languages) {
+            String mimeType = language.getMimeType();
+            assert mimeType.equals(mimeType.toLowerCase()) : mimeType;
+            mimeToLanguage.put( mimeType,language);
+        }
     }
 
     public static synchronized LanguageRegistry getInstance() {
@@ -356,6 +363,14 @@ public class LanguageRegistry implements Iterable<Language> {
         
         return getLanguageByMimeType(mimeType) != null;
     }
+    
+    //private void listCustomEditorKits() {
+    //    for (Language language : this) {
+    //        if (language.useCustomEditorKit()) {
+    //            System.out.println(language.getDisplayName());
+    //        }
+    //    }
+    //}
     
     public String getLanguagesDisplayName() {
         StringBuilder sb = new StringBuilder();
@@ -868,6 +883,15 @@ public class LanguageRegistry implements Iterable<Language> {
         }
         }
          */
+        
+        // Highlighting layers
+        if (root.getFileObject("org-netbeans-modules-gsfret-editor-semantic-HighlightsLayerFactoryImpl.instance") == null) {
+            try {
+                FileObject fo = FileUtil.createData(root, "org-netbeans-modules-gsfret-editor-semantic-HighlightsLayerFactoryImpl.instance");
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
 
         // Code completion
         String completionProviders = "CompletionProviders";
@@ -897,8 +921,8 @@ public class LanguageRegistry implements Iterable<Language> {
                     completion.createData(provider);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
-                }
-                
+        }
+
             }
             if (checkUserdirUpgrade) {
                 // Delete old name present up to and including beta2

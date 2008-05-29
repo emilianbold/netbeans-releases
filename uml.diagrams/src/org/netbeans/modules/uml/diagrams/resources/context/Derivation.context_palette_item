@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<palette_item version="1.0">
+
+  <icon16 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/derivation-edge.png" />
+  <icon32 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/derivation-edge-32.png" />
+
+  <description localizing-bundle="org.netbeans.modules.uml.diagrams.resources.context.Bundle"
+               display-name-key="NAME_Derivation" 
+               tooltip-key="HINT_Derivation" />
+</palette_item>

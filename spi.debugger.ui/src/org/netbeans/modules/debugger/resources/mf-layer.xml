@@ -79,7 +79,7 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
         <folder name="Debug">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle"/>
             <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
             <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>

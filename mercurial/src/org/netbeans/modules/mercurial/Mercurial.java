@@ -405,6 +405,10 @@ public class Mercurial {
         }
     }
 
+    public void notifyFileChanged(File file) {
+        fileStatusCache.notifyFileChanged(file);
+    }
+
     /**
      *
      * @param repositoryRoot String of Mercurial repository so that logger writes to correct output tab. Can be null

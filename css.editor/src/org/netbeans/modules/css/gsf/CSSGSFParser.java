@@ -126,11 +126,12 @@ public class CSSGSFParser implements Parser, PositionManager {
     }
 
     public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle object) {
-        if (object instanceof CssElementHandle) {
+        if (object instanceof CssAstElement) {
             ParserResult presult = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator().next();
             final TranslatedSource source = presult.getTranslatedSource();
-            CssElementHandle handle = (CssElementHandle) object;
-            return new OffsetRange(AstUtils.documentPosition(handle.elementAstStartOffset(), source), AstUtils.documentPosition(handle.elementAstEndOffset(), source));
+            CssAstElement handle = (CssAstElement) object;
+            return new OffsetRange(AstUtils.documentPosition(handle.node().startOffset(), source), 
+                    AstUtils.documentPosition(handle.node().endOffset(), source));
         } else {
             throw new IllegalArgumentException((("Foreign element: " + object + " of type " +
                     object) != null) ? object.getClass().getName() : "null"); //NOI18N

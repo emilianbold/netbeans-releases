@@ -130,16 +130,14 @@ public class MercurialAnnotator extends VCSAnnotator {
             FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY |
             FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY;
 
-    public static String ANNOTATION_REVISION    = "revision"; // NOI18N
     public static String ANNOTATION_STATUS      = "status"; // NOI18N
     public static String ANNOTATION_FOLDER      = "folder"; // NOI18N
 
-    public static String[] LABELS = new String[] {ANNOTATION_REVISION, ANNOTATION_STATUS, ANNOTATION_FOLDER};
+    public static String[] LABELS = new String[] {ANNOTATION_STATUS, ANNOTATION_FOLDER};
 
     private FileStatusCache cache;
     private MessageFormat format;
     private String emptyFormat;
-    private Boolean needRevisionForFormat;
     private File folderToScan;
     private ConcurrentLinkedQueue<File> dirsToScan = new ConcurrentLinkedQueue<File>();
     private RequestProcessor.Task scanTask;
@@ -163,24 +161,15 @@ public class MercurialAnnotator extends VCSAnnotator {
     }
 
     public void refresh() {
-        String string = HgModuleConfig.getDefault().getAnnotationFormat(); //System.getProperty("netbeans.experimental.svn.ui.statusLabelFormat");  // NOI18N
+        String string = HgModuleConfig.getDefault().getAnnotationFormat(); 
         if (string != null && !string.trim().equals("")) { // NOI18N
-            needRevisionForFormat = isRevisionInAnnotationFormat(string); 
-            string = string.replaceAll("\\{revision\\}",  "\\{0\\}");           // NOI18N
-            string = string.replaceAll("\\{status\\}",    "\\{1\\}");           // NOI18N
-            string = string.replaceAll("\\{folder\\}",    "\\{2\\}");           // NOI18N
+            string = string.replaceAll("\\{status\\}",    "\\{0\\}");           // NOI18N
+            string = string.replaceAll("\\{folder\\}",    "\\{1\\}");           // NOI18N
             format = new MessageFormat(string);
             emptyFormat = format.format(new String[] {"", "", ""} , new StringBuffer(), null).toString().trim(); // NOI18N
         }
     }
     
-    public static boolean isRevisionInAnnotationFormat(String str){
-        if (str.indexOf("{revision}") != -1) { // NOI18N
-            return true;
-        } else {
-            return false;
-        }        
-    }
 
     private void initDefaultColor(String name) {
         String color = System.getProperty("hg.color." + name);  // NOI18N
@@ -439,24 +428,6 @@ public class MercurialAnnotator extends VCSAnnotator {
             statusString = info.getShortStatusText();
         }
 
-        String revisionString = "";     // NOI18N
-        String binaryString = "";       // NOI18N
-
-        if (needRevisionForFormat) {
-            if ((status & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) == 0) {
-                try {
-                    File repository = Mercurial.getInstance().getTopmostManagedParent(file);
-                    String revStr = HgCommand.getLastRevision(repository, file);
-                    if (revStr != null) {
-                        revisionString = revStr;
-                    }
-                } catch (HgException ex) {
-                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                    DialogDisplayer.getDefault().notifyLater(e);
-                }
-            }
-        }
-
         //String stickyString = SvnUtils.getCopy(file);
         String stickyString = null;
         if (stickyString == null) {
@@ -464,7 +435,6 @@ public class MercurialAnnotator extends VCSAnnotator {
         }
 
         Object[] arguments = new Object[] {
-            revisionString,
             statusString,
             stickyString,
         };

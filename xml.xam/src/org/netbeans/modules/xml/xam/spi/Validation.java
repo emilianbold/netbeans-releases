@@ -106,6 +106,10 @@ public class Validation {
         List<ResultItem> advices = new LinkedList<ResultItem>();
         List<ResultItem> warnings = new LinkedList<ResultItem>();
 
+        if (myValidationResult == null) {
+            myValidationResult = new ArrayList<ResultItem>();
+            return;
+        }
         for (ResultItem item : myValidationResult) {
           if (item.getType() == ResultType.ERROR) {
             errors.add(item);

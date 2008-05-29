@@ -42,17 +42,72 @@
 
 package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
+import java.awt.Dialog;
+import java.util.List;
+import java.util.Map;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.vmd.componentssupport.ui.UIUtils;
+import org.openide.DialogDisplayer;
+import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author  den
  */
 public class DescriptorsVisualPanel extends javax.swing.JPanel {
 
+    private static final String CONTENT_NUMBERED  = "WizardPanel_contentNumbered";  // NOI18N
+    private static final String CONTENT_DISPLAYED = "WizardPanel_contentDisplayed"; // NOI18N
+    private static final String AUTO_WIZARD_STYLE = "WizardPanel_autoWizardStyle";  // NOI18N
+    
+    private static final String DLD_DELETE_TITLE = "MSG_ComponentDeleteTitle";  // NOI18N
+    private static final String DLD_DELETE_MSG = "MSG_ComponentDeleteMsg";  // NOI18N
+
     /** Creates new form DescriptorsVisualPanel */
     public DescriptorsVisualPanel() {
         initComponents();
+
+        myCompDescrList.setModel(new CompDescriptorsListModel());
+        myCompDescrList.getSelectionModel().setSelectionMode(
+                ListSelectionModel.SINGLE_SELECTION);
+        myCompDescrList.getSelectionModel().addListSelectionListener(
+                new ListSelectionListener() {
+                    public void valueChanged(ListSelectionEvent e) {
+                        updateRemoveButton();
+                    }
+                });
+        updateRemoveButton();
     }
 
+    private void updateRemoveButton() {
+        if (myCompDescrList.isSelectionEmpty()) {
+            myRemoveButton.setEnabled(false);
+        } else {
+            myRemoveButton.setEnabled(true);
+        }
+    }
+
+    void readData( WizardDescriptor settings ) {
+        myWizardDescriptor = settings;
+
+        CompDescriptorsListModel model = 
+                (CompDescriptorsListModel)myCompDescrList.getModel();
+        List<Map<String, Object>> components 
+                = (List<Map<String, Object>>)myWizardDescriptor.getProperty(
+                        CustomComponentWizardIterator.CUSTOM_COMPONENTS);
+        model.updateModel(components);
+    }
+
+    
+    void storeData( WizardDescriptor settings ) {
+        /*
+         * nothing to save. 
+         */
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -62,20 +117,134 @@ public class DescriptorsVisualPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        myCompDescrLabel = new javax.swing.JLabel();
+        myAddButton = new javax.swing.JButton();
+        myRemoveButton = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        myCompDescrList = new javax.swing.JList();
+
+        myCompDescrLabel.setLabelFor(myCompDescrList);
+        org.openide.awt.Mnemonics.setLocalizedText(myCompDescrLabel, org.openide.util.NbBundle.getMessage(DescriptorsVisualPanel.class, "LBL_AddedComponentDescriptors")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(myAddButton, org.openide.util.NbBundle.getMessage(DescriptorsVisualPanel.class, "BTN_AddComponentDescr")); // NOI18N
+        myAddButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addPressed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(myRemoveButton, org.openide.util.NbBundle.getMessage(DescriptorsVisualPanel.class, "BTN_RemoveComponentDescr")); // NOI18N
+        myRemoveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removePressed(evt);
+            }
+        });
+
+        jScrollPane1.setViewportView(myCompDescrList);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 400, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(myCompDescrLabel)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 321, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                    .add(myAddButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(myRemoveButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 300, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(myCompDescrLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(myAddButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(myRemoveButton)
+                        .addContainerGap(228, Short.MAX_VALUE))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)))
         );
+
+        myCompDescrLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DescriptorsVisualPanel.class, "ACSN_AddedComponentDescriptors")); // NOI18N
+        myCompDescrLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DescriptorsVisualPanel.class, "ACSD_AddedComponentDescriptors")); // NOI18N
+        myAddButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DescriptorsVisualPanel.class, "ACSN_AddComponentDescr")); // NOI18N
+        myAddButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DescriptorsVisualPanel.class, "ACSD_AddComponentDescr")); // NOI18N
+        myRemoveButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DescriptorsVisualPanel.class, "ACSN_RemoveComponentDescr")); // NOI18N
+        myRemoveButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DescriptorsVisualPanel.class, "ACSD_RemoveComponentDescr")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+private void addPressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPressed
+    WizardDescriptor.Iterator iterator = new NewComponentDescriptor(myWizardDescriptor);
+    myInnerDescriptor = new WizardDescriptor( iterator );
+    myInnerDescriptor.putProperty( AUTO_WIZARD_STYLE, true );
+    myInnerDescriptor.putProperty( CONTENT_DISPLAYED, true );
+    myInnerDescriptor.putProperty( CONTENT_NUMBERED, true );
+    Dialog dialog = DialogDisplayer.getDefault().createDialog( myInnerDescriptor );
+    dialog.setVisible( true );
+    readData(myWizardDescriptor);
+
+}//GEN-LAST:event_addPressed
+
+private void removePressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removePressed
+    int index = myCompDescrList.getSelectedIndex();
+    List<Map> components = (List<Map>)myWizardDescriptor.getProperty( 
+                CustomComponentWizardIterator.CUSTOM_COMPONENTS);
+
+    String name = (String)components.get(index).get(NewComponentDescriptor.CC_PREFIX);
+    String title = getMessage(DLD_DELETE_TITLE);
+    String msg = getMessage(DLD_DELETE_MSG, name);
+    if (!UIUtils.userConfirmOkCancel(title, msg)){
+        return;
+    }
+    
+    // remove in UI
+    ((CompDescriptorsListModel)myCompDescrList.getModel()).remove(index);
+    
+    //remove from WizardDescriptor
+    components.remove(index);
+}//GEN-LAST:event_removePressed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JButton myAddButton;
+    private javax.swing.JLabel myCompDescrLabel;
+    private javax.swing.JList myCompDescrList;
+    private javax.swing.JButton myRemoveButton;
     // End of variables declaration//GEN-END:variables
 
+    private static String getMessage(String key, Object... args) {
+        return NbBundle.getMessage(JavaMELibsVisualPanel.class, key, args);
+    }
+        
+    private class CompDescriptorsListModel extends EditableListModel{
+
+        public void updateModel(List<Map<String,Object>> components){
+            if (components == null){
+                return; 
+            }
+            
+            // clean
+            removeAllElements();
+            
+            for (Map<String, Object> component : components){
+                String prefix = (String)component.get(
+                        NewComponentDescriptor.CC_PREFIX);
+                String typeID = (String)component.get(
+                        NewComponentDescriptor.CD_TYPE_ID);
+                
+                assert prefix != null && typeID != null
+                        : "Component data is not consistent";
+                
+                addElement(prefix + " [ " + typeID + " ]"); // NOI18N 
+            }
+        }
+    }
+    
+    private WizardDescriptor myWizardDescriptor;
+    private WizardDescriptor myInnerDescriptor;
 }

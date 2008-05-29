@@ -100,14 +100,19 @@ made subject to such option by the copyright holder.
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
+                        <code-name-base>org.openide.dialogs</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.openide.text</code-name-base>
                         <recursive/>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.openide.dialogs</code-name-base>
-                        <recursive/>
+                        <code-name-base>org.openide.util</code-name-base>
                         <compile-dependency/>
+                        <test/>
                     </test-dependency>
                 </test-type>
                 <test-type>

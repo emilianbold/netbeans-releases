@@ -41,17 +41,16 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.algosuite.impl;
 
-import org.netbeans.modules.websvc.wsitmodelext.security.algosuite.AlgorithmSuiteQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.algosuite.Basic128;
+import org.netbeans.modules.websvc.wsitmodelext.security.impl.SecurityPolicyComponentImpl;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author Martin Grebac
  */
-public class Basic128Impl extends AlgorithmSuiteComponentImpl implements Basic128 {
+public class Basic128Impl extends SecurityPolicyComponentImpl implements Basic128 {
     
     /**
      * Creates a new instance of Basic128Impl
@@ -60,13 +59,4 @@ public class Basic128Impl extends AlgorithmSuiteComponentImpl implements Basic12
         super(model, e);
     }
     
-    public Basic128Impl(WSDLModel model){
-        this(model, createPrefixedElement(AlgorithmSuiteQName.BASIC128.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
 }

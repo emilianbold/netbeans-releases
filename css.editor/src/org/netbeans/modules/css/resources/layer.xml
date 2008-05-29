@@ -32,12 +32,12 @@
                 </file>
                 
                 <file name="completion.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.CodeCmpletionHandler"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Completable"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.css.gsf.CSSCompletion"/>
                 </file>
                 
                 <file name="bracket.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.KeystrokeHandler"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.BracketCompletion"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.css.gsf.CssBracketCompleter"/>
                 </file>
                 

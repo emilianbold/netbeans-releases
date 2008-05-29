@@ -21,17 +21,14 @@ package org.netbeans.modules.xslt.core.util;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
-import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xslt.model.spi.XslModelFactory;
 import org.netbeans.modules.xslt.model.XslModel;
-import org.openide.util.Lookup;
 
 /**
  * @author Vitaly Bychkov
  * @version 1.0
  */
 public class Util {
-    
     public static XslModel getXslModel(FileObject xslFo) {
         XslModel model = null;
         if (xslFo != null) {
@@ -40,5 +37,16 @@ public class Util {
         }
         
         return model;
+    }
+    
+    public static String packageToPath(Object obj) {
+        return packageToPath(obj.getClass());
+    }
+    
+    public static String packageToPath(Class objClass){
+        String className = objClass.getName();
+        int lastDotIndex = className.lastIndexOf(".");
+        return (lastDotIndex < 0) ? "" : 
+                className.substring(0, lastDotIndex).replace('.', '/');
     }
 }

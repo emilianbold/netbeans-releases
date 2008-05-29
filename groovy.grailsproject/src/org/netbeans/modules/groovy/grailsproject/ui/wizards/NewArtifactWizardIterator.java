@@ -38,6 +38,7 @@ import org.openide.WizardDescriptor;
 import javax.swing.JComponent;
 import org.openide.util.NbBundle;
 import java.io.File;
+import java.nio.charset.Charset;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import java.util.logging.Logger;
@@ -45,13 +46,14 @@ import java.util.logging.Level;
 import org.netbeans.api.progress.ProgressHandle;
 import java.util.concurrent.Callable;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.extexecution.api.DefaultDescriptor;
+import org.netbeans.modules.extexecution.api.ExecutionService;
+import org.netbeans.modules.extexecution.api.input.InputProcessors;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
-import org.netbeans.modules.groovy.grailsproject.execution.DefaultDescriptor;
-import org.netbeans.modules.groovy.grailsproject.execution.ExecutionService;
 import org.openide.util.Task;
 
 
@@ -123,7 +125,9 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
                 Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
                         serverCommand, GrailsProjectConfig.forProject(project), pls.getDomainClassName());
                 ExecutionService service = new ExecutionService(callable, displayName,
-                        new DefaultDescriptor(project, new ProgressSnooper(handle, 100, 2) , null, false, false, true, true, false));
+                        new DefaultDescriptor(project,
+                            InputProcessors.bridge(new ProgressSnooper(handle, 100, 2), Charset.defaultCharset()),
+                            null, false, false, true, true, false));
 
                 Task task = service.run();
                 task.waitFinished();
