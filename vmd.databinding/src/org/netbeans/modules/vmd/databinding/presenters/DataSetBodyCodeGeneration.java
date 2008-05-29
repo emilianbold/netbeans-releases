@@ -91,8 +91,15 @@ public final class DataSetBodyCodeGeneration extends CodeClassLevelPresenter.Ada
         for (CodeClassInitHeaderFooterPresenter footer : headersFooters) {
             footer.generateClassInitializationFooter(section);
         }
-       
+
         createBodyCode(section);
+        section.switchToEditable(getComponent().getComponentID() + "registrationZone"); //NOI18N
+        section.getWriter().write(" // write before registration \n"); //NOI18N
+        section.getWriter().commit();
+        section.switchToGuarded();
+        String instanceName = (String) getComponent().readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue();
+        section.getWriter().write("    DataBinder.registerDataSet(" + instanceName + ",\"" + instanceName + "\");"); //NOI18N
+        section.getWriter().commit();
 
         section.switchToEditable(getComponent().getComponentID() + "-postInit"); // NOI18N
         section.getWriter().write(" // write post-init user code here\n").commit(); // NOI18N
@@ -108,7 +115,7 @@ public final class DataSetBodyCodeGeneration extends CodeClassLevelPresenter.Ada
 
     private void createBodyCode(final MultiGuardedSection section) {
         try {
-            InputStream is = DataSetBodyCodeGeneration.class.getClassLoader().getResourceAsStream(bodyTemplatePath); 
+            InputStream is = DataSetBodyCodeGeneration.class.getClassLoader().getResourceAsStream(bodyTemplatePath);
             BufferedReader in = new BufferedReader(new InputStreamReader(is));
             String line = in.readLine();
             int i = 0;
@@ -121,19 +128,22 @@ public final class DataSetBodyCodeGeneration extends CodeClassLevelPresenter.Ada
                     while ((line = in.readLine()) != null && !line.contains(STOP_GUARDED_BLOCK)) {
                         if (line.contains(INSTANCE_NAME)) {
                             section.getWriter().write(line.replace(INSTANCE_NAME, (String) getComponent().readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue()) + "\n"); //NOI18N
-                        } else {
+                        } else if (!line.startsWith("#")) { //NOI18N
                             section.getWriter().write(line + "\n"); //NOI18N
                         }
                     }
                     section.getWriter().commit();
-                }
-                if (line != null && line.contains(STOP_GUARDED_BLOCK)) {
+                } else if (line != null && line.contains(STOP_GUARDED_BLOCK)) {
                     i++;
                     section.switchToEditable(getComponent().getComponentID() + "codeZone" + i); //NOI18N
                     while ((line = in.readLine()) != null && !line.contains(START_GUARDED_BLOCK)) {
-                        section.getWriter().write(line + "\n"); //NOI18N
+                        if (!line.startsWith("#")) { //NOI18N
+                            section.getWriter().write(line + "\n"); //NOI18N
+                        }
                     }
                     section.getWriter().commit();
+                } else {
+                    line = in.readLine();
                 }
             }
             in.close();
