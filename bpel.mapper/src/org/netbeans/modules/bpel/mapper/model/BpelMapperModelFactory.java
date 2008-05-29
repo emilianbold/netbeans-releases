@@ -251,7 +251,7 @@ public class BpelMapperModelFactory implements MapperModelFactory {
             assert bpelEntity instanceof ConditionHolder;
             Expression expr = ((ConditionHolder)bpelEntity).getCondition();
             if (expr != null) {
-                BpelEntityCasts castList = editorExtProcessor.getCastList(expr);
+                BpelEntityCasts castList = editorExtProcessor.getCastList(bpelEntity);
                 editorExtProcessor.registerCasts(castList);
                 addExpressionGraph(expr, newMapperModel, 
                         ConditionValueTreeModel.BOOLEAN_CONDITION, 
