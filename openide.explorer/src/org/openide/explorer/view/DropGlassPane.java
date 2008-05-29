@@ -69,7 +69,7 @@ final class DropGlassPane extends JPanel {
     final static private int MIN_WIDTH = 10;
     final static private int MIN_HEIGTH = 3;
     transient static private Component oldPane;
-    transient static private JTree originalSource;
+    transient static private JComponent originalSource;
     transient static private boolean wasVisible;
     Line2D line = null;
 
@@ -97,7 +97,7 @@ final class DropGlassPane extends JPanel {
      * @param pane the original glass
      * @param visible was glass pane visible
      */
-    static void setOriginalPane(JTree source, Component pane, boolean visible) {
+    static void setOriginalPane(JComponent source, Component pane, boolean visible) {
         // pending, should throw an exception that original is set already
         oldPane = pane;
         originalSource = source;
