@@ -93,35 +93,47 @@ final class ComponentProducerVisualPanel extends JPanel {
         myCPPaletteCategoryCombo.setModel(PaletteCategory.getComboBoxModel());
         myCPValidAlwaysRadio.setSelected(true);
         
-        DocumentListener dListener = new DocumentAdapter() {
+        myDocListener = new DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
                 checkValidity();
             }
         };
-        myCPClassName.getDocument().addDocumentListener(dListener);
-        myCPPaletteDispName.getDocument().addDocumentListener(dListener);
-        myCPPaletteTooltip.getDocument().addDocumentListener(dListener);
-        myCPSmallIconPath.getDocument().addDocumentListener(new DocumentAdapter() {
+        myClassNameListener = new DocumentAdapter() {
+            public void insertUpdate(DocumentEvent e) {
+                isCPClassNameUpdated = true;
+                checkValidity();
+            }
+        };
+        mySmallIconPathListener = new DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
                 isSmallIconUpdated = true;
                 checkValidity();
             }
-        });
-        myCPLargeIconPath.getDocument().addDocumentListener(new DocumentAdapter() {
+        };
+        myLargeIconPathListener = new DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
                 isLargeIconUpdated = true;
                 checkValidity();
             }
-        });
-        myCPLibName.getDocument().addDocumentListener(dListener);
-        myCPAddLibDepChk.addActionListener(new ActionListener() {
+        };
+        myAddLibDependencyListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 checkValidity();
             }
-        });
+        };
         
     }
     
+    public @Override void addNotify() {
+        super.addNotify();
+        attachDocumentListeners();
+    }
+    
+    public @Override void removeNotify() {
+        // prevent checking when the panel is not "active"
+        removeDocumentListeners();
+        super.removeNotify();
+    }
 
     void storeData(WizardDescriptor descriptor) {
         descriptor.putProperty(NewComponentDescriptor.CP_CLASS_NAME, 
@@ -151,13 +163,13 @@ final class ComponentProducerVisualPanel extends JPanel {
     void readData( WizardDescriptor descriptor) {
         mySettings = descriptor;
         
-        myCPClassName.setText(getClassName());
+        readClassNameValue();
         myCPPaletteDispName.setText(getPaletteDispName());
         myCPPaletteTooltip.setText(getPaletteTooltip());
         myCPPaletteCategoryCombo.setSelectedItem(getPaletteCategory());
         myCPSmallIconPath.setText(getSmallIcon());
         myCPLargeIconPath.setText(getLargeIcon());
-        myCPAddLibDepChk.setSelected(getAddLib());
+        myCPAddLibDependencyChk.setSelected(getAddLib());
         myCPLibName.setText((String)mySettings.getProperty(
                 NewComponentDescriptor.CP_LIB_NAME));
         if (getValidAlways() != null){
@@ -200,14 +212,16 @@ final class ComponentProducerVisualPanel extends JPanel {
         return prefix;
     }
     
-    private String getClassName() {
+    private void readClassNameValue() {
         String name = (String) mySettings.getProperty(
                 NewComponentDescriptor.CP_CLASS_NAME);
-        if (name == null) {
-            String prefix = getPrefix();
-            name = prefix + NewComponentDescriptor.COMPONENT_PRODUCER_POSTFIX;
+        if (name == null || !isCPClassNameUpdated){
+            name = getPrefix() + NewComponentDescriptor.COMPONENT_PRODUCER_POSTFIX;
+            myCPClassName.setText(name);
+            isCPClassNameUpdated = false;
+        } else {
+            myCPClassName.setText(name);
         }
-        return name;
     }
 
     private Boolean getAddLib() {
@@ -438,7 +452,7 @@ final class ComponentProducerVisualPanel extends JPanel {
     }
     
     private Boolean getAddLibraryValue(){
-        return myCPAddLibDepChk.isSelected();
+        return myCPAddLibDependencyChk.isSelected();
     }
     
     private String getLibraryNameValue(){
@@ -457,11 +471,32 @@ final class ComponentProducerVisualPanel extends JPanel {
         return myCPValidCustomRadio.isSelected();
     }
     
-    public void addNotify() {
-        super.addNotify();
-        checkValidity();
+    private void attachDocumentListeners() {
+        if (!listenersAttached) {
+            myCPClassName.getDocument().addDocumentListener(myClassNameListener);
+            myCPPaletteDispName.getDocument().addDocumentListener(myDocListener);
+            myCPPaletteTooltip.getDocument().addDocumentListener(myDocListener);
+            myCPSmallIconPath.getDocument().addDocumentListener(mySmallIconPathListener);
+            myCPLargeIconPath.getDocument().addDocumentListener(myLargeIconPathListener);
+            myCPLibName.getDocument().addDocumentListener(myDocListener);
+            myCPAddLibDependencyChk.addActionListener(myAddLibDependencyListener);
+            listenersAttached = true;
+        }
     }
-    
+
+    private void removeDocumentListeners() {
+        if (listenersAttached) {
+            myCPClassName.getDocument().removeDocumentListener(myClassNameListener);
+            myCPPaletteDispName.getDocument().removeDocumentListener(myDocListener);
+            myCPPaletteTooltip.getDocument().removeDocumentListener(myDocListener);
+            myCPSmallIconPath.getDocument().removeDocumentListener(mySmallIconPathListener);
+            myCPLargeIconPath.getDocument().removeDocumentListener(myLargeIconPathListener);
+            myCPLibName.getDocument().removeDocumentListener(myDocListener);
+            myCPAddLibDependencyChk.removeActionListener(myAddLibDependencyListener);
+            listenersAttached = false;
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -486,7 +521,7 @@ final class ComponentProducerVisualPanel extends JPanel {
         myCPLargeIconPathLabel = new javax.swing.JLabel();
         myCPLargeIconPath = new javax.swing.JTextField();
         myCPLargeIconPathButton = new javax.swing.JButton();
-        myCPAddLibDepChk = new javax.swing.JCheckBox();
+        myCPAddLibDependencyChk = new javax.swing.JCheckBox();
         myLibNamePanel = new javax.swing.JPanel();
         myCPLibNameLabel = new javax.swing.JLabel();
         myCPLibName = new javax.swing.JTextField();
@@ -543,7 +578,7 @@ final class ComponentProducerVisualPanel extends JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(myCPAddLibDepChk, org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "LBL_CP_AddLibraryChk")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(myCPAddLibDependencyChk, org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "LBL_CP_AddLibraryChk")); // NOI18N
 
         myCPLibNameLabel.setLabelFor(myCPLibName);
         org.openide.awt.Mnemonics.setLocalizedText(myCPLibNameLabel, org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "LBL_CP_LibName")); // NOI18N
@@ -625,7 +660,7 @@ final class ComponentProducerVisualPanel extends JPanel {
                     .add(myValidityPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(myCompProducerPanelLayout.createSequentialGroup()
                         .add(myCompProducerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, myCPAddLibDepChk)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, myCPAddLibDependencyChk)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, myLibNamePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, myCompProducerPanelLayout.createSequentialGroup()
                                 .add(myCompProducerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -681,7 +716,7 @@ final class ComponentProducerVisualPanel extends JPanel {
                     .add(myCPLargeIconPathButton)
                     .add(myCPLargeIconPath, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(myCPAddLibDepChk)
+                .add(myCPAddLibDependencyChk)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(myLibNamePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -704,8 +739,8 @@ final class ComponentProducerVisualPanel extends JPanel {
         myCPLargeIconPathLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_LargeIconPath")); // NOI18N
         myCPLargeIconPathButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSN_CP_LargeIconButton")); // NOI18N
         myCPLargeIconPathButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_LargeIconButton")); // NOI18N
-        myCPAddLibDepChk.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSN_CP_AddLibraryChk")); // NOI18N
-        myCPAddLibDepChk.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_AddLibraryChk")); // NOI18N
+        myCPAddLibDependencyChk.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSN_CP_AddLibraryChk")); // NOI18N
+        myCPAddLibDependencyChk.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_AddLibraryChk")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -800,7 +835,7 @@ private void myCPLargeIconPathButtonActionPerformed(java.awt.event.ActionEvent e
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox myCPAddLibDepChk;
+    private javax.swing.JCheckBox myCPAddLibDependencyChk;
     private javax.swing.JTextField myCPClassName;
     private javax.swing.JLabel myCPClassNameLabel;
     private javax.swing.JTextField myCPLargeIconPath;
@@ -830,4 +865,12 @@ private void myCPLargeIconPathButtonActionPerformed(java.awt.event.ActionEvent e
     private ComponentProducerWizardPanel myPanel;
     private boolean isSmallIconUpdated;
     private boolean isLargeIconUpdated;
+    private boolean isCPClassNameUpdated;
+    private boolean listenersAttached;
+
+    DocumentListener myDocListener;
+    DocumentListener myClassNameListener;
+    DocumentListener mySmallIconPathListener;
+    DocumentListener myLargeIconPathListener;
+    ActionListener myAddLibDependencyListener;
 }

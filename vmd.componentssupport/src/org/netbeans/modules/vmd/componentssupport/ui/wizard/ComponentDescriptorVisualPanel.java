@@ -154,8 +154,6 @@ final class ComponentDescriptorVisualPanel extends JPanel {
         myCanInstantiateChk.setSelected(getCanInstantiate());
         myCanBeSuperChk.setSelected(getCanBeSuper());
 
-        //isCDClassNameUpdated = false;
-        //isCDTypeIdUpdated = false;
         updateValuesOnPrefixUpdate();
         checkValidity();
     }
