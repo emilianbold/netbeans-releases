@@ -136,14 +136,12 @@ class Commandline {
             while ((line = ctError.readLine()) != null) {                                    
                 Subversion.LOG.info("cli: ERROR \"" + line + "\"");
                 command.errorText(line);
-            }                            
-
-            try {
-                cli.waitFor();
-            } catch (InterruptedException ex) {
-                // ignore
-            }
-            
+            }                                     
+            cli.waitFor();
+        } catch (InterruptedException ex) {
+            // ignore         
+        } catch (InterruptedIOException ex) {
+            // ignore         
         } finally {
             Subversion.LOG.fine("cli: process finnished");            
             command.commandFinished();
