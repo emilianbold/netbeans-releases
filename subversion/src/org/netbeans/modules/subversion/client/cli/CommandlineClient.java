@@ -124,10 +124,17 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
 
     public void checkSupportedVersion() throws SVNClientException {
         VersionCommand cmd = new VersionCommand();        
-        exec(cmd);
-        if(!cmd.isSupported()) {
-            throw new SVNClientException("Command line client adapter is not available " + "\n" + cmd.getOutput());               
-        }   
+        try {            
+            config(cmd);
+            cli.exec(cmd);
+            checkErrors(cmd);            
+            if(!cmd.isSupported()) {
+                throw new SVNClientException(ERR_CLI_NOT_AVALABLE + "\n" + cmd.getOutput());               
+            }                       
+        } catch (IOException ex) {
+            Subversion.LOG.log(Level.INFO, null, ex);
+            throw new SVNClientException(ERR_CLI_NOT_AVALABLE);
+        }        
     }
     
     public void addNotifyListener(ISVNNotifyListener l) {
