@@ -60,6 +60,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElem
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.diagrams.nodes.ContainerNode;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
+import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
 import org.netbeans.modules.uml.drawingarea.view.ResourceType;
@@ -85,6 +86,11 @@ public class ActivityPartitionWidget extends UMLNodeWidget
     {
         super(scene);
         this.scene = scene;
+        
+        // initialize context palette
+        DefaultContextPaletteModel paletteModel = new DefaultContextPaletteModel(this);
+        paletteModel.initialize("UML/context-palette/ActivityFinal");
+        addToLookup(paletteModel);
     }
 
     @Override
@@ -312,13 +318,13 @@ public class ActivityPartitionWidget extends UMLNodeWidget
                 Widget w = children.get(i);
                 if (w instanceof SubPartitionWidget)
                 {
-                    partitionPanel.setChildConstraint(w, i == (count - 1) ? 1 :0);
+                    partitionPanel.setChildConstraint(w, i == (count - 1) ? 1 : 0);
                     ((SubPartitionWidget) w).showPartitionDivider(i != (count - 1));
                 }
             }
         }
     }
-
+    
     @Override
     public void propertyChange(PropertyChangeEvent event)
     {

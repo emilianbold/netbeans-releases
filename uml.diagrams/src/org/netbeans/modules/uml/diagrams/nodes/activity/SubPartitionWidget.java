@@ -41,7 +41,6 @@
 package org.netbeans.modules.uml.diagrams.nodes.activity;
 
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -107,8 +106,7 @@ public class SubPartitionWidget extends Widget implements PropertyChangeListener
         initializeNode();
 
         WidgetAction.Chain selectTool = createActions(DesignerTools.SELECT);
-        selectTool.addAction(ActionFactory.createSelectAction(selectProvider,
-                                                              true));
+        selectTool.addAction(ActionFactory.createSelectAction(selectProvider, true));
         getActions().addAction(ActionFactory.createResizeAction(resizeStrategy,
                                                               new RegionResizeControlPointResolver(),
                                                               resizeProvider));
@@ -217,7 +215,14 @@ public class SubPartitionWidget extends Widget implements PropertyChangeListener
             if (propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString()) ||
                propName.equals(ModelElementChangedKind.ALIAS_MODIFIED.toString()) )
             {
-                nameWidget.setLabel(partitionElem.getNameWithAlias());
+                String newName = partitionElem.getNameWithAlias();
+                String oldName = nameWidget.getLabel();
+                if ( newName != null && !newName.equals(oldName) )
+                {
+                    nameWidget.setLabel(newName);
+                    parentWidget.revalidate();
+                    getScene().revalidate();
+                }
             }
         }
     }
@@ -323,18 +328,17 @@ public class SubPartitionWidget extends Widget implements PropertyChangeListener
         public void resizingFinished(Widget widget)
         {
             parentWidget.revalidate();
-            //parentWidget.getScene().validate();
+            widget.getScene().validate();
         }
     };
     
     private TwoStateHoverProvider hoverProvider = new TwoStateHoverProvider()
     {
-
         public void unsetHovering(Widget widget)
         {
             if (widget != null)
             {
-                widget.setBorder(BorderFactory.createEmptyBorder(3));
+                widget.setBorder(BorderFactory.createEmptyBorder(1));
             }
         }
 
@@ -342,7 +346,7 @@ public class SubPartitionWidget extends Widget implements PropertyChangeListener
         {
             if (widget != null)
             {
-                widget.setBorder(BorderFactory.createLineBorder(3, UMLWidget.BORDER_HILIGHTED_COLOR));
+                widget.setBorder(BorderFactory.createLineBorder(1, UMLWidget.BORDER_HILIGHTED_COLOR));
             }
 
         }
