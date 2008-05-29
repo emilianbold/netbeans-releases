@@ -830,14 +830,19 @@ public class HgCommand {
         List<String> filesShortPaths = new ArrayList<String>();
         
         if (list != null && !list.isEmpty()) {
-            if(files != null){
-                for(File f: files){
+            if (files != null) {
+                for (File f : files) {
                     String shortPath = f.getAbsolutePath();
-                    if(shortPath.startsWith(rootURL) && shortPath.length() > rootURL.length()) {
-                        filesShortPaths.add(shortPath.substring(rootURL.length()+1));
+                    if (shortPath.startsWith(rootURL) && shortPath.length() > rootURL.length()) {
+                        if (Utilities.isWindows()) {
+                            filesShortPaths.add(shortPath.substring(rootURL.length() + 1).replace(File.separatorChar, '/')); // NOI18N
+                        } else {
+                            filesShortPaths.add(shortPath.substring(rootURL.length() + 1)); // NOI18N
+                        }
                     }
                 }
             }
+            
             rev = author = desc = date = id = parents = fm = fa = fd = fc = null;
             boolean bEnd = false;
             for (String s : list) {
