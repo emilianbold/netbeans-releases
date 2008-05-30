@@ -39,26 +39,15 @@
 
 package org.netbeans.test.web;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.ConnectException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import javax.swing.SwingUtilities;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewWebProjectServerSettingsStepOperator;
-import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
@@ -78,14 +67,8 @@ public class WebSpringProjectValidation extends WebProjectValidationEE5 {
 
     static {
         PROJECT_NAME = "WebSpringProject";
-        PROJECT_FOLDER = PROJECT_LOCATION + File.separator + PROJECT_NAME;
+//        PROJECT_FOLDER = PROJECT_LOCATION + File.separator + PROJECT_NAME;
     }
-
-    // folder of sample project
-    protected TestURLDisplayer urlDisplayer;
-    private static final String BUILD_SUCCESSFUL = "BUILD SUCCESSFUL";
-    private ServerInstance server;
-    protected static int logIdx = 0;
 
     /** Need to be defined because of JUnit */
     public WebSpringProjectValidation(String name) {
@@ -96,66 +79,35 @@ public class WebSpringProjectValidation extends WebProjectValidationEE5 {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new WebSpringProjectValidation("testPreconditions"));
         suite.addTest(new WebSpringProjectValidation("testNewSpringWebProject"));
-//        suite.addTest(new WebVWJSFProjectValidation("testNewJSP"));
-//        suite.addTest(new WebVWJSFProjectValidation("testNewJSP2"));
-//        suite.addTest(new WebVWJSFProjectValidation("testJSPNavigator"));
-//        suite.addTest(new WebVWJSFProjectValidation("testNewServlet"));
-//        suite.addTest(new WebVWJSFProjectValidation("testNewServlet2"));
+        suite.addTest(new WebSpringProjectValidation("testRedeployProject"));
+//        suite.addTest(new WebSpringProjectValidation("testNewJSP"));
+//        suite.addTest(new WebSpringProjectValidation("testNewJSP2"));
+//        suite.addTest(new WebSpringProjectValidation("testJSPNavigator"));
+//        suite.addTest(new WebSpringProjectValidation("testNewServlet"));
+//        suite.addTest(new WebSpringProjectValidation("testNewServlet2"));
         suite.addTest(new WebSpringProjectValidation("testBuildProject"));
         suite.addTest(new WebSpringProjectValidation("testCompileAllJSP"));
-//        suite.addTest(new WebVWJSFProjectValidation("testCompileJSP"));
+//        suite.addTest(new WebSpringProjectValidation("testCompileJSP"));
         suite.addTest(new WebSpringProjectValidation("testCleanProject"));
-//        suite.addTest(new WebVWJSFProjectValidation("testRunProject"));
-//        suite.addTest(new WebVWJSFProjectValidation("testRunJSP"));
-//        suite.addTest(new WebVWJSFProjectValidation("testViewServlet"));
-//        suite.addTest(new WebVWJSFProjectValidation("testRunServlet"));
-//        suite.addTest(new WebVWJSFProjectValidation("testCreateTLD"));
-//        suite.addTest(new WebVWJSFProjectValidation("testCreateTagHandler"));
-//        suite.addTest(new WebVWJSFProjectValidation("testRunTag"));
-//        suite.addTest(new WebVWJSFProjectValidation("testNewHTML"));
-//        suite.addTest(new WebVWJSFProjectValidation("testHTMLNavigator"));
-//        suite.addTest(new WebVWJSFProjectValidation("testRunHTML"));
-//        suite.addTest(new WebVWJSFProjectValidation("testNewSegment"));
-//        suite.addTest(new WebVWJSFProjectValidation("testNewDocument"));
-//        suite.addTest(new WebVWJSFProjectValidation("testStopServer"));
-//        suite.addTest(new WebVWJSFProjectValidation("testStartServer"));
-//        suite.addTest(new WebVWJSFProjectValidation("testBrowserSettings"));
-//        suite.addTest(new WebVWJSFProjectValidation("testFinish"));
+//        suite.addTest(new WebSpringProjectValidation("testRunProject"));
+//        suite.addTest(new WebSpringProjectValidation("testRunJSP"));
+//        suite.addTest(new WebSpringProjectValidation("testViewServlet"));
+//        suite.addTest(new WebSpringProjectValidation("testRunServlet"));
+//        suite.addTest(new WebSpringProjectValidation("testCreateTLD"));
+//        suite.addTest(new WebSpringProjectValidation("testCreateTagHandler"));
+//        suite.addTest(new WebSpringProjectValidation("testRunTag"));
+//        suite.addTest(new WebSpringProjectValidation("testNewHTML"));
+//        suite.addTest(new WebSpringProjectValidation("testHTMLNavigator"));
+//        suite.addTest(new WebSpringProjectValidation("testRunHTML"));
+//        suite.addTest(new WebSpringProjectValidation("testNewSegment"));
+//        suite.addTest(new WebSpringProjectValidation("testNewDocument"));
+        suite.addTest(new WebSpringProjectValidation("testStopServer"));
+//        suite.addTest(new WebSpringProjectValidation("testStartServer"));
+//        suite.addTest(new WebSpringProjectValidation("testBrowserSettings"));
+//        suite.addTest(new WebSpringProjectValidation("testFinish"));
         return suite;
     }
-    @Override
-    public void setUp() {
-        System.out.println("########  " + getName() + "  #######");
-        JemmyProperties.setCurrentTimeout(
-                "ComponentOperator.WaitComponentTimeout", 180000);
-        JemmyProperties.setCurrentTimeout(
-                "FrameWaiter.WaitFrameTimeout", 180000);
-        JemmyProperties.setCurrentTimeout(
-                "DialogWaiter.WaitDialogTimeout", 180000);
-        server = ServerInstance.getDefault();
-    }
 
-    @Override
-    public void tearDown() {
-        logAndCloseOutputs();
-    }
-
-    /** checks if the Server ports are not used */
-    public void testPreconditions() throws Exception {
-        URLConnection connection = server.getServerURL().openConnection();
-        try {
-            connection.connect();
-            fail("Port: " + server.getServerURL() + " is used by different server.");
-        } catch (ConnectException e) {
-        }
-        URL url = new URL("http://localhost:8025");
-        connection = url.openConnection();
-        try {
-            connection.connect();
-            fail("Connection to http://localhost:8025 established, but tomcat should not be running.");
-        } catch (ConnectException e) {
-        }
-    }
     /** Test creation of web project.
      * - open New Project wizard from main menu (File|New Project)
      * - select Web|Web Application
@@ -178,7 +130,8 @@ public class WebSpringProjectValidation extends WebProjectValidationEE5 {
         nameStep.txtProjectName().setText("");
         nameStep.txtProjectName().typeText(PROJECT_NAME);
         nameStep.txtProjectLocation().setText("");
-        nameStep.txtProjectLocation().typeText(getProjectFolder(PROJECT_NAME));
+        String sFolder = getProjectFolder(PROJECT_NAME);
+        nameStep.txtProjectLocation().typeText(sFolder);
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
         serverStep.selectServer("GlassFish V2");
@@ -229,134 +182,6 @@ public class WebSpringProjectValidation extends WebProjectValidationEE5 {
         ref(Util.dumpProjectView(PROJECT_NAME));
         compareReferenceFiles();
 //        ProjectSupport.closeProject(PROJECT_NAME);
-    }
-
-    //********************************************************
-    protected void sleep(int milis) {
-        try {
-            Thread.sleep(milis);
-        } catch (InterruptedException ex) {
-            throw new JemmyException("Interrupted", ex);
-        }
-    }
-
-    private void logAndCloseOutputs() {
-        OutputTabOperator outputTab;
-        long timeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        try {
-            do {
-                try {
-                    outputTab = new OutputTabOperator("");
-                } catch (TimeoutExpiredException e) {
-                    // probably no more tabs so ignore it and continue
-                    break;
-                }
-                String logName = "Output" + logIdx++ + ".log";
-                log(logName, outputTab.getName() + "\n-------------\n\n" + outputTab.getText());
-                outputTab.close();
-            } while (true);
-        } finally {
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", timeout);
-        }
-    }
-
-    private void waitBuildSuccessful() {
-        OutputTabOperator console = new OutputTabOperator(PROJECT_NAME);
-        console.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 180000);
-        console.waitText(BUILD_SUCCESSFUL);
-    }
-
-    private void initDisplayer() {
-        if (urlDisplayer == null) {
-            urlDisplayer = TestURLDisplayer.getInstance();
-        }
-        urlDisplayer.invalidateURL();
-    }
-
-    private void assertDisplayerContent(String substr) {
-        try {
-            urlDisplayer.waitURL();
-        } catch (InterruptedException ex) {
-            throw new JemmyException("Waiting interrupted.", ex);
-        }
-        String page = urlDisplayer.readURL();
-        boolean contains = page.indexOf(substr) > -1;
-        if (!contains) {
-            log("DUMP OF: " + urlDisplayer.getURL() + "\n");
-            log(page);
-        }
-        assertTrue("The '" + urlDisplayer.getURL() + "' page does not contain '" + substr + "'", contains);
-    }
-
-    private void assertContains(String text, String value) {
-        assertTrue("Assertation failed, cannot find:\n" + value + "\nin the following text:\n" + text, text.contains(value));
-    }
-
-    public String getProjectFolder(String project) {
-        return PROJECT_LOCATION + File.separator + project;
-    }
-
-    protected void installJemmyQueue() {
-        try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-
-                public void run() {
-                    QueueTool.installQueue();
-                }
-            });
-        } catch (Exception ex) {
-            throw new JemmyException("Cannot install Jemmy Queue.", ex);
-        }
-    }
-
-    private static class ServerInstance {
-
-        private String host;
-        private int serverPort;
-        private String nodeName;
-        private String userName;
-        private String password;
-        private URL serverURL;
-        private static ServerInstance instance;
-
-        private ServerInstance() {
-        }
-
-        public static ServerInstance getDefault() {
-            if (instance == null) {
-                instance = new ServerInstance();
-                instance.host = "localhost";
-                instance.serverPort = 8080;
-                instance.nodeName = "GlassFish V2";
-                instance.userName = "admin";
-                instance.password = "adminadmin";
-            }
-            return instance;
-        }
-
-        public URL getServerURL() {
-            if (serverURL == null) {
-                try {
-                    serverURL = new URL("http", host, serverPort, "");
-                } catch (MalformedURLException mue) {
-                    throw new JemmyException("Cannot create server URL.", mue);
-                }
-            }
-            return serverURL;
-        }
-
-        public J2eeServerNode getServerNode() {
-            return J2eeServerNode.invoke(nodeName);
-        }
-
-        public void stop() {
-            getServerNode().stop();
-        }
-
-        public void start() {
-            getServerNode().start();
-        }
     }
 
 }
