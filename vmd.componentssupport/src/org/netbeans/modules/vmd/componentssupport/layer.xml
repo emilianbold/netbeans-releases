@@ -9,26 +9,26 @@
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/vmd/componentssupport/ui/resources/CustomComponentIcon.gif"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.componentssupport.Bundle"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.vmd.componentssupport.ui.wizard.CustomComponentWizardIterator.createIterator"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/vmd/componentssupport/ui/resources/CustomComponentDescription.html"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/vmd/componentssupport/ui/resources/CustomComponentProject.html"/>
                     <attr name="template" boolvalue="true"/>
                 </file>
             </folder>
         </folder>
         <!--
-        <folder name="MIDP">
+        <folder name="J2MEComponents">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.componentssupport.Bundle"/>
+            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/vmd/componentssupport/ui/resources/j2meComponentsCategory.html"/>
+            <attr name="position" intvalue="950"/>
+
             <file name="CustomComponent">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.wizard.Bundle"/>
-                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/descriptions/MIDP/MIDlet_java.html"/>
-                <attr name="position" intvalue="960"/>
-                <attr boolvalue="true" name="template"/>
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.vmd.componentssupport.ui.wizard.NewComponentDescriptor.instanceForProject"/>
-                <attr boolvalue="true" name="isMIDletTemplate"/>
-                <attr name="MIDP" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="MIDP"/>
-                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/class.gif"/> 
-            </file>
-        </folder>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.componentssupport.Bundle"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.vmd.componentssupport.ui.wizard.NewComponentDescriptor"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/vmd/componentssupport/ui/resources/j2meCustomComponent.html"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/vmd/componentssupport/ui/resources/CustomComponentIcon.gif"/>
+                <attr name="templateCategory" stringvalue="nbm-specific"/>
+            </file>           
+        </folder> 
         -->
         <folder name="MobilityCustomComponent-files">
             <attr name="position" intvalue="0"/>

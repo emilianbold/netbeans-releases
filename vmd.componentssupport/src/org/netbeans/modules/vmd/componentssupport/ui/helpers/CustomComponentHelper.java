@@ -56,7 +56,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.vmd.componentssupport.ui.wizard.CustomComponentWizardIterator;
 import org.netbeans.modules.vmd.componentssupport.ui.wizard.NewComponentDescriptor;
@@ -72,7 +71,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 /**
- *
+ * Abstract helper for custom component filed preview and instantiation.
+ * 
  * @author avk
  */
 public abstract class CustomComponentHelper extends BaseHelper {
@@ -127,6 +127,15 @@ public abstract class CustomComponentHelper extends BaseHelper {
                 producerName + JAVA_EXTENSION; // NOI18N
     }
     
+    /**
+     * CustomComponentHelper implementation for 
+     * "New Custom Component" wizard started from 
+     * CustomComponentWizardIterator panels.
+     * <p>
+     * It instantiates data into main WizardDescriptor. 
+     * And allows to preview created and modified files that will be actually 
+     * updated by main wizard. Doesn't perform any real instantiation.
+     */
     public static class InstantiationToWizardHelper extends CustomComponentHelper{
 
         public InstantiationToWizardHelper(WizardDescriptor mainWizard, 
@@ -212,6 +221,11 @@ public abstract class CustomComponentHelper extends BaseHelper {
         private WizardDescriptor myMainWizard;
     }
 
+    /**
+     * CustomComponentHelper implementation for Independent wizard 
+     * started from existing project. instantiate performs real files 
+     * updating and creation in existing project.
+     */
     public static class RealInstantiationHelper extends CustomComponentHelper{
 
         private static final String INSTANCE_NAME_EXTENSION  
@@ -233,15 +247,34 @@ public abstract class CustomComponentHelper extends BaseHelper {
         private static final String VALIDITY_TOKEN_VALUE_CUSTOM = "custom";//NOI18N
         
         /**
-         * this CustomComponentHelper implementation helps to preview expected changes 
-         * and instantiate custom component as real files in existing project.
+         * Constructor to be used in main wizard 
+         * (CustomComponentWizardIterator.instantiate() method)
+         * to instantiate custom component basing on data stored in component Map.
          * @param project where to store custom component
-         * @param Map with custom component data. Map returned by
-         * wizardDescriptor.getProperties() is expected.
+         * @param component Map with custom component data. Map returned by
+         * {@link org.openide.WizardDescriptor.getProperties } is expected. 
+         * {@link org.openide.WizardDescriptor.getProperties } returns Map with 
+         * already stored values only - So be careful to use it after 
+         * custom component wizard is finished.
          */
         public RealInstantiationHelper(Project project, Map<String, Object> component){
             myProject = project;
             myComponent = component;
+            myComponentWizard = null;
+        }
+
+        /**
+         * Constructor to be used in independent custom component wizard.
+         * The only difference from {@link RealInstantiationHelper(Project, Map)} is 
+         * that this constructor can be used to create helper when wizard 
+         * is not finished yet.
+         * @param project where to store custom component
+         * @param wizard New Custom Componet WizardDescriptor.
+         */
+        public RealInstantiationHelper(Project project, WizardDescriptor wizard){
+            myProject = project;
+            myComponent = null;
+            myComponentWizard = wizard;
         }
 
         @Override
@@ -253,6 +286,8 @@ public abstract class CustomComponentHelper extends BaseHelper {
         @Override
         public Set<FileObject> instantiate() throws IOException {
             Set<FileObject> result = new LinkedHashSet<FileObject>();
+
+            initComponentData();
 
             FileObject cdFO = configureComponentDescriptor();
             result.add(cdFO);
@@ -352,6 +387,14 @@ public abstract class CustomComponentHelper extends BaseHelper {
             String codeNameBase = dotCodeNameBase.replace('.', '-');            // NOI18N
             return codeNameBase + "-" + PRODUCERS + "-" +
                     name + INSTANCE_NAME_EXTENSION;                             // NOI18N
+        }
+    
+        private void initComponentData(){
+            assert myComponent != null || myComponentWizard != null;
+            
+            if (myComponent == null){
+                myComponent = myComponentWizard.getProperties();
+            }
         }
         
         private FileObject configureComponentDescriptor()
@@ -630,9 +673,50 @@ public abstract class CustomComponentHelper extends BaseHelper {
             }
             return myManifest;
         }
+
+        
+        /*
+        private void configureLibraries(){
+            addLibraryToProject(myProject, libraryName);
+        }
+        
+        private static void addLibraryToProject(final Project project, final String... libraryNames) {
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                public void run() {
+                    if (project == null) {
+                        return;
+                    }
+                    Library[] libraries = getLibrariesByNames(libraryNames);
+                    try {
+                        FileObject projectDir = project.getProjectDirectory();
+                        ProjectClassPathModifier.addLibraries(libraries,
+                                projectDir, ClassPath.COMPILE);
+                    } catch (IOException e) {
+                        ErrorManager.getDefault().notify(e);
+                    }
+                };
+            });
+        }
+
+        private static Library[] getLibrariesByNames(final String... libraryNames) {
+            List<Library> libraries = new ArrayList<Library>();
+            final LibraryManager libraryManager = LibraryManager.getDefault();
+            for (String libraryName : libraryNames) {
+                final Library library = libraryManager.getLibrary(libraryName);
+                if (library != null) {
+                    libraries.add(library);
+                }
+            }
+            return libraries.toArray(new Library[]{});
+        }
+        */
+        
         
         private Project myProject;
         private Map<String, Object> myComponent;
+        private WizardDescriptor myComponentWizard;
+        
         private String myBundlePath;
         private String myLayerPath;
         private String myCodeNameBase;

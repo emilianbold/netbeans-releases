@@ -114,16 +114,12 @@ public final class NewComponentDescriptor implements WizardDescriptor.Instantiat
     // properties - component presenters step
     // properties - final step
 
-    private NewComponentDescriptor() {
+    public NewComponentDescriptor() {
     }
     
     NewComponentDescriptor(WizardDescriptor mainWizard){
         myMainWizard = mainWizard;
         assert myMainWizard != null;
-    }
-    
-    public static NewComponentDescriptor instanceForProject(){
-        return new NewComponentDescriptor();
     }
     
     /* (non-Javadoc)
@@ -158,26 +154,33 @@ public final class NewComponentDescriptor implements WizardDescriptor.Instantiat
         wizardDescriptor.setTitle(
                 NbBundle.getMessage(NewLibraryDescriptor.class, WIZARD_TITLE));
         
+        initWizardData();
         
+    }
+
+    private void initWizardData(){
         
         if (myMainWizard != null){
-            // this is child wizard
+            // child wizard started from CustomComponentWizardIterator panels
             myCustCompHelper = new CustomComponentHelper.
                     InstantiationToWizardHelper(myMainWizard, myWizard);
-            wizardDescriptor.putProperty( EXISTING_COMPONENTS, 
-                myMainWizard.getProperty(
-                        CustomComponentWizardIterator.CUSTOM_COMPONENTS));
+            Object components = myMainWizard.getProperty(
+                        CustomComponentWizardIterator.CUSTOM_COMPONENTS);
+            
+            myWizard.putProperty( EXISTING_COMPONENTS, components);
         } else {
-            Project project = Templates.getProject(wizardDescriptor);
+            // independent wizard started from existing project
+            Project project = Templates.getProject(myWizard);
             assert project != null;
+            
             myCustCompHelper = new CustomComponentHelper.
-                    RealInstantiationHelper(project, wizardDescriptor.getProperties());
+                    RealInstantiationHelper(project, myWizard);
         }
         assert myCustCompHelper != null;
         
-        wizardDescriptor.putProperty( HELPER, myCustCompHelper );
+        myWizard.putProperty( HELPER, myCustCompHelper );
     }
-
+    
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.InstantiatingIterator#instantiate()
      */
