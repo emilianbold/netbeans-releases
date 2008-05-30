@@ -67,7 +67,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
     static final LocalServer DEFAULT_LOCAL_SERVER;
 
-    static final String DEFAULT_SOURCE_FOLDER = "web"; // NOI18N
+    static final String DEFAULT_SOURCES_FOLDER = "web"; // NOI18N
 
     static final String PROJECT_NAME = "projectName"; // NOI18N
     static final String PROJECT_DIR = "projectDir"; // NOI18N
@@ -86,7 +86,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
     static {
         String msg = NbBundle.getMessage(ConfigureProjectPanel.class, "LBL_UseProjectFolder",
-                File.separator, ConfigureProjectPanel.DEFAULT_SOURCE_FOLDER);
+                File.separator, ConfigureProjectPanel.DEFAULT_SOURCES_FOLDER);
         DEFAULT_LOCAL_SERVER = new LocalServer(null, null, msg, false);
     }
 
@@ -388,7 +388,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         String sourcesSrcRoot = sources.getSrcRoot();
         if (isProjectFolder(sources)) {
             File project = new File(configureProjectPanelVisual.getProjectLocation(), configureProjectPanelVisual.getProjectName());
-            File src = FileUtil.normalizeFile(new File(project, DEFAULT_SOURCE_FOLDER));
+            File src = FileUtil.normalizeFile(new File(project, DEFAULT_SOURCES_FOLDER));
             sourcesSrcRoot = src.getAbsolutePath();
         }
         LocalServer copyTarget = (LocalServer) descriptor.getProperty(ConfigureServerPanel.COPY_TARGET);

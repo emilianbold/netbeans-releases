@@ -222,7 +222,7 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel<WizardDescri
             assert projectLocation != null;
             assert projectName != null;
             File project = new File(projectLocation, projectName);
-            File src = FileUtil.normalizeFile(new File(project, ConfigureProjectPanel.DEFAULT_SOURCE_FOLDER));
+            File src = FileUtil.normalizeFile(new File(project, ConfigureProjectPanel.DEFAULT_SOURCES_FOLDER));
             sourcesSrcRoot = src.getAbsolutePath();
         }
         File normalized = FileUtil.normalizeFile(new File(configureServerPanelVisual.getLocalServer().getSrcRoot()));
@@ -284,6 +284,6 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel<WizardDescri
 //        }
 //    }
 //    private String getDefaultUrl(String projectName) {
-//        return "http://localhost/" + projectName + "/" + DEFAULT_SOURCE_FOLDER + "/"; // NOI18N
+//        return "http://localhost/" + projectName + "/" + DEFAULT_SOURCES_FOLDER + "/"; // NOI18N
 //    }
 }

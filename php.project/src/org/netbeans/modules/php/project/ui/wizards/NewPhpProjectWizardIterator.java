@@ -232,7 +232,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         LocalServer localServer = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.SOURCES_FOLDER);
         if (ConfigureProjectPanel.isProjectFolder(localServer)) {
             File projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
-            return new File(projectDirectory, ConfigureProjectPanel.DEFAULT_SOURCE_FOLDER);
+            return new File(projectDirectory, ConfigureProjectPanel.DEFAULT_SOURCES_FOLDER);
         }
         return FileUtil.normalizeFile(new File(localServer.getSrcRoot()));
     }
