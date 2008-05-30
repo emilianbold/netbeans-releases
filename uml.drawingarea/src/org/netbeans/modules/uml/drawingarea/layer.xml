@@ -117,10 +117,6 @@ made subject to such option by the copyright holder.
                 <attr name="template" boolvalue="true"/>
             </file>
             -->
-            <file name="UMLDiagramTemplate.diagram" url="UMLDiagramTemplate.diagram">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.drawingarea.dataobject.Bundle"/>
-                <attr name="template" boolvalue="true"/>
-            </file>
         </folder>
     </folder>
     <folder name="Editors"> 
