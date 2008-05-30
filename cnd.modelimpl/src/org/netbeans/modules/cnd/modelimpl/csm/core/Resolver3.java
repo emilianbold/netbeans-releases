@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.TypeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
@@ -229,9 +228,6 @@ public class Resolver3 implements Resolver {
                 gatherMaps(incFile);
                 offset = oldOffset;
             }
-        }
-        if (file.getAbsolutePath().toString().indexOf("stl_list.h")>0){
-            System.out.println(file.getAbsolutePath());
         }
         gatherMaps(file.getDeclarations());
     }
@@ -427,7 +423,7 @@ public class Resolver3 implements Resolver {
                 }
                 
                 if( result == null ) {
-                    CsmDeclaration decl = (CsmDeclaration) usingDeclarations.get(CharSequenceKey.create(nameTokens[0]));
+                    CsmDeclaration decl = usingDeclarations.get(CharSequenceKey.create(nameTokens[0]));
                     if( decl != null ) {
                         result = decl;
                     }
