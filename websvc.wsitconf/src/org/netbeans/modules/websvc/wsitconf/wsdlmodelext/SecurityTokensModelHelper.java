@@ -69,6 +69,7 @@ import org.netbeans.modules.websvc.wsitmodelext.trust.TrustQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.EncryptionToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.EndorsingEncryptedSupportingTokens;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.EndorsingSupportingTokens;
+import org.netbeans.modules.websvc.wsitmodelext.security.tokens.HashPassword;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.HttpsToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.InitiatorToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.IssuedToken;
@@ -218,6 +219,15 @@ public class SecurityTokensModelHelper {
         if (wc != null) return wc;
         wc = getTokenElement(tokenKind, IssuedToken.class);
         return wc;
+    }
+    
+    public static boolean isHashPassword(WSDLComponent tokenType) {
+        if (tokenType instanceof UsernameToken) {
+            if (SecurityPolicyModelHelper.isAttributeEnabled((ExtensibilityElement) tokenType, HashPassword.class)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     public static String getTokenProfileVersion(WSDLComponent tokenType) {
@@ -444,6 +454,44 @@ public class SecurityTokensModelHelper {
         }
    }
 
+    public void setHashPassword(WSDLComponent tokenType, boolean enable) {
+        
+        System.out.println("setHAshPassword" + tokenType + ", " + enable);
+        
+        WSDLModel model = tokenType.getModel();
+        WSDLComponentFactory wcf = model.getFactory();
+        boolean isTransaction = model.isIntransaction();
+        if (!isTransaction) {
+            model.startTransaction();
+        }
+        try {            
+            PolicyModelHelper pmh = PolicyModelHelper.getInstance(configVersion);
+            Policy p = pmh.createElement(tokenType, PolicyQName.POLICY.getQName(configVersion), Policy.class, false);
+            List<ExtensibilityElement> tokenAssertions = p.getExtensibilityElements();
+            
+            if (tokenType instanceof UsernameToken) {
+                if ((tokenAssertions != null) && (!tokenAssertions.isEmpty())) {
+                    for (ExtensibilityElement e : tokenAssertions) {
+                        if (e instanceof HashPassword) {                     
+                             p.removeExtensibilityElement(e);
+                        }
+                    }
+                }
+                
+                if (enable) {
+                    WSDLComponent wc = wcf.create(p, SecurityPolicyQName.HASHPASSWORD.getQName(configVersion));
+                    p.addExtensibilityElement((ExtensibilityElement) wc);
+                }
+            }
+        } catch (Exception exc) {
+            exc.printStackTrace();
+        } finally {
+            if (!isTransaction) {
+                model.endTransaction();
+            }
+        }
+    }
+    
     public void setTokenProfileVersion(WSDLComponent tokenType, String profileVersion) {
         WSDLModel model = tokenType.getModel();
         WSDLComponentFactory wcf = model.getFactory();
@@ -453,7 +501,7 @@ public class SecurityTokensModelHelper {
         }
         try {
             PolicyModelHelper pmh = PolicyModelHelper.getInstance(configVersion);
-            Policy p = PolicyModelHelper.getInstance(configVersion).createElement(tokenType, PolicyQName.POLICY.getQName(configVersion), Policy.class, false);
+            Policy p = pmh.createElement(tokenType, PolicyQName.POLICY.getQName(configVersion), Policy.class, false);
             WSDLComponent profileVersionAssertion = null;
             List<ExtensibilityElement> tokenAssertions = p.getExtensibilityElements();
             
@@ -583,24 +631,11 @@ public class SecurityTokensModelHelper {
             model.startTransaction();
         }
         try {
-            rem = PolicyModelHelper.getTopLevelElement(p, SupportingTokens.class,false);
-            if (rem != null) {
-                rem.getParent().removeExtensibilityElement(rem);
-            }
-
-            rem = PolicyModelHelper.getTopLevelElement(p, SignedSupportingTokens.class,false);
-            if (rem != null) {
-                rem.getParent().removeExtensibilityElement(rem);
-            }
-
-            rem = PolicyModelHelper.getTopLevelElement(p, EndorsingSupportingTokens.class,false);
-            if (rem != null) {
-                rem.getParent().removeExtensibilityElement(rem);
-            }
-
-            rem = PolicyModelHelper.getTopLevelElement(p, SignedEndorsingSupportingTokens.class,false);
-            if (rem != null) {
-                rem.getParent().removeExtensibilityElement(rem);
+            for (Class cl : SUPPORTING_TOKENS) {
+                rem = PolicyModelHelper.getTopLevelElement(p, cl,false);
+                if (rem != null) {
+                    rem.getParent().removeExtensibilityElement(rem);
+                }
             }
         } finally {
             if (!isTransaction) {
@@ -622,7 +657,7 @@ public class SecurityTokensModelHelper {
             model.startTransaction();
         }
         try {
-            for (int i=0; i < 4; i++) {
+            for (int i=0; i < 8; i++) {
                 tokenKind = getSupportingToken(c, i);
                 if (tokenKind != null) {
                     if (ComboConstants.NONE.equals(authToken) || (authToken == null)) { 
@@ -659,6 +694,18 @@ public class SecurityTokensModelHelper {
             }
             if (SIGNED_ENDORSING == supportingType) {
                 tokenKind = wcf.create(topLevel, SecurityPolicyQName.SIGNEDENDORSINGSUPPORTINGTOKENS.getQName(configVersion));
+            }
+            if (ENCRYPTED == supportingType) {
+                tokenKind = wcf.create(topLevel, SecurityPolicyQName.ENCRYPTEDSUPPORTINGTOKENS.getQName(configVersion));
+            }
+            if (SIGNED_ENCRYPTED == supportingType) {
+                tokenKind = wcf.create(topLevel, SecurityPolicyQName.SIGNEDENCRYPTEDSUPPORTINGTOKENS.getQName(configVersion));
+            }
+            if (SIGNED_ENDORSING_ENCRYPTED == supportingType) {
+                tokenKind = wcf.create(topLevel, SecurityPolicyQName.SIGNEDENDORSINGENCRYPTEDSUPPORTINGTOKENS.getQName(configVersion));
+            }
+            if (ENDORSING_ENCRYPTED == supportingType) {
+                tokenKind = wcf.create(topLevel, SecurityPolicyQName.ENDORSINGENCRYPTEDSUPPORTINGTOKENS.getQName(configVersion));
             }
             topLevel.addExtensibilityElement((ExtensibilityElement) tokenKind);
 

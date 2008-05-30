@@ -264,6 +264,16 @@ public class ProfilesModelHelper {
                             } else {
                                 tokenKind = SecurityTokensModelHelper.getSupportingToken(c, SecurityTokensModelHelper.SIGNED_SUPPORTING);
                             }
+                            WSDLComponent encTokenKind = null;
+                            if (secConv) {
+                                Policy pp = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class, false);
+                                encTokenKind = SecurityTokensModelHelper.getSupportingToken(pp, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
+                            } else {
+                                encTokenKind = SecurityTokensModelHelper.getSupportingToken(c, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
+                            }
+                            if (encTokenKind != null) {
+                                return ComboConstants.PROF_USERNAME;
+                            }
                             tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
                             if (ComboConstants.ISSUED.equals(tokenType)) { // profile 13
                                 return ComboConstants.PROF_STSISSUEDSUPPORTING;
@@ -573,7 +583,9 @@ public class ProfilesModelHelper {
                 spmh.enableMustSupportRefThumbprint(wss, true);
                 spmh.enableMustSupportRefEncryptedKey(wss, true);
                 SecurityTokensModelHelper.removeSupportingTokens(c);
-                stmh.setSupportingTokens(c, ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                int suppTokenType = (ConfigVersion.CONFIG_1_0.equals(configVersion)) ? 
+                    SecurityTokensModelHelper.SIGNED_SUPPORTING : SecurityTokensModelHelper.SIGNED_ENCRYPTED;                
+                stmh.setSupportingTokens(c, ComboConstants.USERNAME, suppTokenType);
             } else if (ComboConstants.PROF_MUTUALCERT.equals(profile)) {         // #5
                 WSDLComponent bt = spmh.setSecurityBindingType(c, ComboConstants.ASYMMETRIC);
                 WSDLComponent tokenType = stmh.setTokenType(bt, ComboConstants.INITIATOR, ComboConstants.X509);
