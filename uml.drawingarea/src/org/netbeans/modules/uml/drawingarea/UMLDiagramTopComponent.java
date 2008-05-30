@@ -1055,6 +1055,7 @@ public class UMLDiagramTopComponent extends TopComponent
 
         if (element != null)
         {
+            // temp solution to fire events when constraint is changed
             if (element instanceof IConstraint)
             {
                 ArrayList<IPresentationElement> pes = new ArrayList<IPresentationElement>();
