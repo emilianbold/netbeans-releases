@@ -57,7 +57,6 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
-import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.cookies.EditorCookie;
@@ -69,34 +68,15 @@ import org.openide.util.Parameters;
 
 
 /**
- * Source represents some part of text. Source can be created from file or document
- * opened in editor. And source can represent some block of code written 
- * in different language embedded inside some top level language too. It can contain
- * some generated parts of code that is not contained in the original 
- * file. Source is read only and immutable. It means that source created 
- * from document opened in editor contains some copy of original text. 
- * You do not need to call source methods under 
- * any locks, but on other hand source may not be up to date.
- *
- * Following example shows how to create Source for block of code 
- * embedded in other source:
- * {@link org.netbeans.modules.parsing.spi.EmbeddingProvider}:
- * 
- * <pre> 
- *           int start = findStartJavaOffset (source);
- *           int length = getJavaBlockLength (source, start);
- *           return source.create (Arrays.asList (new Source[] {
- *               source.create ("some prefix code", "text/x-java"),
- *               source.create (start, length, "text/x-java"),
- *               source.create ("some postfix code", "text/x-java")
- *           })));
- * </pre>
+ * Source represents one file or document. There is always at most one Source
+ * for one FileObject.
  * 
  * @author Jan Jancura
  */
 public final class Source {
     
-    private static Map<FileObject,Reference<Source>> instances = new WeakHashMap<FileObject,Reference<Source>>();
+    private static Map<FileObject,Reference<Source>> 
+                            instances = new WeakHashMap<FileObject,Reference<Source>>();
     
     private String          mimeType;
     private Document        document;
@@ -114,10 +94,11 @@ public final class Source {
     }
     
     /**
-     * Creates source for given file.
+     * Creates Source for given file.
      * 
      * @param fileObject    A file object.
-     * @return source for given file or null when the given file doesn't exist.
+     * @return              Source for given file or null when the given 
+     *                      file doesn't exist.
      */
     public static Source create (
         FileObject          fileObject
@@ -170,9 +151,11 @@ public final class Source {
     }
     
     /**
-     * Returns document this source has originally been created from or null.
+     * Returns <code>Document</code> this source has been created from or 
+     * <code>null</code>.
      * 
-     * @return              a document.
+     * @return              <code>Document</code> this source has been created 
+     *                      from or <code>null</code>
      */
     public Document getDocument () {
         if (document != null)
@@ -187,14 +170,21 @@ public final class Source {
     }
     
     /**
-     * Returns file this source has originally been created from or null.
+     * Returns <code>FileObject</code> this source has been created from 
+     * or <code>null</code>.
      * 
-     * @return              a file.
+     * @return              <code>FileObject</code> this source has been 
+     *                      created from or <code>null</code>
      */
     public FileObject getFileObject () {
         return fileObject;
     }
 
+    /**
+     * Creates snapshot of current content of this source.
+     * 
+     * @return              snapshot of current content of this source
+     */
     public Snapshot createSnapshot () {
         Document document = getDocument ();
         if (document != null) {

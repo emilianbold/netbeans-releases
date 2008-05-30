@@ -51,15 +51,15 @@ import org.openide.util.RequestProcessor.Task;
 
 
 /**
- * TaskScheduler defines when tasks should be started. Some {@link Task}s (like syntax
- * coloring) are current document sensitive only. It means that such {@link Task} 
+ * TaskScheduler defines when tasks should be started. Some {@link SchedulerTask}s (like syntax
+ * coloring) are current document sensitive only. It means that such {@link SchedulerTask} 
  * is automatically scheduled when currently edited document is changed.
  * Other tasks may listen on different events. Implementation of TaskScheduler 
- * just listens on various IDE events, and call {@link #scheduleTasks()} method
+ * just listens on various IDE events, and call one of scheduleTasks() methods
  * when something interesting happens. Implementation of Parsing API just finds
- * all {@link Task}s registerred for this TaskScheduler and reschedules them.
+ * all {@link SchedulerTask}s registerred for this TaskScheduler and reschedules them.
  * Implementation of this class should be registerred in your manifest.xml file
- * in "Editors" folder.
+ * in "Editors/your mime type" folder.
  * 
  * @author Jan Jancura
  */
@@ -108,7 +108,7 @@ public abstract class TaskScheduler {
 
     /**
      * Reschedule all tasks registered for <code>this</code> TaskScheduler (see
-     * {@link ParserResultTask#getScheduler()}.
+     * {@link ParserResultTask#getSchedulerClass()}.
      */
     protected final void scheduleTasks (
         SchedulerEvent      event
@@ -122,7 +122,7 @@ public abstract class TaskScheduler {
     
     /**
      * Reschedule all tasks registered for <code>this</code> TaskScheduler (see
-     * {@link ParserResultTask#getScheduler()}, and sets new {@link Source}s for them.
+     * {@link ParserResultTask#getSchedulerClass()}, and sets new {@link Source}s for them.
      * 
      * @param sources       A collection of {@link Source}s.
      */

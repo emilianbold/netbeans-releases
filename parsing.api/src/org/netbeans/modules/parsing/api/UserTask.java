@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.parsing.api;
 
-import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 
 
@@ -49,16 +48,16 @@ import org.netbeans.modules.parsing.spi.Parser;
  *
  * @author Jan Jancura
  */
-public abstract class UserTask<T extends Parser.Result> extends Task {
+public abstract class UserTask extends Task {
 
     /**
      * Called when parser is finished.
      * 
      * @param result        A result of parsing.
-     * @param source        A source that was parsed.
-     * @throws Exception rethrown by the infrastructure as a {@link ParseException}.
+     * @param snapshot      A snapshot that was parsed.
+     * @throws Exception rethrown by the infrastructure as a {@link org.netbeans.modules.parsing.spi.ParseException}.
      */
-    public abstract void run (T result, Source source) throws Exception;
+    public abstract void run (Parser.Result result, Snapshot snapshot) throws Exception;
 }
 
 

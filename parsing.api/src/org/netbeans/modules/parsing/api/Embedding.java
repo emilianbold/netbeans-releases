@@ -44,9 +44,19 @@ import java.util.List;
 
 
 /**
- * Represents one block of code embedded in some other source. Performance is the only
- * purpose of this class. You can obtain some basic inforation about embedded
- * {@link Source} before it is really created.
+ * Represents one block of code embedded in some other source. Performance 
+ * is the only purpose of this class. You can obtain some basic inforation 
+ * about embedded block of code before it is really created.
+ *
+ * Following example shows how to create compound Embedding from some snapshot:
+ * 
+ * <pre> 
+ *         Embedding compoundEmbedding = Embedding.create (Arrays.asList (new Source[] {
+ *             snapshot.create ("some prefix code", "text/x-java"),
+ *             snapshot.create (10, 100, "text/x-java"),
+ *             snapshot.create ("some postfix code", "text/x-java")
+ *         })));
+ * </pre>
  * 
  * @author Jan Jancura
  */
@@ -54,9 +64,9 @@ public final class Embedding {
     
     /**
      * Creates {@link Embedding} from a list of embeddings. All embeddings 
-     * must have the same DataObject and Document like this document. 
-     * All embeddings must have the same mime type, but this mime type have 
-     * to be different than current embedding mime types.
+     * have to be created from one Smapshot. All embeddings must have the same 
+     * mime type, but this mime type have to be different than current 
+     * embedding mime types.
      * 
      * @param embeddings    A list of some embeddings created from one source.
      * @return              A new embedding compound from given pieces.
@@ -129,11 +139,12 @@ public final class Embedding {
     }
     
     /**
-     * Returns <code>true</code> if embeddid source contains given offset.
+     * Returns <code>true</code> if this embedding contains given offset related
+     * to top level source.
      * 
      * @param originalOffset
      *                      A offset in original source.
-     * @return              <code>true</code> if embeddid source contains given offset.
+     * @return              <code>true</code> if this embedding contains given offset
      */
     public final boolean containsOriginalOffset (int originalOffset) {
 	return snapshot.getEmbeddedOffset (originalOffset) >= 0;

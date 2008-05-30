@@ -47,11 +47,69 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-overall">
   <p>
-    Parsing API implements basic contract between parsers registerred 
+    Parsing API defines contract between parsers registerred 
     for diferent languages and the rest of IDE. It is language neutral 
-    and it supports language embeddings.
+    and it supports language embeddings. 
+  </p>
+  <p>
+      The basic Parsing API constructs are Source, Snapshot and Embedding. 
+      <a href="org/netbeans/modules/parsing/api/Source.html">Source</a>
+      identificates some concrete file or document. There is always at most 
+      one Source for one FileObject.
+      <a href="org/netbeans/modules/parsing/api/Snapshot.html">Snapshot</a>
+      represents some concrete content of Source, and it is immutable. And
+      <a href="org/netbeans/modules/parsing/api/Embedding.html">Embedding</a>
+      represents some part of Snapshot written in different language. Embedding 
+      can contain some virtual code that is not contained in outside language too.
+      Content of Embedding is represented by Snapshot and it can contain another
+      Embeddings, so embeddings are recursive.
+  </p>
+  <p>
+      Parser is represented by abstract class called 
+      <a href="org/netbeans/modules/parsing/spi/Parser.html">Parser</a>.
+      The only way how to register a new parser for some concrete mime type 
+      is to implement 
+      <a href="org/netbeans/modules/parsing/spi/ParserFactory.html">ParserFactory</a>, 
+      and register it in your manifest file in folder called 
+      <code>"Editors/" + mimeType</code>. A new instance of Parser is always 
+      created for some concrete Snapshot, or collection of Snapshots. One 
+      instance of parser can be reused for more Snapshots created from the same 
+      Source. Parser computes 
+      <a href="org/netbeans/modules/parsing/spi/Parser.Result.html">Parser.Result</a> 
+      for given Snapshot. Parser.Result represents result of parsing (AST, semantic 
+      information).
+  </p>
+  <p>
+    Parsing API defines two basic kinds of 
+    <a href="org/netbeans/modules/parsing/api/Task.html">Task</a>s. High priority 
+    UserTasks and SchedulerTasks.
+  </p>
+  <p>
+    Execution of UserTask is synchnonous and it stops execution of all other 
+    tasks. There are two types of UserTask. Simple 
+    <a href="org/netbeans/modules/parsing/api/UserTask.html">UserTask</a>
+    that supports some computations based on one block code written in one language. 
+    And 
+    <a href="org/netbeans/modules/parsing/api/MultiLanguageUserTask.html">MultiLanguageUserTask</a>
+    that supports scanning of all blocks of code written in different languages
+    embedded in one Source.
+  </p>
+  <p>
+    User of Parsing API can register various implementations of 
+    <a href="org/netbeans/modules/parsing/spi/SchedulerTask.html">SchedulerTask</a> 
+    for any language. Each SchedulerTask is registered for some specific 
+    <a href="org/netbeans/modules/parsing/spi/TaskScheduler.html">TaskScheduler</a>.
+    TaskScheduler defines when task shoud be started (for example
+    when current editor is changed, when some nodes are selected in Project View, or
+    when cursor position is changed). Some specific tasks can define language 
+    embedding. So task implementator can recognize blocks of embedded languages.
+    
+    Parsing API contains support for high priority 
     <api name="ParsingAPI" type="export" category="official" group="java" url="@TOP@index.html"/>
     <api name="ParsingSPI" type="import" category="official" group="java" url="@TOP@index.html"/>
+  </p>
+  <p>
+      
   </p>
  </answer>
 
@@ -152,7 +210,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-what">
   <p>
-   XXX no answer for arch-what
+      See <a href="http://wiki.netbeans.org/ParsingAPI">Parsing API homepage</a> for project requirements, motivation.
   </p>
  </answer>
 

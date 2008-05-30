@@ -44,7 +44,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 
 
 /**
- * Creates new instance of Parser for some specific {@link Document}.
+ * Creates new instance of Parser for some specific collection of {@link Snapshot}s.
  * ParserFactory implemementation can be registerred for some concrete 
  * mimeType, or generally for all languages. So it can be registerred 
  * in manifest.xml in <code>"Editors/" + mimeType</code> folder, or directly in
@@ -55,13 +55,13 @@ import org.netbeans.modules.parsing.api.Snapshot;
 public abstract class ParserFactory {
 
     /**
-     * Returns new instance of {@link Parser} for given {@link Snapshot}s 
-     * or <code>null</code>.
+     * Returns new instance of {@link Parser} for given collection of 
+     * {@link Snapshot}s or <code>null</code>.
      * 
      * @param snapshots     A snapshots.
      * @return              A new instance of parser.
      */
-    public abstract Parser createParser (Collection<Snapshot> source);
+    public abstract Parser createParser (Collection<Snapshot> snapshots);
 }
 
 

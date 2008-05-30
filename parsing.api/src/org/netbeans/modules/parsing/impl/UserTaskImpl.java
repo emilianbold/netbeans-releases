@@ -75,12 +75,12 @@ public class UserTaskImpl extends MultiLanguageUserTask {
     }
     
     private void run (ResultIterator resultIterator, Source source) throws Exception {
-        for (Embedding embedding : resultIterator.getEmbeddedSources ()) {
+        for (Embedding embedding : resultIterator.getEmbeddings ()) {
             if (embedding.containsOriginalOffset (offset)) {
                 run (resultIterator.getResultIterator (embedding), source);
                 return;
             }
         }
-        userTask.run (resultIterator.getParserResult (), source);
+        userTask.run (resultIterator.getParserResult (), resultIterator.getSnapshot ());
     }
 }

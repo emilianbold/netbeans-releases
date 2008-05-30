@@ -67,6 +67,7 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.GenericUserTask;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
@@ -178,6 +179,7 @@ public class TaskProcessor {
                 if (parser == null) {
                     throw new IllegalAccessException("Source: " + source + " has no parser.");  //NOI18N
                 }
+                Snapshot snapshot = source.createSnapshot ();
                 synchronized (source) { //tzezula: rough grained lock - may cause deadlock, but Hanz doesn't want the parsing API to do caching of results
                     final Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(source);
                     if (!flags.contains(SourceFlags.INVALID)) {
@@ -185,9 +187,9 @@ public class TaskProcessor {
                         if (!shared) {
                             flags.add(SourceFlags.INVALID);
                         }
-                    }                                                                            
+                    }                             
                     if (currentResult == null) {                                        
-                        parser.parse(source.createSnapshot(), userTask, null);
+                        parser.parse(snapshot, userTask, null);
                         currentResult = parser.getResult(userTask, null);
                         if (shared) {
                             flags.remove(SourceFlags.INVALID);
@@ -212,7 +214,7 @@ public class TaskProcessor {
                     stack.push (currentResult);
                 }
                 try {
-                    userTask.run (currentResult, source);                    
+                    userTask.run (currentResult, snapshot);                    
                 } finally {
                     if (!shared) {
                         stack.pop ();

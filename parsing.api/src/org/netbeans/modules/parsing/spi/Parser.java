@@ -46,18 +46,21 @@ import org.netbeans.modules.parsing.api.Task;
 
 
 /**
- * Represents implementation of parser for one or more languages. 
- * Parser is always created by {@link ParserFactory}.
+ * Represents implementation of parser for one language. 
+ * Parser is always created by {@link ParserFactory} for some concrete 
+ * {@link Snapshot} or collection of {@link Snapshot}s.
  * Parser fires change when some conditions are changed and sources 
- * should be reparsed.
+ * should be reparsed. One instance of Parser can be reused for more Snapshots
+ * created from one Source.
  * 
  * @author Jan Jancura
  */
 public abstract class Parser {
     
     /**
-     * Called when some client needs some result of parsing. Parser must parse
-     * source based on {@link Snapshot#getText()} method call. 
+     * Called by infastructure when {@link org.netbeans.modules.parsing.api.Source} 
+     * is changed, and a new {@link org.netbeans.modules.parsing.api.Snapshot}
+     * has been created for it. 
      * 
      * @param snapshot      A snapshot that should be parsed.
      * @param task          A task asking for parsing result.
@@ -70,7 +73,7 @@ public abstract class Parser {
     ) throws ParseException;
     
     /**
-     * Called when some client needs some result of parsing.
+     * Called when some task needs some result of parsing.
      * 
      * @param task          A task asking for parsing result.
      * @return              Result of parsing or null.
@@ -107,13 +110,15 @@ public abstract class Parser {
     );
     
     /**
-     * Represents result of parsing. Implementation of this class should 
-     * provide AST for parsed file, semantic information, etc.
+     * Represents result of parsing created for one specific {@link Task}. 
+     * Implementation of this class should provide AST for parsed file, 
+     * semantic information, etc. A new instance of Result is created for each
+     * Task. When Task execution is finished, task should be invalidated.
      */
     public abstract static class Result {
         
         /**
-         * This method is called by Parsing API, when tash is finished.
+         * This method is called by Parsing API, when {@link Task} is finished.
          */
         public abstract void invalidate ();
     }

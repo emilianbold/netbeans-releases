@@ -415,7 +415,7 @@ public final class JavaSource {
                     final MultiLanguageUserTask _task = new ClasspathInfoTask (this.classpathInfo) {
                         @Override
                         public void run(ResultIterator resultIterator) throws Exception {
-                            final Source source = resultIterator.getSource();
+                            final Source source = resultIterator.getSnapshot();
                             if (JavacParser.MIME_TYPE.equals(source.getMimeType())) {
                                 Parser.Result result = resultIterator.getParserResult();
                                 final CompilationController cc = CompilationController.get(result);
@@ -443,7 +443,7 @@ public final class JavaSource {
                         private Parser.Result findEmbeddedJava (final ResultIterator theMess) throws ParseException {
                             final Collection<Embedding> todo = new LinkedList<Embedding>();
                             //BFS should perform better than DFS in this dark.
-                            for (Embedding embedding : theMess.getEmbeddedSources()) {
+                            for (Embedding embedding : theMess.getEmbeddings()) {
                                 if (JavacParser.MIME_TYPE.equals(embedding.getMimeType())) {
                                     return theMess.getResultIterator(embedding).getParserResult();
                                 }
@@ -534,7 +534,7 @@ public final class JavaSource {
                 final MultiLanguageUserTask _task = new ClasspathInfoTask(this.classpathInfo) {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
-                        final Source source = resultIterator.getSource();
+                        final Source source = resultIterator.getSnapshot();
                         if (JavacParser.MIME_TYPE.equals(source.getMimeType())) {
                             Parser.Result parserResult = resultIterator.getParserResult();
                             final CompilationController cc = CompilationController.get(parserResult);
@@ -633,7 +633,7 @@ public final class JavaSource {
         }
         
         public void propertyChange(PropertyChangeEvent pce) {
-            DataObject invalidDO = (DataObject) pce.getSource();
+            DataObject invalidDO = (DataObject) pce.getSnapshot();
             if (invalidDO != dobj)
                 return;
             final String propName = pce.getPropertyName();

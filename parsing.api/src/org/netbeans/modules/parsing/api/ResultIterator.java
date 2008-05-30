@@ -79,8 +79,8 @@ public final class ResultIterator {
         this.task = task;
     }
     
-    public Source getSource () {
-        return this.snapshot.getSource();
+    public Snapshot getSnapshot () {
+        return snapshot;
     }
     
     /**
@@ -114,12 +114,12 @@ public final class ResultIterator {
      * 
      * @return              {@link Iterator} of all embeddings.
      */
-    public Iterable<Embedding> getEmbeddedSources () {
+    public Iterable<Embedding> getEmbeddings () {
         return new Iterable<Embedding> () {
             public Iterator<Embedding> iterator () {
                 return new CompoundIterator<SchedulerTask,Embedding> (
                     new CompoundIterator<TaskFactory,SchedulerTask> (
-                            (Iterator<TaskFactory>) MimeLookup.getLookup (
+                            MimeLookup.getLookup (
                                 snapshot.getMimeType ()
                             ).lookupAll (TaskFactory.class).iterator ()
                         ) {
@@ -133,7 +133,7 @@ public final class ResultIterator {
                     protected Iterator<Embedding> getIterator (SchedulerTask schedulerTask) {
                         if (schedulerTask instanceof EmbeddingProvider)
                             return ((EmbeddingProvider) schedulerTask).getEmbeddings (snapshot).iterator ();
-                        return Collections.EMPTY_LIST.iterator ();
+                        return Collections.<Embedding>emptyList ().iterator ();
                     }
                 };
             }
@@ -152,14 +152,14 @@ public final class ResultIterator {
     
     private static abstract class CompoundIterator<A,B> implements Iterator<B> {
 
-        private Iterator<A> iteratorA;
-        private Iterator<B> iteratorB;
+        private Iterator<? extends A> iteratorA;
+        private Iterator<? extends B> iteratorB;
 
-        public CompoundIterator (Iterator<A> iteratorA) {
+        public CompoundIterator (Iterator<? extends A> iteratorA) {
             this.iteratorA = iteratorA;
         }
         
-        protected abstract Iterator<B> getIterator (A a);
+        protected abstract Iterator<? extends B> getIterator (A a);
         
         public boolean hasNext () {
             if (iteratorB == null) {
