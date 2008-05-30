@@ -1101,6 +1101,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      */
     public void output(String msg) {
         if (iotab != null) {
+            if (msg.contains("PR_SYSEXIT")) { // NOI18N
+                DialogDisplayer.getDefault().notify(
+                       new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
+                       "ERR_ExitedFromSYSEXIT"))); // NOI18N
+                setExited();
+                finish(true);
+            }
             if (!(firstOutput && Utilities.getOperatingSystem() == Utilities.OS_SOLARIS &&
                     msg.startsWith("PR_"))) { // NOI18N
                 firstOutput = false;
