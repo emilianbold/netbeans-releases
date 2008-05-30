@@ -99,8 +99,36 @@ public final class Validator extends XsdBasedValidator {
     description = replace(description, "}'", ""); // NOI18N
     description = replace(description, "\"http://docs.oasis-open.org/wsbpel/2.0/process/executable\":", ""); // NOI18N
     description = replace(description, "WC[##other:\"http://docs.oasis-open.org/wsbpel/2.0/process/executable\"], ", ""); // NOI18N
+
+    description = adjustDescription(description);
     
     return description;
+  }
+
+  // # 135858
+  private String adjustDescription(String value) {
+    int count = getCommaCount(value);
+
+    if (count < 2+2+2) {
+      return value;
+    }
+    int k = value.indexOf("One of "); // NOI18N
+
+    if (k == -1) {
+      return value;
+    }
+    return value.substring(0, k) + "The element must contain at least one child activity."; // NOI18N
+  }
+
+  private int getCommaCount(String value) {
+    int count = 0;
+
+    for (int i=0; i < value.length(); i++) {
+      if (value.charAt(i) == ',') {
+        count++;
+      }
+    }
+    return count;
   }
 
   public String getName() {

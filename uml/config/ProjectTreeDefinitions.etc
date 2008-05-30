@@ -102,7 +102,7 @@
 	</PropertyDefinition>
 	<PropertyDefinition name="Implementation" sort="alpha" showDetails="true">
 		<aDefinition name="Implementing Classifier" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IImplementation" get="getImplementingClassifier"/>
-		<aDefinition name="Contract" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IImplementation" get="getSupplier"/>
+		<aDefinition name="Contract" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IImplementation" get="getContract"/>
 	</PropertyDefinition>
 	<PropertyDefinition name="Generalization" sort="alpha" showDetails="true">
 		<aDefinition name="Sub" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IGeneralization" get="getSpecific"/>

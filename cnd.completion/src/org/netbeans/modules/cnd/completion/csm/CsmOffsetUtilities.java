@@ -161,6 +161,9 @@ public class CsmOffsetUtilities {
                     return false;
                 }
             }
+            if (CsmKindUtilities.isFunctionDeclaration(fun)) {
+                return false;
+            }
         }
         return inScope;
     }    

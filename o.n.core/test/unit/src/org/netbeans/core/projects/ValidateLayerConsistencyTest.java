@@ -57,7 +57,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.jar.Manifest;
 import java.util.logging.Handler;
@@ -84,11 +87,11 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 
 /** Checks consistency of System File System contents.
- *
- * @author Jaroslav Tulach
  */
 public class ValidateLayerConsistencyTest extends NbTestCase {
-    
+
+    private static final String SFS_LB = "SystemFileSystem.localizingBundle";
+
     private ClassLoader contextClassLoader;   
     
     public ValidateLayerConsistencyTest(String name) {
@@ -336,6 +339,9 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         Map<String,ContentAndAttrs> contents = new HashMap<String,ContentAndAttrs>();
         /* < FO path , < module name, { content, attributes } > > */
         Map<String,Map<String,ContentAndAttrs>> differentContents = new HashMap<String,Map<String,ContentAndAttrs>>();
+        Map</* path */String,Map</* attr name */String,Map</* module name */String,/* attr value */Object>>> folderAttributes =
+                new TreeMap<String,Map<String,Map<String,Object>>>();
+        StringBuffer sb = new StringBuffer();
         
         boolean atLeastOne = false;
         Enumeration<URL> en = l.getResources("META-INF/MANIFEST.MF");
@@ -354,7 +360,8 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             if (layer == null) continue;
             
             atLeastOne = true;
-            URL layerURL = new URL(u, "../" + layer);
+            URL base = new URL(u, "../");
+            URL layerURL = new URL(base, layer);
             java.net.URLConnection connect = layerURL.openConnection ();
             connect.setDefaultUseCaches (false);
             FileSystem fs = new XMLFileSystem(layerURL);
@@ -362,18 +369,47 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             Enumeration<? extends FileObject> all = fs.getRoot().getChildren(true);
             while (all.hasMoreElements ()) {
                 FileObject fo = all.nextElement ();
-                if (!fo.isData ()) continue;
-                
                 String path = fo.getPath();
+                Map<String,Object> attributes = getAttributes(fo, base);
+
+                /* XXX too many failures to enable yet:
+                // Check for misplaced localizing bundle attributes.
+                // Might be more natural to check in testAreAttributesFine
+                // but easier here because of the way we load one layer at a time.
+                for (Map.Entry<String,Object> entry : attributes.entrySet()) {
+                    if (entry.getKey().equals(SFS_LB) && entry.getValue() instanceof Exception) {
+                        sb.append("Module " + module + " defines an incorrect " + SFS_LB + " on " + path +
+                                ": " + fo.getAttribute(SFS_LB) + "\n");
+                    }
+                }
+                 */
+
+                if (fo.isFolder()) {
+                    for (Map.Entry<String,Object> attr : attributes.entrySet()) {
+                        Map<String,Map<String,Object>> m1 = folderAttributes.get(path);
+                        if (m1 == null) {
+                            m1 = new TreeMap<String,Map<String,Object>>();
+                            folderAttributes.put(path, m1);
+                        }
+                        Map<String,Object> m2 = m1.get(attr.getKey());
+                        if (m2 == null) {
+                            m2 = new TreeMap<String,Object>();
+                            m1.put(attr.getKey(), m2);
+                        }
+                        m2.put(module, attr.getValue());
+                    }
+                    continue;
+                }
+                
                 List<String> list = files.get(path);
                 if (list == null) {
                     list = new ArrayList<String>();
                     files.put (path, list);
                     list.add (module);
-                    contents.put(path, new ContentAndAttrs(getFileContent(fo), getAttributes(fo), layerURL));
+                    contents.put(path, new ContentAndAttrs(getFileContent(fo), attributes, layerURL));
                 } else {
                     ContentAndAttrs contentAttrs = contents.get(path);
-                    ContentAndAttrs nue = new ContentAndAttrs(getFileContent(fo), getAttributes(fo), layerURL);
+                    ContentAndAttrs nue = new ContentAndAttrs(getFileContent(fo), attributes, layerURL);
                     if (!nue.equals(contentAttrs)) {
                         //System.err.println("Found differences in " + path + " between " + nue + " and " + contentAttrs);
                         Map<String,ContentAndAttrs> diffs = differentContents.get(path);
@@ -392,7 +428,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         }
         contents = null; // Not needed any more
         
-        StringBuffer sb = new StringBuffer ();
         for (Map.Entry<String,List<String>> e : files.entrySet()) {
             List<String> list = e.getValue();
             if (list.size () == 1) continue;
@@ -454,6 +489,15 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         
         assertTrue ("At least one layer file is usually used", atLeastOne);
         
+        for (Map.Entry<String,Map<String,Map<String,Object>>> entry1 : folderAttributes.entrySet()) {
+            for (Map.Entry<String,Map<String,Object>> entry2 : entry1.getValue().entrySet()) {
+                if (new HashSet<Object>(entry2.getValue().values()).size() > 1) {
+                    // XXX currently do not check if the modules are unrelated by dependency.
+                    sb.append("Some modules conflict on the definition of " + entry2.getKey() + " in " + entry1.getKey() + ": " + entry2.getValue() + "\n");
+                }
+            }
+        }
+
         if (sb.length () > 0) {
             fail ("Some modules override their files and do not depend on each other\n" + sb);
         }
@@ -592,12 +636,32 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         return content;
     }
     
-    private static Map<String,Object> getAttributes(FileObject fo) {
-        Map<String,Object> attrs = new HashMap<String,Object>();
+    private static Map<String,Object> getAttributes(FileObject fo, URL base) {
+        Map<String,Object> attrs = new TreeMap<String,Object>();
         Enumeration<String> en = fo.getAttributes();
         while (en.hasMoreElements()) {
             String attrName = en.nextElement();
             Object attr = fo.getAttribute(attrName);
+            if (attrName.equals(SFS_LB)) {
+                try {
+                    String bundleName = (String) attr;
+                    URL bundle = new URL(base, bundleName.replace('.', '/') + ".properties");
+                    Properties p = new Properties();
+                    InputStream is = bundle.openStream();
+                    try {
+                        p.load(is);
+                    } finally {
+                        is.close();
+                    }
+                    String path = fo.getPath();
+                    attr = p.get(path);
+                    if (attr == null) {
+                        attr = new MissingResourceException("No such bundle entry " + path + " in " + bundleName, bundleName, path);
+                    }
+                } catch (Exception x) {
+                    attr = x;
+                }
+            }
             attrs.put(attrName, attr);
         }
         return attrs;
@@ -623,6 +687,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         if (s.startsWith ("Templates/JSP_Servlet")) return true;
         if (s.startsWith ("EnvironmentProviders/ProfileTypes/Execution/nb-j2ee-deployment.instance")) return true;
         if (s.startsWith ("Shortcuts/D-BACK_QUOTE.shadow")) return true;
+        if (s.startsWith("UML/")) return true;
         
         return false;
     }

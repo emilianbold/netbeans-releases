@@ -68,6 +68,7 @@ public class ServiceConfigurationPanel extends javax.swing.JPanel implements jav
 
         wsNameLabel = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
+        jPanel1 = new javax.swing.JPanel();
         wsClassLabel = new javax.swing.JLabel();
         jTextField2 = new javax.swing.JTextField();
         browseButton = new javax.swing.JButton();
@@ -82,6 +83,17 @@ public class ServiceConfigurationPanel extends javax.swing.JPanel implements jav
 
         wsNameLabel.setLabelFor(jTextField1);
         org.openide.awt.Mnemonics.setLocalizedText(wsNameLabel, org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.wsNameLabel.text")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 224, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 16, Short.MAX_VALUE)
+        );
 
         wsClassLabel.setLabelFor(jTextField2);
         org.openide.awt.Mnemonics.setLocalizedText(wsClassLabel, org.openide.util.NbBundle.getMessage(ServiceConfigurationPanel.class, "ServiceConfigurationPanel.wsClassLabel.text")); // NOI18N
@@ -131,7 +143,10 @@ public class ServiceConfigurationPanel extends javax.swing.JPanel implements jav
                                     .add(wsNameLabel))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 140, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                        .add(jTextField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                        .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                                     .add(jTextField2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 467, Short.MAX_VALUE))))
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
@@ -159,9 +174,11 @@ public class ServiceConfigurationPanel extends javax.swing.JPanel implements jav
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(wsNameLabel)
-                    .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(wsNameLabel)
+                        .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(wsClassLabel)
@@ -243,6 +260,7 @@ public class ServiceConfigurationPanel extends javax.swing.JPanel implements jav
     private javax.swing.JCheckBox cbDefault2;
     private javax.swing.JCheckBox cbGenerateWsdl;
     private javax.swing.JLabel generateWsdlDesc;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     private javax.swing.JTextField jTextField3;

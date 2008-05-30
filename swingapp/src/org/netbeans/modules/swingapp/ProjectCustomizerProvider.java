@@ -108,9 +108,13 @@ public class ProjectCustomizerProvider implements ProjectCustomizer.CompositeCat
             ProjectCustomizerPanel.fileChooserDir = projDir.getPath();
         }
         DesignResourceMap resMap = ResourceUtils.getAppDesignResourceMap(project);
-        panel.setVendorId(resMap.getString(KEY_VENDOR_ID));
-        panel.setApplicationId(resMap.getString(KEY_APP_ID));
-        panel.setLookAndFeel(resMap.getString(KEY_LOOK_AND_FEEL));        
+        if (resMap != null) { // Issue 134831
+            panel.setVendorId(resMap.getString(KEY_VENDOR_ID));
+            panel.setApplicationId(resMap.getString(KEY_APP_ID));
+            panel.setLookAndFeel(resMap.getString(KEY_LOOK_AND_FEEL));        
+        } else {
+            panel.setReadOnly();
+        }
         return panel;
     }
 
@@ -131,6 +135,9 @@ public class ProjectCustomizerProvider implements ProjectCustomizer.CompositeCat
 
         public void run() {
             DesignResourceMap resMap = ResourceUtils.getAppDesignResourceMap(project);
+            if (resMap == null) {
+                return; // Issue 134831
+            }
             // read properties from the common Application category panel
             // and store them to the application properties file
             J2SEPropertyEvaluator propEval = project.getLookup().lookup(J2SEPropertyEvaluator.class);

@@ -89,6 +89,7 @@
             <folder name="x-httpd-eruby">
                 <file name="org-netbeans-modules-ruby-rhtml-RhtmlIndentTaskFactory.instance"/>
                 <file name="org-netbeans-modules-ruby-rhtml-EmbeddedSectionsHighlighting$Factory.instance"/>
+                <file name="org-netbeans-modules-gsfret-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
 
                 <file name="language.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId.language"/>

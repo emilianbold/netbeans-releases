@@ -27,11 +27,11 @@
  */
 package org.netbeans.modules.groovy.grailsproject.actions;
 
-import org.netbeans.modules.groovy.grailsproject.execution.LineSnooper;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import org.netbeans.api.project.Project;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -39,15 +39,18 @@ import java.util.Enumeration;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.extexecution.api.DefaultDescriptor;
+import org.netbeans.modules.extexecution.api.ExecutionService;
+import org.netbeans.modules.extexecution.api.input.InputProcessors;
+import org.netbeans.modules.extexecution.api.input.LineProcessor;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
-import org.netbeans.modules.groovy.grailsproject.execution.DefaultDescriptor;
-import org.netbeans.modules.groovy.grailsproject.execution.ExecutionService;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
-public class CreateWarFileAction extends AbstractAction implements LineSnooper {
+public class CreateWarFileAction extends AbstractAction implements LineProcessor {
 
     private static final Logger LOG = Logger.getLogger(CreateWarFileAction.class.getName());
 
@@ -83,12 +86,12 @@ public class CreateWarFileAction extends AbstractAction implements LineSnooper {
         Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
                 command, GrailsProjectConfig.forProject(prj)); // NOI18N
         ExecutionService service = new ExecutionService(callable, displayName,
-                new DefaultDescriptor(prj, autodeploy ? this : null, null, false));
+                new DefaultDescriptor(prj, autodeploy ? InputProcessors.bridge(this, Charset.defaultCharset()) : null, null, false));
 
         service.run();
     }
 
-    public void lineFilter(String line) throws IOException {
+    public void processLine(String line) {
         if (line.contains("Done creating WAR") || line.contains("Created WAR")) { // NOI18N
             LOG.log(Level.FINEST, "War file created, copy");
             FileObject prjDir = prj.getProjectDirectory();
@@ -111,11 +114,20 @@ public class CreateWarFileAction extends AbstractAction implements LineSnooper {
                             LOG.log(Level.FINEST, "Copy file (source)     :" + fo.getPath());
                             LOG.log(Level.FINEST, "Copy file (destination):" + target.getPath());
                             LOG.log(Level.FINEST, "Copy file (name)       :" + fo.getName());
-                            FileUtil.copyFile(fo, target, fo.getName());
+                            try {
+                                FileUtil.copyFile(fo, target, fo.getName());
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
                         }
                     }
                 }
             }
         }
     }
+
+    public void reset() {
+        // noop
+    }
+
 }

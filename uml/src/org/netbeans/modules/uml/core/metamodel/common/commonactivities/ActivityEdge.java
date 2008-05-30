@@ -247,4 +247,9 @@ public class ActivityEdge extends RedefinableElement implements IActivityEdge, I
    public void onLanguageModified(IExpression exp)
    {
    }
+
+    public ETList<IElement> getRelatedElements()
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

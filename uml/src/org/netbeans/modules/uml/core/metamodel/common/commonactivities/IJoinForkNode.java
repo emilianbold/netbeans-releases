@@ -51,5 +51,9 @@ package org.netbeans.modules.uml.core.metamodel.common.commonactivities;
  */
 public interface IJoinForkNode extends IJoinNode, IForkNode
 {
-
+    public final static byte HORIZONTAL = 0;
+    public final static byte VERTICAL = 1;
+    
+    public void setOrientation(byte orientation);
+    public byte getOrientation();
 }
