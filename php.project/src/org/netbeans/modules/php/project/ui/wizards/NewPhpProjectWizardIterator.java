@@ -89,9 +89,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         wizard.putProperty(ConfigureProjectPanel.PROJECT_NAME, null);
         wizard.putProperty(ConfigureProjectPanel.PROJECT_DIR, null);
         //wizard.putProperty(ConfigureProjectPanel.SET_AS_MAIN, null); // "setAsMain" has to remain!
-        wizard.putProperty(ConfigureProjectPanel.WWW_FOLDER, null);
+        wizard.putProperty(ConfigureProjectPanel.SOURCES_FOLDER, null);
         wizard.putProperty(ConfigureProjectPanel.LOCAL_SERVERS, null);
-        wizard.putProperty(ConfigureProjectPanel.URL, null);
         wizard.putProperty(ConfigureProjectPanel.CREATE_INDEX_FILE, null);
         wizard.putProperty(ConfigureProjectPanel.INDEX_FILE, null);
         wizard.putProperty(ConfigureProjectPanel.ENCODING, null);
@@ -190,7 +189,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
     private WizardDescriptor.Panel[] createPanels() {
         String[] steps = new String[] {
-            NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString("LBL_ProjectTitleName"),
+            NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString("LBL_ProjectNameLocation"),
             NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString("LBL_ProjectServer"),
         };
 
@@ -202,7 +201,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     private AntProjectHelper createProject(File dir, String name) throws IOException {
-        FileObject projectFO = FileUtil.createFolder(new File(dir, name));
+        FileObject projectFO = FileUtil.createFolder(dir);
         AntProjectHelper helper = ProjectGenerator.createProject(projectFO, PhpProjectType.TYPE);
 
         // configure
@@ -230,7 +229,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     private File getSources(AntProjectHelper helper) {
-        LocalServer localServer = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.WWW_FOLDER);
+        LocalServer localServer = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.SOURCES_FOLDER);
         if (ConfigureProjectPanel.isProjectFolder(localServer)) {
             File projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
             return new File(projectDirectory, ConfigureProjectPanel.DEFAULT_SOURCE_FOLDER);
@@ -248,7 +247,6 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             srcPath = srcDir.getAbsolutePath();
         }
         properties.setProperty(PhpProjectProperties.SRC_DIR, srcPath);
-        properties.setProperty(PhpProjectProperties.URL, (String) descriptor.getProperty(ConfigureProjectPanel.URL));
     }
 
     private void configureIndexFile(EditableProperties properties) {

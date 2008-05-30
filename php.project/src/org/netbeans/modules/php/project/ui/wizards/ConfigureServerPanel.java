@@ -156,7 +156,7 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel<WizardDescri
     }
 
     private boolean isProjectFolderSelected() {
-        LocalServer localServer = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.WWW_FOLDER);
+        LocalServer localServer = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.SOURCES_FOLDER);
         return ConfigureProjectPanel.isProjectFolder(localServer);
     }
 
@@ -205,15 +205,15 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel<WizardDescri
             return err;
         }
         // warn about visibility of source folder
-        String url = (String) descriptor.getProperty(ConfigureProjectPanel.URL);
-        String warning = NbBundle.getMessage(ConfigureServerPanel.class, "MSG_TargetFolderVisible", url);
-        descriptor.putProperty("WizardPanel_errorMessage", warning); // NOI18N
+//        String url = (String) descriptor.getProperty(ConfigureProjectPanel.URL);
+//        String warning = NbBundle.getMessage(ConfigureServerPanel.class, "MSG_TargetFolderVisible", url);
+//        descriptor.putProperty("WizardPanel_errorMessage", warning); // NOI18N
         return null;
     }
 
     // #131023
     private String validateSourcesAndCopyTarget() {
-        LocalServer sources = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.WWW_FOLDER);
+        LocalServer sources = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.SOURCES_FOLDER);
         assert sources != null;
         String sourcesSrcRoot = sources.getSrcRoot();
         if (ConfigureProjectPanel.isProjectFolder(sources)) {
@@ -241,4 +241,49 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel<WizardDescri
     public void stateChanged(ChangeEvent e) {
         fireChangeEvent();
     }
+
+//    private void adjustUrl() {
+//        String currentUrl = configureProjectPanelVisual.getUrl();
+//        if (!defaultUrl.equals(currentUrl)) {
+//            return;
+//        }
+//        LocalServer sources = configureProjectPanelVisual.getSourcesLocation();
+//        String url = null;
+//        if (isProjectFolder(sources)) {
+//            // project/web => check project name and url
+//            // XXX copy-to-folder should be added
+//            String correctUrl = getDefaultUrl(getSourcesFolderName());
+//            if (!defaultUrl.equals(correctUrl)) {
+//                url = correctUrl;
+//            }
+//        } else {
+//            // /var/www or similar => check source folder name and url
+//            String srcRoot = sources.getSrcRoot();
+//            @SuppressWarnings("unchecked")
+//            List<DocumentRoot> roots = (List<DocumentRoot>) descriptor.getProperty(ROOTS);
+//            for (DocumentRoot root : roots) {
+//                String docRoot = root.getDocumentRoot() + File.separator;
+//                if (srcRoot.startsWith(docRoot)) {
+//                    String urlSuffix = srcRoot.replaceFirst(Pattern.quote(docRoot), ""); // NOI18N
+//                    // handle situations like: /var/www/xxx///// or c:\\apache\htdocs\aaa\bbb
+//                    url = root.getUrl() + urlSuffix.replaceAll(Pattern.quote(File.separator) + "+", "/"); // NOI18N
+//                    if (!url.endsWith("/")) { // NOI18N
+//                        url += "/"; // NOI18N
+//                    }
+//                    break;
+//                }
+//            }
+//            if (url == null) {
+//                // not found => get the name of the sources
+//                url = "http://localhost/" + new File(sources.getSrcRoot()).getName() + "/"; // NOI18N
+//            }
+//        }
+//        if (url != null && !defaultUrl.equals(url)) {
+//            defaultUrl = url;
+//            configureProjectPanelVisual.setUrl(url);
+//        }
+//    }
+//    private String getDefaultUrl(String projectName) {
+//        return "http://localhost/" + projectName + "/" + DEFAULT_SOURCE_FOLDER + "/"; // NOI18N
+//    }
 }
