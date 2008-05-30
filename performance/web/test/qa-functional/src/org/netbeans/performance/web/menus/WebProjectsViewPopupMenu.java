@@ -46,8 +46,6 @@ import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
 
@@ -59,6 +57,9 @@ public class WebProjectsViewPopupMenu extends PerformanceTestCase {
     
     private static ProjectsTabOperator projectsTab = null;
         protected static Node dataObjectNode;
+        
+    public static final String suiteName="UI Responsiveness Web Menus suite";    
+        
 
     /** Creates a new instance of ProjectsViewPopupMenu */
     public WebProjectsViewPopupMenu(String testName) {

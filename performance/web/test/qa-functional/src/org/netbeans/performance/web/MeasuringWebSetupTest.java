@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,32 +41,25 @@
 
 package org.netbeans.performance.web;
 
-
-import org.netbeans.junit.NbTestCase;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.performance.web.menus.*;
+import org.netbeans.performance.web.setup.*;
 
 /**
- * Measure UI-RESPONSIVENES and WINDOW_OPENING.
+ * Test suite that actually does not perform any test but sets up user directory
+ * for UI responsiveness tests
  *
- * @author  mmirilovic@netbeans.org
+ * @author  Radim Kubacki
  */
-public class MeasureWebMenusTest extends NbTestCase {
+public class MeasuringWebSetupTest {
+
     
-    private MeasureWebMenusTest(String name) {
-        super(name);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness Web Menus suite"); 
-   
-        suite.addTest(NbModuleSuite.create(WebProjectsViewPopupMenu.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(WebRuntimeViewPopupMenu.class, ".*", ".*"));
+    public static Test suite() {
+        TestSuite suite = new NbTestSuite("UI Responsiveness Web Setup suite");
+
+        suite.addTest(NbModuleSuite.create(WebSetup.class, ".*", ".*"));
         
         return suite;
     }

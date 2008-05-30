@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,34 +41,32 @@
 
 package org.netbeans.performance.web;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.performance.web.setup.*;
+import org.netbeans.performance.web.actions.*;
 
 /**
- * Test suite that actually does not perform any test but sets up user directory
- * for UI responsiveness tests
+ * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
- * @author  Radim Kubacki
+ * @author  mmirilovic@netbeans.org
  */
-public class MeasuringWebSetupTest extends NbTestCase {
+public class MeasureWebActionsTest {
+   
     
-    public MeasuringWebSetupTest (String testName) {
-        super(testName);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite("UI Responsiveness Web Setup suite");
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness Web Actions suite");
 
-        suite.addTest(NbModuleSuite.create(WebSetup.class, ".*", ".*"));
-        
+        suite.addTest(NbModuleSuite.create(ExpandNodesWebProjectsView.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(JavaCompletionInJspEditor.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(OpenServletFile.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(OpenServletFileWithOpenedEditor.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(OpenWebFiles.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(OpenWebFilesWithOpenedEditor.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(PageUpPageDownInJspEditor.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(PasteInJspEditor.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(ToggleBreakpoint.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(TypingInJspEditor.class, ".*", ".*"));
+       
         return suite;
     }
     

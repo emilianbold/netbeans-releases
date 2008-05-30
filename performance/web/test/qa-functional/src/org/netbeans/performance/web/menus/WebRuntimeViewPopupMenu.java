@@ -51,7 +51,6 @@ import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.modules.performance.guitracker.ActionTracker;
-import org.netbeans.jemmy.Timeouts;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
@@ -73,6 +72,9 @@ public class WebRuntimeViewPopupMenu extends PerformanceTestCase {
     private static String WEB_APPLICATIONS = Bundle.getStringTrimmed(
         "org.netbeans.modules.tomcat5.nodes.Bundle",
         "LBL_WebApps");
+    
+    public static final String suiteName="UI Responsiveness Web Menus suite";    
+
     
     /** Creates a new instance of TypingInEditor */
     public WebRuntimeViewPopupMenu(String testName) {

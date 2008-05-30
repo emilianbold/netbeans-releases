@@ -51,7 +51,6 @@ import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.guitracker.ActionTracker;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 
@@ -80,6 +79,9 @@ public class OpenServletFile extends PerformanceTestCase {
     protected static String OPEN = "Open"; //NOI18N
     
     protected static String EDIT = "Edit"; //NOI18N
+    
+    public static final String suiteName="UI Responsiveness Web Actions suite";    
+    
     
     /**
      * Creates a new instance of OpenFiles

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,41 +39,55 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.web;
+package org.netbeans.performance.web.actions;
 
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.actions.OpenAction;
 
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.performance.web.actions.*;
 
 /**
- * Measure UI-RESPONSIVENES and WINDOW_OPENING.
+ * Test of opening files.
  *
  * @author  mmirilovic@netbeans.org
  */
-public class MeasureWebActionsTest extends NbTestCase {
+public class OpenServletFileWithOpenedEditor extends OpenServletFile {
     
-    private MeasureWebActionsTest(String name) {
-        super(name);
+    public static final String suiteName="UI Responsiveness Web Actions suite";    
+    
+    /**
+     * Creates a new instance of OpenFiles
+     * @param testName the name of the test
+     */
+    public OpenServletFileWithOpenedEditor(String testName) {
+        super(testName);
+        expectedTime = WINDOW_OPEN;
     }
     
+    /**
+     * Creates a new instance of OpenFiles
+     * @param testName the name of the test
+     * @param performanceDataName measured values will be saved under this name
+     */
+    public OpenServletFileWithOpenedEditor(String testName, String performanceDataName) {
+        super(testName, performanceDataName);
+        expectedTime = WINDOW_OPEN;
+    }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness Web Actions suite");
-
-        suite.addTest(NbModuleSuite.create(ExpandNodesWebProjectsView.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(JavaCompletionInJspEditor.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(OpenServletFile.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(OpenServletFileWithOpenedEditor.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(OpenWebFiles.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(OpenWebFilesWithOpenedEditor.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(PageUpPageDownInJspEditor.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(PasteInJspEditor.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(ToggleBreakpoint.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(TypingInJspEditor.class, ".*", ".*"));
-       
-        return suite;
+    public void testOpeningServletFile(){
+        super.testOpeningServletFile();
+    }
+    
+    public void testOpeningJavaFile(){
+        super.testOpeningJavaFile();
+    }
+    
+    /**
+     * Initialize test - open Main.java file in the Source Editor.
+     */
+    public void initialize(){
+        super.initialize();
+        new OpenAction().perform(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Source Packages|test|Test.java"));
     }
     
 }

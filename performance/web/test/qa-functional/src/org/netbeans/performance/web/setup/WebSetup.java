@@ -56,6 +56,9 @@ import java.io.IOException;
 public class WebSetup extends JellyTestCase {
     
 	private String workdir;
+        
+    public static final String suiteName="UI Responsiveness Web Setup suite";    
+        
 
     public WebSetup(String testName) {
         super(testName);

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,15 +40,18 @@
  */
 
 package org.netbeans.performance.web.actions;
+
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.CopyAction;
+import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.actions.Action.Shortcut;
 
@@ -59,82 +62,79 @@ import org.netbeans.modules.performance.utilities.PerformanceTestCase;
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
-public class PasteInJspEditor extends PerformanceTestCase {
+public class ToggleBreakpoint extends PerformanceTestCase {
     private String file;
-    private EditorOperator editorOperator1, editorOperator2;
+    private List bpList = new ArrayList();
+
+    public static final String suiteName="UI Responsiveness Web Actions suite";    
     
-    /** Creates a new instance of PasteInEditor */
-    public PasteInJspEditor(String testName) {
+    /** Creates a new instance of ToggleBreakpoint */
+    public ToggleBreakpoint(String testName) {
         super(testName);
         init();
     }
     
-    /** Creates a new instance of PasteInEditor */
-    public PasteInJspEditor(String file, String testName, String performanceDataName) {
+    /** Creates a new instance of ToggleBreakpoint */
+    public ToggleBreakpoint(String file, String testName, String performanceDataName) {
         super(testName, performanceDataName);
         this.file = file;
-        init();
     }
     
     protected void init() {
 //        super.init();
         expectedTime = UI_RESPONSE;
-        WAIT_AFTER_PREPARE = 2000;
-        // in case this time is longer than 1000ms we will catch events generated
-        // by parser which starts with 1000ms delay
+        WAIT_AFTER_PREPARE = 1000;
         WAIT_AFTER_OPEN = 100;
     }
+    private EditorOperator editorOperator1;
     
-   public void testPasteInJspEditor() {
+   public void testToggleBreakpoint() {
         doMeasurement();
     }    
     
     protected void initialize() {
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         EditorOperator.closeDiscardAll();
 //        jspOptions().setCaretBlinkRate(0);
         // delay between the caret stops and the update of his position in status bar
 //        jspOptions().setStatusBarCaretDelay(0);
-//        jspOptions().setFontSize(20);
-//        jspOptions().setCodeFoldingEnable(false);
-        // open two java files in the editor
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Web Pages|Test.jsp"));
-        editorOperator1 = new EditorWindowOperator().getEditor("Test.jsp");
+        // open file in the editor
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Web Pages|"+file));
-        editorOperator2 = new EditorWindowOperator().getEditor(file);
-        // copy a part of the first file to the clipboard
-        editorOperator1.makeComponentVisible();
-        editorOperator1.select(12,18);
-        new CopyAction().perform();
-        // go to the end of the second file
-        editorOperator2.makeComponentVisible();
-        editorOperator2.setCaretPositionToLine(1);
-        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_END, KeyEvent.CTRL_MASK)).perform(editorOperator2);
-//        eventTool().waitNoEvent(2000);
+        editorOperator1 = new EditorWindowOperator().getEditor(file);
+//        eventTool().waitNoEvent(500);
+//        waitNoEvent(1000);
+//        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
     }
     
     public void prepare() {
         System.out.println("=== " + this.getClass().getName() + " ===");
+        editorOperator1.makeComponentVisible();
+        editorOperator1.setCaretPosition(7,1);
+//        eventTool().waitNoEvent(100);
     }
     
     public ComponentOperator open(){
-        //repaintManager().setOnlyEditor(true);
-        // paste the clipboard contents
-//        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_V, KeyEvent.CTRL_MASK)).perform(editorOperator2);
-        new Action(null, null, new Shortcut(KeyEvent.VK_V, KeyEvent.CTRL_MASK)).perform(editorOperator2);
+        // Toggle Breakpoint
+        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_F8, KeyEvent.CTRL_MASK)).perform(editorOperator1);
         return null;
     }
     
     public void close() {
-        //repaintManager().setOnlyEditor(false);
-        
+        deleteAllBreakpoints();
     }
     
     protected void shutdown() {
-        super.shutdown();
         repaintManager().resetRegionFilters();
-        // close the second file without saving it
         editorOperator1.closeDiscard();
-        editorOperator2.closeDiscard();
+        super.shutdown();
+    }
+    
+    private void deleteAllBreakpoints() {
+        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_5, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK)).perform();
+        //new BreakpointsWindowAction().perform();
+        //new Action("Window|Debugging|Breakpoints",null).perform();
+        TopComponentOperator tco = new TopComponentOperator("Breakpoints");
+        new Action(null,"Delete All").perform(tco);
+        tco.close();
     }
 }

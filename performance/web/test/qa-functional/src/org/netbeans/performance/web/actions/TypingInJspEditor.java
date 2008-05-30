@@ -42,7 +42,8 @@
 package org.netbeans.performance.web.actions;
 
 import java.awt.event.KeyEvent;
-
+import javax.swing.KeyStroke;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -52,92 +53,84 @@ import org.netbeans.jellytools.actions.Action.Shortcut;
 import org.netbeans.jellytools.actions.OpenAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.modules.editor.options.BaseOptions;
-import org.netbeans.modules.web.core.syntax.JSPKit;
-import org.netbeans.modules.web.core.syntax.settings.JSPOptions;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-/**
- * Test of Page Up and Page Down in opened source editor.
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;/**
+ * Test of typing in opened source editor.
  *
  * @author  anebuzelsky@netbeans.org
  */
-public class PageUpPageDownInJspEditor extends PerformanceTestCase {
-    private boolean pgup;
+public class TypingInJspEditor extends PerformanceTestCase {
     private String file;
+    private int line;
     
-    /** Creates a new instance of PageUpPageDownInEditor */
-    public PageUpPageDownInJspEditor(String file, String testName) {
+    public static final String suiteName="UI Responsiveness Web Actions suite";    
+    
+    /** Creates a new instance of TypingInEditor */
+    public TypingInJspEditor(String file, int line, String testName) {
         super(testName);
-        pgup = true;
         this.file = file;
+        this.line = line;
         init();
     }
     
-    /** Creates a new instance of PageUpPageDownInEditor */
-    public PageUpPageDownInJspEditor(String file, String testName, String performanceDataName, boolean up) {
+    /** Creates a new instance of TypingInEditor */
+    public TypingInJspEditor(String file, int line, String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        pgup = up;
         this.file = file;
+        this.line = line;
         init();
     }
     
     protected void init() {
 //        super.init();
         expectedTime = UI_RESPONSE;
+        WAIT_AFTER_PREPARE = 3000;
         WAIT_AFTER_OPEN = 100;
     }
     
     private EditorOperator editorOperator;
-    private int statusBarCaretDelay;
-    private boolean codeFoldindEnabled;
     
-   public void testPageUpPageDownInJspEditor() {
+    public void testTypingInJspEditor() {
         doMeasurement();
     }
     
     protected void initialize() {
-        EditorOperator.closeDiscardAll();
+        System.out.println("=== " + this.getClass().getName() + " ===");
 //        jspOptions().setCaretBlinkRate(0);
         // delay between the caret stops and the update of his position in status bar
 //        jspOptions().setStatusBarCaretDelay(0);
+//        jspOptions().setFontSize(20);
 //        jspOptions().setCodeFoldingEnable(false);
         // open a java file in the editor
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Web Pages|"+file));
         editorOperator = new EditorWindowOperator().getEditor(file);
-        // turn off the status bar delay
-//        JSPOptions options = (JSPOptions) BaseOptions.getOptions(JSPKit.class);
-//        statusBarCaretDelay = options.getStatusBarCaretDelay();
-//        options.setStatusBarCaretDelay(0);
-//        codeFoldindEnabled = options.getCodeFoldingEnable();
-//        options.setCodeFoldingEnable(false);
-        waitNoEvent(2000);
+        // go to the right place
+        editorOperator.setCaretPositionToLine(line);
+        // make the file modified
+        //XXX new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_ENTER)).perform(editorOperator);
+        //wait painting pf folds in the editor
+        new EventTool().waitNoEvent(1000);
     }
     
     public void prepare() {
-        System.out.println("=== " + this.getClass().getName() + " ===");
-        // scroll to the place where we start
-        if (pgup)
-            // press CTRL+END
-            new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_END, KeyEvent.CTRL_MASK)).perform(editorOperator);
-        else
-            // go to the first line
-            editorOperator.setCaretPositionToLine(1);
-        waitNoEvent(500);
-    }
+   }
     
     public ComponentOperator open(){
-       //repaintManager().setOnlyEditor(true);
+        //repaintManager().setOnlyEditor(true);
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
-        if (pgup)
-            new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_PAGE_UP)).perform(editorOperator);
-        else
-            new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_PAGE_DOWN)).perform(editorOperator);
+//        KeyStroke keyA = KeyStroke.getKeyStroke('a');
+//        new ActionNoBlock(null, null, keyA).perform(editorOperator);
+        editorOperator.typeKey('a');
         return null;
     }
     
+    public void close() {
+        //repaintManager().setOnlyEditor(false);
+        repaintManager().resetRegionFilters();
+       
+    }
+    
     protected void shutdown() {
-       repaintManager().resetRegionFilters(); ///added reset filters command - possibly missing previously
-       editorOperator.closeDiscard();
+        editorOperator.closeDiscard();
         super.shutdown();
     }
 }

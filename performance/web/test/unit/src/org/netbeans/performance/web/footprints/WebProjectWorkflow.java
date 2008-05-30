@@ -39,56 +39,81 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.web.actions;
+package org.netbeans.performance.web.footprints;
 
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.actions.OpenAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.modules.performance.utilities.MemoryFootprintTestCase;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 
 /**
- * Test of opening files.
+ * Measure Web Project Workflow Memory footprint
  *
- * @author  mmirilovic@netbeans.org
+ * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
-public class OpenServletFileWithOpenedEditor extends OpenServletFile {
+public class WebProjectWorkflow extends MemoryFootprintTestCase {
+
+    private String webproject;
+
+    public static final String suiteName="Web Footprints suite";
     
     /**
-     * Creates a new instance of OpenFiles
+     * Creates a new instance of WebProjectWorkflow
      * @param testName the name of the test
      */
-    public OpenServletFileWithOpenedEditor(String testName) {
+    public WebProjectWorkflow(String testName) {
         super(testName);
-        expectedTime = WINDOW_OPEN;
+        prefix = "Web Project Workflow |";
     }
-    
+
     /**
-     * Creates a new instance of OpenFiles
+     * Creates a new instance of WebProjectWorkflow
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
-    public OpenServletFileWithOpenedEditor(String testName, String performanceDataName) {
+    public WebProjectWorkflow(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = WINDOW_OPEN;
+        prefix = "Web Project Workflow |";
     }
     
-    public void testOpeningServletFile(){
-        super.testOpeningServletFile();
+    public void testMeasureMemoryFootprint() {
+        super.testMeasureMemoryFootprint();
     }
     
-    public void testOpeningJavaFile(){
-        super.testOpeningJavaFile();
-    }
-    
-    /**
-     * Initialize test - open Main.java file in the Source Editor.
-     */
-    public void initialize(){
+    @Override
+    public void initialize() {
         super.initialize();
-        new OpenAction().perform(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Source Packages|test|Test.java"));
+        CommonUtilities.closeAllDocuments();
+        CommonUtilities.closeMemoryToolbar();
+    }
+    
+    @Override
+    public void setUp() {
+        //do nothing
+    }
+    
+    public void prepare() {
+    }
+    
+    public ComponentOperator open(){
+        // Web project
+        webproject = CommonUtilities.createproject("Samples|Web", "Tomcat Servlet Example", false);
+        
+        CommonUtilities.openFile(webproject, "<default package>", "SessionExample.java", true);
+        CommonUtilities.buildproject(webproject);
+        CommonUtilities.deployProject(webproject);
+        //CommonUtilities.collapseProject(webproject);
+        
+        return null;
+    }
+    
+    @Override
+    public void close(){
+        CommonUtilities.deleteProject(webproject);
+    }
+    
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(new WebProjectWorkflow("measureMemoryFooprint"));
     }
     
 }

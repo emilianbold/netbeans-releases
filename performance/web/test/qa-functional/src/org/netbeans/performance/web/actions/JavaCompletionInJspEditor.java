@@ -60,6 +60,9 @@ import org.netbeans.modules.performance.utilities.PerformanceTestCase;/**
 public class JavaCompletionInJspEditor extends PerformanceTestCase {
     private String text;
     private EditorOperator editorOperator;    
+    
+    public static final String suiteName="UI Responsiveness Web Actions suite";    
+    
     protected LoggingRepaintManager.RegionFilter COMPLETION_DIALOG_FILTER =
         new LoggingRepaintManager.RegionFilter() {
             public boolean accept(JComponent comp) {

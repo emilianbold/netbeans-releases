@@ -40,95 +40,104 @@
  */
 
 package org.netbeans.performance.web.actions;
-
 import java.awt.event.KeyEvent;
-import javax.swing.KeyStroke;
-import org.netbeans.jemmy.EventTool;
+
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.CopyAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.Action.Shortcut;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.actions.Action.Shortcut;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;/**
- * Test of typing in opened source editor.
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+/**
+ * Test of Paste text to opened source editor.
  *
- * @author  anebuzelsky@netbeans.org
+ * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
-public class TypingInJspEditor extends PerformanceTestCase {
+public class PasteInJspEditor extends PerformanceTestCase {
     private String file;
-    private int line;
+    private EditorOperator editorOperator1, editorOperator2;
     
-    /** Creates a new instance of TypingInEditor */
-    public TypingInJspEditor(String file, int line, String testName) {
+    public static final String suiteName="UI Responsiveness Web Actions suite";    
+
+    
+    /** Creates a new instance of PasteInEditor */
+    public PasteInJspEditor(String testName) {
         super(testName);
-        this.file = file;
-        this.line = line;
         init();
     }
     
-    /** Creates a new instance of TypingInEditor */
-    public TypingInJspEditor(String file, int line, String testName, String performanceDataName) {
+    /** Creates a new instance of PasteInEditor */
+    public PasteInJspEditor(String file, String testName, String performanceDataName) {
         super(testName, performanceDataName);
         this.file = file;
-        this.line = line;
         init();
     }
     
     protected void init() {
 //        super.init();
         expectedTime = UI_RESPONSE;
-        WAIT_AFTER_PREPARE = 3000;
+        WAIT_AFTER_PREPARE = 2000;
+        // in case this time is longer than 1000ms we will catch events generated
+        // by parser which starts with 1000ms delay
         WAIT_AFTER_OPEN = 100;
     }
     
-    private EditorOperator editorOperator;
-    
-    public void testTypingInJspEditor() {
+   public void testPasteInJspEditor() {
         doMeasurement();
-    }
+    }    
     
     protected void initialize() {
-        System.out.println("=== " + this.getClass().getName() + " ===");
+        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+        EditorOperator.closeDiscardAll();
 //        jspOptions().setCaretBlinkRate(0);
         // delay between the caret stops and the update of his position in status bar
 //        jspOptions().setStatusBarCaretDelay(0);
 //        jspOptions().setFontSize(20);
 //        jspOptions().setCodeFoldingEnable(false);
-        // open a java file in the editor
+        // open two java files in the editor
+        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Web Pages|Test.jsp"));
+        editorOperator1 = new EditorWindowOperator().getEditor("Test.jsp");
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Web Pages|"+file));
-        editorOperator = new EditorWindowOperator().getEditor(file);
-        // go to the right place
-        editorOperator.setCaretPositionToLine(line);
-        // make the file modified
-        //XXX new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_ENTER)).perform(editorOperator);
-        //wait painting pf folds in the editor
-        new EventTool().waitNoEvent(1000);
+        editorOperator2 = new EditorWindowOperator().getEditor(file);
+        // copy a part of the first file to the clipboard
+        editorOperator1.makeComponentVisible();
+        editorOperator1.select(12,18);
+        new CopyAction().perform();
+        // go to the end of the second file
+        editorOperator2.makeComponentVisible();
+        editorOperator2.setCaretPositionToLine(1);
+        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_END, KeyEvent.CTRL_MASK)).perform(editorOperator2);
+//        eventTool().waitNoEvent(2000);
     }
     
     public void prepare() {
-   }
+        System.out.println("=== " + this.getClass().getName() + " ===");
+    }
     
     public ComponentOperator open(){
         //repaintManager().setOnlyEditor(true);
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
-//        KeyStroke keyA = KeyStroke.getKeyStroke('a');
-//        new ActionNoBlock(null, null, keyA).perform(editorOperator);
-        editorOperator.typeKey('a');
+        // paste the clipboard contents
+//        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_V, KeyEvent.CTRL_MASK)).perform(editorOperator2);
+        new Action(null, null, new Shortcut(KeyEvent.VK_V, KeyEvent.CTRL_MASK)).perform(editorOperator2);
         return null;
     }
     
     public void close() {
         //repaintManager().setOnlyEditor(false);
-        repaintManager().resetRegionFilters();
-       
+        
     }
     
     protected void shutdown() {
-        editorOperator.closeDiscard();
         super.shutdown();
+        repaintManager().resetRegionFilters();
+        // close the second file without saving it
+        editorOperator1.closeDiscard();
+        editorOperator2.closeDiscard();
     }
 }

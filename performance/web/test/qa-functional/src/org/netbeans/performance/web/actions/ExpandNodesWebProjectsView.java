@@ -67,6 +67,10 @@ public class ExpandNodesWebProjectsView extends PerformanceTestCase {
     private static ProjectsTabOperator projectTab;
     /** Project with data for these tests */
     private static String testDataProject = "PerformanceTestFolderWebApp";
+    
+    public static final String suiteName="UI Responsiveness Web Actions suite";    
+
+   
     /**
      * Creates a new instance of ExpandNodesInExplorer
      * @param testName the name of the test

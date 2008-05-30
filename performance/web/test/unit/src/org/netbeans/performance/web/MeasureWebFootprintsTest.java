@@ -39,75 +39,29 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.web.footprint;
+package org.netbeans.performance.web;
 
-
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.modules.performance.utilities.MemoryFootprintTestCase;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.performance.web.footprints.*;
 
 /**
- * Measure Web Project Workflow Memory footprint
+ * Test suite that actually does not perform any test but sets up user directory
+ * for UI responsiveness tests
  *
- * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
+ * @author  Radim Kubacki
  */
-public class WebProjectWorkflow extends MemoryFootprintTestCase {
+public class MeasureWebFootprintsTest {
+    
+    
+    public static Test suite() {
+        TestSuite suite = new NbTestSuite("Web Footprints suite");
 
-    private String webproject;
-
-    /**
-     * Creates a new instance of WebProjectWorkflow
-     * @param testName the name of the test
-     */
-    public WebProjectWorkflow(String testName) {
-        super(testName);
-        prefix = "Web Project Workflow |";
-    }
-
-    /**
-     * Creates a new instance of WebProjectWorkflow
-     * @param testName the name of the test
-     * @param performanceDataName measured values will be saved under this name
-     */
-    public WebProjectWorkflow(String testName, String performanceDataName) {
-        super(testName, performanceDataName);
-        prefix = "Web Project Workflow |";
-    }
-    
-    @Override
-    public void initialize() {
-        super.initialize();
-        CommonUtilities.closeAllDocuments();
-        CommonUtilities.closeMemoryToolbar();
-    }
-    
-    @Override
-    public void setUp() {
-        //do nothing
-    }
-    
-    public void prepare() {
-    }
-    
-    public ComponentOperator open(){
-        // Web project
-        webproject = CommonUtilities.createproject("Samples|Web", "Tomcat Servlet Example", false);
+        suite.addTest(NbModuleSuite.create(WebProjectWorkflow.class, ".*", ".*"));
         
-        CommonUtilities.openFile(webproject, "<default package>", "SessionExample.java", true);
-        CommonUtilities.buildproject(webproject);
-        CommonUtilities.deployProject(webproject);
-        //CommonUtilities.collapseProject(webproject);
-        
-        return null;
-    }
-    
-    @Override
-    public void close(){
-        CommonUtilities.deleteProject(webproject);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new WebProjectWorkflow("measureMemoryFooprint"));
+        return suite;
     }
     
 }
