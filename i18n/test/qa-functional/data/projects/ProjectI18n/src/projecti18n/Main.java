@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package javaapplication13;
+package projecti18n;
 
 /**
  *
