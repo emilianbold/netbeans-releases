@@ -39,11 +39,14 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.spi;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistryTestBase;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 
 /**
  *
@@ -61,7 +64,9 @@ public class ServerInstanceTest extends ServerRegistryTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         ServerRegistry registry = ServerRegistry.getInstance();
-        registry.addInstance(URL, "user", "password", "TestInstance", true, null); // NOI18N
+        Map<String, String> props = new HashMap<String, String>();
+        props.put(InstanceProperties.HTTP_PORT_NUMBER, "8080");
+        registry.addInstance(URL, "user", "password", "TestInstance", true, props); // NOI18N
     }
 
     @Override
@@ -125,6 +130,38 @@ public class ServerInstanceTest extends ServerRegistryTestBase {
         ServerRegistry.getInstance().removeServerInstance(URL);
         try {
             instance.getJ2eePlatform();
+            fail("Does not throw InstanceRemovedException");
+        } catch (InstanceRemovedException ex) {
+            // expected
+        }
+    }
+
+    public void testDescriptor() throws InstanceRemovedException {
+        ServerInstance instance = Deployment.getDefault().getServerInstance(URL);
+        ServerInstance.Descriptor descriptor = instance.getDescriptor();
+        assertNotNull(descriptor);
+        assertEquals(8080, descriptor.getHttpPort());
+        assertEquals("localhost", descriptor.getHostname());
+        assertTrue(descriptor.isLocal());
+
+        ServerRegistry.getInstance().removeServerInstance(URL);
+
+        try {
+            descriptor.getHttpPort();
+            fail("Does not throw InstanceRemovedException");
+        } catch (InstanceRemovedException ex) {
+            // expected
+        }
+
+        try {
+            descriptor.getHostname();
+            fail("Does not throw InstanceRemovedException");
+        } catch (InstanceRemovedException ex) {
+            // expected
+        }
+
+        try {
+            descriptor.isLocal();
             fail("Does not throw InstanceRemovedException");
         } catch (InstanceRemovedException ex) {
             // expected

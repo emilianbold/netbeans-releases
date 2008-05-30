@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,44 +31,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-
-package org.netbeans.tests.j2eeserver.plugin;
-
-import javax.enterprise.deploy.spi.DeploymentManager;
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
+package org.netbeans.modules.j2ee.deployment.plugins.spi;
 
 /**
+ * Descriptor providing extra (and optional) information about the server instance.
  *
- * @author  nn136682
+ * @author Petr Hejl
+ * @since 1.46
  */
-public class ManagerWrapperFactory extends OptionalDeploymentManagerFactory {
+public interface ServerInstanceDescriptor {
 
-    /** Creates a new instance of ManagerWrapperFactory */
-    public ManagerWrapperFactory() {
-    }
+    /**
+     * Returns the HTTP port of the server.
+     *
+     * @return the HTTP port of the server
+     */
+    int getHttpPort();
 
-    public FindJSPServlet getFindJSPServlet(javax.enterprise.deploy.spi.DeploymentManager dm) {
-        return null;
-    }
+    /**
+     * Returns the hostname of the server. Returned name is usable to reach
+     * the server from the computer where IDE runs.
+     *
+     * @return the hostname of the server
+     */
+    String getHostname();
 
-    public IncrementalDeployment getIncrementalDeployment(javax.enterprise.deploy.spi.DeploymentManager dm) {
-        return new IncrementalDeploySupport(dm);
-    }
-    
-    public StartServer getStartServer(javax.enterprise.deploy.spi.DeploymentManager dm) {
-        return new ServerLifecycle(dm);
-    }
+    /**
+     * Returns <code>true</code> if the server is installed locally,
+     * <code>false</code> otherwise.
+     *
+     * @return <code>true</code> if the server is installed locally
+     */
+    boolean isLocal();
 
-    @Override
-    public ServerInstanceDescriptor getServerInstanceDescriptor(DeploymentManager dm) {
-        return new TestInstanceDescriptor(dm);
-    }
-    
 }

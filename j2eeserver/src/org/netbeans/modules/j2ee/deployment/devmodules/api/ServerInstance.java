@@ -136,6 +136,21 @@ public final class ServerInstance {
          return J2eePlatform.create(getInstanceFromRegistry(ServerRegistry.getInstance()));
     }
 
+    /**
+     * Returns descriptor providing extra information about the instance. May
+     * return <code>null</code> if the server does not support this.
+     *
+     * @return descriptor providing extra information about the instance or <code>null</code>
+     * @throws InstanceRemovedException if the instance is not available anymore
+     * @since 1.46
+     */
+    public Descriptor getDescriptor() throws InstanceRemovedException {
+        if (getInstanceFromRegistry(ServerRegistry.getInstance()).getServerInstanceDescriptor() != null) {
+            return new Descriptor();
+        }
+        return null;
+    }
+
     private org.netbeans.modules.j2ee.deployment.impl.ServerInstance getInstanceFromRegistry(ServerRegistry registry)
             throws InstanceRemovedException {
 
@@ -146,6 +161,45 @@ public final class ServerInstance {
                 throw new InstanceRemovedException(serverInstanceId);
             }
             return inst;
+        }
+    }
+
+    /**
+     * Descriptor providing extra (and optional) information about the server instance.
+     * @since 1.46
+     */
+    public final class Descriptor {
+
+        /**
+         * Returns the HTTP port of the server.
+         *
+         * @return the HTTP port of the server
+         * @throws InstanceRemovedException if the instance is not available anymore
+         */
+        public int getHttpPort() throws InstanceRemovedException {
+            return getInstanceFromRegistry(ServerRegistry.getInstance()).getServerInstanceDescriptor().getHttpPort();
+        }
+
+        /**
+         * Returns the hostname of the server. Returned name is usable to reach
+         * the server from the computer where IDE runs.
+         *
+         * @return the hostname of the server
+         * @throws InstanceRemovedException if the instance is not available anymore
+         */
+        public String getHostname() throws InstanceRemovedException {
+            return getInstanceFromRegistry(ServerRegistry.getInstance()).getServerInstanceDescriptor().getHostname();
+        }
+
+        /**
+         * Returns <code>true</code> if the server is installed locally,
+         * <code>false</code> otherwise.
+         *
+         * @return <code>true</code> if the server is installed locally
+         * @throws InstanceRemovedException if the instance is not available anymore
+         */
+        public boolean isLocal() throws InstanceRemovedException {
+            return getInstanceFromRegistry(ServerRegistry.getInstance()).getServerInstanceDescriptor().isLocal();
         }
     }
 }

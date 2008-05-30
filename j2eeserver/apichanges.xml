@@ -111,6 +111,27 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="serverInstanceDescriptor">
+	    <api name="plugins"/>
+	    <summary>
+                API providing information about server host, port and flag
+                indicating local installation.
+	    </summary>
+	    <version major="1" minor="46"/>
+	    <date day="30" month="5" year="2008"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                    API for querying server host, port and flag indicating
+                    local installation. This is replacement for terrible hacks
+                    querying (leaking) InstanceProperties directly.
+                </p>
+	    </description>
+	    <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="ServerInstanceDescriptor"/>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="ServerInstance"/>
+            <issue number="133751"/>
+	</change>        
         <change id="serverInstanceAPI">
 	    <api name="plugins"/>
 	    <summary>
