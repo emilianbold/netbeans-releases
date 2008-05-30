@@ -204,7 +204,7 @@ public class StrictWarning extends JsErrorRule {
             if (key.equals(TRAILING_COMMA)) { // NOI18N
 
                 fixList = new ArrayList<HintFix>(2);
-                fixList.add(new RemoveTrailingCommaFix(info, lexOffset));
+                fixList.add(new RemoveTrailingCommaFix(context, lexOffset));
                 fixList.add(new MoreInfoFix(key));
             } else {
                 fixList = Collections.<HintFix>singletonList(new MoreInfoFix(key));
@@ -288,11 +288,11 @@ public class StrictWarning extends JsErrorRule {
 
     private static class RemoveTrailingCommaFix implements PreviewableFix {
 
-        private CompilationInfo info;
-        private int offset;
+        private final JsRuleContext context;
+        private final int offset;
 
-        public RemoveTrailingCommaFix(CompilationInfo info, int offset) {
-            this.info = info;
+        public RemoveTrailingCommaFix(JsRuleContext context, int offset) {
+            this.context = context;
             this.offset = offset;
         }
 
@@ -308,7 +308,7 @@ public class StrictWarning extends JsErrorRule {
         }
 
         public EditList getEditList() throws Exception {
-            BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = context.doc;
             EditList list = new EditList(doc);
             list.replace(offset, 1, null, false, 0);
 

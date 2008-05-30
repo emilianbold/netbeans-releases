@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.javascript.editing;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -1584,6 +1583,9 @@ public class JsBracketCompleter implements KeystrokeHandler {
         // leaf "node" which contains the comment line and then comment block
         try {
             BaseDocument doc = (BaseDocument)info.getDocument();
+            if (doc == null) {
+                return ranges;
+            }
             length = doc.getLength();
 
 //            if (RubyUtils.isRhtmlDocument(doc)) {
@@ -1669,9 +1671,6 @@ public class JsBracketCompleter implements KeystrokeHandler {
             }
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
-            return ranges;
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
             return ranges;
         }
 

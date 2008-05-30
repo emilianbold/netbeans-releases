@@ -110,7 +110,6 @@ import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.Call;
 import org.netbeans.modules.ruby.lexer.RubyStringTokenId;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -423,6 +422,9 @@ public class CodeCompleter implements CodeCompletionHandler {
     public String getPrefix(CompilationInfo info, int lexOffset, boolean upToOffset) {
         try {
             BaseDocument doc = (BaseDocument)info.getDocument();
+            if (doc == null) {
+                return null;
+            }
 
             TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
             doc.readLock(); // Read-lock due to token hierarchy use
@@ -669,8 +671,6 @@ public class CodeCompleter implements CodeCompletionHandler {
                 doc.readUnlock();
             }
             // Else: normal identifier: just return null and let the machinery do the rest
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
         }
@@ -1320,6 +1320,9 @@ public class CodeCompleter implements CodeCompletionHandler {
 
             // Adjust offset to the left
             BaseDocument doc = (BaseDocument) info.getDocument();
+            if (doc == null) {
+                return false;
+            }
             int newLexOffset = LexUtilities.findSpaceBegin(doc, lexOffset);
             if (newLexOffset < lexOffset) {
                 astOffset -= (lexOffset-newLexOffset);
@@ -1591,9 +1594,6 @@ public class CodeCompleter implements CodeCompletionHandler {
                 anchorOffset = call.getPosition().getStartOffset(); // TODO - compute
             }
             anchorOffsetHolder[0] = anchorOffset;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return false;
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
             return false;
@@ -2068,11 +2068,8 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         final RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
 
-        final Document document;
-        try {
-            document = info.getDocument();
-        } catch (Exception e) {
-            Exceptions.printStackTrace(e);
+        final Document document = info.getDocument();
+        if (document == null) {
             return null;
         }
 
@@ -2188,10 +2185,12 @@ public class CodeCompleter implements CodeCompletionHandler {
                 
                 Node method = AstUtilities.findLocalScope(closest, path);
 
-                @SuppressWarnings("unchecked")
                 List<Node> list2 = method.childNodes();
 
                 for (Node child : list2) {
+                    if (child.isInvisible()) {
+                        continue;
+                    }
                     addLocals(child, variables);
                 }
             }
@@ -2229,10 +2228,12 @@ public class CodeCompleter implements CodeCompletionHandler {
 
             // $ is neither upper nor lower 
             if ((prefix.length() == 0) || (first == '$') || showSymbols) {
-                @SuppressWarnings("unchecked")
                 List<Node> list = root.childNodes();
 
                 for (Node child : list) {
+                    if (child.isInvisible()) {
+                        continue;
+                    }
                     addGlobals(child, globals);
                 }
             }
@@ -2611,7 +2612,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         IndexedElement candidate = null;
 
         if (classes.size() > 0) {
-            candidate = finder.findBestClassMatch(classes, doc, path, path.leaf(), index);
+            candidate = finder.findBestClassMatch(classes, path, path.leaf(), index);
         } else if (methods.size() > 0) {
             candidate = finder.findBestMethodMatch(name, methods, doc, astOffset, lexOffset, path,
                     path.leaf(), index);
@@ -2668,7 +2669,6 @@ public class CodeCompleter implements CodeCompletionHandler {
     //        return true;
     //    }
 
-    @SuppressWarnings("unchecked")
     static void addLocals(Node node, Map<String, Node> variables) {
         switch (node.nodeId) {
         case LOCALASGNNODE: {
@@ -2737,6 +2737,9 @@ public class CodeCompleter implements CodeCompletionHandler {
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             switch (child.nodeId) {
             case DEFNNODE:
             case DEFSNODE:
@@ -2795,10 +2798,12 @@ public class CodeCompleter implements CodeCompletionHandler {
             //            }
         }
 
-        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             switch (child.nodeId) {
             case ITERNODE:
             //case BLOCKNODE:
@@ -2823,10 +2828,12 @@ public class CodeCompleter implements CodeCompletionHandler {
             }
         }
 
-        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             addGlobals(child, globals);
         }
     }
@@ -2836,10 +2843,12 @@ public class CodeCompleter implements CodeCompletionHandler {
             constants.put(((INameNode)node).getName(), node);
         }
 
-        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             addConstants(child, constants);
         }
     }
@@ -3024,22 +3033,16 @@ public class CodeCompleter implements CodeCompletionHandler {
         Document doc = null;
         BaseDocument baseDoc = null;
 
-        try {
-            if (element instanceof IndexedElement) {
-                doc = ((IndexedElement)element).getDocument();
-                info = null;
-            } else if (info != null) {
-                doc = info.getDocument();
-            }
+        if (element instanceof IndexedElement) {
+            doc = ((IndexedElement)element).getDocument();
+            info = null;
+        } else if (info != null) {
+            doc = info.getDocument();
+        }
 
-            if (doc instanceof BaseDocument) {
-                baseDoc = (BaseDocument)doc;
-            } else {
-                return null;
-            }
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
-
+        if (doc instanceof BaseDocument) {
+            baseDoc = (BaseDocument)doc;
+        } else {
             return null;
         }
 
@@ -3201,6 +3204,9 @@ public class CodeCompleter implements CodeCompletionHandler {
                     selectionEnd = temp;
                 }
                 BaseDocument doc = (BaseDocument) info.getDocument();
+                if (doc == null) {
+                    return Collections.emptySet();
+                }
 
                 boolean startLineIsEmpty = Utilities.isRowEmpty(doc, selectionBegin);
                 boolean endLineIsEmpty = Utilities.isRowEmpty(doc, selectionEnd);
@@ -3234,8 +3240,6 @@ public class CodeCompleter implements CodeCompletionHandler {
                 }
             } catch (BadLocationException ble) {
                 Exceptions.printStackTrace(ble);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
             }
         } else {
             valid = true;

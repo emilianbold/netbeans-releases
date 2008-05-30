@@ -38,8 +38,10 @@ package org.netbeans.installer.utils.system.launchers;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.installer.utils.helper.JavaCompatibleProperties;
+import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.progress.Progress;
 
 /**
@@ -54,7 +56,7 @@ public abstract class Launcher extends LauncherProperties {
     public abstract File create(Progress progress) throws IOException;
     public abstract void initialize() throws IOException;
     public abstract String [] getExecutionCommand();
-    public abstract List <JavaCompatibleProperties> getDefaultCompatibleJava();    
+    public abstract List <JavaCompatibleProperties> getDefaultCompatibleJava(Version version);
     public abstract String getExtension();
     protected abstract String getI18NResourcePrefix();
     

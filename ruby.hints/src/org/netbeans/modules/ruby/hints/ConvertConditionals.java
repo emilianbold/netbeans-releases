@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.ruby.hints;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -124,9 +123,9 @@ public class ConvertConditionals extends RubyAstRule {
             return;
         }
         
+        BaseDocument doc = context.doc;
         try {
-            BaseDocument doc = (BaseDocument) info.getDocument();
-            int keywordOffset = ConvertIfToUnless.findKeywordOffset(info, ifNode);
+            int keywordOffset = ConvertIfToUnless.findKeywordOffset(context, ifNode);
             if (keywordOffset == -1 || keywordOffset > doc.getLength() - 1) {
                 return;
             }
@@ -137,8 +136,6 @@ public class ConvertConditionals extends RubyAstRule {
             }
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
         }
 
         // If statement that is not already a statement modifier
@@ -151,9 +148,7 @@ public class ConvertConditionals extends RubyAstRule {
                 return;
             }
 
-            BaseDocument doc = null;
             try {
-                doc = (BaseDocument) info.getDocument();
                 doc.readLock();
                 TokenHierarchy th = TokenHierarchy.get(doc);
                 TokenSequence ts = th.tokenSequence();
@@ -165,17 +160,13 @@ public class ConvertConditionals extends RubyAstRule {
                 if (ts.offset()+ts.token().length() < range.getEnd()) {
                     return;
                 }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
             } finally {
-                if (doc != null) {
-                    doc.readUnlock();
-                }
+                doc.readUnlock();
             }
         }
         
         
-        ConvertToModifier fix = new ConvertToModifier(info, ifNode);
+        ConvertToModifier fix = new ConvertToModifier(context, ifNode);
         
         if (fix.getEditList() == null) {
             return;
@@ -222,11 +213,11 @@ public class ConvertConditionals extends RubyAstRule {
     }
     
     private class ConvertToModifier implements PreviewableFix {
-        private CompilationInfo info;
+        private final RubyRuleContext context;
         private IfNode ifNode;
 
-        public ConvertToModifier(CompilationInfo info, IfNode ifNode) {
-            this.info = info;
+        public ConvertToModifier(RubyRuleContext context, IfNode ifNode) {
+            this.context = context;
             this.ifNode = ifNode;
         }
 
@@ -243,13 +234,14 @@ public class ConvertConditionals extends RubyAstRule {
         
         public EditList getEditList() {
             try {
-                BaseDocument doc = (BaseDocument) info.getDocument();
+                BaseDocument doc = context.doc;
 
                 Node bodyNode = ifNode.getThenBody();
                 boolean isIf = bodyNode != null;
                 if (bodyNode == null) {
                     bodyNode = ifNode.getElseBody();
                 }
+                CompilationInfo info = context.compilationInfo;
                 OffsetRange bodyRange = AstUtilities.getRange(bodyNode);
                 bodyRange = LexUtilities.getLexerOffsets(info, bodyRange);
                 if (bodyRange == OffsetRange.NONE) {

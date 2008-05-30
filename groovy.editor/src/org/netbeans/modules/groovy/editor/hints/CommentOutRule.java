@@ -27,7 +27,6 @@
  */
 package org.netbeans.modules.groovy.editor.hints;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -46,7 +45,6 @@ import org.netbeans.modules.gsf.api.EditList;
 import org.netbeans.modules.gsf.api.HintFix;
 import org.netbeans.modules.gsf.api.HintSeverity;
 import org.netbeans.modules.gsf.api.RuleContext;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 public class CommentOutRule extends GroovySelectionRule {
@@ -63,13 +61,7 @@ public class CommentOutRule extends GroovySelectionRule {
         
         assert start < end;
         
-        BaseDocument baseDoc;
-        try {
-            baseDoc = (BaseDocument) info.getDocument();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return;
-        }
+        BaseDocument baseDoc = context.doc;
         
         if (end > baseDoc.getLength()) {
             return;
