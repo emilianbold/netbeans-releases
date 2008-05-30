@@ -188,7 +188,15 @@ public class HibernateRevengCodeGenerationPanel extends javax.swing.JPanel {
     
     public boolean getChkHbm() {
         return chkHbm.isSelected();
-    }        
+    } 
+    
+    public boolean getChkJava() {
+        return chkJava.isSelected();
+    }
+    
+    public boolean getChkEjb() {
+        return chkEjb.isSelected();
+    }
     
     private void locationChanged() {
         updatePackageComboBox();
@@ -214,6 +222,9 @@ public class HibernateRevengCodeGenerationPanel extends javax.swing.JPanel {
         cmbLocation = new javax.swing.JComboBox();
         jLabel4 = new javax.swing.JLabel();
         cmbPackage = new javax.swing.JComboBox();
+        jLabel5 = new javax.swing.JLabel();
+        chkJava = new javax.swing.JCheckBox();
+        chkEjb = new javax.swing.JCheckBox();
 
         setName(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "LBL_GenerateClasses")); // NOI18N
 
@@ -229,6 +240,11 @@ public class HibernateRevengCodeGenerationPanel extends javax.swing.JPanel {
 
         txtProject.setEditable(false);
         txtProject.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.txtProject.text")); // NOI18N
+        txtProject.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtProjectActionPerformed(evt);
+            }
+        });
 
         jLabel3.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.jLabel3.text")); // NOI18N
 
@@ -244,54 +260,87 @@ public class HibernateRevengCodeGenerationPanel extends javax.swing.JPanel {
         cmbPackage.setEditable(true);
         cmbPackage.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
+        jLabel5.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.jLabel5.text")); // NOI18N
+
+        chkJava.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.chkJava.text")); // NOI18N
+        chkJava.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chkJavaActionPerformed(evt);
+            }
+        });
+
+        chkEjb.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.chkEjb.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(chkHbm)
-                            .add(chkDomain)))
+                        .add(chkEjb)
+                        .addContainerGap())
                     .add(layout.createSequentialGroup()
-                        .add(jLabel4)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cmbPackage, 0, 342, Short.MAX_VALUE))
+                        .add(chkJava)
+                        .addContainerGap())
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(layout.createSequentialGroup()
+                            .add(jLabel5)
+                            .addContainerGap(417, Short.MAX_VALUE))
+                        .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                .add(jLabel2)
+                                .add(jLabel4)
+                                .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 72, Short.MAX_VALUE))
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                .add(layout.createSequentialGroup()
+                                    .add(txtProject, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE)
+                                    .addContainerGap())
+                                .add(layout.createSequentialGroup()
+                                    .add(cmbPackage, 0, 414, Short.MAX_VALUE)
+                                    .addContainerGap())
+                                .add(layout.createSequentialGroup()
+                                    .add(cmbLocation, 0, 414, Short.MAX_VALUE)
+                                    .addContainerGap())))
+                        .add(layout.createSequentialGroup()
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                .add(chkHbm)
+                                .add(chkDomain))
+                            .addContainerGap(303, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(txtProject, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 342, Short.MAX_VALUE)
-                            .add(cmbLocation, 0, 342, Short.MAX_VALUE)))
-                    .add(jLabel1))
-                .addContainerGap())
+                        .add(jLabel1)
+                        .addContainerGap(373, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
+                .add(6, 6, 6)
+                .add(jLabel5)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(chkJava)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(chkEjb)
+                .add(19, 19, 19)
                 .add(jLabel1)
-                .add(7, 7, 7)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(chkDomain)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(chkHbm)
-                .add(18, 18, 18)
+                .add(23, 23, 23)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(txtProject, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel3)
-                    .add(cmbLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(cmbLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel3))
+                .add(7, 7, 7)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel4)
-                    .add(cmbPackage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(129, Short.MAX_VALUE))
+                    .add(cmbPackage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel4))
+                .add(29, 29, 29))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -300,15 +349,26 @@ private void cmbLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
      locationChanged();
 }//GEN-LAST:event_cmbLocationActionPerformed
 
+private void chkJavaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkJavaActionPerformed
+// TODO add your handling code here:
+}//GEN-LAST:event_chkJavaActionPerformed
+
+private void txtProjectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtProjectActionPerformed
+// TODO add your handling code here:
+}//GEN-LAST:event_txtProjectActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox chkDomain;
+    private javax.swing.JCheckBox chkEjb;
     private javax.swing.JCheckBox chkHbm;
+    private javax.swing.JCheckBox chkJava;
     private javax.swing.JComboBox cmbLocation;
     private javax.swing.JComboBox cmbPackage;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JTextField txtProject;
     // End of variables declaration//GEN-END:variables
 }

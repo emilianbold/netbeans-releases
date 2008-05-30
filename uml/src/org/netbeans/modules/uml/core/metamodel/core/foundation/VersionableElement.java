@@ -42,13 +42,13 @@
 
 package org.netbeans.modules.uml.core.metamodel.core.foundation;
 
-import java.io.IOException;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.Node;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -66,9 +66,7 @@ import org.netbeans.modules.uml.core.eventframework.EventDispatchRetriever;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchNameKeeper;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 
 public class VersionableElement implements IVersionableElement
@@ -1336,7 +1334,8 @@ protected List getAllAffectedElements(Document doc, String xmiid) {
 		return proj;
 	}
 	
-	protected void finalize() 
+        @Override
+        protected void finalize() 
         {
             try 
             {

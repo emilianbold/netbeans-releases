@@ -48,7 +48,6 @@ import java.util.logging.Level;
 import org.netbeans.modules.uml.core.support.UMLLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -239,7 +238,7 @@ public class FileSysManip
       
 		return retStr;
 	}
-   
+        
    public static boolean copyFile1(String fromFile, String toFile)
    {
    		boolean copySuccess = false;

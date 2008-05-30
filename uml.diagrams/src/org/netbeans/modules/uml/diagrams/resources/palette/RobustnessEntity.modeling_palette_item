@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<palette_item version="1.0">
+  <element name="Class" />
+  <stereotype value="entity" />
+
+  <icon16 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/entity-class.png" />
+  <icon32 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/entity-class-32.png" />
+
+  <description localizing-bundle="org.netbeans.modules.uml.diagrams.resources.palette.Bundle"
+               display-name-key="NAME_RobustnessEntity"
+               tooltip-key="HINT_RobustnessEntity" />
+</palette_item>

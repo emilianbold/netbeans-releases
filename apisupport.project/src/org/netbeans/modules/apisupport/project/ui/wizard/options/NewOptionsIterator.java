@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,9 +43,7 @@ package org.netbeans.modules.apisupport.project.ui.wizard.options;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -96,6 +94,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
         
         private static final int ERR_BLANK_DISPLAYNAME = 1;
         private static final int ERR_BLANK_TOOLTIP = 2;
+        private static final int ERR_BLANK_PRIMARY_PANEL = 3;
         private static final int ERR_BLANK_TITLE = 4;
         private static final int ERR_BLANK_CATEGORY_NAME = 5;
         private static final int ERR_BLANK_ICONPATH = 6;
@@ -122,6 +121,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
             "OptionsCategory_CLASS_NAME", // NOI18N
             "Panel_CLASS_NAME", // NOI18N
             "OptionsPanelController_CLASS_NAME", // NOI18N
+            "OptionsPanelController_INSTANCE", // NOI18N
             "ICON_PATH", // NOI18N
             ADVANCED_BUNDLE_KEYS[0],
             ADVANCED_BUNDLE_KEYS[1],
@@ -129,21 +129,23 @@ final class NewOptionsIterator extends BasicWizardIterator {
             CATEGORY_BUNDLE_KEYS[1]
         };
                 
-        private static final String FORM_TEMPLATE_SUFFIXES[] = {"Panel"}; // NOI18N
-        private static final String[] JAVA_TEMPLATE_SUFFIXES = {
-            "AdvancedOption",//NOI18N
-            "OptionsCategory",//NOI18N
-            "Panel",//NOI18N
-            "OptionsPanelController"//NOI18N
-        };
+        private static final String ADVANCED_OPTION = "AdvancedOption"; //NOI18N
+        private static final String OPTIONS_CATEGORY = "OptionsCategory"; //NOI18N
+        private static final String PANEL = "Panel"; //NOI18N
+        private static final String OPTIONS_PANEL_CONTROLLER = "OptionsPanelController"; //NOI18N
+        
         private static final String JAVA_TEMPLATE_PREFIX = "template_myplugin"; // NOI18N
         private static final String FORM_TEMPLATE_PREFIX = "template_myplugin_form"; // NOI18N
+        
+        static final String MISCELLANEOUS_LABEL = "Miscellaneous"; //NOI18N
+        
         
         private CreatedModifiedFiles files;
         private String codeNameBase;
         private boolean advanced;
         
         //Advanced panel
+        private String primaryPanel;
         private String displayName;
         private String tooltip;
         
@@ -151,6 +153,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
         private String title;
         private String categoryName;
         private String iconPath;
+        private boolean allowAdvanced;
         
         private String classNamePrefix;
         
@@ -158,19 +161,21 @@ final class NewOptionsIterator extends BasicWizardIterator {
             super(wiz);
         }
         
-        int setDataForAdvanced(final String displayName, final String tooltip) {
+        int setDataForAdvanced(final String primaryPanel, final String displayName, final String tooltip) {
             this.advanced = true;
+            this.primaryPanel = primaryPanel;
             this.displayName = displayName;
             this.tooltip = tooltip;
             return checkFirstPanel();
         }
         
         int setDataForOptionCategory(final String title,
-                final String categoryName, final String iconPath) {
+                final String categoryName, final String iconPath, final boolean allowAdvanced) {
             this.advanced = false;
             this.title = title;
             this.categoryName = categoryName;
             this.iconPath = iconPath;
+            this.allowAdvanced = allowAdvanced;
             return checkFirstPanel();
         }
         
@@ -216,6 +221,8 @@ final class NewOptionsIterator extends BasicWizardIterator {
                 return getPanelClassName();
             } else if ("OptionsPanelController_CLASS_NAME".equals(key)) {// NOI18N
                 return getOptionsPanelControllerClassName();
+            } else if ("OptionsPanelController_INSTANCE".equals(key)) {// NOI18N
+                return getOptionsPanelControllerInstance();
             } else if ("ICON_PATH".equals(key)) {// NOI18N
                 return addCreateIconOperation(new CreatedModifiedFiles(getProject()), getIconPath());
             } else {
@@ -252,6 +259,9 @@ final class NewOptionsIterator extends BasicWizardIterator {
                     break;
                 case ERR_BLANK_TOOLTIP:
                     field = "FIELD_Tooltip";//NOI18N
+                    break;
+                case ERR_BLANK_PRIMARY_PANEL:
+                    field = "FIELD_PrimaryPanel"; //NOI18N
                     break;
                 case ERR_BLANK_TITLE:
                     field = "FIELD_Title";//NOI18N
@@ -312,7 +322,9 @@ final class NewOptionsIterator extends BasicWizardIterator {
         
         private int checkFirstPanel() {
             if (advanced) {
-                if (getDisplayName().length() == 0) {
+                if (getPrimaryPanel().length() == 0) {
+                    return ERR_BLANK_PRIMARY_PANEL;
+                } else if (getDisplayName().length() == 0) {
                     return ERR_BLANK_DISPLAYNAME;
                 } else if (getTooltip().length() == 0) {
                     return ERR_BLANK_TOOLTIP;
@@ -374,18 +386,19 @@ final class NewOptionsIterator extends BasicWizardIterator {
             }
             return files;
         }
-        
+    
         private void generateFiles() {
-            List allForms = Arrays.asList(FORM_TEMPLATE_SUFFIXES);
-            for (int i = 0; i < JAVA_TEMPLATE_SUFFIXES.length; i++) {
-                boolean ommit = (isAdvanced()) ? "OptionsCategory".equals(JAVA_TEMPLATE_SUFFIXES[i]) : // NOI18N
-                    "AdvancedOption".equals(JAVA_TEMPLATE_SUFFIXES[i]);// NOI18N
-                if (ommit) {
-                    continue;
-                }
-                files.add(createJavaFileCopyOperation(JAVA_TEMPLATE_SUFFIXES[i]));
-                if (allForms.contains(JAVA_TEMPLATE_SUFFIXES[i])) {
-                    files.add(createFormFileCopyOperation(JAVA_TEMPLATE_SUFFIXES[i]));
+            if(isAdvanced()) {
+                files.add(createJavaFileCopyOperation(ADVANCED_OPTION));
+                files.add(createJavaFileCopyOperation(OPTIONS_PANEL_CONTROLLER));
+                files.add(createJavaFileCopyOperation(PANEL));
+                files.add(createFormFileCopyOperation(PANEL));
+            } else {
+                files.add(createJavaFileCopyOperation(OPTIONS_CATEGORY));
+                if(!isAdvancedCategory()) {
+                    files.add(createJavaFileCopyOperation(OPTIONS_PANEL_CONTROLLER));                     
+                    files.add(createJavaFileCopyOperation(PANEL));
+                    files.add(createFormFileCopyOperation(PANEL));
                 }
             }
         }
@@ -401,18 +414,27 @@ final class NewOptionsIterator extends BasicWizardIterator {
         
         private void generateDependencies() {
             files.add(files.addModuleDependency("org.openide.util")); // NOI18N
-            files.add(files.addModuleDependency("org.netbeans.modules.options.api","0-1",null,true));// NOI18N
+            files.add(files.addModuleDependency("org.netbeans.modules.options.api","1",null,true));// NOI18N
             files.add(files.addModuleDependency("org.openide.awt")); // NOI18N
             files.add(files.addModuleDependency("org.jdesktop.layout")); // NOI18N
         }
-        
+
         private void generateLayerEntry() {
-            String resourcePathPrefix = (isAdvanced()) ? "OptionsDialog/Advanced/" : "OptionsDialog/";// NOI18N
-            String instanceName = isAdvanced() ? getAdvancedOptionClassName() : getOptionsCategoryClassName();
-            String instanceFullPath = resourcePathPrefix + getPackageName().replace('.','-') + "-" + instanceName + ".instance";//NOI18N
-            files.add(files.createLayerEntry(instanceFullPath, null, null, null, null));
+            if(isAdvanced()) {
+                String resourcePathPrefix = "OptionsDialog/"+getPrimaryPanel()+"/";  //NOI18N
+                String instanceName = getAdvancedOptionClassName();
+                String instanceFullPath = resourcePathPrefix + getPackageName().replace('.','-') + "-" + instanceName + ".instance";//NOI18N
+                files.add(files.createLayerEntry(instanceFullPath, null, null, null, null));
+            } else {
+                String resourcePathPrefix = "OptionsDialog/";  //NOI18N
+                String instanceName = getOptionsCategoryClassName();
+                String instanceFullPath = resourcePathPrefix + instanceName + ".instance";//NOI18N
+                Map<String, Object> attrsMap = new HashMap<String, Object>(1);
+                attrsMap.put("instanceClass", getPackageName()+"."+instanceName);  //NOI18N
+                files.add(files.createLayerEntry(instanceFullPath, null, null, null, attrsMap));
+            }
         }
-        
+
         private CreatedModifiedFiles.Operation createJavaFileCopyOperation(final String templateSuffix) {
             FileObject template = CreatedModifiedFiles.getTemplate(JAVA_TEMPLATE_PREFIX + templateSuffix + ".java");
             assert template != null : JAVA_TEMPLATE_PREFIX+templateSuffix;
@@ -438,6 +460,15 @@ final class NewOptionsIterator extends BasicWizardIterator {
                 codeNameBase = mod.getCodeNameBase();
             }
             return codeNameBase;
+        }
+        
+        private String getPrimaryPanel() {
+            // map Miscellaneous category to its ID
+            if(primaryPanel.equals(MISCELLANEOUS_LABEL)) {
+                return "Advanced"; //NOI18N
+            } else {
+                return primaryPanel;
+            }
         }
         
         private String getDisplayName() {
@@ -468,9 +499,12 @@ final class NewOptionsIterator extends BasicWizardIterator {
         
         String getClassNamePrefix() {
             if (classNamePrefix == null) {
-                classNamePrefix = getCodeNameBase();
-                classNamePrefix = classNamePrefix.substring(classNamePrefix.lastIndexOf(".")+1);// NOI18N
-                classNamePrefix = classNamePrefix.substring(0,1).toUpperCase(Locale.ENGLISH) + classNamePrefix.substring(1); // NOI18N
+                if(isAdvanced()) {
+                    classNamePrefix = getDisplayName();
+                } else {
+                    classNamePrefix = getCategoryName();
+                }
+                classNamePrefix = classNamePrefix.trim().replaceAll(" ", "");
             }
             return classNamePrefix;
         }
@@ -479,20 +513,34 @@ final class NewOptionsIterator extends BasicWizardIterator {
             return advanced;
         }
         
+        private boolean isAdvancedCategory() {
+            return allowAdvanced;
+        }
+        
         private String getAdvancedOptionClassName() {
-            return getClassName(JAVA_TEMPLATE_SUFFIXES[0]);
+            return getClassName(ADVANCED_OPTION);
         }
         
         private String getOptionsCategoryClassName() {
-            return getClassName(JAVA_TEMPLATE_SUFFIXES[1]);
+            return getClassName(OPTIONS_CATEGORY);
         }
         
         private String getPanelClassName() {
-            return getClassName(JAVA_TEMPLATE_SUFFIXES[2]);
+            return getClassName(PANEL);
         }
         
         private String getOptionsPanelControllerClassName() {
-            return getClassName(JAVA_TEMPLATE_SUFFIXES[3]);
+            return getClassName(OPTIONS_PANEL_CONTROLLER);
+        }
+        
+        private String getOptionsPanelControllerInstance() {
+            if(isAdvancedCategory()) {
+                // "OptionsPanelController.createAdvanced("MyOptionsCategory")"
+                return "OptionsPanelController.createAdvanced(\""+getOptionsCategoryClassName()+"\")";//NOI18N
+            } else {
+                // "new MyOptionsPanelController();"
+                return "new "+getOptionsPanelControllerClassName()+"()"; //NOI18N
+            }
         }
         
         private String getClassName(String suffix) {

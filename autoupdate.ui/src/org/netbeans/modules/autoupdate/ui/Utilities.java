@@ -108,6 +108,8 @@ public class Utilities {
     private static final String FIRST_CLASS_MODULES = "org.netbeans.modules.autoupdate.services, org.netbeans.modules.autoupdate.ui"; // NOI18N
     private static final String PLUGIN_MANAGER_FIRST_CLASS_MODULES = "plugin.manager.first.class.modules"; // NOI18N
     
+    private static final String ALLOW_SHOWING_BALLOON = "plugin.manager.allow.showing.balloon"; // NOI18N
+    
     private static Collection<String> first_class_modules = null;
     
     @SuppressWarnings ("deprecation")
@@ -489,6 +491,11 @@ public class Utilities {
             first_class_modules.add (en.nextToken ().trim ());
         }
         return first_class_modules;
+    }
+    
+    public static Boolean allowShowingBalloon () {
+        String allowShowing = System.getProperty (ALLOW_SHOWING_BALLOON);
+        return allowShowing == null ? null : Boolean.valueOf (allowShowing);
     }
 
     /** Do auto-check for available new plugins a while after startup.

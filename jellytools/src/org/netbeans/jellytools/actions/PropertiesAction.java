@@ -51,7 +51,7 @@ import org.netbeans.jellytools.Bundle;
 public class PropertiesAction extends Action {
 
     private static final String propertiesPopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Properties");
-    private static final String propertiesMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window")
+    private static final String propertiesMenu = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window")
                                                 + "|" + propertiesPopup;
     private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
             KeyStroke.getKeyStroke(KeyEvent.VK_7, KeyEvent.META_MASK|KeyEvent.SHIFT_MASK) :

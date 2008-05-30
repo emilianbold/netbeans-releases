@@ -178,6 +178,9 @@ public class JsAnalyzer implements StructureScanner {
 
         try {
             BaseDocument doc = (BaseDocument)info.getDocument();
+            if (doc == null) {
+                return Collections.emptyMap();
+            }
 
             for (AstElement element : elements) {
                 ElementKind kind = element.getKind();
