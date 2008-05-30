@@ -69,12 +69,13 @@ import org.openide.util.NbBundle;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.dom4j.io.SAXReader;
+import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.JDBCMetaDataConfiguration;
 import org.hibernate.cfg.reveng.DefaultReverseEngineeringStrategy;
 import org.hibernate.cfg.reveng.OverrideRepository;
+import org.hibernate.tool.hbm2x.HibernateMappingExporter;
 import org.hibernate.tool.hbm2x.POJOExporter;
 import org.hibernate.util.XMLHelper;
-import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -239,13 +240,13 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
             ArrayList<Table> list = (ArrayList<Table>) helper.getSelectedTables().getTables();
             for (int i = 0; i < list.size(); i++) {
                 int index = hre.addTableFilter(true);
-                //hre.setAttributeValue(hre.TABLE_FILTER, index, ATTRIBUTE_NAME, ".*");
+                hre.setAttributeValue(hre.TABLE_FILTER, index, ATTRIBUTE_NAME, helper.getSchemaName());
                 hre.setAttributeValue(hre.TABLE_FILTER, index, MATCH_NAME, list.get(i).getName());
 
             }
             hro.addReveng();
             hro.save();
-           // generateClasses(hro.getPrimaryFile());
+            generateClasses(hro.getPrimaryFile());
             return Collections.singleton(hro.getPrimaryFile());
         } catch (Exception e) {
             return Collections.EMPTY_SET;
@@ -292,49 +293,64 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
 
     }
 
-    public void generateClasses(FileObject revengFile) throws IOException {
-        HibernateEnvironment env = null;
-        JDBCMetaDataConfiguration cfg = null;
-        File f = null;        
-        DataObject revengDataObject = DataObject.find(revengFile);
+    // Generates POJOs and hibernate mapping files based on a .reveng.xml file
+    public void generateClasses(FileObject revengFile) throws IOException {        
+        JDBCMetaDataConfiguration cfg = null;       
+        
+        File confFile = FileUtil.toFile(helper.getConfigurationFile());
 
-        // String fileName = FileUtil.toFile(revengFile).getAbsolutePath();
-        String fileName = HibernateUtil.getRelativeSourcePath(revengDataObject.getPrimaryFile(), Util.getSourceRoot(project));
-        File confFile  = FileUtil.toFile(helper.getConfigurationFile());      
-
-        try {       
-
-            cfg = new JDBCMetaDataConfiguration();            
-            OverrideRepository or = new OverrideRepository();
-            InputStream xmlInputStream = new FileInputStream(FileUtil.toFile(revengFile));
-            xmlHelper = new XMLHelper();
-            entityResolver = XMLHelper.DEFAULT_DTD_RESOLVER;
-            List errors = new ArrayList();
-            
-            SAXReader saxReader = xmlHelper.createSAXReader("XML InputStream", errors, entityResolver);
-            
-            org.dom4j.Document doc = saxReader.read(new InputSource(xmlInputStream));
-            
-            cfg.configure(confFile);        
-            
-            cfg.setReverseEngineeringStrategy(or.getReverseEngineeringStrategy(new DefaultReverseEngineeringStrategy()));
-            
-            cfg.readFromJDBC();
-            
-        } catch (Exception e) {
-            e.printStackTrace();      
-        }
-
-        // Generating POJOs
-        FileObject pkg;
+        ClassLoader oldClassLoader = null;
         try {
-            pkg = SourceGroups.getFolderForPackage(helper.getLocation(), helper.getPackageName());            
-            File outputDir = FileUtil.toFile(pkg);            
-            POJOExporter exporter = new POJOExporter(cfg, outputDir);            
-            exporter.getProperties().setProperty("ejb3", "true");            
-            exporter.start();            
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            oldClassLoader = Thread.currentThread().getContextClassLoader();
+            Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
+
+
+            try {
+
+                cfg = new JDBCMetaDataConfiguration();
+                OverrideRepository or = new OverrideRepository();
+                InputStream xmlInputStream = new FileInputStream(FileUtil.toFile(revengFile));
+                xmlHelper = new XMLHelper();
+                entityResolver = XMLHelper.DEFAULT_DTD_RESOLVER;
+                List errors = new ArrayList();
+
+                SAXReader saxReader = xmlHelper.createSAXReader("XML InputStream", errors, entityResolver);
+                org.dom4j.Document doc = saxReader.read(new InputSource(xmlInputStream));
+                Configuration c = cfg.configure(confFile);
+                cfg.setReverseEngineeringStrategy(or.getReverseEngineeringStrategy(new DefaultReverseEngineeringStrategy()));
+                cfg.readFromJDBC();
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
+            }
+
+            // Generating POJOs
+            FileObject pkg;
+            try {                
+                if (helper.getDomainGen()) {
+                    pkg = SourceGroups.getFolderForPackage(helper.getLocation(), helper.getPackageName());
+                    File outputDir = FileUtil.toFile(pkg);
+                    POJOExporter exporter = new POJOExporter(cfg, outputDir);
+                    exporter.getProperties().setProperty("jdk", new Boolean(helper.getJavaSyntax()).toString());
+                    exporter.getProperties().setProperty("ejb3", new Boolean(helper.getEjbAnnotation()).toString());
+                    exporter.start();
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            // Generating Mappings
+            try {                
+                if (helper.getHbmGen()) {
+                    pkg = SourceGroups.getFolderForPackage(helper.getLocation(), helper.getPackageName());
+                    File outputDir = FileUtil.toFile(pkg);
+                    HibernateMappingExporter exporter = new HibernateMappingExporter(cfg, outputDir);
+                    exporter.start();
+                }
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } finally {
+            Thread.currentThread().setContextClassLoader(oldClassLoader);
         }
     }
 

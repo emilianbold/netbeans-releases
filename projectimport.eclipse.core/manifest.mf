@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.projectimport.eclipse.core/1
+OpenIDE-Module-Implementation-Version: 1
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/projectimport/eclipse/core/resources/Bundle.properties
+OpenIDE-Module-Layer: org/netbeans/modules/projectimport/eclipse/core/resources/layer.xml
+
