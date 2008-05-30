@@ -53,6 +53,9 @@ import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.util.Comparator;
 import java.util.EventObject;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -208,6 +211,12 @@ public class Outline extends ETable {
     private void init() {
         initialized = true;
         setDefaultRenderer(Object.class, new DefaultOutlineCellRenderer());
+        ActionMap am = getActionMap();
+        //make rows expandable with left/rigt arrow keys
+        Action a = am.get("selectNextColumn"); //NOI18N
+        am.put("selectNextColumn", new ExpandAction(true, a)); //NOI18N
+        a = am.get("selectPreviousColumn"); //NOI18N
+        am.put("selectPreviousColumn", new ExpandAction(false, a)); //NOI18N
     }
     
     /** Always returns the default renderer for Object.class for the tree column */
@@ -737,6 +746,35 @@ public class Outline extends ETable {
                 }
                 icon.paintIcon(c, g, iconX, iconY);
             }
+        }
+    }
+    
+    private class ExpandAction extends AbstractAction {
+        private boolean expand;
+        private Action origAction;
+        public ExpandAction( boolean expand, Action orig ) {
+            this.expand = expand;
+            this.origAction = orig;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if( getSelectedRowCount() == 1 && isTreeColumnIndex (getSelectedColumn()) ) {
+                int selRow = getSelectedRow();
+                TreePath selPath = getLayoutCache().getPathForRow(selRow);
+                if( null != selPath 
+                        && !getOutlineModel().isLeaf(selPath.getLastPathComponent()) ) {
+                    boolean expanded = getLayoutCache().isExpanded(selPath);
+                    if( expanded && !expand ) {
+                        collapsePath(selPath);
+                        return;
+                    } else if( !expanded && expand ) {
+                        expandPath(selPath);
+                        return;
+                    }
+                }
+            }
+            if( null != origAction )
+                origAction.actionPerformed(e);
         }
     }
 }
