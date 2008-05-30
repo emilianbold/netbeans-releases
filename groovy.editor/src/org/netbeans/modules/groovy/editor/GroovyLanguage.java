@@ -41,20 +41,25 @@
 
 package org.netbeans.modules.groovy.editor;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyHintsProvider;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
-
-/*
- * Language/lexing configuration for Groovy
- *
- * @author Martin Adamek
- */
+import org.netbeans.modules.groovy.editor.parser.GroovyOccurrencesFinder;
+import org.netbeans.modules.groovy.editor.parser.GroovyParser;
+import org.netbeans.modules.groovy.editor.parser.GroovySemanticAnalyzer;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
+import org.netbeans.modules.gsf.api.DeclarationFinder;
+import org.netbeans.modules.gsf.api.Formatter;
+import org.netbeans.modules.gsf.api.HintsProvider;
+import org.netbeans.modules.gsf.api.Indexer;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
+import org.netbeans.modules.gsf.api.OccurrencesFinder;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
-import org.openide.filesystems.FileObject;
-/*
+
+/**
  * Language/lexing configuration for Groovy
  *
  * @author Tor Norbye
@@ -88,5 +93,57 @@ public class GroovyLanguage extends DefaultLanguageConfig {
     @Override
     public String getPreferredExtension() {
         return "groovy"; // NOI18N
+    }
+
+    // Service Registrations
+    
+    @Override
+    public Parser getParser() {
+        return new GroovyParser();
+    }
+
+    @Override
+    public Formatter getFormatter() {
+        return new org.netbeans.modules.groovy.editor.Formatter();
+    }
+
+    @Override
+    public KeystrokeHandler getKeystrokeHandler() {
+        return new BracketCompleter();
+    }
+
+    @Override
+    public CodeCompletionHandler getCompletionHandler() {
+        return new CodeCompleter();
+    }
+
+    @Override
+    public SemanticAnalyzer getSemanticAnalyzer() {
+        return new GroovySemanticAnalyzer();
+    }
+
+    @Override
+    public OccurrencesFinder getOccurrencesFinder() {
+        return new GroovyOccurrencesFinder();
+    }
+
+    @Override
+    public StructureScanner getStructureScanner() {
+        return new StructureAnalyzer();
+    }
+
+    @Override
+    public Indexer getIndexer() {
+        return new GroovyIndexer();
+    }
+
+    @Override
+    public HintsProvider getHintsProvider() {
+        return new GroovyHintsProvider();
+    }
+
+    @Override
+    public DeclarationFinder getDeclarationFinder() {
+        return new GroovyDeclarationFinder();
     }
 }
