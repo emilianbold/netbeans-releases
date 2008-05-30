@@ -1017,6 +1017,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (!isTmp && getState().equals(STATE_SILENT_STOP) && pendingBreakpointMap.isEmpty()) {
                 setRunning();
             }
+        } else if (msg.startsWith("gdb: unknown target exception")) { // NOI18N
+            DialogDisplayer.getDefault().notify(
+                           new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
+                           "ERR_UnknownTargetException")));
+            setExited();
+            finish(false);
         } else if (msg.startsWith("Copyright ") || // NOI18N
                 msg.startsWith("GDB is free software,") || // NOI18N
                 msg.startsWith("welcome to change it and") || // NOI18N
