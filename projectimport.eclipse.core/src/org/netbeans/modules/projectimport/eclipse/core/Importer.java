@@ -83,7 +83,7 @@ final class Importer {
 
     private final List<EclipseProject> eclProjects;
     private final String destination;
-    private Project[] nbProjects;
+    private final List<Project> nbProjects;
     
     private int nOfProcessed;
     private String progressInfo;
@@ -97,7 +97,7 @@ final class Importer {
     Importer(final List<EclipseProject> eclProjects, String destination) {
         this.eclProjects = eclProjects;
         this.destination = destination;
-        this.nbProjects = new Project[eclProjects.size()];
+        this.nbProjects = new ArrayList<Project>();
 }
     
     /**
@@ -122,7 +122,7 @@ final class Importer {
                             int pos = 0;
                             for (Iterator it = eclProjects.iterator(); it.hasNext(); ) {
                                 EclipseProject eclPrj = (EclipseProject) it.next();
-                                nbProjects[pos++] = importProject(eclPrj, warnings);
+                                nbProjects.add(importProject(eclPrj, warnings));
                             }
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
@@ -164,7 +164,7 @@ final class Importer {
      * Gets imported projects. Call after the importing <code>isDone()</code>.
      */
     Project[] getProjects() {
-        return nbProjects;
+        return nbProjects.toArray(new Project[nbProjects.size()]);
     }
     
     private Project importProject(EclipseProject eclProject, List<String> importProblems) throws IOException {
@@ -191,6 +191,7 @@ final class Importer {
                     eclProject.getWorkspace().getDirectory().getAbsolutePath(), "0", key);
             EclipseProjectReference.write(p, ref);
         }
+        assert p != null;
         return p;
     }
     
