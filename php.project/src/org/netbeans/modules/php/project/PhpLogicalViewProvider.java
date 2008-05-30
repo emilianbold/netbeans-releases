@@ -463,9 +463,9 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
             Action[] actions = new Action[] {
                 CommonProjectActions.newFileAction(),
                 null,
-                provider.getAction(DownloadCommand.ID),
-                provider.getAction(UploadCommand.ID),
-                null,
+//                provider.getAction(DownloadCommand.ID),
+//                provider.getAction(UploadCommand.ID),
+//                null,
                 SystemAction.get(FileSystemAction.class),
                 null,
                 SystemAction.get(FindAction.class),
