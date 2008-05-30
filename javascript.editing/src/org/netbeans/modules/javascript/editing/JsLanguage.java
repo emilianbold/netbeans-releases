@@ -46,6 +46,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
+import org.netbeans.modules.gsf.api.DeclarationFinder;
+import org.netbeans.modules.gsf.api.Formatter;
+import org.netbeans.modules.gsf.api.Indexer;
+import org.netbeans.modules.gsf.api.InstantRenamer;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
+import org.netbeans.modules.gsf.api.OccurrencesFinder;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 
@@ -136,5 +146,57 @@ public class JsLanguage extends DefaultLanguageConfig {
         sourceGroups.put("WebProject", "java"); // NOI18N
         
         return sourceGroups;
+    }
+
+    // Service Registrations
+    
+    @Override
+    public KeystrokeHandler getKeystrokeHandler() {
+        return new JsKeystrokeHandler();
+    }
+
+    @Override
+    public Formatter getFormatter() {
+        return new JsFormatter();
+    }
+
+    @Override
+    public Parser getParser() {
+        return new JsParser();
+    }
+    
+    @Override
+    public CodeCompletionHandler getCompletionHandler() {
+        return new JsCodeCompletion();
+    }
+
+    @Override
+    public StructureScanner getStructureScanner() {
+        return new JsAnalyzer();
+    }
+
+    @Override
+    public Indexer getIndexer() {
+        return new JsIndexer();
+    }
+
+    @Override
+    public DeclarationFinder getDeclarationFinder() {
+        return new JsDeclarationFinder();
+    }
+
+    @Override
+    public SemanticAnalyzer getSemanticAnalyzer() {
+        return new JsSemanticAnalyzer();
+    }
+
+    @Override
+    public OccurrencesFinder getOccurrencesFinder() {
+        return new JsOccurrenceFinder();
+    }
+
+    @Override
+    public InstantRenamer getInstantRenamer() {
+        return new JsRenameHandler();
     }
 }

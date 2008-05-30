@@ -44,7 +44,6 @@ package org.netbeans.modules.javascript.editing;
 import javax.swing.JTextArea;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
-import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 
@@ -59,17 +58,12 @@ import org.netbeans.editor.Utilities;
  * 
  * @author Tor Norbye
  */
-public class JsBracketCompleterTest extends JsTestBase {
+public class JsKeystrokeHandlerTest extends JsTestBase {
     
-    public JsBracketCompleterTest(String testName) {
+    public JsKeystrokeHandlerTest(String testName) {
         super(testName);
     }
     
-    @Override
-    protected KeystrokeHandler getBracketCompletion() {
-        return new JsBracketCompleter();
-    }
-
     private void match(String original) throws BadLocationException {
         super.assertMatches(original);
     }
@@ -453,7 +447,7 @@ public class JsBracketCompleterTest extends JsTestBase {
     
 
     public void testContComment() throws Exception {
-        if (JsBracketCompleter.CONTINUE_COMMENTS) {
+        if (JsKeystrokeHandler.CONTINUE_COMMENTS) {
             insertBreak("// ^", "// \n// ^");
         } else {
             insertBreak("// ^", "// \n^");
@@ -462,7 +456,7 @@ public class JsBracketCompleterTest extends JsTestBase {
     
     public void testContComment2() throws Exception {
         // No auto-# on new lines
-        if (JsBracketCompleter.CONTINUE_COMMENTS) {
+        if (JsKeystrokeHandler.CONTINUE_COMMENTS) {
             insertBreak("   //  ^", "   //  \n   //  ^");
         } else {
             insertBreak("   //  ^", "   //  \n   ^");
@@ -471,7 +465,7 @@ public class JsBracketCompleterTest extends JsTestBase {
     
     public void testContComment3() throws Exception {
         // No auto-# on new lines
-        if (JsBracketCompleter.CONTINUE_COMMENTS) {
+        if (JsKeystrokeHandler.CONTINUE_COMMENTS) {
             insertBreak("   //\t^", "   //\t\n   //\t^");
         } else {
             insertBreak("   //\t^", "   //\t\n   ^");
@@ -484,7 +478,7 @@ public class JsBracketCompleterTest extends JsTestBase {
 
     public void testContComment5() throws Exception {
         // No auto-# on new lines
-        if (JsBracketCompleter.CONTINUE_COMMENTS) {
+        if (JsKeystrokeHandler.CONTINUE_COMMENTS) {
             insertBreak("      // ^", "      // \n      // ^");
         } else {
             insertBreak("      // ^", "      // \n      ^");
@@ -639,7 +633,7 @@ public class JsBracketCompleterTest extends JsTestBase {
     
     public void testBackwardsDeletion() throws Exception {
         String s = "Foo::Bar = whatever('hello')  \n  nextline";
-        JsBracketCompleter bc = new JsBracketCompleter();
+        JsKeystrokeHandler bc = new JsKeystrokeHandler();
         for (int i = s.length(); i >= 1; i--) {
             String shortened = s.substring(0, i);
             BaseDocument doc = getDocument(shortened);

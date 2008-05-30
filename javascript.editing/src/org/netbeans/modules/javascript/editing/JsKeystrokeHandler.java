@@ -89,7 +89,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
-public class JsBracketCompleter implements KeystrokeHandler {
+public class JsKeystrokeHandler implements KeystrokeHandler {
     /** When true, automatically reflows comments that are being edited according to the rdoc
      * conventions as well as the right hand side margin
      */
@@ -125,7 +125,7 @@ public class JsBracketCompleter implements KeystrokeHandler {
      */
     private int previousAdjustmentIndent;
 
-    public JsBracketCompleter() {
+    public JsKeystrokeHandler() {
     }
     
     public boolean isInsertMatchingEnabled(BaseDocument doc) {
