@@ -49,6 +49,7 @@ var MORE_LANGUAGES_REDIRECT_URL = "{alternative.languages.page.url}";
 var JDK_LATEST_UPDATE = "6";
 
 var LOAD_OMNITURE_CODE = 1;
+var LOAD_GOOGLE_ANALYTICS_CODE = 1;
 
 function add_download_tabs() {
 	add_download_tab("6.1");
