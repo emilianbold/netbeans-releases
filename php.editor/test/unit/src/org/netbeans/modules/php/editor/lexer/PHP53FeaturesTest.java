@@ -84,4 +84,26 @@ public class PHP53FeaturesTest extends PHPLexerTestPerformer {
         performFileLexerTest("jump13");
         checkNewResultFiles();
     }
+    
+    public void testNowDoc() throws Exception {
+        clearWorkDir();
+        clearNewResultFiles();
+        performFileLexerTest("nowdoc_000");
+        performFileLexerTest("nowdoc_001");
+        performFileLexerTest("nowdoc_002");
+        performFileLexerTest("nowdoc_003");
+        performFileLexerTest("nowdoc_004");
+        performFileLexerTest("nowdoc_005");
+        performFileLexerTest("nowdoc_006");
+        performFileLexerTest("nowdoc_007");
+        performFileLexerTest("nowdoc_008");
+        performFileLexerTest("nowdoc_009");
+        performFileLexerTest("nowdoc_010");
+        performFileLexerTest("nowdoc_011");
+        performFileLexerTest("nowdoc_012");
+        performFileLexerTest("nowdoc_013");
+        performFileLexerTest("nowdoc_014");
+        performFileLexerTest("nowdoc_015");
+        checkNewResultFiles();
+    }
 }

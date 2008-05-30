@@ -223,6 +223,7 @@ public enum PHPTokenId implements TokenId {
     PHPDOC_COMMENT(null, "comment"), //NOI18N
     UNKNOWN_TOKEN(null, "error"), //NOI18N
     PHP_HEREDOC_TAG(null, "php"), //NOI18N
+    PHP_NOWDOC_TAG(null, "php"), //NOI18N
     PHP_TOKEN(null, "php"), //NOI18N
     PHP__FUNCTION__(null, "constant"), //NOI18N
     PHP_CASTING(null, "keyword"), //NOI18N

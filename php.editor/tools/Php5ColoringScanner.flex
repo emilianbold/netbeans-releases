@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.php.editor.lexer;
 
-import org.netbeans.modules.php.editor.PHPVersion;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 %%
@@ -59,6 +58,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %state ST_PHP_HEREDOC
 %state ST_PHP_START_HEREDOC
 %state ST_PHP_END_HEREDOC
+%state ST_PHP_NOWDOC
+%state ST_PHP_START_NOWDOC
+%state ST_PHP_END_NOWDOC
 %state ST_PHP_LOOKING_FOR_PROPERTY
 %state ST_PHP_VAR_OFFSET
 %state ST_PHP_COMMENT
@@ -81,6 +83,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
     protected String heredoc = null;
     protected int heredoc_len = 0;
+    protected String nowdoc = null;
+    protected int nowdoc_len = 0;
     private boolean asp_tags = false;
     private StateStack stack = new StateStack();
 
@@ -264,6 +268,7 @@ HEREDOC_LABEL_NO_NEWLINE=({LABEL}([^a-zA-Z0-9_\x7f-\xff;$\n\r\\{]|(";"[^$\n\r\\{
 DOUBLE_QUOTES_CHARS=("{"*([^$\"\\{]|("\\"{ANY_CHAR}))|{DOUBLE_QUOTES_LITERAL_DOLLAR})
 BACKQUOTE_CHARS=("{"*([^$`\\{]|("\\"{ANY_CHAR}))|{BACKQUOTE_LITERAL_DOLLAR})
 HEREDOC_CHARS=("{"*([^$\n\r\\{]|("\\"[^\n\r]))|{HEREDOC_LITERAL_DOLLAR}|({HEREDOC_NEWLINE}+({HEREDOC_NON_LABEL}|{HEREDOC_LABEL_NO_NEWLINE})))
+NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\x7f-\xff;\n\r][^\n\r]*)|({LABEL}[;][^\n\r]+)))
 PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-="|"*="|"/="|".="|"%="|"<<="|">>="|"&="|"|="|"^="|"||"|"&&"|"OR"|"AND"|"XOR"|"<<"|">>"
 
 
@@ -890,6 +895,62 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
 }
 
+<ST_PHP_IN_SCRIPTING>b?"<<<"{TABS_AND_SPACES}[']{LABEL}[']{NEWLINE} {
+	int bprefix = (yytext().charAt(0) != '<') ? 1 : 0;
+        int startString=3+1+bprefix;
+        nowdoc_len = yylength()-bprefix-3-2-1-(yytext().charAt(yylength()-2)=='\r'?1:0);
+        while ((yytext().charAt(startString) == ' ') || (yytext().charAt(startString) == '\t')) {
+            startString++;
+            nowdoc_len--;
+        }
+        nowdoc = yytext().substring(startString,nowdoc_len+startString);
+        yybegin(ST_PHP_START_NOWDOC);
+        return PHPTokenId.PHP_NOWDOC_TAG;
+}
+
+<ST_PHP_START_NOWDOC>{ANY_CHAR} {
+	yypushback(1);
+	yybegin(ST_PHP_NOWDOC);
+}
+
+<ST_PHP_START_NOWDOC>{LABEL}";"?[\r\n] {
+    int label_len = yylength() - 1;
+
+    if (yytext().charAt(label_len-1)==';') {
+        label_len--;
+    }
+
+    if (label_len==nowdoc_len && yytext().substring(0,label_len).equals(nowdoc)) {
+        nowdoc=null;
+        nowdoc_len=0;
+        yybegin(ST_PHP_IN_SCRIPTING);
+        return PHPTokenId.PHP_NOWDOC_TAG;
+    } else {
+        return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
+    }
+}
+
+               
+<ST_PHP_NOWDOC>{NOWDOC_CHARS}*{NEWLINE}+{LABEL}";"?[\n\r] {
+    int label_len = yylength() - 1;
+
+    if (yytext().charAt(label_len-1)==';') {
+	   label_len--;
+    }
+    if (label_len > nowdoc_len && yytext().substring(label_len - nowdoc_len,label_len).equals(nowdoc)) {
+        yybegin(ST_PHP_END_NOWDOC);
+    }
+    yypushback(1);
+    return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
+}
+
+<ST_PHP_END_NOWDOC>{ANY_CHAR} {
+    nowdoc=null;
+    nowdoc_len=0;
+    yybegin(ST_PHP_IN_SCRIPTING);
+    return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
+}
+
 <ST_PHP_IN_SCRIPTING>b?"<<<"{TABS_AND_SPACES}{LABEL}{NEWLINE} {
     int bprefix = (yytext().charAt(0) != '<') ? 1 : 0;
     int startString=3+bprefix;
@@ -1026,7 +1087,7 @@ but jflex doesn't support a{n,} so we changed a{2,} to aa+
    This rule must be the last in the section!!
    it should contain all the states.
    ============================================ */
-<ST_PHP_IN_SCRIPTING,ST_PHP_DOUBLE_QUOTES,ST_PHP_VAR_OFFSET,ST_PHP_BACKQUOTE,ST_PHP_HEREDOC,ST_PHP_START_HEREDOC,ST_PHP_END_HEREDOC>. {
+<ST_PHP_IN_SCRIPTING,ST_PHP_DOUBLE_QUOTES,ST_PHP_VAR_OFFSET,ST_PHP_BACKQUOTE,ST_PHP_HEREDOC,ST_PHP_START_HEREDOC,ST_PHP_END_HEREDOC,ST_PHP_NOWDOC,ST_PHP_START_NOWDOC,ST_PHP_END_NOWDOC>. {
     yypushback(1);
     pushState(ST_PHP_HIGHLIGHTING_ERROR);
 }
