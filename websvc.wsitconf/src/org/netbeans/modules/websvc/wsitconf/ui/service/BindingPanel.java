@@ -455,7 +455,7 @@ public class BindingPanel extends SectionInnerPanel {
             
             boolean defaults = devDefaultsChBox.isSelected();
 
-            profConfigButton.setEnabled(secSelected && !defaults);
+            profConfigButton.setEnabled(secSelected);
             
             if (secSelected) {                
 

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,48 +31,47 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.sql.loader;
+package org.netbeans.modules.websvc.wsitconf.design;
 
-import java.io.IOException;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.ExtensionList;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.UniFileLoader;
+import javax.swing.JComponent;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author Andrei Badea
+ * @author Martin Grebac
  */
-public class SQLDataLoader extends UniFileLoader {
+public class ConfigRunnable implements Runnable {
 
-    private static final long serialVersionUID = 7673892611992320469L;
+    private ProgressHandle progressHandle = ProgressHandleFactory.createHandle(null);
+    final ProgressPanel progressPanel = new ProgressPanel(
+            NbBundle.getMessage(MtomConfiguration.class, "LBL_Wait")); //NOI18N
 
-    private static final String SQL_MIME_TYPE = "text/x-sql"; // NOI18N
-    
-    public SQLDataLoader() {
-        super("org.netbeans.modules.db.sql.loader.SQLDataObject"); // NOI18N
-    }
-    
-    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
-        return new SQLDataObject(primaryFile, this);
-    }
-    
-    protected String defaultDisplayName() {
-        return NbBundle.getMessage(SQLDataLoader.class, "LBL_LoaderName");
+    boolean stop = false;
+    boolean started = false;
+
+    public void run() {
+        JComponent progressComponent = ProgressHandleFactory.createProgressComponent(progressHandle);
+        if (!stop) {
+            progressHandle.start();
+            started = true;
+            progressHandle.switchToIndeterminate();
+            progressPanel.open(progressComponent);
+        }
     }
 
-    protected void initialize() {
-        super.initialize();
-        ExtensionList extensions = new ExtensionList();
-        extensions.addMimeType(SQL_MIME_TYPE);
-        setExtensions(extensions);
-    }
-    
-    protected String actionsContext() {
-        return "Loaders/text/x-sql/Actions/"; // NOI18N    
-    }
+    public void stop() {
+        stop = true;
+        if (started) {
+            progressHandle.finish();
+        }
+        progressPanel.close();
+    }    
 }

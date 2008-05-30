@@ -301,8 +301,8 @@ public class STSClientPanel extends SectionInnerPanel {
         namespaceTextField = new javax.swing.JTextField();
         metadataLabel = new javax.swing.JLabel();
         metadataField = new javax.swing.JTextField();
-        policyVersionLabel = new javax.swing.JLabel();
-        policyVersionTextField = new javax.swing.JTextField();
+        trustVersionLabel = new javax.swing.JLabel();
+        trustVersionTextField = new javax.swing.JTextField();
 
         addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -349,10 +349,10 @@ public class STSClientPanel extends SectionInnerPanel {
         metadataLabel.setLabelFor(metadataField);
         org.openide.awt.Mnemonics.setLocalizedText(metadataLabel, org.openide.util.NbBundle.getMessage(STSClientPanel.class, "LBL_STSPanel_Metadata")); // NOI18N
 
-        policyVersionLabel.setLabelFor(policyVersionTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(policyVersionLabel, org.openide.util.NbBundle.getMessage(STSClientPanel.class, "LBL_STSPanel_PolicyVersion")); // NOI18N
+        trustVersionLabel.setLabelFor(trustVersionTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(trustVersionLabel, org.openide.util.NbBundle.getMessage(STSClientPanel.class, "LBL_STSPanel_PolicyVersion")); // NOI18N
 
-        policyVersionTextField.setHorizontalAlignment(javax.swing.JTextField.LEFT);
+        trustVersionTextField.setHorizontalAlignment(javax.swing.JTextField.LEFT);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -367,7 +367,7 @@ public class STSClientPanel extends SectionInnerPanel {
                     .add(metadataLabel)
                     .add(serviceNameLabel)
                     .add(portNameLabel)
-                    .add(policyVersionLabel))
+                    .add(trustVersionLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(namespaceTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
@@ -376,7 +376,7 @@ public class STSClientPanel extends SectionInnerPanel {
                     .add(wsdlLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
                     .add(endpointTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
                     .add(metadataField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 383, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(policyVersionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE))
+                    .add(trustVersionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -411,8 +411,8 @@ public class STSClientPanel extends SectionInnerPanel {
                     .add(namespaceTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(policyVersionLabel)
-                    .add(policyVersionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(trustVersionLabel)
+                    .add(trustVersionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -446,12 +446,12 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     private javax.swing.JLabel metadataLabel;
     private javax.swing.JLabel namespaceLabel;
     private javax.swing.JTextField namespaceTextField;
-    private javax.swing.JLabel policyVersionLabel;
-    private javax.swing.JTextField policyVersionTextField;
     private javax.swing.JLabel portNameLabel;
     private javax.swing.JTextField portNameTextField;
     private javax.swing.JLabel serviceNameLabel;
     private javax.swing.JTextField serviceNameTextField;
+    private javax.swing.JLabel trustVersionLabel;
+    private javax.swing.JTextField trustVersionTextField;
     private javax.swing.JLabel wsdlLocationLabel;
     private javax.swing.JTextField wsdlLocationTextField;
     // End of variables declaration//GEN-END:variables

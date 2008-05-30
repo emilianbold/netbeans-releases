@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,48 +31,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.sql.loader;
-
-import java.io.IOException;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.ExtensionList;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.UniFileLoader;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.j2ee.deployment.plugins.spi;
 
 /**
+ * Descriptor providing extra (and optional) information about the server instance.
  *
- * @author Andrei Badea
+ * @author Petr Hejl
+ * @since 1.46
  */
-public class SQLDataLoader extends UniFileLoader {
+public interface ServerInstanceDescriptor {
 
-    private static final long serialVersionUID = 7673892611992320469L;
+    /**
+     * Returns the HTTP port of the server.
+     *
+     * @return the HTTP port of the server
+     */
+    int getHttpPort();
 
-    private static final String SQL_MIME_TYPE = "text/x-sql"; // NOI18N
-    
-    public SQLDataLoader() {
-        super("org.netbeans.modules.db.sql.loader.SQLDataObject"); // NOI18N
-    }
-    
-    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
-        return new SQLDataObject(primaryFile, this);
-    }
-    
-    protected String defaultDisplayName() {
-        return NbBundle.getMessage(SQLDataLoader.class, "LBL_LoaderName");
-    }
+    /**
+     * Returns the hostname of the server. Returned name is usable to reach
+     * the server from the computer where IDE runs.
+     *
+     * @return the hostname of the server
+     */
+    String getHostname();
 
-    protected void initialize() {
-        super.initialize();
-        ExtensionList extensions = new ExtensionList();
-        extensions.addMimeType(SQL_MIME_TYPE);
-        setExtensions(extensions);
-    }
-    
-    protected String actionsContext() {
-        return "Loaders/text/x-sql/Actions/"; // NOI18N    
-    }
+    /**
+     * Returns <code>true</code> if the server is installed locally,
+     * <code>false</code> otherwise.
+     *
+     * @return <code>true</code> if the server is installed locally
+     */
+    boolean isLocal();
+
 }

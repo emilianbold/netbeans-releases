@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,48 +31,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.sql.loader;
+package org.netbeans.tests.j2eeserver.plugin;
 
-import java.io.IOException;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.ExtensionList;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.UniFileLoader;
-import org.openide.util.NbBundle;
+import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
+import org.netbeans.tests.j2eeserver.plugin.jsr88.DepManager;
 
 /**
  *
- * @author Andrei Badea
+ * @author Petr Hejl
  */
-public class SQLDataLoader extends UniFileLoader {
+public class TestInstanceDescriptor implements ServerInstanceDescriptor {
 
-    private static final long serialVersionUID = 7673892611992320469L;
+    private final DepManager manager;
 
-    private static final String SQL_MIME_TYPE = "text/x-sql"; // NOI18N
-    
-    public SQLDataLoader() {
-        super("org.netbeans.modules.db.sql.loader.SQLDataObject"); // NOI18N
-    }
-    
-    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
-        return new SQLDataObject(primaryFile, this);
-    }
-    
-    protected String defaultDisplayName() {
-        return NbBundle.getMessage(SQLDataLoader.class, "LBL_LoaderName");
+    public TestInstanceDescriptor(DeploymentManager manager) {
+        this.manager = (DepManager) manager;
     }
 
-    protected void initialize() {
-        super.initialize();
-        ExtensionList extensions = new ExtensionList();
-        extensions.addMimeType(SQL_MIME_TYPE);
-        setExtensions(extensions);
+    public String getHostname() {
+        return "localhost";
     }
-    
-    protected String actionsContext() {
-        return "Loaders/text/x-sql/Actions/"; // NOI18N    
+
+    public int getHttpPort() {
+        return Integer.parseInt(manager.getInstanceProperties().getProperty(InstanceProperties.HTTP_PORT_NUMBER));
     }
+
+    public boolean isLocal() {
+        return true;
+    }
+
+
 }

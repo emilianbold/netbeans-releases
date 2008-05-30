@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,46 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.db.sql.loader;
+package org.netbeans.modules.websvc.wsitmodelext.security.tokens;
 
-import java.io.IOException;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.ExtensionList;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.UniFileLoader;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 
 /**
  *
- * @author Andrei Badea
+ * @author Martin Grebac
  */
-public class SQLDataLoader extends UniFileLoader {
-
-    private static final long serialVersionUID = 7673892611992320469L;
-
-    private static final String SQL_MIME_TYPE = "text/x-sql"; // NOI18N
-    
-    public SQLDataLoader() {
-        super("org.netbeans.modules.db.sql.loader.SQLDataObject"); // NOI18N
-    }
-    
-    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
-        return new SQLDataObject(primaryFile, this);
-    }
-    
-    protected String defaultDisplayName() {
-        return NbBundle.getMessage(SQLDataLoader.class, "LBL_LoaderName");
-    }
-
-    protected void initialize() {
-        super.initialize();
-        ExtensionList extensions = new ExtensionList();
-        extensions.addMimeType(SQL_MIME_TYPE);
-        setExtensions(extensions);
-    }
-    
-    protected String actionsContext() {
-        return "Loaders/text/x-sql/Actions/"; // NOI18N    
-    }
+public interface HashPassword extends ExtensibilityElement {
 }
