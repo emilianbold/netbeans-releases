@@ -43,7 +43,9 @@ package org.netbeans.modules.websvc.wsitconf.ui.client;
 
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
+import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
@@ -81,13 +83,21 @@ public class STSClientPanel extends SectionInnerPanel {
         serviceNameTextField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         wsdlLocationLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         wsdlLocationTextField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        trustVersionLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        trustVersionCombo.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
 
+        inSync = true;
+        trustVersionCombo.addItem(ComboConstants.TRUST_10);
+        trustVersionCombo.addItem(ComboConstants.TRUST_13);
+        inSync = false;
+        
         addImmediateModifier(endpointTextField);
         addImmediateModifier(namespaceTextField);
         addImmediateModifier(portNameTextField);
         addImmediateModifier(serviceNameTextField);
         addImmediateModifier(wsdlLocationTextField);
         addImmediateModifier(metadataField);
+        addImmediateModifier(trustVersionCombo);
 
         sync();
     }
@@ -124,6 +134,11 @@ public class STSClientPanel extends SectionInnerPanel {
         if (wsdlLocation != null) {
             setWsdlLocation(wsdlLocation);
         } 
+        
+        String wstVersion = ProprietarySecurityPolicyModelHelper.getPreSTSWstVersion(binding);
+        if (wstVersion != null) {
+            setWstVersion(wstVersion);
+        }
         
         inSync = false;
     }
@@ -175,6 +190,22 @@ public class STSClientPanel extends SectionInnerPanel {
     private void setWsdlLocation(String wsdlLocation) {
         this.wsdlLocationTextField.setText(wsdlLocation);
     }
+
+    private String getWstVersion() {
+        if (ComboConstants.TRUST_13.equals(trustVersionCombo.getSelectedItem())) {
+            return ComboConstants.TRUST_13_POLICYSTR;
+        } else {
+            return ComboConstants.TRUST_10_POLICYSTR;
+        }
+    }
+
+    private void setWstVersion(String wstVersion) {        
+        if (ComboConstants.TRUST_13_POLICYSTR.equals(wstVersion)) {
+            trustVersionCombo.setSelectedItem(ComboConstants.TRUST_13);
+        } else {
+            trustVersionCombo.setSelectedItem(ComboConstants.TRUST_10);
+        }
+    }
     
     @Override
     public void setValue(javax.swing.JComponent source, Object value) {
@@ -187,7 +218,6 @@ public class STSClientPanel extends SectionInnerPanel {
                 } else {
                     ProprietarySecurityPolicyModelHelper.setPreSTSEndpoint(binding, endpoint);
                 }
-                return;
             }
 
             if (source.equals(metadataField)) {
@@ -197,7 +227,6 @@ public class STSClientPanel extends SectionInnerPanel {
                 } else {
                     ProprietarySecurityPolicyModelHelper.setPreSTSMetadata(binding, metad);
                 }
-                return;
             }
 
             if (source.equals(namespaceTextField)) {
@@ -207,7 +236,6 @@ public class STSClientPanel extends SectionInnerPanel {
                 } else {
                     ProprietarySecurityPolicyModelHelper.setPreSTSNamespace(binding, ns);
                 }
-                return;
             }
 
             if (source.equals(serviceNameTextField)) {
@@ -217,7 +245,6 @@ public class STSClientPanel extends SectionInnerPanel {
                 } else {
                     ProprietarySecurityPolicyModelHelper.setPreSTSServiceName(binding, sname);
                 }
-                return;
             }
 
             if (source.equals(portNameTextField)) {
@@ -227,7 +254,6 @@ public class STSClientPanel extends SectionInnerPanel {
                 } else {
                     ProprietarySecurityPolicyModelHelper.setPreSTSPortName(binding, pname);
                 }
-                return;
             }
 
             if (source.equals(wsdlLocationTextField)) {
@@ -237,8 +263,13 @@ public class STSClientPanel extends SectionInnerPanel {
                 } else {
                     ProprietarySecurityPolicyModelHelper.setPreSTSWsdlLocation(binding, wsdlLoc);
                 }
-                return;
             }
+
+            if (source.equals(trustVersionCombo)) {
+                String version = getWstVersion();
+                ProprietarySecurityPolicyModelHelper.setPreSTSWstVersion(binding, version);
+            }
+            
             enableDisable();
         }
     }
@@ -302,7 +333,7 @@ public class STSClientPanel extends SectionInnerPanel {
         metadataLabel = new javax.swing.JLabel();
         metadataField = new javax.swing.JTextField();
         trustVersionLabel = new javax.swing.JLabel();
-        trustVersionTextField = new javax.swing.JTextField();
+        trustVersionCombo = new javax.swing.JComboBox();
 
         addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -349,10 +380,7 @@ public class STSClientPanel extends SectionInnerPanel {
         metadataLabel.setLabelFor(metadataField);
         org.openide.awt.Mnemonics.setLocalizedText(metadataLabel, org.openide.util.NbBundle.getMessage(STSClientPanel.class, "LBL_STSPanel_Metadata")); // NOI18N
 
-        trustVersionLabel.setLabelFor(trustVersionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(trustVersionLabel, org.openide.util.NbBundle.getMessage(STSClientPanel.class, "LBL_STSPanel_PolicyVersion")); // NOI18N
-
-        trustVersionTextField.setHorizontalAlignment(javax.swing.JTextField.LEFT);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -375,13 +403,10 @@ public class STSClientPanel extends SectionInnerPanel {
                     .add(serviceNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
                     .add(wsdlLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
                     .add(endpointTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
-                    .add(metadataField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 383, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(trustVersionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE))
+                    .add(metadataField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+                    .add(trustVersionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 63, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
-
-        layout.linkSize(new java.awt.Component[] {endpointTextField, metadataField, namespaceTextField, portNameTextField, serviceNameTextField, wsdlLocationTextField}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
@@ -412,7 +437,7 @@ public class STSClientPanel extends SectionInnerPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(trustVersionLabel)
-                    .add(trustVersionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(trustVersionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -450,8 +475,8 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     private javax.swing.JTextField portNameTextField;
     private javax.swing.JLabel serviceNameLabel;
     private javax.swing.JTextField serviceNameTextField;
+    private javax.swing.JComboBox trustVersionCombo;
     private javax.swing.JLabel trustVersionLabel;
-    private javax.swing.JTextField trustVersionTextField;
     private javax.swing.JLabel wsdlLocationLabel;
     private javax.swing.JTextField wsdlLocationTextField;
     // End of variables declaration//GEN-END:variables
