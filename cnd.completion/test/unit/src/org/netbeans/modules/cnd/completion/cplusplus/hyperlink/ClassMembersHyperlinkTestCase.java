@@ -300,6 +300,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("ClassA.cc", 102, 15, "ClassA.h", 69, 5); // ostream& operator <<(ostream& output, const ClassA& item) {
     }
 
+    public void testIZ136102() throws Exception {
+        // from usage to definition
+        performTest("IZ136102.cc", 15, 8, "IZ136102.cc", 6, 12);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
         
         protected Class getTestCaseDataClass() {

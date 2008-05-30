@@ -230,6 +230,9 @@ public class Resolver3 implements Resolver {
                 offset = oldOffset;
             }
         }
+        if (file.getAbsolutePath().toString().indexOf("stl_list.h")>0){
+            System.out.println(file.getAbsolutePath());
+        }
         gatherMaps(file.getDeclarations());
     }
     
@@ -497,6 +500,18 @@ public class Resolver3 implements Resolver {
                         }
                     }
                 }
+                
+                if( result == null ) {
+                    for (Iterator<CharSequence> iter = usedNamespaces.iterator(); iter.hasNext();) {
+                        String nsp = iter.next().toString();
+                        String fqn = nsp + "::" + sb; // NOI18N
+                        result = findClassifier(fqn);
+                        if( result != null ) {
+                            break;
+                        }
+                    }
+                }
+
                 if( result == null ) {
                     CsmObject first = new Resolver3(this.file, this.origOffset, this).resolve(nameTokens[0], NAMESPACE);
                     if( first != null ) {
