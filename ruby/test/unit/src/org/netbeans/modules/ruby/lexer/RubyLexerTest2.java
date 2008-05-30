@@ -25,8 +25,9 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ruby;
+package org.netbeans.modules.ruby.lexer;
 
+import org.netbeans.modules.ruby.*;
 import javax.swing.JTextArea;
 import javax.swing.text.Caret;
 import org.netbeans.editor.BaseDocument;
@@ -44,7 +45,7 @@ public class RubyLexerTest2 extends RubyTestBase {
         Caret caret = ta.getCaret();
         caret.setDot(6);
         
-        BracketCompleter bc = new BracketCompleter();
+        RubyKeystrokeHandler bc = new RubyKeystrokeHandler();
         bc.getNextWordOffset(doc, 9, true);
         
         doc.atomicLock();

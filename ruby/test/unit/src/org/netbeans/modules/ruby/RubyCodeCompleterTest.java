@@ -45,23 +45,17 @@ import javax.swing.JTextArea;
 import javax.swing.text.Caret;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 
 /**
  *
  * @author Tor Norbye
  */
-public class CodeCompleterTest extends RubyTestBase {
+public class RubyCodeCompleterTest extends RubyTestBase {
     
-    public CodeCompleterTest(String testName) {
+    public RubyCodeCompleterTest(String testName) {
         super(testName);
     }
 
-    @Override
-    protected CodeCompletionHandler getCodeCompleter() {
-        return new CodeCompleter();
-    }
-    
     public void checkCompletion(String file, String caretLine) throws Exception {
         checkCompletion(file, caretLine, false);
     }
@@ -100,7 +94,7 @@ public class CodeCompleterTest extends RubyTestBase {
     
     
     private void assertAutoQuery(QueryType queryType, String source, String typedText) {
-        CodeCompleter completer = new CodeCompleter();
+        RubyCodeCompleter completer = new RubyCodeCompleter();
         int caretPos = source.indexOf('^');
         source = source.substring(0, caretPos) + source.substring(caretPos+1);
         

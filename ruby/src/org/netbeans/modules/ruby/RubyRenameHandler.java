@@ -99,8 +99,8 @@ end
  *
  * @author Tor Norbye
  */
-public class RenameHandler implements InstantRenamer {
-    public RenameHandler() {
+public class RubyRenameHandler implements InstantRenamer {
+    public RubyRenameHandler() {
     }
 
     public boolean isRenameAllowed(CompilationInfo info, int caretOffset,
@@ -108,7 +108,7 @@ public class RenameHandler implements InstantRenamer {
         Node root = AstUtilities.getRoot(info);
 
         if (root == null) {
-            explanationRetValue[0] = NbBundle.getMessage(RenameHandler.class, "NoRenameWithErrors");
+            explanationRetValue[0] = NbBundle.getMessage(RubyRenameHandler.class, "NoRenameWithErrors");
 
             return false;
         }
@@ -138,7 +138,7 @@ public class RenameHandler implements InstantRenamer {
             }
         }
 
-        //explanationRetValue[0] = NbBundle.getMessage(RenameHandler.class, "NoRename");
+        //explanationRetValue[0] = NbBundle.getMessage(RubyRenameHandler.class, "NoRename");
         //return false;
         switch (closest.nodeId) {
         case INSTASGNNODE:

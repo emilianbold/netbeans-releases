@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,19 +39,18 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.ruby;
+package org.netbeans.modules.ruby.lexer;
 
-import org.netbeans.modules.ruby.lexer.RubyStringTokenId;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
+import org.netbeans.modules.ruby.lexer.RubyTokenId;
 
 /**
- *
- * @author Tor Norbye
+ * Test tokens dump of Ruby code input. Based on Java one by Mila Metelka.
  */
-public class RubyStringLexerTest extends NbTestCase {
+public class RubyTokenDumpTest extends NbTestCase {
     
-    public RubyStringLexerTest(String testName) {
+    public RubyTokenDumpTest(String testName) {
         super(testName);
     }
     
@@ -61,8 +60,33 @@ public class RubyStringLexerTest extends NbTestCase {
         LexerTestUtilities.setTesting(true);
     }
 
-    public void test() throws Exception {
-        LexerTestUtilities.checkTokenDump(this, "testfiles/testStrings.rb.txt",
-                RubyStringTokenId.languageDouble());
+    public void testInput() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/testInput.rb.txt",
+                RubyTokenId.language());
     }
+
+    public void testHeredoc1() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/heredoc1.rb.txt",
+                RubyTokenId.language());
+    }
+    
+    public void testEmbeddedCode() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/embeddedcode.rb.txt",
+                RubyTokenId.language());
+    }    
+
+    public void testScenario2() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/postgresql_adapter.rb.txt",
+                RubyTokenId.language());
+    }    
+
+    public void testScenario3() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/freakout.rb.txt",
+                RubyTokenId.language());
+    }    
+
+    public void testPercentExpressions() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/percent-expressions2.rb.txt",
+                RubyTokenId.language());
+    }    
 }

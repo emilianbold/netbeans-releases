@@ -1788,10 +1788,11 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         
         // Try to guess the name - see if it's in a method and if so name it after the parameter
         IndexedMethod[] methodHolder = new IndexedMethod[1];
+        @SuppressWarnings("unchecked")
         Set<IndexedMethod>[] alternatesHolder = new Set[1];
         int[] paramIndexHolder = new int[1];
         int[] anchorOffsetHolder = new int[1];
-        if (!CodeCompleter.computeMethodCall(info, lexRange.getStart(), astRange.getStart(),
+        if (!RubyCodeCompleter.computeMethodCall(info, lexRange.getStart(), astRange.getStart(),
                 methodHolder, paramIndexHolder, anchorOffsetHolder, alternatesHolder)) {
 
             return guessedName;
@@ -1855,11 +1856,11 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         Node method = AstUtilities.findLocalScope(closest, path);
         Map<String, Node> variables = new HashMap<String, Node>();
         // Add locals
-        CodeCompleter.addLocals(method, variables);
+        RubyCodeCompleter.addLocals(method, variables);
 
         List<Node> applicableBlocks = AstUtilities.getApplicableBlocks(path, false);
         for (Node block : applicableBlocks) {
-            CodeCompleter.addDynamic(block, variables);
+            RubyCodeCompleter.addDynamic(block, variables);
         }
         
         return variables.keySet();

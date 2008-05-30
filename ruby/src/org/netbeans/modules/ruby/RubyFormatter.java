@@ -87,16 +87,16 @@ end
  *
  * @author Tor Norbye
  */
-public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
+public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
     private boolean isRhtmlDocument;
     private final CodeStyle codeStyle;
     private int rightMarginOverride = -1;
 
-    public Formatter() {
+    public RubyFormatter() {
         this.codeStyle = CodeStyle.getDefault(null);
     }
     
-    public Formatter(CodeStyle codeStyle, int rightMarginOverride) {
+    public RubyFormatter(CodeStyle codeStyle, int rightMarginOverride) {
         assert codeStyle != null;
         this.codeStyle = codeStyle;
         this.rightMarginOverride = rightMarginOverride;

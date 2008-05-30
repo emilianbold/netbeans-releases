@@ -82,11 +82,11 @@ import org.netbeans.modules.ruby.lexer.LexUtilities;
  * @todo Stash unused variables in a list I can reference from a quickfix!
  * @author Tor Norbye
  */
-public class SemanticAnalysis implements SemanticAnalyzer {
+public class RubySemanticAnalyzer implements SemanticAnalyzer {
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
 
-    public SemanticAnalysis() {
+    public RubySemanticAnalyzer() {
     }
 
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {

@@ -123,7 +123,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Tor Norbye
  */
-public class DeclarationFinder implements org.netbeans.modules.gsf.api.DeclarationFinder {
+public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.DeclarationFinder {
     private static final boolean CHOOSE_ONE_DECLARATION = Boolean.getBoolean("ruby.choose_one_decl");
     
     /** An increasing number; I will be using this number modulo the  */
@@ -132,8 +132,8 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
     /** When true, don't match alias nodes as reads. Used during traversal of the AST. */
     private boolean ignoreAlias;
 
-    /** Creates a new instance of DeclarationFinder */
-    public DeclarationFinder() {
+    /** Creates a new instance of RubyDeclarationFinder */
+    public RubyDeclarationFinder() {
     }
 
     public OffsetRange getReferenceSpan(Document document, int lexOffset) {
@@ -399,7 +399,7 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
                     if (method != null) {
                         // TODO - if the lhs is "foo.bar." I need to split this
                         // up and do it a bit more cleverly
-                        TypeAnalyzer analyzer = new TypeAnalyzer(/*info.getParserResult(),*/ index, method, closest, astOffset, lexOffset, doc, info.getFileObject());
+                        RubyTypeAnalyzer analyzer = new RubyTypeAnalyzer(/*info.getParserResult(),*/ index, method, closest, astOffset, lexOffset, doc, info.getFileObject());
                         type = analyzer.getType(lhs);
                     }
                 }
@@ -1186,7 +1186,7 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
                 if (method != null) {
                     // TODO - if the lhs is "foo.bar." I need to split this
                     // up and do it a bit more cleverly
-                    TypeAnalyzer analyzer = new TypeAnalyzer(/*info.getParserResult(),*/ index, method, node, astOffset, lexOffset, 
+                    RubyTypeAnalyzer analyzer = new RubyTypeAnalyzer(/*info.getParserResult(),*/ index, method, node, astOffset, lexOffset, 
                             (BaseDocument)doc, info.getFileObject());
                     type = analyzer.getType(lhs);
                 }
@@ -2234,7 +2234,7 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
                     // Deleted file?
                     // Just leave out the file name
                 } else if (url.indexOf("rubystubs") != -1) {
-                    filename = NbBundle.getMessage(DeclarationFinder.class, "RubyLib");
+                    filename = NbBundle.getMessage(RubyDeclarationFinder.class, "RubyLib");
                     
                     if (url.indexOf("/stub_") == -1) {
                         // Not a stub file, such as ftools.rb
@@ -2290,17 +2290,17 @@ public class DeclarationFinder implements org.netbeans.modules.gsf.api.Declarati
 
                 if (filename != null) {
                     formatter.appendText(" ");
-                    formatter.appendText(NbBundle.getMessage(DeclarationFinder.class, "In"));
+                    formatter.appendText(NbBundle.getMessage(RubyDeclarationFinder.class, "In"));
                     formatter.appendText(" ");
                     formatter.appendText(filename);
                 }
                 
                 if (documented) {
                     formatter.appendText(" ");
-                    formatter.appendText(NbBundle.getMessage(DeclarationFinder.class, "Documented"));
+                    formatter.appendText(NbBundle.getMessage(RubyDeclarationFinder.class, "Documented"));
                 } else if (nodoc) {
                     formatter.appendText(" ");
-                    formatter.appendText(NbBundle.getMessage(DeclarationFinder.class, "NoDoced"));
+                    formatter.appendText(NbBundle.getMessage(RubyDeclarationFinder.class, "NoDoced"));
                 }
 
                 if (isPreferred) {

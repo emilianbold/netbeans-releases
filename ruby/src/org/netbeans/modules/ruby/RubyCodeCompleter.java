@@ -177,7 +177,7 @@ import org.openide.util.NbBundle;
  *    { } and do/end !!
  * @author Tor Norbye
  */
-public class CodeCompleter implements CodeCompletionHandler {
+public class RubyCodeCompleter implements CodeCompletionHandler {
     /** Another good logical parameter would be SINGLE_WHITESPACE which would insert a whitespace separator IF NEEDED */
     /** Live code template parameter: require the given file, if not already done so */
     private static final String KEY_REQUIRE = "require"; // NOI18N
@@ -398,7 +398,7 @@ public class CodeCompleter implements CodeCompletionHandler {
     private boolean caseSensitive;
     private int anchor;
 
-    public CodeCompleter() {
+    public RubyCodeCompleter() {
     }
 
     private boolean startsWith(String theString, String prefix) {
@@ -935,7 +935,7 @@ public class CodeCompleter implements CodeCompletionHandler {
                 if (method != null) {
                     // TODO - if the lhs is "foo.bar." I need to split this
                     // up and do it a bit more cleverly
-                    TypeAnalyzer analyzer = new TypeAnalyzer(/*request.info.getParserResult(),*/ index, method, node, astOffset, lexOffset, doc, fileObject);
+                    RubyTypeAnalyzer analyzer = new RubyTypeAnalyzer(/*request.info.getParserResult(),*/ index, method, node, astOffset, lexOffset, doc, fileObject);
                     type = analyzer.getType(lhs);
                 }
             }
@@ -1576,7 +1576,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             } else if (targetMethod == null) {
                 // Look up the
                 // See if we can find the method corresponding to this call
-                targetMethod = new DeclarationFinder().findMethodDeclaration(info, call, path, 
+                targetMethod = new RubyDeclarationFinder().findMethodDeclaration(info, call, path, 
                         alternativesHolder);
                 if (targetMethod == null) {
                     return false;
@@ -2608,7 +2608,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         // Try to pick the best match among many documentation entries: Heuristic time.
         // Similar to heuristics used for Go To Declaration: Prefer long documentation,
         // prefer documentation related to the require-statements in this file, etc.
-        DeclarationFinder finder = new DeclarationFinder();
+        RubyDeclarationFinder finder = new RubyDeclarationFinder();
         IndexedElement candidate = null;
 
         if (classes.size() > 0) {
@@ -2859,7 +2859,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         StringBuilder sb = new StringBuilder();
 
         try {
-            is = new BufferedInputStream(CodeCompleter.class.getResourceAsStream("resources/" +
+            is = new BufferedInputStream(RubyCodeCompleter.class.getResourceAsStream("resources/" +
                     basename));
             //while (is)
             while (true) {
@@ -3082,7 +3082,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         Element element = null;
         if (handle instanceof ElementHandle.UrlHandle) {
             String url = ((ElementHandle.UrlHandle)handle).getUrl();
-            DeclarationLocation loc = new DeclarationFinder().findLinkedMethod(info, url);
+            DeclarationLocation loc = new RubyDeclarationFinder().findLinkedMethod(info, url);
             if (loc != DeclarationLocation.NONE) {
                 //element = loc.getElement();
                 ElementHandle h = loc.getElement();
@@ -3129,9 +3129,9 @@ public class CodeCompleter implements CodeCompletionHandler {
         if (comments == null) {
             if (element.getName().startsWith("find_by_") ||
                 element.getName().startsWith("find_all_by_")) {
-                return new RDocFormatter().getSignature(element) + NbBundle.getMessage(CodeCompleter.class, "DynamicMethod");
+                return new RDocFormatter().getSignature(element) + NbBundle.getMessage(RubyCodeCompleter.class, "DynamicMethod");
             }
-            String html = new RDocFormatter().getSignature(element) + "\n<hr>\n<i>" + NbBundle.getMessage(CodeCompleter.class, "NoCommentFound") +"</i>";
+            String html = new RDocFormatter().getSignature(element) + "\n<hr>\n<i>" + NbBundle.getMessage(RubyCodeCompleter.class, "NoCommentFound") +"</i>";
 
             return html;
         }

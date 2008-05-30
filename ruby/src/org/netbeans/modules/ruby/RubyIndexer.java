@@ -74,7 +74,7 @@ import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
-import org.netbeans.modules.ruby.StructureAnalyzer.AnalysisResult;
+import org.netbeans.modules.ruby.RubyStructureAnalyzer.AnalysisResult;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.ClassElement;
 import org.netbeans.modules.ruby.elements.IndexedClass;

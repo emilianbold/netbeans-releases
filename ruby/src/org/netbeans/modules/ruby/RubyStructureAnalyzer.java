@@ -120,7 +120,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
-public class StructureAnalyzer implements StructureScanner {
+public class RubyStructureAnalyzer implements StructureScanner {
     
     private Set<AstClassElement> haveAccessModifiers;
     private List<AstElement> structure;
@@ -134,7 +134,7 @@ public class StructureAnalyzer implements StructureScanner {
     private static final String RUBY_KEYWORD = "org/netbeans/modules/ruby/jruby.png"; //NOI18N
     private static ImageIcon keywordIcon;
     
-    public StructureAnalyzer() {
+    public RubyStructureAnalyzer() {
     }
 
     public List<?extends StructureItem> scan(CompilationInfo info, HtmlFormatter formatter) {

@@ -63,7 +63,7 @@ import org.netbeans.modules.gsf.api.HintFix;
 import org.netbeans.modules.gsf.api.HintSeverity;
 import org.netbeans.modules.gsf.api.PreviewableFix;
 import org.netbeans.modules.gsf.api.RuleContext;
-import org.netbeans.modules.ruby.Formatter;
+import org.netbeans.modules.ruby.RubyFormatter;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
@@ -235,7 +235,7 @@ public class ColonToThen extends RubyAstRule {
             EditList list = new EditList(doc);
             switch (mode) {
             case INSERT_NEWLINE:
-                list.setFormatter(new Formatter(), false);
+                list.setFormatter(new RubyFormatter(), false);
                 list.replace(offset, 1, "\n", true, 0); // NOI18N
                 break;
             case INSERT_THEN: {

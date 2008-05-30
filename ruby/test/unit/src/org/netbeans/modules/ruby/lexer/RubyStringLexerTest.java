@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,62 +38,31 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.core.syntax.gsf;
 
-import org.netbeans.api.jsp.lexer.JspTokenId;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.gsf.api.Parser;
-import org.netbeans.modules.gsf.api.StructureScanner;
-import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+package org.netbeans.modules.ruby.lexer;
 
-public class JspLanguage extends DefaultLanguageConfig {
+import org.netbeans.modules.ruby.lexer.RubyStringTokenId;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.lib.lexer.test.LexerTestUtilities;
+
+/**
+ *
+ * @author Tor Norbye
+ */
+public class RubyStringLexerTest extends NbTestCase {
     
-    //XXX no line comment in jsp!
-    private static final String LINE_COMMENT_PREFIX = "<%--";
-    
-    public JspLanguage() {
+    public RubyStringLexerTest(String testName) {
+        super(testName);
     }
-
-    @Override
-    public Language getLexerLanguage() {
-        return JspTokenId.language();
-    }
-
-    @Override
-    public String getLineCommentPrefix() {
-        return LINE_COMMENT_PREFIX;
-    }
-
-    @Override
-    public boolean isIdentifierChar(char c) {
-        return Character.isLetter(c);
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "JSP";
-    }
-
-    @Override
-    public String getPreferredExtension() {
-        return "jsp"; // NOI18N
-    }
-
-    @Override
-    public boolean isUsingCustomEditorKit() {
-        return true;
-    }
-
-    // Service Registrations
     
     @Override
-    public Parser getParser() {
-        // we need the parser and the StructureScanner to enable navigator of embedded languages
-        return new JspGSFParser();
+    protected void setUp() throws java.lang.Exception {
+        // Set-up testing environment
+        LexerTestUtilities.setTesting(true);
     }
 
-    @Override
-    public StructureScanner getStructureScanner() {
-        return new JspStructureScanner();
+    public void test() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/testStrings.rb.txt",
+                RubyStringTokenId.languageDouble());
     }
 }
