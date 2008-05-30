@@ -308,6 +308,10 @@ public final class Utils {
     public static class EncodingModel extends DefaultComboBoxModel {
         private static final long serialVersionUID = -3139920099217726436L;
 
+        public EncodingModel() {
+            this(null);
+        }
+
         public EncodingModel(String originalEncoding) {
             Charset defEnc = null;
             for (Charset c : Charset.availableCharsets().values()) {
