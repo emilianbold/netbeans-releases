@@ -151,6 +151,9 @@ public class EvenIfReadonlyItNeedsToThrowExceptionTest extends NbTestCase {
     }
     
     public void testSaveThrowsException() throws IOException, BadLocationException, Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) { // #136179
+            return;
+        }
         
         fileObject.canWrite = true;
         
