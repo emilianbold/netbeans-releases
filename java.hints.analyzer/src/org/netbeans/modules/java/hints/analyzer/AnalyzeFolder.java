@@ -54,15 +54,16 @@ import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
 import org.netbeans.modules.java.hints.spi.TreeRule;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.actions.SystemAction;
 
 public final class AnalyzeFolder extends AbstractAction implements ContextAwareAction {
 
     private final boolean def;
-    private Lookup context;
+    private final Lookup context;
 
     public AnalyzeFolder() {
         context = Utilities.actionsGlobalContext();
@@ -110,86 +111,31 @@ public final class AnalyzeFolder extends AbstractAction implements ContextAwareA
     public Action createContextAwareInstance(Lookup actionContext) {
         return new AnalyzeFolder(actionContext);
     }
-//    private static final Set<String> SUPPORTED_IDS = new HashSet<String>(Arrays.asList("create-javadoc", "error-in-javadoc"));
-//    protected void performAction(Node[] activatedNodes) {
-//        DataFolder folder = activatedNodes[0].getLookup().lookup(DataFolder.class);
-//        Map<String, Preferences> preferencesOverlay = new HashMap<String, Preferences>();
-//        for (List<TreeRule> rules : RulesManager.getInstance().getHints().values()) {
-//            for (TreeRule r : rules) {
-//                String id = r.getId();
-//                
-//                if (!SUPPORTED_IDS.contains(id)) {
-//                    continue;
-//                }
-//                
-//                if (r instanceof AbstractHint && !preferencesOverlay.containsKey(id)) {
-//                    OverridePreferences prefs = new OverridePreferences(((AbstractHint) r).getPreferences(null));
-//                    
-//                    preferencesOverlay.put(r.getId(),prefs);
-//                    HintsSettings.setEnabled(prefs, true);
-//                    HintsSettings.setSeverity(prefs, HintSeverity.WARNING);
-//                }
-//            }
-//        }
-//        
-//        ProgressHandle h = ProgressHandleFactory.createHandle("Processing Hints");
-//        JButton cancel = new JButton("Cancel");
-//        final AtomicBoolean abCancel = new AtomicBoolean();
-//        DialogDescriptor dd = new DialogDescriptor(ProgressHandleFactory.createProgressComponent(h), "Processing Hints", true, new Object[] {cancel}, cancel, DialogDescriptor.DEFAULT_ALIGN, null, new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                abCancel.set(true);
-//            }
-//        });
-//        Dialog d = DialogDisplayer.getDefault().createDialog(dd);
-//        
-//        RequestProcessor.getDefault().post(new Analyzer(folder, abCancel, h, d, preferencesOverlay));
-//        
-//        d.setVisible(true);
-//    }
-//
-//    protected int mode() {
-//        return CookieAction.MODE_EXACTLY_ONE;
-//    }
-//
-//    public String getName() {
-//        return NbBundle.getMessage(AnalyzeFolder.class, "CTL_AnalyzeFolder");
-//    }
-//
-//    protected Class[] cookieClasses() {
-//        return new Class[]{DataFolder.class};
-//    }
-//
-//    @Override
-//    protected void initialize() {
-//        super.initialize();
-//        // see org.openide.util.actions.SystemAction.iconResource() Javadoc for more details
-//        putValue("noIconInMenu", Boolean.TRUE);
-//    }
-//
-//    public HelpCtx getHelpCtx() {
-//        return HelpCtx.DEFAULT_HELP;
-//    }
-//
-//    @Override
-//    protected boolean asynchronous() {
-//        return false;
-//    }
+    
+    public final static class ToolsAction extends SystemAction implements ContextAwareAction {
+
+        public ToolsAction() {
+            setEnabled(false);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            throw new IllegalStateException();
+        }
+
+        public Action createContextAwareInstance(Lookup actionContext) {
+            return new AnalyzeFolder(actionContext);
+        }
+
+        @Override
+        public String getName() {
+            return NbBundle.getMessage(AnalyzeFolder.class, "CTL_AnalyzeFolder");
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return null;
+        }
+        
+    }
+
 }
-
-
-
-//        for (List<TreeRule> rules : RulesManager.getInstance().getHints().values()) {
-//            for (TreeRule r : rules) {
-//                String id = r.getId();
-//                System.err.println("id=" + id);
-//                if (r instanceof AbstractHint && !preferencesOverlay.containsKey(id)) {
-//                    OverridePreferences prefs = new OverridePreferences(((AbstractHint) r).getPreferences(null));
-//                    
-//                    preferencesOverlay.put(r.getId(),prefs);
-//                    HintsSettings.setEnabled(prefs, false);
-//                }
-//            }
-//        }
-//        
-//        DialogDescriptor choose = new DialogDescriptor(new HintsPanel(preferencesOverlay), "Choose");
-//        DialogDisplayer.getDefault().notify(choose);
