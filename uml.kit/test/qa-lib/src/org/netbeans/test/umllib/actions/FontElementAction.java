@@ -38,20 +38,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
-
 package org.netbeans.test.umllib.actions;
 
 import org.netbeans.test.umllib.ElementTypes;
 import org.netbeans.test.umllib.util.PopupConstants;
 
-public class FontElementAction extends DiagramElementAction{
-    
-    private static final String actionPopup = PopupConstants.FONT;
-    
-    public FontElementAction(ElementTypes elementType) {
-        super(null, elementType+"|"+actionPopup);
-    }
+public class FontElementAction extends DiagramElementAction {
 
+    private static final String actionPopup = PopupConstants.FONT;
+
+    //public FontElementAction(ElementTypes elementType) {
+    public FontElementAction() {
+        super(null, PopupConstants.COLORS_FONTS + "|" + actionPopup);
+    }
 }

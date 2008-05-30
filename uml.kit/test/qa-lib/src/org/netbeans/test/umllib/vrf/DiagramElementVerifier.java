@@ -128,21 +128,24 @@ public class DiagramElementVerifier extends GenericVerifier{
             DiagramElementOperator el = getElement(EL_NAME);
             //now coping element
             JPopupMenuOperator popup = el.getPopup();
-            JMenuItemOperator item = popup.showMenuItem(PopupConstants.EDIT+"|"+PopupConstants.COPY);
+            JMenuItemOperator item = popup.showMenuItem(PopupConstants.COPY);
             if(!item.isEnabled()){
-                log("Popup menu item " + PopupConstants.EDIT+"|"+PopupConstants.COPY + " disabled");
+                log("Popup menu item " + PopupConstants.COPY + " disabled");
                 return false;
             }
             item.clickMouse();
             
             //now pasting element
             eventTool.waitNoEvent(500);
-            Point point = dia.getDrawingArea().getFreePoint(100);
+           // Point point = dia.getDrawingArea().getFreePoint(100);
+            Point point = new Point(300, 300);
+            //6.5 workaround 
+            dia.getDrawingArea().clickMouse(point.x, point.y, 1, true);
             dia.getDrawingArea().clickForPopup(point.x, point.y);
             popup = new JPopupMenuOperator();
-            item = popup.showMenuItem(PopupConstants.EDIT+"|"+PopupConstants.PASTE);
+            item = popup.showMenuItem(PopupConstants.PASTE);
             if(!item.isEnabled()){
-                log("Popup menu item " + PopupConstants.EDIT+"|"+PopupConstants.PASTE + " disabled");
+                log("Popup menu item " + PopupConstants.PASTE + " disabled");
                 return false;
             }
             item.clickMouse();
@@ -217,9 +220,9 @@ public class DiagramElementVerifier extends GenericVerifier{
             
             //Cut element
             JPopupMenuOperator popup = el.getPopup();
-            JMenuItemOperator item = popup.showMenuItem(PopupConstants.EDIT+"|"+PopupConstants.CUT);
+            JMenuItemOperator item = popup.showMenuItem(PopupConstants.CUT);
             if(!item.isEnabled()){
-                log("Popup menu item " + PopupConstants.EDIT+"|"+PopupConstants.CUT + " disabled");
+                log("Popup menu item " + PopupConstants.CUT + " disabled");
                 return false;
             }
             item.clickMouse();
@@ -242,9 +245,9 @@ public class DiagramElementVerifier extends GenericVerifier{
             Point point = dia.getDrawingArea().getFreePoint(100);
             dia.getDrawingArea().getPopup();
             popup = new JPopupMenuOperator();
-            item = popup.showMenuItem(PopupConstants.EDIT+"|"+PopupConstants.PASTE);
+            item = popup.showMenuItem(PopupConstants.PASTE);
             if(!item.isEnabled()){
-                log("Popup menu item " + PopupConstants.EDIT+"|"+PopupConstants.PASTE + " disabled");
+                log("Popup menu item " + PopupConstants.PASTE + " disabled");
                 return false;
             }
             item.clickMouse();
@@ -561,7 +564,7 @@ public class DiagramElementVerifier extends GenericVerifier{
             Point point = dia.getDrawingArea().getFreePoint();
             createElement(EL_NAME, elementType, point.x, point.y);
             eventTool.waitNoEvent(500);
-            
+           
             for(int i=0; i<typesToPut.length; i++){
                 point = dia.getDrawingArea().getFreePoint(100);
                 createElement(EL_NAME+i, typesToPut[i], point.x, point.y);
@@ -613,15 +616,22 @@ public class DiagramElementVerifier extends GenericVerifier{
             createElement(EL_NAME, elementType, point.x, point.y);
             eventTool.waitNoEvent(500);
             
+            // 6.5 Workaround, getFreePoint() not quite working
+            int c=0;
             for(int i=0; i<typesToSelect.length; i++){
+                c = c+50;
                 point = dia.getDrawingArea().getFreePoint(100);
-                createElement(EL_NAME+"SEL"+i, typesToSelect[i], point.x, point.y);
+                createElement(EL_NAME+"SEL"+i, typesToSelect[i], 50+c, 90+c);
+                //createElement(EL_NAME+"SEL"+i, typesToSelect[i], point.x, point.y);
                 eventTool.waitNoEvent(500);
             }
             
+            c=0;
             for(int i=0; i<typesNotToSelect.length; i++){
-                point = dia.getDrawingArea().getFreePoint(100);
-                createElement(EL_NAME+"NOTSEL"+i, typesNotToSelect[i], point.x, point.y);
+                c = c+50;
+                point = dia.getDrawingArea().getFreePoint(200);
+                createElement(EL_NAME+"NOTSEL"+i, typesNotToSelect[i], 100+c, 150+c);
+                //createElement(EL_NAME+"NOTSEL"+i, typesNotToSelect[i], point.x, point.y);
                 eventTool.waitNoEvent(500);
             }
             
@@ -1153,7 +1163,8 @@ public class DiagramElementVerifier extends GenericVerifier{
             eventTool.waitNoEvent(500);
             new Thread(new Runnable() {
                 public void run() {
-                    new FontElementAction(elementType).performPopup(el);
+                    //new FontElementAction(elementType).performPopup(el);
+                    new FontElementAction().performPopup(el);
                 }
             }).start();
             
@@ -1227,7 +1238,7 @@ public class DiagramElementVerifier extends GenericVerifier{
             eventTool.waitNoEvent(500);
             new Thread(new Runnable() {
                 public void run() {
-                    new BorderColorElementAction(elementType).performPopup(el);
+                    new BorderColorElementAction().performPopup(el);
                 }
             }).start();
             
@@ -1271,7 +1282,7 @@ public class DiagramElementVerifier extends GenericVerifier{
             eventTool.waitNoEvent(500);
             new Thread(new Runnable() {
                 public void run() {
-                    new BackgroundColorElementAction(elementType).performPopup(el);
+                    new BackgroundColorElementAction().performPopup(el);
                 }
             }).start();
             
@@ -1324,7 +1335,7 @@ public class DiagramElementVerifier extends GenericVerifier{
             eventTool.waitNoEvent(500);
             new Thread(new Runnable() {
                 public void run() {
-                    new FontColorElementAction(elementType).performPopup(el);
+                    new FontColorElementAction().performPopup(el);
                 }
             }).start();
             

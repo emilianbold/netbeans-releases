@@ -447,7 +447,8 @@ public class CompartmentOperator implements Actionable {
     public Font getFont(){
         //TODO: 
         //6.0 return sourceCompartment.getCompartmentFont(sourceElement.getDiagram().getDrawingAreaControl().getCurrentZoom());
-        return null;
+        return sourceCompartment.getFont();
+        // return null;
     }
     
     

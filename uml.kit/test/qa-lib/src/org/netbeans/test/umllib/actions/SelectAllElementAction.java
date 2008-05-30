@@ -48,7 +48,7 @@ import org.netbeans.test.umllib.util.PopupConstants;
 
 public class SelectAllElementAction extends DiagramElementAction{
     
-    private static final String actionPopup = PopupConstants.EDIT+"|"+PopupConstants.SELECT_ALL;
+    private static final String actionPopup = PopupConstants.SELECT_ALL;
     private static final Shortcut shortcutSelectAll = new Shortcut(KeyEvent.VK_A, KeyEvent.CTRL_DOWN_MASK);
     
     public SelectAllElementAction() {

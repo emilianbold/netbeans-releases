@@ -46,7 +46,7 @@ import org.netbeans.test.umllib.util.PopupConstants;
 
 public class SelectAllSimilarElementAction extends DiagramElementAction{
     
-    private static final String actionPopup = PopupConstants.EDIT+"|"+PopupConstants.SELECT_ALL_SIMILAR;
+    private static final String actionPopup = PopupConstants.SELECT_ALL_SIMILAR;
     
     public SelectAllSimilarElementAction() {
         super(null, actionPopup);

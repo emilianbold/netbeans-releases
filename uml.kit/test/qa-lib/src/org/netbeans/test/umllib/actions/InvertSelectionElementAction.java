@@ -47,7 +47,7 @@ import org.netbeans.test.umllib.util.PopupConstants;
 
 public class InvertSelectionElementAction extends DiagramElementAction{
     
-    private static final String actionPopup = PopupConstants.EDIT+"|"+PopupConstants.INVERT_SELECTION;
+    private static final String actionPopup = PopupConstants.INVERT_SELECTION;
     
     public InvertSelectionElementAction() {
         super(null, actionPopup);
