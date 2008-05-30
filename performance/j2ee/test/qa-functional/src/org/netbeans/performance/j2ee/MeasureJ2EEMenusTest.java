@@ -42,33 +42,27 @@
 package org.netbeans.performance.j2ee;
 
 
-import org.netbeans.performance.j2ee.actions.*;
+import org.netbeans.performance.j2ee.menus.J2EEProjectsViewPopupMenu;
+import org.netbeans.performance.j2ee.menus.AppServerPopupMenu;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.performance.j2ee.menus.*;
 import org.netbeans.junit.NbModuleSuite;
+
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
  * @author  lmartinek@netbeans.org
  */
-public class MeasureJ2EEActionsTest  {
-    
+public class MeasureJ2EEMenusTest  {
 
-    
+ 
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Actions suite");
-        
-        suite.addTest(NbModuleSuite.create(Deploy.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(CreateJ2EEProject.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(CreateNewFile.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(ExpandEJBNodesProjectsView.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(MeasureCallEjbAction.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(MeasureEntityBeanAction.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(MeasureSessionBeanAction.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(MeasureWebServiceAction.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(OpenJ2EEFiles.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(OpenJ2EEFilesWithOpenedEditor.class, ".*", ".*"));
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Menus suite");
 
+        suite.addTest(NbModuleSuite.create(AppServerPopupMenu.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(J2EEProjectsViewPopupMenu.class, ".*", ".*"));
+       
         return suite;
     }
     

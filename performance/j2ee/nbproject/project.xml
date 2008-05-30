@@ -19,6 +19,21 @@
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jemmy</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.performance</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
+                <test-type>
+                    <name>qa-functional</name>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.editor</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
@@ -32,10 +47,6 @@
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.jellytools</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.jemmy</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>

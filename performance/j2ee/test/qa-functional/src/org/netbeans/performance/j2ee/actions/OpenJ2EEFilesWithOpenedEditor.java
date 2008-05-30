@@ -54,6 +54,7 @@ import org.netbeans.jellytools.nodes.Node;
  */
 public class OpenJ2EEFilesWithOpenedEditor extends OpenJ2EEFiles {
     
+    public static final String suiteName="UI Responsiveness J2EE Actions";    
     
     /**
      * Creates a new instance of OpenFiles

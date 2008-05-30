@@ -71,6 +71,9 @@ public class CreateNewFile extends PerformanceTestCase {
     private String fileName;
     private String packageName;
     private boolean isEntity = false;
+
+    public static final String suiteName="UI Responsiveness J2EE Actions";    
+    
     /**
      * Creates a new instance of CreateNewFile 
      */

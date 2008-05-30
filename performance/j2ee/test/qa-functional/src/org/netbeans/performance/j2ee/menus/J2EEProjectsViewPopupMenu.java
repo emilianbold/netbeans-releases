@@ -41,56 +41,134 @@
 
 package org.netbeans.performance.j2ee.menus;
 
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-
-import org.netbeans.jellytools.RuntimeTabOperator;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+
+
 /**
- * Test of popup menu on nodes in Runtime View
- * @author  juhrik@netbeans.org, mmirilovic@netbeans.org
+ * Test of popup menu on nodes in Projects View.
+ * @author  lmartinek@netbeans.org
  */
-
-
-public class AppServerPopupMenu extends PerformanceTestCase {
+public class J2EEProjectsViewPopupMenu extends PerformanceTestCase {
     
-    private static RuntimeTabOperator runtimeTab;
+    private static ProjectsTabOperator projectsTab = null;
     protected static Node dataObjectNode;
+
+    private static final String JAVA_EE_MODULES = Bundle.getStringTrimmed(
+                "org.netbeans.modules.j2ee.earproject.ui.Bundle",
+                "LBL_LogicalViewNode");
     
-    private final String SERVER_REGISTRY = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE");
+    public static final String suiteName="UI Responsiveness J2EE Menus";    
     
     /**
-     * Creates a new instance of AppServerPopupMenu 
+     * Creates a new instance of J2EEProjectsViewPopupMenu 
      */
-    public AppServerPopupMenu(String testName) {
+    public J2EEProjectsViewPopupMenu(String testName) {
         super(testName);
     }
     
     /**
-     * Creates a new instance of AppServerPopupMenu 
+     * Creates a new instance of J2EEProjectsViewPopupMenu 
      */
-    public AppServerPopupMenu(String testName, String performanceDataName) {
+    public J2EEProjectsViewPopupMenu(String testName, String performanceDataName) {
         super(testName, performanceDataName);
     }
     
     
-    public void testAppServerPopupMenuRuntime(){
-        testMenu(SERVER_REGISTRY + "|" + "GlassFish V2");
+    public void testEARProjectNodePopupMenu() {
+        testNode(getEARProjectNode(), null);
     }
     
-    private void testMenu(String path){
+    public void testEARConfFilesNodePopupMenu(){
+        testNode(getEARProjectNode(), "Configuration Files");
+    }
+    
+    public void testApplicationXmlPopupMenu(){
+        testNode(getEARProjectNode(), "Configuration Files|application.xml");
+    }
+
+    public void testSunApplicationXmlPopupMenu(){
+        testNode(getEARProjectNode(), "Configuration Files|sun-application.xml");
+    }
+    
+    public void testJ2eeModulesNodePopupMenu(){
+        testNode(getEARProjectNode(), JAVA_EE_MODULES);
+    }
+
+    public void testJ2eeModulesEJBNodePopupMenu(){
+        testNode(getEARProjectNode(), JAVA_EE_MODULES+"|TestApplication-EJBModule.jar");
+    }
+
+    public void testJ2eeModulesWebNodePopupMenu(){
+        testNode(getEARProjectNode(), JAVA_EE_MODULES+"|TestApplication-WebModule.war");
+    }
+
+    public void testEJBProjectNodePopupMenu() {
+        testNode(getEJBProjectNode(), null);
+    }
+    
+    public void testEJBsNodePopupMenu() {
+        testNode(getEJBProjectNode(), "Enterprise Beans");
+    }
+    
+    public void testSessionBeanNodePopupMenu() {
+        testNode(getEJBProjectNode(), "Enterprise Beans|TestSessionSB");
+    }
+    
+    public void testEntityBeanNodePopupMenu() {
+        testNode(getEJBProjectNode(), "Enterprise Beans|TestEntityEB");
+    }
+    
+    public void testEjbJarXmlPopupMenu(){
+        testNode(getEJBProjectNode(), "Configuration Files|ejb-jar.xml");
+    }
+
+    public void testSunEjbJarXmlPopupMenu(){
+        testNode(getEJBProjectNode(), "Configuration Files|sun-ejb-jar.xml");
+    }
+    
+    
+    public void testNode(Node rootNode, String path){
         try {
-            runtimeTab = new RuntimeTabOperator();
-            dataObjectNode = new Node(runtimeTab.getRootNode(), path);
+            if (path == null)
+                dataObjectNode = rootNode;
+            else
+                dataObjectNode = new Node(rootNode, path);
             doMeasurement();
         } catch (Exception e) {
             throw new Error("Exception thrown",e);
         }
+        
     }
     
-            /**
+    private Node getEARProjectNode() {
+        if(projectsTab==null)
+            projectsTab = new ProjectsTabOperator();
+        
+        return projectsTab.getProjectRootNode("TestApplication");
+    }
+
+    private Node getWebProjectNode() {
+        if(projectsTab==null)
+            projectsTab = new ProjectsTabOperator();
+        
+        return projectsTab.getProjectRootNode("TestApplication-WebModule");
+    }
+    
+    private Node getEJBProjectNode() {
+        if(projectsTab==null)
+            projectsTab = new ProjectsTabOperator();
+        
+        return projectsTab.getProjectRootNode("TestApplication-EJBModule");
+    }
+
+    
+        /**
      * Closes the popup by sending ESC key event.
      */
     @Override
@@ -115,15 +193,4 @@ public class AppServerPopupMenu extends PerformanceTestCase {
         return new JPopupMenuOperator();
     }
     
-    @Override
-    public void initialize() {
-        //Utils.startStopServer(true);
-    }
-    
-    @Override
-    public void shutdown() {
-        //Utils.startStopServer(false);
-    }
-
- 
 }

@@ -63,27 +63,32 @@ import org.netbeans.jemmy.operators.JLabelOperator;
  *
  * @author  lmartinek@netbeans.org
  */
-public class MeasureEntityBeanAction extends PerformanceTestCase {
+public class MeasureSessionBeanAction extends PerformanceTestCase {
     
     private static EditorOperator editor;
     private static NbDialogOperator dialog;
+
+//    private static JTextPaneOperator tc;
     
     private String popup_menu;
     private String title;
     private String name;
+
+    public static final String suiteName="UI Responsiveness J2EE Actions";    
+
     
     /**
-     * Creates a new instance of MeasureEntityBeanAction 
+     * Creates a new instance of MeasureSessionBeanAction 
      */
-    public MeasureEntityBeanAction(String testName) {
+    public MeasureSessionBeanAction(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
     
     /**
-     * Creates a new instance of MeasureEntityBeanAction 
+     * Creates a new instance of MeasureSessionBeanAction 
      */
-    public MeasureEntityBeanAction(String testName, String performanceDataName) {
+    public MeasureSessionBeanAction(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
@@ -91,34 +96,17 @@ public class MeasureEntityBeanAction extends PerformanceTestCase {
      public void testAddBusinessMethod(){
         WAIT_AFTER_OPEN = 1000;
         popup_menu = "EJB Methods|Add Business Method";
-        title = "Add Business Method";
+        title = "Add Business Method...";
         name = "testBusinessMethod";
         doMeasurement();
     }
-
-     public void testAddFinderMethod(){
-        WAIT_AFTER_OPEN = 1000;
-        popup_menu = "EJB Methods|Add Finder Method";
-        title = "Add Finder Method";
-        name = "findByTest";
-        doMeasurement();
-    }
-
-     public void testAddSelectMethod(){
-        WAIT_AFTER_OPEN = 1000;
-        popup_menu = "EJB Methods|Add Select Method";
-        title = "Add Select Method";
-        name = "ejbSelectByTest";
-        doMeasurement();
-    }
-     
-     
+    
     @Override
     public void initialize() {
         // open a java file in the editor
-        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-EJBModule"),"Enterprise Beans|TestEntityEB");
+        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-EJBModule"),"Enterprise Beans|TestSessionSB");
         new OpenAction().performAPI(openFile);
-        editor = new EditorWindowOperator().getEditor("TestEntityBean.java");
+        editor = new EditorWindowOperator().getEditor("TestSessionBean.java");
 //        new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
         editor.select(11);
 //        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK); 
@@ -127,11 +115,10 @@ public class MeasureEntityBeanAction extends PerformanceTestCase {
     public void prepare() {
         new ActionNoBlock(null,popup_menu).perform(editor);
         dialog = new NbDialogOperator(title);
-//        new JTextFieldOperator(dialog).setText(name+Utils.getTimeIndex());
         JLabelOperator lblOper = new JLabelOperator(dialog, "Name");
         new JTextFieldOperator((JTextField)lblOper.getLabelFor()).setText(name+CommonUtilities.getTimeIndex());
 
-//        new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
+//        tc=new JTextPaneOperator(dialog); tc.setText(name+Utils.getTimeIndex());
    }
     
     public ComponentOperator open(){

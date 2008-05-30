@@ -42,6 +42,9 @@
 package org.netbeans.performance.j2ee;
 
 
+import org.netbeans.performance.j2ee.dialogs.InvokeEJBAction;
+import org.netbeans.performance.j2ee.dialogs.InvokeWSAction;
+import org.netbeans.performance.j2ee.dialogs.SelectJ2EEModuleDialog;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.performance.j2ee.dialogs.*;
 import org.netbeans.junit.NbModuleSuite;

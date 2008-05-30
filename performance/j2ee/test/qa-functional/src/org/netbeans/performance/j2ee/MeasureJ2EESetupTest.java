@@ -42,6 +42,7 @@
 package org.netbeans.performance.j2ee;
 
 
+import org.netbeans.performance.j2ee.setup.J2EESetup;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.performance.j2ee.setup.*;
 import org.netbeans.junit.NbModuleSuite;

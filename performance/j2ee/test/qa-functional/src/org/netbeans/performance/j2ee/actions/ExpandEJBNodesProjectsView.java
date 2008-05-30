@@ -72,6 +72,8 @@ public class ExpandEJBNodesProjectsView extends PerformanceTestCase {
     /** Project with data for these tests */
     private static String testDataProject = "TestApplication-EJBModule";
     
+    public static final String suiteName="UI Responsiveness J2EE Actions";    
+    
     /**
      * Creates a new instance of ExpandNodesInExplorer
      * @param testName the name of the test

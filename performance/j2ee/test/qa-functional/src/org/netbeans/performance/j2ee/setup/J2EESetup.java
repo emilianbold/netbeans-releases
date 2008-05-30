@@ -54,6 +54,9 @@ import java.io.File;
 public class J2EESetup extends JellyTestCase {
     
     private String workdir;
+    
+    public static final String suiteName="UI Responsiveness J2EE Setup";    
+    
 
     public J2EESetup(java.lang.String testName) {
         super(testName);

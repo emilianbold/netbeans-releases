@@ -88,6 +88,8 @@ public class OpenJ2EEFiles extends PerformanceTestCase {
     
     protected static String EDIT = org.netbeans.jellytools.Bundle.getStringTrimmed("org/openide/actions/Bundle", "Edit");
     
+    public static final String suiteName="UI Responsiveness J2EE Actions";    
+    
     /**
      * Creates a new instance of OpenFiles
      * @param testName the name of the test

@@ -55,6 +55,9 @@ import org.netbeans.jemmy.operators.*;
  * @author Martin.Schovanek@sun.com
  */
 public class MeasureJ2EEStartupTimeWithWeb extends JellyTestCase {
+    
+    public static final String suiteName="J2EE Startup suite";        
+    
     /** Define testcase
      * @param testName name of the testcase
      */

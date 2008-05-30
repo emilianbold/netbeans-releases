@@ -39,68 +39,28 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.j2ee.dialogs;
+package org.netbeans.performance.j2ee;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.jemmy.operators.Operator;
+
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.performance.j2ee.memory.*;
+import org.netbeans.junit.NbModuleSuite;
+
 
 /**
- * Test of Project Properties Window
+ * Test suite that actually does not perform any test but sets up user directory
+ * for UI responsiveness tests
  *
- * @author  mmirilovic@netbeans.org
+ * @author  Radim Kubacki
  */
-public class SelectJ2EEModuleDialog extends PerformanceTestCase {
+public class MeasureJ2EEStartupTest {
     
-    private static Node testNode;
-    private String TITLE;
-    
-    /**
-     * Creates a new instance of SelectJ2EEModuleDialog 
-     */
-    public SelectJ2EEModuleDialog(String testName) {
-        super(testName);
-        expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN = 2000;
-    }
-    
-    /**
-     * Creates a new instance of SelectJ2EEModuleDialog 
-     */
-    public SelectJ2EEModuleDialog(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
-        expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN = 2000;
-    }
-    
-    public void testJ2EEModuleDialog() {
-        doMeasurement();
-    }    
-    
-    @Override
-    public void initialize() {
-        JTreeOperator tree = new ProjectsTabOperator().tree();
-        tree.setComparator(new Operator.DefaultStringComparator(true, true));
-        String JAVA_EE_MODULES = Bundle.getStringTrimmed(
-                "org.netbeans.modules.j2ee.earproject.ui.Bundle",
-                "LBL_LogicalViewNode");
-        testNode = new Node(new ProjectRootNode(tree, "TestApplication"), JAVA_EE_MODULES);
-    }
-    
-    public void prepare() {
-        // do nothing
-    }
-    
-    public ComponentOperator open() {
-        // invoke Window / Properties from the main menu
-        testNode.performPopupActionNoBlock("Add Java EE Module...");
-        return new NbDialogOperator("Add Java EE Module");
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite("J2EE Memory suite");
+
+        suite.addTest(NbModuleSuite.create(MeasureBaselineMemoryFootprint.class, ".*", ".*"));
+
+        return suite;
     }
     
 }

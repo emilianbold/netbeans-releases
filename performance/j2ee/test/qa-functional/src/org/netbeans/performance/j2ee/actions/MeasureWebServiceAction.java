@@ -41,72 +41,81 @@
 
 package org.netbeans.performance.j2ee.actions;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.actions.SaveAllAction;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.JemmyProperties;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 
 /**
  * Test of finishing dialogs from WS source editor.
  *
  * @author  lmartinek@netbeans.org
  */
-public class MeasureCallEjbAction extends PerformanceTestCase {
+public class MeasureWebServiceAction extends PerformanceTestCase {
     
     private static EditorOperator editor;
     private static NbDialogOperator dialog;
+    private static Node openFile;
     
-    private int index;
+    private String popup_menu;
+    private String title;
+    private String name;
+    
+    public static final String suiteName="UI Responsiveness J2EE Actions";    
     
     /**
      * Creates a new instance of MeasureWebServiceAction 
      */
-    public MeasureCallEjbAction(String testName) {
+    public MeasureWebServiceAction(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN = 5000;
     }
     
     /**
      * Creates a new instance of MeasureEntityBeanAction 
      */
-    public MeasureCallEjbAction(String testName, String performanceDataName) {
+    public MeasureWebServiceAction(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN = 5000;
     }
     
-    public void testCallEjbAction() {
+     public void testAddOperation(){
+        WAIT_AFTER_OPEN = 5000;
+        popup_menu = Bundle.getString(
+                "org.netbeans.modules.websvc.core.webservices.action.Bundle",
+                "LBL_OperationAction");
+        title = Bundle.getString(
+                "org.netbeans.modules.websvc.core.webservices.action.Bundle",
+                "TTL_AddOperation");
+        name = "testOperation";
         doMeasurement();
     }
      
     @Override
     public void initialize() {
-    	index = 1;
         // open a java file in the editor
-        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-EJBModule"),"Enterprise Beans|TestSessionSB");
+        openFile = new Node(new ProjectsTabOperator().getProjectRootNode(
+                "TestApplication-WebModule"),"Web Services|TestWebService");
         new OpenAction().performAPI(openFile);
-        editor = new EditorWindowOperator().getEditor("TestSessionBean.java");
+        editor = new EditorWindowOperator().getEditor("TestWebServiceImpl.java");
         new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
         editor.select(11);
-        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK); 
     }
     
     public void prepare() {
-        new ActionNoBlock(null,"Enterprise Resources|" + 
-                org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle", "LBL_CallEjbAction")).perform(editor);
-        dialog = new NbDialogOperator("Call Enterprise Bean");
-        new Node(new JTreeOperator(dialog),"TestApplication-EJBModule|ExpandTest00" + (index++) + "SB").select();
+        //new ActionNoBlock(null,popup_menu).perform(editor);
+        openFile.performPopupActionNoBlock(popup_menu);
+        dialog = new NbDialogOperator(title);
+        new JTextFieldOperator(dialog).setText(name+CommonUtilities.getTimeIndex());
         new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
    }
     

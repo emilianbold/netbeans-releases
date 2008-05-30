@@ -39,87 +39,93 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.j2ee.dialogs;
+package org.netbeans.performance.j2ee.menus;
 
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
 /**
- * Test of dialogs from EJB source editor.
- *
- * @author  lmartinek@netbeans.org
+ * Test of popup menu on nodes in Runtime View
+ * @author  juhrik@netbeans.org, mmirilovic@netbeans.org
  */
-public class InvokeEJBAction extends PerformanceTestCase {
+
+
+public class AppServerPopupMenu extends PerformanceTestCase {
     
-    private static EditorOperator editor;
+    private static RuntimeTabOperator runtimeTab;
+    protected static Node dataObjectNode;
     
-    private String popupMenu = null;
-    private String dialogTitle = null;
+    private final String SERVER_REGISTRY = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE");
+    
+    public static final String suiteName="UI Responsiveness J2EE Menus";    
     
     /**
-     * Creates a new instance of InvokeEJBAction 
+     * Creates a new instance of AppServerPopupMenu 
      */
-    public InvokeEJBAction(String testName) {
+    public AppServerPopupMenu(String testName) {
         super(testName);
-        expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN = 1000;
     }
     
     /**
-     * Creates a new instance of InvokeEJBAction 
+     * Creates a new instance of AppServerPopupMenu 
      */
-    public InvokeEJBAction(String testName, String performanceDataName) {
+    public AppServerPopupMenu(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN = 1000;
     }
     
-    public void testAddBusinessMethodDialog(){
-        popupMenu = "EJB Methods|Add Business Method";
-        dialogTitle = "Add Business Method";
-        doMeasurement();
+    
+    public void testAppServerPopupMenuRuntime(){
+        testMenu(SERVER_REGISTRY + "|" + "GlassFish V2");
+    }
+    
+    private void testMenu(String path){
+        try {
+            runtimeTab = new RuntimeTabOperator();
+            dataObjectNode = new Node(runtimeTab.getRootNode(), path);
+            doMeasurement();
+        } catch (Exception e) {
+            throw new Error("Exception thrown",e);
+        }
+    }
+    
+            /**
+     * Closes the popup by sending ESC key event.
+     */
+    @Override
+    public void close(){
+        //testedComponentOperator.pressKey(java.awt.event.KeyEvent.VK_ESCAPE);
+        // Above sometimes fails in QUEUE mode waiting to menu become visible.
+        // This pushes Escape on underlying JTree which should be always visible
+        dataObjectNode.tree().pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
+    }
+    
+    
+    @Override
+    public void prepare() {
+        dataObjectNode.select();
     }
 
-    public void testCallEJBDialog(){
-        popupMenu = "Enterprise Resources|" + 
-                org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle", "LBL_CallEjbAction");
-        dialogTitle = "Call Enterprise Bean";
-        doMeasurement();
+    @Override
+    public ComponentOperator open() {
+        java.awt.Point point = dataObjectNode.tree().getPointToClick(dataObjectNode.getTreePath());
+        int button = dataObjectNode.tree().getPopupMouseButton();
+        dataObjectNode.tree().clickMouse(point.x, point.y, 1, button);
+        return new JPopupMenuOperator();
     }
     
     @Override
     public void initialize() {
-        
-        // open a java file in the editor
-        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-EJBModule"),"Enterprise Beans|TestSessionSB");
-        new OpenAction().performAPI(openFile);
-        editor = new EditorWindowOperator().getEditor("TestSessionBean.java");
-        new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
-        editor.select(11);
-        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK); 
+        //Utils.startStopServer(true);
     }
     
-    public void prepare() {
-        // do nothing
-   }
-    
-    public ComponentOperator open(){
-        new ActionNoBlock(null,popupMenu).perform(editor);
-        return new NbDialogOperator(dialogTitle);
+    @Override
+    public void shutdown() {
+        //Utils.startStopServer(false);
     }
 
-    @Override
-    public void shutdown(){
-        editor.closeDiscard();
-    }
-    
+ 
 }
