@@ -71,6 +71,7 @@ import org.netbeans.editor.TokenID;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtSettingsDefaults;
 import org.netbeans.editor.ext.ExtSettingsNames;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
@@ -1249,6 +1250,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 if (item.getParameterCount() > 0) {
                     lastType = resolveType(item.getParameter(0));
                     staticOnly = false;
+                    lastType = getOperatorReturnType(lastType, "*");
                     // TODO: need to convert lastType into reference based on item token '&' or '*'
                     // and nested pointer expressions
                 }
@@ -1481,6 +1483,53 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 cont = false;
             }
             return cont;
+        }
+    
+        private CsmType getOperatorReturnType(CsmType type, String unaryOperator){
+            if (type == null){
+                return type;
+            }
+            CsmClassifier cls = type.getClassifier();
+            for (int i = 0; i < 5; i++) {
+                // For performance issues do not use set. 5 guarantees anti loop.
+                if (CsmKindUtilities.isTypedef(cls)) {
+                    CsmTypedef def = (CsmTypedef) cls;
+                    CsmType t = def.getType();
+                    if (t != null){
+                        cls = t.getClassifier();
+                        continue;
+                    }
+                }
+                break;
+            }
+            if (!CsmKindUtilities.isClass(cls)) {
+                return type;
+            }
+            CsmClass c = (CsmClass) cls;
+            for(CsmMember m : c.getMembers()){
+                if (CsmKindUtilities.isOperator(m)){
+                    CsmFunction f = (CsmFunction) m;
+                    String name = f.getName().toString();
+                    if (name.equals("operator "+unaryOperator)) { // NOI18N
+                        CsmType t = f.getReturnType();
+                        if (t != null){
+                            type = t;
+                            CsmClassifier c1 = type.getClassifier();
+                            if (CsmKindUtilities.isTypedef(c1)) {
+                                CsmTypedef def = (CsmTypedef) c1;
+                                CsmType tt = def.getType();
+                                if (tt != null){
+                                    CsmClassifier c2 = tt.getClassifier();
+                                    return tt;
+                                }
+                            }
+                        }
+                        return type;
+                    }
+                }
+            }
+            // TODO: What about friends?
+            return type;
         }
 
         private CsmNamespace findExactNamespace(final String var, final int varPos) {
