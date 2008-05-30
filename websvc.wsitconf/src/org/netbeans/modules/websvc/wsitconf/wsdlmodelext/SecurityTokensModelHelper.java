@@ -657,7 +657,7 @@ public class SecurityTokensModelHelper {
             model.startTransaction();
         }
         try {
-            for (int i=0; i < 8; i++) {
+            for (int i=0; i < SecurityTokensModelHelper.SUPPORTING_TOKENS.length; i++) {
                 tokenKind = getSupportingToken(c, i);
                 if (tokenKind != null) {
                     if (ComboConstants.NONE.equals(authToken) || (authToken == null)) { 
