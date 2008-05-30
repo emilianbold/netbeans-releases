@@ -64,6 +64,7 @@ import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramRectangularSelectDecorator;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramSceneRectangularSelectProvider;
 import org.netbeans.modules.uml.drawingarea.actions.MarqueeZoomSelectProvider;
+import org.netbeans.modules.uml.drawingarea.actions.UMLRectangularSelectAction;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager; 
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
@@ -194,8 +195,8 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
     
     public WidgetAction createMarqueeSelectAction()
     {
-        return ActionFactory.createRectangularSelectAction
-                (new DiagramRectangularSelectDecorator(this, DesignerTools.MARQUEE_ZOOM), 
+        return new UMLRectangularSelectAction(
+                new DiagramRectangularSelectDecorator(this, DesignerTools.MARQUEE_ZOOM), 
                 backgroundLayer, new MarqueeZoomSelectProvider(this));
     }
     
