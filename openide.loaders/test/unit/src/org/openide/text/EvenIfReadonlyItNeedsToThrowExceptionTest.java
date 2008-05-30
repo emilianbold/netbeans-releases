@@ -39,66 +39,44 @@
  * made subject to such option by the copyright holder.
  */
 
-
 package org.openide.text;
 
-
-import java.io.File;
+import java.awt.EventQueue;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import javax.swing.SwingUtilities;
+import java.util.Date;
+import java.util.Enumeration;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.Position;
-import javax.swing.text.StyledDocument;
-
-import junit.textui.TestRunner;
-
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.ErrorManager;
-import org.openide.ErrorManager.Annotation;
-import org.openide.actions.*;
-import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
-
-import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
-import org.openide.cookies.PrintCookie;
-import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataLoader;
+import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.ExtensionList;
+import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.UniFileLoader;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.util.HelpCtx;
-import org.openide.util.io.NbMarshalledObject;
-import org.openide.util.Lookup;
-import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
-import org.openide.windows.CloneableOpenSupport;
-import org.openide.windows.WindowManager;
+import org.openide.util.Enumerations;
+import org.openide.util.test.MockLookup;
+import org.openide.windows.CloneableTopComponent;
 
-
-/**
- */
 public class EvenIfReadonlyItNeedsToThrowExceptionTest extends NbTestCase {
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
@@ -107,43 +85,32 @@ public class EvenIfReadonlyItNeedsToThrowExceptionTest extends NbTestCase {
     // for file object support
     String content = "";
     long expectedSize = -1;
-    java.util.Date date = new java.util.Date ();
-    
+    Date date = new Date();
     MyFileObject fileObject;
-    org.openide.filesystems.FileSystem fs;
-    static {
-        System.setProperty ("org.openide.util.Lookup", "org.openide.text.EvenIfReadonlyItNeedsToThrowExceptionTest$Lkp");
-    }
     
     public EvenIfReadonlyItNeedsToThrowExceptionTest(String s) {
         super(s);
     }
     
-    protected void setUp () throws Exception {
-        fs = org.openide.filesystems.FileUtil.createMemoryFileSystem ();
-        org.openide.filesystems.Repository.getDefault ().addFileSystem (fs);
-        org.openide.filesystems.FileObject root = fs.getRoot ();
-        fileObject = new MyFileObject (org.openide.filesystems.FileUtil.createData (root, "my.obj"));
+    protected @Override void setUp() throws Exception {
+        MockLookup.setInstances(new Pool());
+        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
+        fileObject = new MyFileObject(FileUtil.createData(root, "my.obj"));
     }
     
-    protected void tearDown () throws Exception {
-        waitEQ ();
-        org.openide.filesystems.Repository.getDefault ().removeFileSystem (fs);
-    }
-    
-    protected boolean runInEQ() {
+    protected @Override boolean runInEQ() {
         return false;
     }
     
     private void waitEQ () throws Exception {
-        javax.swing.SwingUtilities.invokeAndWait (new Runnable () { public void run () { } });
+        EventQueue.invokeAndWait(new Runnable() {public void run() {}});
     }
 
     DES support () throws Exception {
         DataObject obj = DataObject.find (fileObject);
         
         assertEquals ("My object was created", MyDataObject.class, obj.getClass ());
-        Object cookie = obj.getCookie (org.openide.cookies.OpenCookie.class);
+        Object cookie = obj.getCookie(OpenCookie.class);
         assertNotNull ("Our object has this cookie", cookie);
         assertEquals ("It is my cookie", DES.class, cookie.getClass ());
         
@@ -182,18 +149,18 @@ public class EvenIfReadonlyItNeedsToThrowExceptionTest extends NbTestCase {
     /** File object that let us know what is happening and delegates to certain
      * instance variables of the test.
      */
-    private static final class MyFileObject extends org.openide.filesystems.FileObject {
-        private org.openide.filesystems.FileObject delegate;
+    private static final class MyFileObject extends FileObject {
+        private FileObject delegate;
         public boolean canWrite;
         public String content;
         
-        public MyFileObject (org.openide.filesystems.FileObject del) {
+        public MyFileObject(FileObject del) {
             delegate = del;
         }
 
-        public java.io.OutputStream getOutputStream (FileLock lock) throws IOException {
-            class ContentStream extends java.io.ByteArrayOutputStream {
-                public void close () throws java.io.IOException {
+        public OutputStream getOutputStream (FileLock lock) throws IOException {
+            class ContentStream extends ByteArrayOutputStream {
+                public @Override void close () throws IOException {
                     super.close ();
                     content = new String (toByteArray ());
                 }
@@ -206,15 +173,16 @@ public class EvenIfReadonlyItNeedsToThrowExceptionTest extends NbTestCase {
             delegate.delete (lock);
         }
 
+        @SuppressWarnings("deprecation")
         public void setImportant (boolean b) {
             delegate.setImportant (b);
         }
 
-        public void addFileChangeListener (org.openide.filesystems.FileChangeListener fcl) {
+        public void addFileChangeListener(FileChangeListener fcl) {
             delegate.addFileChangeListener (fcl);
         }
 
-        public void removeFileChangeListener (org.openide.filesystems.FileChangeListener fcl) {
+        public void removeFileChangeListener(FileChangeListener fcl) {
             delegate.removeFileChangeListener (fcl);
         }
 
@@ -238,8 +206,8 @@ public class EvenIfReadonlyItNeedsToThrowExceptionTest extends NbTestCase {
             return delegate.getName ();
         }
 
-        public java.io.InputStream getInputStream () throws java.io.FileNotFoundException {
-            return new java.io.ByteArrayInputStream (new byte[0]);
+        public InputStream getInputStream() throws FileNotFoundException {
+            return new ByteArrayInputStream(new byte[0]);
         }
 
         public FileSystem getFileSystem () throws FileStateInvalidException {
@@ -258,7 +226,7 @@ public class EvenIfReadonlyItNeedsToThrowExceptionTest extends NbTestCase {
             return null;
         }
 
-        public java.util.Enumeration getAttributes () {
+        public Enumeration<String> getAttributes() {
             return delegate.getAttributes ();
         }
 
@@ -282,6 +250,7 @@ public class EvenIfReadonlyItNeedsToThrowExceptionTest extends NbTestCase {
             return false;
         }
 
+        @SuppressWarnings("deprecation")
         public boolean isReadOnly () {
             return !canWrite;
         }
@@ -294,15 +263,15 @@ public class EvenIfReadonlyItNeedsToThrowExceptionTest extends NbTestCase {
             return delegate.isValid ();
         }
 
-        public java.util.Date lastModified () {
-            return new java.util.Date();
+        public Date lastModified() {
+            return new Date();
         }
 
         public FileLock lock () throws IOException {
             return delegate.lock ();
         }
         
-        public boolean canWrite() {
+        public @Override boolean canWrite() {
             return canWrite;
         }
     }
@@ -314,7 +283,7 @@ public class EvenIfReadonlyItNeedsToThrowExceptionTest extends NbTestCase {
             super (obj, env);
         }
         
-        public org.openide.windows.CloneableTopComponent.Ref getRef () {
+        public CloneableTopComponent.Ref getRef() {
             return allEditors;
         }
         
@@ -338,30 +307,17 @@ public class EvenIfReadonlyItNeedsToThrowExceptionTest extends NbTestCase {
         
     }
 
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup  {
-        public Lkp () {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private Lkp (org.openide.util.lookup.InstanceContent ic) {
-            super (ic);
-            
-            ic.add (new Pool ());
-        }
-        
-    } // end of Lkp
-    
-    private static final class Pool extends org.openide.loaders.DataLoaderPool {
-        protected java.util.Enumeration loaders () {
-            return org.openide.util.Enumerations.singleton(MyLoader.get ());
+    private static final class Pool extends DataLoaderPool {
+        protected @Override Enumeration<? extends DataLoader> loaders() {
+            return Enumerations.singleton(MyLoader.get());
         }
     }
     
-    public static final class MyLoader extends org.openide.loaders.UniFileLoader {
+    public static final class MyLoader extends UniFileLoader {
         public int primary;
         
         public static MyLoader get () {
-            return (MyLoader)MyLoader.findObject (MyLoader.class, true);
+            return MyLoader.findObject(MyLoader.class, true);
         }
         
         public MyLoader() {
@@ -374,9 +330,9 @@ public class EvenIfReadonlyItNeedsToThrowExceptionTest extends NbTestCase {
         protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
             return new MyDataObject(this, primaryFile);
         }
-        protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
+        protected @Override MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
             primary++;
-            return new org.openide.loaders.FileEntry (obj, primaryFile);
+            return new FileEntry(obj, primaryFile);
         }
     }
     public static final class MyDataObject extends MultiDataObject 
@@ -386,11 +342,15 @@ public class EvenIfReadonlyItNeedsToThrowExceptionTest extends NbTestCase {
             getCookieSet ().add (OpenCookie.class, this);
         }
 
-        public org.openide.nodes.Node.Cookie createCookie (Class klass) {
-            return new DES (this, new MyEnv (this)); 
+        public <T extends Node.Cookie> T createCookie(Class<T> klass) {
+            if (klass.isAssignableFrom(DES.class)) {
+                return klass.cast(new DES(this, new MyEnv(this)));
+            } else {
+                return null;
+            }
         }
         
-        protected Node createNodeDelegate() {
+        protected @Override Node createNodeDelegate() {
             return new MyNode(this, Children.LEAF); 
         }
     }
@@ -402,7 +362,7 @@ public class EvenIfReadonlyItNeedsToThrowExceptionTest extends NbTestCase {
             super(obj, ch);
         }
         
-        public String getHtmlDisplayName() {
+        public @Override String getHtmlDisplayName() {
             return "<b>" + getDisplayName() + "</b>";
         }
     }
