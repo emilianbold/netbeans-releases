@@ -275,7 +275,7 @@ public class UMLClassWidget  extends SwitchableWidget
             nameWidget.initialize(element);
 
             classView.addChild(nameWidget);
-            classView.addChild(new SeparatorWidget(scene, SeparatorWidget.Orientation.HORIZONTAL));
+//            classView.addChild(new SeparatorWidget(scene, SeparatorWidget.Orientation.HORIZONTAL));
 
             // It turns out that attributes can be redefined as well.  I do not
             // think that we have a UI to allow an attribute to be redefined,
@@ -292,11 +292,11 @@ public class UMLClassWidget  extends SwitchableWidget
             members = new ElementListWidget(scene);
             members.createActions(DesignerTools.SELECT).addAction(ActionFactory.createAcceptAction(new AcceptFeatureProvider()));
             ((ListWidget) members).setLabel(attrsTitle);
-            attributeSection.addChild(members);
+            attributeSection.addChild(new CollapsibleWidget(scene, members));
             classView.addChild(attributeSection);
             initializeAttributes(element);
 
-            classView.addChild(new SeparatorWidget(scene, SeparatorWidget.Orientation.HORIZONTAL));
+//            classView.addChild(new SeparatorWidget(scene, SeparatorWidget.Orientation.HORIZONTAL));
 
             String opsTitle = NbBundle.getMessage(UMLClassWidget.class, 
                                                     "LBL_OperationsCompartment");
@@ -304,7 +304,7 @@ public class UMLClassWidget  extends SwitchableWidget
             operations = new ElementListWidget(scene);
             operations.createActions(DesignerTools.SELECT).addAction(ActionFactory.createAcceptAction(new AcceptFeatureProvider()));
             ((ListWidget) operations).setLabel(opsTitle);
-            classView.addChild(operations);
+            classView.addChild(new CollapsibleWidget(scene, operations));
             initializeOperations(element);
         }
         
@@ -388,9 +388,9 @@ public class UMLClassWidget  extends SwitchableWidget
             retVal = new ElementListWidget(getScene());
             retVal.setLabel(title);
 
-            classView.addChild(new SeparatorWidget(getScene(), 
-                                                   SeparatorWidget.Orientation.HORIZONTAL));
-            classView.addChild(retVal);
+//            classView.addChild(new SeparatorWidget(getScene(), 
+//                                                   SeparatorWidget.Orientation.HORIZONTAL));
+            classView.addChild(new CollapsibleWidget(getScene(), retVal));
             
             operationRedefinedMap.put(classifier.getXMIID(), retVal);
         }
@@ -410,9 +410,9 @@ public class UMLClassWidget  extends SwitchableWidget
             retVal = new ElementListWidget(getScene());
             retVal.setLabel(title);
 
-            attributeSection.addChild(new SeparatorWidget(getScene(), 
-                                                   SeparatorWidget.Orientation.HORIZONTAL));
-            attributeSection.addChild(retVal);
+//            attributeSection.addChild(new SeparatorWidget(getScene(), 
+//                                                   SeparatorWidget.Orientation.HORIZONTAL));
+            attributeSection.addChild(new CollapsibleWidget(getScene(), retVal));
             
             attributeRedefinedMap.put(classifier.getXMIID(), retVal);
         }
