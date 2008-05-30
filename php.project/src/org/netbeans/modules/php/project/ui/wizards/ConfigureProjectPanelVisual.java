@@ -78,7 +78,7 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
     }
 
     private void init() {
-        projectLocationTextField.getDocument().addDocumentListener(this);
+        projectFolderTextField.getDocument().addDocumentListener(this);
         projectNameTextField.getDocument().addDocumentListener(this);
         localServerComponent.addChangeListener(this);
         createIndexCheckBox.addActionListener(this);
@@ -113,8 +113,8 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
 
         projectNameLabel = new javax.swing.JLabel();
         projectNameTextField = new javax.swing.JTextField();
-        projectLocationLabel = new javax.swing.JLabel();
-        projectLocationTextField = new javax.swing.JTextField();
+        projectFolderLabel = new javax.swing.JLabel();
+        projectFolderTextField = new javax.swing.JTextField();
         browseButton = new javax.swing.JButton();
         sourcesLabel = new javax.swing.JLabel();
         localServerComboBox = new javax.swing.JComboBox();
@@ -132,8 +132,8 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
         org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_ProjectName")); // NOI18N
         projectNameLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
 
-        projectLocationLabel.setLabelFor(projectLocationTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, org.openide.util.NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_ProjectLocation")); // NOI18N
+        projectFolderLabel.setLabelFor(projectFolderTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(projectFolderLabel, org.openide.util.NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_ProjectFolder")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_BrowseProject")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
@@ -175,7 +175,7 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
                 .add(0, 0, 0)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(separator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
-                    .add(projectLocationLabel)
+                    .add(projectFolderLabel)
                     .add(setAsMainCheckBox)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -198,7 +198,7 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
                                         .add(createIndexCheckBox))
                                     .add(encodingComboBox, 0, 323, Short.MAX_VALUE)))
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
+                                .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(browseButton))
                             .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)))))
@@ -215,8 +215,8 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
                     .add(projectNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(projectLocationLabel)
-                    .add(projectLocationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(projectFolderLabel)
+                    .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(browseButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -241,10 +241,10 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        String newLocation = Utils.browseLocationAction(this, getProjectLocation(),
-                NbBundle.getMessage(LocationPanelVisual.class, "LBL_SelectProjectLocation"));
+        String newLocation = Utils.browseLocationAction(this, getProjectFolder(),
+                NbBundle.getMessage(LocationPanelVisual.class, "LBL_SelectProjectFolder"));
         if (newLocation != null) {
-            setProjectLocation(newLocation);
+            setProjectFolder(newLocation);
         }
     }//GEN-LAST:event_browseButtonActionPerformed
 
@@ -257,8 +257,8 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
     private javax.swing.JTextField indexNameTextField;
     private javax.swing.JButton localServerButton;
     private javax.swing.JComboBox localServerComboBox;
-    private javax.swing.JLabel projectLocationLabel;
-    private javax.swing.JTextField projectLocationTextField;
+    private javax.swing.JLabel projectFolderLabel;
+    private javax.swing.JTextField projectFolderTextField;
     private javax.swing.JLabel projectNameLabel;
     protected javax.swing.JTextField projectNameTextField;
     private javax.swing.JSeparator separator;
@@ -270,8 +270,8 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
         return projectNameTextField.getText().trim();
     }
 
-    public String getProjectLocation() {
-        return new File(projectLocationTextField.getText().trim()).getAbsolutePath();
+    public String getProjectFolder() {
+        return new File(projectFolderTextField.getText().trim()).getAbsolutePath();
     }
 
     public void setProjectName(String projectName) {
@@ -279,8 +279,8 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
         projectNameTextField.selectAll();
     }
 
-    public void setProjectLocation(String projectLocation) {
-        projectLocationTextField.setText(projectLocation);
+    public void setProjectFolder(String projectFolder) {
+        projectFolderTextField.setText(projectFolder);
     }
 
     public LocalServer getSourcesLocation() {

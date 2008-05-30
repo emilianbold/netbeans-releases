@@ -114,7 +114,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
         // project
         configureProjectPanelVisual.setProjectName(getProjectName());
-        configureProjectPanelVisual.setProjectLocation(getProjectLocation().getAbsolutePath());
+        configureProjectPanelVisual.setProjectFolder(getProjectFolder().getAbsolutePath());
         adjustProjectNameAndLocation();
 
         // sources
@@ -152,7 +152,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
     public void storeSettings(WizardDescriptor settings) {
         // project
-        settings.putProperty(PROJECT_DIR, FileUtil.normalizeFile(new File(configureProjectPanelVisual.getProjectLocation())));
+        settings.putProperty(PROJECT_DIR, FileUtil.normalizeFile(new File(configureProjectPanelVisual.getProjectFolder())));
         settings.putProperty(PROJECT_NAME, configureProjectPanelVisual.getProjectName());
 
         // sources
@@ -232,22 +232,22 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         return projectName;
     }
 
-    private File getProjectLocation() {
-        File projectLocation = (File) descriptor.getProperty(PROJECT_DIR);
-        if (projectLocation == null
-                || projectLocation.getParentFile() == null
-                || !projectLocation.isDirectory()) {
-            projectLocation = new File(ProjectChooser.getProjectsFolder(), getProjectName());
-            descriptor.putProperty(PROJECT_DIR, projectLocation);
+    private File getProjectFolder() {
+        File projectFolder = (File) descriptor.getProperty(PROJECT_DIR);
+        if (projectFolder == null
+                || projectFolder.getParentFile() == null
+                || !projectFolder.isDirectory()) {
+            projectFolder = new File(ProjectChooser.getProjectsFolder(), getProjectName());
+            descriptor.putProperty(PROJECT_DIR, projectFolder);
         }
-        return projectLocation;
+        return projectFolder;
     }
 
-    private String getDefaultFreeName(File projectLocation) {
+    private String getDefaultFreeName(File projectFolder) {
         int i = 1;
         String projectName;
         do {
-            projectName = validFreeProjectName(projectLocation, i++);
+            projectName = validFreeProjectName(projectFolder, i++);
         } while (projectName == null);
         return projectName;
     }
@@ -307,18 +307,18 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private String validateProject() {
-        String projectLocation = configureProjectPanelVisual.getProjectLocation();
+        String projectFolder = configureProjectPanelVisual.getProjectFolder();
         String projectName = configureProjectPanelVisual.getProjectName();
 
         if (!Utils.isValidFileName(projectName)) {
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectName");
         }
 
-        if (Utils.getCanonicalFile(new File(projectLocation).getAbsoluteFile()) == null) {
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectLocation");
+        if (Utils.getCanonicalFile(new File(projectFolder).getAbsoluteFile()) == null) {
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectFolder");
         }
         // XXX
-        return Utils.validateProjectDirectory(projectLocation, "Project", false, false); // NOI18N
+        return Utils.validateProjectDirectory(projectFolder, "Project", false, false); // NOI18N
     }
 
     private String validateSources() {
@@ -387,7 +387,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         LocalServer sources = configureProjectPanelVisual.getSourcesLocation();
         String sourcesSrcRoot = sources.getSrcRoot();
         if (isProjectFolder(sources)) {
-            File project = new File(configureProjectPanelVisual.getProjectLocation(), configureProjectPanelVisual.getProjectName());
+            File project = new File(configureProjectPanelVisual.getProjectFolder(), configureProjectPanelVisual.getProjectName());
             File src = FileUtil.normalizeFile(new File(project, DEFAULT_SOURCES_FOLDER));
             sourcesSrcRoot = src.getAbsolutePath();
         }
@@ -398,7 +398,8 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private void adjustProjectNameAndLocation() {
-        // XXX
+        String projectName = configureProjectPanelVisual.getProjectName();
+        String projectFolderName = new File(configureProjectPanelVisual.getProjectFolder()).getName();
     }
 
     public void stateChanged(ChangeEvent e) {

@@ -217,11 +217,11 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel<WizardDescri
         assert sources != null;
         String sourcesSrcRoot = sources.getSrcRoot();
         if (ConfigureProjectPanel.isProjectFolder(sources)) {
-            File projectLocation = (File) descriptor.getProperty(ConfigureProjectPanel.PROJECT_DIR);
+            File projectFolder = (File) descriptor.getProperty(ConfigureProjectPanel.PROJECT_DIR);
             String projectName = (String) descriptor.getProperty(ConfigureProjectPanel.PROJECT_NAME);
-            assert projectLocation != null;
+            assert projectFolder != null;
             assert projectName != null;
-            File project = new File(projectLocation, projectName);
+            File project = new File(projectFolder, projectName);
             File src = FileUtil.normalizeFile(new File(project, ConfigureProjectPanel.DEFAULT_SOURCES_FOLDER));
             sourcesSrcRoot = src.getAbsolutePath();
         }
