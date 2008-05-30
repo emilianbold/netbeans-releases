@@ -57,10 +57,10 @@ public class CopyFilesVisual extends JPanel {
     final LocalServerController localServerController;
     final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    public CopyFilesVisual(WebFolderNameProvider webFolderNameProvider, LocalServer... defaultLocalServers) {
+    public CopyFilesVisual(SourcesFolderNameProvider sourcesFolderNameProvider, LocalServer... defaultLocalServers) {
         initComponents();
 
-        localServerController = LocalServerController.create(copyFilesComboBox, copyFilesButton, webFolderNameProvider,
+        localServerController = LocalServerController.create(copyFilesComboBox, copyFilesButton, sourcesFolderNameProvider,
                 NbBundle.getMessage(CopyFilesVisual.class, "LBL_SelectFolderLocation"), defaultLocalServers);
         // set default, disabled state
         localServerController.setEnabled(false);

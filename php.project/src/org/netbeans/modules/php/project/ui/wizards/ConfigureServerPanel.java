@@ -40,7 +40,7 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import org.netbeans.modules.php.project.environment.PhpEnvironment.DocumentRoot;
-import org.netbeans.modules.php.project.ui.WebFolderNameProvider;
+import org.netbeans.modules.php.project.ui.SourcesFolderNameProvider;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import java.awt.Component;
 import java.io.File;
@@ -67,20 +67,20 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel<WizardDescri
     static final String COPY_TARGETS = "copyTargets"; // NOI18N
     static final String SERVER_IS_VALID = "serverIsValid"; // NOI18N
 
-    private final WebFolderNameProvider webFolderNameProvider;
+    private final SourcesFolderNameProvider sourcesFolderNameProvider;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final String[] steps;
     private ConfigureServerPanelVisual configureServerPanelVisual = null;
     private WizardDescriptor descriptor;
 
-    public ConfigureServerPanel(String[] steps, WebFolderNameProvider webFolderNameProvider) {
-        this.webFolderNameProvider = webFolderNameProvider;
+    public ConfigureServerPanel(String[] steps, SourcesFolderNameProvider sourcesFolderNameProvider) {
+        this.sourcesFolderNameProvider = sourcesFolderNameProvider;
         this.steps = steps;
     }
 
     public Component getComponent() {
         if (configureServerPanelVisual == null) {
-            configureServerPanelVisual = new ConfigureServerPanelVisual(this, webFolderNameProvider);
+            configureServerPanelVisual = new ConfigureServerPanelVisual(this, sourcesFolderNameProvider);
         }
         return configureServerPanelVisual;
     }
@@ -175,7 +175,7 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel<WizardDescri
         }
         model = new LocalServer.ComboBoxModel();
 
-        List<DocumentRoot> roots = PhpEnvironment.get().getDocumentRoots(webFolderNameProvider.getWebFolderName());
+        List<DocumentRoot> roots = PhpEnvironment.get().getDocumentRoots(sourcesFolderNameProvider.getSourcesFolderName());
         for (DocumentRoot root : roots) {
             LocalServer ls = new LocalServer(root.getDocumentRoot());
             model.addElement(ls);

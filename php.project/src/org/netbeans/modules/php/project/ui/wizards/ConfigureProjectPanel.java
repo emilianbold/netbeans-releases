@@ -41,7 +41,7 @@ package org.netbeans.modules.php.project.ui.wizards;
 
 import java.util.List;
 import org.netbeans.modules.php.project.environment.PhpEnvironment.DocumentRoot;
-import org.netbeans.modules.php.project.ui.WebFolderNameProvider;
+import org.netbeans.modules.php.project.ui.SourcesFolderNameProvider;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import java.awt.Component;
 import java.io.File;
@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescriptor>,
-        WizardDescriptor.FinishablePanel<WizardDescriptor>, WebFolderNameProvider, ChangeListener {
+        WizardDescriptor.FinishablePanel<WizardDescriptor>, SourcesFolderNameProvider, ChangeListener {
 
     static final LocalServer DEFAULT_LOCAL_SERVER;
 
@@ -207,7 +207,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         return DEFAULT_LOCAL_SERVER.equals(localServer);
     }
 
-    public String getWebFolderName() {
+    public String getSourcesFolderName() {
         getComponent();
         return locationPanelVisual.getProjectName();
     }
@@ -271,7 +271,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     private MutableComboBoxModel getOSDependentLocalServers() {
         MutableComboBoxModel model = new LocalServer.ComboBoxModel(DEFAULT_LOCAL_SERVER);
 
-        String projectName = getWebFolderName();
+        String projectName = getSourcesFolderName();
         List<DocumentRoot> roots = PhpEnvironment.get().getDocumentRoots();
         descriptor.putProperty(ROOTS, roots);
         for (DocumentRoot root : roots) {
@@ -298,7 +298,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         if (isProjectFolder(sources)) {
             // project/web => check project name and url
             // XXX copy-to-folder should be added
-            String correctUrl = getDefaultUrl(getWebFolderName());
+            String correctUrl = getDefaultUrl(getSourcesFolderName());
             if (!defaultUrl.equals(correctUrl)) {
                 url = correctUrl;
             }

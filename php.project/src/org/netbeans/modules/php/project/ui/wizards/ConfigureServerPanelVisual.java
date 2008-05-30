@@ -45,7 +45,7 @@ import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.project.ui.CopyFilesVisual;
 import org.netbeans.modules.php.project.ui.LocalServer;
-import org.netbeans.modules.php.project.ui.WebFolderNameProvider;
+import org.netbeans.modules.php.project.ui.SourcesFolderNameProvider;
 import org.openide.util.NbBundle;
 
 /**
@@ -56,8 +56,7 @@ public class ConfigureServerPanelVisual extends JPanel {
 
     private final CopyFilesVisual copyFilesVisual;
 
-    /** Creates new form ConfigureServerPanelVisual */
-    public ConfigureServerPanelVisual(ConfigureServerPanel wizardPanel, WebFolderNameProvider webFolderNameProvider) {
+    public ConfigureServerPanelVisual(ConfigureServerPanel wizardPanel, SourcesFolderNameProvider sourcesFolderNameProvider) {
 
         // Provide a name in the title bar.
         setName(NbBundle.getMessage(ConfigureServerPanelVisual.class, "LBL_ProjectServer"));
@@ -67,7 +66,7 @@ public class ConfigureServerPanelVisual extends JPanel {
 
         initComponents();
 
-        copyFilesVisual = new CopyFilesVisual(webFolderNameProvider);
+        copyFilesVisual = new CopyFilesVisual(sourcesFolderNameProvider);
         copyFilesPanel.add(BorderLayout.NORTH, copyFilesVisual);
     }
 
