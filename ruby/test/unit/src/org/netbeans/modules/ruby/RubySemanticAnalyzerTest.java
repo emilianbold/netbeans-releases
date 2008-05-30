@@ -1,21 +1,14 @@
 package org.netbeans.modules.ruby;
 
-import org.netbeans.modules.gsf.api.SemanticAnalyzer;
-
 /**
  * Test the semantic analyzer / highlighter
  * 
  * @author Tor Norbye
  */
-public class SemanticAnalyzerTest extends RubyTestBase {
+public class RubySemanticAnalyzerTest extends RubyTestBase {
 
-    public SemanticAnalyzerTest(String testName) {
+    public RubySemanticAnalyzerTest(String testName) {
         super(testName);
-    }
-
-    @Override
-    protected SemanticAnalyzer getSemanticAnalyzer() {
-        return new SemanticAnalysis();
     }
 
     public void testAnalysis() throws Exception {

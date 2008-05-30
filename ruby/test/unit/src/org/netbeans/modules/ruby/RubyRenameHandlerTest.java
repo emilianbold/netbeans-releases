@@ -28,23 +28,16 @@
 
 package org.netbeans.modules.ruby;
 
-import org.netbeans.modules.gsf.api.InstantRenamer;
-
 /**
  *
  * @author Tor Norbye
  */
-public class RenameHandlerTest extends RubyTestBase {
+public class RubyRenameHandlerTest extends RubyTestBase {
     
-    public RenameHandlerTest(String testName) {
+    public RubyRenameHandlerTest(String testName) {
         super(testName);
     }
 
-    @Override
-    protected InstantRenamer getRenameHandler() {
-        return new RenameHandler();
-    }
-    
     public void testRename1() throws Exception {
         checkRenameSections("testfiles/postgresql_adapter.rb", "  def indexes(tabl^e_name, name = nil) #:nodoc:");
     }

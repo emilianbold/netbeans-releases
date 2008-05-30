@@ -39,9 +39,10 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.ruby;
+package org.netbeans.modules.ruby.lexer;
 
 
+import org.netbeans.modules.ruby.*;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;

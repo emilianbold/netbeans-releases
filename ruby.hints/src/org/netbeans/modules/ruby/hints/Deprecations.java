@@ -54,7 +54,7 @@ import org.netbeans.modules.gsf.api.HintSeverity;
 import org.netbeans.modules.gsf.api.PreviewableFix;
 import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.Formatter;
+import org.netbeans.modules.ruby.RubyFormatter;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
@@ -292,7 +292,7 @@ public class Deprecations extends RubyAstRule {
                     if (gemName != null) {
                         list.replace(rowEnd, 0, "\nrequire \"" + gemName + "\"", false, 1); // NOI18N
                     }
-                    list.setFormatter(new Formatter(), true);
+                    list.setFormatter(new RubyFormatter(), true);
                 } else {
                     list.replace(range.getStart(), range.getLength(), deprecation.newName, false, 0);
                 }

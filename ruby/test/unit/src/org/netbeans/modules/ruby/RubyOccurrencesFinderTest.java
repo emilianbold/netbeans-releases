@@ -46,15 +46,10 @@ package org.netbeans.modules.ruby;
  *
  * @author Tor Norbye
  */
-public class OccurrencesFinderTest extends RubyTestBase {
+public class RubyOccurrencesFinderTest extends RubyTestBase {
 
-    public OccurrencesFinderTest(String testName) {
+    public RubyOccurrencesFinderTest(String testName) {
         super(testName);
-    }
-
-    @Override
-    protected org.netbeans.modules.gsf.api.OccurrencesFinder getOccurrencesFinder() {
-        return new OccurrencesFinder();
     }
 
     public void testApeParams() throws Exception {

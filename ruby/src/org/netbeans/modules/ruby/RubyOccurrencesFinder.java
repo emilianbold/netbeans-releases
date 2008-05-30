@@ -88,6 +88,7 @@ import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.OccurrencesFinder;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.util.Exceptions;
@@ -104,7 +105,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
-public class OccurrencesFinder implements org.netbeans.modules.gsf.api.OccurrencesFinder {
+public class RubyOccurrencesFinder implements OccurrencesFinder {
     private boolean cancelled;
     private int caretPosition;
     private Map<OffsetRange, ColoringAttributes> occurrences;
@@ -112,7 +113,7 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
     /** When true, don't match alias nodes as reads. Used during traversal of the AST. */
     private boolean ignoreAlias;
 
-    public OccurrencesFinder() {
+    public RubyOccurrencesFinder() {
     }
 
     public Map<OffsetRange, ColoringAttributes> getOccurrences() {

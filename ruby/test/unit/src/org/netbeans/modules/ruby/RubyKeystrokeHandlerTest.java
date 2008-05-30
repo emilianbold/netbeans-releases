@@ -65,17 +65,12 @@ import org.openide.filesystems.FileObject;
  * 
  * @author Tor Norbye
  */
-public class BracketCompleterTest extends RubyTestBase {
+public class RubyKeystrokeHandlerTest extends RubyTestBase {
     
-    public BracketCompleterTest(String testName) {
+    public RubyKeystrokeHandlerTest(String testName) {
         super(testName);
     }
 
-    @Override
-    protected KeystrokeHandler getBracketCompletion() {
-        return new BracketCompleter();
-    }
-    
     private void match(String original) throws BadLocationException {
         super.assertMatches(original);
     }
@@ -479,7 +474,7 @@ public class BracketCompleterTest extends RubyTestBase {
     }
     
     public void testContComment() throws Exception {
-        if (BracketCompleter.CONTINUE_COMMENTS) {
+        if (RubyKeystrokeHandler.CONTINUE_COMMENTS) {
             insertBreak("# ^", "# \n# ^");
         } else {
             insertBreak("# ^", "# \n^");
@@ -488,7 +483,7 @@ public class BracketCompleterTest extends RubyTestBase {
     
     public void testContComment2() throws Exception {
         // No auto-# on new lines
-        if (BracketCompleter.CONTINUE_COMMENTS) {
+        if (RubyKeystrokeHandler.CONTINUE_COMMENTS) {
             insertBreak("   #  ^", "   #  \n   #  ^");
         } else {
             insertBreak("   #  ^", "   #  \n   ^");
@@ -497,7 +492,7 @@ public class BracketCompleterTest extends RubyTestBase {
     
     public void testContComment3() throws Exception {
         // No auto-# on new lines
-        if (BracketCompleter.CONTINUE_COMMENTS) {
+        if (RubyKeystrokeHandler.CONTINUE_COMMENTS) {
             insertBreak("   #\t^", "   #\t\n   #\t^");
         } else {
             insertBreak("   #\t^", "   #\t\n   ^");
@@ -510,7 +505,7 @@ public class BracketCompleterTest extends RubyTestBase {
 
     public void testContComment5() throws Exception {
         // No auto-# on new lines
-        if (BracketCompleter.CONTINUE_COMMENTS) {
+        if (RubyKeystrokeHandler.CONTINUE_COMMENTS) {
             insertBreak("      # ^", "      # \n      # ^");
         } else {
             insertBreak("      # ^", "      # \n      ^");
@@ -782,7 +777,7 @@ public class BracketCompleterTest extends RubyTestBase {
     
     public void testBackwardsDeletion() throws Exception {
         String s = "Foo::Bar = whatever('hello')  \n  nextline";
-        BracketCompleter bc = new BracketCompleter();
+        RubyKeystrokeHandler bc = new RubyKeystrokeHandler();
         for (int i = s.length(); i >= 1; i--) {
             String shortened = s.substring(0, i);
             BaseDocument doc = getDocument(shortened);

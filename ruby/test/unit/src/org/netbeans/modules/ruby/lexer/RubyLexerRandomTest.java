@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.ruby;
+package org.netbeans.modules.ruby.lexer;
 
 import junit.framework.TestCase;
 import org.netbeans.lib.lexer.test.FixedTextDescriptor;

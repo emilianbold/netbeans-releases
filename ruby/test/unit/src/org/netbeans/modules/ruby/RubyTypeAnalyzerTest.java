@@ -52,13 +52,13 @@ import org.openide.filesystems.FileObject;
  *
  * @author Tor Norbye
  */
-public class TypeAnalyzerTest extends RubyTestBase {
+public class RubyTypeAnalyzerTest extends RubyTestBase {
     
-    public TypeAnalyzerTest(String testName) {
+    public RubyTypeAnalyzerTest(String testName) {
         super(testName);
     }
 
-    private TypeAnalyzer getAnalyzer(String file, String caretLine, boolean findMethod) throws Exception {
+    private RubyTypeAnalyzer getAnalyzer(String file, String caretLine, boolean findMethod) throws Exception {
         FileObject fo = getTestFile(file);
         BaseDocument doc = getDocument(fo);
         GsfTestCompilationInfo info = getInfo(fo);
@@ -86,13 +86,13 @@ public class TypeAnalyzerTest extends RubyTestBase {
             root = method;
         }
         
-        TypeAnalyzer instance = new TypeAnalyzer(index, root, node, caretOffset, caretOffset, doc, fo);
+        RubyTypeAnalyzer instance = new RubyTypeAnalyzer(index, root, node, caretOffset, caretOffset, doc, fo);
 
         return instance;
     }
     
     public void testGetType() throws Exception {
-        TypeAnalyzer instance = getAnalyzer("testfiles/types.rb", " l^oc = {", false);
+        RubyTypeAnalyzer instance = getAnalyzer("testfiles/types.rb", " l^oc = {", false);
 
         assertEquals("Integer", instance.getType("x"));
         // y is reassigned later in the file - make sure that at this
@@ -104,7 +104,7 @@ public class TypeAnalyzerTest extends RubyTestBase {
     }
 
     public void testGetType2() throws Exception {
-        TypeAnalyzer instance = getAnalyzer("testfiles/types.rb", " # d^one", false);
+        RubyTypeAnalyzer instance = getAnalyzer("testfiles/types.rb", " # d^one", false);
 
         // Y is assigned different types - make sure that at this position, it's a number
         assertEquals("Fixnum", instance.getType("y"));
@@ -117,30 +117,30 @@ public class TypeAnalyzerTest extends RubyTestBase {
     }
  
     public void testTypeAssertions() throws Exception {
-        TypeAnalyzer instance = getAnalyzer("testfiles/types.rb", " l^oc = {", true);
+        RubyTypeAnalyzer instance = getAnalyzer("testfiles/types.rb", " l^oc = {", true);
         assertEquals("String", instance.getType("param1"));
         assertEquals("Hash", instance.getType("param2"));
     }
 
     public void testBegin() throws Exception {
-        TypeAnalyzer instance = getAnalyzer("testfiles/types2.rb", " @f^iles = ARGV.dup", true);
+        RubyTypeAnalyzer instance = getAnalyzer("testfiles/types2.rb", " @f^iles = ARGV.dup", true);
         assertEquals("GetoptLong", instance.getType("go"));
     }
 
     public void testRailsController() throws Exception {
-        TypeAnalyzer instance = getAnalyzer("testfiles/type_controller.rb", "^end", false);
+        RubyTypeAnalyzer instance = getAnalyzer("testfiles/type_controller.rb", "^end", false);
         assertEquals("ActionController::CgiRequest", instance.getType("request"));
     }
 
 // This test doesn't work; the behavior works in the IDE but the
 // Lucene index isn't returning local symbols in the testing framework yet    
 //    public void testComplex1() throws Exception {
-//        TypeAnalyzer instance = getAnalyzer("testfiles/types3.rb", "^caret", false);
+//        RubyTypeAnalyzer instance = getAnalyzer("testfiles/types3.rb", "^caret", false);
 //        assertEquals("Product", instance.getType("@product"));
 //    }
 
     public void testComplex2() throws Exception {
-        TypeAnalyzer instance = getAnalyzer("testfiles/types3.rb", "^caret", true);
+        RubyTypeAnalyzer instance = getAnalyzer("testfiles/types3.rb", "^caret", true);
         assertEquals("ActiveRecord::ConnectionAdapters::TableDefinition", instance.getType("t"));
     }
 

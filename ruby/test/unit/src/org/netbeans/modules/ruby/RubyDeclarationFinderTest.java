@@ -32,9 +32,9 @@ package org.netbeans.modules.ruby;
  *
  * @author Tor Norbye
  */
-public class DeclarationFinderTest extends RubyTestBase {
+public class RubyDeclarationFinderTest extends RubyTestBase {
     
-    public DeclarationFinderTest(String testName) {
+    public RubyDeclarationFinderTest(String testName) {
         super(testName);
     }
 

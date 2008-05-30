@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,18 +39,21 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.ruby;
+package org.netbeans.modules.ruby.lexer;
 
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.ruby.lexer.RubyCommentTokenId;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
-import org.netbeans.modules.ruby.lexer.RubyTokenId;
 
 /**
- * Test tokens dump of Ruby code input. Based on Java one by Mila Metelka.
+ *
+ * @author Tor Norbye
  */
-public class RubyTokenDumpTest extends NbTestCase {
+public class RubyCommentLexerTest extends NbTestCase {
     
-    public RubyTokenDumpTest(String testName) {
+    public RubyCommentLexerTest(String testName) {
         super(testName);
     }
     
@@ -60,33 +63,26 @@ public class RubyTokenDumpTest extends NbTestCase {
         LexerTestUtilities.setTesting(true);
     }
 
-    public void testInput() throws Exception {
-        LexerTestUtilities.checkTokenDump(this, "testfiles/testInput.rb.txt",
-                RubyTokenId.language());
+    @SuppressWarnings("unchecked")
+    public void testClassLink() {
+        String text = "Clz#mtd";
+        TokenHierarchy hi = TokenHierarchy.create(text, RubyCommentTokenId.language());
+        TokenSequence ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyCommentTokenId.COMMENT_LINK, "Clz#mtd");
     }
 
-    public void testHeredoc1() throws Exception {
-        LexerTestUtilities.checkTokenDump(this, "testfiles/heredoc1.rb.txt",
-                RubyTokenId.language());
+    @SuppressWarnings("unchecked")
+    public void testClassLink2() {
+        String text = "my Clz#mtd,";
+        TokenHierarchy hi = TokenHierarchy.create(text, RubyCommentTokenId.language());
+        TokenSequence ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyCommentTokenId.COMMENT_TEXT, "my ");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyCommentTokenId.COMMENT_LINK, "Clz#mtd");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyCommentTokenId.COMMENT_TEXT, ",");
     }
-    
-    public void testEmbeddedCode() throws Exception {
-        LexerTestUtilities.checkTokenDump(this, "testfiles/embeddedcode.rb.txt",
-                RubyTokenId.language());
-    }    
 
-    public void testScenario2() throws Exception {
-        LexerTestUtilities.checkTokenDump(this, "testfiles/postgresql_adapter.rb.txt",
-                RubyTokenId.language());
-    }    
-
-    public void testScenario3() throws Exception {
-        LexerTestUtilities.checkTokenDump(this, "testfiles/freakout.rb.txt",
-                RubyTokenId.language());
-    }    
-
-    public void testPercentExpressions() throws Exception {
-        LexerTestUtilities.checkTokenDump(this, "testfiles/percent-expressions2.rb.txt",
-                RubyTokenId.language());
-    }    
+    public void test() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/testComments.rb.txt",
+                RubyCommentTokenId.language());
+    }
 }

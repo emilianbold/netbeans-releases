@@ -86,7 +86,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Tor Norbye
  */
-public class TypeAnalyzer {
+public class RubyTypeAnalyzer {
     static final String PARAM_HINT_ARG = "#:arg:"; // NOI18N
     static final String PARAM_HINT_RETURN = "#:return:=>"; // NOI18N
 
@@ -101,9 +101,9 @@ public class TypeAnalyzer {
     private final BaseDocument doc;
     private final FileObject fileObject;
 
-    /** Creates a new instance of TypeAnalyzer for a given position.
+    /** Creates a new instance of RubyTypeAnalyzer for a given position.
      * The {@link #analyze} method will do the rest. */
-    public TypeAnalyzer(RubyIndex index, Node root, Node target, int astOffset, int lexOffset, BaseDocument doc, FileObject fileObject) {
+    public RubyTypeAnalyzer(RubyIndex index, Node root, Node target, int astOffset, int lexOffset, BaseDocument doc, FileObject fileObject) {
         this.index = index;
         this.root = root;
         this.target = target;

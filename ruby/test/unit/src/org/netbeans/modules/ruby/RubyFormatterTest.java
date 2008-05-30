@@ -56,8 +56,8 @@ import org.openide.filesystems.FileUtil;
  * 
  * @author Tor Norbye
  */
-public class FormatterTest extends RubyTestBase {
-    public FormatterTest(String testName) {
+public class RubyFormatterTest extends RubyTestBase {
+    public RubyFormatterTest(String testName) {
         super(testName);
     }
 
@@ -95,7 +95,7 @@ public class FormatterTest extends RubyTestBase {
     
     private void reformatAll(List<FileObject> files) {
         IndentPrefs preferences = new IndentPrefs(2,2);
-        Formatter formatter = getFormatter(preferences);
+        RubyFormatter formatter = getFormatter(preferences);
         
         int fileCount = files.size();
         int count = 0;
