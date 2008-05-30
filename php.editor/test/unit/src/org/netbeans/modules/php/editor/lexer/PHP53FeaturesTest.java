@@ -106,4 +106,24 @@ public class PHP53FeaturesTest extends PHPLexerTestPerformer {
         performFileLexerTest("nowdoc_015");
         checkNewResultFiles();
     }
+    
+    public void testHereDoc() throws Exception {
+        clearWorkDir();
+        clearNewResultFiles();
+        performFileLexerTest("heredoc_001");
+        performFileLexerTest("heredoc_002");
+        performFileLexerTest("heredoc_003");
+        performFileLexerTest("heredoc_004");
+        performFileLexerTest("heredoc_005");
+        performFileLexerTest("heredoc_006");
+        performFileLexerTest("heredoc_007");
+        performFileLexerTest("heredoc_008");
+        performFileLexerTest("heredoc_009");
+        performFileLexerTest("heredoc_010");
+        performFileLexerTest("heredoc_011");
+        performFileLexerTest("heredoc_012");
+        performFileLexerTest("heredoc_013");
+        performFileLexerTest("heredoc_014");
+        checkNewResultFiles();
+    }
 }
