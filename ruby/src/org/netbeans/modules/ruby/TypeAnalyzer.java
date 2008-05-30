@@ -165,10 +165,12 @@ public class TypeAnalyzer {
 //            
         }
 
-        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             analyze(child);
         }
         
@@ -183,7 +185,6 @@ public class TypeAnalyzer {
         //   x = String.new("Whatever")
         // gives me a LocalAsgnNode with a Call node child with name "new",
         // and a ConstNode receiver (could be a composite too)
-        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
         if (list.size() != 1) {

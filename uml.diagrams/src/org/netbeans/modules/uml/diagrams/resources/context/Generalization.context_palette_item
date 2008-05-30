@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<palette_item version="1.0">
+
+  <icon16 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/general-link.png" />
+  <icon32 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/general-link-32.png" />
+
+  <description localizing-bundle="org.netbeans.modules.uml.diagrams.resources.context.Bundle"
+               display-name-key="NAME_Generalization" 
+               tooltip-key="HINT_Generalization" />
+</palette_item>

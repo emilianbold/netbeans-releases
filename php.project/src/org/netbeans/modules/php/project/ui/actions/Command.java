@@ -61,6 +61,7 @@ import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -196,10 +197,15 @@ public abstract class Command {
         String runAs = getPropertyEvaluator().getProperty(PhpProjectProperties.RUN_AS);
         return PhpProjectProperties.RunAsType.SCRIPT.name().equals(runAs);
     }
-    
+
     protected String getPhpInterpreter() {
         String retval = PhpOptions.getInstance().getPhpInterpreter();
         return (retval != null && retval.length() >  0) ? retval.trim() : null;
+    }
+
+    protected boolean isRemoteConfigSelected() {
+        String runAs = getPropertyEvaluator().getProperty(PhpProjectProperties.RUN_AS);
+        return PhpProjectProperties.RunAsType.REMOTE.name().equals(runAs);
     }
 
     //or null
@@ -224,21 +230,27 @@ public abstract class Command {
         return utils;
     }
 
-    private static OutputWriter getOutputWriter(String outTabTitle) {
+    private static OutputWriter getOutputWriter(String outTabTitle, boolean error, boolean clearOutput) {
         InputOutput io = IOProvider.getDefault().getIO(outTabTitle, false);
         io.select();
-        OutputWriter writer = io.getOut();
-        return writer;
+        if (clearOutput) {
+            try {
+                io.getOut().reset();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return error ? io.getErr() : io.getOut();
     }
 
     protected final BufferedReader reader(InputStream is, Charset encoding) {
         return new BufferedReader(new InputStreamReader(is, encoding));
     }
 
-    protected final BufferedWriter outputTabWriter(File scriptFile) {
+    protected final BufferedWriter outputTabWriter(File scriptFile, boolean error, boolean clearOutput) {
         String outputTitle = getOutputTabTitle(scriptFile);
-        BufferedWriter outputWriter = new BufferedWriter(getOutputWriter(outputTitle));
-        return outputWriter;
+        OutputWriter outputWriter = getOutputWriter(outputTitle, error, clearOutput);
+        return new BufferedWriter(outputWriter);
     }
 
     protected final String getOutputTabTitle(File scriptFile) {

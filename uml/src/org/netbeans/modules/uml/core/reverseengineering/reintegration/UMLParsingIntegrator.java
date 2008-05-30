@@ -153,9 +153,6 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
 import org.netbeans.modules.uml.core.workspacemanagement.IWSProject;
-import org.netbeans.modules.uml.ui.controls.drawingarea.DiagramAreaEnumerations;
-import org.netbeans.modules.uml.ui.controls.drawingarea.ElementBroadcastAction;
-import org.netbeans.modules.uml.ui.controls.drawingarea.IElementBroadcastAction;
 import org.netbeans.modules.uml.ui.controls.newdialog.INewDialogProjectDetails;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewDialogProjectDetails;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl;
@@ -832,11 +829,10 @@ public class UMLParsingIntegrator
         Node foundNode = null;
         try
         {
-
             // Attempt to get the value of the @name attribute. It QUITE possible that xml attribute
             // doesn't exist...
             String value = XMLManip.getAttributeValue(prototypeNode, "name"); // NOI18N
-             if (value != null)
+            if (value != null)
             {
                 // We've got a name, so let's see if we get lucky...
                 String query = ".//*[@name=\""; // NOI18N
@@ -879,7 +875,7 @@ public class UMLParsingIntegrator
         }
         return foundNode;
     }
-
+    
     public void ensureXMLAttrValues(String query, Node childInDestinationNamespace, Node elmentBeingInjected, String attrName)
     {
         try
@@ -1034,7 +1030,7 @@ public class UMLParsingIntegrator
                 ensureXMLAttrValues(query, childInDestinationNamespace, elementBeingInjected, attrName);
             }
 
-            // Make sure to check the current element as well                        
+            // Make sure to check the current element as well
             if (element != null)
             {
                 Attribute attr = element.attribute(attrName);
@@ -1167,18 +1163,19 @@ public class UMLParsingIntegrator
                     int count = m_ItemsToSink.size();
                     
                     // Create a broadcast to update the open diagrams
-                    IElementBroadcastAction elementAction = new ElementBroadcastAction();
-                    elementAction.setKind(DiagramAreaEnumerations.EBK_DEEP_SYNC);
-                    
-                    for (int i = 0; i < count; ++i)
-                    {
-                        IElement element = fact.createTypeAndFill(m_ItemsToSink.get(i));
-                        // Add this model element to our broadcast
-                        elementAction.add(element);
-                        reinitializePresentationElement(element);
-                    }
-                    
-                    proxyMan.broadcastToAllOpenDiagrams(elementAction);
+                    // TODO: meteora
+//                    IElementBroadcastAction elementAction = new ElementBroadcastAction();
+//                    elementAction.setKind(DiagramAreaEnumerations.EBK_DEEP_SYNC);
+//                    
+//                    for (int i = 0; i < count; ++i)
+//                    {
+//                        IElement element = fact.createTypeAndFill(m_ItemsToSink.get(i));
+//                        // Add this model element to our broadcast
+//                        elementAction.add(element);
+//                        reinitializePresentationElement(element);
+//                    }
+//                    
+//                    proxyMan.broadcastToAllOpenDiagrams(elementAction);
                     m_ItemsToSink.clear();
                 }
             }
@@ -1197,10 +1194,11 @@ public class UMLParsingIntegrator
         while(iter.hasNext() == true)
         {
             IPresentationElement curElement = iter.next();
-            if (curElement instanceof org.netbeans.modules.uml.ui.support.applicationmanager.IGraphPresentation)
-            {
-                ((org.netbeans.modules.uml.ui.support.applicationmanager.IGraphPresentation)curElement).setModelElement(null);
-            }
+            // TODO: meteora
+//            if (curElement instanceof org.netbeans.modules.uml.ui.support.applicationmanager.IGraphPresentation)
+//            {
+//                ((org.netbeans.modules.uml.ui.support.applicationmanager.IGraphPresentation)curElement).setModelElement(null);
+//            }
         }
     }
     
@@ -1614,7 +1612,7 @@ public class UMLParsingIntegrator
             sendExceptionMessage(e);
         }
     }
-
+    
     private void handleClientDependenciesAttr(Node childInDestinationNamespace, Node elementBeingInjected)
     {
         String clientDeps 
@@ -1945,7 +1943,7 @@ public class UMLParsingIntegrator
             }
                 
                 if ((childInDestinationNamespace != null) &&
-                    !m_CancelDueToConflict)
+                        !m_CancelDueToConflict)
                 {
                     boolean overwrite = true;
                     
@@ -1986,7 +1984,7 @@ public class UMLParsingIntegrator
                     //ok = false;
                     ok = true;
                 }
-
+            
         }
         
         return ok;
@@ -6261,7 +6259,6 @@ public class UMLParsingIntegrator
                     for (int index = 0; index < max; index++)
                     {
                         IDependency pDep = pDependencies.get(index);
-
                         if(pDep!=null 
                            && ( ! ( pDep instanceof Dependency
                                   || pDep instanceof Realization                                 
@@ -6274,7 +6271,7 @@ public class UMLParsingIntegrator
                         {
                             pNamedElement.removeClientDependency(pDep);
                             pDep.delete();
-                        }                        
+                        }                                                
                     }
                 }
             }
@@ -7137,7 +7134,7 @@ public class UMLParsingIntegrator
         
         try
         {
-
+            
             String value = XMLManip.retrieveNodeTextValue(node, "./UML:Element.ownedElement/UML:TaggedValue[@name='documentation']/UML:TaggedValue.dataValue");
             
             if (value.length() > 0)

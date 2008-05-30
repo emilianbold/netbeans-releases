@@ -28,34 +28,30 @@
 
 package org.netbeans.modules.ruby.rhtml;
 
-import java.io.IOException;
 import javax.swing.text.Document;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.ruby.DeclarationFinder;
-import org.openide.util.Exceptions;
 
 /**
- *
+ * Declaration finder for Ruby. All it does is determine if we're inside Ruby,
+ * and if so, delegates to the Ruby declaration finder.
+ * 
  * @author Tor Norbye
  */
 public class RhtmlFinder extends DeclarationFinder {
     @Override
-    public DeclarationLocation findDeclaration( CompilationInfo info, int caretOffset) {
-        try {
-            Document doc = info.getDocument();
-            if (RhtmlCompleter.isWithinRuby(doc, caretOffset)) {
-                return super.findDeclaration(info, caretOffset);
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+    public DeclarationLocation findDeclaration(CompilationInfo info, int caretOffset) {
+        Document doc = info.getDocument();
+        if (doc != null && RhtmlCompleter.isWithinRuby(doc, caretOffset)) {
+            return super.findDeclaration(info, caretOffset);
         }
         
         return DeclarationLocation.NONE;
     }
 
     @Override
-    public OffsetRange getReferenceSpan( Document doc, int caretOffset) {
+    public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
         if (RhtmlCompleter.isWithinRuby(doc, caretOffset)) {
             return super.getReferenceSpan(doc, caretOffset);
         }

@@ -43,7 +43,6 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="CreatorDesignerPalette">        
-        <!--<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.resources.Bundle"/>-->
         
         <folder name="DataProviders">
             <attr name="isReadonly" boolvalue="true"/>
@@ -121,7 +120,6 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     <folder name="CreatorDesignerPalette5">        
-        <!--<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.resources.Bundle"/>-->
         
         <folder name="DataProviders">            
             <attr name="isExpanded" boolvalue="false"/>
@@ -199,8 +197,6 @@ made subject to such option by the copyright holder.
     </folder>
     
     <folder name="CreatorJavaPalette">        
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.codeclips.Bundle"/>
-        
         <folder name="DatabaseandWebServices">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.codeclips.Bundle"/>
             <attr name="isExpanded" boolvalue="true"/>
@@ -237,8 +233,6 @@ made subject to such option by the copyright holder.
     </folder>
     
     <folder name="CreatorJavaPalette5">        
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.codeclips.Bundle"/>
-        
         <folder name="DatabaseandWebServices">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.codeclips.Bundle"/>
             <attr name="isExpanded" boolvalue="true"/>
