@@ -347,7 +347,7 @@ public class ProjectsRootNode extends AbstractNode {
         }
         
         final void refresh(Project p) {
-            refreshKey( new Pair(p, p.getProjectDirectory()) );
+            refreshKey(new Pair(p));
         }
                                 
         // Own methods ---------------------------------------------------------
@@ -360,7 +360,7 @@ public class ProjectsRootNode extends AbstractNode {
             
             for (int i = 0; i < projects.size(); i++) {
                 Project project = projects.get(i);
-                dirs.set(i, new Pair(project, project.getProjectDirectory()));
+                dirs.set(i, new Pair(project));
             }
 
             
@@ -375,9 +375,9 @@ public class ProjectsRootNode extends AbstractNode {
             public Project project;
             public final FileObject fo;
 
-            public Pair(Project project, FileObject fo) {
+            public Pair(Project project) {
                 this.project = project;
-                this.fo = fo;
+                this.fo = project.getProjectDirectory();
             }
 
             @Override
