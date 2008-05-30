@@ -1020,7 +1020,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         } else if (msg.startsWith("gdb: unknown target exception")) { // NOI18N
             DialogDisplayer.getDefault().notify(
                            new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
-                           "ERR_UnknownTargetException")));
+                           "ERR_UnknownTargetException"))); // NOI18N
             setExited();
             finish(false);
         } else if (msg.startsWith("Copyright ") || // NOI18N
