@@ -9,6 +9,7 @@ package org.netbeans.modules.debugger.jpda.ui.debugging;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
@@ -70,7 +71,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     
     static final Color hitsColor = new Color(255, 255, 178);
     static final Color hitsBarColor = new Color(230, 230, 130);
-    static final Color deadlockColor = new Color(252, 157, 159); // UIManager.getDefaults().getColor("nb.errorForeground");
+    static final Color deadlockColor = UIManager.getDefaults().getColor("nb.errorForeground"); // new Color(252, 157, 159); 
     
     private transient Color greenBarColor = new Color(189, 230, 170);
     private transient Color treeBackgroundColor = UIManager.getDefaults().getColor("Tree.background"); // NOI18N
@@ -466,7 +467,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 JPDAThread jpdaThread = node.getLookup().lookup(JPDAThread.class);
                 if (jpdaThread != null) {
                     if (leftBarHeight > 0) {
-                        addLeftBarPart(isCurrent, isAtBreakpoint, isInDeadlock, leftBarHeight);
+                        leftPanel.add(new BarPanel(isCurrent, isAtBreakpoint, isInDeadlock, leftBarHeight));
                     }
                     leftBarHeight = 0;
                     isCurrent = jpdaThread == currentThread && jpdaThread.isSuspended();
@@ -493,7 +494,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 sy += height;
             } // for
             if (leftBarHeight > 0) {
-                addLeftBarPart(isCurrent, isAtBreakpoint, isInDeadlock, leftBarHeight);
+                leftPanel.add(new BarPanel(isCurrent, isAtBreakpoint, isInDeadlock, leftBarHeight));
             }
 
             leftPanel.revalidate();
@@ -521,29 +522,68 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                     NbBundle.getMessage(DebuggingView.class, "LBL_Java_Project")); // [TODO]
             }
         }
-
-        private void addLeftBarPart(boolean isCurrent, boolean isAtBreakpoint, boolean isInDeadlock, int height) {
-            JComponent label = new JPanel();
+    }
+    
+    private class BarPanel extends JPanel {
+        
+        private Color secondaryBarColor = null;
+        private int height;
+        boolean isEmpty;
+        
+        BarPanel(boolean isCurrent, boolean isAtBreakpoint, boolean isInDeadlock, int height) {
+            this.height = height;
             String toolTipText = null;
-            label.setPreferredSize(new Dimension(BAR_WIDTH, height));
-            if (isCurrent) {
-                label.setBackground(greenBarColor);
-                toolTipText = NbBundle.getMessage(DebuggingView.class, "LBL_CURRENT_BAR_TIP");
-            } else if (isInDeadlock) {
-                label.setBackground(deadlockColor);
+            isEmpty = true;
+            setPreferredSize(new Dimension(BAR_WIDTH, height));
+            if (isInDeadlock) {
+                setBackground(deadlockColor);
                 toolTipText = NbBundle.getMessage(DebuggingView.class, "LBL_DEADLOCKED_THREAD_TIP");
+            } else if (isCurrent) {
+                setBackground(greenBarColor);
+                toolTipText = NbBundle.getMessage(DebuggingView.class, "LBL_CURRENT_BAR_TIP");
             } else if (isAtBreakpoint) {
-                label.setBackground(hitsBarColor);
+                setBackground(hitsBarColor);
                 toolTipText = NbBundle.getMessage(DebuggingView.class, "LBL_BREAKPOINT_HIT_TIP");
             } else {
-                label.setBackground(treeBackgroundColor);
-                label.setOpaque(false);
+                setBackground(treeBackgroundColor);
+                setOpaque(false);
             }
             if (toolTipText != null) {
-                label.setToolTipText(toolTipText);
+                setToolTipText(toolTipText);
+                isEmpty = false;
             }
-            leftPanel.add(label);
+            if (isCurrent && isInDeadlock) {
+                secondaryBarColor = greenBarColor;
+            }
         }
+        
+        @Override
+        public void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            if (isEmpty) {
+                return;
+            }
+            Color originalColor = g.getColor();
+            Rectangle clipRect = g.getClipBounds();
+            if (secondaryBarColor != null) {
+                g.setColor(secondaryBarColor);
+                Rectangle bounds = getBounds();
+                Rectangle rect = new Rectangle (bounds.width / 2 - 1, 0, (bounds.width + 1) / 2 + 1, bounds.height);
+                rect = rect.intersection(clipRect);
+                if (!rect.isEmpty()) {
+                    g.fillRect(rect.x, rect.y, rect.width, rect.height);
+                }
+            }
+            g.setColor(treeBackgroundColor);
+            if (clipRect.y == 0) {
+                g.drawLine(clipRect.x, 0, clipRect.x + clipRect.width - 1, 0);
+            }
+            if (clipRect.height == height) {
+                g.drawLine(clipRect.x, height - 1, clipRect.x + clipRect.width - 1, height - 1);
+            }
+            g.setColor(originalColor);
+        }
+        
     }
     
 }
