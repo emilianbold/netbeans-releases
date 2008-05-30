@@ -258,17 +258,13 @@ public class ProfilesModelHelper {
                             return ComboConstants.PROF_ENDORSCERT;
                         }
                         if (tokenType == null) {    // profile 4
-                            if (secConv) {
-                                Policy pp = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class, false);
-                                tokenKind = SecurityTokensModelHelper.getSupportingToken(pp, SecurityTokensModelHelper.SIGNED_SUPPORTING);
-                            } else {
-                                tokenKind = SecurityTokensModelHelper.getSupportingToken(c, SecurityTokensModelHelper.SIGNED_SUPPORTING);
-                            }
                             WSDLComponent encTokenKind = null;
                             if (secConv) {
                                 Policy pp = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class, false);
+                                tokenKind = SecurityTokensModelHelper.getSupportingToken(pp, SecurityTokensModelHelper.SIGNED_SUPPORTING);
                                 encTokenKind = SecurityTokensModelHelper.getSupportingToken(pp, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
                             } else {
+                                tokenKind = SecurityTokensModelHelper.getSupportingToken(c, SecurityTokensModelHelper.SIGNED_SUPPORTING);
                                 encTokenKind = SecurityTokensModelHelper.getSupportingToken(c, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
                             }
                             if (encTokenKind != null) {
