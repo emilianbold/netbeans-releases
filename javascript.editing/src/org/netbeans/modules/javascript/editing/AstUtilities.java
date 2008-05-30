@@ -294,28 +294,28 @@ public final class AstUtilities {
     public static OffsetRange getRange(CompilationInfo info, Node node) {
         if (node.getType() == Token.STRING) {
             // Work around difficulties with the offset
-            try {
-                BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = (BaseDocument) info.getDocument();
+            if (doc != null) {
                 int astOffset = node.getSourceStart();
                 int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
                 if (lexOffset != -1 && doc != null) {
-                    int rowStart = Utilities.getRowStart(doc, lexOffset);
-                    int rowEnd = Utilities.getRowEnd(doc, rowStart);
-                    String line = doc.getText(rowStart, rowEnd-rowStart);
-                    String s = node.getString();
-                    int lineOffset = line.indexOf(s);
-                    if (lineOffset != -1) {
-                        int start = rowStart+lineOffset;
-                        int astStart = getAstOffset(info, start);
-                        if (astStart != -1) {
-                            return new OffsetRange(astStart, astStart+s.length());
+                    try {
+                        int rowStart = Utilities.getRowStart(doc, lexOffset);
+                        int rowEnd = Utilities.getRowEnd(doc, rowStart);
+                        String line = doc.getText(rowStart, rowEnd-rowStart);
+                        String s = node.getString();
+                        int lineOffset = line.indexOf(s);
+                        if (lineOffset != -1) {
+                            int start = rowStart+lineOffset;
+                            int astStart = getAstOffset(info, start);
+                            if (astStart != -1) {
+                                return new OffsetRange(astStart, astStart+s.length());
+                            }
                         }
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 }
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
             }
         }
 

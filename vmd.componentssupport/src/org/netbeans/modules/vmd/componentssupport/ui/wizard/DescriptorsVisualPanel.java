@@ -45,9 +45,13 @@ package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 import java.awt.Dialog;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.vmd.componentssupport.ui.helpers.CustomComponentHelper;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.vmd.componentssupport.ui.UIUtils;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -59,11 +63,31 @@ public class DescriptorsVisualPanel extends javax.swing.JPanel {
     private static final String CONTENT_DISPLAYED = "WizardPanel_contentDisplayed"; // NOI18N
     private static final String AUTO_WIZARD_STYLE = "WizardPanel_autoWizardStyle";  // NOI18N
     
+    private static final String DLD_DELETE_TITLE = "MSG_ComponentDeleteTitle";  // NOI18N
+    private static final String DLD_DELETE_MSG = "MSG_ComponentDeleteMsg";  // NOI18N
+
     /** Creates new form DescriptorsVisualPanel */
     public DescriptorsVisualPanel() {
         initComponents();
 
-        myCompDescrList.setModel( new CompDescriptorsListModel() );
+        myCompDescrList.setModel(new CompDescriptorsListModel());
+        myCompDescrList.getSelectionModel().setSelectionMode(
+                ListSelectionModel.SINGLE_SELECTION);
+        myCompDescrList.getSelectionModel().addListSelectionListener(
+                new ListSelectionListener() {
+                    public void valueChanged(ListSelectionEvent e) {
+                        updateRemoveButton();
+                    }
+                });
+        updateRemoveButton();
+    }
+
+    private void updateRemoveButton() {
+        if (myCompDescrList.isSelectionEmpty()) {
+            myRemoveButton.setEnabled(false);
+        } else {
+            myRemoveButton.setEnabled(true);
+        }
     }
 
     void readData( WizardDescriptor settings ) {
@@ -167,12 +191,20 @@ private void addPressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPr
 
 private void removePressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removePressed
     int index = myCompDescrList.getSelectedIndex();
+    List<Map> components = (List<Map>)myWizardDescriptor.getProperty( 
+                CustomComponentWizardIterator.CUSTOM_COMPONENTS);
+
+    String name = (String)components.get(index).get(NewComponentDescriptor.CC_PREFIX);
+    String title = getMessage(DLD_DELETE_TITLE);
+    String msg = getMessage(DLD_DELETE_MSG, name);
+    if (!UIUtils.userConfirmOkCancel(title, msg)){
+        return;
+    }
+    
     // remove in UI
     ((CompDescriptorsListModel)myCompDescrList.getModel()).remove(index);
     
     //remove from WizardDescriptor
-    List<Map> components = (List<Map>)myWizardDescriptor.getProperty( 
-                CustomComponentWizardIterator.CUSTOM_COMPONENTS);
     components.remove(index);
 }//GEN-LAST:event_removePressed
 
@@ -185,7 +217,10 @@ private void removePressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_re
     private javax.swing.JButton myRemoveButton;
     // End of variables declaration//GEN-END:variables
 
-    
+    private static String getMessage(String key, Object... args) {
+        return NbBundle.getMessage(JavaMELibsVisualPanel.class, key, args);
+    }
+        
     private class CompDescriptorsListModel extends EditableListModel{
 
         public void updateModel(List<Map<String,Object>> components){

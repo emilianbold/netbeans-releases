@@ -329,7 +329,7 @@ public class OpenTempl_defaultPack extends JellyTestCase {
             log("Java reference file was created");
 
         } catch (Exception e) {
-            fail("Fail during create reffile: " + e.getMessage());
+            fail("Fail during create reffile: " + e.getMessage());  
         }
         if (jdkVersion == "jdk15") {
             assertFile(new File(getWorkDir() + File.separator + this.getName() + ".ref"), getGoldenFile(javafile + "JavaFile15.pass"), new File(getWorkDir(), javafile + ".diff"));

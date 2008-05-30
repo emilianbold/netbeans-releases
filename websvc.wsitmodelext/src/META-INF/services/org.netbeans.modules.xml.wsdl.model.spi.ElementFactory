@@ -134,6 +134,7 @@ org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokenFactories$RequireE
 org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokenFactories$RequireThumbprintReferenceFactory
 org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokenFactories$SC10SecurityContextTokenFactory
 org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokenFactories$IssuerFactory
+org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokenFactories$HashPasswordFactory
 org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokenFactories$WssUsernameToken10Factory
 org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokenFactories$WssUsernameToken11Factory
 org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokenFactories$WssX509V1Token10Factory

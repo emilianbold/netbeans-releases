@@ -1,19 +1,131 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="buttonGroup1">
     </Component>
   </NonVisualComponents>
   <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
-    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,44,0,0,1,-112"/>
   </AuxValues>
 
-  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
+  <Layout>
+    <DimensionLayout dim="0">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" attributes="0">
+              <Component id="advancedButton" min="-2" pref="400" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="98" max="-2" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="allowSecondaryPanelsCheckBox" min="-2" pref="215" max="-2" attributes="0"/>
+              <EmptySpace pref="277" max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Group type="103" alignment="1" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="tooltipLbl1" min="-2" max="-2" attributes="0"/>
+                              <Component id="displayNameLbl1" min="-2" max="-2" attributes="0"/>
+                              <Component id="primaryPanelComboLbl" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="-2" pref="22" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="primaryPanelCombo" alignment="0" pref="379" max="32767" attributes="2"/>
+                              <Component id="displayNameField1" alignment="0" pref="379" max="32767" attributes="2"/>
+                              <Component id="tooltipField1" alignment="0" pref="379" max="32767" attributes="2"/>
+                          </Group>
+                          <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace min="-2" pref="13" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="categoryNameLbl" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="iconLbl" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="-2" pref="19" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="1" attributes="0">
+                              <Group type="102" alignment="1" attributes="1">
+                                  <Component id="iconField" pref="290" max="32767" attributes="0"/>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Component id="iconButton" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <Component id="categoryNameField" alignment="1" pref="379" max="32767" attributes="2"/>
+                              <Component id="titleField" alignment="1" pref="379" max="32767" attributes="2"/>
+                          </Group>
+                          <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace min="-2" pref="235" max="-2" attributes="0"/>
+                          <Component id="dummyPanel" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" attributes="0">
+                          <EmptySpace min="13" pref="13" max="13" attributes="0"/>
+                          <Component id="titleLbl" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="373" pref="373" max="373" attributes="0"/>
+                      </Group>
+                  </Group>
+                  <Component id="optionsCategoryButton" alignment="0" min="-2" pref="400" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+    <DimensionLayout dim="1">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" max="-2" attributes="0">
+              <Component id="advancedButton" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="primaryPanelComboLbl" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="primaryPanelCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="displayNameLbl1" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="displayNameField1" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="tooltipLbl1" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="tooltipField1" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+              <Component id="optionsCategoryButton" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="titleLbl" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="titleField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="categoryNameLbl" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="categoryNameField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="iconLbl" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="iconButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="iconField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+              <Component id="allowSecondaryPanelsCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="28" max="-2" attributes="0"/>
+              <Component id="dummyPanel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="56" max="-2" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+  </Layout>
   <SubComponents>
     <Component class="javax.swing.JRadioButton" name="advancedButton">
       <Properties>
@@ -36,11 +148,6 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="advancedButtonActionPerformed"/>
       </Events>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="-1" gridY="-1" gridWidth="0" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="6" insetsRight="0" anchor="17" weightX="0.0" weightY="0.0"/>
-        </Constraint>
-      </Constraints>
     </Component>
     <Component class="javax.swing.JRadioButton" name="optionsCategoryButton">
       <Properties>
@@ -62,18 +169,8 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="optionsCategoryButtonActionPerformed"/>
       </Events>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="0" gridY="3" gridWidth="0" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="6" insetsLeft="0" insetsBottom="6" insetsRight="0" anchor="17" weightX="0.0" weightY="0.0"/>
-        </Constraint>
-      </Constraints>
     </Component>
     <Container class="javax.swing.JPanel" name="dummyPanel">
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="0" gridY="7" gridWidth="0" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="0" insetsRight="0" anchor="10" weightX="1.0" weightY="1.0"/>
-        </Constraint>
-      </Constraints>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
     </Container>
@@ -87,21 +184,11 @@
         </Property>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="0" gridY="5" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="18" insetsBottom="6" insetsRight="12" anchor="17" weightX="0.0" weightY="0.0"/>
-        </Constraint>
-      </Constraints>
     </Component>
     <Component class="javax.swing.JTextField" name="categoryNameField">
       <Properties>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="1" gridY="5" gridWidth="0" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="6" insetsRight="0" anchor="17" weightX="1.0" weightY="0.0"/>
-        </Constraint>
-      </Constraints>
     </Component>
     <Component class="javax.swing.JLabel" name="displayNameLbl1">
       <Properties>
@@ -112,18 +199,8 @@
           <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/wizard/options/Bundle.properties" key="LBL_DisplaName" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="0" gridY="1" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="18" insetsBottom="6" insetsRight="12" anchor="17" weightX="0.0" weightY="0.0"/>
-        </Constraint>
-      </Constraints>
     </Component>
     <Component class="javax.swing.JTextField" name="displayNameField1">
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="1" gridY="1" gridWidth="0" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="0" insetsRight="0" anchor="17" weightX="1.0" weightY="0.0"/>
-        </Constraint>
-      </Constraints>
     </Component>
     <Component class="javax.swing.JLabel" name="tooltipLbl1">
       <Properties>
@@ -134,18 +211,8 @@
           <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/wizard/options/Bundle.properties" key="LBL_Tooltip" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="0" gridY="2" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="6" insetsLeft="18" insetsBottom="6" insetsRight="12" anchor="17" weightX="0.0" weightY="0.0"/>
-        </Constraint>
-      </Constraints>
     </Component>
     <Component class="javax.swing.JTextField" name="tooltipField1">
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="1" gridY="2" gridWidth="0" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="0" insetsRight="0" anchor="17" weightX="1.0" weightY="0.0"/>
-        </Constraint>
-      </Constraints>
     </Component>
     <Component class="javax.swing.JLabel" name="titleLbl">
       <Properties>
@@ -157,21 +224,11 @@
         </Property>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="0" gridY="4" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="6" insetsLeft="18" insetsBottom="6" insetsRight="12" anchor="17" weightX="0.0" weightY="0.0"/>
-        </Constraint>
-      </Constraints>
     </Component>
     <Component class="javax.swing.JTextField" name="titleField">
       <Properties>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="1" gridY="4" gridWidth="0" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="0" insetsRight="0" anchor="17" weightX="1.0" weightY="0.0"/>
-        </Constraint>
-      </Constraints>
     </Component>
     <Component class="javax.swing.JLabel" name="iconLbl">
       <Properties>
@@ -183,11 +240,6 @@
         </Property>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="0" gridY="6" gridWidth="1" gridHeight="1" fill="1" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="18" insetsBottom="0" insetsRight="0" anchor="10" weightX="0.0" weightY="0.0"/>
-        </Constraint>
-      </Constraints>
     </Component>
     <Component class="javax.swing.JTextField" name="iconField">
       <Properties>
@@ -197,11 +249,6 @@
         </Property>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="1" gridY="6" gridWidth="1" gridHeight="1" fill="1" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="0" insetsRight="12" anchor="10" weightX="1.0" weightY="0.0"/>
-        </Constraint>
-      </Constraints>
     </Component>
     <Component class="javax.swing.JButton" name="iconButton">
       <Properties>
@@ -213,11 +260,38 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="iconButtonActionPerformed"/>
       </Events>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="2" gridY="6" gridWidth="0" gridHeight="-1" fill="1" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="0" insetsRight="0" anchor="10" weightX="0.0" weightY="0.0"/>
-        </Constraint>
-      </Constraints>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="allowSecondaryPanelsCheckBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/wizard/options/Bundle.properties" key="LBL_AllowSecondaryPanels" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="allowSecondaryPanelsCheckBoxActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="primaryPanelComboLbl">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="primaryPanelCombo"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/wizard/options/Bundle.properties" key="LBL_PrimaryPanelCombo" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="primaryPanelCombo">
+      <Properties>
+        <Property name="editable" type="boolean" value="true"/>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="new DefaultComboBoxModel(getPrimaryIdsFromLayer())" type="code"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="primaryPanelComboActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

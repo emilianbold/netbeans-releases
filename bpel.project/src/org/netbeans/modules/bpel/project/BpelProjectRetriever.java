@@ -469,6 +469,9 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                            if (scMdl != null) {
                               Collection<org.netbeans.modules.xml.schema.model.Import> subImports = scMdl.getSchema().getImports();
                               processSchemaImport(scMdl, subImports);
+                              
+                              Collection<org.netbeans.modules.xml.schema.model.Include> subIncludes = scMdl.getSchema().getIncludes();
+                              processSchemaInclude(scMdl, subIncludes);
                            }
                        }
                    } else {
@@ -532,6 +535,9 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                           mVisitedXMLResources.add(xsdKey);*/
                                       Collection<org.netbeans.modules.xml.schema.model.Import> subImports = scMdl.getSchema().getImports();
                                       processSchemaImport(scMdl, subImports);
+                              
+                              Collection<org.netbeans.modules.xml.schema.model.Include> subIncludes = scMdl.getSchema().getIncludes();
+                              processSchemaInclude(scMdl, subIncludes);
                                    //}    
                                }
                            }
@@ -542,6 +548,45 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                }
 
            }
+
+        void processSchemaInclude(SchemaModel scm, Collection<org.netbeans.modules.xml.schema.model.Include> colIncludes ) {
+            for (org.netbeans.modules.xml.schema.model.Include include: colIncludes) {
+                final String importLocation = include.getSchemaLocation();
+                
+                if (importLocation != null) {
+                    if (!mVisitedXMLResources.contains(importLocation)) {
+                        mVisitedXMLResources.add(importLocation);
+                        URI resourceURI = externalResource("", importLocation);
+                        if (resourceURI != null) {
+                            if (!ApacheResolverHelper.isPresent(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri()).getAbsolutePath(), resourceURI.toString())) {
+                                try {
+                                    FileObject catalogFO = FileUtil.toFileObject(FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverPath())));
+                                    displayStatus(importLocation);
+                                    Retriever.getDefault().retrieveResource(
+                                            catalogFO,
+                                            null,
+                                            resourceURI);
+                                } catch (Exception ex) {
+                                    logger.log(
+                                            Level.SEVERE,
+                                            "Error encountered while retreiving file - " + importLocation);
+                                }
+                            }
+                        } else {
+                            SchemaModel scMdl = getSchemaModel(include);
+                            
+                            if (scMdl != null) {
+                                Collection<org.netbeans.modules.xml.schema.model.Import> subImports = scMdl.getSchema().getImports();
+                                processSchemaImport(scMdl, subImports);
+                              
+                                Collection<org.netbeans.modules.xml.schema.model.Include> subIncludes = scMdl.getSchema().getIncludes();
+                                processSchemaInclude(scMdl, subIncludes);
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
            void processWSDLImport(WSDLModel wsdlModel, org.netbeans.modules.bpel.model.api.Import imports ) {
                String importLocation = imports.getLocation();
@@ -597,6 +642,9 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                                    Collection<org.netbeans.modules.xml.schema.model.Import> colImports1 =
                                        schema.getImports();
                                    processSchemaImport(schema.getModel(), colImports1);
+                              
+                                Collection<org.netbeans.modules.xml.schema.model.Include> subIncludes = schema.getIncludes();
+                                processSchemaInclude(schema.getModel(), subIncludes);
                            }
                        }
                    }
@@ -687,6 +735,9 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                                                Collection<org.netbeans.modules.xml.schema.model.Import> colImports1 =
                                                    schema.getImports();
                                                processSchemaImport(schema.getModel(), colImports1);
+                              
+                                Collection<org.netbeans.modules.xml.schema.model.Include> subIncludes = schema.getIncludes();
+                                processSchemaInclude(schema.getModel(), subIncludes);
                                           // }
                                        }
                                    }
@@ -791,6 +842,33 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                return schemaModel;
            }
 
+           public SchemaModel getSchemaModel( org.netbeans.modules.xml.schema.model.Include imp ) {
+               String location = imp.getSchemaLocation();
+               SchemaModel schemaModel ;
+               if (location == null) {
+                   return null;
+               }
+               try {
+                   URI uri = new URI( location );
+                   ModelSource modelSource = CatalogModelFactory.getDefault().
+                               getCatalogModel(imp.getModel().getModelSource())
+                               .getModelSource(uri, imp.getModel().getModelSource());
+
+                   schemaModel = SchemaModelFactory.getDefault().
+                       getModel( modelSource );
+               }
+               catch (URISyntaxException e) {
+                   schemaModel = null;
+               }
+               catch (CatalogModelException e) {
+                   schemaModel = null;
+               }
+               if (schemaModel != null && schemaModel.getState() == Model.State.NOT_WELL_FORMED) {
+                   schemaModel = null;
+               }
+               return schemaModel;
+           }
+           
            public  WSDLModel getWsdlModel( org.netbeans.modules.xml.wsdl.model.Import imp ) {
               String location = imp.getLocation();
               WSDLModel wsdlModel;
