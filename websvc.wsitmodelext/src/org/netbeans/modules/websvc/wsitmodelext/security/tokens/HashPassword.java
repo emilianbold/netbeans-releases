@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,42 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
+package org.netbeans.modules.websvc.wsitmodelext.security.tokens;
 
-package org.netbeans.tests.j2eeserver.plugin;
-
-import javax.enterprise.deploy.spi.DeploymentManager;
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
+import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 
 /**
  *
- * @author  nn136682
+ * @author Martin Grebac
  */
-public class ManagerWrapperFactory extends OptionalDeploymentManagerFactory {
-
-    /** Creates a new instance of ManagerWrapperFactory */
-    public ManagerWrapperFactory() {
-    }
-
-    public FindJSPServlet getFindJSPServlet(javax.enterprise.deploy.spi.DeploymentManager dm) {
-        return null;
-    }
-
-    public IncrementalDeployment getIncrementalDeployment(javax.enterprise.deploy.spi.DeploymentManager dm) {
-        return new IncrementalDeploySupport(dm);
-    }
-    
-    public StartServer getStartServer(javax.enterprise.deploy.spi.DeploymentManager dm) {
-        return new ServerLifecycle(dm);
-    }
-
-    @Override
-    public ServerInstanceDescriptor getServerInstanceDescriptor(DeploymentManager dm) {
-        return new TestInstanceDescriptor(dm);
-    }
-    
+public interface HashPassword extends ExtensibilityElement {
 }

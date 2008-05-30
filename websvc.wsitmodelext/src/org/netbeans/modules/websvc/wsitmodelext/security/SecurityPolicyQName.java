@@ -135,6 +135,8 @@ public enum SecurityPolicyQName {
     WSSRELV10TOKEN11(createSecurityPolicyQName("WssRelV10Token11")),  //NOI18N
     WSSRELV20TOKEN11(createSecurityPolicyQName("WssRelV20Token11")),  //NOI18N
 
+    HASHPASSWORD(createSecurityPolicyQName("HashPassword")),  //NOI18N
+    
     INCLUDETOKENATTRIBUTE(createSecurityPolicyQName("IncludeToken")),  //NOI18N
     
     USERNAMETOKEN(createSecurityPolicyQName("UsernameToken")),  //NOI18N
