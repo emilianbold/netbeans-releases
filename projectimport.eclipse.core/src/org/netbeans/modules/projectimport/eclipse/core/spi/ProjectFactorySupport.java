@@ -83,6 +83,7 @@ public class ProjectFactorySupport {
      */
     public static void updateProjectClassPath(AntProjectHelper helper, ProjectImportModel model, 
             List<String> importProblems) throws IOException {
+        assert model.getEclipseSourceRootsAsFileArray().length > 0 : model.getProjectName(); // XXX handle more gracefully (add an import problem)
         FileObject sourceRoot = FileUtil.toFileObject(model.getEclipseSourceRootsAsFileArray()[0]);
         for (DotClassPathEntry entry : model.getEclipseClassPathEntries()) {
             addItemToClassPath(helper, entry, model.getNetBeansProjectLocation(), model.getProjectName(), importProblems, sourceRoot);
@@ -226,6 +227,7 @@ public class ProjectFactorySupport {
             ProjectClassPathModifier.addRoots(new URL[]{FileUtil.urlForArchiveOrDir(new File(entry.getAbsolutePath()))}, sourceRoot, ClassPath.COMPILE);
         } else if (entry.getKind() == DotClassPathEntry.Kind.VARIABLE) {
             // add property directly to Ant property
+            // XXX it can happen that entry.absolutePath == null (e.g. "APPLICATION_HOME_DIR/lib/javaee.jar"), in which case the following throws NPE:
             addToBuildProperties(helper, "javac.classpath", ProjectFactorySupport.asAntVariable(entry), new File(entry.getAbsolutePath()).getName());
 //            ProjectClassPathModifier.addRoots(new URI[]{new URI(null, null, ProjectFactorySupport.asAntVariable(entry), null)}, sourceRoot, ClassPath.COMPILE);
         } else if (entry.getKind() == DotClassPathEntry.Kind.CONTAINER) {
