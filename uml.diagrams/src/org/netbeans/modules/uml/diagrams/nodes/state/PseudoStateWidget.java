@@ -89,13 +89,13 @@ public class PseudoStateWidget extends UMLLabelNodeWidget
             {
 
                 case IPseudostateKind.PK_SHALLOWHISTORY:
-                    view = new HistoryStateWidget(getScene(), 15, getWidgetID(), loc("LBL_BodyColor"), "H");
+                    view = new HistoryStateWidget(getScene(), 10, getWidgetID(), loc("LBL_BodyColor"), " H ");
                     break;
                 case IPseudostateKind.PK_CHOICE:
                     view = new ChoicePseudoStateWidget(getScene(), getWidgetID(), loc("LBL_BodyColor"));
                     break;
                 case IPseudostateKind.PK_DEEPHISTORY:
-                    view = new HistoryStateWidget(getScene(), 15, getWidgetID(), loc("LBL_BodyColor"), " H*");
+                    view = new HistoryStateWidget(getScene(), 10, getWidgetID(), loc("LBL_BodyColor"), " H*");
                     break;
                 case IPseudostateKind.PK_FORK:
                 case IPseudostateKind.PK_JOIN:

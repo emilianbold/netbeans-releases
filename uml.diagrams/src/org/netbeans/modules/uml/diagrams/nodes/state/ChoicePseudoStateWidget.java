@@ -55,6 +55,7 @@ import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 public class ChoicePseudoStateWidget extends CustomizableWidget
 {
     public static final int width = 20;
+    public static final int height = 30;
     
     public ChoicePseudoStateWidget(Scene scene, String propID, String propDisplayName)
     {
@@ -67,7 +68,7 @@ public class ChoicePseudoStateWidget extends CustomizableWidget
     {
         if (getBounds()==null || !isPreferredBoundsSet())
         {
-            return new Rectangle(0, 0, width, width);
+            return new Rectangle(0, 0, width, height);
         }
        return  super.calculateClientArea();
     }

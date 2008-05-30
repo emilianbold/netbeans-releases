@@ -41,6 +41,8 @@ package org.netbeans.modules.uml.diagrams.edges;
 import org.netbeans.api.visual.anchor.AnchorShapeFactory;
 import org.netbeans.api.visual.anchor.PointShape;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.modules.uml.diagrams.actions.state.StateTransitionLabelManager;
+import org.netbeans.modules.uml.drawingarea.LabelManager;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
 
 /**
@@ -61,5 +63,10 @@ public class StateTransitionWidget extends AbstractUMLConnectionWidget
     public String getWidgetID()
     {
         return UMLWidget.UMLWidgetIDString.STATETRANSITIONWIDGET.toString();
+    }
+    
+    protected LabelManager createLabelManager()
+    {
+        return new StateTransitionLabelManager(this);
     }
 }

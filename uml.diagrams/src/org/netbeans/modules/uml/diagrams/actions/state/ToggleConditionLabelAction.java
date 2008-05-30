@@ -37,37 +37,50 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.uml.diagrams.nodes.state;
+package org.netbeans.modules.uml.diagrams.actions.state;
 
-import java.awt.Font;
-import org.netbeans.api.visual.border.BorderFactory;
-import org.netbeans.api.visual.layout.LayoutFactory;
-import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
-import org.netbeans.api.visual.widget.LabelWidget;
-import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import org.netbeans.modules.uml.drawingarea.LabelManager;
+import org.netbeans.modules.uml.drawingarea.LabelManager.LabelType;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 
 /**
  *
  * @author Sheryl Su
  */
-public class HistoryStateWidget extends CircleWidget
+public class ToggleConditionLabelAction extends AbstractAction
 {
-    public HistoryStateWidget(Scene scene, int radius, String widgetID, String displayName, String label)
-    {
-        super(scene, radius, widgetID, displayName);
+    private LabelManager manager;
+    private String name;
+    private LabelType type;
         
-        LabelWidget labelWidget = new UMLLabelWidget(scene, label);
-        labelWidget.setFont(Font.decode("SansSerif-plain-10")); // NOI18N
-        labelWidget.setForeground(null);
-        setLayout(LayoutFactory.createHorizontalFlowLayout(SerialAlignment.CENTER, 0));
-        Widget layer = new Widget(scene);
-        layer.setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.CENTER, 0));
-        layer.setForeground(null);
-        layer.setBackground(null);
-        layer.addChild(labelWidget);
-        layer.setBorder(BorderFactory.createEmptyBorder(3));
-        addChild(layer,1);
-    }   
+    public ToggleConditionLabelAction(LabelManager manager, 
+                           String labelName,
+                           LabelType type,
+                           String displayName)
+    {
+        this.manager = manager;
+        name = labelName;
+        this.type = type;
+        
+        putValue(Action.NAME, displayName);
+        if (manager.isVisible(name, type))
+            
+            putValue(Action.SMALL_ICON, ImageUtil.instance().getIcon("bold.png"));
+        else
+            putValue(Action.SMALL_ICON, null);
+    }
+    
+    
+    public void actionPerformed(ActionEvent evt)
+    {
+       if (manager.isVisible(name, type))
+       {
+           manager.hideLabel(name, type);
+       }
+       else
+           manager.showLabel(name, type);
+    }
 }
