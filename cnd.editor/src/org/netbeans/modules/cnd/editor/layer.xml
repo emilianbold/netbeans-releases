@@ -32,8 +32,6 @@
         
         <folder name="text">
             <folder name="x-c++">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
-                
                 <file name="Settings.settings" url="resources/CCOptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CCKit"/>
@@ -116,8 +114,6 @@
             </folder>
             
             <folder name="x-c">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
-                
                  <file name="Settings.settings" url="resources/COptions.settings"/>
                  <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CKit"/>

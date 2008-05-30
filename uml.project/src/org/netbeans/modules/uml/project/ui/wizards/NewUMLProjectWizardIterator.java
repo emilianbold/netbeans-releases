@@ -65,7 +65,6 @@ import org.netbeans.modules.uml.project.UMLProject;
 import org.netbeans.modules.uml.project.UMLProjectGenerator;
 import org.netbeans.modules.uml.project.ui.UMLProjectSettings;
 import org.netbeans.modules.uml.project.ui.common.JavaSourceRootsUI;
-import org.netbeans.modules.uml.project.ui.wizards.PanelConfigureProject;
 
 
 /**

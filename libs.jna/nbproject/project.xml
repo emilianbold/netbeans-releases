@@ -48,6 +48,7 @@ made subject to such option by the copyright holder.
             <module-dependencies/>
             <friend-packages>
                 <friend>org.netbeans.core.nativeaccess</friend>
+                <friend>org.jruby</friend>
                 <package>com.sun.jna</package>
                 <package>com.sun.jna.ptr</package>
                 <package>com.sun.jna.win32</package>

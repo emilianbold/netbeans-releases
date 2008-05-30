@@ -117,6 +117,7 @@ public abstract class HintTestBase extends RubyTestBase {
                 }
                 AstUtilities.addNodesByType(root, nodeIds, nodes);
                 BaseDocument doc = (BaseDocument) info.getDocument();
+                assertNotNull(doc);
                 for (Node n : nodes) {
                     int start = AstUtilities.getRange(n).getStart();
                     int lineStart = Utilities.getRowFirstNonWhite(doc, start);

@@ -44,6 +44,7 @@ package org.netbeans.modules.swingapp;
 import java.awt.AWTKeyStroke;
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
@@ -720,6 +721,18 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     
     // just reload the table
     private void reloadTable() {
+        if (EventQueue.isDispatchThread()) {
+            reloadTableInAWT();
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    reloadTableInAWT();
+                }
+            });
+        }
+    }
+    
+    private void reloadTableInAWT() {
         if(filterClass == null) {
             realModel = new ActionTableModel(actionManager.getAllActions());
         } else {

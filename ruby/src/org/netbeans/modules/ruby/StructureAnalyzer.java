@@ -332,8 +332,9 @@ public class StructureAnalyzer implements StructureScanner {
 
         try {
             BaseDocument doc = (BaseDocument)info.getDocument();
-
-            addFolds(doc, analysisResult.getElements(), folds, codefolds);
+            if (doc != null) {
+                addFolds(doc, analysisResult.getElements(), folds, codefolds);
+            }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -671,15 +672,12 @@ public class StructureAnalyzer implements StructureScanner {
         }
         }
 
-        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
-        // This was a temporary bug in JRuby that has been fixed
-        if (list == null) {
-            return;
-        }
-
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             path.descend(child);
             scan(child, path, in, includes, parent);
             path.ascend();
@@ -757,10 +755,12 @@ public class StructureAnalyzer implements StructureScanner {
             }
         }
         
-        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             CallNode call = findExtendCall(child);
             
             if (call != null) {
@@ -787,7 +787,6 @@ public class StructureAnalyzer implements StructureScanner {
         RubyParserResult r = result.getJRubyResult();
 
         // REALLY slow implementation
-        @SuppressWarnings("unchecked")
         List<CommentNode> comments = r.getCommentNodes();
 
         for (CommentNode comment : comments) {
@@ -802,7 +801,6 @@ public class StructureAnalyzer implements StructureScanner {
     }
 
     private Node findClosest(Node node, int start, int end) {
-        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
         ISourcePosition pos = node.getPosition();
@@ -816,6 +814,9 @@ public class StructureAnalyzer implements StructureScanner {
         }
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             Node closest = findClosest(child, start, end);
 
             if (closest != null) {
@@ -1024,16 +1025,13 @@ public class StructureAnalyzer implements StructureScanner {
     
     public List<? extends StructureItem> scanRhtml(CompilationInfo info, final HtmlFormatter formatter) {
         List<RhtmlStructureItem> items = new ArrayList<RhtmlStructureItem>();
-        AbstractDocument doc;
-        try {
-            doc = (AbstractDocument) info.getDocument();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        AbstractDocument doc = (AbstractDocument) info.getDocument();
+        if (doc == null) {
             return Collections.emptyList();
         }
         doc.readLock ();
         try {
-            TokenHierarchy th = TokenHierarchy.get(info.getDocument());
+            TokenHierarchy th = TokenHierarchy.get(doc);
             TokenSequence ts = th.tokenSequence();
             if (ts == null) {
                 return items;
@@ -1061,8 +1059,6 @@ public class StructureAnalyzer implements StructureScanner {
                     }
                 }
             }
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
         } finally {
             doc.readUnlock ();
         }

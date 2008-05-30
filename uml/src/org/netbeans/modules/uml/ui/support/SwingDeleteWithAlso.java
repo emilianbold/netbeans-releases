@@ -49,7 +49,6 @@
 package org.netbeans.modules.uml.ui.support;
 
 import java.awt.BorderLayout;
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -63,9 +62,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
-import org.netbeans.modules.uml.ui.products.ad.diagramengines.DiagramEngineResources;
 import org.netbeans.modules.uml.ui.swing.commondialogs.DefaultCommonDialogResource;
 import org.netbeans.modules.uml.ui.swing.commondialogs.JCenterDialog;
+import org.openide.util.NbBundle;
 
 /**
  * @author jingmingm
@@ -108,8 +107,8 @@ public class SwingDeleteWithAlso extends JCenterDialog implements ItemListener
 	{
 		getContentPane().setLayout(new BorderLayout());
 		
-		m_LabelMessage = new JLabel( DiagramEngineResources.getString("ADCoreEngine.DELETE_GRAPH_OBJECTS_MESSAGE") );
-		String text = DiagramEngineResources.getString("ADCoreEngine.DELETE_ELEMENTS_QUESTION");
+		m_LabelMessage = new JLabel( NbBundle.getMessage(SwingDeleteWithAlso.class, "DELETE_GRAPH_OBJECTS_MESSAGE") );
+		String text = NbBundle.getMessage(SwingDeleteWithAlso.class, "DELETE_ELEMENTS_QUESTION");
 		m_CheckboxData = new JCheckBox();
 		setCheckboxText(m_CheckboxData, text);
 		m_CheckboxData.setSelected(true);
@@ -173,7 +172,7 @@ public class SwingDeleteWithAlso extends JCenterDialog implements ItemListener
 				}
 			}
 		);
-		setTitle(DiagramEngineResources.getString("ADCoreEngine.DELETE_QUESTIONDIALOGTITLE"));
+		setTitle(NbBundle.getMessage(SwingDeleteWithAlso.class, "DELETE_QUESTIONDIALOGTITLE"));
 		setSize(520, 180);
 		setModal(true);
 	}

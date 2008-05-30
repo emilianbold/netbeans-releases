@@ -49,9 +49,6 @@ import java.io.File;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.netbeans.modules.uml.core.IApplication;
-//import org.netbeans.modules.uml.core.addinframework.IAddIn;
-//import org.netbeans.modules.uml.core.addinframework.plugins.IExtension;
-//import org.netbeans.modules.uml.core.addinframework.plugins.IExtensionPoint;
 import org.netbeans.modules.uml.core.coreapplication.CoreProductManager;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.coreapplication.IDesignCenterSupport;
@@ -86,13 +83,8 @@ import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeModel;
 import org.netbeans.modules.uml.ui.products.ad.application.ApplicationView;
 import org.netbeans.modules.uml.ui.products.ad.application.IMenuManager;
-//import org.netbeans.modules.uml.ui.products.ad.application.action.AddinActionSetDelegate;
 import org.netbeans.modules.uml.ui.products.ad.application.action.ContextMenuActionClass;
-//import org.netbeans.modules.uml.ui.products.ad.application.action.IContributionItem;
 import org.netbeans.modules.uml.ui.products.ad.application.action.IETContextMenuHandler;
-//import org.netbeans.modules.uml.ui.products.ad.application.action.IViewActionDelegate;
-//import org.netbeans.modules.uml.ui.products.ad.application.action.PluginAction;
-//import org.netbeans.modules.uml.ui.products.ad.application.selection.ISelection;
 import org.netbeans.modules.uml.ui.support.DispatchHelper;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.QuestionResponse;
@@ -109,23 +101,14 @@ import org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager;
 import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeElement;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
 import org.netbeans.modules.uml.ui.support.wizard.IWizardSheet;
 import org.netbeans.modules.uml.ui.swing.commondialogs.SwingQuestionDialogImpl;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext;
 import org.netbeans.modules.uml.ui.swing.projecttree.JProjectTree;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
-//public class DesignPatternCatalog implements IDesignPatternCatalog,
-//												IAddIn,
-//												IDesignPatternSupport,
-//												IDesignCenterSupportGUI,
-//												IDesignCenterSupport,
-//												IETContextMenuHandler,
-//												IViewActionDelegate
+
 public class DesignPatternCatalog implements IDesignPatternCatalog, IDesignPatternSupport,
     IDesignCenterSupportGUI, IDesignCenterSupport, IETContextMenuHandler
 {
@@ -145,12 +128,13 @@ public class DesignPatternCatalog implements IDesignPatternCatalog, IDesignPatte
     protected static Object m_Context = null;
     
     private static boolean m_Initialized = false;
+    
 
     static {
         org.netbeans.modules.uml.UMLCoreModule.checkInit();        
     }
 
-    
+
     /**
      *
      */
@@ -233,8 +217,8 @@ public class DesignPatternCatalog implements IDesignPatternCatalog, IDesignPatte
                         
                         DispatchHelper dispatcherHelper = new DispatchHelper();
                         dispatcherHelper.registerProjectTreeEvents(m_EventsSink);
-                        dispatcherHelper.registerDrawingAreaContextMenuEvents(m_EventsSink);
-                        dispatcherHelper.registerDrawingAreaEvents(m_EventsSink);
+//                        dispatcherHelper.registerDrawingAreaContextMenuEvents(m_EventsSink);
+//                        dispatcherHelper.registerDrawingAreaEvents(m_EventsSink);
                         dispatcherHelper.registerForInitEvents(m_EventsSink);
                         dispatcherHelper.registerForProjectEvents(m_EventsSink);
                         dispatcherHelper.registerForWorkspaceEventsDP(m_EventsSink);
@@ -275,8 +259,9 @@ public class DesignPatternCatalog implements IDesignPatternCatalog, IDesignPatte
     {
         DispatchHelper dispatcherHelper = new DispatchHelper();
         dispatcherHelper.revokeProjectTreeSink(m_EventsSink);
-        dispatcherHelper.revokeDrawingAreaContextMenuSink(m_EventsSink);
-        dispatcherHelper.revokeDrawingAreaSink(m_EventsSink);
+        // TODO: meteora
+//        dispatcherHelper.revokeDrawingAreaContextMenuSink(m_EventsSink);
+//        dispatcherHelper.revokeDrawingAreaSink(m_EventsSink);
         dispatcherHelper.revokeInitSink(m_EventsSink);
         dispatcherHelper.revokeProjectSink(m_EventsSink);
         dispatcherHelper.revokeWorkspaceSinkDP(m_EventsSink);
@@ -906,86 +891,87 @@ public class DesignPatternCatalog implements IDesignPatternCatalog, IDesignPatte
      * @return HRESULT
      *
      */
-    public void onDrawingAreaPreDrop(IDiagram pParentDiagram, IDrawingAreaDropContext pContext, IResultCell cell)
-    {
-        if (pParentDiagram != null && pContext != null)
-        {
-            if (m_PatternManager != null)
-            {
-                // ask the pattern manager if we should even be allowing a drag and drop
-                boolean bAllow = m_PatternManager.allowDragAndDrop(pContext);
-                if (bAllow)
-                {
-                    ICollaboration pCollab = m_PatternManager.getDragAndDropCollab(pContext);
-                    // yes, allow the drag and drop
-                    if (pCollab != null)
-                    {
-                        boolean handled = false;
-                        // get what it was dropped on - we will first check the compartment
-                        // to see if the pattern dropped applies specifically to a compartment
-                        ICompartment pCompartment = pContext.getCompartmentDroppedOn();
-                        if (pCompartment != null)
-                        {
-                            // get the model element associated with this compartment
-                            IElement pElement = pCompartment.getModelElement();
-                            if (pElement != null)
-                            {
-                                // ask the pattern manager if the pattern roles are fulfilled
-                                // by this element because if they are, we will just do the apply
-                                // and not display the dialog
-                                boolean bFulfill = m_PatternManager.doesElementFulfillPattern(pElement, pCollab);
-                                if (bFulfill)
-                                {
-                                    handled = true;
-                                    // set up some information for the apply
-                                    pContext.setCancel(true);
-                                    m_PatternManager.setCollaboration(pCollab);
-                                    m_PatternManager.setParticipantScope(DesignPatternParticipantScopeEnum.DPPARTICIPANT_SCOPE_COMPARTMENT);
-                                    m_PatternManager.setProjectTree(null);
-                                    apply(pCollab);
-                                }
-                            }
-                        }
-                        // if we are to this point and haven't done anything still more checking
-                        // to do because the compartment stuff didn't pan out
-                        if (!handled)
-                        {
-                            // get what it was dropped on
-                            IPresentationElement pPresElement = pContext.getPEDroppedOn();
-                            if (pPresElement != null)
-                            {
-                                pContext.setCancel(true);
-                                // set up some information for the apply by using
-                                // what was dropped on
-                                m_PatternManager.setCollaboration(pCollab);
-                                m_PatternManager.setParticipantScope(DesignPatternParticipantScopeEnum.DPPARTICIPANT_SCOPE_PRESENTATION);
-                                m_PatternManager.setProjectTree(null);
-                                apply(pCollab);
-                            }
-                            else
-                            {
-                                // probably dropping onto a diagram
-                                // so now if the diagram is owned by the project of this addin
-                                // we will want to treat this like the user wants to visualize the pattern
-                                // so we won't do anything
-                                // if it is a diagram not in the design center, we will ask the user to apply
-                                // it through the GUI
-                                boolean bOwned = m_PatternManager.diagramOwnedByAddInProject(null, pParentDiagram, pContext);
-                                if (!bOwned)
-                                {
-                                    pContext.setCancel(true);
-                                    m_PatternManager.setCollaboration(pCollab);
-                                    m_PatternManager.setParticipantScope(DesignPatternParticipantScopeEnum.DPPARTICIPANT_SCOPE_PRESENTATION);
-                                    m_PatternManager.setProjectTree(null);
-                                    apply(pCollab);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+    // TODO: meteora
+//    public void onDrawingAreaPreDrop(IDiagram pParentDiagram, IDrawingAreaDropContext pContext, IResultCell cell)
+//    {
+//        if (pParentDiagram != null && pContext != null)
+//        {
+//            if (m_PatternManager != null)
+//            {
+//                // ask the pattern manager if we should even be allowing a drag and drop
+//                boolean bAllow = m_PatternManager.allowDragAndDrop(pContext);
+//                if (bAllow)
+//                {
+//                    ICollaboration pCollab = m_PatternManager.getDragAndDropCollab(pContext);
+//                    // yes, allow the drag and drop
+//                    if (pCollab != null)
+//                    {
+//                        boolean handled = false;
+//                        // get what it was dropped on - we will first check the compartment
+//                        // to see if the pattern dropped applies specifically to a compartment
+//                        ICompartment pCompartment = pContext.getCompartmentDroppedOn();
+//                        if (pCompartment != null)
+//                        {
+//                            // get the model element associated with this compartment
+//                            IElement pElement = pCompartment.getModelElement();
+//                            if (pElement != null)
+//                            {
+//                                // ask the pattern manager if the pattern roles are fulfilled
+//                                // by this element because if they are, we will just do the apply
+//                                // and not display the dialog
+//                                boolean bFulfill = m_PatternManager.doesElementFulfillPattern(pElement, pCollab);
+//                                if (bFulfill)
+//                                {
+//                                    handled = true;
+//                                    // set up some information for the apply
+//                                    pContext.setCancel(true);
+//                                    m_PatternManager.setCollaboration(pCollab);
+//                                    m_PatternManager.setParticipantScope(DesignPatternParticipantScopeEnum.DPPARTICIPANT_SCOPE_COMPARTMENT);
+//                                    m_PatternManager.setProjectTree(null);
+//                                    apply(pCollab);
+//                                }
+//                            }
+//                        }
+//                        // if we are to this point and haven't done anything still more checking
+//                        // to do because the compartment stuff didn't pan out
+//                        if (!handled)
+//                        {
+//                            // get what it was dropped on
+//                            IPresentationElement pPresElement = pContext.getPEDroppedOn();
+//                            if (pPresElement != null)
+//                            {
+//                                pContext.setCancel(true);
+//                                // set up some information for the apply by using
+//                                // what was dropped on
+//                                m_PatternManager.setCollaboration(pCollab);
+//                                m_PatternManager.setParticipantScope(DesignPatternParticipantScopeEnum.DPPARTICIPANT_SCOPE_PRESENTATION);
+//                                m_PatternManager.setProjectTree(null);
+//                                apply(pCollab);
+//                            }
+//                            else
+//                            {
+//                                // probably dropping onto a diagram
+//                                // so now if the diagram is owned by the project of this addin
+//                                // we will want to treat this like the user wants to visualize the pattern
+//                                // so we won't do anything
+//                                // if it is a diagram not in the design center, we will ask the user to apply
+//                                // it through the GUI
+//                                boolean bOwned = m_PatternManager.diagramOwnedByAddInProject(null, pParentDiagram, pContext);
+//                                if (!bOwned)
+//                                {
+//                                    pContext.setCancel(true);
+//                                    m_PatternManager.setCollaboration(pCollab);
+//                                    m_PatternManager.setParticipantScope(DesignPatternParticipantScopeEnum.DPPARTICIPANT_SCOPE_PRESENTATION);
+//                                    m_PatternManager.setProjectTree(null);
+//                                    apply(pCollab);
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
     /**
      * In order to properly display and eventually "instantiate" the pattern, we need
      * to know certain pieces of information.  The design pattern details houses
@@ -2041,8 +2027,8 @@ public class DesignPatternCatalog implements IDesignPatternCatalog, IDesignPatte
             }
             else if (id.equals("org.netbeans.modules.uml.view.drawingarea"))
             {
-                IDrawingAreaControl drawControl = (IDrawingAreaControl)m_View;
-                m_Context = drawControl;
+//                IDrawingAreaControl drawControl = (IDrawingAreaControl)m_View;
+//                m_Context = drawControl;
                 m_PatternManager.setParticipantScope(DesignPatternParticipantScopeEnum.DPPARTICIPANT_SCOPE_PRESENTATION);
                 m_PatternManager.setProjectTree(null);
                 onHandleButton(e, e.getActionCommand());

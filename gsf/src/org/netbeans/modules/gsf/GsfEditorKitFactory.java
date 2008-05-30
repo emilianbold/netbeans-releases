@@ -74,6 +74,7 @@ import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.gsfret.InstantRenameAction;
 import org.netbeans.modules.gsfret.editor.fold.GsfFoldManager;
 import org.netbeans.modules.gsfret.editor.hyperlink.GoToSupport;
+import org.netbeans.modules.gsfret.editor.semantic.GoToMarkOccurrencesAction;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -236,6 +237,11 @@ public class GsfEditorKitFactory {
             actions.add(new SelectPreviousCamelCasePosition(findAction(superActions, selectionPreviousWordAction)));
             actions.add(new DeleteToNextCamelCasePosition(findAction(superActions, removeNextWordAction)));
             actions.add(new DeleteToPreviousCamelCasePosition(findAction(superActions, removePreviousWordAction)));
+            
+            if (language.hasOccurrencesFinder()) {
+                actions.add(new GoToMarkOccurrencesAction(false));
+                actions.add(new GoToMarkOccurrencesAction(true));
+            }
             
             return TextAction.augmentList(superActions,
                 actions.toArray(new Action[actions.size()]));

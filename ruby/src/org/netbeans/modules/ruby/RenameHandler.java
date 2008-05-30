@@ -251,7 +251,6 @@ public class RenameHandler implements InstantRenamer {
         return regions;
     }
 
-    @SuppressWarnings("unchecked")
     private void addLocals(CompilationInfo info, Node node, String name, Set<OffsetRange> ranges) {
         if (node.nodeId == NodeType.LOCALVARNODE) {
             if (((INameNode)node).getName().equals(name)) {
@@ -341,6 +340,9 @@ public class RenameHandler implements InstantRenamer {
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             addLocals(info, child, name, ranges);
         }
     }
@@ -356,7 +358,6 @@ public class RenameHandler implements InstantRenamer {
     // Test both parent blocks, sibling blocks and descendant blocks
     // Make sure the "isUsed" detection is smarter too.
     
-    @SuppressWarnings("unchecked")
     private void addDynamicVars(CompilationInfo info, Node node, String name, Set<OffsetRange> ranges) {
         switch (node.nodeId) {
         case DVARNODE:
@@ -385,6 +386,9 @@ public class RenameHandler implements InstantRenamer {
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             switch (child.nodeId) {
             case ITERNODE:
             //case BLOCKNODE:

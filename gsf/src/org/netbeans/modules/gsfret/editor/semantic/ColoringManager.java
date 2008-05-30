@@ -40,27 +40,34 @@
  */
 package org.netbeans.modules.gsfret.editor.semantic;
 
-import java.awt.Color;
-import java.awt.Font;
+
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Enumeration;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.StyleConstants;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.editor.Coloring;
 import org.netbeans.modules.gsf.api.ColoringAttributes;
+import org.netbeans.spi.editor.highlighting.HighlightAttributeValue;
 import static org.netbeans.modules.gsf.api.ColoringAttributes.*;
+import org.openide.util.NbBundle;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -80,26 +87,8 @@ public final class ColoringManager {
     private String mimeType;
     private final Map<Set<ColoringAttributes>, String> type2Coloring;
     
-    private static Font italic = null;
-    private static Font getItalic() {
-        if (italic == null) {
-            FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
-            AttributeSet attribs = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
-            Font defaultFont = Coloring.fromAttributeSet(attribs).getFont();
-            italic = defaultFont.deriveFont(Font.ITALIC);
-        }
-        return italic;
-    }
-    private static Font bold = null;
-    private static Font getBold() {
-        if (bold == null) {
-            FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
-            AttributeSet attribs = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
-            Font defaultFont = Coloring.fromAttributeSet(attribs).getFont();
-            bold = defaultFont.deriveFont(Font.BOLD);
-        }
-        return bold;
-    }
+    //private static final Font ITALIC = SettingsDefaults.defaultFont.deriveFont(Font.ITALIC);
+    //private static final Font BOLD = SettingsDefaults.defaultFont.deriveFont(Font.BOLD);
 
     
     public ColoringManager(String mimeType) {
@@ -108,57 +97,45 @@ public final class ColoringManager {
         type2Coloring = new LinkedHashMap<Set<ColoringAttributes>, String>();
         
         put("mark-occurrences", MARK_OCCURRENCES);
-        put("mod-type-parameter-use", TYPE_PARAMETER_USE);
-        put("mod-type-parameter-declaration", TYPE_PARAMETER_DECLARATION);
-//        put("mod-enum-declaration", ENUM, DECLARATION);
-//        put("mod-annotation-type-declaration", ANNOTATION_TYPE, DECLARATION);
-//        put("mod-interface-declaration", INTERFACE, DECLARATION);
-//        put("mod-class-declaration", CLASS, DECLARATION);
-//        put("mod-constructor-declaration", CONSTRUCTOR, DECLARATION);
-//        put("mod-method-declaration", METHOD, DECLARATION);
-//        put("mod-parameter-declaration", PARAMETER, DECLARATION);
-//        put("mod-local-variable-declaration", LOCAL_VARIABLE, DECLARATION);
-//        put("mod-field-declaration", FIELD, DECLARATION);
-        put("mod-enum", ENUM);
-        put("mod-annotation-type", ANNOTATION_TYPE);
-        put("mod-interface", INTERFACE);
-        put("mod-class", CLASS);
-        put("mod-global", GLOBAL);
-        put("mod-constructor", CONSTRUCTOR);
-        put("mod-method", METHOD);
-        put("mod-parameter", PARAMETER);
-        put("mod-local-variable", LOCAL_VARIABLE);
-        put("mod-field", FIELD);
-        put("mod-public", PUBLIC);
-        put("mod-protected", PROTECTED);
-        put("mod-package-private", PACKAGE_PRIVATE);
-        put("mod-private", PRIVATE);
-        put("mod-static", STATIC);
         put("mod-abstract", ABSTRACT);
+        put("mod-annotation-type", ANNOTATION_TYPE);
+        put("mod-class", CLASS);
+        put("mod-constructor", CONSTRUCTOR);
+        put("mod-custom1", CUSTOM1);
+        put("mod-custom2", CUSTOM2);
+        put("mod-custom3", CUSTOM3);
+        put("mod-declaration", DECLARATION);
         put("mod-deprecated", DEPRECATED);
+        put("mod-enum", ENUM);
+        put("mod-field", FIELD);
+        put("mod-global", GLOBAL);
+        put("mod-interface", INTERFACE);
+        put("mod-local-variable", LOCAL_VARIABLE);
+        put("mod-method", METHOD);
+        put("mod-package-private", PACKAGE_PRIVATE);
+        put("mod-parameter", PARAMETER);
+        put("mod-private", PRIVATE);
+        put("mod-protected", PROTECTED);
+        put("mod-public", PUBLIC);
+        put("mod-regexp", REGEXP);
+        put("mod-static", STATIC);
+        put("mod-type-parameter-declaration", TYPE_PARAMETER_DECLARATION);
+        put("mod-type-parameter-use", TYPE_PARAMETER_USE);
         put("mod-undefined", UNDEFINED);
         put("mod-unused", UNUSED);
-
-        put("mod-local-variable-use", LOCAL_VARIABLE_USE);
-        put("mod-local-variable-declaration", LOCAL_VARIABLE_DECLARATION);
-        put("mod-parameter-declaration", PARAMETER_DECLARATION);
-        put("mod-parameter-use", PARAMETER_USE);
-        put("mod-java-method-use", JAVA_METHOD_USE);
-        put("mod-java-field-use", JAVA_FIELD_USE);
-        put("mod-java-constructor-use", JAVA_CONSTRUCTOR_USE);
-        put("mod-class-use", CLASS_USE);
-        put("mod-class-declaration", CLASS_DECLARATION);
-        put("mod-java-interface-use", JAVA_INTERFACE_USE);
-        put("mod-attribute-declaration", ATTRIBUTE_DECLARATION);
-        put("mod-function-declaration", FUNCTION_DECLARATION);
-        put("mod-operation-declaration", OPERATION_DECLARATION);
-        put("mod-operation-use", OPERATION_USE);
-        put("mod-attribute-use", ATTRIBUTE_USE);
-        put("mod-functions-use", FUNCTION_USE); 
-
-        put("mod-static-field", STATICFIELD); 
-        put("mod-static-method", STATICMETHOD); 
-        put("mod-regexp", REGEXP); 
+        
+        COLORING_MAP.put(ColoringAttributes.UNUSED_SET, getColoring(ColoringAttributes.UNUSED_SET));
+        COLORING_MAP.put(ColoringAttributes.FIELD_SET, getColoring(ColoringAttributes.FIELD_SET));
+        COLORING_MAP.put(ColoringAttributes.STATIC_FIELD_SET, getColoring(ColoringAttributes.STATIC_FIELD_SET));
+        COLORING_MAP.put(ColoringAttributes.PARAMETER_SET, getColoring(ColoringAttributes.PARAMETER_SET));
+        COLORING_MAP.put(ColoringAttributes.CUSTOM1_SET, getColoring(ColoringAttributes.CUSTOM1_SET));
+        COLORING_MAP.put(ColoringAttributes.CUSTOM2_SET, getColoring(ColoringAttributes.CUSTOM2_SET));
+        COLORING_MAP.put(ColoringAttributes.CONSTRUCTOR_SET, getColoring(ColoringAttributes.CONSTRUCTOR_SET));
+        COLORING_MAP.put(ColoringAttributes.METHOD_SET, getColoring(ColoringAttributes.METHOD_SET));
+        COLORING_MAP.put(ColoringAttributes.CLASS_SET, getColoring(ColoringAttributes.CLASS_SET));
+        COLORING_MAP.put(ColoringAttributes.GLOBAL_SET, getColoring(ColoringAttributes.GLOBAL_SET));
+        COLORING_MAP.put(ColoringAttributes.REGEXP_SET, getColoring(ColoringAttributes.REGEXP_SET));
+        COLORING_MAP.put(ColoringAttributes.STATIC_SET, getColoring(ColoringAttributes.STATIC_SET));
     }
     
     private void put(String coloring, ColoringAttributes... attributes) {
@@ -167,75 +144,92 @@ public final class ColoringManager {
         type2Coloring.put(attribs, coloring);
     }
     
-    public Coloring getColoring(Collection<ColoringAttributes> colorings) {
+    Map<Set<ColoringAttributes>,Coloring> COLORING_MAP = new IdentityHashMap<Set<ColoringAttributes>, Coloring>();
+    
+    public Coloring getColoring(Set<ColoringAttributes> attrs) {
+        Coloring c = COLORING_MAP.get(attrs);
+        if (c != null) {
+            return c;
+        }
+        
+        c = ColoringAttributes.empty();
+
+        for (ColoringAttributes color : attrs) {
+            c = ColoringAttributes.add(c, color);
+        }
+        
+        return c;
+    }
+    
+    public AttributeSet getColoringImpl(Coloring colorings) {
         FontColorSettings fcs = MimeLookup.getLookup(MimePath.get(mimeType)).lookup(FontColorSettings.class);
         
-        Coloring c = new Coloring(null, 0, null, null);
+        if (fcs == null) {
+            //in tests:
+            return AttributesUtilities.createImmutable();
+        }
         
-        colorings = colorings.size() > 0 ? EnumSet.copyOf(colorings) : EnumSet.noneOf(ColoringAttributes.class);
+        assert fcs != null;
+        
+        List<AttributeSet> attribs = new LinkedList<AttributeSet>();
+        
+        EnumSet<ColoringAttributes> es = EnumSet.noneOf(ColoringAttributes.class);
+        
+        es.addAll(colorings);
+        
+        if (colorings.contains(UNUSED)) {
+            attribs.add(AttributesUtilities.createImmutable(EditorStyleConstants.Tooltip, new UnusedTooltipResolver()));
+            attribs.add(AttributesUtilities.createImmutable("unused-browseable", Boolean.TRUE));
+        }
+        
+        //colorings = colorings.size() > 0 ? EnumSet.copyOf(colorings) : EnumSet.noneOf(ColoringAttributes.class);
         
         for (Entry<Set<ColoringAttributes>, String> attribs2Colorings : type2Coloring.entrySet()) {
-//            System.err.println("type = " + type );
-            if (colorings.containsAll(attribs2Colorings.getKey())) {
-//                System.err.println("type2Coloring.get(type)=" + type2Coloring.get(type));
+            if (es.containsAll(attribs2Colorings.getKey())) {
                 String key = attribs2Colorings.getValue();
                 
-                colorings.removeAll(attribs2Colorings.getKey());
+                es.removeAll(attribs2Colorings.getKey());
                 
                 if (key != null) {
                     AttributeSet colors = fcs.getTokenFontColors(key);
                     
                     if (colors == null) {
-                        Logger.getLogger(ColoringManager.class.getName()).log(Level.SEVERE, "no colors for: {0}", key);
+                        Logger.getLogger(ColoringManager.class.getName()).log(Level.SEVERE, "no colors for: {0} with mime" + mimeType, key);
                         continue;
                     }
                     
-                    Color foreColor = (Color) colors.getAttribute(StyleConstants.Foreground);
-                    Color backColor = (Color) colors.getAttribute(StyleConstants.Background);
-                    Color strikeThroughColor = (Color) colors.getAttribute(StyleConstants.StrikeThrough);
-                    Color underlineColor = (Color) colors.getAttribute(StyleConstants.Underline);
-                    Color waveUnderlineColor = (Color) colors.getAttribute(EditorStyleConstants.WaveUnderlineColor);
-                    boolean isBold  = colors.getAttribute(StyleConstants.Bold) == Boolean .TRUE;
-                    boolean isItalic = colors.getAttribute(StyleConstants.Italic) == Boolean .TRUE;
-                    
-                    Font font = c.getFont();
-                    int  fontMode = font != null ? c.getFontMode() : 0;
-                    
-                    if (foreColor == null)
-                        foreColor = c.getForeColor();
-                    if (backColor == null)
-                        backColor = c.getBackColor();
-                    if (isBold) {
-                        if (font != null) {
-                            font = font.deriveFont(font.isItalic() ? (Font.BOLD | Font.ITALIC) : Font.BOLD);
-                        } else {
-                            font = getBold();
-                        }
-                        fontMode |= Coloring.FONT_MODE_APPLY_STYLE;
-                    }
-                    if (isItalic) {
-                        if (font != null) {
-                            font = font.deriveFont(font.isBold() ? (Font.BOLD | Font.ITALIC) : Font.ITALIC);
-                        } else {
-                            font = getItalic();
-                        }
-                        fontMode |= Coloring.FONT_MODE_APPLY_STYLE;
-                    }
-                    if (underlineColor == null)
-                        underlineColor = c.getUnderlineColor();
-                    if (strikeThroughColor == null)
-                        strikeThroughColor = c.getStrikeThroughColor();
-                    if (waveUnderlineColor == null)
-                        waveUnderlineColor = c.getWaveUnderlineColor();
-                    
-                    c = new Coloring(font, fontMode, foreColor, backColor, underlineColor, strikeThroughColor, waveUnderlineColor);
+                    attribs.add(adjustAttributes(colors));
                 }
-                
-//                System.err.println("c = " + c );
             }
         }
         
-//        System.err.println("c = " + c );
-        return c;
+        Collections.reverse(attribs);
+        
+        AttributeSet result = AttributesUtilities.createComposite(attribs.toArray(new AttributeSet[0]));
+        
+        return result;
+    }
+    
+    private static AttributeSet adjustAttributes(AttributeSet as) {
+        Collection<Object> attrs = new LinkedList<Object>();
+        
+        for (Enumeration<?> e = as.getAttributeNames(); e.hasMoreElements(); ) {
+            Object key = e.nextElement();
+            Object value = as.getAttribute(key);
+            
+            if (value != Boolean.FALSE) {
+                attrs.add(key);
+                attrs.add(value);
+            }
+        }
+        
+        return AttributesUtilities.createImmutable(attrs.toArray());
+    }
+    
+    final class UnusedTooltipResolver implements HighlightAttributeValue<String> {
+
+        public String getValue(JTextComponent component, Document document, Object attributeKey, int startOffset, final int endOffset) {
+            return NbBundle.getMessage(ColoringManager.class, "LBL_UNUSED");
+        }
     }
 }

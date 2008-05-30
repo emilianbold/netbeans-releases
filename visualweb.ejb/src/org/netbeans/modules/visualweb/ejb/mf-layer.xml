@@ -53,8 +53,6 @@ made subject to such option by the copyright holder.
     </folder>
     
     <folder name="CreatorJavaPalette">       
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.ejb.codeclips.Bundle"/>
-        
         <folder name="EnterpriseJavaBeans">   
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.ejb.codeclips.Bundle"/>
             <attr name="position" intvalue="500"/>
@@ -72,8 +70,6 @@ made subject to such option by the copyright holder.
     </folder>
     
    <folder name="CreatorJavaPalette5">       
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.ejb.codeclips.Bundle"/>
-        
         <folder name="EnterpriseJavaBeans">   
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.ejb.codeclips.Bundle"/>
             <attr name="position" intvalue="500"/>

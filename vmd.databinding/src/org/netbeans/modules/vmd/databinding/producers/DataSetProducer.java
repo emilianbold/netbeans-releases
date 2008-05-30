@@ -40,10 +40,12 @@
 package org.netbeans.modules.vmd.databinding.producers;
 
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
 import org.netbeans.modules.vmd.databinding.components.DataSetCD;
 import org.netbeans.modules.vmd.databinding.palette.DatabindingPaletteProvider;
+import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -56,6 +58,12 @@ public class DataSetProducer extends ComponentProducer{
     
     public DataSetProducer() {
         super(DataSetCD.TYPEID.toString(), DataSetCD.TYPEID, new PaletteDescriptor(DATABINDING_CATEGORY, "DataSet", "DataSet", DataSetCD.ICON_PATH, null));
+    }
+
+    @Override
+    public Result postInitialize(DesignDocument document, DesignComponent mainComponent) {
+        MidpProjectSupport.addLibraryToProject(document, "DataBindingME"); //NOI18N
+        return super.postInitialize(document, mainComponent);
     }
     
     

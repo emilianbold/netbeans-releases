@@ -182,7 +182,7 @@ made subject to such option by the copyright holder.
                 
                 <folder name="Popup">
                     <folder name="goto">
-                        <attr name="position" intvalue="100"/>
+                        <attr name="position" intvalue="500"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.editor.Bundle"/>
                         <file name="goto-source">
                             <attr name="position" intvalue="100"/>
@@ -193,11 +193,6 @@ made subject to such option by the copyright holder.
                         <file name="goto-super-implementation">
                             <attr name="position" intvalue="300"/>
                         </file>  
-                        <!-- file name="goto">
-                            <attr name="position" intvalue="500"/>
-                        </file -->
-                        
-                        
                     </folder>
                     
                     <file name="goto-help">
