@@ -390,6 +390,7 @@ public class ContainerWidget extends Widget
             Widget[] target = null;
             ObjectScene scene = (ObjectScene) widget.getScene();
             boolean convertLocation = false;
+            boolean isMovingWidget = false;
             
             if(isWidgetMove(transferable) == true)
             {
@@ -404,6 +405,8 @@ public class ContainerWidget extends Widget
                 {
                     target = new Widget[0];
                 }
+                
+                isMovingWidget = true;
             }
             else
             {
@@ -426,7 +429,7 @@ public class ContainerWidget extends Widget
             {
                 // Only add the node to the container if it is fully contained
                 // by the container.
-                if(isFullyContained(curWidget) == false)
+                if((isMovingWidget == true) && (isFullyContained(curWidget) == false))
                 {
                     break;
                 }
