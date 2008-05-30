@@ -152,7 +152,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
     public void storeSettings(WizardDescriptor settings) {
         // project
-        settings.putProperty(PROJECT_DIR, FileUtil.normalizeFile(new File(configureProjectPanelVisual.getProjectFolder())));
+        settings.putProperty(PROJECT_DIR, configureProjectPanelVisual.getProjectFolderFile());
         settings.putProperty(PROJECT_NAME, configureProjectPanelVisual.getProjectName());
 
         // sources
@@ -307,18 +307,21 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private String validateProject() {
-        String projectFolder = configureProjectPanelVisual.getProjectFolder();
         String projectName = configureProjectPanelVisual.getProjectName();
-
-        if (!Utils.isValidFileName(projectName)) {
+        if (projectName.trim().length() == 0) {
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectName");
         }
-
-        if (Utils.getCanonicalFile(new File(projectFolder).getAbsoluteFile()) == null) {
+        File projectFolder = configureProjectPanelVisual.getProjectFolderFile();
+        if (!Utils.isValidFileName(projectFolder)) {
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectFolder");
         }
-        // XXX
-        return Utils.validateProjectDirectory(projectFolder, "Project", false, false); // NOI18N
+        String projectPath = projectFolder.getAbsolutePath();
+        String err = Utils.validateProjectDirectory(projectPath, "Project", true, false);
+        if (err != null) {
+            return err;
+        }
+        warnIfNotEmpty(projectPath, "Project"); // NOI18N
+        return null;
     }
 
     private String validateSources() {
@@ -333,20 +336,12 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
                 return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalSourcesName");
             }
 
-            // XXX
             err = Utils.validateProjectDirectory(sourcesLocation, "Sources", true, true); // NOI18N
             if (err != null) {
                 return err;
             }
 
-            // warn if the folder is not empty
-            File destFolder = new File(sourcesLocation);
-            File[] kids = destFolder.listFiles();
-            if (destFolder.exists() && kids != null && kids.length > 0) {
-                // folder exists and is not empty - but just warning
-                String warning = NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_SourcesNotEmpty");
-                descriptor.putProperty("WizardPanel_errorMessage", warning); // NOI18N
-            }
+            warnIfNotEmpty(sourcesLocation, "Sources"); // NOI18N
         }
         err = validateSourcesAndCopyTarget();
         if (err != null) {
@@ -387,8 +382,8 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         LocalServer sources = configureProjectPanelVisual.getSourcesLocation();
         String sourcesSrcRoot = sources.getSrcRoot();
         if (isProjectFolder(sources)) {
-            File project = new File(configureProjectPanelVisual.getProjectFolder(), configureProjectPanelVisual.getProjectName());
-            File src = FileUtil.normalizeFile(new File(project, DEFAULT_SOURCES_FOLDER));
+            File project = configureProjectPanelVisual.getProjectFolderFile();
+            File src = new File(project, DEFAULT_SOURCES_FOLDER);
             sourcesSrcRoot = src.getAbsolutePath();
         }
         LocalServer copyTarget = (LocalServer) descriptor.getProperty(ConfigureServerPanel.COPY_TARGET);
@@ -396,10 +391,21 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         String cpTarget = normalized.getAbsolutePath();
         return Utils.validateSourcesAndCopyTarget(sourcesSrcRoot, cpTarget);
     }
+    
+    // type - Project | Sources
+    private void warnIfNotEmpty(String location, String type) {
+        // warn if the folder is not empty
+        File destFolder = new File(location);
+        File[] kids = destFolder.listFiles();
+        if (destFolder.exists() && kids != null && kids.length > 0) {
+            // folder exists and is not empty - but just warning
+            String warning = NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_" + type + "NotEmpty");
+            descriptor.putProperty("WizardPanel_errorMessage", warning); // NOI18N
+        }
+    }
 
     private void adjustProjectNameAndLocation() {
-        String projectName = configureProjectPanelVisual.getProjectName();
-        String projectFolderName = new File(configureProjectPanelVisual.getProjectFolder()).getName();
+        // XXX
     }
 
     public void stateChanged(ChangeEvent e) {
