@@ -43,11 +43,25 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
+import org.netbeans.modules.gsf.api.DeclarationFinder;
+import org.netbeans.modules.gsf.api.Formatter;
 import org.netbeans.modules.gsf.api.GsfLanguage;
+import org.netbeans.modules.gsf.api.HintsProvider;
+import org.netbeans.modules.gsf.api.Indexer;
+import org.netbeans.modules.gsf.api.InstantRenamer;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
+import org.netbeans.modules.gsf.api.OccurrencesFinder;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.gsf.api.StructureScanner;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.openide.filesystems.FileObject;
 
 /**
- * Default implementation of the LanguageConfig class
+ * Default implementation of the LanguageConfig class. Descendants of this
+ * class also get some extra support; instead of registering services in the
+ * layer you can just override the service creation methods below.
  * 
  * @author Tor Norbye
  */
@@ -77,5 +91,121 @@ public abstract class DefaultLanguageConfig implements GsfLanguage {
 
     public Map<String,String> getSourceGroupNames() {
         return Collections.emptyMap();
+    }
+
+    /** 
+     * Get a Parser to use for this language, or null if none is available
+     * @return a parser instance
+     */
+    public Parser getParser() {
+        return null;
+    }
+    
+    /** 
+     * HACK: Some language supports may want to use their own editor kit
+     * implementation (such as Schliemann) for some services. By returning
+     * true here GSF will not register its own editing services for this mime type.
+     * <p>
+     * If you set this flag, you may need to register additional services on your
+     * own. For example, if you still want GSF "Go To Declaration" functionality,
+     * you need to register the GsfHyperlinkProvider.
+     * The ruby.rhtml/ module provides an example of this.
+     * <p>
+     * NOTE: Code folding doesn't work until you enable code folding for your
+     * editor kit; see GsfEditorKitFactory's reference to CODE_FOLDING_ENABLE for
+     * an example.
+     */
+    public boolean isUsingCustomEditorKit() {
+        return false;
+    }
+    
+    /**
+     * Get a CodeCompletionHandler for this language, or null if none is available
+     * @return a CodeCompletionHandler
+     */
+    @CheckForNull
+    public CodeCompletionHandler getCompletionHandler() {
+        return null;
+    }
+
+    /**
+     * Get an InstantRenamer for this language, or null if none is available
+     * @return a renamer
+     */
+    @CheckForNull
+    public InstantRenamer getInstantRenamer() {
+        return null;
+    }
+
+    /**
+     * A DeclarationFinder for this language, or null if none is available
+     * @return a declaration finder
+     */
+    @CheckForNull
+    public DeclarationFinder getDeclarationFinder() {
+        return null;
+    }
+
+    /**
+     * A Formatter for this language, or null if none is available
+     * @return the formatter
+     */
+    @CheckForNull
+    public Formatter getFormatter() {
+        return null;
+    }
+
+    /**
+     * A KeystrokeHandler for this language, or null if none is available
+     * @return the keystroke handler
+     */
+    @CheckForNull
+    public KeystrokeHandler getKeystrokeHandler() {
+        return null;
+    }
+
+    /**
+     * A Indexer for this language, or null if none is available
+     * @return the indexer
+     */
+    @CheckForNull
+    public Indexer getIndexer() {
+        return null;
+    }
+
+    /**
+     * A StructureScanner for this language, or null if none is available
+     * @return the structure scanner
+     */
+    @CheckForNull
+    public StructureScanner getStructureScanner() {
+        return null;
+    }
+
+    /**
+     * A HintsProvider for this language, or null if none is available
+     * @return the hints provider
+     */
+    @CheckForNull
+    public HintsProvider getHintsProvider() {
+        return null;
+    }
+
+    /**
+     * A OccurrencesFinder for this language, or null if none is available
+     * @return the occurrences finder
+     */
+    @CheckForNull
+    public OccurrencesFinder getOccurrencesFinder() {
+        return null;
+    }
+
+    /**
+     * A SemanticAnalyzer for this language, or null if none is available
+     * @return the semantic analyzer
+     */
+    @CheckForNull
+    public SemanticAnalyzer getSemanticAnalyzer() {
+        return null;
     }
 }
