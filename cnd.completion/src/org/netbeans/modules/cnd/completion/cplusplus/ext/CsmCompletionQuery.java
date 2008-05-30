@@ -1281,7 +1281,10 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                     if (nrTokens > 1) {
                         String varName = item.getTokenText(nrTokens - 1);
                         int varPos = item.getTokenOffset(nrTokens - 1);
-                        compResolver.setResolveTypes(CompletionResolver.RESOLVE_LOCAL_VARIABLES | CompletionResolver.RESOLVE_CLASSES);
+                        compResolver.setResolveTypes(CompletionResolver.RESOLVE_LOCAL_VARIABLES
+                                                     | CompletionResolver.RESOLVE_CLASSES 
+                                                     | CompletionResolver.RESOLVE_GLOB_NAMESPACES
+                                                     );
                         if (compResolver.refresh() && compResolver.resolve(varPos, varName, false)) {
                             res = compResolver.getResult();
                             if (findType) {

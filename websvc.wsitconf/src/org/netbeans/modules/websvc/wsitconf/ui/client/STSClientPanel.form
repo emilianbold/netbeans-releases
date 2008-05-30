@@ -27,7 +27,7 @@
                   <Component id="metadataLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="serviceNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="portNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="policyVersionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="trustVersionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
@@ -37,7 +37,7 @@
                   <Component id="wsdlLocationTextField" linkSize="2" alignment="0" pref="383" max="32767" attributes="1"/>
                   <Component id="endpointTextField" linkSize="2" alignment="0" pref="383" max="32767" attributes="1"/>
                   <Component id="metadataField" linkSize="2" alignment="0" min="-2" pref="383" max="-2" attributes="0"/>
-                  <Component id="policyVersionTextField" alignment="0" pref="383" max="32767" attributes="1"/>
+                  <Component id="trustVersionTextField" alignment="0" pref="383" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -78,8 +78,8 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="policyVersionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="policyVersionTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="trustVersionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="trustVersionTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
@@ -224,17 +224,17 @@
     </Component>
     <Component class="javax.swing.JTextField" name="metadataField">
     </Component>
-    <Component class="javax.swing.JLabel" name="policyVersionLabel">
+    <Component class="javax.swing.JLabel" name="trustVersionLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="policyVersionTextField"/>
+          <ComponentRef name="trustVersionTextField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/websvc/wsitconf/ui/client/Bundle.properties" key="LBL_STSPanel_PolicyVersion" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="policyVersionTextField">
+    <Component class="javax.swing.JTextField" name="trustVersionTextField">
       <Properties>
         <Property name="horizontalAlignment" type="int" value="2"/>
       </Properties>
