@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.uml.ui.support.commonresources;
 
+import java.awt.Image;
 import java.util.HashMap;
 import java.util.ResourceBundle;
 import javax.swing.Icon;
@@ -54,13 +55,12 @@ import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.core.workspacemanagement.IWSProject;
 import org.netbeans.modules.uml.core.workspacemanagement.IWorkspace;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
-import org.netbeans.modules.uml.ui.support.diagramsupport.DiagramTypesManager;
 import org.netbeans.modules.uml.ui.support.diagramsupport.IDiagramTypesManager;
-import java.awt.Image;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IForkNode;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IPartFacade;
 import org.netbeans.modules.uml.core.metamodel.core.primitivetypes.IMessageKind;
+import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramTypesManager;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IMessage;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.ICollaboration;

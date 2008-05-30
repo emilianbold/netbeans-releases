@@ -147,7 +147,7 @@ class ComponentDescriptorWizardPanel implements Panel, FinishablePanel,
      * @see org.openide.WizardDescriptor.FinishablePanel#isFinishPanel()
      */
     public boolean isFinishPanel() {
-        return true;
+        return false;
     }
 
     /* (non-Javadoc)

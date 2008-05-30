@@ -53,7 +53,7 @@ public class StartServerAction extends ActionNoBlock {
 
     /** creates new "Start Server" action */
     public StartServerAction() {
-        super(Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Tools")+"|"
+        super(Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Tools")+"|"
                 +Bundle.getStringTrimmed("org.netbeans.modules.derby.Bundle", "LBL_DerbyDatabase")+"|"
                 +Bundle.getStringTrimmed("org.netbeans.modules.derby.Bundle", "LBL_StartAction"), null);
     }

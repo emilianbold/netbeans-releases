@@ -698,7 +698,6 @@ the ${netbeans.dest}/bin/ directory.
   <macrodef name="run-depend-build">
     <attribute name="clusters-to-build"/>
     <sequential>
-      <echo>Repeat @{clusters-to-build}</echo>
       <repeat target="build-one-cluster" name="one.cluster.name" values="@{clusters-to-build}" /> 
     </sequential>
   </macrodef>
@@ -711,10 +710,7 @@ the ${netbeans.dest}/bin/ directory.
     <condition property="${one.cluster.name}-hasNoDependencies">
       <equals arg1="${one.cluster.dependencies}" arg2="" trim="true"/>
     </condition>
-    <echo>Dependency prop :${one.cluster.name}-hasNoDependencies:</echo>
-    <echo>Cluster dep :${one.cluster.dependencies}:</echo>
     <resolve name="test.prop" value="${one.cluster.name}-hasNoDependencies"/>
-    <echo>Cluster dep prp:${test.prop}:</echo>
   </target>
 
   <target name="build-one-cluster-dependencies" 
@@ -728,7 +724,6 @@ the ${netbeans.dest}/bin/ directory.
       <available file="${netbeans.dest.dir}/${one.cluster.name}.built"/>
     </condition>
     <resolve name="test1.prop" value="${one.cluster.name}-is-built"/>
-    <echo>Cluster ${one.cluster.name} is :${test1.prop}:</echo>
   </target>
 
   <target name="build-one-cluster" unless="${one.cluster.name}-is-built" depends="build-one-cluster-check">

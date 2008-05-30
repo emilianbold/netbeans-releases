@@ -1936,7 +1936,6 @@ public class ReformatterImpl {
                        (KEYWORD_CATEGORY.equals(p.id().primaryCategory()) ||
                         KEYWORD_DIRECTIVE_CATEGORY.equals(p.id().primaryCategory()))){
                 switch (p.id()) {
-                    case RETURN:
                     case SIZEOF:
                     case TYPEID:
                     case TYPEOF:
@@ -1955,6 +1954,13 @@ public class ReformatterImpl {
                     case _STDCALL:
                     case __STDCALL:
                         spaceBefore(previous, codeStyle.spaceBeforeKeywordParen());
+                        return;
+                    case RETURN:
+                        spaceBefore(previous, codeStyle.spaceBeforeKeywordParen());
+                        if (ts.isTypeCast()) {
+                            spaceAfter(current, codeStyle.spaceWithinTypeCastParens());
+                        }
+                        return;
                 }
                 return;
             } else if (ts.isTypeCast()){

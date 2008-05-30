@@ -84,6 +84,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
@@ -132,6 +133,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     private DeploymentManager manager;
     private DeploymentManager disconnectedManager;
     private IncrementalDeployment incrementalDeployment;
+    private ServerInstanceDescriptor instanceDescriptor;
     private TargetModuleIDResolver tmidResolver;
     private J2eePlatform j2eePlatform;
     private J2eePlatformImpl j2eePlatformImpl;
@@ -566,7 +568,16 @@ public class ServerInstance implements Node.Cookie, Comparable {
             return incrementalDeployment;
         }
     }
-    
+   
+    public ServerInstanceDescriptor getServerInstanceDescriptor() {
+        DeploymentManager dm = getDeploymentManager();
+        synchronized (this) {
+            if (instanceDescriptor == null) {
+                instanceDescriptor = server.getOptionalFactory().getServerInstanceDescriptor(dm);
+            }
+            return instanceDescriptor;
+         }
+    }
     public AntDeploymentProvider getAntDeploymentProvider() {
         try {
             return server.getOptionalFactory().getAntDeploymentProvider(getDisconnectedDeploymentManager());

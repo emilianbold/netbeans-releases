@@ -57,7 +57,7 @@ import org.netbeans.jellytools.Bundle;
 public class NewProjectAction extends ActionNoBlock {
 
     /** File|New Project..." main menu path. */
-    private  static final String menuPath = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/File")
+    private  static final String menuPath = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/File")
                                             + "|"
                                             + Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_NewProjectAction_Name");
     

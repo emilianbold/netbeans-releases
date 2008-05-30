@@ -140,10 +140,11 @@ public class HgCommand {
     private static final String HG_LOG_TEMPLATE_LONG_CMD = "--template={rev}\\n{desc}\\n{date|hgdate}\\n{node|short}\\n"; // NOI18N
 
     private static final String HG_LOG_NO_MERGES_CMD = "-M";
-    private static final String HG_LOG_DEBUG_CMD = "--debug";  
+    private static final String HG_LOG_DEBUG_CMD = "--debug"; 
+    // Note: files_adds, file_dels and file_copies taken from cmdutil.py, need to use --debug to get this info
     private static final String HG_LOG_TEMPLATE_HISTORY_CMD = 
             "--template=rev:{rev}\\nauth:{author}\\ndesc:{desc}\\ndate:{date|hgdate}\\nid:{node|short}\\nparents:{parents}\\n" + // NOI18N
-            "file_mods:{files}\\nfile_adds:{file_adds}\\nfile_dels:{file_dels}\\nfile_copies:\\nendCS:\\n"; // NOI18N
+            "file_mods:{files}\\nfile_adds:{file_adds}\\nfile_dels:{file_dels}\\nfile_copies:{file_copies}\\nendCS:\\n"; // NOI18N
     private static final String HG_LOG_TEMPLATE_HISTORY_NO_FILEINFO_CMD = 
             "--template=rev:{rev}\\nauth:{author}\\ndesc:{desc}\\ndate:{date|hgdate}\\nid:{node|short}\\n" + // NOI18N
             "\\nendCS:\\n"; // NOI18N
@@ -529,6 +530,7 @@ public class HgCommand {
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
+        command.add(HG_VERBOSE_CMD);
         command.add(HG_PULL_CMD);
         command.add(HG_UPDATE_CMD);
         command.add(HG_OPT_REPOSITORY);
@@ -571,6 +573,7 @@ public class HgCommand {
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
+        command.add(HG_VERBOSE_CMD);
         command.add(HG_UNBUNDLE_CMD);
         command.add(HG_UPDATE_CMD);
         command.add(HG_OPT_REPOSITORY);
@@ -828,14 +831,19 @@ public class HgCommand {
         List<String> filesShortPaths = new ArrayList<String>();
         
         if (list != null && !list.isEmpty()) {
-            if(files != null){
-                for(File f: files){
+            if (files != null) {
+                for (File f : files) {
                     String shortPath = f.getAbsolutePath();
-                    if(shortPath.startsWith(rootURL) && shortPath.length() > rootURL.length()) {
-                        filesShortPaths.add(shortPath.substring(rootURL.length()+1));
+                    if (shortPath.startsWith(rootURL) && shortPath.length() > rootURL.length()) {
+                        if (Utilities.isWindows()) {
+                            filesShortPaths.add(shortPath.substring(rootURL.length() + 1).replace(File.separatorChar, '/')); // NOI18N
+                        } else {
+                            filesShortPaths.add(shortPath.substring(rootURL.length() + 1)); // NOI18N
+                        }
                     }
                 }
             }
+            
             rev = author = desc = date = id = parents = fm = fa = fd = fc = null;
             boolean bEnd = false;
             for (String s : list) {

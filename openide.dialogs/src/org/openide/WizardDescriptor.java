@@ -2192,6 +2192,7 @@ public class WizardDescriptor extends DialogDescriptor {
             ta.setWrapStyleWord(true);
             ta.setFont(UIManager.getFont("Label.font")); // NOI18N
             ta.getAccessibleContext().setAccessibleDescription(""); // NOI18N
+            ta.setBorder(BorderFactory.createEmptyBorder());
 
             taWidth = wrappingWidth - 12 - 12;
 
@@ -2458,10 +2459,10 @@ public class WizardDescriptor extends DialogDescriptor {
             JScrollPane scroll = new JScrollPane(contentList);
             scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
             scroll.getViewport().setOpaque(false);
-            scroll.setBorder(null);
+            scroll.setBorder(BorderFactory.createEmptyBorder());
             scroll.setOpaque(false);
             // #89392: remove GTK's viewport border
-            scroll.setViewportBorder(null);
+            scroll.setViewportBorder(BorderFactory.createEmptyBorder());
 
             label = new JLabel(NbBundle.getMessage(WizardDescriptor.class, "CTL_ContentName"));
             label.setForeground(Color.white);

@@ -70,8 +70,8 @@ import org.netbeans.modules.uml.project.ui.nodes.actions.NewPackageType;
 import org.netbeans.modules.uml.project.ui.nodes.actions.NewElementType;
 import org.netbeans.modules.uml.project.ui.nodes.actions.NewAttributeType;
 import org.netbeans.modules.uml.project.ui.nodes.actions.NewOperationType;
+import org.netbeans.modules.uml.ui.controls.newdialog.NewElementUI;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
-import org.netbeans.modules.uml.ui.swing.drawingarea.DiagramEngine;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -320,7 +320,7 @@ public class UMLModelElementNode extends UMLElementNode
 			{
 				DialogDisplayer.getDefault().notify(
 						new NotifyDescriptor.Message(NbBundle.getMessage(
-						DiagramEngine.class, "IDS_NAMESPACECOLLISION")));
+						NewElementUI.class, "IDS_NAMESPACECOLLISION")));
 				return;
 			}
 			
@@ -606,7 +606,7 @@ public class UMLModelElementNode extends UMLElementNode
     
     public void onNameModified(INamedElement element, IResultCell cell)
     {
-        if (element.isSame(this.getElement()))
+         if (element.isSame(this.getElement()))
         {
             if (!getName().equals(element.getName()))
                 setName(element.getName());

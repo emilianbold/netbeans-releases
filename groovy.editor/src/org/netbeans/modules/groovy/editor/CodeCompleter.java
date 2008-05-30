@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.codehaus.groovy.ast.ASTNode;
@@ -72,25 +73,30 @@ import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.modules.groovy.editor.elements.KeywordElement;
 import org.netbeans.modules.groovy.editor.parser.GroovyParser;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.reflection.CachedClass;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.elements.GroovyElement;
+import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+
 
 public class CodeCompleter implements CodeCompletionHandler {
 
@@ -103,7 +109,7 @@ public class CodeCompleter implements CodeCompletionHandler {
     private String gapiDocBase = null;
 
     public CodeCompleter() {
-        // LOG.setLevel(Level.FINEST);
+        LOG.setLevel(Level.FINEST);
 
         JavaPlatformManager platformMan = JavaPlatformManager.getDefault();
         JavaPlatform platform = platformMan.getDefaultPlatform();
@@ -196,6 +202,69 @@ public class CodeCompleter implements CodeCompletionHandler {
             : theString.toLowerCase().startsWith(prefix.toLowerCase());
     }
 
+    
+    /**
+     * Get the closest ASTNode related to this request. This is used to complete
+     * Methods etc later on.
+     * @param request
+     * @return a valid ASTNode or null
+     */
+    ASTNode getClosestNode(CompletionRequest request) {
+        
+        AstPath path = getPathFromRequest(request);
+        
+        if (path == null) {
+            LOG.log(Level.FINEST, "path == null"); // NOI18N
+            return null;
+        }
+        
+        ASTNode closest = null;
+
+        if (request.prefix.equals("")) {
+            closest = path.leaf();
+        } else {
+            closest = path.leafParent();
+        }
+
+        LOG.log(Level.FINEST, "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+        LOG.log(Level.FINEST, "(leaf): ");
+        printASTNodeInformation(closest);
+        LOG.log(Level.FINEST, "(parentLeaf): ");
+        printASTNodeInformation(path.leafParent());
+        
+        return closest;
+    }    
+    
+    /**
+     * Calculate an AstPath from a given request or null if we can not get a
+     * AST root-node from the request.
+     * 
+     * @param request
+     * @return a freshly created AstPath object for the offset given in the request
+     */
+    private AstPath getPathFromRequest(CompletionRequest request){
+        // figure out which class we are dealing with:
+        ASTNode root = AstUtilities.getRoot(request.info);
+
+        // in some cases we can not repair the code, therefore root == null
+        // therefore we can not complete. See # 131317
+
+        if (root == null) {
+            LOG.log(Level.FINEST, "root == null"); // NOI18N
+            return null;
+        }
+
+        return new AstPath(root, request.astOffset, request.doc);
+    }
+    
+    /**
+     * Complete Groovy Keywords.
+     * 
+     * @param proposals
+     * @param request
+     * @param isSymbol
+     * @return
+     */
     private boolean completeKeywords(List<CompletionProposal> proposals, CompletionRequest request, boolean isSymbol) {
 
         String prefix = request.prefix;
@@ -217,40 +286,85 @@ public class CodeCompleter implements CodeCompletionHandler {
         return false;
     }
 
+    /**
+     * Complete potential import statements if we're invoced from a suitable
+     * position (outside method or class, right behind an import statement)
+     * 
+     * @param proposals the CompletionPropasal we should populate
+     * @param request wrapper object for this specific request ( position etc.)
+     * @return true if we found something suitable
+     */
+    private boolean completeImports(List<CompletionProposal> proposals, CompletionRequest request) {
+
+        LOG.log(Level.FINEST, "completeImports(...)"); // NOI18N
+
+        ASTNode closest = getClosestNode(request);
+
+        if (closest != null && closest instanceof ModuleNode) {
+            int position = request.lexOffset;
+
+            try {
+                int rowStart = org.netbeans.editor.Utilities.getRowStart(request.doc, position);
+                int nonWhite = org.netbeans.editor.Utilities.getFirstNonWhiteFwd(request.doc, rowStart);
+                
+                Token<? extends GroovyTokenId> importToken = LexUtilities.getToken(request.doc, nonWhite);
+                
+                    if (importToken != null && importToken.id() == GroovyTokenId.LITERAL_import) {
+                        LOG.log(Level.FINEST, "Right behind an import statement");
+                        
+                        // fixme: the positioning to nonWhite seems to fail in this example.
+                        TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, nonWhite);
+                        
+                        ts.move(nonWhite);
+                        ts.moveNext();
+                        ts.moveNext();
+                            
+                        String pkgPrefix = "";
+                        
+                        while (ts.isValid() && ts.moveNext() && ts.offset() < position ) {
+                            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+                            
+//                            LOG.log(Level.FINEST, "Token = >{0}<", t.text().toString());
+//                            LOG.log(Level.FINEST, "Token type = {0}", t.id());
+                            
+                            if(t.id() == GroovyTokenId.DOT || t.id() == GroovyTokenId.IDENTIFIER){
+                                pkgPrefix = pkgPrefix + t.text().toString();
+                            } else {
+                                break;
+                            }
+                        }
+                        
+                        LOG.log(Level.FINEST, "Token prefix = >{0}<", pkgPrefix);
+                        return true;
+                    }
+                
+            } catch (BadLocationException ex) {
+                LOG.log(Level.FINEST, "BadLocationException: {0}", ex);
+                return false;
+            }
+            
+        }
+
+        return false;
+    }
+
+    
+    /**
+     * Complete the methods invocable on a class.
+     * @param proposals the CompletionProposal List we populate (return value)
+     * @param request location information used as input
+     * @return true if we found something usable
+     */
     private boolean completeMethods(List<CompletionProposal> proposals, CompletionRequest request) {
 
         LOG.log(Level.FINEST, "completeMethods(...)"); // NOI18N
 
-        // figure out which class we are dealing with:
-        ASTNode root = AstUtilities.getRoot(request.info);
-
-        // in some cases we can not repair the code, therefore root == null
-        // therefore we can not complete. See # 131317
-
-        if (root == null) {
-            LOG.log(Level.FINEST, "root == null"); // NOI18N
-            return false;
-        }
-
-        AstPath path = new AstPath(root, request.astOffset, request.doc);
-        ASTNode closest;
-
-        if (request.prefix.equals("")) {
-            closest = path.leaf();
-        } else {
-            closest = path.leafParent();
-        }
-
-        LOG.log(Level.FINEST, "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-        LOG.log(Level.FINEST, "(leaf): ");
-        printASTNodeInformation(closest);
-        LOG.log(Level.FINEST, "(parentLeaf): ");
-        printASTNodeInformation(path.leafParent());
+        ASTNode closest = getClosestNode(request);
 
         Class clz = null;
         ClassNode declClass = null;
 
-        if (closest instanceof AnnotatedNode) {
+        if (closest != null && closest instanceof AnnotatedNode) {
             LOG.log(Level.FINEST, "closest: AnnotatedNode"); // NOI18N
 
             // if this AnnotetedNode happens to be a ClassNode then 
@@ -262,10 +376,10 @@ public class CodeCompleter implements CodeCompletionHandler {
             } else {
                 declClass = ((AnnotatedNode) closest).getDeclaringClass();
             }
-        } else if (closest instanceof Expression) {
+        } else if (closest != null && closest instanceof Expression) {
             LOG.log(Level.FINEST, "closest: Expression"); // NOI18N
             declClass = ((Expression) closest).getType();
-        } else if (closest instanceof ExpressionStatement) {
+        } else if (closest != null && closest instanceof ExpressionStatement) {
             LOG.log(Level.FINEST, "closest: ExpressionStatement"); // NOI18N
             Expression expr = ((ExpressionStatement) closest).getExpression();
             if (expr instanceof PropertyExpression) {
@@ -332,11 +446,8 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         anchor = lexOffset - prefix.length();
 
-        final Document document;
-        try {
-            document = info.getDocument();
-        } catch (Exception e) {
-            Exceptions.printStackTrace(e);
+        final Document document = info.getDocument();
+        if (document == null) {
             return CodeCompletionResult.NONE;
         }
 
@@ -358,7 +469,6 @@ public class CodeCompleter implements CodeCompletionHandler {
             request.formatter = formatter;
             request.lexOffset = lexOffset;
             request.astOffset = astOffset;
-//            request.index = index;
             request.doc = doc;
             request.info = info;
             request.prefix = prefix;
@@ -375,6 +485,9 @@ public class CodeCompleter implements CodeCompletionHandler {
 
             // complete methods
             completeMethods(proposals, request);
+
+            // complete imports
+            completeImports(proposals, request);
 
             return new DefaultCompletionResult(proposals, false);
         } finally {

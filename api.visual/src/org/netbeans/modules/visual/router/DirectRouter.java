@@ -43,7 +43,6 @@ package org.netbeans.modules.visual.router;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.router.Router;
-import org.netbeans.api.visual.router.RouterFactory;
 
 import java.awt.*;
 import java.util.ArrayList;

@@ -63,7 +63,7 @@ import org.netbeans.test.umllib.values.Visibility;
 
 public class AttributeElement {
     
-    /** Creates a new instance of OperationElement */
+    /** Creates a new instance of AttributeElement */
     
     private Visibility visibility;
     private Type type;

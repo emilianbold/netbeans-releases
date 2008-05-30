@@ -49,18 +49,20 @@ package org.netbeans.test.umllib;
  */
 public enum CompartmentTypes {
 
-    NAME_LIST_COMPARTMENT("org.netbeans.modules.uml.ui.products.ad.compartments.INameListCompartment"),
-    NAME_COMPARTMENT("org.netbeans.modules.uml.ui.products.ad.compartments.IADClassNameCompartment"),
-    ATTRIBUTE_LIST_COMPARTMENT("org.netbeans.modules.uml.ui.products.ad.compartments.IADAttributeListCompartment"),
-    EXTENSION_POINTS_LIST_COMPARTMENT("org.netbeans.modules.uml.ui.products.ad.compartments.IADExtensionPointListCompartment"),
-    EXTENSION_POINT_COMPARTMENT("org.netbeans.modules.uml.ui.products.ad.compartments.ETExtensionPointCompartment"),
-    OPERATION_LIST_COMPARTMENT("org.netbeans.modules.uml.ui.products.ad.compartments.IADOperationListCompartment"),
-    SEQUENCE_LIFELINE_COMPARTMENT("org.netbeans.modules.uml.ui.products.ad.compartments.sequencediagram.IADLifelineCompartment"),
-    SEQUENCE_LIFELINE_NAME_COMPARTMENT("org.netbeans.modules.uml.ui.products.ad.compartments.sequencediagram.ILifelineNameCompartment"),
-    PACKAGE_IMPORT_COMPARTMENT("org.netbeans.modules.uml.ui.products.ad.compartments.IPackageImportCompartment"),
-    TEMPLATE_PARAMETERS_COMPARTMENT("org.netbeans.modules.uml.ui.products.ad.compartments.ITemplateParametersCompartment"),
-    ACTIVITY_PARTITIONS_COMPARTMENT("org.netbeans.modules.uml.ui.products.ad.compartments.ETActivityPartitionsCompartment"),
-    STEREOTYPE_COMPARTMENT("org.netbeans.modules.uml.ui.products.ad.compartments.IADStereotypeCompartment");
+    NAME_LIST_COMPARTMENT("org.netbeans.modules.uml.diagrams.nodes.?INameListCompartment"),
+    NAME_COMPARTMENT("org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget"),
+    ATTRIBUTE_LIST_COMPARTMENT("org.netbeans.modules.uml.diagrams.nodes.ElementListWidget"),
+    ATTRIBUTE_COMPARTMENT("org.netbeans.modules.uml.diagrams.nodes.AttributeWidget"),
+    EXTENSION_POINTS_LIST_COMPARTMENT("org.netbeans.modules.uml.diagrams.nodes.?IADExtensionPointListCompartment"),
+    EXTENSION_POINT_COMPARTMENT("org.netbeans.modules.uml.diagrams.nodes.?ETExtensionPointCompartment"),
+    OPERATION_LIST_COMPARTMENT("org.netbeans.modules.uml.diagrams.nodes.ElementListWidget"),
+    OPERATION_COMPARTMENT("org.netbeans.modules.uml.diagrams.nodes.OperationWidget"),
+    SEQUENCE_LIFELINE_COMPARTMENT("org.netbeans.modules.uml.diagrams.nodes.sqd.LifelineLineWidget"),
+    SEQUENCE_LIFELINE_NAME_COMPARTMENT("org.netbeans.modules.uml.diagrams.nodes.sqd.LifelinBoxWidget"),
+    PACKAGE_IMPORT_COMPARTMENT("org.netbeans.modules.uml.diagrams.nodes.PackageCompartment"),
+    TEMPLATE_PARAMETERS_COMPARTMENT("org.netbeans.modules.uml.diagrams.nodes.?ITemplateParametersCompartment"),
+    ACTIVITY_PARTITIONS_COMPARTMENT("org.netbeans.modules.uml.diagrams.nodes.?ETActivityPartitionsCompartment"),
+    STEREOTYPE_COMPARTMENT("org.netbeans.modules.uml.diagrams.nodes.?IADStereotypeCompartment");
     
     private String val = "";
     

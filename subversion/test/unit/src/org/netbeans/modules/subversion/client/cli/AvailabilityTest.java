@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.subversion.client.cli;
 
-import java.io.File;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
@@ -68,7 +67,7 @@ public class AvailabilityTest extends AbstractCLITest {
 
     public void testVersion() throws Exception {
         CommandlineClient c = new CommandlineClient();
-        assertTrue(c.isSupportedVersion());
+        c.checkSupportedVersion();
     }
     
     public void testWrongPath() throws Exception {
@@ -77,7 +76,7 @@ public class AvailabilityTest extends AbstractCLITest {
         
         Exception ex = null;
         try {
-            c.isSupportedVersion();
+            c.checkSupportedVersion();
         } catch (SVNClientException e) {
             ex = e;
         }
@@ -95,7 +94,7 @@ public class AvailabilityTest extends AbstractCLITest {
         
         Exception ex = null;
         try {
-            assertTrue(c.isSupportedVersion());
+            c.checkSupportedVersion();
         } catch (SVNClientException e) {
             ex = e;
         }
@@ -108,7 +107,7 @@ public class AvailabilityTest extends AbstractCLITest {
         }
 
         try {
-            assertTrue(c.isSupportedVersion());
+            c.checkSupportedVersion();
         } catch (SVNClientException e) {
             ex = e;
         }
@@ -125,7 +124,7 @@ public class AvailabilityTest extends AbstractCLITest {
         
         Exception ex = null;
         try {
-            assertTrue(c.isSupportedVersion());
+            c.checkSupportedVersion();
         } catch (SVNClientException e) {
             ex = e;
         }

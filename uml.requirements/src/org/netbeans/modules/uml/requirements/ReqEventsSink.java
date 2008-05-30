@@ -66,10 +66,6 @@ import org.netbeans.modules.uml.ui.products.ad.projecttreedefaultengine.Filtered
 import org.netbeans.modules.uml.ui.support.contextmenusupport.IProductContextMenu;
 import org.netbeans.modules.uml.ui.support.contextmenusupport.IProductContextMenuItem;
 import org.netbeans.modules.uml.ui.support.contextmenusupport.IProductContextMenuSelectionHandler;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IToolTipData;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink;
 import java.awt.datatransfer.Transferable;
 
 /**
@@ -79,7 +75,7 @@ import java.awt.datatransfer.Transferable;
 public class ReqEventsSink implements IProjectTreeEventsSink,
                                       ICoreProductInitEventsSink,
                                       IProductContextMenuSelectionHandler,
-                                      IDrawingAreaEventsSink,
+//                                      IDrawingAreaEventsSink,
                                       IReqEventsSink
 {
    private ADRequirementsManager m_Manager = null;
@@ -112,159 +108,160 @@ public class ReqEventsSink implements IProjectTreeEventsSink,
     * @return void
     *
     */
-   public void onDrawingAreaPreDrop(IDiagram pParentDiagram,
-                                    IDrawingAreaDropContext pContext,
-                                    IResultCell cell)
-   {
-      if( (null == pParentDiagram) ||
-          (pContext == null))
-      {
-         throw new IllegalArgumentException();
-      }
-      
-      
-      if( m_Manager != null)
-      {
-         // Forward to the requriments proxy manager if interested.
-         m_Manager.onDrawingAreaPreDrop( pParentDiagram, pContext, cell );
-      }
-   }
-   
-   /**
-    *
- IDrawingAreaEventsSink event, Fired after items are are
- dropped onto the diagram.  This event sink calls the same
- method name in the ReqProxyManger to handle the event.
-    *
- @param pParentDiagram[in] The diagram where the drop occured
- @param pContext[in] Deatails of what has been dropped onto the diagram
- @param cell[in] The result cell from the original event.
-    *
- @return void
-    *
-    */
-   public void onDrawingAreaPostDrop( IDiagram pParentDiagram,
-                                      IDrawingAreaDropContext pContext,
-                                      IResultCell cell )
-   {
-      if( (null == pParentDiagram) ||
-      (pContext == null))
-      {
-         throw new IllegalArgumentException();
-      }
-      
-      if( m_Manager != null)
-      {
-         // Forward to the requriments proxy manager if interested.
-         m_Manager.onDrawingAreaPostDrop( pParentDiagram, pContext, cell );
-      }
-   }
-   
-   // Ignored by CReqEventsSink
-   public void onDrawingAreaPreCreated(IDrawingAreaControl pDiagramControl,
-   IResultCell cell)
-   {
-      
-   }
-   
-   // Ignored by CReqEventsSink
-   public void onDrawingAreaPostCreated(IDrawingAreaControl pDiagramControl,
-   IResultCell cell)
-   {
-      
-   }
-   
-   // Ignored by CReqEventsSink
-   public void onDrawingAreaOpened(IDiagram parentDiagram,
-   IResultCell cell)
-   {
-      
-   }
-   
-   // Ignored by CReqEventsSink
-   public void onDrawingAreaClosed(IDiagram parentDiagram,
-   boolean bDiagramIsDirty,
-   IResultCell cell)
-   {
-      
-   }
-   
-   // Ignored by CReqEventsSink
-   public void onDrawingAreaPreSave(IProxyDiagram parentDiagram,
-   IResultCell cell)
-   {
-      
-   }
-   
-   // Ignored by CReqEventsSink
-   public void onDrawingAreaPostSave(IProxyDiagram parentDiagram,
-   IResultCell cell)
-   {
-      
-   }
-   
-   // Ignored by CReqEventsSink
-   public void onDrawingAreaKeyDown( IDiagram pParentDiagram, 
-                                     int nKeyCode, 
-                                     boolean bControlIsDown, 
-                                     boolean bShiftIsDown, 
-                                     boolean bAltIsDown, 
-                                     IResultCell cell)
-   {
-      
-   }
-   
-   // Ignored by CReqEventsSink
-   public void onDrawingAreaPrePropertyChange(IProxyDiagram parentDiagram,
-                                              int nPropertyKindChanged,
-                                              IResultCell cell)
-   {
-      
-   }
-   public void onDrawingAreaPreFileRemoved(String sFilename,  IResultCell cell)
-   {
-      
-   }
-   public void onDrawingAreaFileRemoved(String sFilename,IResultCell cell)
-   {
-      
-   }
-//   public void onDrawingAreaPresentationElementPreAction(IDiagram pParentDiagram,
-//                                                         IPresentationElement pPE,
-//                                                         PresentationElementPreAction nAction,
-//                                                         IResultCell cell)
+// TODO: meteora
+//   public void onDrawingAreaPreDrop(IDiagram pParentDiagram,
+//                                    IDrawingAreaDropContext pContext,
+//                                    IResultCell cell)
 //   {
+//      if( (null == pParentDiagram) ||
+//          (pContext == null))
+//      {
+//         throw new IllegalArgumentException();
+//      }
 //      
+//      
+//      if( m_Manager != null)
+//      {
+//         // Forward to the requriments proxy manager if interested.
+//         m_Manager.onDrawingAreaPreDrop( pParentDiagram, pContext, cell );
+//      }
 //   }
-//   public void onDrawingAreaPresentationElementAction(IDiagram pParentDiagram,
-//   IPresentationElement pPE,
-//   PresentationElementAction nAction,
+//   
+//   /**
+//    *
+// IDrawingAreaEventsSink event, Fired after items are are
+// dropped onto the diagram.  This event sink calls the same
+// method name in the ReqProxyManger to handle the event.
+//    *
+// @param pParentDiagram[in] The diagram where the drop occured
+// @param pContext[in] Deatails of what has been dropped onto the diagram
+// @param cell[in] The result cell from the original event.
+//    *
+// @return void
+//    *
+//    */
+//   public void onDrawingAreaPostDrop( IDiagram pParentDiagram,
+//                                      IDrawingAreaDropContext pContext,
+//                                      IResultCell cell )
+//   {
+//      if( (null == pParentDiagram) ||
+//      (pContext == null))
+//      {
+//         throw new IllegalArgumentException();
+//      }
+//      
+//      if( m_Manager != null)
+//      {
+//         // Forward to the requriments proxy manager if interested.
+//         m_Manager.onDrawingAreaPostDrop( pParentDiagram, pContext, cell );
+//      }
+//   }
+//   
+//   // Ignored by CReqEventsSink
+//   public void onDrawingAreaPreCreated(IDrawingAreaControl pDiagramControl,
 //   IResultCell cell)
 //   {
 //      
 //   }
-   
-   // Ignored by CReqEventsSink
-   public void onDrawingAreaPostPropertyChange(IProxyDiagram parentDiagram,
-                                               int nPropertyKindChanged,
-                                               IResultCell cell)
-   {
-   }
-   
-   // Ignored by CReqEventsSink
-   public void onDrawingAreaTooltipPreDisplay(IDiagram parentDiagram,
-   IPresentationElement pE,
-   IToolTipData tooltip,
-   IResultCell cell)
-   {
-   }
-   
-   // Ignored by CReqEventsSink
-   public void onDrawingAreaActivated(IDiagram parentDiagram,
-   IResultCell cell)
-   {
-      
-   }
+//   
+//   // Ignored by CReqEventsSink
+//   public void onDrawingAreaPostCreated(IDrawingAreaControl pDiagramControl,
+//   IResultCell cell)
+//   {
+//      
+//   }
+//   
+//   // Ignored by CReqEventsSink
+//   public void onDrawingAreaOpened(IDiagram parentDiagram,
+//   IResultCell cell)
+//   {
+//      
+//   }
+//   
+//   // Ignored by CReqEventsSink
+//   public void onDrawingAreaClosed(IDiagram parentDiagram,
+//   boolean bDiagramIsDirty,
+//   IResultCell cell)
+//   {
+//      
+//   }
+//   
+//   // Ignored by CReqEventsSink
+//   public void onDrawingAreaPreSave(IProxyDiagram parentDiagram,
+//   IResultCell cell)
+//   {
+//      
+//   }
+//   
+//   // Ignored by CReqEventsSink
+//   public void onDrawingAreaPostSave(IProxyDiagram parentDiagram,
+//   IResultCell cell)
+//   {
+//      
+//   }
+//   
+//   // Ignored by CReqEventsSink
+//   public void onDrawingAreaKeyDown( IDiagram pParentDiagram, 
+//                                     int nKeyCode, 
+//                                     boolean bControlIsDown, 
+//                                     boolean bShiftIsDown, 
+//                                     boolean bAltIsDown, 
+//                                     IResultCell cell)
+//   {
+//      
+//   }
+//   
+//   // Ignored by CReqEventsSink
+//   public void onDrawingAreaPrePropertyChange(IProxyDiagram parentDiagram,
+//                                              int nPropertyKindChanged,
+//                                              IResultCell cell)
+//   {
+//      
+//   }
+//   public void onDrawingAreaPreFileRemoved(String sFilename,  IResultCell cell)
+//   {
+//      
+//   }
+//   public void onDrawingAreaFileRemoved(String sFilename,IResultCell cell)
+//   {
+//      
+//   }
+////   public void onDrawingAreaPresentationElementPreAction(IDiagram pParentDiagram,
+////                                                         IPresentationElement pPE,
+////                                                         PresentationElementPreAction nAction,
+////                                                         IResultCell cell)
+////   {
+////      
+////   }
+////   public void onDrawingAreaPresentationElementAction(IDiagram pParentDiagram,
+////   IPresentationElement pPE,
+////   PresentationElementAction nAction,
+////   IResultCell cell)
+////   {
+////      
+////   }
+//   
+//   // Ignored by CReqEventsSink
+//   public void onDrawingAreaPostPropertyChange(IProxyDiagram parentDiagram,
+//                                               int nPropertyKindChanged,
+//                                               IResultCell cell)
+//   {
+//   }
+//   
+//   // Ignored by CReqEventsSink
+//   public void onDrawingAreaTooltipPreDisplay(IDiagram parentDiagram,
+//   IPresentationElement pE,
+//   IToolTipData tooltip,
+//   IResultCell cell)
+//   {
+//   }
+//   
+//   // Ignored by CReqEventsSink
+//   public void onDrawingAreaActivated(IDiagram parentDiagram,
+//   IResultCell cell)
+//   {
+//      
+//   }
    
    /////////////////////////////////////////////////////////////////////////////////////
    // IProjectTreeEventsSink

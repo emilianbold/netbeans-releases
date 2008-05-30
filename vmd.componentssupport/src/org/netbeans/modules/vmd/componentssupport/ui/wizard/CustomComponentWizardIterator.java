@@ -49,8 +49,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.zip.ZipEntry;
@@ -63,6 +66,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.vmd.componentssupport.ui.helpers.BaseHelper;
+import org.netbeans.modules.vmd.componentssupport.ui.helpers.CustomComponentHelper;
 import org.netbeans.modules.vmd.componentssupport.ui.helpers.JavaMELibsConfigurationHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -97,7 +101,6 @@ public class CustomComponentWizardIterator implements
                                             = "WizardPanel_errorMessage";        // NOI18N
     private static final String LBL_WIZARD_STEPS_COUNT 
                                             = "LBL_WizardStepsCount";            // NOI18N
-    
     public static final String CONTENT_DATA = "WizardPanel_contentData";         // NOI18N
     public static final String SELECTED_INDEX 
                                             = "WizardPanel_contentSelectedIndex";// NOI18N
@@ -114,6 +117,7 @@ public class CustomComponentWizardIterator implements
     // properties
     public static final String PROJECT_DIR  = "projDir";                         // NOI18N
     public static final String PROJECT_NAME = "projName";                        // NOI18N
+    public static final String SET_AS_MAIN  = "setAsMain";                       // NOI18N
     public static final String LAYER_PATH   = "layer";                           // NOI18N
     public static final String BUNDLE_PATH  = "bundle";                          // NOI18N
     public static final String CODE_BASE_NAME
@@ -124,6 +128,9 @@ public class CustomComponentWizardIterator implements
     public static final String LIB_DISPLAY_NAMES
                                             = "libDisplayNames";                 // NOI18N
     public static final String LIB_NAMES    = "libNames";                        // NOI18N
+    // added Custom components
+    public static final String CUSTOM_COMPONENTS  
+                                            = "customComponents";                // NOI18N
 
     // parameters for project
     private static final String CODE_NAME_PARAM 
@@ -151,10 +158,12 @@ public class CustomComponentWizardIterator implements
     }
 
     WizardDescriptor.Panel[] createPanels() {
-        return new WizardDescriptor.Panel[] { new CustomComponentWizardPanel(), 
+        return new WizardDescriptor.Panel[] { 
+              new CustomComponentWizardPanel(), 
+              new BasicModuleConfWizardPanel(),
               new JavaMELibsWizardPanel(),
-              new DescriptorsWizardPanel(),
-              new BasicModuleConfWizardPanel()};
+              new DescriptorsWizardPanel()
+        };
     }
 
     private String[] createSteps() {
@@ -162,14 +171,15 @@ public class CustomComponentWizardIterator implements
                 NbBundle.getMessage(
                         CustomComponentWizardIterator.class, STEP_BASIC_PARAMS) ,
                 NbBundle.getMessage(
+                        CustomComponentWizardIterator.class, FINAL_STEP),
+                NbBundle.getMessage(
                         CustomComponentWizardIterator.class, LBL_LIBRARIES),
                 NbBundle.getMessage(
-                        CustomComponentWizardIterator.class, LBL_COMPONENT_DESC),
-                NbBundle.getMessage(
-                        CustomComponentWizardIterator.class, FINAL_STEP)
+                        CustomComponentWizardIterator.class, LBL_COMPONENT_DESC)
                         };
     }
 
+    // TODO add all created elements into result set.
     public Set/* <FileObject> */instantiate(/* ProgressHandle handle */)
             throws IOException
     {
@@ -200,9 +210,11 @@ public class CustomComponentWizardIterator implements
         }
         
         Project createdProject = FileOwnerQuery.getOwner(dir);
+        // store ME Libraries
         JavaMELibsConfigurationHelper
                 .configureJavaMELibs(createdProject, myWizard);
-
+        // store custom component descriptors
+        configureComponents(createdProject, myWizard);
         return resultSet;
     }
 
@@ -237,6 +249,7 @@ public class CustomComponentWizardIterator implements
         wiz.putProperty(LIBRARIES, null );
         wiz.putProperty(LIB_NAMES, null);
         wiz.putProperty(LIB_DISPLAY_NAMES, null);
+        wiz.putProperty(CUSTOM_COMPONENTS, null);
         wiz = null;
         panels = null;
     }
@@ -279,6 +292,26 @@ public class CustomComponentWizardIterator implements
     }
 
     public final void removeChangeListener( ChangeListener l ) {
+    }
+    
+    private static Set<FileObject> configureComponents(Project project, WizardDescriptor wizard)
+            throws IOException 
+    {
+            List<Map<String, Object>> components = 
+                    (List<Map<String, Object>>) wizard.getProperty(
+                    CustomComponentWizardIterator.CUSTOM_COMPONENTS);
+            if (components == null){
+                return Collections.EMPTY_SET;
+            }
+            
+            Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
+            for(Map<String, Object> component : components){
+                CustomComponentHelper helper = new CustomComponentHelper.
+                        RealInstantiationHelper(project, component);
+                resultSet.addAll( helper.instantiate() );
+            }
+            
+            return Collections.EMPTY_SET;
     }
     
     private static void unZipFile( InputStream source, FileObject projectRoot ,

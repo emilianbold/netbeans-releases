@@ -1244,9 +1244,9 @@ public class WSDLGenerator {
             WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName);
         } catch (final Exception e) {
            if(e instanceof FileNotFoundException){
-                e.printStackTrace();
+                WSDLGenerator.logger.log(Level.SEVERE, e.getMessage());
             }else if(e instanceof IOException){
-                e.printStackTrace();
+                WSDLGenerator.logger.log(Level.SEVERE, e.getMessage());
             }else if(e instanceof WSDLException){ 
             if((((WSDLException)e).getMessage()).indexOf("Unsupported Java encoding for writing wsdl file") != -1){
                 try{ 
@@ -1257,10 +1257,10 @@ public class WSDLGenerator {
                    writer.writeWSDL(this.def, sink);
                    WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName);
                    }catch(Exception ex){
-                       ex.printStackTrace();
+                       WSDLGenerator.logger.log(Level.SEVERE, ex.getMessage());
                    }
-                }else e.printStackTrace();
-            }else e.printStackTrace();
+                }else WSDLGenerator.logger.log(Level.SEVERE, e.getMessage());
+            }else WSDLGenerator.logger.log(Level.SEVERE, e.getMessage());
         }
     }
 

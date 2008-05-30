@@ -123,6 +123,7 @@
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.editor.palette.Bundle"/>
             <file name="InvokeStream.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/external/InvokeStream.xml"/>
             <file name="ExternalTablePollingStream.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/external/ExternalTablePollingStream.xml"/>
+            <file name="SaveStream.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/external/SaveStream.xml"/>
         </folder>
     </folder>
     

@@ -114,6 +114,8 @@ public class HibernateRevengCodeGenWizardDescriptor implements WizardDescriptor.
                 helper.setPackageName(getComponent().getPackageName());
                 helper.setDomainGen(getComponent().getChkDomain());
                 helper.setHbmGen(getComponent().getChkHbm());
+                helper.setJavaSyntax(getComponent().getChkJava());
+                helper.setEjbAnnotation(getComponent().getChkEjb());
                 
             }        
     }

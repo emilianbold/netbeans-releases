@@ -42,16 +42,14 @@
 
 
 package org.netbeans.test.umllib.customelements;
-import java.util.ArrayList;
-import java.util.Iterator;
-import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.products.ad.compartments.sequencediagram.ETLifelineNameCompartment;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
+
+import java.util.List;
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.test.umllib.DiagramElementChooser;
 import org.netbeans.test.umllib.DiagramElementOperator;
 import org.netbeans.test.umllib.DiagramOperator;
 import org.netbeans.test.umllib.ElementTypes;
+import org.netbeans.test.umllib.UMLWidgetOperator;
 import org.netbeans.test.umllib.exceptions.NotFoundException;
 
 public class CombinedFragmentOperator extends DiagramElementOperator{
@@ -74,29 +72,28 @@ public class CombinedFragmentOperator extends DiagramElementOperator{
             this.name = name;
         }
         
-        public boolean checkElement(IETGraphObject graphObject) {
-            
-            
-            if ( !graphObject.getEngine().getElementType().equals(ElementTypes.COMBINED_FRAGMENT.toString())){
+        
+        public boolean checkElement(Widget widget) {
+            UMLWidgetOperator widgetOpr = new UMLWidgetOperator(widget);
+            String name = widgetOpr.getName();
+            if (!widgetOpr.getElementType().equals(ElementTypes.COMBINED_FRAGMENT.toString())) {
                 return false;
             }
+
+            List<Widget> widList = widget.getChildren();
+            UMLWidgetOperator childWidgetOpr;
             
-            for(ICompartment comp : graphObject.getEngine().getCompartments()){
-                if(name.equals(comp.getName())){
+            for (Widget child : widList) {
+                 childWidgetOpr = new UMLWidgetOperator(child);
+                if (name.equals(childWidgetOpr.getName())) {
                     return true;
                 }
             }
-            
             return false;
         }
         
         public String getDescription() {
             return "Chooser for CombinedFragment Element: " + name ;
-        }
-        
-        
+        }  
     }
-    
-    
- 
 }

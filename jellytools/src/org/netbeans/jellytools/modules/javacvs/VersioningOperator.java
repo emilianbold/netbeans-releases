@@ -89,7 +89,7 @@ public class VersioningOperator extends TopComponentOperator {
      * VersioningOperator.
      * @return new instance of VersioningOperator */
     public static VersioningOperator invoke() {
-        String windowItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window");
+        String windowItem = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window");
         String versioningItem = Bundle.getStringTrimmed(
                         "org.netbeans.modules.versioning.Bundle",
                         "Menu/Window/Versioning");

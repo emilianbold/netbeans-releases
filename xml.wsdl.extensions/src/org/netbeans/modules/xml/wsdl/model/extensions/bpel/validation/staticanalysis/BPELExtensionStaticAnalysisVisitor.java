@@ -67,9 +67,6 @@ import org.openide.util.NbBundle;
  */
 public class BPELExtensionStaticAnalysisVisitor extends ValidationVisitor {
     
-    public static final String VAL_INVALID_PROPERTY_ALIAS = "VAL_INVALID_PROPERTY_ALIAS"; //NOT I18N
-    public static final String FIX_INVALID_PROPERTY_ALIAS = "VAL_INVALID_PROPERTY_ALIAS"; //NOT 118N
-
     public static final String VAL_INVALID_PROPERTY_ALIAS_MUST_SPECIFY_ONE_OF_MESSAGETYPE_OR_ELEMENT_OR_TYPE =
                             "VAL_INVALID_PROPERTY_ALIAS_MUST_SPECIFY_ONE_OF_MESSAGETYPE_OR_ELEMENT_OR_TYPE";
 
@@ -79,20 +76,15 @@ public class BPELExtensionStaticAnalysisVisitor extends ValidationVisitor {
     public static final String VAL_INVALID_PROPERTY_ALIAS_MUST_SPECIFY_MESSAGE_PART = 
                             "VAL_INVALID_PROPERTY_ALIAS_MUST_SPECIFY_MESSAGE_PART";
             
-    
     public static final String VAL_INVALID_PROPERTY_ALIAS_MESSAGE_PART_IS_NOT_FROM_MESSAGE =
                         "VAL_INVALID_PROPERTY_ALIAS_MESSAGE_PART_IS_NOT_FROM_MESSAGE";
+
     public static final String FIX_INVALID_PROPERTY_ALIAS_MESSAGE_PART_IS_NOT_FROM_MESSAGE =
                         "FIX_INVALID_PROPERTY_ALIAS_MESSAGE_PART_IS_NOT_FROM_MESSAGE";
     
     public static final String VAL_INVALID_PROPERTY = "VAL_INVALID_PROPERTY"; //NOT I18N
     public static final String FIX_INVALID_PROPERTY = "VAL_INVALID_PROPERTY"; //NOT 118N
     
-    public static final String VAL_INVALID_PROPERTY_MUST_SPECIFY_ONE_OF_ELEMENT_OR_TYPE =
-                        "VAL_INVALID_PROPERTY_MUST_SPECIFY_ONE_OF_ELEMENT_OR_TYPE";
-
-    
-            
     private Validator mValidator;
 
     public BPELExtensionStaticAnalysisVisitor(Validator validator) {
@@ -125,14 +117,9 @@ public class BPELExtensionStaticAnalysisVisitor extends ValidationVisitor {
         }
         
         if(element == null && type == null) {
-            addNewResultItem(Validator.ResultType.ERROR,
-                            c,
-                            NbBundle.getMessage(getClass(), VAL_INVALID_PROPERTY_MUST_SPECIFY_ONE_OF_ELEMENT_OR_TYPE),
-                            "");
+            addNewResultItem(Validator.ResultType.ERROR, c, NbBundle.getMessage(getClass(), "FIX_SA00019"), ""); // NOI18N
         }
     }
-
-
 
     public void visit(PropertyAlias c) {
         NamedComponentReference<Message> msgRef = c.getMessageType();
@@ -153,8 +140,8 @@ public class BPELExtensionStaticAnalysisVisitor extends ValidationVisitor {
         {
             addNewResultItem(Validator.ResultType.ERROR,
                             c,
-                            NbBundle.getMessage(getClass(), VAL_INVALID_PROPERTY_ALIAS),
-                            NbBundle.getMessage(getClass(), FIX_INVALID_PROPERTY_ALIAS));
+                            NbBundle.getMessage(getClass(), "FIX_SA00020"),
+                            NbBundle.getMessage(getClass(), "FIX_INVALID_PROPERTY_ALIAS"));
             
         }
         

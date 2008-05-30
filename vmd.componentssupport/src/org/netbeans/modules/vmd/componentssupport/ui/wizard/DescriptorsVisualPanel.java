@@ -43,8 +43,15 @@
 package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
 import java.awt.Dialog;
+import java.util.List;
+import java.util.Map;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.vmd.componentssupport.ui.UIUtils;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -56,11 +63,31 @@ public class DescriptorsVisualPanel extends javax.swing.JPanel {
     private static final String CONTENT_DISPLAYED = "WizardPanel_contentDisplayed"; // NOI18N
     private static final String AUTO_WIZARD_STYLE = "WizardPanel_autoWizardStyle";  // NOI18N
     
+    private static final String DLD_DELETE_TITLE = "MSG_ComponentDeleteTitle";  // NOI18N
+    private static final String DLD_DELETE_MSG = "MSG_ComponentDeleteMsg";  // NOI18N
+
     /** Creates new form DescriptorsVisualPanel */
     public DescriptorsVisualPanel() {
         initComponents();
 
-        myCompDescrList.setModel( new CompDescriptorsListModel() );
+        myCompDescrList.setModel(new CompDescriptorsListModel());
+        myCompDescrList.getSelectionModel().setSelectionMode(
+                ListSelectionModel.SINGLE_SELECTION);
+        myCompDescrList.getSelectionModel().addListSelectionListener(
+                new ListSelectionListener() {
+                    public void valueChanged(ListSelectionEvent e) {
+                        updateRemoveButton();
+                    }
+                });
+        updateRemoveButton();
+    }
+
+    private void updateRemoveButton() {
+        if (myCompDescrList.isSelectionEmpty()) {
+            myRemoveButton.setEnabled(false);
+        } else {
+            myRemoveButton.setEnabled(true);
+        }
     }
 
     void readData( WizardDescriptor settings ) {
@@ -68,7 +95,10 @@ public class DescriptorsVisualPanel extends javax.swing.JPanel {
 
         CompDescriptorsListModel model = 
                 (CompDescriptorsListModel)myCompDescrList.getModel();
-        model.updateModel();
+        List<Map<String, Object>> components 
+                = (List<Map<String, Object>>)myWizardDescriptor.getProperty(
+                        CustomComponentWizardIterator.CUSTOM_COMPONENTS);
+        model.updateModel(components);
     }
 
     
@@ -117,30 +147,26 @@ public class DescriptorsVisualPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(myCompDescrLabel)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(myAddButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(myRemoveButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                .addContainerGap())
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 321, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                    .add(myAddButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(myRemoveButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(myCompDescrLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(myAddButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(myRemoveButton))
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE))
-                .addContainerGap())
+                        .add(myRemoveButton)
+                        .addContainerGap(228, Short.MAX_VALUE))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)))
         );
 
         myCompDescrLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DescriptorsVisualPanel.class, "ACSN_AddedComponentDescriptors")); // NOI18N
@@ -152,7 +178,7 @@ public class DescriptorsVisualPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void addPressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPressed
-    WizardDescriptor.Iterator iterator = new NewComponentDescriptor( myWizardDescriptor );
+    WizardDescriptor.Iterator iterator = new NewComponentDescriptor(myWizardDescriptor);
     myInnerDescriptor = new WizardDescriptor( iterator );
     myInnerDescriptor.putProperty( AUTO_WIZARD_STYLE, true );
     myInnerDescriptor.putProperty( CONTENT_DISPLAYED, true );
@@ -165,16 +191,21 @@ private void addPressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPr
 
 private void removePressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removePressed
     int index = myCompDescrList.getSelectedIndex();
+    List<Map> components = (List<Map>)myWizardDescriptor.getProperty( 
+                CustomComponentWizardIterator.CUSTOM_COMPONENTS);
+
+    String name = (String)components.get(index).get(NewComponentDescriptor.CC_PREFIX);
+    String title = getMessage(DLD_DELETE_TITLE);
+    String msg = getMessage(DLD_DELETE_MSG, name);
+    if (!UIUtils.userConfirmOkCancel(title, msg)){
+        return;
+    }
+    
     // remove in UI
     ((CompDescriptorsListModel)myCompDescrList.getModel()).remove(index);
     
-    // remove from WizardDescriptor
-    //List<String> libNames = (List<String>)myWizardDescriptor.getProperty( 
-    //            CustomComponentWizardIterator.LIB_NAMES);
-    //List<String> libDisplayNames = (List<String>)myWizardDescriptor.getProperty( 
-    //            CustomComponentWizardIterator.LIB_DISPLAY_NAMES);
-    //libNames.remove(index);
-    //libDisplayNames.remove(index);
+    //remove from WizardDescriptor
+    components.remove(index);
 }//GEN-LAST:event_removePressed
 
 
@@ -186,11 +217,31 @@ private void removePressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_re
     private javax.swing.JButton myRemoveButton;
     // End of variables declaration//GEN-END:variables
 
-    
+    private static String getMessage(String key, Object... args) {
+        return NbBundle.getMessage(JavaMELibsVisualPanel.class, key, args);
+    }
+        
     private class CompDescriptorsListModel extends EditableListModel{
 
-        public void updateModel(){
+        public void updateModel(List<Map<String,Object>> components){
+            if (components == null){
+                return; 
+            }
             
+            // clean
+            removeAllElements();
+            
+            for (Map<String, Object> component : components){
+                String prefix = (String)component.get(
+                        NewComponentDescriptor.CC_PREFIX);
+                String typeID = (String)component.get(
+                        NewComponentDescriptor.CD_TYPE_ID);
+                
+                assert prefix != null && typeID != null
+                        : "Component data is not consistent";
+                
+                addElement(prefix + " [ " + typeID + " ]"); // NOI18N 
+            }
         }
     }
     

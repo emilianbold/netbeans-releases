@@ -167,22 +167,22 @@ public final class Validator extends BpelValidator {
     String queryLang = process.getQueryLanguage();
 
     if (queryLang != null) {
-        addWarning(FIX_ATTRIBUTE, process, Process.QUERY_LANGUAGE);
+        addWarning("FIX_Attribute", process, Process.QUERY_LANGUAGE); // NOI18N
     }
     String expression = process.getExpressionLanguage();
     
     if (expression != null) {
-        addWarning(FIX_ATTRIBUTE, process, Process.EXPRESSION_LANGUAGE);
+        addWarning("FIX_Attribute", process, Process.EXPRESSION_LANGUAGE); // NOI18N
     }
     TBoolean value = process.getSuppressJoinFailure();
     
     if (value != null) {
-        addWarning(FIX_ATTRIBUTE, process, Process.SUPPRESS_JOIN_FAILURE);
+        addWarning("FIX_Attribute", process, Process.SUPPRESS_JOIN_FAILURE); // NOI18N
     }
     value = process.getExitOnStandardFault();
     
     if (value != null) {
-        addWarning(FIX_ATTRIBUTE, process, Process.EXIT_ON_STANDART_FAULT);
+        addWarning("FIX_Attribute", process, Process.EXIT_ON_STANDART_FAULT); // NOI18N
     }
     checkValidURI(process, Process.QUERY_LANGUAGE, process.getQueryLanguage());
     checkValidURI(process, Process.EXPRESSION_LANGUAGE, process.getExpressionLanguage());
@@ -255,21 +255,21 @@ public final class Validator extends BpelValidator {
   
   @Override
   public void visit(PartnerLink partnerLink) {
-      if ( partnerLink.getInitializePartnerRole() != null ) {
-          addWarning(FIX_ATTRIBUTE, partnerLink, PartnerLink.INITIALIZE_PARTNER_ROLE);
+      if (partnerLink.getInitializePartnerRole() != null) {
+          addWarning("FIX_Attribute", partnerLink, PartnerLink.INITIALIZE_PARTNER_ROLE); // NOI18N
       }
   }
   
   @Override
-  public void visit( Variable variable ) {
+  public void visit(Variable variable) {
       From from = variable.getFrom();
-      if ( from != null ) {
-          addElementsInParentError( variable , from );
+      if (from != null) {
+          addElementsInParentError(variable, from);
       }
   }
   
   @Override
-  public void visit( TargetContainer container ) {
+  public void visit(TargetContainer container) {
       addElementError(container);
   }
   
@@ -288,7 +288,7 @@ public final class Validator extends BpelValidator {
     }
     CatchAll catchAll = invoke.getCatchAll();
 
-    if (catchAll != null ) {
+    if (catchAll != null) {
         addElementsInParentError(invoke, catchAll);
     }
     if (invoke.getFromPartContaner() != null) {
@@ -309,7 +309,7 @@ public final class Validator extends BpelValidator {
       super.visit(assign);
 
       if (assign.getValidate() != null) {
-          addWarning(FIX_ATTRIBUTE, assign, Assign.VALIDATE);
+          addWarning("FIX_Attribute", assign, Assign.VALIDATE); // NOI18N
       }
   }
   
@@ -320,20 +320,12 @@ public final class Validator extends BpelValidator {
       if (docs!= null && docs.length > 0) {
           addElementsInParentError(from, (BpelEntity[]) docs);
       }
-      if (from.getExpressionLanguage()!= null ) {
-          addWarning(FIX_ATTRIBUTE, from, From.EXPRESSION_LANGUAGE);
+      if (from.getExpressionLanguage() != null) {
+          addWarning("FIX_Attribute", from, From.EXPRESSION_LANGUAGE); // NOI18N
       }
-      if (from.getProperty() != null ) {
-          addWarning(FIX_ATTRIBUTE, from, From.PROPERTY);
+      if (from.getProperty() != null) {
+          addWarning("FIX_Attribute", from, From.PROPERTY); // NOI18N
       }
-// # 123382
-//        if (from.getPartnerLink() != null) {
-//            addWarning(FIX_ATTRIBUTE, from, From.PARTNER_LINK);
-//        }
-// # 128665
-//        if (from.getEndpointReference() != null) {
-//            addWarning(FIX_ATTRIBUTE, from, From.ENDPOINT_REFERENCE);
-//        }
       checkAbsenceExtensions(from);
   }
   
@@ -344,17 +336,13 @@ public final class Validator extends BpelValidator {
         addElementsInParentError(to, (BpelEntity[]) docs);
     }
     if (to.getProperty () != null) {
-        addWarning(FIX_ATTRIBUTE, to, To.PROPERTY);
+        addWarning("FIX_Attribute", to, To.PROPERTY); // NOI18N
     }
-// # 123382
-//  if (to.getPartnerLink () != null) {
-//      addWarning(FIX_ATTRIBUTE, to, To.PARTNER_LINK);
-//  }
-    checkAbsenceExtensions( to );
+    checkAbsenceExtensions(to);
   }
   
   @Override
-  public void visit( Flow flow ) {
+  public void visit(Flow flow) {
       super.visit(flow);
       LinkContainer container = flow.getLinkContainer();
 
@@ -364,37 +352,37 @@ public final class Validator extends BpelValidator {
   }
   
   @Override
-  public void visit( Scope scope ) {
+  public void visit(Scope scope) {
       super.visit(scope);
       PartnerLinkContainer container = scope.getPartnerLinkContainer();
-      if ( container!= null ) {
-          addElementsInParentError( scope, container );
+      if (container != null) {
+          addElementsInParentError(scope, container);
       }
       CorrelationSetContainer setContainer = scope.getCorrelationSetContainer();
-      if ( setContainer!= null ) {
-          addElementsInParentError( scope, setContainer );
+
+      if (setContainer != null) {
+          addElementsInParentError(scope, setContainer);
       }
-      
-      if ( scope.getIsolated() != null ) {
-          addWarning(FIX_ATTRIBUTE, scope, Scope.ISOLATED);
+      if (scope.getIsolated() != null) {
+          addWarning("FIX_Attribute", scope, Scope.ISOLATED); // NOI18N
       }
-      if ( scope.getExitOnStandardFault()!= null ) {
-          addWarning(FIX_ATTRIBUTE, scope, Scope.EXIT_ON_STANDART_FAULT);
+      if (scope.getExitOnStandardFault() != null) {
+          addWarning("FIX_Attribute", scope, Scope.EXIT_ON_STANDART_FAULT); // NOI18N
       }
   }
   
   @Override
-  public void visit( ForEach forEach ) {
+  public void visit(ForEach forEach) {
       super.visit(forEach);
-      if ( TBoolean.YES.equals( forEach.getParallel())) {
-          addWarning(FIX_ATTRIBUTE, forEach, ForEach.PARALLEL);
+      if (TBoolean.YES.equals(forEach.getParallel())) {
+          addWarning("FIX_Attribute", forEach, ForEach.PARALLEL); // NOI18N
       }
   }
   
   @Override
-  protected void visit( Activity activity ) {
-      if ( activity.getSuppressJoinFailure() !=null ) {
-          addWarning(FIX_ATTRIBUTE, activity, Activity.SUPPRESS_JOIN_FAILURE);
+  protected void visit(Activity activity) {
+      if (activity.getSuppressJoinFailure() != null) {
+          addWarning("FIX_Attribute", activity, Activity.SUPPRESS_JOIN_FAILURE); // NOI18N
       }
   }
   
@@ -413,11 +401,11 @@ public final class Validator extends BpelValidator {
   public void visit(Receive receive) {
       super.visit(receive);
 
-      if (receive.getFromPartContaner()!= null ) {
+      if (receive.getFromPartContaner()!= null) {
           addElementsInParentError(receive, FROM_PARTS);
       }
       if (receive.getMessageExchange() != null) {
-          addWarning(FIX_ATTRIBUTE, receive, Receive.MESSAGE_EXCHANGE);
+          addWarning("FIX_Attribute", receive, Receive.MESSAGE_EXCHANGE); // NOI18N
       }
       processCorrelationsHolder(receive);
   }
@@ -426,33 +414,33 @@ public final class Validator extends BpelValidator {
   public void visit(Reply reply) {
       super.visit(reply);
 
-      if(reply.getToPartContaner() != null ) {
+      if (reply.getToPartContaner() != null) {
           addElementsInParentError(reply, TO_PARTS);
       }
-      if(reply.getMessageExchange() != null) {
-          addWarning(FIX_ATTRIBUTE, reply, Reply.MESSAGE_EXCHANGE);
+      if (reply.getMessageExchange() != null) {
+          addWarning("FIX_Attribute", reply, Reply.MESSAGE_EXCHANGE); // NOI18N
       }
       processCorrelationsHolder(reply);
   }
   
   @Override
   public void visit(OnEvent onEvent) {
-      if(onEvent.getFromPartContaner() != null ) {  
+      if (onEvent.getFromPartContaner() != null) {  
           addElementsInParentError(onEvent, FROM_PARTS);
       }
-      if(onEvent.getMessageExchange() != null) {
-          addWarning(FIX_ATTRIBUTE, onEvent, OnEvent.MESSAGE_EXCHANGE);
+      if (onEvent.getMessageExchange() != null) {
+          addWarning("FIX_Attribute", onEvent, OnEvent.MESSAGE_EXCHANGE); // NOI18N
       }
       processCorrelationsHolder(onEvent);
   }
   
   @Override
   public void visit(OnMessage onMessage) {
-      if(onMessage.getFromPartContaner() != null ) {
+      if (onMessage.getFromPartContaner() != null) {
           addElementsInParentError(onMessage, FROM_PARTS);
       }
-      if(onMessage.getMessageExchange() != null) {
-          addWarning(FIX_ATTRIBUTE, onMessage, OnMessage.MESSAGE_EXCHANGE);
+      if (onMessage.getMessageExchange() != null) {
+          addWarning("FIX_Attribute", onMessage, OnMessage.MESSAGE_EXCHANGE); // NOI18N
       }
       processCorrelationsHolder(onMessage);
   }
@@ -462,26 +450,26 @@ public final class Validator extends BpelValidator {
     addElementError(messageExchangeContainer);
   }
 
-  private void checkAbsenceExtensions( ExtensibleElements element ) {
-      if ( element instanceof AbstractDocumentComponent ){
-          AbstractDocumentComponent component =
-                  (AbstractDocumentComponent)element;
-          
+  private void checkAbsenceExtensions(ExtensibleElements element) {
+      if (element instanceof AbstractDocumentComponent) {
+          AbstractDocumentComponent component = (AbstractDocumentComponent)element;
           Map map = component.getAttributeMap();
-          for( Object obj : map.keySet() ){
+
+          for (Object obj : map.keySet()) {
               QName qName = (QName)obj;
-              if ( qName.getNamespaceURI()!= null && qName.getNamespaceURI().length()>0 ){
-                  addWarning(FIX_ATTRIBUTE, element, qName.toString());
+              if (qName.getNamespaceURI() != null && qName.getNamespaceURI().length() > 0) {
+                  addWarning("FIX_Attribute", element, qName.toString()); // NOI18N
               }
           }
-          
           NodeList list = component.getPeer().getChildNodes();
-          for ( int i=0 ; i<list.getLength() ; i++ ){
+
+          for (int i=0; i<list.getLength(); i++) {
               Node node = list.item(i);
-              if ( node instanceof Element ){
+              if (node instanceof Element) {
                   Element childElement = (Element) node;
-                  if ( !BpelEntity.BUSINESS_PROCESS_NS_URI.equals(childElement.getNamespaceURI() ) ) {
-                      addElementsInParentError( element, childElement.getLocalName() );
+
+                  if ( !BpelEntity.BUSINESS_PROCESS_NS_URI.equals(childElement.getNamespaceURI())) {
+                      addElementsInParentError(element, childElement.getLocalName());
                   }
               }
           }
@@ -489,41 +477,41 @@ public final class Validator extends BpelValidator {
   }
   
   private void addElementError(BpelEntity entity) {
-      addError(FIX_ELEMENT, entity, entity.getPeer().getLocalName());
+      addError("FIX_Element", entity, entity.getPeer().getLocalName()); // NOI18N
   }
   
   private void addElementsInParentError(BpelContainer parent, BpelEntity... entities) {
-      addError(FIX_ELEMENT_IN_PARENT, entities[0], entities[0].getPeer().getLocalName(), parent.getPeer().getLocalName());
+      addError("FIX_ElementInParent", entities[0], entities[0].getPeer().getLocalName(), parent.getPeer().getLocalName()); // NOI18N
   }
   
-  private void addElementsInParentError( BpelContainer parent, String tagName ) {
-      addError(FIX_ELEMENT_IN_PARENT, parent, tagName,parent.getPeer().getLocalName());
+  private void addElementsInParentError(BpelContainer parent, String tagName) {
+      addError("FIX_ElementInParent", parent, tagName,parent.getPeer().getLocalName()); // NOI18N
   }
   
   private void addAttributeNeededForRuntime(String attributeName, Component component) {
-      addWarning(FIX_ATTRIBUTE_REQUIRED_SUN_BPELSE, component, attributeName);
+      addWarning("FIX_Attribute_Required_by_SE", component, attributeName); // NOI18N
   }
   
   private boolean isAttributeValueSpecified(String value) {
-      return value != null && !value.trim().equals("");
+      return value != null && !value.trim().equals("");  // NOI18N
   }
 
   private void checkValidURI(BpelEntity bpelEntity, String attribute, String attributeValue) {
-      if(attributeValue != null) {
+      if (attributeValue != null) {
           try {
               new URI(attributeValue);
           }
           catch (URISyntaxException ex) {
-              addError(FIX_INVALID_URI, bpelEntity, attribute);
+              addError("FIX_Invalid_URI", bpelEntity, attribute); // NOI18N
           }
       }
   }
   
-  private BpelContainer hasParent( BpelEntity entity, Class<? extends BpelContainer>... types) {
+  private BpelContainer hasParent(BpelEntity entity, Class<? extends BpelContainer>... types) {
       BpelContainer parent = entity.getParent();
 
-      while( parent != null ) {
-          for( Class<? extends BpelContainer> clazz :types ) {
+      while (parent != null) {
+          for (Class<? extends BpelContainer> clazz :types) {
               if (clazz.isInstance(parent)) {
                   return parent;
               }
@@ -533,12 +521,7 @@ public final class Validator extends BpelValidator {
       return null;
   }
 
-  private static final String FIX_ATTRIBUTE = "FIX_Attribute";    // NOI18N
-  private static final String FIX_ELEMENT = "FIX_Element";        // NOI18N
-  private static final String FIX_ELEMENT_IN_PARENT = "FIX_ElementInParent"; // NOI18N
-  private static final String FIX_ATTRIBUTE_REQUIRED_SUN_BPELSE = "FIX_Attribute_Required_For_Sun_BpelSE"; // NOI18N
-  private static final String FROM_PARTS = "<fromParts>";  // NOI18N
   private static final String TO_PARTS = "<toParts>"; // NOI18N
-  private static final String FIX_INVALID_URI = "FIX_INVALID_URI"; // NOI18N
+  private static final String FROM_PARTS = "<fromParts>";  // NOI18N
 
 };}}

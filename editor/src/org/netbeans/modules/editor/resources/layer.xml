@@ -138,7 +138,7 @@ made subject to such option by the copyright holder.
             </folder>
         
         <folder name="Source">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
             <attr name="position" intvalue="500"/>
 
             <file name="org-netbeans-modules-editor-MainMenuAction$FormatAction.instance">

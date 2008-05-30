@@ -40,7 +40,6 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -58,28 +57,26 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
  * @author Tomasz.Slota@Sun.COM
  */
 public class PHPHintsProvider implements HintsProvider {
+    public static final String FIRST_PASS_HINTS = "1st pass"; //NOI18N
+    public static final String SECOND_PASS_HINTS = "2nd pass"; //NOI18N
 
     public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
-        Map<Integer, List<PHPRule>> allHints = (Map) manager.getHints(false, context);
+        Map<String, List> allHints = (Map) manager.getHints(false, context);
         CompilationInfo info = context.compilationInfo;
 
-        List<PHPRule> allRules = new LinkedList<PHPRule>();
-        
-        for (List<PHPRule> ruleList : allHints.values()) {
-            for (PHPRule rule : ruleList) {
-                allRules.add(rule);
-            }
-        }
+        PHPVerificationVisitor visitor = new PHPVerificationVisitor((PHPRuleContext)context, allHints.get(FIRST_PASS_HINTS));
         
         for (PHPParseResult parseResult : ((List<PHPParseResult>) info.getEmbeddedResults(PHPLanguage.PHP_MIME_TYPE))) {
-            PHPVerificationVisitor visitor = new PHPVerificationVisitor((PHPRuleContext)context, allRules);
-
             if (parseResult.getProgram() != null) {
                 parseResult.getProgram().accept(visitor);
             }
             
             hints.addAll(visitor.getResult());
         }
+        
+        assert allHints.get(SECOND_PASS_HINTS).size() == 1;
+        UnusedVariableRule unusedVariableRule = (UnusedVariableRule) allHints.get(SECOND_PASS_HINTS).get(0);
+        unusedVariableRule.check((PHPRuleContext) context, hints);
     }
 
     public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
