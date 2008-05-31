@@ -49,8 +49,9 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Timeout;
@@ -59,18 +60,9 @@ import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.drivers.input.MouseRobotDriver;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.core.support.umlsupport.ETRect;
-import org.netbeans.modules.uml.core.support.umlsupport.IETPoint;
-import org.netbeans.modules.uml.core.support.umlsupport.IETRect;
-import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.support.applicationmanager.LabelPresentation;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETLabel;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.TSLabelKind;
-import org.netbeans.modules.uml.ui.swing.drawingarea.ADGraphWindow;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
+import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.test.umllib.actions.Actionable;
 import org.netbeans.test.umllib.exceptions.NotFoundException;
 import org.netbeans.test.umllib.util.JPopupByPointChooser;
@@ -90,14 +82,15 @@ public class DiagramLabelOperator implements Actionable {
         Timeouts.initDefault("LabelOperator.WaitLabelTime", WAIT_LABEL_TIMEOUT);
     }
     
-    protected IETLabel sourceLabel = null;
+
+    protected Widget sourceLabel = null;
     private DiagramOperator diagramOperator = null;
     
     /**
      * 
      * @return 
      */
-    protected IETLabel getSource(){
+     protected Widget getSource(){
         return sourceLabel;
     }
     
@@ -138,7 +131,7 @@ public class DiagramLabelOperator implements Actionable {
      * @param dia 
      * @param label 
      */
-    public DiagramLabelOperator(DiagramOperator dia, IETLabel label){
+    public DiagramLabelOperator(DiagramOperator dia, Widget label){
         sourceLabel = label;
         diagramOperator = dia;
     }
@@ -149,7 +142,7 @@ public class DiagramLabelOperator implements Actionable {
      *@return compartmant name
      */
     public String getText(){
-        return sourceLabel.getText();
+       return  ((UMLLabelWidget) sourceLabel).getLabel();
     }
     
     
@@ -159,36 +152,28 @@ public class DiagramLabelOperator implements Actionable {
      * @param labelChooser custom chooser
      * @param index index
      * @throws qa.uml.exceptions.NotFoundException when nothing suitable found
-     * @return Graph object if found
+     * @return UMLLabelWidget if found
      */
-    public static IETLabel findLabel(DiagramOperator diagramOperator, LabelChooser labelChooser, int index) throws NotFoundException{
-        ArrayList<IETLabel> elementsFound = new ArrayList<IETLabel>();
-        
-        //searching for elements matching elemenFinder criteria
-        ETList<IETGraphObject> allGraphs = diagramOperator.getDrawingAreaControl().getAllItems6();
-        Iterator<IETGraphObject> tsIt = allGraphs.iterator();
-        while(tsIt.hasNext()) {
-            IETGraphObject graphObject = tsIt.next();
-            if (!(graphObject instanceof IETLabel)){
+    public static Widget findLabel(DiagramOperator diagramOperator, LabelChooser labelChooser, int index) throws NotFoundException{
+        ArrayList<Widget> elementsFound = new ArrayList<Widget>();
+        DesignerScene scene = diagramOperator.getDesignerScene();
+        Collection<IPresentationElement> children =scene.getNodes();
+        for (IPresentationElement presElement : children)
+        {
+            Widget widget = scene.findWidget(presElement);  
+ 
+            if (!(widget instanceof UMLLabelWidget)){
                 continue;
             }
-            IETLabel label = (IETLabel)graphObject;
-            IPresentationElement presElement = graphObject.getPresentationElement();
-            if (presElement == null) {
-                continue;
-            }
-            if(!(presElement instanceof LabelPresentation)) { //We are looking only for labels here
-                continue;
-            }
-            
-            if (labelChooser.checkLabel(label)){
-                elementsFound.add(label);
+ 
+            if (labelChooser.checkLabel(widget)){
+                elementsFound.add(widget);
             }
         }
         
         //sorting found elements
-        LabelComparator<IETLabel> c = new LabelComparator<IETLabel>();
-        IETLabel[] arr = (IETLabel[])elementsFound.toArray(new IETLabel[0]);
+        LabelComparator<Widget> c = new LabelComparator<Widget>();
+        Widget[] arr = (Widget[])elementsFound.toArray(new Widget[0]);
         Arrays.sort(arr,c);
         if (arr.length>index){
             return arr[index];
@@ -199,7 +184,7 @@ public class DiagramLabelOperator implements Actionable {
     
     
     
-    public static class LabelComparator<C extends IETLabel> implements Comparator<C>{
+    public static class LabelComparator<C extends Widget> implements Comparator<C>{
         /**
          *
          * @param o1
@@ -207,8 +192,9 @@ public class DiagramLabelOperator implements Actionable {
          * @return
          */
         public int compare(C o1, C o2){
-            Point o1Center = o1.getEngine().getBoundingRect().getCenterPoint();
-            Point o2Center = o2.getEngine().getBoundingRect().getCenterPoint();
+             Point o1Center = (new UMLWidgetOperator(o1)).getCenterPoint();
+             Point o2Center = (new UMLWidgetOperator(o1)).getCenterPoint(); 
+        
             if (o1Center.y>o2Center.y){
                 return 1;
             }else if (o1Center.y == o2Center.y){
@@ -230,12 +216,13 @@ public class DiagramLabelOperator implements Actionable {
      * @param diagramOperator Diagram to look for element
      * @param index index
      */
-    public static IETLabel waitForLabel(final DiagramOperator diagramOperator, final LabelChooser chooser, final int index) {
+    public static Widget waitForLabel(final DiagramOperator diagramOperator, final LabelChooser chooser, final int index) {
+    
         try{
             Waiter w = new Waiter(new Waitable() {
                 public Object actionProduced(Object obj) {
                     try {
-                        IETLabel go = findLabel(diagramOperator, chooser, index);
+                        Widget go = findLabel(diagramOperator, chooser, index);
                         return go;
                     }catch(NotFoundException e) {
                         return null;
@@ -247,13 +234,13 @@ public class DiagramLabelOperator implements Actionable {
             });
             Timeouts t = JemmyProperties.getCurrentTimeouts();
             t.setTimeout("Waiter.WaitingTime", t.getTimeout("LabelOperator.WaitLabelTime"));
-            return (IETLabel)w.waitAction(null);
+            return (Widget)w.waitAction(null);
             
         }catch(InterruptedException ie) {
             return null;
         }
     }
-    
+     
         
     
     //Methods from Actionable interface
@@ -329,9 +316,7 @@ public class DiagramLabelOperator implements Actionable {
     }
     
     private void dummy() {
-        //diagramOperator.getDrawingArea
-        ADGraphWindow a;
-        // a.sc
+        
     }
     
     
@@ -346,16 +331,18 @@ public class DiagramLabelOperator implements Actionable {
      * @param deselectOthers
      */
     public void center(boolean selectIt, boolean deselectOthers) {
-        ADGraphWindow area = diagramOperator.getDrawingArea().getArea();
-        area.getDrawingArea().centerPresentationElement(sourceLabel.getPresentationElement(), selectIt, deselectOthers);
+        //wait for Trey's center apis
+//6.0        ADGraphWindow area = diagramOperator.getDrawingArea().getArea();
+//        area.getDrawingArea().centerPresentationElement(sourceLabel.getPresentationElement(), selectIt, deselectOthers);
     }
     
     /**
      * @return bounding rect for label
      */
-    public IETRect getBoundingRect()
+    public Rectangle getBoundingRect()
     {
-        return sourceLabel.getEngine().getBoundingRect();
+        return (new UMLWidgetOperator(sourceLabel)).getRectangle();
+         
     }
     
     /**
@@ -363,7 +350,7 @@ public class DiagramLabelOperator implements Actionable {
      * @return center point of this compartment
      */
     public Point getCenterPoint() {
-        return getBoundingRect().getCenterPoint();
+         return (new UMLWidgetOperator(sourceLabel)).getCenterPoint();
     }
     
    /**
@@ -372,11 +359,12 @@ public class DiagramLabelOperator implements Actionable {
      */
     public boolean isLinkName()
     {
-        int kind=sourceLabel.getLabelKind();
-        //
-        boolean isName=kind==TSLabelKind.TSLK_ACTIVITYEDGE_NAME;
-        isName=isName || kind==TSLabelKind.TSLK_ASSOCIATION_NAME;
-        isName=isName || kind==TSLabelKind.TSLK_NAME;
+     //TODO: getLabelKind()  
+// 6.0       int kind=sourceLabel.getLabelKind();
+//        //
+//        boolean isName=kind==TSLabelKind.TSLK_ACTIVITYEDGE_NAME;
+//        isName=isName || kind==TSLabelKind.TSLK_ASSOCIATION_NAME;
+// 6.0       isName=isName || kind==TSLabelKind.TSLK_NAME;
         /*isName=isName || kind==TSLabelKind.;
         isName=isName || kind==TSLabelKind.;
         isName=isName || kind==TSLabelKind.;
@@ -387,7 +375,8 @@ public class DiagramLabelOperator implements Actionable {
         isName=isName || kind==TSLabelKind.;
         isName=isName || kind==TSLabelKind.;
         isName=isName || kind==TSLabelKind.;*/
-        return isName;
+//        return isName;
+        return false;
     }
     
     /**
@@ -397,20 +386,22 @@ public class DiagramLabelOperator implements Actionable {
      * @return 
      */
     public Point makeVisible(Point point){
-        ADGraphWindow area = diagramOperator.getDrawingArea().getArea();
-        IDrawingAreaControl daControl = area.getDrawingArea();
-        
-        IETPoint etPoint = daControl.deviceToLogicalPoint(point.x,point.y);
-        
-        IETRect eDeviceAreaRect = new ETRect(area.getVisibleRect());
-        IETRect eVisibleAreaRect = daControl.deviceToLogicalRect(eDeviceAreaRect);
-        IETRect eElementRect = sourceLabel.getEngine().getLogicalBoundingRect(true);
-        
-        if (!eVisibleAreaRect.contains(eElementRect)){
-            center();
-            new Timeout("", 500);
-        }
-        return daControl.logicalToDevicePoint(etPoint).asPoint();
+        //TODO: Wait for Trey's api
+//6.0        ADGraphWindow area = diagramOperator.getDrawingArea().getArea();
+//        IDrawingAreaControl daControl = area.getDrawingArea();
+//        
+//        IETPoint etPoint = daControl.deviceToLogicalPoint(point.x,point.y);
+//        
+//        IETRect eDeviceAreaRect = new ETRect(area.getVisibleRect());
+//        IETRect eVisibleAreaRect = daControl.deviceToLogicalRect(eDeviceAreaRect);
+//        IETRect eElementRect = sourceLabel.getEngine().getLogicalBoundingRect(true);
+//        
+//        if (!eVisibleAreaRect.contains(eElementRect)){
+//            center();
+//            new Timeout("", 500);
+//        }
+//6.0        return daControl.logicalToDevicePoint(etPoint).asPoint();
+   return point;
     }
         
     /**
@@ -490,8 +481,9 @@ public class DiagramLabelOperator implements Actionable {
          * @return true if suitable and false otherwise
          * @param label 
          */
-        public boolean checkLabel(IETLabel label) {
-            return text.equals(label.getText());
+        public boolean checkLabel(Widget label) {
+            return text.equals(((UMLLabelWidget)label).getLabel());
+           
         }
         
         /**
@@ -500,16 +492,8 @@ public class DiagramLabelOperator implements Actionable {
          */
         public String getDescription( ) {
             return "Chooser that accepts label with specific text";
-        }
-        
-        
+        }  
     }
-    
-    
-    
-    
-    
-    
     
     
     /**
@@ -528,7 +512,7 @@ public class DiagramLabelOperator implements Actionable {
          * @param lab label to check
          * @return Always true
          */
-        public boolean checkLabel(IETLabel lab) {
+        public boolean checkLabel(Widget lab) {
             return true;
         }
         
@@ -538,13 +522,6 @@ public class DiagramLabelOperator implements Actionable {
          */
         public String getDescription( ) {
             return "Chooser that accepts any label ";
-        }
-        
-        
-    }
-    
-    
-    
-    
-    
+        }        
+    }  
 }

@@ -304,28 +304,28 @@ public class GsfTaskProvider extends PushTaskScanner  {
                             provider.computeErrors(manager, ruleContext, hints, errors);
                             provider.computeHints(manager, ruleContext, hints);
                             for (Error error : errors) {
-                                try {
-                                    int astOffset = error.getStartPosition();
-                                    int lexOffset;
-                                    if (parserResult.getTranslatedSource() != null) {
-                                        lexOffset = parserResult.getTranslatedSource().getLexicalOffset(astOffset);
-                                        if (lexOffset == -1) {
-                                            continue;
-                                        }
-                                    } else {
-                                        lexOffset = astOffset;
-                                    }
-
-
-                                    int lineno = NbDocument.findLineNumber((StyledDocument)info.getDocument(), lexOffset)+1;
-                                    Task task = Task.create(file, 
-                                            error.getSeverity() == org.netbeans.modules.gsf.api.Severity.ERROR ? TASKLIST_ERROR : TASKLIST_WARNING,
-                                            error.getDisplayName(),
-                                            lineno);
-                                    tasks.add(task);
-                                } catch (IOException ioe) {
-                                    Exceptions.printStackTrace(ioe);
+                                StyledDocument doc = (StyledDocument) info.getDocument();
+                                if (doc == null) {
+                                    continue;
                                 }
+
+                                int astOffset = error.getStartPosition();
+                                int lexOffset;
+                                if (parserResult.getTranslatedSource() != null) {
+                                    lexOffset = parserResult.getTranslatedSource().getLexicalOffset(astOffset);
+                                    if (lexOffset == -1) {
+                                        continue;
+                                    }
+                                } else {
+                                    lexOffset = astOffset;
+                                }
+
+                                int lineno = NbDocument.findLineNumber(doc, lexOffset) + 1;
+                                Task task = Task.create(file, 
+                                        error.getSeverity() == org.netbeans.modules.gsf.api.Severity.ERROR ? TASKLIST_ERROR : TASKLIST_WARNING,
+                                        error.getDisplayName(),
+                                        lineno);
+                                tasks.add(task);
                             }
                             for (Hint desc : hints) {
                                 ErrorDescription errorDesc = manager.createDescription(desc, ruleContext, false);

@@ -142,8 +142,8 @@ class RDocFormatter {
             noComment = false;
 
             return;
-        } else if (text.startsWith(TypeAnalyzer.PARAM_HINT_ARG) ||
-                text.startsWith(TypeAnalyzer.PARAM_HINT_RETURN)) {
+        } else if (text.startsWith(RubyTypeAnalyzer.PARAM_HINT_ARG) ||
+                text.startsWith(RubyTypeAnalyzer.PARAM_HINT_RETURN)) {
             // Don't include param hints in the documentation.
             // TODO: Try to include these correlated to the actual parameter list in the logical view.
             return;

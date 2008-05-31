@@ -399,14 +399,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             prefix = "";
         }
 
-        final Document document;
-        try {
-            document = info.getDocument();
-            if (document == null) {
-                return null;
-            }
-        } catch (Exception e) {
-            Exceptions.printStackTrace(e);
+        final Document document = info.getDocument();
+        if (document == null) {
             return null;
         }
         final BaseDocument doc = (BaseDocument)document;
@@ -1206,8 +1200,6 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                 doc.readUnlock();
             }
             // Else: normal identifier: just return null and let the machinery do the rest
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
         }
@@ -2094,6 +2086,9 @@ public class JsCodeCompletion implements CodeCompletionHandler {
 
             // Adjust offset to the left
             BaseDocument doc = (BaseDocument) info.getDocument();
+            if (doc == null) {
+                return false;
+            }
             int newLexOffset = LexUtilities.findSpaceBegin(doc, lexOffset);
             if (newLexOffset < lexOffset) {
                 astOffset -= (lexOffset-newLexOffset);
@@ -2380,9 +2375,6 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                 anchorOffset = call.getSourceStart(); // TODO - compute
             }
             anchorOffsetHolder[0] = anchorOffset;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return false;
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
             return false;

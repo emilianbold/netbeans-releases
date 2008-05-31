@@ -65,7 +65,7 @@ public enum ElementTypes {
         UTILITY_CLASS("Class"),
         USE_CASE("UseCase"),
         // represents Actor lifeline symbol on interaction diagrams (COD, SQD)
-        ACTOR_LIFELINE("Lifeline"),
+        ACTOR_LIFELINE("Actor Lifeline"),
         // represents lifeline symbol on interaction diagrams (COD, SQD)
         LIFELINE("Lifeline"),
         // represents Actor symbol on all non-interaction diagrams (CLD, USD, comp)

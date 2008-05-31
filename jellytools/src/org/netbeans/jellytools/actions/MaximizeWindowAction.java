@@ -59,7 +59,7 @@ import org.openide.windows.TopComponent;
 public class MaximizeWindowAction extends Action {
     
     /** "Window" main menu item. */
-    private static final String windowItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle",
+    private static final String windowItem = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle",
                                                                      "Menu/Window");
     
     /** "Window|Maximize Window" */

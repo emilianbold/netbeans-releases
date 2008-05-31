@@ -46,7 +46,6 @@
  */
 package org.netbeans.modules.uml.core.roundtripframework;
 
-import java.util.HashMap;
 import java.util.Iterator;
 
 import org.dom4j.Node;
@@ -3792,6 +3791,7 @@ public class RTEventManager implements IRTEventManager
      * @param preReq[in] The struct used in order to retrieve the Pre-element
      * @param type[in]
      * @param detail[in]
+
      * @param req[out] The created request
      *
      * @return HRESULT

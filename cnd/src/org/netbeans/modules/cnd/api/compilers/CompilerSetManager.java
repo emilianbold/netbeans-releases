@@ -180,6 +180,10 @@ public class CompilerSetManager {
         HashSet flavors = new HashSet();
         
         for (String path : dirlist) {
+            if (path.equals("/usr/ucb")) { // NOI18N
+                // Don't look here.
+                continue;
+            }
             if (!IpeUtils.isPathAbsolute(path)) {
                 path = FileUtil.normalizeFile(new File(path)).getAbsolutePath();
             }

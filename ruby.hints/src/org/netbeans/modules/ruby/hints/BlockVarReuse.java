@@ -104,7 +104,6 @@ public class BlockVarReuse extends RubyAstRule {
         if (node.nodeId == NodeType.ITERNODE) {
             // Check the children and see if we have a LocalAsgnNode; these are going
             // to be local variable reuses
-            @SuppressWarnings(value = "unchecked")
             List<Node> list = node.childNodes();
 
             for (Node child : list) {
@@ -114,8 +113,8 @@ public class BlockVarReuse extends RubyAstRule {
                     List<HintFix> fixList = new ArrayList<HintFix>(2);
                     Node root = AstUtilities.getRoot(info);
                     AstPath childPath = new AstPath(root, child);
-                    fixList.add(new RenameVarFix(info, childPath, false));
-                    fixList.add(new RenameVarFix(info, childPath, true));
+                    fixList.add(new RenameVarFix(context, childPath, false));
+                    fixList.add(new RenameVarFix(context, childPath, true));
 
                     range = LexUtilities.getLexerOffsets(info, range);
                     if (range != OffsetRange.NONE) {
@@ -129,14 +128,12 @@ public class BlockVarReuse extends RubyAstRule {
 
     private static class RenameVarFix implements PreviewableFix {
 
-        private CompilationInfo info;
+        private final RubyRuleContext context;
+        private final AstPath path;
+        private final boolean renameLocal;
 
-        private AstPath path;
-
-        private boolean renameLocal;
-
-        RenameVarFix(CompilationInfo info, AstPath path, boolean renameLocal) {
-            this.info = info;
+        RenameVarFix(RubyRuleContext context, AstPath path, boolean renameLocal) {
+            this.context = context;
             this.path = path;
             this.renameLocal = renameLocal;
         }
@@ -164,22 +161,24 @@ public class BlockVarReuse extends RubyAstRule {
             }
 
             // Initiate synchronous editing:
-            EditRegions.getInstance().edit(info.getFileObject(), ranges, caretOffset);
+            EditRegions.getInstance().edit(context.compilationInfo.getFileObject(), ranges, caretOffset);
         }
 
         private void addNonBlockRefs(Node node, String name, Set<OffsetRange> ranges) {
             if ((node.nodeId == NodeType.LOCALASGNNODE || node.nodeId == NodeType.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
                 OffsetRange range = AstUtilities.getNameRange(node);
-                range = LexUtilities.getLexerOffsets(info, range);
+                range = LexUtilities.getLexerOffsets(context.compilationInfo, range);
                 if (range != OffsetRange.NONE) {
                     ranges.add(range);
                 }
             }
 
-            @SuppressWarnings(value = "unchecked")
             List<Node> list = node.childNodes();
 
             for (Node child : list) {
+                if (child.isInvisible()) {
+                    continue;
+                }
 
                 // Skip inline method defs
                 if (child.nodeId == NodeType.DEFNNODE || child.nodeId == NodeType.DEFSNODE) {
@@ -228,7 +227,7 @@ public class BlockVarReuse extends RubyAstRule {
         }
 
         public EditList getEditList() throws Exception {
-            BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = context.doc;
             EditList edits = new EditList(doc);
             Set<OffsetRange> ranges = findRegionsToEdit();
             String oldName = ((INameNode)path.leaf()).getName();

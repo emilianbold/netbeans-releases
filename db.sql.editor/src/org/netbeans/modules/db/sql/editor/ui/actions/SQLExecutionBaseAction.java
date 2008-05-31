@@ -119,7 +119,7 @@ public abstract class SQLExecutionBaseAction extends AbstractAction implements C
     static class ContextAwareDelegate extends AbstractAction implements Presenter.Toolbar, HelpCtx.Provider {
 
         private final SQLExecutionBaseAction parent;
-        private final Lookup.Result result;
+        private final Lookup.Result<SQLExecution> result;
 
         private SQLExecution sqlExecution;
         private PropertyChangeListener listener;
@@ -127,7 +127,7 @@ public abstract class SQLExecutionBaseAction extends AbstractAction implements C
         public ContextAwareDelegate(SQLExecutionBaseAction parent, Lookup actionContext) {
             this.parent = parent;
 
-            result = actionContext.lookup(new Lookup.Template(SQLExecution.class));
+            result = actionContext.lookup(new Lookup.Template<SQLExecution>(SQLExecution.class));
             result.addLookupListener(new LookupListener() {
                 public void resultChanged(LookupEvent ev) {
                     ContextAwareDelegate.this.resultChanged();

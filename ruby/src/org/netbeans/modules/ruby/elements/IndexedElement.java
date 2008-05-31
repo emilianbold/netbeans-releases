@@ -134,7 +134,7 @@ public abstract class IndexedElement extends RubyElement {
         return fileUrl;
     }
 
-    public Document getDocument() throws IOException {
+    public Document getDocument() {
         if (document == null) {
             FileObject fo = getFileObject();
 
