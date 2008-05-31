@@ -679,7 +679,7 @@ made subject to such option by the copyright holder.
             <class package="org.netbeans.api.visual.widget" name="ResourceTable" link="yes"/>
             <class package="org.netbeans.api.visual.widget" name="Widget" link="yes"/>
             <class package="org.netbeans.api.visual.border" name="BorderFactory" link="yes"/>
-            <class package="org.netbeans.api.visual.border" name="Scene" link="yes"/>
+            <class package="org.netbeans.api.visual.widget" name="Scene" link="yes"/>
             <issue number="128348"/>
         </change>
     </changes>

@@ -62,7 +62,7 @@ import org.netbeans.modules.gsf.api.EditList;
 import org.netbeans.modules.gsf.api.PreviewableFix;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.Formatter;
+import org.netbeans.modules.ruby.RubyFormatter;
 import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyMimeResolver;
@@ -328,7 +328,7 @@ class IntroduceFix implements PreviewableFix {
         }
         
         EditList edits = new EditList(doc);
-        edits.setFormatter(new Formatter(), false);
+        edits.setFormatter(new RubyFormatter(), false);
 
         edits.replace(lexStart, lexEnd-lexStart, name, true, 1);
         edits.replace(begin, 0, sb.toString(), true, 2);
@@ -386,7 +386,7 @@ class IntroduceFix implements PreviewableFix {
 
         StringBuilder sb = new StringBuilder();
         EditList edits = new EditList(doc);
-        edits.setFormatter(new Formatter(), false);
+        edits.setFormatter(new RubyFormatter(), false);
         boolean isAbove = prevEnd < astRange.getStart();
         sb.append("\n");
         if (!isAbove) {

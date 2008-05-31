@@ -44,7 +44,6 @@ package org.netbeans.spi.java.project.classpath.support;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -58,11 +57,12 @@ import org.netbeans.spi.project.support.ant.AntBasedTestUtil;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.TestUtil;
+import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
+import org.openide.util.test.MockLookup;
 
 /**
  * Tests for {@link ProjectClassPathImplementation}.
@@ -84,27 +84,9 @@ public class ProjectClassPathImplementationTest extends NbTestCase {
     private AntProjectHelper helper;
     private PropertyEvaluator evaluator;
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
-        TestUtil.setLookup(new Object[] {
-            new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation(),
-            AntBasedTestUtil.testAntBasedProjectType(),
-        });
-    }
-
-    protected void tearDown() throws Exception {
-        scratch = null;
-        projdir = null;
-        cpRoots1 = null;
-        cpRoots2 = null;
-        helper = null;
-        evaluator = null;
-        TestUtil.setLookup(Lookup.EMPTY);
-        super.tearDown();
-    }
-    
-    
-    private void prepareProject () throws IOException {
+        MockLookup.setInstances(new SimpleFileOwnerQueryImplementation(), AntBasedTestUtil.testAntBasedProjectType());
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj"); //NOI18N
         cpRoots1 = new FileObject[2];
@@ -119,7 +101,6 @@ public class ProjectClassPathImplementationTest extends NbTestCase {
     }
     
     public void testBootClassPathImplementation () throws Exception {
-        prepareProject();
         ClassPathImplementation cpImpl = ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
                 FileUtil.toFile(helper.getProjectDirectory()), evaluator, new String[] {PROP_NAME_1, PROP_NAME_2});
         ClassPath cp = ClassPathFactory.createClassPath(cpImpl);
@@ -145,7 +126,6 @@ public class ProjectClassPathImplementationTest extends NbTestCase {
     }        
     
     public void testProjectClassPathEvents () throws Exception {
-        prepareProject();
         final ClassPathImplementation cpImpl = ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
                 FileUtil.toFile(helper.getProjectDirectory()), evaluator, new String[] {PROP_NAME_1, PROP_NAME_2});
         final CPImplListener listener = new CPImplListener ();

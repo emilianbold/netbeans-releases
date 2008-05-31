@@ -60,7 +60,7 @@
             <fileset dir="${libs.dir}">
                 <include name="asm*.jar"/>
                 <include name="joni*.jar"/>
-                <include name="jna*.jar"/>
+                <include name="jna-posix*.jar"/>
                 <include name="joda*.jar"/>
                 <include name="jline*.jar"/>
                 <include name="jvyamlb*.jar"/>

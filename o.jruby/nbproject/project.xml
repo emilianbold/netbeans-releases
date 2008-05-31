@@ -4,7 +4,17 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.jruby</code-name-base>
-            <module-dependencies/>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.netbeans.libs.jna</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
             <public-packages>
                 <subpackages>jline</subpackages>
                 <subpackages>org.jruby</subpackages>
@@ -13,7 +23,6 @@
                 <subpackages>jruby</subpackages>
                 <subpackages>builtin</subpackages>
                 <subpackages>org.joni</subpackages>
-                <subpackages>com.sun.jna</subpackages>
                 <subpackages>org.objectweb.asm</subpackages>
                 <subpackages>org.joda</subpackages>
             </public-packages>
@@ -48,10 +57,6 @@
             <class-path-extension>
                 <runtime-relative-path>ext/joni.jar</runtime-relative-path>
                 <binary-origin>patched_source/jruby-1.1.2/build_lib/joni.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jna.jar</runtime-relative-path>
-                <binary-origin>patched_source/jruby-1.1.2/build_lib/jna.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jna-posix.jar</runtime-relative-path>

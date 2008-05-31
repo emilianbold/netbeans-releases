@@ -193,16 +193,25 @@ TestSupport.prototype = {
         }
     },
     
+    getResourcePath : function (n) {
+        var path = this.getPath(n, '')
+        return path.replace(/\/\//g,"\/");
+    },
+    
     getPath : function (n, pathVal) {
-        if(n.parentNode == null || n.attributes.getNamedItem('path') == null)
-            return pathVal.replace(/\/\//g,"\/");
-        else {
+        if(n.parentNode == null || n.attributes.getNamedItem('path') == null) {
+            if(pathVal == null || pathVal == '')
+                return '';
+            else
+                return pathVal;
+        } else {
             var path = n.attributes.getNamedItem('path');
             var pathElem = path.nodeValue;
-            pathElem = pathElem.replace(/\/\//g,"\/");
-            pathElem = ts.wdr.trimSeperator(pathElem);
-            pathElem = ts.wdr.prependSeperator(pathElem);
-            return this.getPath(n.parentNode, pathElem+'/'+pathVal);
+            if(pathVal == null || pathVal == '') {
+                return this.getPath(n.parentNode, pathElem);
+            } else {
+                return this.getPath(n.parentNode, pathElem+'/'+pathVal);
+            }
         }
     },
     
@@ -1301,7 +1310,13 @@ WADLParser.prototype = {
           var resources = this.getAllResourcesFromWadl(content);
           if(resources != null) {
               for (i=0;i<resources.length;i++) {
-                str += '<node uri="'+baseURL+ts.getPath(resources[i], '')+'"/>';
+                  var path = ts.getResourcePath(resources[i]);
+                  var url = '';
+                  if(baseURL.substring(baseURL.length-1, baseURL.length) != '/' && path.substring(0, 1) != '/')
+                      url = baseURL + '/' + path;
+                  else
+                      url = baseURL + path;
+                  str += '<node uri="'+url+'"/>';
               }
           }
         }

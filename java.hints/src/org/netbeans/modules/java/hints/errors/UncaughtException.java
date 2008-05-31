@@ -231,26 +231,27 @@ public final class UncaughtException implements ErrorRule<Void> {
                             ExecutableType et = (ExecutableType) info.getTypes().asMemberOf((DeclaredType) enclosingType.asType(), ee);
                             List<TypeMirror> thisDeclaredThrows = new LinkedList<TypeMirror>(et.getThrownTypes());
                             
-                            for (Iterator<TypeMirror> dt = declaredThrows.iterator(); dt.hasNext(); ) {
-                                for (Iterator<TypeMirror> tdt = thisDeclaredThrows.iterator(); tdt.hasNext(); ) {
-                                    TypeMirror dtNext = dt.next();
-                                    TypeMirror tdtNext = tdt.next();
-                                    
-                                    if (info.getTypes().isSubtype(tdtNext, dtNext)) {
+                            if (!thisDeclaredThrows.isEmpty()) {
+                                for (Iterator<TypeMirror> dt = declaredThrows.iterator(); dt.hasNext();) {
+                                    for (Iterator<TypeMirror> tdt = thisDeclaredThrows.iterator(); tdt.hasNext();) {
+                                        TypeMirror dtNext = dt.next();
+                                        TypeMirror tdtNext = tdt.next();
+
+                                        if (info.getTypes().isSubtype(tdtNext, dtNext)) {
+                                            tdt.remove();
+                                            continue;
+                                        }
+
+                                        if (info.getTypes().isSubtype(dtNext, tdtNext)) {
+                                            dt.remove();
+                                            continue;
+                                        }
+
                                         tdt.remove();
-                                        continue;
-                                    }
-                                    
-                                    if (info.getTypes().isSubtype(dtNext, tdtNext)) {
                                         dt.remove();
-                                        continue;
                                     }
-                                    
-                                    tdt.remove();
-                                    dt.remove();
                                 }
                             }
-                            
                             declaredThrows.addAll(thisDeclaredThrows);
                         }
                     }
