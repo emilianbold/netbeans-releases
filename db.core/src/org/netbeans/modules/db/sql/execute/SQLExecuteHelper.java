@@ -55,6 +55,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.db.core.SQLOptions;
+import org.netbeans.modules.db.sql.execute.SQLHistory;
+import org.netbeans.modules.db.sql.execute.SQLHistoryManager;
 
 /**
  * Support class for executing SQL statements.
@@ -128,6 +130,7 @@ public final class SQLExecuteHelper {
                 } else {
                     result = new SQLExecutionResult(info, stmt, stmt.getUpdateCount(), executionTime);
                 }
+                save(statements, conn.getMetaData().getURL());
             } catch (SQLException e) {
                 result = new SQLExecutionResult(info, stmt, e);
             }
@@ -183,6 +186,10 @@ public final class SQLExecuteHelper {
             }
         }
         return new int[] { type, concurrency };
+    }
+    
+    private static void save(List<StatementInfo> statements, String url) {
+        SQLCatcher.save(statements, url);
     }
     
     private static List<StatementInfo> getStatements(String script, int startOffset, int endOffset) {
@@ -524,6 +531,15 @@ public final class SQLExecuteHelper {
         
         public List<StatementInfo> getStatements() {
             return Collections.unmodifiableList(statements);
+        }
+    }
+    
+    private static final class SQLCatcher {
+        private static void save(List<StatementInfo> statements,  String url) {
+            SQLHistoryManager sqlToPersist = SQLHistoryManager.getInstance();
+            for (StatementInfo stmt : statements) {
+                sqlToPersist.saveSQL(new SQLHistory(url, stmt.getSQL()));
+            }
         }
     }
 }
