@@ -39,7 +39,6 @@
 package org.netbeans.modules.db.sql.execute;
 
 
-import org.netbeans.modules.db.sql.loader.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -81,37 +80,41 @@ public class SQLHistoryManager  {
     }
 
     public void saveSQL(SQLHistory sqlStored) {
-        new File(System.getProperty("netbeans.user") + File.separator + "config" + File.separator + "Databases" + File.separator);
+        new File(System.getProperty("netbeans.user") + File.separator + "config" + File.separator + "Databases" + File.separator); // NO18N
         sqlList.add(sqlStored);
 
     }
 
     private String generateSerializedFilename() {
-        return System.getProperty("netbeans.user") + File.separator + "config" + File.separator + "Databases" + File.separator + "sql_history.ser";
+        return System.getProperty("netbeans.user") + File.separator + "config" + File.separator + "Databases" + File.separator + "sql_history.ser"; // NOI18N
     }
 
     public void save() {
+        LOGGER.log(Level.INFO, "SQL Saved (test message)");
+
         // XXX Need to check if file exists and rewrite if it does
-        if (sqlList != null) {
-            ObjectOutputStream os = null;
-            try {
-                os = new ObjectOutputStream(new FileOutputStream(generateSerializedFilename()));
-                os.writeObject(sqlList);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
-                try {
-                    if (os != null) {
-                        os.close();
-                    }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
+//        if (sqlList != null) {
+//            ObjectOutputStream os = null;
+//            try {
+//                os = new ObjectOutputStream(new FileOutputStream(generateSerializedFilename()));
+//                os.writeObject(sqlList);
+//            } catch (IOException ex) {
+//                Exceptions.printStackTrace(ex);
+//            } finally {
+//                try {
+//                    if (os != null) {
+//                        os.close();
+//                    }
+//                } catch (IOException ex) {
+//                    Exceptions.printStackTrace(ex);
+//                }
+//            }
+//        }
     }
 
     private List<SQLHistory> deserialize() {
+        // Deserializing saved SQL will occur when opening the SQL History dialog
+        
 //        List<SQLHistory> history = new ArrayList<SQLHistory>();
 //        FileInputStream fileIn = null;
 //        try {
@@ -191,7 +194,6 @@ public class SQLHistoryManager  {
         }
 
         public synchronized void initialize() {
-            LOGGER.log(Level.INFO, "SQL Editor = " + currentDocument.TitleProperty);
             EditorRegistry.addPropertyChangeListener(this);
             JTextComponent newComponent = EditorRegistry.lastFocusedComponent();
             currentDocument = newComponent != null ? newComponent.getDocument() : null;
