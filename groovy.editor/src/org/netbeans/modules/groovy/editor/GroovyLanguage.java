@@ -103,6 +103,11 @@ public class GroovyLanguage extends DefaultLanguageConfig {
     }
 
     @Override
+    public boolean hasFormatter() {
+        return true;
+    }
+
+    @Override
     public Formatter getFormatter() {
         return new org.netbeans.modules.groovy.editor.Formatter();
     }
@@ -123,8 +128,18 @@ public class GroovyLanguage extends DefaultLanguageConfig {
     }
 
     @Override
+    public boolean hasOccurrencesFinder() {
+        return true;
+    }
+
+    @Override
     public OccurrencesFinder getOccurrencesFinder() {
         return new GroovyOccurrencesFinder();
+    }
+
+    @Override
+    public boolean hasStructureScanner() {
+        return true;
     }
 
     @Override
@@ -135,6 +150,11 @@ public class GroovyLanguage extends DefaultLanguageConfig {
     @Override
     public Indexer getIndexer() {
         return new GroovyIndexer();
+    }
+
+    @Override
+    public boolean hasHintsProvider() {
+        return true;
     }
 
     @Override

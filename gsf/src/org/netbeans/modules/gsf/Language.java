@@ -397,6 +397,10 @@ public final class Language {
                 getGsfLanguage(); // Also initializes languageConfig
                 if (languageConfig != null) {
                     formatter = languageConfig.getFormatter();
+                    if (formatter != null) {
+                        // You MUST return true from this method if you provide a formatter!
+                        assert languageConfig.hasFormatter();
+                    }
                 }
             }
         }
@@ -483,6 +487,11 @@ public final class Language {
                 getGsfLanguage(); // Also initializes languageConfig
                 if (languageConfig != null) {
                     structure = languageConfig.getStructureScanner();
+                    if (structure != null) {
+                        // You MUST return true from this method if you provide a structure
+                        // scanner!
+                        assert languageConfig.hasStructureScanner();
+                    }
                 }
             }
         }
@@ -509,6 +518,11 @@ public final class Language {
                 getGsfLanguage(); // Also initializes languageConfig
                 if (languageConfig != null) {
                     hintsProvider = languageConfig.getHintsProvider();
+                    if (hintsProvider != null) {
+                        // You MUST return true from this method if you provide a hints
+                        // provider
+                        assert languageConfig.hasHintsProvider();
+                    }
                 }
             }
             if (hintsProvider != null) {
@@ -559,8 +573,11 @@ public final class Language {
         if (structureFile != null) {
             return true;
         } else {
-            getStructure(); // Initialize from DefaultLanguageConfig if possible
-            return structure != null;
+            getGsfLanguage();
+            if (languageConfig != null) {
+                return languageConfig.hasStructureScanner();
+            }
+            return false;
         }
     }
     
@@ -568,8 +585,11 @@ public final class Language {
         if (formatterFile != null) {
             return true;
         } else {
-            getFormatter(); // Initialize from DefaultLanguageConfig if possible
-            return formatter != null;
+            getGsfLanguage();
+            if (languageConfig != null) {
+                return languageConfig.hasFormatter();
+            }
+            return false;
         }
     }
 
@@ -577,8 +597,11 @@ public final class Language {
         if (hintsProviderFile != null) {
             return true;
         } else {
-            getHintsProvider(); // Initialize from DefaultLanguageConfig if possible
-            return hintsProviderFile != null;
+            getGsfLanguage();
+            if (languageConfig != null) {
+                return languageConfig.hasHintsProvider();
+            }
+            return false;
         }
     }
     
@@ -598,6 +621,11 @@ public final class Language {
                 getGsfLanguage(); // Also initializes languageConfig
                 if (languageConfig != null) {
                     occurrences = languageConfig.getOccurrencesFinder();
+                    if (occurrences != null) {
+                        // You MUST return true from this method if you provide a structure
+                        // scanner!
+                        assert languageConfig.hasOccurrencesFinder();
+                    }
                 }
             }
         }
@@ -612,8 +640,11 @@ public final class Language {
         if (occurrencesFile != null) {
             return true;
         } else {
-            getOccurrencesFinder(); // Initialize from DefaultLanguageConfig if possible
-            return occurrencesFile != null;
+            getGsfLanguage();
+            if (languageConfig != null) {
+                return languageConfig.hasOccurrencesFinder();
+            }
+            return false;
         }
     }
     
