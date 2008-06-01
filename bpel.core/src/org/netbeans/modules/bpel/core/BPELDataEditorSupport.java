@@ -541,7 +541,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
         });
     }
 
-    protected BPELEnv getEnv() {
+    BPELEnv getEnv() {
         return (BPELEnv) env;
     }
 
