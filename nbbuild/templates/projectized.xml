@@ -939,6 +939,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
                  version="${mf.OpenIDE-Module-Specification-Version}"
                  action="${sigtest.check.type}"
                  packages="${sigtest.public.packages}"
+                 report="${sigtest.output.dir}/${code.name.base.dashes}.xml"
                  failonerror="${sigtest.fail.on.error}"
         />
     </target>

@@ -2020,22 +2020,65 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </pathconvert>
   </target>
   
-  <target name="gen-sigtests" depends="sigtests-init">
+  <target name="gen-sigtests" depends="sigtests-init"
+    description="Generates snaphost of API of all modules"
+  >
     <echo message="Generating signature files for ${cluster.config} modules"/>
+    <property name="sigtest.basedir" location="build/sigtest/snapshot"/>
     
     <subant target="gen-sigtest" buildpath="${modules.fullpath}">
       <property name="ant.core.lib" value="${ant.core.lib}"/>
     </subant>
   </target>
 
+  <target name="gen-sigtests-release" depends="bootstrap"
+    description="Generates signature files into stable API modules directories"
+  >
+    <echo message="Generating signature files into stable API modules directories"/>
+
+    <pathconvert property="modules.fullpath" >
+        <path>
+            <dirset dir="${nb_all}" includes="${config.javadoc.stable}" />
+        </path>
+        <mapper type="identity" />
+    </pathconvert>
+    
+    <subant target="gen-sigtest" buildpath="${modules.fullpath}">
+      <property name="ant.core.lib" value="${ant.core.lib}"/>
+    </subant>
+  </target>
+  
+  <target name="check-sigtests-release" depends="bootstrap"
+    description="Checks signature files of stable API modules"
+  >
+    <echo message="Checking signature files of stable API modules"/>
+    
+    <property name="sigtest.output.dir" location="build/sigtest/check-release"/>
+    <delete dir="${sigtest.output.dir}"/>
+    <mkdir dir="${sigtest.output.dir}"/>
+    <pathconvert property="modules.fullpath" >
+        <path>
+            <dirset dir="${nb_all}" includes="${config.javadoc.stable}" />
+        </path>
+        <mapper type="identity" />
+    </pathconvert>
+    <subant target="check-sigtest" buildpath="${modules.fullpath}">
+        <property name="sigtest.output.dir" value="${sigtest.output.dir}"/>
+        <property name="ant.core.lib" value="${ant.core.lib}"/>
+    </subant>
+  </target>
+
   <target name="check-sigtests" depends="sigtests-init">
     <echo message="Checking signature files for ${cluster.config} modules"/>
     
-    <property name="sigtest.output.dir" location="build/sigtestscheck"/>
+    <property name="sigtest.output.dir" location="build/sigtest/check-snapshot"/>
+    <property name="sigtest.basedir" location="build/sigtest/snapshot"/>
+    
     <delete dir="${sigtest.output.dir}"/>
     <mkdir dir="${sigtest.output.dir}"/>
     <subant target="check-sigtest" buildpath="${modules.fullpath}">
         <property name="sigtest.output.dir" value="${sigtest.output.dir}"/>
+        <property name="sigtest.version.strictcheck" value="true"/>
         <property name="ant.core.lib" value="${ant.core.lib}"/>
     </subant>
     

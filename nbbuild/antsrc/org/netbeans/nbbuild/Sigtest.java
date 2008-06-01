@@ -68,11 +68,16 @@ public class Sigtest extends Task {
     String packages;
     ActionType action;
     File sigtestJar;
+    File report;
     boolean failOnError = true;
     String version;
     
     public void setFileName(File f) {
         fileName = f;
+    }
+
+    public void setReport(File f) {
+        report = f;
     }
     
     public void setPackages(String s) {
@@ -284,6 +289,7 @@ public class Sigtest extends Task {
         task.setTaskName(getTaskName());
         setM(task, "setFailOnError", boolean.class, failOnError);
         setM(task, "setFileName", File.class, fileName);
+        setM(task, "setReport", File.class, report);
         setM(task, "setPackages", String.class, packages);
         setM(task, "setVersion", String.class, version);
         
