@@ -44,9 +44,12 @@ package org.netbeans.nbbuild;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.StringTokenizer;
 import java.util.zip.ZipFile;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Java;
 import org.apache.tools.ant.types.Commandline;
@@ -137,27 +140,32 @@ public class Sigtest extends Task {
         
         try {
             ZipFile zip = new ZipFile(sigtestJar);
+            String c2 = "org/netbeans/apitest/Sigtest.class";
+            if (zip.getEntry(c2) != null) {
+                log("Using " + c2 + " found in " + sigtestJar, Project.MSG_DEBUG);
+                zip.close();
+                try {
+                    apitest();
+                } catch (Exception ex) {
+                    throw new BuildException(ex);
+                }
+                return;
+            }
             String c1 = "com/sun/tdk/signaturetest/Setup.class";
             if (zip.getEntry(c1) != null) {
+                log("Using " + c1 + " found in " + sigtestJar, Project.MSG_DEBUG);
                 zip.close();
                 tdk();
                 return;
             }
-            String c2 = "org/netbeans/apitest/Main.class";
-            if (zip.getEntry(c2) != null) {
-                zip.close();
-                apitest();
-                return;
-            }
             zip.close();
-            
             throw new BuildException("Cannot find " + c1 + " nor " + c2 + " in " + sigtestJar);
         } catch (IOException ex) {
             throw new BuildException(ex);
         }
         
     }
-    
+
     private void tdk() {
         Java java = new Java();
         java.setProject(getProject());
@@ -257,53 +265,34 @@ public class Sigtest extends Task {
         }
     }
     
-    private void apitest() {
-        Java java = new Java();
-        java.setProject(getProject());
-        java.setTaskName(getTaskName());
-        java.setFork(true);
-        Path sigtestPath = new Path(getProject());
-        sigtestPath.setLocation(sigtestJar);
+    private <T> void setM(Task task, String name, Class<? extends T> type, T value) throws Exception {
+        log("Delegating " + name + " value: " + value, Project.MSG_DEBUG);
+        task.getClass().getMethod(name, type).invoke(task, value);
+    }
+    private <T> void setM(Task task, String string, T instance) throws Exception {
+        setM(task, string, instance.getClass(), instance);
+    }
+    private <T> T getM(Task task, String name, Class<T> type) throws Exception {
+        return type.cast(task.getClass().getMethod(name).invoke(task));
+    }
+    private void apitest() throws Exception {
+        URLClassLoader url = new URLClassLoader(new URL[] { sigtestJar.toURI().toURL() }, Sigtest.class.getClassLoader());
+        Class<?> clazz = url.loadClass("org.netbeans.apitest.Sigtest");
+        Task task = (Task)clazz.newInstance();
         
+        task.setProject(getProject());
+        task.setTaskName(getTaskName());
+        setM(task, "setFailOnError", boolean.class, failOnError);
+        setM(task, "setFileName", File.class, fileName);
+        setM(task, "setPackages", String.class, packages);
+        setM(task, "setVersion", String.class, version);
         
-        java.setClasspath(sigtestPath);
-        java.setClassname("org.netbeans.apitest.Main");
-        Commandline.Argument arg;
-        arg = java.createArg();
-        arg.setValue("-FileName");
-        arg = java.createArg();
-        arg.setValue(fileName.getAbsolutePath());
-        arg = java.createArg();
-        arg.setValue("-Classpath");
-        arg = java.createArg();
-        arg.setPath(classpath);
-        if (action.getValue().equals("generate")) {
-            arg = java.createArg();
-            arg.setValue("-setup");
-        } else if (action.getValue().equals("binarycheck")) {
-            arg = java.createArg();
-            arg.setValue("-extensibleinterfaces");
-        } else if (action.getValue().equals("check")) {
-            // no special arg for check
-        } else if (action.getValue().equals("strictcheck")) {
-            arg = java.createArg();
-            arg.setValue("-maintenance");
-        } else {
-            throw new BuildException("Unknown action: " + action);
-        }
-        if (version != null) {
-            arg = java.createArg();
-            arg.setValue("-Version");
-            arg = java.createArg();
-            arg.setValue(version);
-        }
+        Class<?> actionType = url.loadClass("org.netbeans.apitest.Sigtest$ActionType");
+        setM(task, "setAction", EnumeratedAttribute.getInstance(actionType, action.getValue()));
+
+        Path path = getM(task, "createClasspath", Path.class);
+        path.add(classpath);
         
-        
-        arg = java.createJvmarg();
-        arg.setValue("-XX:PermSize=32m");
-        arg = java.createJvmarg();
-        arg.setValue("-XX:MaxPermSize=200m");
-            
         File outputFile = null;
         String s = getProject().getProperty("sigtest.output.dir");
         if (s != null) {
@@ -311,42 +300,12 @@ public class Sigtest extends Task {
             dir.mkdirs();
             outputFile = new File(dir, fileName.getName().replace(".sig", "").replace("-", "."));
             log(outputFile.toString());
-            java.setOutput(outputFile);
+//            java.setOutput(outputFile);
         }
-        
-        
-        log("Packages: " + packages);
-        StringTokenizer packagesTokenizer = new StringTokenizer(packages,",");
-        while (packagesTokenizer.hasMoreTokens()) {
-            String p = packagesTokenizer.nextToken().trim();
-            String prefix = "-PackageWithoutSubpackages "; // NOI18N
-            //Strip the ending ".*"
-            int idx = p.lastIndexOf(".*");
-            if (idx > 0) {
-                p = p.substring(0, idx);
-            } else {
-                idx = p.lastIndexOf(".**");
-                if (idx > 0) {
-                    prefix = "-Package "; // NOI18N
-                    p = p.substring(0, idx);
-                }
-            }
-            
-            arg = java.createArg();
-            arg.setLine(prefix + p);
-        }
-        int returnCode = java.executeJava();
-        if (returnCode != 0) {
-            if (failOnError && outputFile == null) {
-                throw new BuildException("Signature tests return code is wrong (" + returnCode + "), check the messages above. To disable signature tests, run your built with -Dsigtest.skip.check=true property", getLocation());
-            }
-            else {
-                log("Signature tests return code is wrong (" + returnCode + "), check the messages above");
-            }
-        } else {
-            if (outputFile != null) {
-                outputFile.delete();
-            }
+
+        task.execute();
+        if (outputFile != null) {
+            outputFile.delete();
         }
     }
 
