@@ -2071,17 +2071,26 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
 
   <target name="check-sigtests">
     <echo message="Checking signature files for ${cluster.config} modules"/>
+    <property name="sigtest.output.dir" location="build/sigtest/check-snapshot"/>
     <antcall target="-do-check-sigtests">
         <param name="sigtest.check.type" value="strictcheck"/>
         <param name="sigtest.fail.on.error" value="false"/>
+        <param name="sigtest.output.dir" value="${sigtest.output.dir}"/>
     </antcall>
+    <junitreport todir="${sigtest.output.dir}">
+        <fileset dir="${sigtest.output.dir}">
+            <include name="*.xml"/>
+        </fileset>
+        <report todir="${sigtest.output.dir}/html" format="frames"/>
+    </junitreport>
+    <echo message="Report generated to ${sigtest.output.dir}/html/index.html"/>
   </target>
   
   <target name="-do-check-sigtests" depends="sigtests-init">
     <fail unless="sigtest.check.type"/>
     <fail unless="sigtest.fail.on.error"/>
-    
-    <property name="sigtest.output.dir" location="build/sigtest/check-snapshot"/>
+    <fail unless="sigtest.output.dir"/>
+
     <property name="sigtest.basedir" location="build/sigtest/snapshot"/>
     
     <mkdir dir="${sigtest.basedir}"/>
