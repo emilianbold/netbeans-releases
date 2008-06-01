@@ -144,13 +144,18 @@ public final class Language {
     }
 
     public boolean useCustomEditorKit() {
-        if (useCustomEditorKit == null) { // Lazy init
-            getGsfLanguage(); // Also initializes languageConfig
-            if (languageConfig != null) {
-                useCustomEditorKit = languageConfig.isUsingCustomEditorKit();
-            } else {
-                useCustomEditorKit = Boolean.FALSE;
-            }
+// This is done during initialization so we don't want to configure all the language configurations
+// at this point and cause a lot of class loading.        
+//        if (useCustomEditorKit == null) { // Lazy init
+//            getGsfLanguage(); // Also initializes languageConfig
+//            if (languageConfig != null) {
+//                useCustomEditorKit = languageConfig.isUsingCustomEditorKit();
+//            } else {
+//                useCustomEditorKit = Boolean.FALSE;
+//            }
+//        }
+        if (useCustomEditorKit == null) {
+            useCustomEditorKit = Boolean.FALSE;
         }
 
         return useCustomEditorKit;
@@ -573,10 +578,14 @@ public final class Language {
         if (structureFile != null) {
             return true;
         } else {
-            getGsfLanguage();
-            if (languageConfig != null) {
-                return languageConfig.hasStructureScanner();
-            }
+            // For performance reasons, we don't want to initialize this yet;
+            // navigators have to be installed early during startup for all languages,
+            // but we don't want to actually create the configuration objects
+            // (which can load a lot of state)
+//            getGsfLanguage();
+//            if (languageConfig != null) {
+//                return languageConfig.hasStructureScanner();
+//            }
             return false;
         }
     }
