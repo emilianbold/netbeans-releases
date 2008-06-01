@@ -2028,6 +2028,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     
     <subant target="gen-sigtest" buildpath="${modules.fullpath}">
       <property name="ant.core.lib" value="${ant.core.lib}"/>
+      <property name="sigtest.basedir" value="${sigtest.basedir}"/>
     </subant>
   </target>
 
@@ -2068,36 +2069,29 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </subant>
   </target>
 
-  <target name="check-sigtests" depends="sigtests-init">
+  <target name="check-sigtests">
     <echo message="Checking signature files for ${cluster.config} modules"/>
+    <antcall target="-do-check-sigtests">
+        <param name="sigtest.check.type" value="strictcheck"/>
+        <param name="sigtest.fail.on.error" value="false"/>
+    </antcall>
+  </target>
+  
+  <target name="-do-check-sigtests" depends="sigtests-init">
+    <fail unless="sigtest.check.type"/>
+    <fail unless="sigtest.fail.on.error"/>
     
     <property name="sigtest.output.dir" location="build/sigtest/check-snapshot"/>
     <property name="sigtest.basedir" location="build/sigtest/snapshot"/>
     
+    <mkdir dir="${sigtest.basedir}"/>
     <delete dir="${sigtest.output.dir}"/>
     <mkdir dir="${sigtest.output.dir}"/>
     <subant target="check-sigtest" buildpath="${modules.fullpath}">
         <property name="sigtest.output.dir" value="${sigtest.output.dir}"/>
-        <property name="sigtest.version.strictcheck" value="true"/>
         <property name="ant.core.lib" value="${ant.core.lib}"/>
+        <property name="sigtest.basedir" value="${sigtest.basedir}"/>
     </subant>
-    
-    <concat destfile="${sigtest.output.dir}/all">
-        <fileset dir="${sigtest.output.dir}">
-            <include name="*"/>
-            <exclude name="all"/>
-        </fileset>
-    </concat>
-    
-    <loadfile property="sigtest.output" srcfile="${sigtest.output.dir}/all" failonerror="false"/>
-    <property name="sigtest.output" value=""/>
-    <delete file="${sigtest.output.dir}/all"/>
-    
-    <fail message="Sigtest failed${line.separator}${sigtest.output}">
-        <condition>
-            <not><equals arg1="" arg2="${sigtest.output}"/></not>
-        </condition>
-    </fail>
   </target>
 
   <target name="findbugs">
