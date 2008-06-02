@@ -41,6 +41,8 @@ package org.netbeans.modules.xslt.core.text.completion;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -88,7 +90,11 @@ public class XSLTCompletionQuery extends AsyncCompletionQuery implements Runnabl
     }
     
     private void makeResultSet() {
-        if ((resultSet == null) || (document == null) || (caretOffset < 0)) return;
+        if ((resultSet == null) || (document == null) || 
+            (srcEditorPane == null) || (caretOffset < 0)) {
+            resultSet.finish();
+            return;
+        }
         XslModel xslModel = getXslModel(document);
 
         if (xslModel != null) {
@@ -156,16 +162,19 @@ public class XSLTCompletionQuery extends AsyncCompletionQuery implements Runnabl
     
     private JEditorPane getXslSourceEditor() {
         TopComponent topComponent = TopComponent.getRegistry().getActivated();
-        if (topComponent != null) {
+        try {
             XSLTDataEditorSupport editorSupport = topComponent.getLookup().lookup(
                 XSLTDataEditorSupport.class);
-            
+
             JEditorPane[] editorPanes = editorSupport.getOpenedPanes();
             if ((editorPanes == null) || (editorPanes.length < 1)) return null;
-                
+
             return editorPanes[0];
+        } catch(Exception e) {
+            Logger logger = Logger.getLogger(XSLTCompletionQuery.class.getName());
+            logger.log(Level.INFO, null, e);
+            return null;
         }
-        return null;
     }
 
     private XslModel getXslModel(Document doc) {
