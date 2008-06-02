@@ -79,6 +79,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
+import org.openide.util.Exceptions;
 
 /**
  * Encapsulates a set of ServerTarget(s), provides a wrapper for deployment
@@ -112,13 +113,25 @@ public class TargetServer {
         this.instance = dtarget.getServer().getServerInstance();
     }
     
-    private void init(ProgressUI ui) throws ServerException {
+    private void init(ProgressUI ui, boolean start, boolean processLast) throws ServerException {
         if (targets == null) {
-            instance.start(ui);
-            targets = dtarget.getServer().toTargets();
+            if (start) {
+                instance.start(ui);
+                targets = dtarget.getServer().toTargets();
+            } else {
+                Set<Target> tempTargets = new HashSet<Target>(Arrays.asList(dtarget.getServer().toTargets()));
+                for (Iterator<Target> it = tempTargets.iterator(); it.hasNext();) {
+                    Target target = it.next();
+                    if (!instance.getStartServer().isRunning(target)) {
+                        it.remove();
+                    }                    
+                }
+                targets = tempTargets.toArray(new Target[tempTargets.size()]);
+            }
+            
         }        
         incremental = instance.getIncrementalDeployment();
-        if (incremental != null && ! checkServiceImplementations())
+        if (incremental != null && !checkServiceImplementations())
             incremental = null;
 
         try {
@@ -140,7 +153,9 @@ public class TargetServer {
             }
         }
         
-        processLastTargetModules();
+        if (processLast) {
+            processLastTargetModules();
+        }
     }
     
     private boolean canFileDeploy(Target[] targetz, J2eeModule deployable) {
@@ -476,7 +491,7 @@ public class TargetServer {
         ProgressObject po = null;
         boolean hasActivities = false;
         
-        init(ui);
+        init(ui, true, true);
         if (forceRedeploy) {
             if (redeployTargetModules == null) {
             } else {
@@ -579,6 +594,51 @@ public class TargetServer {
     public static boolean anyChanged(AppChangeDescriptor acd) {
         return (acd.manifestChanged() || acd.descriptorChanged() || acd.classesChanged()
         || acd.ejbsChanged() || acd.serverDescriptorChanged());
+    }
+    
+    public void notifyArtifactsUpdated(Iterable<File> artifacts) {
+        try {
+            init(null, false, false);
+        } catch (ServerException ex) {
+            // this should never occur
+            Exceptions.printStackTrace(ex);
+        }
+        
+        TargetModule[] modules = getArtifactRealodCandidates();
+        // FIXME more precise check
+        if (incremental != null) {
+            for (TargetModule module : modules) {
+                incremental.notifyArtifactsUpdated(module.delegate(), artifacts);
+            }        
+        }
+    }
+    
+    private TargetModule[] getArtifactRealodCandidates() {
+        TargetModule[] modules = dtarget.getTargetModules();
+        
+        ServerInstance serverInstance = dtarget.getServer().getServerInstance();
+        Set<String> targetNames = new HashSet<String>();
+        for (int i = 0; i < targets.length; i++) {
+            targetNames.add(targets[i].getName());
+        }
+        
+        Set<TargetModule> ret = new HashSet<TargetModule>();
+        for (TargetModule module : modules) {
+            // not my module
+            if (!module.getInstanceUrl().equals(serverInstance.getUrl())
+                    || ! targetNames.contains(module.getTargetName())) {
+                continue;
+            }
+            
+            TargetModuleID tmID = (TargetModuleID) getAvailableTMIDsMap().get(module.getId());
+            
+            // no longer a deployed module on server
+            if (tmID != null) {
+                module.initDelegate(tmID);
+                ret.add(module);
+            }
+        }
+        return ret.toArray(new TargetModule[ret.size()]);
     }
     
     /**

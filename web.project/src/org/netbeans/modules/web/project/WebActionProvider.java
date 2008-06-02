@@ -1385,45 +1385,4 @@ class WebActionProvider implements ActionProvider {
         return foundWebServiceAnnotation[0];
     }
 
-    private void startListeningOnCos() {
-        String buildClassesDir = project.evaluator().getProperty("build.classes.dir");
-        File buildClasses = buildClassesDir != null ? project.getAntProjectHelper().resolveFile(buildClassesDir) : null;
-
-        if (buildClasses == null) {
-            //XXX: warn?
-            return ;
-        }
-        
-        URL buildClassesURL = FileUtil.urlForArchiveOrDir(buildClasses);
-        
-        if (buildClassesURL == null) {
-            //XXX: warn?
-            return ;
-        }
-
-//        for (FileObject file : SourceForBinaryQuery.findSourceRoots(buildClassesURL).getRoots()) {
-//            try {
-////                BuildArtifactMapper.map(file.getURL(), buildClasses, new ArtifactsUpdatedListenerImpl(buildClasses));
-////                BuildArtifactMapper.ensureBuilt(file.getURL());
-//            } catch (IOException ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-//        }
-    }
-    
-    private final class ArtifactsUpdatedListenerImpl implements ArtifactsUpdated {
-
-        private final File buildClasses;
-
-        public ArtifactsUpdatedListenerImpl(File buildClasses) {
-            this.buildClasses = buildClasses;
-        }
-        
-        public void artifactsUpdated(Iterable<File> artifacts) {
-            File webXML = new File(buildClasses.getParentFile(), "web.xml");
-
-            webXML.setLastModified(System.currentTimeMillis());
-        }
-        
-    }
 }

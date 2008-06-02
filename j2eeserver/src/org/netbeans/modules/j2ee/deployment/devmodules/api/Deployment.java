@@ -463,62 +463,6 @@ public final class Deployment {
         public void log(String message);
     }
     
-    private static TargetModule[] forJ2eeModuleProvider(J2eeModuleProvider provider) {
-        // TODO check if running
-        DeploymentTargetImpl deploymentTarget = new DeploymentTargetImpl(provider, null);
-        TargetModule[] modules = deploymentTarget.getTargetModules();
-        
-        ServerInstance serverInstance = deploymentTarget.getServer().getServerInstance();
-        Set<String> targetNames = new HashSet<String>();
-        Set<Target> targets = new HashSet<Target>();
-        for (TargetModule module : modules) {
-            Target target = module.findTarget();
-            if (serverInstance.getStartServer().isRunning(target)) {
-                targetNames.add(target.getName());
-                targets.add(target);
-            }
-        }
-        
-        Set<TargetModule> ret = new HashSet<TargetModule>();
-        for (TargetModule module : modules) {
-            // not my module
-            if (!module.getInstanceUrl().equals(serverInstance.getUrl())
-                    || ! targetNames.contains(module.getTargetName())) {
-                continue;
-            }
-            
-            TargetModuleID tmID = (TargetModuleID) getAvailableTMIDsMap(
-                    deploymentTarget, targets.toArray(new Target[targets.size()]), serverInstance).get(module.getId());
-            
-            // no longer a deployed module on server
-            if (tmID != null) {
-                module.initDelegate(tmID);
-                ret.add(module);
-            }
-        }
-        return ret.toArray(new TargetModule[ret.size()]);
-    }
-    
-    private static Map<String, TargetModuleID> getAvailableTMIDsMap(DeploymentTargetImpl dtarget,
-            Target[] targets, ServerInstance instance) {
-        
-        DeploymentManager dm = instance.getDeploymentManager();
-        Map<String, TargetModuleID> availablesMap = new HashMap<String, TargetModuleID>();
-        try {
-            ModuleType type = (ModuleType) dtarget.getModule().getModuleType();
-            TargetModuleID[] ids = dm.getAvailableModules(type, targets);
-            if (ids == null) {
-                return availablesMap;
-            }
-            for (int i=0; i<ids.length; i++) {
-                availablesMap.put(ids[i].toString(), ids[i]);
-            }
-        } catch (TargetException te) {
-            throw new IllegalArgumentException(te);
-        }
-        return availablesMap;
-    }
-    
     private static void startListeningOnCos(J2eeModuleProvider provider) {
         for (FileObject file : provider.getSourceFileMap().getSourceRoots()) {         
             try {
@@ -527,7 +471,6 @@ public final class Deployment {
                     FileObject object = URLMapper.findFileObject(binary);
                     if (object != null) {
                         BuildArtifactMapper.addArtifactsUpdatedListener(file.getURL(), new ArtifactsUpdatedListenerImpl(provider));
-//                        BuildArtifactMapper.ensureBuilt(file.getURL());
                     }
                 }
             } catch (IOException ex) {
@@ -545,13 +488,9 @@ public final class Deployment {
         }
         
         public void artifactsUpdated(Iterable<File> artifacts) {
-            TargetModule[] modules = forJ2eeModuleProvider(provider);
-            ServerInstance instance = ServerRegistry.getInstance().getServerInstance(
-                    provider.getServerInstanceID());
-            IncrementalDeployment depl = instance.getIncrementalDeployment();
-            for (TargetModule module : modules) {
-                depl.notifyArtifactsUpdated(module.delegate(), artifacts);
-            }
+            DeploymentTargetImpl deploymentTarget = new DeploymentTargetImpl(provider, null);
+            TargetServer server = new TargetServer(deploymentTarget);
+            server.notifyArtifactsUpdated(artifacts);
         }
         
     }    
