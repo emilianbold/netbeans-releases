@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,55 +31,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.core.dev.wizard;
+package org.netbeans.modules.tomcat5;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
 
 /**
- * Provides EJB tree of all open projects. This class is not used for displaying Enterprise Beans node in project view.
+ *
+ * @author Petr Hejl
  */
-public final class EJBListViewChildren extends Children.Keys<String> {
+public class TomcatInstanceDescriptor implements ServerInstanceDescriptor {
 
-    public static final String KEY_EJBS = "ejbKey"; //NOI18N
-        private Project project;
+    private final TomcatManager manager;
 
-    public EJBListViewChildren(Project project) {
-        assert project != null;
-        this.project = project;
+    public TomcatInstanceDescriptor(TomcatManager manager) {
+        this.manager = manager;
+    }
+    
+    public String getHostname() {
+        return  manager.getTomcatProperties().getHost();
     }
 
-    @Override
-    protected void addNotify() {
-        createNodes();
+    public int getHttpPort() {
+        return manager.getTomcatProperties().getServerPort();
     }
 
-    private void createNodes() {
-        List<String> l = new ArrayList<String>();
-        l.add(KEY_EJBS);
-        setKeys(l);
+    public boolean isLocal() {
+        return true;
     }
 
-    @Override
-    protected void removeNotify() {
-        setKeys(Collections.<String>emptySet());
-    }
-
-    public Node[] createNodes(String key) {
-        Node n = null;
-        if (key == KEY_EJBS) {
-            EjbJar[] apiEjbJars = EjbJar.getEjbJars(project);
-            n = J2eeProjectView.createEjbsView(apiEjbJars[0], project);
-        }
-        return n == null ? new Node[0] : new Node[] {n};
-    }
     
 }

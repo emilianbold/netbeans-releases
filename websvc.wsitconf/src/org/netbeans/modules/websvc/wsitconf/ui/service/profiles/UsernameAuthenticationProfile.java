@@ -208,7 +208,7 @@ public class UsernameAuthenticationProfile extends ProfileBase
     }
 
     public void enableSecureConversation(WSDLComponent component, boolean enable) {
-        ProfilesModelHelper.getInstance(PolicyModelHelper.getConfigVersion(component)).enableSecureConversation(component, enable);
+        ProfilesModelHelper.getInstance(PolicyModelHelper.getConfigVersion(component)).setSecureConversation(component, enable);
     }
     
 }

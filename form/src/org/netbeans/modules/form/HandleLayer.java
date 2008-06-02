@@ -203,11 +203,12 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             RADComponent conTarget = formDesigner.getConnectionTarget();
             if (conSource != null || conTarget != null) {
                 g2.setColor(formSettings.getConnectionBorderColor());
-                g2.setStroke(getPaintStroke());
-                if (conSource != null)
+                if (conSource != null) {
                     paintSelection(g2, conSource, false);
-                if (conTarget != null)
+                }
+                if (conTarget != null) {
                     paintSelection(g2, conTarget, false);
+                }
             }
             return; // that's all in connection mode
         }
@@ -222,7 +223,6 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         }
         else { // just paint the selection of selected components
             g2.setColor(formSettings.getSelectionBorderColor());
-            g2.setStroke(getPaintStroke());
             boolean painted = false;
             try {
                 boolean inLayout = selectedComponentsInSameVisibleContainer();
@@ -244,8 +244,12 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 }
             }
 
-            if (selectionDragger != null)
+            if (selectionDragger != null) {
+                Stroke oldStroke = g2.getStroke();
+                g2.setStroke(getPaintStroke());
                 selectionDragger.paintDragFeedback(g2);
+                g2.setStroke(oldStroke);
+            }
         }
     }
 
@@ -306,7 +310,10 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             int y = selRect.y - correction;
             int width = selRect.width + correction;
             int height = selRect.height + correction;
+            Stroke oldStroke = g.getStroke();
+            g.setStroke(getPaintStroke());
             g.drawRect(x, y, width, height);
+            g.setStroke(oldStroke);
             if (inLayout) {
                 Image resizeHandle = resizeHandle();
                 int iconHeight = resizeHandle.getHeight(null);
