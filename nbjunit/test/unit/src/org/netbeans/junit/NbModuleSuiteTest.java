@@ -39,6 +39,7 @@
 
 package org.netbeans.junit;
 
+
 import test.pkg.not.in.junit.NbModuleSuiteIns;
 import test.pkg.not.in.junit.NbModuleSuiteT;
 import java.io.File;
@@ -47,7 +48,6 @@ import java.util.Properties;
 import java.util.Set;
 import junit.framework.Test;
 import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 /**
  *
@@ -76,7 +76,6 @@ public class NbModuleSuiteTest extends TestCase {
 
     public void testRun() {
         Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(NbModuleSuiteT.class).gui(false));
-        assertEquals("no so far", 0, instance.countTestCases());
         junit.textui.TestRunner.run(instance);
         
         assertEquals("OK", System.getProperty("t.one"));
@@ -134,9 +133,6 @@ public class NbModuleSuiteTest extends TestCase {
     private static void assertProperty(String name, String value) {
         String v = System.getProperty(name);
         assertEquals("Property " + name, value, v);
-            assertFalse("No more", en.hasMoreElements());
-        } else {
-            fail("Should be a test suite: " + instance);
     }
 
     public void testAccessExtraDefinedAutoload() {
