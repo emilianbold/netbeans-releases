@@ -66,6 +66,11 @@ public class ElementListWidget extends ListWidget implements DiagramNodeWriter, 
         setForeground((Color)null);
     }
     
+    /**
+     * Removes the widgets that represent the specified model element.
+     * 
+     * @param element the model element to remove.
+     */
     public void removeElement(IElement element)
     {
         if(getScene() instanceof ObjectScene)
@@ -87,6 +92,20 @@ public class ElementListWidget extends ListWidget implements DiagramNodeWriter, 
                 }
             }
         }
+    }
+    
+    /**
+     * Retreives the number of element widgets that are contained by the list 
+     * widget.
+     * 
+     * @return the number of element widgets.
+     */
+    public int getSize()
+    {
+        // The first widget is going to be the label widget.  Therefore do not 
+        // count the first widget.
+        List < Widget > children = getChildren();
+        return children.size() - 1;
     }
     
     public void save(NodeWriter nodeWriter) {

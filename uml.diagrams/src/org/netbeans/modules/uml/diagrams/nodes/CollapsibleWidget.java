@@ -38,9 +38,23 @@
  */
 package org.netbeans.modules.uml.diagrams.nodes;
 
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
+import org.netbeans.api.visual.action.WidgetAction;
+import org.netbeans.api.visual.action.WidgetAction.State;
+import org.netbeans.api.visual.action.WidgetAction.WidgetMouseEvent;
+import org.netbeans.api.visual.animator.SceneAnimator;
+import org.netbeans.api.visual.border.Border;
+import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.widget.SeparatorWidget;
+import org.netbeans.api.visual.widget.SeparatorWidget.Orientation;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 
 /**
  *
@@ -48,17 +62,84 @@ import org.netbeans.api.visual.widget.Widget;
  */
 public class CollapsibleWidget extends Widget
 {
+
     private Widget targetWidget = null;
-    
+
     public CollapsibleWidget(Scene scene, Widget target)
     {
         super(scene);
-        
+
         setLayout(LayoutFactory.createVerticalFlowLayout());
-        
+
         targetWidget = target;
+
+        SeparatorWidget separator = new SeparatorWidget(scene, Orientation.HORIZONTAL);
+        separator.createActions(DesignerTools.SELECT).addAction(new CollapseControllerAction());
+        separator.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
         
-        addChild(new ElementListSeperator(scene, targetWidget));
+        addChild(separator);
         addChild(targetWidget);
+    }
+
+    public class CollapseControllerAction extends WidgetAction.Adapter
+    {
+
+        private Border border = null;
+        private boolean collapsed = false;
+
+        @Override
+        public State mouseClicked(Widget widget, WidgetMouseEvent event)
+        {
+            State retVal = State.REJECTED;
+            if ((event.getClickCount() == 2) && (event.getButton() == MouseEvent.BUTTON1))
+            {
+                // First make sure that the nodes minumum size is not set.
+                Widget parent = getParentWidget();
+                UMLNodeWidget node = null;
+                while (parent != null)
+                {
+                    if (parent instanceof UMLNodeWidget)
+                    {
+                        node = (UMLNodeWidget) parent;
+
+                        // I would perfer this to be the name comparment min size.  
+                        // Maybe the size of the children above.
+                        node.setMinimumSize(new Dimension(1, 1));
+                        break;
+                    }
+                    parent = parent.getParentWidget();
+                }
+
+
+                Rectangle bounds = targetWidget.getBounds();
+                final SceneAnimator animator = getScene().getSceneAnimator();
+                final Rectangle newBounds = collapsed == false ? new Rectangle() : null;
+
+                for (Widget child : targetWidget.getChildren())
+                {
+                    animator.animatePreferredBounds(child, newBounds);
+                }
+                
+                if (collapsed == true)
+                {
+                    if (border != null)
+                    {
+                        targetWidget.setBorder(border);
+                    }
+                    collapsed = false;
+                }
+                else
+                {
+                    border = targetWidget.getBorder();
+                    
+                    // I want to create som space between the separator and the 
+                    // next widget. That way the separator does not look crowded.
+                    targetWidget.setBorder(BorderFactory.createEmptyBorder(1, 0, 1, 0));
+                    collapsed = true;
+                }
+            }
+
+            return retVal;
+        }
     }
 }

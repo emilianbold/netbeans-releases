@@ -64,7 +64,6 @@ import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumerationLiteral;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
@@ -76,7 +75,6 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameterableElement;
 import org.netbeans.modules.uml.diagrams.DefaultWidgetContext;
-import org.netbeans.modules.uml.diagrams.actions.ClassifierSelectAction;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
@@ -288,13 +286,12 @@ public class EnumerationWidget extends SwitchableWidget
             nameWidget.initialize(element);
 
             classView.addChild(nameWidget);
-            classView.addChild(new SeparatorWidget(scene, SeparatorWidget.Orientation.HORIZONTAL));
 
             String literalsTitle = NbBundle.getMessage(EnumerationWidget.class, 
                                                     "LBL_LiteralsCompartment"); 
             literals = new ElementListWidget(scene);
             ((ListWidget) literals).setLabel(literalsTitle);
-            classView.addChild(literals);
+            classView.addChild(new CollapsibleWidget(scene, literals));
             initializeLiterals(element);
             
             // It turns out that attributes can be redefined as well.  I do not
@@ -303,7 +300,6 @@ public class EnumerationWidget extends SwitchableWidget
             // adding it here.  The attribute section allows the redefined
             // compartments to be grouped with the standard attributes 
             // compartment.
-            classView.addChild(new SeparatorWidget(scene, SeparatorWidget.Orientation.HORIZONTAL));
             attributeSection = new Widget(scene);
             attributeSection.setForeground((Color)null);
             attributeSection.setLayout(LayoutFactory.createVerticalFlowLayout());
@@ -313,11 +309,12 @@ public class EnumerationWidget extends SwitchableWidget
             members = new ElementListWidget(scene);
             members.createActions(DesignerTools.SELECT).addAction(ActionFactory.createAcceptAction(new AcceptFeatureProvider()));
             ((ListWidget) members).setLabel(attrsTitle);
-            attributeSection.addChild(members);
+            
+            CollapsibleWidget membersSection = new CollapsibleWidget(scene, members);
+            membersSection.setVisible(false);
+            attributeSection.addChild(membersSection);
             classView.addChild(attributeSection);
             initializeAttributes(element);
-
-            classView.addChild(new SeparatorWidget(scene, SeparatorWidget.Orientation.HORIZONTAL));
 
             String opsTitle = NbBundle.getMessage(EnumerationWidget.class, 
                                                     "LBL_OperationsCompartment");
@@ -325,7 +322,10 @@ public class EnumerationWidget extends SwitchableWidget
             operations = new ElementListWidget(scene);
             operations.createActions(DesignerTools.SELECT).addAction(ActionFactory.createAcceptAction(new AcceptFeatureProvider()));
             ((ListWidget) operations).setLabel(opsTitle);
-            classView.addChild(operations);
+            
+            CollapsibleWidget operationSection = new CollapsibleWidget(scene, operations);
+            operationSection.setVisible(false);
+            classView.addChild(operationSection);
             initializeOperations(element);
         }
         
@@ -421,8 +421,7 @@ public class EnumerationWidget extends SwitchableWidget
             retVal = new ElementListWidget(getScene());
             retVal.setLabel(title);
 
-            classView.addChild(new SeparatorWidget(getScene(), 
-                                                   SeparatorWidget.Orientation.HORIZONTAL));
+            classView.addChild(new CollapsibleWidget(getScene(), retVal));
             classView.addChild(retVal);
             
             operationRedefinedMap.put(classifier.getXMIID(), retVal);
@@ -443,8 +442,7 @@ public class EnumerationWidget extends SwitchableWidget
             retVal = new ElementListWidget(getScene());
             retVal.setLabel(title);
 
-            attributeSection.addChild(new SeparatorWidget(getScene(), 
-                                                   SeparatorWidget.Orientation.HORIZONTAL));
+            attributeSection.addChild(new CollapsibleWidget(getScene(), retVal));
             attributeSection.addChild(retVal);
             
             attributeRedefinedMap.put(classifier.getXMIID(), retVal);
@@ -460,6 +458,16 @@ public class EnumerationWidget extends SwitchableWidget
             OperationWidget widget = new OperationWidget(getScene());
             widget.initialize(op);
             operations.addChild(widget);
+            
+            if(operations.isVisible() == false)
+            {
+                operations.setVisible(true);
+            }
+            
+            if(operations.getParentWidget().isVisible() == false)
+            {
+                operations.getParentWidget().setVisible(true);
+            }
         }
         else
         {
@@ -471,6 +479,11 @@ public class EnumerationWidget extends SwitchableWidget
     protected void removeOperation(IOperation op)
     {
         operations.removeElement(op);
+        
+        if(operations.getSize() == 0)
+        {
+            operations.getParentWidget().setVisible(false);
+        }
     }
     
     protected void addAttribute(IAttribute attr)
@@ -488,7 +501,15 @@ public class EnumerationWidget extends SwitchableWidget
            addRedefinedAttribute(attr);
         }
         
-        
+        if(members.isVisible() == false)
+        {
+            members.setVisible(true);
+        }
+
+        if(members.getParentWidget().isVisible() == false)
+        {
+            members.getParentWidget().setVisible(true);
+        }
     }
     
     protected void addLiteral(IEnumerationLiteral literal)
@@ -505,6 +526,11 @@ public class EnumerationWidget extends SwitchableWidget
     protected void removeAttribute(IAttribute attr)
     {
         members.removeElement(attr);
+        
+        if(members.getSize() == 0)
+        {
+            members.getParentWidget().setVisible(false);
+        }
     }
     
     public String getKind()
