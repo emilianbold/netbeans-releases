@@ -203,31 +203,40 @@ public class UpdateAction extends ContextAction {
         return;
     }
 
-    private static void revisionUpdateWorkaround(boolean recursive, File root, SvnClient client) throws SVNClientException {
-        // this isn't clean - the client notifies only files which realy were updated.
-        // The problem here is that the revision in the metadata is set to HEAD even if the file didn't change         
-        List<File> filesToRefresh;
-        if (recursive) {
-            filesToRefresh = SvnUtils.listRecursively(root);
-        } else {
-            filesToRefresh = new ArrayList<File>();
-            filesToRefresh.add(root);
-            File[] files = root.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    filesToRefresh.add(file);
+    private static void revisionUpdateWorkaround(final boolean recursive, final File root, final SvnClient client) throws SVNClientException {
+        Utils.post(new Runnable() {
+            public void run() {
+                // this isn't clean - the client notifies only files which realy were updated.
+                // The problem here is that the revision in the metadata is set to HEAD even if the file didn't change         
+                List<File> filesToRefresh;
+                if (recursive) {
+                    filesToRefresh = SvnUtils.listRecursively(root);
+                } else {
+                    filesToRefresh = new ArrayList<File>();
+                    filesToRefresh.add(root);
+                    File[] files = root.listFiles();
+                    if (files != null) {
+                        for (File file : files) {
+                            filesToRefresh.add(file);
+                        }
+                    }
                 }
+                File[] fileArray = filesToRefresh.toArray(new File[filesToRefresh.size()]);
+
+                ISVNInfo info = null;
+                try {
+                    info = client.getInfoFromWorkingCopy(root);
+                } catch (SVNClientException ex) {
+                    SvnClientExceptionHandler.notifyException(ex, true, true); 
+                }
+                Subversion.getInstance().getStatusCache().patchRevision(fileArray, info.getRevision());
+
+                // the cache fires status change events to trigger the annotation refresh.
+                // unfortunatelly, we have to call the refresh explicitly for each file from this place
+                // as the revision label was changed even if the files status wasn't
+                Subversion.getInstance().refreshAnnotations(fileArray);
             }
-        }
-        File[] fileArray = filesToRefresh.toArray(new File[filesToRefresh.size()]);
-        
-        ISVNInfo info = client.getInfoFromWorkingCopy(root);
-        Subversion.getInstance().getStatusCache().patchRevision(fileArray, info.getRevision());
-        
-        // the cache fires status change events to trigger the annotation refresh.
-        // unfortunatelly, we have to call the refresh explicitly for each file from this place
-        // as the revision label was changed even if the files status wasn't
-        Subversion.getInstance().refreshAnnotations(fileArray);
+        });
     }
     
     public static void performUpdate(final Context context, final String contextDisplayName) {                
