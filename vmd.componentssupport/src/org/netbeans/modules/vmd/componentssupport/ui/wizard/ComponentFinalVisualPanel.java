@@ -44,7 +44,6 @@ package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import javax.swing.JPanel;
 import org.netbeans.modules.vmd.componentssupport.ui.UIUtils;
 import org.netbeans.modules.vmd.componentssupport.ui.helpers.BaseHelper;
@@ -182,20 +181,8 @@ final class ComponentFinalVisualPanel extends JPanel {
         String codeNameBase = dotCodeNameBase.replace('.', '/'); // NOI18N
         String bundle = codeNameBase + "/" +                                    // NOI18N
                 CustomComponentWizardIterator.BUNDLE_PROPERTIES;
-        if (getExistingComponents() != null){
-            modified.add(bundle);
-        } else {
-            created.add(bundle);
-        }
-    }
-    
-    private List<Map<String, Object>> getExistingComponents(){
-        Object value = mySettings.getProperty(
-                NewComponentDescriptor.EXISTING_COMPONENTS);
-        if (value == null || !(value instanceof List)){
-            return null;
-        }
-        return (List<Map<String, Object>>)value;
+        // simply add to modified, while for the first producer it will be created.
+        modified.add(bundle);
     }
     
     private void addIconsToList(List<String> created, List<String> modified){

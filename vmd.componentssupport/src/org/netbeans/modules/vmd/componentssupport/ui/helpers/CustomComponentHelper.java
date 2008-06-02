@@ -90,6 +90,10 @@ public abstract class CustomComponentHelper extends BaseHelper {
     
     public abstract Set<FileObject> instantiate() throws IOException ;
     
+    /**
+     * code name base with dot as delimiter
+     * @return
+     */
     public abstract String getCodeNameBase();
     
     public abstract String getProjectName();
@@ -105,26 +109,42 @@ public abstract class CustomComponentHelper extends BaseHelper {
      * @return path to Producer java file relative to Project directory
      */
     public abstract String getProducerPath();
-    
+
+    /**
+     * checks if given component descriptor class already exists
+     * @param name
+     * @return
+     */
+    public abstract boolean isCDClassNameExist(String name);
+
+    /**
+     * checks if given component Producer class already exists
+     * @param name
+     * @return
+     */
+    public abstract boolean isProducerClassNameExist(String name);
+        
     /**
      * creates path to CD class relative to source directory
      * @param slashCodeNameBase
      * @param cdName
      * @return
      */
-    protected String createCDPath(String slashCodeNameBase, String cdName){
-        return slashCodeNameBase + "/" + DESCRIPTORS + "/" +
+    protected String createCDPath(String cdName){
+        String slashCodeNameBase = getCodeNameBase().replace('.', '/'); // NOI18N
+        return SRC + slashCodeNameBase + "/" + DESCRIPTORS + "/" +
                 cdName + JAVA_EXTENSION; // NOI18N
     }
 
     /**
-     * creates path to Producer class relative to source directory
+     * creates path to Producer class relative to project directory
      * @param slashCodeNameBase
      * @param producerName
      * @return
      */
-    protected String createProducerPath(String slashCodeNameBase, String producerName){
-        return slashCodeNameBase + "/" + PRODUCERS + "/" +
+    protected String createProducerPath(String producerName){
+        String slashCodeNameBase = getCodeNameBase().replace('.', '/'); // NOI18N
+        return SRC + slashCodeNameBase + "/" + PRODUCERS + "/" +
                 producerName + JAVA_EXTENSION; // NOI18N
     }
     
@@ -146,9 +166,19 @@ public abstract class CustomComponentHelper extends BaseHelper {
             myComponentWizard = componentWizard;
         }
 
+        public boolean isCDClassNameExist(String name) {
+            return checkIfComponentValueExists(
+                    NewComponentDescriptor.CD_CLASS_NAME, name);
+        }
+
+        public boolean isProducerClassNameExist(String name) {
+            return checkIfComponentValueExists(
+                    NewComponentDescriptor.CP_CLASS_NAME, name);
+        }
+
         @Override
         public String getProjectName() {
-            return (String)myMainWizard.getProperty( 
+            return (String) myMainWizard.getProperty(
                     CustomComponentWizardIterator.PROJECT_NAME);
         }
         
@@ -156,17 +186,15 @@ public abstract class CustomComponentHelper extends BaseHelper {
         @Override
         public String getCDPath() {
             String name = getCDClassName();
-            String codeNameBase = getCodeNameBase().replace('.', '/'); // NOI18N
         
-            return SRC + createProducerPath(codeNameBase, name);
+            return createCDPath(name);
         }
 
         @Override
         public String getProducerPath() {
             String name = getProducerClassName();
-            String codeNameBase = getCodeNameBase().replace('.', '/'); // NOI18N
         
-            return SRC + createProducerPath(codeNameBase, name);
+            return createProducerPath(name);
         }
 
         /**
@@ -206,6 +234,29 @@ public abstract class CustomComponentHelper extends BaseHelper {
                 codeNameBase = getDefaultCodeNameBase(projectName);
             }
             return codeNameBase;
+        }
+
+        private boolean checkIfComponentValueExists(String key, Object value) {
+            List<Map<String, Object>> list = getExistingComponents();
+            if (list == null) {
+                return false;
+            }
+            for (Map<String, Object> comp : list) {
+                Object testValue = comp.get(key);
+                if (testValue.equals(value)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private List<Map<String, Object>> getExistingComponents() {
+            Object value = myMainWizard.getProperty(
+                        CustomComponentWizardIterator.CUSTOM_COMPONENTS);
+            if (value == null || !(value instanceof List)) {
+                return null;
+            }
+            return (List<Map<String, Object>>) value;
         }
 
         private String getCDClassName() {
@@ -262,6 +313,8 @@ public abstract class CustomComponentHelper extends BaseHelper {
             myProject = project;
             myComponent = component;
             myComponentWizard = null;
+            
+            assert myComponent != null;
         }
 
         /**
@@ -276,6 +329,20 @@ public abstract class CustomComponentHelper extends BaseHelper {
             myProject = project;
             myComponent = null;
             myComponentWizard = wizard;
+            
+            assert myComponentWizard != null;
+        }
+
+        public boolean isCDClassNameExist(String name) {
+            FileObject prjDir = getProject().getProjectDirectory();
+            String cd = createCDPath(name);
+            return isFileExist(prjDir, cd);
+        }
+
+        public boolean isProducerClassNameExist(String name) {
+            FileObject prjDir = getProject().getProjectDirectory();
+            String producer = createProducerPath(name);
+            return isFileExist(prjDir, producer);
         }
 
         @Override
@@ -288,7 +355,7 @@ public abstract class CustomComponentHelper extends BaseHelper {
         public Set<FileObject> instantiate() throws IOException {
             Set<FileObject> result = new LinkedHashSet<FileObject>();
 
-            initComponentData();
+            assert myComponent != null || myComponentWizard != null;
 
             FileObject cdFO = configureComponentDescriptor();
             result.add(cdFO);
@@ -309,22 +376,16 @@ public abstract class CustomComponentHelper extends BaseHelper {
         
         @Override
         public String getCDPath() {
-            String dotCodeNameBase = getCodeNameBase();
             String name = getCDClassName();
 
-            String codeNameBase = dotCodeNameBase.replace('.', '/'); // NOI18N
-        
-            return SRC + createCDPath(codeNameBase, name);
+            return createCDPath(name);
         }
 
         @Override
         public String getProducerPath() {
-            String dotCodeNameBase = getCodeNameBase();
             String name = getProducerClassName();
 
-            String codeNameBase = dotCodeNameBase.replace('.', '/'); // NOI18N
-        
-            return SRC + createProducerPath(codeNameBase, name);
+            return createProducerPath(name);
         }
         
         @Override
@@ -394,14 +455,6 @@ public abstract class CustomComponentHelper extends BaseHelper {
                     name + INSTANCE_NAME_EXTENSION;                             // NOI18N
         }
     
-        private void initComponentData(){
-            assert myComponent != null || myComponentWizard != null;
-            
-            if (myComponent == null){
-                myComponent = myComponentWizard.getProperties();
-            }
-        }
-        
         private FileObject configureComponentDescriptor()
                 throws IOException
         {
@@ -427,21 +480,21 @@ public abstract class CustomComponentHelper extends BaseHelper {
             tokens.put("package", getCDPkg());
             tokens.put("cdName", getCDClassName());
             tokens.put("typeId", 
-                    (String)myComponent.get(NewComponentDescriptor.CD_TYPE_ID));
+                    (String)getProperty(NewComponentDescriptor.CD_TYPE_ID));
             tokens.put("superDescriptorClass", 
-                    (String)myComponent.get(NewComponentDescriptor.CD_SUPER_DESCR_CLASS));
+                    (String)getProperty(NewComponentDescriptor.CD_SUPER_DESCR_CLASS));
             tokens.put("prefix", 
-                    (String)myComponent.get(NewComponentDescriptor.CC_PREFIX));
+                    (String)getProperty(NewComponentDescriptor.CC_PREFIX));
             tokens.put("canInstantiate", 
-                    myComponent.get(NewComponentDescriptor.CD_CAN_INSTANTIATE).toString());
+                    getProperty(NewComponentDescriptor.CD_CAN_INSTANTIATE).toString());
             tokens.put("canBeSuper", 
-                    myComponent.get(NewComponentDescriptor.CD_CAN_BE_SUPER).toString());
+                    getProperty(NewComponentDescriptor.CD_CAN_BE_SUPER).toString());
             tokens.put("midpVersion", getMidpVersionToken());
             return tokens;
         }
         
         private String getMidpVersionToken(){
-            Version version = (Version)myComponent.get(NewComponentDescriptor.CD_VERSION);
+            Version version = (Version)getProperty(NewComponentDescriptor.CD_VERSION);
             assert version != null;
             return version.javaCodeValue();
         }
@@ -456,17 +509,17 @@ public abstract class CustomComponentHelper extends BaseHelper {
             tokens.put("cdPackage", getCDPkg());
             tokens.put("paletteCategory", getPaletteCategoryToken());
             tokens.put("prefix", 
-                    (String)myComponent.get(NewComponentDescriptor.CC_PREFIX));
-            if ((Boolean)myComponent.get(NewComponentDescriptor.CP_ADD_LIB)){
+                    (String)getProperty(NewComponentDescriptor.CC_PREFIX));
+            if ((Boolean)getProperty(NewComponentDescriptor.CP_ADD_LIB)){
                 tokens.put("libraryName", 
-                        (String)myComponent.get(NewComponentDescriptor.CP_LIB_NAME));
+                        (String)getProperty(NewComponentDescriptor.CP_LIB_NAME));
             }
             tokens.put("validity", getProducerValidityToken());
             return tokens;
         }
         
         private String getPaletteCategoryToken(){
-            PaletteCategory category = (PaletteCategory)myComponent.get(
+            PaletteCategory category = (PaletteCategory)getProperty(
                     NewComponentDescriptor.CP_PALETTE_CATEGORY);
             assert category != null;
             return category.javaCodeValue();
@@ -474,11 +527,11 @@ public abstract class CustomComponentHelper extends BaseHelper {
 
         private String getProducerValidityToken(){
 
-            Boolean always = (Boolean) myComponent.get(
+            Boolean always = (Boolean) getProperty(
                     NewComponentDescriptor.CP_VALID_ALWAYS);
-            Boolean platform = (Boolean) myComponent.get(
+            Boolean platform = (Boolean) getProperty(
                     NewComponentDescriptor.CP_VALID_PLATFORM);
-            Boolean custom = (Boolean) myComponent.get(
+            Boolean custom = (Boolean) getProperty(
                     NewComponentDescriptor.CP_VALID_CUSTOM);
 
             
@@ -528,7 +581,7 @@ public abstract class CustomComponentHelper extends BaseHelper {
             String bundlePath = SRC + pkgPath + "/" +                  // NOI18N
                     CustomComponentWizardIterator.BUNDLE_PROPERTIES;
 
-            boolean exists = isProducerBundleExist(prjDir, bundlePath);
+            boolean exists = isFileExist(prjDir, bundlePath);
             
             FileObject bundleFO = FileUtil.createData(prjDir, bundlePath);
             
@@ -547,15 +600,15 @@ public abstract class CustomComponentHelper extends BaseHelper {
                 throws IOException
         {
             String prefix = 
-                    (String)myComponent.get(NewComponentDescriptor.CC_PREFIX)+"_";
+                    (String)getProperty(NewComponentDescriptor.CC_PREFIX)+"_";
             EditableProperties ep = loadProperties(bundleFO);
             
             String nameKey = prefix + "paletteName"; // NOI18N
-            String nameValue = (String)myComponent.get(
+            String nameValue = (String)getProperty(
                     NewComponentDescriptor.CP_PALETTE_DISP_NAME);
             
             String tooltipKey = prefix + "paletteTooltip"; // NOI18N
-            String tooltipValue = (String)myComponent.get(
+            String tooltipValue = (String)getProperty(
                     NewComponentDescriptor.CP_PALETTE_TIP);
 
             ep.setProperty(nameKey, nameValue);
@@ -567,12 +620,12 @@ public abstract class CustomComponentHelper extends BaseHelper {
         /**
          * 
          * @param prjDir project FileObject
-         * @param bundlePath path to bundl;e related to project directory
-         * @return
+         * @param file path related to project directory
+         * @return true is file with specified path exists inside project dir
          */
-        private boolean isProducerBundleExist(FileObject prjDir, String bundlePath){
-            File bundleFile = new File(FileUtil.toFile(prjDir), bundlePath);
-            return bundleFile.exists() ? false : true;
+        private boolean isFileExist(FileObject prjDir, String path){
+            File file = new File(FileUtil.toFile(prjDir), path);
+            return file.exists() ? true : false;
         }
         
         private Set<FileObject> configureLayerXml()
@@ -687,7 +740,7 @@ public abstract class CustomComponentHelper extends BaseHelper {
         }
         
         private String getSmallIconPath() {
-            String path = (String) myComponent.get(
+            String path = (String) getProperty(
                     NewComponentDescriptor.CP_SMALL_ICON);
             if (path == null || path.length() == 0) {
                 return null;
@@ -696,7 +749,7 @@ public abstract class CustomComponentHelper extends BaseHelper {
         }
 
         private String getLargeIconPath() {
-            String path = (String) myComponent.get(
+            String path = (String) getProperty(
                     NewComponentDescriptor.CP_LARGE_ICON);
             if (path == null || path.length() == 0) {
                 return null;
@@ -704,13 +757,20 @@ public abstract class CustomComponentHelper extends BaseHelper {
             return path;
         }
 
+        private Object getProperty(String name){
+            if (myComponent == null) {
+                return myComponentWizard.getProperty(name);
+            } else {
+                return myComponent.get(name);
+            }
+        }
+        
         private String getCDClassName() {
-            return (String) myComponent.get(
-                    NewComponentDescriptor.CD_CLASS_NAME);
+            return (String)getProperty(NewComponentDescriptor.CD_CLASS_NAME);
         }
         
         private String getProducerClassName() {
-            return (String) myComponent.get(
+            return (String) getProperty(
                     NewComponentDescriptor.CP_CLASS_NAME);
         }
 

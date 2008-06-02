@@ -161,6 +161,7 @@ final class ComponentDescriptorVisualPanel extends JPanel {
     public @Override void addNotify() {
         super.addNotify();
         attachDocumentListeners();
+        checkValidity();
     }
     
     public @Override void removeNotify() {
@@ -237,8 +238,7 @@ final class ComponentDescriptorVisualPanel extends JPanel {
     }
 
     private String getDefaultPrefix(){
-        return NbBundle.getMessage(ComponentDescriptorVisualPanel.class,
-                    TXT_DEFAULT_PREFIX);
+        return getMessage(TXT_DEFAULT_PREFIX);
     }
     
     private Version getVersion(){
@@ -248,15 +248,6 @@ final class ComponentDescriptorVisualPanel extends JPanel {
             return Version.MIDP;
         }
         return (Version)value;
-    }
-    
-    private List<Map<String, Object>> getExistingComponents(){
-        Object value = mySettings.getProperty(
-                NewComponentDescriptor.EXISTING_COMPONENTS);
-        if (value == null || !(value instanceof List)){
-            return null;
-        }
-        return (List<Map<String, Object>>)value;
     }
     
     private boolean checkValidity(){
@@ -312,16 +303,13 @@ final class ComponentDescriptorVisualPanel extends JPanel {
     private boolean isCCClassNameValid(){
         String name = getClassNameValue();
         if (name.length() == 0) {
-            setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
-                    MSG_ERR_CLASS_NAME_EMPTY));
+            setError(getMessage(MSG_ERR_CLASS_NAME_EMPTY));
             return false;
         } else if (!Utilities.isJavaIdentifier(name)){
-            setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
-                    MSG_ERR_CLASS_NAME_INVALID));
+            setError(getMessage(MSG_ERR_CLASS_NAME_INVALID));
             return false;
-        } else if (isCDClassNameExist(name)){
-            setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
-                    MSG_ERR_CLASS_NAME_EXISTS));
+        } else if (getHelper().isCDClassNameExist(name)){
+            setError(getMessage(MSG_ERR_CLASS_NAME_EXISTS));
             return false;
         }
         return true;
@@ -330,8 +318,7 @@ final class ComponentDescriptorVisualPanel extends JPanel {
     private boolean isCCTypeIDValid(){
         String typeId = getTypeIdValue();
         if (typeId.length() == 0) {
-            setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
-                    MSG_ERR_TYPE_ID_EMPTY));
+            setError(getMessage(MSG_ERR_TYPE_ID_EMPTY));
             return false;
         }
         return true;
@@ -340,12 +327,10 @@ final class ComponentDescriptorVisualPanel extends JPanel {
     private boolean isCCSuperClassValid(){
         String name = getSuperDescrValue();
         if (name.length() == 0) {
-            setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
-                    MSG_ERR_SUPER_CLASS_EMPTY));
+            setError(getMessage(MSG_ERR_SUPER_CLASS_EMPTY));
             return false;
         } else if (!UIUtils.isValidJavaFQN(name)){
-            setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
-                    MSG_ERR_SUPER_CLASS_INVALID));
+            setError(getMessage(MSG_ERR_SUPER_CLASS_INVALID));
             return false;
         }
         return true;
@@ -354,47 +339,16 @@ final class ComponentDescriptorVisualPanel extends JPanel {
     private boolean isCCPrefixValid(){
         String prefix = getPrefixValue();
         if (prefix.length() == 0) {
-            setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
-                    MSG_ERR_PREFIX_EMPTY));
+            setError(getMessage(MSG_ERR_PREFIX_EMPTY));
             return false;
         } else if (prefix.contains(".")){
-            setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
-                    MSG_ERR_PREFIX_WITH_DOT));
+            setError(getMessage(MSG_ERR_PREFIX_WITH_DOT));
             return false;
         } else if (!Utilities.isJavaIdentifier(prefix)){
-            setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
-                    MSG_ERR_PREFIX_INVALID));
-            return false;
-        } else if (isCCPrefixExist(prefix)){
-            setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
-                    MSG_ERR_PREFIX_EXISTS));
+            setError(getMessage(MSG_ERR_PREFIX_INVALID));
             return false;
         }
         return true;
-    }
-    
-    private boolean isCCPrefixExist(String prefix){
-        return checkIfComponentValueExists(
-                NewComponentDescriptor.CC_PREFIX, prefix);
-    }
-    
-    private boolean isCDClassNameExist(String name){
-        return checkIfComponentValueExists(
-                NewComponentDescriptor.CD_CLASS_NAME, name);
-    }
-    
-    private boolean checkIfComponentValueExists(String key, Object value){
-        List<Map<String, Object>> list = getExistingComponents();
-        if (list == null){
-            return false;
-        }
-        for (Map<String, Object> comp : list){
-            Object testValue = comp.get(key);
-            if (testValue.equals(value)){
-                return true;
-            }
-        }
-        return false;
     }
     
     private String getPrefixValue(){

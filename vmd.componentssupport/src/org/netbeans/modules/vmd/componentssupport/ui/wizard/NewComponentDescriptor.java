@@ -83,9 +83,7 @@ public final class NewComponentDescriptor implements WizardDescriptor.Instantiat
     
     // properties - common
     public static final String HELPER           = "custCompHelper";             // NOI18N 
-    public static final String EXISTING_COMPONENTS   
-                                                = "existingComponents";         // NOI18N 
-    
+
     public static final String CC_PREFIX        = "prefix";                     // NOI18N 
     // properties - component descriptor step
     public static final String CD_CLASS_NAME    = "compDescrClassName";         // NOI18N 
@@ -164,10 +162,6 @@ public final class NewComponentDescriptor implements WizardDescriptor.Instantiat
             // child wizard started from CustomComponentWizardIterator panels
             myCustCompHelper = new CustomComponentHelper.
                     InstantiationToWizardHelper(myMainWizard, myWizard);
-            Object components = myMainWizard.getProperty(
-                        CustomComponentWizardIterator.CUSTOM_COMPONENTS);
-            
-            myWizard.putProperty( EXISTING_COMPONENTS, components);
         } else {
             // independent wizard started from existing project
             Project project = Templates.getProject(myWizard);
@@ -194,7 +188,6 @@ public final class NewComponentDescriptor implements WizardDescriptor.Instantiat
      */
     public void uninitialize( WizardDescriptor arg0 ) {
         myWizard.putProperty(HELPER, null);
-        myWizard.putProperty(EXISTING_COMPONENTS, null);
         
         myWizard.putProperty(CC_PREFIX, null);
         myWizard.putProperty(CD_CLASS_NAME, null);
