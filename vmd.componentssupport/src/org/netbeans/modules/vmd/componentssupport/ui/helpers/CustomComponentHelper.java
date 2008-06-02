@@ -154,20 +154,16 @@ public abstract class CustomComponentHelper extends BaseHelper {
         
         @Override
         public String getCDPath() {
-            String dotCodeNameBase = getCodeNameBase();
             String name = getCDClassName();
-
-            String codeNameBase = dotCodeNameBase.replace('.', '/'); // NOI18N
+            String codeNameBase = getCodeNameBase().replace('.', '/'); // NOI18N
         
             return SRC + createProducerPath(codeNameBase, name);
         }
 
         @Override
         public String getProducerPath() {
-            String dotCodeNameBase = getCodeNameBase();
             String name = getProducerClassName();
-
-            String codeNameBase = dotCodeNameBase.replace('.', '/'); // NOI18N
+            String codeNameBase = getCodeNameBase().replace('.', '/'); // NOI18N
         
             return SRC + createProducerPath(codeNameBase, name);
         }
@@ -196,6 +192,10 @@ public abstract class CustomComponentHelper extends BaseHelper {
             return Collections.EMPTY_SET;
         }
         
+        /**
+         * Returns code name base for project.
+         * @return cnb string with '.' as separator.
+         */
         public String getCodeNameBase() {
             String codeNameBase = (String) myMainWizard.getProperty(
                     CustomComponentWizardIterator.CODE_BASE_NAME);
@@ -298,6 +298,8 @@ public abstract class CustomComponentHelper extends BaseHelper {
             result.addAll( configureLayerXml() );
             
             result.addAll( configureIcons() );
+            
+            //configureLibraries();
             
             return result;
         }
@@ -506,11 +508,11 @@ public abstract class CustomComponentHelper extends BaseHelper {
                 return NULL;
             }
             
-            String dotCodeNameBase = getCodeNameBase();
+            String codeNameBase = getCodeNameBase().replace('.', '/'); // NOI18N
             File iconFile = new File(srcPath);
             String name = iconFile.getName();
             
-            return dotCodeNameBase + "." + BaseHelper.RESOURCES + "." + name;
+            return codeNameBase + "/" + BaseHelper.RESOURCES + "/" + name;
         }
         
         private Set<FileObject> configureLayerXml()
@@ -674,10 +676,11 @@ public abstract class CustomComponentHelper extends BaseHelper {
             return myManifest;
         }
 
-        
         /*
         private void configureLibraries(){
-            addLibraryToProject(myProject, libraryName);
+            addLibraryToProject(myProject, "org.netbeans.modules.vmd.midp");
+            addLibraryToProject(myProject, "org.netbeans.modules.vmd.model");
+            addLibraryToProject(myProject, "org.netbeans.modules.vmd.properties");
         }
         
         private static void addLibraryToProject(final Project project, final String... libraryNames) {
@@ -711,7 +714,6 @@ public abstract class CustomComponentHelper extends BaseHelper {
             return libraries.toArray(new Library[]{});
         }
         */
-        
         
         private Project myProject;
         private Map<String, Object> myComponent;
