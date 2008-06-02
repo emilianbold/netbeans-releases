@@ -49,8 +49,6 @@ See http://wiki.netbeans.info/wiki/view/DevFaqLogicalKeybindings for action name
 
 -->
 <bindings>
-    <bind actionName="goto-help" key="O-F1"/>
-    <bind actionName="ruby-reflow-paragraph" key="DS-P"/>
-    <bind actionName="gsf-next-marked-occurrence" key="O-DOWN"/>
-    <bind actionName="gsf-prev-marked-occurrence" key="O-UP"/>
+    <bind actionName="run-focused-spec" key="OS-F6"/>
+    <bind actionName="debug-focused-test" key="OS-F5"/>
 </bindings>

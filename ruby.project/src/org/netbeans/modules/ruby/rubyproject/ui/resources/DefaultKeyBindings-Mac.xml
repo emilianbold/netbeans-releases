@@ -41,16 +41,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN" "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
-
-<!-- TODO: The java version of this file contains a comment that there is another
-copy of this file in ide/applemenu. Check whether I need to do something there!
-
-See http://wiki.netbeans.info/wiki/view/DevFaqLogicalKeybindings for action names
-
--->
 <bindings>
-    <bind actionName="goto-help" key="O-F1"/>
-    <bind actionName="ruby-reflow-paragraph" key="DS-P"/>
-    <bind actionName="gsf-next-marked-occurrence" key="O-DOWN"/>
-    <bind actionName="gsf-prev-marked-occurrence" key="O-UP"/>
+    <bind key="AS-F6" actionName="run-focused-spec"/>
+    <bind key="AS-F5" actionName="debug-focused-test"/>
 </bindings>

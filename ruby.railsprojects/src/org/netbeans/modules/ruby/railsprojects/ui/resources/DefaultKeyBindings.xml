@@ -49,8 +49,5 @@ See http://wiki.netbeans.info/wiki/view/DevFaqLogicalKeybindings for action name
 
 -->
 <bindings>
-    <bind actionName="goto-help" key="O-F1"/>
-    <bind actionName="ruby-reflow-paragraph" key="DS-P"/>
-    <bind actionName="gsf-next-marked-occurrence" key="O-DOWN"/>
-    <bind actionName="gsf-prev-marked-occurrence" key="O-UP"/>
+    <bind actionName="rails-generator" key="O-INSERT"/>
 </bindings>
