@@ -37,54 +37,43 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.quicksearch;
 
-import java.util.ArrayList;
+package org.netbeans.modules.quicksearch.recent;
+
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.netbeans.spi.quicksearch.CategoryDescription;
 import org.netbeans.spi.quicksearch.SearchProvider;
+import org.netbeans.spi.quicksearch.SearchResult;
 
 /**
- * Command Evaluator. It evaluates commands from toolbar and creates results
- * @author Jan Becicka
+ * Recent searches
+ * @author  Jan Becicka
  */
-public class CommandEvaluator {
-    
-    /**
-     * command pattern is:
-     * "command arguments"
-     */
-    private static Pattern COMMAND_PATTERN = Pattern.compile("(\\w+)(\\s+)(.+)");
-    
-    /**
-     * if command is in form "command arguments" then only providers registered 
-     * for given command are called. Otherwise all providers are called.
-     * @param command
-     * @return 
-     */
-    public static Iterable<? extends CategoryResult> evaluate(String command) {
-        
-        List<CategoryResult> l = new ArrayList<CategoryResult>();
-        Matcher m = COMMAND_PATTERN.matcher(command);
-        boolean isCommand = m.matches() && ProviderRegistry.getInstance().getProviders().isKnownCommand(m.group(1));
-        
-        for (ProviderModel.Category cat : ProviderRegistry.getInstance().getProviders().getCategories()) {
-            CategoryResult curRes = new CategoryResult(cat);
-            for (SearchProvider provider : cat.getProviders()) {
-                if (isCommand) {
-                    String commandPrefix = provider.getCategory().getCommandPrefix();
-                    if (commandPrefix != null && commandPrefix.equalsIgnoreCase(m.group(1))) {
-                        curRes.addAll(provider.evaluate(m.group(3)));
-                    }
-                } else {
-                    curRes.addAll(provider.evaluate(command));
-                }
-            }
-            l.add(curRes);
-        }
+public class RecentProvider implements SearchProvider, CategoryDescription {
 
-        return l;
+
+    public List<SearchResult> evaluate(String pattern) {
+        return RecentSearches.getDefault().getSearches();
+    }
+    
+    public boolean cancel() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public CategoryDescription getCategory() {
+        return this;
+    }
+
+    public String getDisplayName() {
+        return "Recent Searches";
+    }
+    
+    public String getCommandPrefix() {
+        return "recent";
+    }
+
+    public String getHint() {
+        return null;
     }
 
 }

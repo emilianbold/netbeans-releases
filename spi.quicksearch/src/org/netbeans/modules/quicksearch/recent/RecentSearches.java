@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,54 +37,40 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.quicksearch;
+package org.netbeans.modules.quicksearch.recent;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.netbeans.spi.quicksearch.SearchProvider;
+import org.netbeans.spi.quicksearch.SearchResult;
 
 /**
- * Command Evaluator. It evaluates commands from toolbar and creates results
+ *
  * @author Jan Becicka
  */
-public class CommandEvaluator {
-    
-    /**
-     * command pattern is:
-     * "command arguments"
-     */
-    private static Pattern COMMAND_PATTERN = Pattern.compile("(\\w+)(\\s+)(.+)");
-    
-    /**
-     * if command is in form "command arguments" then only providers registered 
-     * for given command are called. Otherwise all providers are called.
-     * @param command
-     * @return 
-     */
-    public static Iterable<? extends CategoryResult> evaluate(String command) {
-        
-        List<CategoryResult> l = new ArrayList<CategoryResult>();
-        Matcher m = COMMAND_PATTERN.matcher(command);
-        boolean isCommand = m.matches() && ProviderRegistry.getInstance().getProviders().isKnownCommand(m.group(1));
-        
-        for (ProviderModel.Category cat : ProviderRegistry.getInstance().getProviders().getCategories()) {
-            CategoryResult curRes = new CategoryResult(cat);
-            for (SearchProvider provider : cat.getProviders()) {
-                if (isCommand) {
-                    String commandPrefix = provider.getCategory().getCommandPrefix();
-                    if (commandPrefix != null && commandPrefix.equalsIgnoreCase(m.group(1))) {
-                        curRes.addAll(provider.evaluate(m.group(3)));
-                    }
-                } else {
-                    curRes.addAll(provider.evaluate(command));
-                }
-            }
-            l.add(curRes);
-        }
+public class RecentSearches {
+    private LinkedList<SearchResult> recent;
+    private static final int MAX_ITEMS = 5;
+    private static RecentSearches instance;
 
-        return l;
+    private RecentSearches() {
+        recent = new LinkedList<SearchResult>();
     }
-
+    
+    public static RecentSearches getDefault() {
+        if (instance==null) {
+            instance = new RecentSearches();
+        }
+        return instance;
+    } 
+    
+    public void add(SearchResult result) {
+        if (recent.size()>=MAX_ITEMS) {
+            recent.removeLast();
+        }
+        recent.addFirst(result);
+    }
+    
+    public List<SearchResult> getSearches() {
+        return recent;
+    }
 }

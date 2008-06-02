@@ -40,15 +40,14 @@
 package org.netbeans.modules.quicksearch;
 
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
+import java.lang.ref.WeakReference;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
-import org.openide.util.Exceptions;
+import org.openide.windows.TopComponent;
 
 /**
  * Quick search toolbar component
@@ -58,6 +57,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     
     Popup popup;
     QuickSearchPopup displayer = new QuickSearchPopup();
+    WeakReference<TopComponent> caller;
     
     /** Creates new form SilverLightComboBar */
     public QuickSearchComboBar() {
@@ -80,21 +80,14 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     }
 
     private void processCommand(String text) {
-        try {
-
-            if (popup == null && !"".equals(command.getText())) {
-                final int caretOffset = command.getCaretPosition();
-                Rectangle carretRectangle = command.modelToView(command.getCaretPosition());
-                Point where = new Point(0, carretRectangle.height);
-                SwingUtilities.convertPointToScreen(where, command);
-                popup = PopupFactory.getSharedInstance().getPopup(command, displayer, where.x, where.y);
-                popup.show();
-                command.requestFocus();
-            }
-            displayer.update(text);
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
+        if (popup == null && !"".equals(command.getText())) {
+            Point where = new Point(0, jPanel1.getSize().height);
+            SwingUtilities.convertPointToScreen(where, jLabel2);
+            popup = PopupFactory.getSharedInstance().getPopup(command, displayer, where.x, where.y);
+            popup.show();
+            command.requestFocus();
         }
+        displayer.update(text);
     }
 
     /** This method is called from within the constructor to
@@ -106,18 +99,27 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPanel1 = new javax.swing.JPanel();
         command = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
 
-        setBackground(command.getBackground());
-        setBorder(javax.swing.BorderFactory.createLineBorder(java.awt.Color.lightGray));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(6, 1, 6, 1));
+        setMaximumSize(new java.awt.Dimension(200, 2147483647));
         setName("Form"); // NOI18N
+        setOpaque(false);
         addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 formFocusLost(evt);
             }
         });
+        setLayout(new java.awt.BorderLayout(10, 10));
 
+        jPanel1.setBackground(javax.swing.UIManager.getDefaults().getColor("TextPane.background"));
+        jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("TextField.shadow")));
+        jPanel1.setName("jPanel1"); // NOI18N
+        jPanel1.setLayout(new java.awt.BorderLayout());
+
+        command.setBorder(null);
         command.setName("command"); // NOI18N
         command.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
@@ -129,28 +131,15 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
                 commandKeyPressed(evt);
             }
         });
+        jPanel1.add(command, java.awt.BorderLayout.CENTER);
 
-        jLabel2.setBackground(command.getBackground());
         jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/quicksearch/resources/find.png"))); // NOI18N
+        jLabel2.setToolTipText(org.openide.util.NbBundle.getMessage(QuickSearchComboBar.class, "QuickSearchComboBar.jLabel2.toolTipText")); // NOI18N
         jLabel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         jLabel2.setName("jLabel2"); // NOI18N
-        jLabel2.setOpaque(true);
+        jPanel1.add(jLabel2, java.awt.BorderLayout.WEST);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(0, 0, 0)
-                .add(jLabel2)
-                .add(0, 0, 0)
-                .add(command, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 555, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(command, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-            .add(jLabel2)
-        );
+        add(jPanel1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
 private void formFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusLost
@@ -181,9 +170,17 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
         }
         command.setText("");
     } else if ((evt.getKeyCode()) == KeyEvent.VK_ESCAPE) {
-    if (popup != null) {
-        popup.hide();
-    }
+        if (popup != null) {
+            popup.hide();
+        }
+        if (caller != null) {
+            TopComponent tc = caller.get();
+            if (tc != null) {
+                tc.requestActive();
+                tc.requestFocus();
+            }
+        }
+
     popup = null;
     }
 
@@ -194,11 +191,13 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField command;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
 
 
     @Override
     public void requestFocus() {
+        caller = new WeakReference<TopComponent>(TopComponent.getRegistry().getActivated());
         super.requestFocus();
         command.requestFocus();
     }

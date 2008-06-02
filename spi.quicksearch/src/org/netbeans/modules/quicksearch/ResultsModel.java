@@ -39,13 +39,9 @@
 
 package org.netbeans.modules.quicksearch;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import javax.swing.AbstractListModel;
 import org.netbeans.spi.quicksearch.SearchResult;
-import org.netbeans.modules.quicksearch.CategoryResult;
 /**
  * ListModel for SearchGroupResults 
  * @author Jan Becicka
@@ -57,19 +53,26 @@ class ResultsModel extends AbstractListModel {
     private ArrayList ar = new ArrayList();
     
     private Map<SearchResult, ProviderModel.Category> items2Cats = new HashMap<SearchResult, ProviderModel.Category>();
+    
+    private HashSet<SearchResult> isFirstInCat = new HashSet<SearchResult>();
 
     public ResultsModel(String text) {
         super();
         results = CommandEvaluator.evaluate(text);
         for (CategoryResult cr : results) {
+            boolean first = true;
             Iterator<? extends SearchResult> it = cr.getItems().iterator();
             SearchResult curSr = null;
             for (int i = 0; i < Math.min(cr.getItems().size(), MAX_RESULTS); i++) {
                 curSr = it.next();
                 ar.add(curSr);
                 items2Cats.put(curSr, cr.getCategory());
+                if (first) {
+                    isFirstInCat.add(curSr);
+                    first=false;
+                }
+                
             }
-            ar.add(null);
         }
     }
 
@@ -77,7 +80,6 @@ class ResultsModel extends AbstractListModel {
         int size = 0;
         for (CategoryResult cr : results) {
             size += Math.min(MAX_RESULTS, cr.getItems().size());
-            size++;
         }
         return size;
     }
@@ -89,5 +91,10 @@ class ResultsModel extends AbstractListModel {
     public ProviderModel.Category getCategory (SearchResult sr) {
         return items2Cats.get(sr);
     } 
+    
+    public boolean isFirstinCat(SearchResult sr) {
+        return isFirstInCat.contains(sr);
+    }
+    
     
 }

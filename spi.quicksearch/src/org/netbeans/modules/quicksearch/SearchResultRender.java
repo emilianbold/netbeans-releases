@@ -50,7 +50,6 @@ import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.border.EmptyBorder;
-import org.netbeans.modules.quicksearch.ProviderModel;
 import org.netbeans.spi.quicksearch.SearchResult;
 
 /**
@@ -60,63 +59,45 @@ import org.netbeans.spi.quicksearch.SearchResult;
 class SearchResultRender extends JLabel implements ListCellRenderer {
 
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-        if (value == null) {
-            JPanel c = new JPanel();
-            c.setBackground(Color.GRAY);
-            c.setPreferredSize(new Dimension(c.getPreferredSize().width, 1));
-            return c;
-        }
-        JLabel jLabel1 = new JLabel();
-        JPanel panel = new JPanel();
-        jLabel1.setText("XXXXXXXXXXXXXX");
-        jLabel1.setFont(jLabel1.getFont().deriveFont(Font.BOLD));
-        jLabel1.setBorder(new EmptyBorder(0, 5, 0, 0));
-        panel.setLayout(new BorderLayout());
-        jLabel1.setOpaque(true);
-        panel.add(jLabel1, BorderLayout.WEST);
-        jLabel1.setPreferredSize(new JLabel("XXXXXXXXXXXXX").getPreferredSize());
-        jLabel1.setForeground(Color.GRAY);
-        Component c = null;
-        if (value == null) {
-            c = new JPanel();
-        } else if (value instanceof Component) {
-            c = (Component) value;
-        } else if (value instanceof SearchResult) {
-            JLabel p = new JLabel(((SearchResult) value).getDisplayName());
-            p.setBorder(new EmptyBorder(0, 5, 0, 0));
+        if (value instanceof SearchResult) {
+            JLabel categoryLabel = new JLabel();
+            JPanel rendererComponent = new JPanel();
+            categoryLabel.setText("XXXXXXXXXXXXXX");
+            categoryLabel.setFont(categoryLabel.getFont().deriveFont(Font.BOLD));
+            categoryLabel.setBorder(new EmptyBorder(0, 5, 0, 0));
+            rendererComponent.setLayout(new BorderLayout());
+            categoryLabel.setOpaque(true);
+            rendererComponent.add(categoryLabel, BorderLayout.WEST);
+            categoryLabel.setPreferredSize(new JLabel("XXXXXXXXXXXXX").getPreferredSize());
+            categoryLabel.setForeground(Color.GRAY);
+            JLabel itemLabel = new JLabel(((SearchResult) value).getDisplayName());
+            itemLabel.setBorder(new EmptyBorder(0, 5, 0, 0));
             ListModel model = list.getModel();
-            if (model instanceof ResultsModel && 
-                    isFirstInCat((SearchResult) value, (ResultsModel)model, index)) {
-                ProviderModel.Category cat = ((ResultsModel)model).getCategory((SearchResult) value);
-                jLabel1.setText(cat.getDisplayName());
+            if (model instanceof ResultsModel && ((ResultsModel) model).isFirstinCat((SearchResult) value)) {
+                ProviderModel.Category cat = ((ResultsModel) model).getCategory((SearchResult) value);
+                categoryLabel.setText(cat.getDisplayName());
+                JPanel x = new JPanel();
+                x.setBackground(Color.GRAY);
+                x.setPreferredSize(new Dimension(x.getPreferredSize().width, 1));
+                rendererComponent.add(x, BorderLayout.NORTH);
             } else {
-                jLabel1.setText("");
+                categoryLabel.setText("");
             }
-            c = p;
-        } else {
-            c = new JLabel(value.toString());
+
+            rendererComponent.add(itemLabel, BorderLayout.CENTER);
+
+            if (isSelected) {
+                itemLabel.setBackground(list.getSelectionBackground());
+                itemLabel.setForeground(list.getSelectionForeground());
+            } else {
+                itemLabel.setBackground(list.getBackground());
+                itemLabel.setForeground(list.getForeground());
+            }
+            ((JComponent) itemLabel).setOpaque(true);
+
+            rendererComponent.setOpaque(true);
+            return rendererComponent;
         }
-
-        panel.add(c, BorderLayout.CENTER);
-
-        if (isSelected) {
-            c.setBackground(list.getSelectionBackground());
-            c.setForeground(list.getSelectionForeground());
-        } else {
-            c.setBackground(list.getBackground());
-            c.setForeground(list.getForeground());
-        }
-        ((JComponent) c).setOpaque(true);
-
-        panel.setOpaque(true);
-
-        return panel;
-    }
-
-    private boolean isFirstInCat (SearchResult result, ResultsModel model, int index) {
-        if (index == 0) {
-            return true;
-        }
-        return model.getElementAt(index - 1) == null;
+        return null;
     }
 }

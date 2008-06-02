@@ -40,6 +40,7 @@
 
 package org.netbeans.modules.quicksearch;
 
+import org.netbeans.modules.quicksearch.recent.RecentSearches;
 import org.netbeans.spi.quicksearch.SearchResult;
 
 /**
@@ -55,7 +56,9 @@ public class QuickSearchPopup extends javax.swing.JPanel {
     }
 
     void invoke() {
-        ((SearchResult) jList1.getModel().getElementAt(jList1.getSelectedIndex())).invoke();
+        SearchResult result = ((SearchResult) jList1.getModel().getElementAt(jList1.getSelectedIndex()));
+        RecentSearches.getDefault().add(result);
+        result.invoke();
     }
 
     void selectNext() {
@@ -69,6 +72,7 @@ public class QuickSearchPopup extends javax.swing.JPanel {
     void update(String text) {
         //should update existing, not create new
         jList1.setModel(new ResultsModel(text));
+        jList1.setSelectedIndex(0);
     }
     
 

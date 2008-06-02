@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.quicksearch;
 
+import java.util.HashSet;
 import java.util.List;
 import org.netbeans.spi.quicksearch.CategoryDescription;
 import org.netbeans.spi.quicksearch.SearchProvider;
@@ -50,6 +51,8 @@ import org.netbeans.spi.quicksearch.SearchProvider;
 final class ProviderModel {
 
     private List<Category> categories;
+    
+    private HashSet<String> knownCommands;
 
     /**
      * Get the value of categories
@@ -67,6 +70,14 @@ final class ProviderModel {
      */
     public void setCategories(List<Category> newCategories) {
         this.categories = newCategories;
+        knownCommands = new HashSet<String>();
+        for (Category cat:categories) {
+            knownCommands.add(cat.getCommandPrefix());
+        }
+    }
+    
+    public boolean isKnownCommand(String command) {
+        return knownCommands.contains(command);
     }
 
     public Category getCategory (String commandPrefix) {
