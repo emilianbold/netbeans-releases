@@ -46,6 +46,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.netbeans.modules.extexecution.api.print.ConvertedLine;
+import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -65,8 +67,12 @@ public final class LineProcessors {
     }
 
     public static LineProcessor printing(OutputWriter out, boolean resetEnabled) {
-        return new PrintingLineProcessor(out, resetEnabled);
+        return printing(out, null, resetEnabled);
     }
+    
+    public static LineProcessor printing(OutputWriter out, LineConvertor convertor, boolean resetEnabled) {
+        return new PrintingLineProcessor(out, convertor, resetEnabled);
+    }    
 
     public static LineProcessor patternWaiting(Pattern pattern, CountDownLatch latch) {
         return new WaitingLineProcessor(pattern, latch);
@@ -101,13 +107,16 @@ public final class LineProcessors {
     private static class PrintingLineProcessor implements LineProcessor {
 
         private final OutputWriter out;
+        
+        private final LineConvertor convertor;
 
         private final boolean resetEnabled;
 
-        public PrintingLineProcessor(OutputWriter out, boolean resetEnabled) {
+        public PrintingLineProcessor(OutputWriter out, LineConvertor convertor, boolean resetEnabled) {
             assert out != null;
 
             this.out = out;
+            this.convertor = convertor;
             this.resetEnabled = resetEnabled;
         }
 
@@ -116,7 +125,22 @@ public final class LineProcessors {
 
             LOGGER.log(Level.FINEST, line);
 
-            out.println(line);
+            if (convertor != null) {
+                for (ConvertedLine converted : convertor.convert(line)) {
+                    if (converted.getListener() == null) {
+                        out.println(converted.getText());
+                    } else {
+                        try {
+                            out.println(converted.getText(), converted.getListener());
+                        } catch (IOException ex) {
+                            LOGGER.log(Level.INFO, null, ex);
+                            out.println(converted.getText());
+                        }
+                    }
+                }
+            } else {
+                out.println(line);
+            }
             out.flush();
         }
 

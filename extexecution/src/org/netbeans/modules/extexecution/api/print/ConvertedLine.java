@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,58 +31,24 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.extexecution.api.input;
+package org.netbeans.modules.extexecution.api.print;
 
-import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.Charset;
-import java.util.concurrent.Callable;
-import org.netbeans.modules.extexecution.input.FileInputReader;
-import org.netbeans.modules.extexecution.input.DefaultInputReader;
-import org.openide.util.Parameters;
+import org.openide.windows.OutputListener;
 
 /**
  *
  * @author Petr Hejl
  */
-public final class InputReaders {
+public interface ConvertedLine {
 
-    private InputReaders() {
-        super();
-    }
+    String getText();
 
-    public static InputReader forReader(Reader reader) {
-        return new DefaultInputReader(reader, true);
-    }
+    OutputListener getListener();
 
-    public static InputReader forStream(InputStream stream, Charset charset) {
-        Parameters.notNull("stream", stream);
-
-        return forReader(new InputStreamReader(stream, charset));
-    }
-
-    public static InputReader forFile(final File file, final Charset charset) {
-        Parameters.notNull("file", file);
-
-        return forFileGenerator(new Callable<File>() {
-
-            public File call() throws Exception {
-                return file;
-            }
-        }, charset);
-    }
-
-    public static InputReader forFileGenerator(Callable<File> fileGenerator, Charset charset) {
-        Parameters.notNull("fileGenerator", fileGenerator);
-
-        return new FileInputReader(fileGenerator, charset);
-    }
 }
