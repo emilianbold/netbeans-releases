@@ -206,7 +206,6 @@ public class AdvancedRMPanel extends JPanel {
         deliveryAssuranceCombo = new javax.swing.JComboBox();
 
         flowControlChBox.setText(org.openide.util.NbBundle.getMessage(AdvancedRMPanel.class, "LBL_AdvancedRM_FlowControlChBox")); // NOI18N
-        flowControlChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         flowControlChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         flowControlChBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -232,6 +231,7 @@ public class AdvancedRMPanel extends JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(flowControlChBox)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(maxBufLabel)
@@ -239,9 +239,9 @@ public class AdvancedRMPanel extends JPanel {
                             .add(deliveryAssuranceLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(deliveryAssuranceCombo, 0, 141, Short.MAX_VALUE)
-                            .add(inactivityTimeoutTextfield, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE)
-                            .add(maxBufTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE))))
+                            .add(deliveryAssuranceCombo, 0, 135, Short.MAX_VALUE)
+                            .add(inactivityTimeoutTextfield, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
+                            .add(maxBufTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -266,6 +266,13 @@ public class AdvancedRMPanel extends JPanel {
 
         layout.linkSize(new java.awt.Component[] {deliveryAssuranceCombo, inactivityTimeoutTextfield, maxBufTextField}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
+        flowControlChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdvancedRMPanel.class, "LBL_AdvancedRM_FlowControl_ACSD")); // NOI18N
+        maxBufLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdvancedRMPanel.class, "LBL_AdvancedRM_MaxFlowBufSize_ACSD")); // NOI18N
+        inactivityTimeoutLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdvancedRMPanel.class, "LBL_AdvancedRM_InactTimeout_ACSD")); // NOI18N
+        inactivityTimeoutTextfield.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AdvancedRMPanel.class, "TXT_AdvancedRM_InactTimeout_ACSN")); // NOI18N
+        inactivityTimeoutTextfield.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdvancedRMPanel.class, "TXT_AdvancedRM_InactTimeout_ACSD")); // NOI18N
+        maxBufTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AdvancedRMPanel.class, "TXT_AdvancedRM_MaxBuf_ACSN")); // NOI18N
+        maxBufTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdvancedRMPanel.class, "TXT_AdvancedRM_MaxBuf_ACSD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void flowControlChBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_flowControlChBoxActionPerformed
