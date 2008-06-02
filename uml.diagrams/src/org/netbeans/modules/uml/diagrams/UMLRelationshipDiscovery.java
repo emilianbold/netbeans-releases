@@ -538,7 +538,7 @@ public class UMLRelationshipDiscovery implements RelationshipDiscovery
                 // containment is being represented by graphical containment - no need for the link.
 
                 Widget nodeWidget = scene.findWidget(pFromPresentationElement);
-                if(!(nodeWidget.getParentWidget() instanceof ConnectionWidget))
+                if(!(nodeWidget.getParentWidget() instanceof ContainerWidget))
                 {            
                     retVal = createConnection(pFromPresentationElement, 
                                               pFromPresentationElement, 
@@ -708,18 +708,10 @@ public class UMLRelationshipDiscovery implements RelationshipDiscovery
             if (linkAlreadyExists(connection, pFromPresentationElement, pToPresentationElement) == false && 
                 linkIsValid(proxyType, pFromPresentationElement, pToPresentationElement) == true)
             {
-                // In the case of nested links we do one more check not done for other links.  If the 
-                // from element is sitting on the to element then don't do the link.  The namespace
-                // containment is being represented by graphical containment - no need for the link.
-
-                Widget nodeWidget = scene.findWidget(pFromPresentationElement);
-                if(!(nodeWidget.getParentWidget() instanceof ContainerWidget))
-                {            
-                    retVal = createConnection(connection, 
-                                              pFromPresentationElement, 
-                                              pToPresentationElement,
-                                              proxyType);
-                }
+                retVal = createConnection(connection, 
+                                          pFromPresentationElement, 
+                                          pToPresentationElement,
+                                          proxyType);
             }
         }
         
