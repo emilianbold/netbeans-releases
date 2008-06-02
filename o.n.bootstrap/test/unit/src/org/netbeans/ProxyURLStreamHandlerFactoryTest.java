@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,65 +38,41 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.masterfs.filebasedfs.utils;
+package org.netbeans;
 
 import java.io.File;
-import java.util.NoSuchElementException;
-import java.util.Scanner;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import java.net.URI;
+import java.net.URL;
 import org.netbeans.junit.NbTestCase;
 
-/**
- *
- * @author Radek Matous
+/** 
+ * Tests ProxyURLStreamHandlerFactory.
  */
-public class FileInfoTest extends NbTestCase {
+public class ProxyURLStreamHandlerFactoryTest extends NbTestCase {
 
-    public FileInfoTest(String testName) {
+    public ProxyURLStreamHandlerFactoryTest(String testName) {
         super(testName);
     }
 
+    /** Register ProxyURLStreamHandlerFactory. */
     @Override
     protected void setUp() throws Exception {
+        ProxyURLStreamHandlerFactory.register();
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(FileInfoTest.class);
-        return suite;
-    }
-
-    /** Test getRoot() method. */
-    public void testGetRoot() {
-        String[][] files = {
-            // filename, expected root
-            {"\\\\computerName\\sharedFolder\\a\\b\\c\\d.txt", "\\\\computerName\\sharedFolder"},
-            {"\\\\computerName\\sharedFolder", "\\\\computerName\\sharedFolder"},
-            {"\\\\computerName", "\\\\"},
-            {"\\\\", "\\\\"},
-            {"D:\\a\\b\\c\\a.txt", "D:\\"},
-            {"D:\\a.txt", "D:\\"},
-            {"D:\\", "D:\\"}
-        };
-        for (int i = 0; i < files.length; i++) {
-            assertEquals("Wrong root for file "+files[i][0]+".", files[i][1], new FileInfo(new File(files[i][0])).getRoot().toString());
-        }
-    }
-
-    public void testComposeName() {
-        testComposeNameImpl("a.b");
-        testComposeNameImpl(".b");
-        testComposeNameImpl("a.");
-    }
-
-    private void testComposeNameImpl(final String fullName) {
-        String ext = FileInfo.getExt(fullName);
-        String name = FileInfo.getName(fullName);
-
-        assertEquals(fullName, FileInfo.composeName(name, ext));
+    /** Tests UNC path is correctly treated. On JDK1.5 UNCFileStreamHandler should 
+     * be installed in ProxyURLStreamHandlerFactory to workaround JDK bug
+     * http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5086147.
+     */
+    public void testUNCFileURLStreamHandler() throws Exception {
+        File uncFile = new File("\\\\computerName\\sharedFolder\\a\\b\\c\\d.txt");
+        URI uri = uncFile.toURI();
+        String expectedURI = "file:////computerName/sharedFolder/a/b/c/d.txt";
+        assertEquals("Wrong URI from File.toURI.", expectedURI, uri.toString());
+        URL url = uri.toURL();
+        assertEquals("Wrong URL from URI.toURL", expectedURI, url.toString());
+        assertNull("URL.getAuthority must be null.", url.getAuthority());
+        uri = url.toURI();
+        assertEquals("Wrong URI from URL.toURI.", expectedURI, uri.toString());
     }
 }

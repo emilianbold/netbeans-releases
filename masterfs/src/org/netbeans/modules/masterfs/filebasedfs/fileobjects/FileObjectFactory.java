@@ -89,7 +89,8 @@ public final class FileObjectFactory {
 
     private FileObjectFactory(final FileInfo fInfo) {
         final File rootFile = fInfo.getFile();
-        assert rootFile.getParentFile() == null;
+        // can be not null for UNC 
+        // assert rootFile.getParentFile() == null;
 
         final BaseFileObj realRoot = create(fInfo);
         root = realRoot;
