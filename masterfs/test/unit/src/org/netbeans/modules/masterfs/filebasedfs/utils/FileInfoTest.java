@@ -46,6 +46,7 @@ import java.util.Scanner;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -72,6 +73,9 @@ public class FileInfoTest extends NbTestCase {
 
     /** Test getRoot() method. */
     public void testGetRoot() {
+        if(!Utilities.isWindows()) {
+            return;
+        }
         String[][] files = {
             // filename, expected root
             {"\\\\computerName\\sharedFolder\\a\\b\\c\\d.txt", "\\\\computerName\\sharedFolder"},

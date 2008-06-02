@@ -44,6 +44,7 @@ import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Utilities;
 
 /** 
  * Tests ProxyURLStreamHandlerFactory.
@@ -65,6 +66,9 @@ public class ProxyURLStreamHandlerFactoryTest extends NbTestCase {
      * http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5086147.
      */
     public void testUNCFileURLStreamHandler() throws Exception {
+        if(!Utilities.isWindows()) {
+            return;
+        }
         File uncFile = new File("\\\\computerName\\sharedFolder\\a\\b\\c\\d.txt");
         URI uri = uncFile.toURI();
         String expectedURI = "file:////computerName/sharedFolder/a/b/c/d.txt";
