@@ -61,6 +61,7 @@ import org.netbeans.modules.vmd.componentssupport.ui.wizard.CustomComponentWizar
 import org.netbeans.modules.vmd.componentssupport.ui.wizard.NewComponentDescriptor;
 import org.netbeans.modules.vmd.componentssupport.ui.wizard.PaletteCategory;
 import org.netbeans.modules.vmd.componentssupport.ui.wizard.Version;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -297,6 +298,8 @@ public abstract class CustomComponentHelper extends BaseHelper {
             
             result.addAll( configureLayerXml() );
             
+            result.addAll( configureProducerBundle() );
+            
             result.addAll( configureIcons() );
             
             //configureLibraries();
@@ -452,11 +455,8 @@ public abstract class CustomComponentHelper extends BaseHelper {
             tokens.put("cdName", getCDClassName());
             tokens.put("cdPackage", getCDPkg());
             tokens.put("paletteCategory", getPaletteCategoryToken());
-            tokens.put("paletteDisplayName", 
-                    (String)myComponent.get(NewComponentDescriptor.CP_PALETTE_DISP_NAME));
-            tokens.put("paletteTooltip", 
-                    (String)myComponent.get(NewComponentDescriptor.CP_PALETTE_TIP));
-            
+            tokens.put("prefix", 
+                    (String)myComponent.get(NewComponentDescriptor.CC_PREFIX));
             if ((Boolean)myComponent.get(NewComponentDescriptor.CP_ADD_LIB)){
                 tokens.put("libraryName", 
                         (String)myComponent.get(NewComponentDescriptor.CP_LIB_NAME));
@@ -513,6 +513,66 @@ public abstract class CustomComponentHelper extends BaseHelper {
             String name = iconFile.getName();
             
             return codeNameBase + "/" + BaseHelper.RESOURCES + "/" + name;
+        }
+        
+        /**
+         * confogures operties in the same pkg as Producer class with values used in producers.
+         * @return Set of created files, if any.
+         * @throws java.io.IOException
+         */
+        private Set<FileObject> configureProducerBundle()
+                throws IOException
+        {
+            FileObject prjDir = getProject().getProjectDirectory();
+            String pkgPath = getProducerPkg().replace('.', '/'); // NOI18N
+            String bundlePath = SRC + pkgPath + "/" +                  // NOI18N
+                    CustomComponentWizardIterator.BUNDLE_PROPERTIES;
+
+            boolean exists = isProducerBundleExist(prjDir, bundlePath);
+            
+            FileObject bundleFO = FileUtil.createData(prjDir, bundlePath);
+            
+            doUpdateProducerBundle(bundleFO);
+            
+            if (exists){
+                return Collections.EMPTY_SET;
+            } else {
+                Set<FileObject> result = new LinkedHashSet<FileObject>();
+                result.add(bundleFO);
+                return result;
+            }
+        }
+        
+        private void doUpdateProducerBundle(FileObject bundleFO) 
+                throws IOException
+        {
+            String prefix = 
+                    (String)myComponent.get(NewComponentDescriptor.CC_PREFIX)+"_";
+            EditableProperties ep = loadProperties(bundleFO);
+            
+            String nameKey = prefix + "paletteName"; // NOI18N
+            String nameValue = (String)myComponent.get(
+                    NewComponentDescriptor.CP_PALETTE_DISP_NAME);
+            
+            String tooltipKey = prefix + "paletteTooltip"; // NOI18N
+            String tooltipValue = (String)myComponent.get(
+                    NewComponentDescriptor.CP_PALETTE_TIP);
+
+            ep.setProperty(nameKey, nameValue);
+            ep.setProperty(tooltipKey, tooltipValue);
+            
+            storeProperties(bundleFO, ep);
+        }
+        
+        /**
+         * 
+         * @param prjDir project FileObject
+         * @param bundlePath path to bundl;e related to project directory
+         * @return
+         */
+        private boolean isProducerBundleExist(FileObject prjDir, String bundlePath){
+            File bundleFile = new File(FileUtil.toFile(prjDir), bundlePath);
+            return bundleFile.exists() ? false : true;
         }
         
         private Set<FileObject> configureLayerXml()
