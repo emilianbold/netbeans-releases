@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
 
 <api-answers
   question-version="1.24"
-  author="jglick@netbeans.org"
+  author="tzezula@netbeans.org"
 >
 
   &api-questions;
@@ -69,9 +69,11 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-overall">
   <api group="java" name="JavaSupportAPIs" type="export" category="official">
-   The Java Support APIs provides basic facilities for getting or supplying
-   information about Java-language source files. It is based on the query pattern
-   so implementations can be supplied from other modules or projects.
+   The ClassPath APIs provides java classpath like ordered collection of (source)
+   roots with ability to listen on changes and helper methods like finding the file
+   under the roots, returning a path from root to given file. It also provides a
+   registry where projects register their classpaths to make them visible to languages
+   infrastructure.
   </api>
  </answer>
 
@@ -127,8 +129,7 @@ made subject to such option by the copyright holder.
  <answer id="arch-usecases">
   <p>
    The API is widely used by all sorts of IDE modules which need to work with
-   Java sources. They can find Javadoc, unit tests, source level, etc.
-   The SPI is intended mainly for Java platform and
+   sources. The SPI is intended mainly for (java) platforms and
    library providers, and project type providers, to declare all of this
    information.
   </p>
@@ -148,8 +149,8 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-what">
   <p>
-   Provides java specific queries (javadc, source level) used by other modules like java language infrastructure.
-   More information in the Javadoc.
+   Models basic aspects of the metadata surrounding list of source roots, such as
+   the classpath. More information in the Javadoc.
   </p>
  </answer>
 
@@ -221,7 +222,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="dep-jre">
   <p>
-   1.4+.
+   1.5+.
   </p>
  </answer>
 
@@ -257,7 +258,15 @@ made subject to such option by the copyright holder.
       For many purposes.
      </p>
     </api>
-   </li>  
+   </li>
+   <li>
+    <api group="java" name="Execution" type="import" category="official">
+     <p>
+      <code>NbClassLoader</code> is used by
+      <code>ClassPath.getClassLoader(...)</code>.
+     </p>
+    </api>
+   </li>
   </ul>
  </answer>
 
@@ -399,7 +408,9 @@ Nothing.
 -->
  <answer id="exec-classloader">
   <p>
-      No.
+   There is support for getting a class loader corresponding to a given
+   classpath, useful e.g. for loading user JavaBeans to introspect. This is not
+   used within the module itself.
   </p>
  </answer>
 
@@ -771,7 +782,14 @@ Nothing.
    Queries perform linearly in number of implementations, but as usual there will
    typically be only one or two implementations, e.g. delegating to owner
    projects.
-  </p>  
+  </p>
+  <p>
+   Currently <code>ClassPath</code>s keep global file change listeners to permit
+   roots to be invalidated, and this makes file change events linear in the
+   number of <code>ClassPath</code> objects. This area is being studied and will
+   hopefully be optimized, perhaps reducing overhead to a small constant.
+   May require explicit support from the Filesystems API to fully optimize.
+  </p>
  </answer>
 
 
@@ -916,7 +934,9 @@ Nothing.
         </question>
 -->
  <answer id="security-grant">
-  No.
+  <p>
+   <code>ClassPath.getClassLoader(...)</code> is granted all permissions.
+  </p>
  </answer>
 
 
