@@ -56,6 +56,8 @@ import org.netbeans.modules.performance.utilities.MeasureStartupTimeTestCase;
  */
 public class OutOfTheBoxStartup extends MeasureStartupTimeTestCase {
     
+    public static final String suiteName="J2SE Startup suite";
+    
     /** Define testcase
      * @param testName name of the testcase
      */

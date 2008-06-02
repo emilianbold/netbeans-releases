@@ -65,6 +65,7 @@ public class MeasureNB40WebStartupTimeOpenedFilesPrepare extends JellyTestCase {
     /** Logging output from the test. */
     protected static PrintStream log;
 
+    public static final String suiteName="J2EE Startup suite";    
     
     
     /** Define testcase

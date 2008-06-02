@@ -68,6 +68,8 @@ import junit.framework.TestSuite;
  */
 public class PrepareIDEForPluginComplexMeasurements extends PrepareIDEForComplexMeasurements {
     
+    public static final String suiteName="J2SE Prepare suite";
+    
     /** Define testcase
      * @param testName name of the testcase
      */

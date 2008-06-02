@@ -58,6 +58,8 @@ import org.netbeans.modules.performance.utilities.CommonUtilities;
  */
 public class ScanClasspath extends PerformanceTestCase {
     
+    public static final String suiteName="J2SE Scan Classpath suite";
+    
     // list of classpath roots we are interesting to measure
     protected static ArrayList<String> reportCPR = new ArrayList<String> ();
     
@@ -98,8 +100,8 @@ public class ScanClasspath extends PerformanceTestCase {
         return suite;
     }
     
-    public void openJEditProject() {
-       CommonUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+"/jEdit41");
+    public void testOpenJEditProject() {
+        CommonUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+"/jEdit41");
         measureClassPathScan();
         reportPerformance("Scanning Java Project Classpath", wholeClasspathScan, "ms", 1);
     }

@@ -84,6 +84,8 @@ public class MeasureBaselineMemoryFootprint extends org.netbeans.junit.NbPerform
         {"Windows_Me,x86",WINDOWS}
     };
     
+    public static final String suiteName="J2EE Memory suite";    
+    
     /** Define testcase
      * @param testName name of the testcase
      */    

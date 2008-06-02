@@ -59,6 +59,8 @@ import org.netbeans.jellytools.ProjectsTabOperator;
  */
 public class MeasureJ2EEStartupTimeOpenedFilesPrepare extends JellyTestCase {
     
+    public static final String suiteName="J2EE Startup suite";        
+    
     /** Define testcase
      * @param testName name of the testcase
      */    

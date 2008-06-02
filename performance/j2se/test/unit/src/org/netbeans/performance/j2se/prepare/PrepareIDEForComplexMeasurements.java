@@ -79,6 +79,8 @@ import org.netbeans.modules.performance.utilities.MeasureStartupTimeTestCase;
  */
 public class PrepareIDEForComplexMeasurements extends JellyTestCase {
     
+    public static final String suiteName="J2SE Prepare suite";
+    
     /** Error output from the test. */
     protected static PrintStream err;
     

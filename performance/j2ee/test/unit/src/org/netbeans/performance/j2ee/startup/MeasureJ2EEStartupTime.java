@@ -50,6 +50,8 @@ import org.netbeans.modules.performance.utilities.MeasureStartupTimeTestCase;
  */
 public class MeasureJ2EEStartupTime extends MeasureStartupTimeTestCase {
     
+    public static final String suiteName="J2EE Startup suite";    
+    
     /** Define testcase
      * @param testName name of the testcase
      */

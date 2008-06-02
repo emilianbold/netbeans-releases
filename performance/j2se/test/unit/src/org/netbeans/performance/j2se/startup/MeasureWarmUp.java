@@ -63,6 +63,8 @@ public class MeasureWarmUp extends  MeasureStartupTimeTestCase {
     protected static final String warmup = "Warmup task executed ";
     protected static final String warmup_started = "Warmup started";
     protected static final String warmup_finished = "Warmup finished, took ";
+    public static final String suiteName="J2SE Startup suite";
+    
     
     /** Define testcase
      * @param testName name of the testcase
