@@ -48,6 +48,7 @@ import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -410,10 +411,14 @@ public class ContextPalette extends JPanel
             Point location = widget.getPreferredLocation();
             location = widget.getParentWidget().convertLocalToScene(location);
             Point viewLocaton = scene.convertSceneToView(location);
+//            Rectangle bnd=widget.getBounds();
+//            bnd=widget.convertLocalToScene(bnd);
+//            Rectangle viewRect=scene.convertSceneToView(bnd);
 
             // Center the palette on the widget.
 //            int width = getPreferredSize().width;
             int xPos = viewLocaton.x - SwingPaletteManager.SPACE_FROM_WIDGET - width;
+//            int xPos = viewRect.x - SwingPaletteManager.SPACE_FROM_WIDGET - width;
             
 //            int expandBuffer = (expanded == true ? 2: -2);
 //            setLocation(xPos - expandBuffer, getY());
