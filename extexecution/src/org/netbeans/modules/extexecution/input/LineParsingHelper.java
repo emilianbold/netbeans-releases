@@ -41,9 +41,7 @@
 
 package org.netbeans.modules.extexecution.input;
 
-import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
