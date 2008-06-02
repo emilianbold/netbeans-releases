@@ -452,7 +452,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         for (Map.Entry<Integer, int[]> entry : bounds.entrySet()) {
             int[] counts = entry.getValue();
             between -= counts[1];
-            if ((between == 0) && (counts[0] > 0)) {
+            if ((between <= 0) && (counts[0] > 0)) {
                 cuts.add(entry.getKey());
             }
             between += counts[0];
@@ -501,6 +501,10 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             int off = 0;
             if (groups[count].size() == 1) {
                 JRadioButton button = groups[count].get(0);
+                Rectangle bound = compBounds.get(button);
+                Dimension dim = button.getPreferredSize();
+                Insets insets = button.getInsets();
+                int textPos = columns ? button.getHorizontalTextPosition() : button.getVerticalTextPosition();
                 Icon icon = button.getIcon();
                 if (icon == null) {
                     icon = UIManager.getIcon("RadioButton.icon"); // NOI18N
@@ -508,10 +512,31 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 if (icon != null) {
                     off = columns ? icon.getIconWidth() : icon.getIconHeight();
                     off /= 2;
+                    if ((textPos == SwingConstants.LEADING) || (textPos == SwingConstants.TOP) || (textPos == SwingConstants.LEFT)) {
+                        off = (columns ? dim.width : dim.height) - off;
+                        off -= columns ? insets.right : insets.bottom;
+                    } else if (textPos == SwingConstants.CENTER) {
+                        off = columns ? (dim.width + insets.left - insets.right)/2
+                                : (dim.height + insets.top - insets.bottom)/2;
+                    } else {
+                        off += columns ? insets.left : insets.top;
+                    }
                 }
-                Insets insets = button.getInsets();
-                off += columns ? insets.left : insets.top;
                 starts[count] += columns ? insets.top : insets.left;
+                int diff = columns ? (bound.width - dim.width) : (bound.height - dim.height);
+                int alignment = columns ? button.getHorizontalAlignment() : button.getVerticalAlignment();
+                if ((alignment == SwingConstants.TRAILING) || (alignment == SwingConstants.BOTTOM) || (alignment == SwingConstants.RIGHT)) {
+                    off += diff;
+                } else if (alignment == SwingConstants.CENTER) {
+                    off += diff/2;
+                }
+                int oppDiff = columns ? (bound.height - dim.height) : (bound.width - dim.width);
+                int oppAlignment = columns ? button.getVerticalAlignment() : button.getHorizontalAlignment();
+                if ((oppAlignment == SwingConstants.TRAILING) || (oppAlignment == SwingConstants.BOTTOM) || (oppAlignment == SwingConstants.RIGHT)) {
+                    starts[count] += oppDiff;
+                } else if (oppAlignment == SwingConstants.CENTER) {
+                    starts[count] += oppDiff/2;
+                }
             } else {
                 off = -BUTTON_GROUP_OFFSET;
             }
