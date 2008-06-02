@@ -46,9 +46,13 @@ made subject to such option by the copyright holder.
     <folder name="GsfPlugins">
         <folder name="text">
             <folder name="html">
+                <attr name="useCustomEditorKit" boolvalue="true"/>
                 <file name="language.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlLanguage"/>
                 </file>
+                <file name="structure.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlStructureScanner"/>
+                </file> 
             </folder>
         </folder>
     </folder>

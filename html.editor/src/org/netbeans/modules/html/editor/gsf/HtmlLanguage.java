@@ -93,6 +93,11 @@ public class HtmlLanguage extends DefaultLanguageConfig {
     }
 
     @Override
+    public boolean hasStructureScanner() {
+        return true;
+    }
+
+    @Override
     public StructureScanner getStructureScanner() {
         return new HtmlStructureScanner();
     }

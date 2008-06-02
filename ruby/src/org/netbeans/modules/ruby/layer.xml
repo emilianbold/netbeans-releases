@@ -132,6 +132,9 @@
                 <file name="language.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyLanguage"/>
                 </file>
+                <file name="structure.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.StructureAnalyzer"/>
+                </file> 
             </folder>
         </folder>
     </folder>

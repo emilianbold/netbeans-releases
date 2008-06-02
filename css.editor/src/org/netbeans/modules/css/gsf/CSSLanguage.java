@@ -95,8 +95,18 @@ public class CSSLanguage extends DefaultLanguageConfig {
     }
 
     @Override
+    public boolean hasStructureScanner() {
+        return true;
+    }
+
+    @Override
     public StructureScanner getStructureScanner() {
         return new CSSStructureScanner();
+    }
+
+    @Override
+    public boolean hasFormatter() {
+        return true;
     }
 
     @Override

@@ -91,6 +91,11 @@ public class RhtmlLanguage extends RubyLanguage {
     }
 
     @Override
+    public boolean hasFormatter() {
+        return false;
+    }
+
+    @Override
     public Formatter getFormatter() {
         return null;
     }
@@ -111,6 +116,11 @@ public class RhtmlLanguage extends RubyLanguage {
     }
 
     @Override
+    public boolean hasOccurrencesFinder() {
+        return false;
+    }
+
+    @Override
     public OccurrencesFinder getOccurrencesFinder() {
         return null;
     }
@@ -123,6 +133,11 @@ public class RhtmlLanguage extends RubyLanguage {
     @Override
     public SemanticAnalyzer getSemanticAnalyzer() {
         return null;
+    }
+
+    @Override
+    public boolean hasStructureScanner() {
+        return true;
     }
 
     @Override

@@ -72,7 +72,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 
 public abstract class CsmPaintComponent extends JPanel {
             
-    protected DrawState drawState = new DrawState();
+    DrawState drawState = new DrawState();
     
     protected Font drawFont;
            
