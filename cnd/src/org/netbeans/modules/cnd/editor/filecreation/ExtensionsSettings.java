@@ -63,13 +63,13 @@ public class ExtensionsSettings {
         String extensions = preferences.get(EXTENSIONS_LIST_PREFIX + name, null); //NOI18N
         if (extensions == null) {
             savedExtensionsList =  (CndExtensionList)che.getDefaultExtensionList();
+            String dext = che.getDefaultDefaultExtension();
+            assert savedExtensionsList.isRegistered(dext);
+            setDefaultExtension( dext, false );
         } else {
             savedExtensionsList = new CndExtensionList(extensions.split(DELIMITER));
         }
         assert savedExtensionsList.extensions().hasMoreElements();
-        String dext = che.getDefaultDefaultExtension();
-        assert savedExtensionsList.isRegistered(dext);
-        setDefaultExtension( dext, false );
 
     }
     
