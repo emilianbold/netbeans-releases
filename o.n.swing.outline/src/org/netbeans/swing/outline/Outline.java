@@ -350,7 +350,7 @@ public class Outline extends ETable {
          * Comparator used for sorting the rows according to value in
          * a given column. Operates on the RowMapping objects.
          */
-        protected class OutlineRowComparator extends RowComparator {
+        private class OutlineRowComparator extends RowComparator {
             private boolean ascending = true;
             public OutlineRowComparator(int column, boolean ascending) {
                 super(column);
