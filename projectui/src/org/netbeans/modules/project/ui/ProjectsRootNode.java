@@ -371,7 +371,7 @@ public class ProjectsRootNode extends AbstractNode {
          * This allows to replace a LazyProject with real one without discarding
          * the nodes.
          */
-        private static final class Pair extends Object {
+        static final class Pair extends Object {
             public Project project;
             public final FileObject fo;
 
@@ -405,7 +405,7 @@ public class ProjectsRootNode extends AbstractNode {
                                                 
     }
         
-    private static final class BadgingNode extends FilterNode implements ChangeListener, PropertyChangeListener, Runnable, FileStatusListener {
+    static final class BadgingNode extends FilterNode implements ChangeListener, PropertyChangeListener, Runnable, FileStatusListener {
 
         private static String badgedNamePattern = NbBundle.getMessage(ProjectsRootNode.class, "LBL_MainProject_BadgedNamePattern");
         private final Object privateLock = new Object();
@@ -413,7 +413,7 @@ public class ProjectsRootNode extends AbstractNode {
         private Map<FileSystem,FileStatusListener> fileSystemListeners;
         private ChangeListener sourcesListener;
         private Map<SourceGroup,PropertyChangeListener> groupsListeners;
-        private RequestProcessor.Task task;
+        RequestProcessor.Task task;
         private boolean nameChange;
         private boolean iconChange;
         private final boolean logicalView;
