@@ -343,7 +343,7 @@ public class Occurrences {
         public void performSafeDelete() {
             FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
             for (Converter converter : facesConfig.getConverters()) {
-                if (oldValue.equals(converter.getConverterClass())){
+                if (oldValue.equals(converter.getConverterForClass())){
                     facesConfig.getModel().startTransaction();
                     facesConfig.removeConverter(converter);
                     facesConfig.getModel().endTransaction();
