@@ -188,6 +188,10 @@ public class WindowStyleResizeProvider extends ResizeStrategyProvider {
                 minResSize.height+=ins.top+ins.bottom;
             }
             widget.setMinimumSize(minResSize);
+            //AS IN 6.1, default and always used mode is preferred size mode allowing to resize to any size, but now with some reasonable limit
+            widget.setPreferredSize(null);//disable to not have side effects
+            ((UMLNodeWidget)widget).setResizeMode(UMLNodeWidget.RESIZEMODE.PREFERREDBOUNDS);
+            //
         }
         else widget.setMinimumSize(new Dimension(10,10));
         if (widget.getScene() instanceof DesignerScene)
@@ -239,6 +243,14 @@ public class WindowStyleResizeProvider extends ResizeStrategyProvider {
         }
         else
         {
+            //normalize bounds on 0-0 at left-top corner
+            Rectangle rec=widget.getPreferredBounds();
+            Point pnt=widget.getPreferredLocation();
+            pnt.x+=rec.x+widget.getBorder().getInsets().left;
+            pnt.y+=rec.y+widget.getBorder().getInsets().left;
+            rec.x=rec.y=-widget.getBorder().getInsets().left;
+            widget.setPreferredBounds(rec);
+            widget.setPreferredLocation(pnt);
         }
         startLocation = null;
         
