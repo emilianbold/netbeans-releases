@@ -43,6 +43,7 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
     public NewFlatfileDatabaseVisualPanel() {
         initComponents();
         errorMsg.setForeground(Color.RED);
+        jLabel1.setForeground(Color.BLACK);
         dbLoc.setForeground(Color.BLACK);
         driverClass.setForeground(Color.BLACK);
         dbName.setText("");
@@ -61,7 +62,7 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
     }
 
     public void clearText() {
-        dbName.setText("");
+        dbName.setText("newMashupDB");
     }
 
     public boolean canProceed() {
@@ -109,11 +110,15 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
      */
     private void initComponents() {
         jLabel1 = new javax.swing.JLabel();
+        jLabel1.setText("Database Name:  ");
         dbName = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        dbLoc = new javax.swing.JLabel();
+        dbLoc = new javax.swing.JTextField();
+        dbLoc.setEditable(false);
         driver = new javax.swing.JLabel();
-        driverClass = new javax.swing.JLabel();
+        driverClass = new javax.swing.JTextField();
+        driverClass.setText("org.axiondb.jdbc.AxionDriver".trim());
+        driverClass.setEditable(false);
         errorMsg = new javax.swing.JLabel();
 
         setMaximumSize(new java.awt.Dimension(10000, 4000));
@@ -132,7 +137,7 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, nbBundle3.substring(15));
         driver.getAccessibleContext().setAccessibleName(nbBundle4.substring(15));
         org.openide.awt.Mnemonics.setLocalizedText(driver, nbBundle4.substring(15));
-        org.openide.awt.Mnemonics.setLocalizedText(driverClass, "org.axiondb.jdbc.AxionDriver");
+        //org.openide.awt.Mnemonics.setLocalizedText(driverClass, "org.axiondb.jdbc.AxionDriver");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -174,10 +179,10 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
             canProceed = false;
         }
     }
-    private javax.swing.JLabel dbLoc;
+    private javax.swing.JTextField dbLoc;
     private javax.swing.JTextField dbName;
     private javax.swing.JLabel driver;
-    private javax.swing.JLabel driverClass;
+    private javax.swing.JTextField driverClass;
     private javax.swing.JLabel errorMsg;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

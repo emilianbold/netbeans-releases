@@ -34,6 +34,10 @@ public class NewEtlproProjectWizardIterator extends NewIcanproProjectWizardItera
     protected String getDefaultName() {
         return NbBundle.getMessage(NewEtlproProjectWizardIterator.class, "LBL_NPW1_DefaultProjectName"); //NOI18N        
     }
+    @Override
+    protected String getDefaultTitle() {
+        return NbBundle.getMessage(NewEtlproProjectWizardIterator.class, "LBL_ETL_Wizard_Title"); //NOI18N   
+    }
 
     protected void createProject(File dirF, String name, String j2eeLevel) throws IOException {
         EtlproProjectGenerator.createProject(dirF, name, j2eeLevel);

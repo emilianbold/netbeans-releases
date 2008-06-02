@@ -273,7 +273,13 @@ if [ $ML_BUILD == 1 ]; then
     cd $NB_ALL
     hg clone $ML_REPO $NB_ALL/l10n
     cd $NB_ALL/l10n
-    ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml -Dlocales=$LOCALES -Ddist.dir=$NB_ALL/nbbuild/netbeans-ml build
+    ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml -Dlocales=$LOCALES -Ddist.dir=$NB_ALL/nbbuild/netbeans-ml -Dnbms.dir=${DIST}/uc -Dnbms.dist.dir=${DIST}/ml/uc -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS build
+    ERROR_CODE=$?
+    if [ $ERROR_CODE != 0 ]; then
+        echo "ERROR: $ERROR_CODE - Can't build ML IDE"
+#        exit $ERROR_CODE;
+    fi
+    ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml -Dlocales=$LOCALES -Ddist.dir=$NB_ALL/nbbuild/netbeans-ml -Dnbms.dir=${DIST}/uc2 -Dnbms.dist.dir=${DIST}/ml/uc2 -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS build
     ERROR_CODE=$?
     if [ $ERROR_CODE != 0 ]; then
         echo "ERROR: $ERROR_CODE - Can't build ML IDE"
@@ -281,6 +287,25 @@ if [ $ML_BUILD == 1 ]; then
     fi
  
     cd $NB_ALL/nbbuild
+    cd nbbuild
+    #Build catalog for ML FU NBMs
+    ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/ml/uc -Dcatalog.file=${DIST}/ml/uc/catalog.xml -Dcatalog.base.url="."
+    ERROR_CODE=$?
+
+    if [ $ERROR_CODE != 0 ]; then
+        echo "ERROR: $ERROR_CODE - Can't build catalog for ML FU NBMs"
+    #    exit $ERROR_CODE;
+    fi
+
+    #Build catalog for ML stable UC NBMs
+    ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/ml/uc2 -Dcatalog.file=${DIST}/ml/uc2/catalog.xml -Dcatalog.base.url="."
+    ERROR_CODE=$?
+
+    if [ $ERROR_CODE != 0 ]; then
+        echo "ERROR: $ERROR_CODE - Can't build catalog for ML FU NBMs"
+    #    exit $ERROR_CODE;
+    fi
+
     cp -r $NB_ALL/nbbuild/netbeans/* $NB_ALL/nbbuild/netbeans-ml/
 
     #Remove the build helper files
@@ -288,6 +313,7 @@ if [ $ML_BUILD == 1 ]; then
 #    rm -f netbeans-ml/build_info
     rm -rf netbeans-ml/extra
     rm -rf netbeans-ml/testtools
+
 fi
 
 cd $NB_ALL/nbbuild

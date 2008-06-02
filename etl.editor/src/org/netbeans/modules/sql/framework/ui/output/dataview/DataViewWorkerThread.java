@@ -67,11 +67,13 @@ import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.RuntimeDatabaseModel;
 import org.netbeans.modules.sql.framework.model.RuntimeInput;
+import org.netbeans.modules.sql.framework.model.SQLCondition;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
 import org.netbeans.modules.sql.framework.model.SQLJoinView;
 import org.netbeans.modules.sql.framework.model.SQLObject;
+import org.netbeans.modules.sql.framework.model.SQLPredicate;
 import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.model.TargetTable;
 import org.netbeans.modules.sql.framework.ui.SwingWorker;
@@ -80,7 +82,6 @@ import org.netbeans.modules.sql.framework.ui.utils.UIUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
-import org.openide.util.Exceptions;
 
 /**
  * @author Ahimanikya Satapathy
@@ -125,7 +126,7 @@ class DataViewWorkerThread extends SwingWorker {
         }
         dataOutputPanel.refreshButton.setEnabled(true);
         dataOutputPanel.refreshField.setEnabled(true);
-        if (this.dbTable instanceof SQLDBTable) {
+        if (this.errMsg == null && (this.dbTable instanceof SQLDBTable || dbTable instanceof SQLJoinView || dbTable instanceof SQLJoinOperator)) {
             if (((dataOutputPanel.nowCount - dataOutputPanel.maxRows) > 0) && (dataOutputPanel.totalCount != 0)) {
                 dataOutputPanel.first.setEnabled(true);
                 dataOutputPanel.previous.setEnabled(true);
@@ -146,17 +147,21 @@ class DataViewWorkerThread extends SwingWorker {
                 dataOutputPanel.maxRows = dataOutputPanel.totalCount;
                 dataOutputPanel.refreshField.setText(String.valueOf(dataOutputPanel.maxRows));
             }
-            if (dataOutputPanel.totalCount != 0 && dataOutputPanel.maxRows != 0) {
-                dataOutputPanel.deleteRow.setEnabled(true);
-            } else {
-                dataOutputPanel.deleteRow.setEnabled(false);
+            
+            // editing controls
+            if(this.dbTable instanceof SQLDBTable) {
+                if (dataOutputPanel.totalCount != 0 && dataOutputPanel.maxRows != 0) {
+                    dataOutputPanel.deleteRow.setEnabled(true);
+                } else {
+                    dataOutputPanel.deleteRow.setEnabled(false);
+                }
+                dataOutputPanel.insert.setEnabled(true);
             }
-            dataOutputPanel.insert.setEnabled(true);
         } else {
-            dataOutputPanel.first.setEnabled(true);
-            dataOutputPanel.next.setEnabled(true);
-            dataOutputPanel.last.setEnabled(true);
-            dataOutputPanel.previous.setEnabled(true);
+            dataOutputPanel.first.setEnabled(false);
+            dataOutputPanel.next.setEnabled(false);
+            dataOutputPanel.last.setEnabled(false);
+            dataOutputPanel.previous.setEnabled(false);
             dataOutputPanel.commit.setEnabled(false);
             dataOutputPanel.deleteRow.setEnabled(false);
             dataOutputPanel.insert.setEnabled(false);
@@ -165,7 +170,7 @@ class DataViewWorkerThread extends SwingWorker {
         if (dataOutputPanel.totalCount == 0) {
             dataOutputPanel.nowCount = 0;
         }
-
+        
         dataOutputPanel.refreshField.setText("" + dataOutputPanel.maxRows);
         dataOutputPanel.queryView.revalidate();
         dataOutputPanel.queryView.repaint();
@@ -178,6 +183,11 @@ class DataViewWorkerThread extends SwingWorker {
             } catch (SQLException e) {
             }
         }
+    }
+
+    private void handleException() {
+        dataOutputPanel.queryView.clearView();
+        dataOutputPanel.totalRowsLabel.setText("0");
     }
 
     private void shutdownConnection(Connection conn) {
@@ -200,6 +210,9 @@ class DataViewWorkerThread extends SwingWorker {
         try {
             DBTableMetadata meta = dataOutputPanel.meta;
             DB db = DBFactory.getInstance().getDatabase(meta.getDBType());
+            if (dbTable.getObjectType() == SQLConstants.TARGET_TABLE) {
+                meta.shutdownIfAxion();
+            }
             conn = meta.createConnection();
             if (conn != null) {
                 String resetFetchSizeSQL = null;
@@ -267,8 +280,7 @@ class DataViewWorkerThread extends SwingWorker {
         } catch (Exception e) {
             this.errMsg = e.getMessage();
             mLogger.errorNoloc(mLoc.t("EDIT177: Cannot get contents for table{0}", ((dbTable != null) ? dbTable.getDisplayName() : "")), e);
-            dataOutputPanel.queryView.clearView();
-            dataOutputPanel.totalRowsLabel.setText("0");
+            handleException();
         } finally {
             if (stmt != null) {
                 try {
@@ -371,8 +383,7 @@ class DataViewWorkerThread extends SwingWorker {
             }
         } catch (Exception ex1) {
             mLogger.errorNoloc(mLoc.t("EDIT177: Cannot get contents for table{0}", ((dbTable != null) ? dbTable.getDisplayName() : "")), ex1);
-            dataOutputPanel.queryView.clearView();
-            dataOutputPanel.totalRowsLabel.setText("0");
+            handleException();
         } finally {
             shutdownConnection(conn);
         }
@@ -401,6 +412,7 @@ class DataViewWorkerThread extends SwingWorker {
                 }
             }
             String joinSql = "";
+            String srcFiltersStr = "";
             StringBuilder buf = null;
             if (isSameDB) {
                 conn = DBExplorerUtil.createConnection(connDef.getDriverClass(), connDef.getConnectionURL(), connDef.getUserName(), connDef.getPassword());
@@ -409,6 +421,7 @@ class DataViewWorkerThread extends SwingWorker {
                 context.setUseSourceTableAliasName(true);
                 buf = new StringBuilder(db.getStatements().getSelectStatement(joinView, context).getSQL());
                 joinSql = joinSql + db.getGeneratorFactory().generate(joinView.getRootJoin(), context);
+                srcFiltersStr = getSourceWhereCondition(db, joinView.getSourceTables(), context);
             } else {
                 try {
                     Thread.currentThread().getContextClassLoader().loadClass(AxionExternalConnectionProvider.class.getName());
@@ -448,6 +461,7 @@ class DataViewWorkerThread extends SwingWorker {
                 joinContext.setUsingUniqueTableName(true);
                 buf = new StringBuilder(db.getStatements().getSelectStatement(joinView, joinContext).getSQL());
                 joinSql = joinSql + db.getGeneratorFactory().generate(joinView.getRootJoin(), joinContext);
+                srcFiltersStr = getSourceWhereCondition(db, joinView.getSourceTables(), joinContext);
             }
             stmt = conn.createStatement();
             rs = stmt.executeQuery(buf.toString().trim());
@@ -456,17 +470,38 @@ class DataViewWorkerThread extends SwingWorker {
             rs.close();
             stmt.close();
             try {
-                ResultSet cntRs = conn.createStatement().executeQuery("SELECT COUNT(*) FROM " + joinSql.trim());
+                ResultSet cntRs = conn.createStatement().executeQuery("SELECT COUNT(*) FROM " + joinSql.trim() + srcFiltersStr.trim());
                 dataOutputPanel.setTotalCount(cntRs);
                 cntRs.close();
             } catch (SQLException e) {
             }
         } catch (Exception e) {
             mLogger.errorNoloc(mLoc.t("EDIT177: Cannot get contents for table{0}", ((dbTable != null) ? dbTable.getDisplayName() : "")), e);
-            dataOutputPanel.queryView.clearView();
-            dataOutputPanel.totalRowsLabel.setText("0");
+            handleException();
         } finally {
             shutdownConnection(conn);
         }
+    }
+    
+    private String getSourceWhereCondition(DB db, List sTables, StatementContext context) throws Exception {
+        StringBuilder sourceCondition = new StringBuilder(50);
+        Iterator it = sTables.iterator();
+        int cnt = 0;
+
+        while (it.hasNext()) {
+            SourceTable sTable = (SourceTable) it.next();
+            SQLCondition condition = sTable.getExtractionCondition();
+            SQLPredicate predicate = condition.getRootPredicate();
+
+            if (predicate != null && !"full".equalsIgnoreCase(sTable.getExtractionType())) {
+                if (cnt != 0) {
+                    sourceCondition.append(" AND ");
+                }
+                sourceCondition.append(db.getGeneratorFactory().generate(predicate, context));
+                cnt++;
+            }
+        }
+
+        return StringUtil.isNullString(sourceCondition.toString()) ? "" : " WHERE " + sourceCondition.toString();
     }
 }

@@ -23,8 +23,8 @@
     <!-- GlassFish properties   -->   
     <property name="glassfish.install.dir" value="${install.dir}/glassfish-v2ur2"/>
     <property name="glassfish.version" value="v2ur2"/>
-    <property name="glassfish_location" value="${gf_builds_host}/java/re/glassfish/9.1_02/promoted/fcs/latest/images/mac/glassfish-image-SNAPSHOT.jar"/>  
-    <property name="glassfish_location_ml" value="${gf_builds_host}/java/re/glassfish/9.1_01/promoted/fcs/b09d/l10n/mac/glassfish-image-v2ur1-b09d-darwin-ml.jar"/>  
+    <property name="glassfish_location"    value="${gf_builds_host}/java/re/glassfish/9.1_02/promoted/fcs/latest/images/mac/glassfish-image-SNAPSHOT.jar"/>
+    <property name="glassfish_location_ml" value="${gf_builds_host}/java/re/glassfish/9.1_02/promoted/fcs/latest/l10n/mac/glassfish-image-SNAPSHOT-ml.jar"/>
     
     <!-- Open ESB Properties-->    
     <property name="openesb.install.dir" value="${glassfish.install.dir}/addons"/>
@@ -44,6 +44,7 @@
     <property name="mysql_connector.name" value="mysql-connector-java-5.1.6-bin"/>
     <property name="mysql_10.5.location" value="${binary_cache_host}/mysql/${mysql_10.5.pkg.name}.dmg"/>
     <property name="mysql_10.4.location" value="${binary_cache_host}/mysql/${mysql_10.4.pkg.name}.dmg"/>
+    <property name="mysql_prefPane.location" value="${binary_cache_host}/mysql/MySQL.prefPane-leopardfix.zip"/>
     <property name="mysql_connector.location" value="${binary_cache_host}/mysql/${mysql_connector.name}.jar"/>   
     <property name="mysql_license.name" value="NB_GF_MySQL.txt"/>   
     <property name="mysql_readme.name" value="NB_GF_MySQL_Bundle_Thirdparty_license_readme.txt"/>   

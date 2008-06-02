@@ -127,7 +127,7 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
     protected JLabel totalRowsLabel;
     protected int totalCount;
     protected int nowCount = 1;
-    private SQLDefinition sqlDefinition;
+    protected SQLDefinition sqlDefinition;
     private ETLCollaborationTopPanel etlView;
     private JToolBar toolbar;
     private JLabel limitRow;
@@ -333,6 +333,10 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
         queryView = new ResultSetTablePanel(this);
         this.add(queryView, BorderLayout.CENTER);
     }
+    
+    public SQLObject getTable(){
+        return table;
+    }
 
     public abstract void generateResult();
 
@@ -516,7 +520,7 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
         }
         if (doCalculation) {
             try {
-                nowCount = totalCount - maxRows + 1;
+                nowCount = totalCount - (totalCount % maxRows) + 1;
             } finally {
             }
             recordToRefresh = totalCount;
@@ -611,6 +615,9 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
                 DialogDisplayer.getDefault().notify(new Message(errorMsg, NotifyDescriptor.INFORMATION_MESSAGE));
             }
             queryView.closeResources(pstmt, conn);
+            if(totalCount <= 0) {
+                totalCount = 1;
+            }
             refreshActionPerformed();
         }
 

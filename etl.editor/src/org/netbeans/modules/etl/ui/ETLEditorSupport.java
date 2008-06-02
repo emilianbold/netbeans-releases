@@ -90,6 +90,7 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
         CloseCookie, ValidateXMLCookie, PrintCookie, UndoRedoManagerProvider {
 
     private static ETLDataObject obj;
+    private boolean updatedDuringLoad = false;
 
     public ETLEditorSupport(ETLDataObject sobj) {
         super(sobj, new ETLEditorEnv(sobj));
@@ -253,6 +254,11 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
 
             // Validate the collabModel and update badge
             updateBadge(etlDataObject);
+            if(updatedDuringLoad){
+                updatedDuringLoad = false;
+                synchDocument();
+                super.saveDocument();
+            }
             getDataObject().setModified(false);
         } catch (Throwable ioe) {
             // The document cannot be parsed             
@@ -678,4 +684,7 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, S
                 }
             });
         }
+    public void setUpdatedDuringLoad(boolean val) {
+        updatedDuringLoad = val;
     }
+}

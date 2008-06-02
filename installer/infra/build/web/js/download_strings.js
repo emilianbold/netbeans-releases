@@ -38,6 +38,7 @@ var BUNDLED_SERVERS_GROUP_NAME = "Bundled&nbsp;Servers";
                                                    
 var MOBILITY_E2E_MESSAGE 	  = "Mobility Web Services Connection wizard is only included in the All download,<br>not in the Mobility download.";
 var NETBEANS_DOWNLOAD_BUNDLES_MSG = "NetBeans IDE Download Bundles";
+var NETBEANS_DOWNLOAD_BUNDLES_COMMUNITY_MSG = "NetBeans IDE Download Bundles in community contributed languages";
 var NETBEANS_PACKS_MSG 		  = "NetBeans&nbsp;Packs";
 
 var JDK_DOWNLOAD_LINK    = "http://java.sun.com/javase/downloads/index.jsp";
@@ -63,6 +64,8 @@ var NOTE_SOLARIS = "Note: Mobility is only available for Windows and Linux.";
 var NOTE_MACOSX  = "Note: Mobility is only available for Windows and Linux. UML for Mac OS X is only available from the IDE`s Plugin Manager (Tools | Plugins).";
 var NOTE_ZIP     = "Note: GlassFish and Apache Tomcat are only available in platform specific installers.";
 
+var MORE_LANGUAGES    = "More Languages...";
+var COMMUNITY_MESSAGE = "The NetBeans Community has contributed to the language(s) that can be downloaded from this page";
 
 var NETBEANS_DOWNLOAD_HEADER = "NetBeans IDE {0} Download";
 var DEVELOPMENT_TITLE        = "Development";
@@ -75,7 +78,7 @@ var CONTACT_LABEL            = "NetBeans&nbsp;can&nbsp;contact&nbsp;me&nbsp;at&n
 var LANGUAGE_LABEL           = "Language:";
 var PLATFORM_LABEL           = "Platform:";
 var PLUGIN_MANAGER_LABEL     = "You can add or remove packs later using the IDE's Plugin Manager (Tools | Plugins).<br><br>";
-var JAVATOOLSBUNDLE_LABEL    = "You can also download the NetBeans IDE as part of the <a href=\"http://java.sun.com/javaee/downloads/index.jsp\">Java EE 5 Tools Bundle</a>.";
+var JAVATOOLSBUNDLE_LABEL    = "You can also download the NetBeans IDE as part of the <a href=\"http://java.sun.com/javaee/downloads/index.jsp\">Java EE 5 Tools Bundle</a> or <a href=\"http://download.netbeans.org/netbeans/6.1/mysql_bundle/\">MySQL GlassFish Bundle</a>.";
 var SOURCE_BINARY_LABEL      = "NetBeans source code and binary builds without bundled runtimes are also available in <a href=\"zip/\">zip file format</a>.";
 var BUILD_WIKI_LABEL         = "See also <a href=\"http://wiki.netbeans.org/wiki/view/WorkingWithNetBeansSources\">instructions on how to build the IDE from sources</a> or <a href=\"{0}\">installation instructions</a>.";
 

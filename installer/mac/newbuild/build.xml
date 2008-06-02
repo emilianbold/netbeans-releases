@@ -255,16 +255,27 @@ Microsystems, Inc. All Rights Reserved.
                             ${basedir}/build/baseide.pkg/Contents/Resources/postflight"/>            
         </exec>          
 
-        <ant target="build-mysql-dmg">
-            <property name="mysql.location" value="${mysql_10.5.location}"/>
-            <property name="mysql.pkg.name" value="${mysql_10.5.pkg.name}"/>                
-            <property name="dmg.name" value="${mysql_10.5.dmg.name}"/>             
-        </ant> 
+        <get src="${mysql_prefPane.location}" 
+             dest="${basedir}/build/${mysql_prefPane.name}.zip"
+             usetimestamp="true"/>    
+                           
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="unzip -o ${basedir}/build/${mysql_prefPane.name}.zip -d ${basedir}/build;
+                        rm -f ${basedir}/build/${mysql_prefPane.name}.zip"/>
+        </exec>        
+        
         <ant target="build-mysql-dmg">
             <property name="mysql.location" value="${mysql_10.4.location}"/>
             <property name="mysql.pkg.name" value="${mysql_10.4.pkg.name}"/>
             <property name="dmg.name" value="${mysql_10.4.dmg.name}"/>                        
         </ant>
+        <ant target="build-mysql-dmg">
+            <property name="mysql.location" value="${mysql_10.5.location}"/>
+            <property name="mysql.pkg.name" value="${mysql_10.5.pkg.name}"/>                
+            <property name="dmg.name" value="${mysql_10.5.dmg.name}"/>
+            <property name="mysql_prefPane.path" value="${basedir}/build/${mysql_prefPane.name}"/>           
+        </ant> 
         <!-- return "NB" in baseide.pkg-->         
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
@@ -272,6 +283,7 @@ Microsystems, Inc. All Rights Reserved.
                             ${basedir}/build/baseide.pkg/Contents/Resources/postflight"/>            
         </exec>         
         <delete file="${basedir}/build/${mysql_connector.name}.jar"/> 
+        <delete file="${basedir}/build/${mysql_prefPane.name}"/> 
         <delete file="${basedir}/build/sizes.pro"/>        
     </target>    
 
@@ -288,16 +300,20 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${mysql.dir}"/>              
         <echo message="Downloading MySQL from ${mysql.location}"/>         
         <get src="${mysql.location}" dest="${mysql.dir}/mysql.dmg" usetimestamp="true"/>        
+                         
+        <condition property="prefPane.path" value="${mysql_prefPane.path}" else="${mysql.dir}/${mysql_prefPane.name}">            
+            <isset property="mysql_prefPane.path"/>                            
+        </condition>
         
-        <echo message="Mounting ${mysql.dir}/mysql.dmg"/>                  
+        <echo message="Mounting ${mysql.dir}/mysql.dmg"/>         
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
             <arg value="hdiutil mount -mountpoint ${mysql.dir} ${mysql.dir}/mysql.dmg;
                         cp -RPfv ${mysql.dir}/${mysql.pkg.name}.pkg  ${basedir}/build/mysql.pkg;
-                        cp -RPfv ${mysql.dir}/${mysql_startup.pkg.name}.pkg ${basedir}/build/mysqlstartup.pkg;
-                        cp -RPfv ${mysql.dir}/${mysql_prefPane.name} ${basedir}/dist_dmg/${mysql_prefPane.name};
+                        cp -RPfv ${mysql.dir}/${mysql_startup.pkg.name}.pkg ${basedir}/build/mysqlstartup.pkg;                                            
+                        cp -RPfv ${prefPane.path} ${basedir}/dist_dmg/${mysql_prefPane.name};                      
                         hdiutil detach ${mysql.dir};"/>            
-        </exec>                                            
+        </exec>                                       
         <delete dir="${mysql.dir}"/>       
         
         <ant target="size-package">
@@ -319,13 +335,17 @@ Microsystems, Inc. All Rights Reserved.
               todir="${basedir}/build/mysql.pkg/Contents/Resources" failonerror="false"/>             
              
         <echo message="script_dir=`dirname &quot;$$0&quot;` ${line.separator}
-cp -p -f  &quot;$$script_dir&quot;/license_mysql.txt &quot;$$2/${mysql_license.name}&quot; ${line.separator}
-cp -p -f  &quot;$$script_dir&quot;/readme_mysql.txt &quot;$$2/${mysql_readme.name}&quot; ${line.separator}
+cp -p -f  &quot;$$script_dir&quot;/license_mysql.txt &quot;$$2/mysql/${mysql_license.name}&quot; ${line.separator}
+cp -p -f  &quot;$$script_dir&quot;/readme_mysql.txt &quot;$$2/mysql/${mysql_readme.name}&quot; ${line.separator}
 if [ -d &quot;${glassfish.install.dir}&quot; ] ; then ${line.separator}
     cp -RPf &quot;$$script_dir&quot;/${mysql_connector.name}.jar &quot;${glassfish.install.dir}/lib/&quot;${line.separator}
 fi"
               file="${basedir}/build/mysql.pkg/Contents/Resources/postflight"
-              append="true"/>                                          
+              append="true"/>  
+                     
+        <copy file="${basedir}/mysqlstartup/pkg/scripts/postflight"
+              todir="${basedir}/build/mysqlstartup.pkg/Contents/Resources/"/>
+        <chmod file="${basedir}/build/mysqlstartup.pkg/Contents/Resources/postflight" perm="ugo+x"/>          
               
         <ant target="build-dmg">             
              <property name="packages" value="./build/baseide.pkg ./build/javase.pkg  ./build/javaee.pkg ./build/ruby.pkg ./build/glassfish.pkg ./build/mysql*.pkg"/>  
