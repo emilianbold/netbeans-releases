@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.QueryScope;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -236,7 +237,9 @@ public class CompletionResolverImpl implements CompletionResolver {
                     templateParameters = new ArrayList<CsmTemplateParameter>();
                 }
                 for(CsmTemplateParameter elem : ((CsmTemplate)clazz).getTemplateParameters()){
-                    templateParameters.add(elem);
+                    if (CsmSortUtilities.matchName(elem.getName(), strPrefix, match, caseSensitive)) {
+                        templateParameters.add(elem);
+                    }
                 }
             }  
             if (CsmKindUtilities.isTemplate(fun)){
@@ -244,7 +247,9 @@ public class CompletionResolverImpl implements CompletionResolver {
                     templateParameters = new ArrayList<CsmTemplateParameter>();
                 }
                 for(CsmTemplateParameter elem : ((CsmTemplate)fun).getTemplateParameters()){
-                    templateParameters.add(elem);
+                    if (CsmSortUtilities.matchName(elem.getName(), strPrefix, match, caseSensitive)) {
+                        templateParameters.add(elem);
+                    }
                 }
             }
             
@@ -280,7 +285,9 @@ public class CompletionResolverImpl implements CompletionResolver {
                         templateParameters = new ArrayList<CsmTemplateParameter>();
                     }
                     for(CsmTemplateParameter elem : ((CsmTemplate)fun).getTemplateParameters()){
-                        templateParameters.add(elem);
+                        if (CsmSortUtilities.matchName(elem.getName(), strPrefix, match, caseSensitive)) {
+                            templateParameters.add(elem);
+                        }
                     }
                 }
             }
@@ -301,7 +308,9 @@ public class CompletionResolverImpl implements CompletionResolver {
                             templateParameters = new ArrayList<CsmTemplateParameter>();
                         }
                         for(CsmTemplateParameter elem : ((CsmTemplate)clazz).getTemplateParameters()){
-                            templateParameters.add(elem);
+                            if (CsmSortUtilities.matchName(elem.getName(), strPrefix, match, caseSensitive)) {
+                                templateParameters.add(elem);
+                            }
                         }
                     }
                 }
