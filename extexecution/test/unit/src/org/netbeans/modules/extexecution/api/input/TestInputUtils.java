@@ -47,7 +47,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.Random;
 
@@ -81,7 +83,15 @@ public final class TestInputUtils {
         return prepareInputStream(byteArray);
     }
 
-    public static InputStream prepareInputStream(byte[] bytes) {
+    public static InputStream prepareInputStream(char[] chars, Charset charset) {
+        CharBuffer wrapped = CharBuffer.wrap(chars);
+        ByteBuffer buffer = charset.encode(wrapped);
+        byte[] bytes = new byte[buffer.limit()];
+        buffer.get(bytes);
+        return prepareInputStream(bytes);
+    }
+    
+    private static InputStream prepareInputStream(byte[] bytes) {
         return new ByteArrayInputStream(bytes.clone());
     }
 
@@ -103,13 +113,15 @@ public final class TestInputUtils {
         return file;
     }
 
-    public static File prepareFile(String name, File workDir, byte[] bytes) throws IOException {
+    public static File prepareFile(String name, File workDir, char[] chars,
+            Charset charset) throws IOException {
+        
         File file = new File(workDir, name);
-        BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(file));
+        Writer writer = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(file)), charset);
         try {
-            os.write(bytes);
+            writer.write(chars);
         } finally {
-            os.close();
+            writer.close();
         }
         return file;
     }

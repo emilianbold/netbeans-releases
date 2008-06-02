@@ -41,13 +41,13 @@
 
 package org.netbeans.modules.extexecution.input;
 
-import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.Charset;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,20 +67,23 @@ public class FileInputReader implements InputReader {
 
     private final Callable<File> fileGenerator;
 
-    private final ByteBuffer buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
+    private final Charset charset;
+
+    private final char[] buffer = new char[BUFFER_SIZE];
 
     private File currentFile;
 
-    private ReadableByteChannel channel;
+    private Reader reader;
 
     private long fileLength;
 
     private boolean closed;
 
-    public FileInputReader(Callable<File> fileGenerator) {
+    public FileInputReader(Callable<File> fileGenerator, Charset charset) {
         assert fileGenerator != null;
 
         this.fileGenerator = fileGenerator;
+        this.charset = charset;
     }
 
     public int readOutput(InputProcessor outputProcessor) {
@@ -93,10 +96,10 @@ public class FileInputReader implements InputReader {
             File file = fileGenerator.call();
 
             if ((currentFile != file && (currentFile == null || !currentFile.equals(file)))
-                    || fileLength > currentFile.length() || channel == null) {
+                    || fileLength > currentFile.length() || reader == null) {
 
-                if (channel != null) {
-                    channel.close();
+                if (reader != null) {
+                    reader.close();
                 }
 
                 currentFile = file;
@@ -104,8 +107,8 @@ public class FileInputReader implements InputReader {
                 if (currentFile != null && currentFile.exists()
                         && currentFile.canRead()) {
 
-                    channel = Channels.newChannel(
-                            new BufferedInputStream(new FileInputStream(currentFile)));
+                    reader = new BufferedReader(new InputStreamReader(
+                            new FileInputStream(currentFile), charset));
                 }
                 if (fileLength > 0) {
                     outputProcessor.reset();
@@ -113,29 +116,27 @@ public class FileInputReader implements InputReader {
                 fileLength = 0;
             }
 
-            if (channel == null || !channel.isOpen()) {
+            if (reader == null) {
                 return fetched;
             }
 
-            buffer.clear();
-            int size = channel.read(buffer);
+            int size = reader.read(buffer);
             if (size > 0) {
                 fileLength += size;
-                buffer.position(0).limit(size);
                 fetched += size;
 
                 if (outputProcessor != null) {
-                    byte[] toProcess = new byte[size];
-                    buffer.get(toProcess);
+                    char[] toProcess = new char[size];
+                    System.arraycopy(buffer, 0, toProcess, 0, size);
                     outputProcessor.processInput(toProcess);
                 }
             }
         } catch (Exception ex) {
             LOGGER.log(Level.INFO, null, ex);
             // we will try the next loop (if any)
-            if (channel != null) {
+            if (reader != null) {
                 try {
-                    channel.close();
+                    reader.close();
                 } catch (IOException iex) {
                     LOGGER.log(Level.FINE, null, ex);
                 }
@@ -147,9 +148,9 @@ public class FileInputReader implements InputReader {
 
     public void close() throws IOException {
         closed = true;
-        if (channel != null && channel.isOpen()) {
-            channel.close();
-            channel = null;
+        if (reader != null) {
+            reader.close();
+            reader = null;
         }
     }
 

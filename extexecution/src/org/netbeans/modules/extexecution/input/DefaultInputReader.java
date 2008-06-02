@@ -41,13 +41,11 @@
 
 package org.netbeans.modules.extexecution.input;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
+import java.io.Reader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.extexecution.api.input.InputProcessor;
 import org.netbeans.modules.extexecution.api.input.InputReader;
 
@@ -56,31 +54,26 @@ import org.netbeans.modules.extexecution.api.input.InputReader;
  * This class is <i>NotThreadSafe</i>.
  * @author Petr.Hejl
  */
-public class StreamInputReader implements InputReader {
+public class DefaultInputReader implements InputReader {
+
+    private static final Logger LOGGER = Logger.getLogger(DefaultInputReader.class.getName());
 
     private static final int BUFFER_SIZE = 512;
 
-    private final InputStream is;
+    private final Reader reader;
 
-    private final ReadableByteChannel channel;
-
-    private final ByteBuffer buffer;
+    private final char[] buffer;
 
     private final boolean greedy;
 
     private boolean closed;
 
-    public StreamInputReader(InputStream stream, boolean greedy) {
-        assert stream != null;
+    public DefaultInputReader(Reader reader, boolean greedy) {
+        assert reader != null;
 
-        InputStream is = stream;
-        if (!(is instanceof BufferedInputStream)) {
-            is = new BufferedInputStream(is);
-        }
-        this.is = is;
-        this.channel = Channels.newChannel(is);
+        this.reader = new BufferedReader(reader);
         this.greedy = greedy;
-        this.buffer = ByteBuffer.allocateDirect(greedy ? BUFFER_SIZE * 2 : BUFFER_SIZE);
+        this.buffer = new char[greedy ? BUFFER_SIZE * 2 : BUFFER_SIZE];
     }
 
     public int readOutput(InputProcessor outputProcessor) throws IOException {
@@ -88,29 +81,23 @@ public class StreamInputReader implements InputReader {
             throw new IllegalStateException("Already closed reader");
         }
 
-        // TODO is it safe to mix channel and stream ?
-        if (!channel.isOpen() || is.available() <= 0) {
+        if (!reader.ready()) {
             return 0;
         }
 
         int fetched = 0;
         // TODO optimization possible
-        ByteArrayOutputStream read = new ByteArrayOutputStream(BUFFER_SIZE);
+        StringBuilder builder = new StringBuilder();
         do {
-            buffer.clear();
-            int size = channel.read(buffer);
+            int size = reader.read(buffer);
             if (size > 0) {
-                buffer.position(0).limit(size);
+                builder.append(buffer, 0, size);
                 fetched += size;
-
-                byte[] toProcess = new byte[size];
-                buffer.get(toProcess);
-                read.write(toProcess);
             }
-        } while (channel.isOpen() && is.available() > 0 && greedy);
+        } while (reader.ready() && greedy);
 
         if (outputProcessor != null && fetched > 0) {
-            outputProcessor.processInput(read.toByteArray());
+            outputProcessor.processInput(builder.toString().toCharArray());
         }
 
         return fetched;
@@ -118,9 +105,8 @@ public class StreamInputReader implements InputReader {
 
     public void close() throws IOException {
         closed = true;
-        if (channel.isOpen()) {
-            channel.close();
-        }
+        reader.close();
+        LOGGER.log(Level.FINEST, "Reader closed");
     }
 
 }

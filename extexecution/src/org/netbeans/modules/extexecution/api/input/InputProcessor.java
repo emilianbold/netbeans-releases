@@ -47,7 +47,7 @@ import java.io.IOException;
  */
 public interface InputProcessor {
 
-    void processInput(byte[] bytes) throws IOException;
+    void processInput(char[] chars) throws IOException;
 
     void reset() throws IOException;
 
