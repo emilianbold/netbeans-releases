@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.gsf.api.HintsProvider;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.DeclarationFinder;
@@ -118,6 +119,11 @@ public class GspLanguage extends DefaultLanguageConfig {
     }
 
     @Override
+    public boolean hasFormatter() {
+        return false;
+    }
+    
+    @Override
     public Formatter getFormatter() {
         return null;
     }
@@ -138,6 +144,11 @@ public class GspLanguage extends DefaultLanguageConfig {
     }
 
     @Override
+    public boolean hasOccurrencesFinder() {
+        return false;
+    }
+
+    @Override
     public OccurrencesFinder getOccurrencesFinder() {
         return null;
     }
@@ -153,7 +164,22 @@ public class GspLanguage extends DefaultLanguageConfig {
     }
 
     @Override
+    public boolean hasStructureScanner() {
+        return true;
+    }
+    
+    @Override
     public StructureScanner getStructureScanner() {
         return new StructureAnalyzer();
+    }
+
+    @Override
+    public boolean hasHintsProvider() {
+        return false;
+    }
+
+    @Override
+    public HintsProvider getHintsProvider() {
+        return null;
     }
 }
