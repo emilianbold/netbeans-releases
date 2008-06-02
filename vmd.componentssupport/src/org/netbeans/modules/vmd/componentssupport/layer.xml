@@ -2,6 +2,7 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Templates">
+        <!--
         <folder name="Project">
             <folder name="J2ME">
                 <file name="CustomComponentProject.zip" url="nbresloc:/org/netbeans/modules/vmd/componentssupport/templates/CustomComponentProject.zip">
@@ -14,7 +15,6 @@
                 </file>
             </folder>
         </folder>
-        <!--
         <folder name="J2MEComponents">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.componentssupport.Bundle"/>
             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/vmd/componentssupport/ui/resources/j2meComponentsCategory.html"/>
