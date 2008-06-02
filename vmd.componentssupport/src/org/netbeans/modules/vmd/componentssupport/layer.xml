@@ -2,7 +2,6 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Templates">
-        <!--
         <folder name="Project">
             <folder name="J2ME">
                 <file name="CustomComponentProject.zip" url="nbresloc:/org/netbeans/modules/vmd/componentssupport/templates/CustomComponentProject.zip">
@@ -29,7 +28,6 @@
                 <attr name="templateCategory" stringvalue="nbm-specific"/>
             </file>           
         </folder> 
-        -->
         <folder name="MobilityCustomComponent-files">
             <attr name="position" intvalue="0"/>
             <attr name="simple" boolvalue="false"/>
