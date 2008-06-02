@@ -62,7 +62,7 @@ public abstract class ProfileBase extends SecurityProfile {
         pmh.setSecurityProfile(component, getDisplayName(), updateServiceUrl);
         boolean isRM = rmh.isRMEnabled(component);
         if (isRM) {
-            pmh.enableSecureConversation(component, true);
+            pmh.setSecureConversation(component, true);
         }
     }
 

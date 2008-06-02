@@ -115,7 +115,7 @@ public class ConfigManager implements IConfigManager
         Debug.log(this, "uml config dir="+homeLocation);
         
         UMLCoreModule.checkInitUml1();
-        
+
         m_HomeLocation = homeLocation;
         
         if (!m_HomeLocation.endsWith(File.separator))

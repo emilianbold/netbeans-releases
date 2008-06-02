@@ -42,17 +42,12 @@
 package org.netbeans.modules.uml.project.ui.nodes;
 
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
 import org.netbeans.modules.uml.ui.support.DispatchHelper;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeDiagram;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IToolTipData;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink;
 import org.netbeans.modules.uml.project.ui.NetBeansUMLProjectTreeModel;
 import java.io.File;
 import java.util.Arrays;
@@ -71,6 +66,8 @@ import org.netbeans.modules.uml.project.ui.nodes.actions.NewDiagramType;
 import java.awt.datatransfer.Transferable;
 import java.util.Enumeration;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
+import org.netbeans.modules.uml.ui.support.diagramsupport.IDrawingAreaEventsSink;
+import org.openide.loaders.DataObject;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
 
@@ -80,6 +77,7 @@ import org.openide.util.datatransfer.PasteType;
  * UMLDiagramsRootNode displays the UML diagrams
  * @author Mike Frisino
  */
+// TODO: meteora
 public final class UMLDiagramsRootNode extends UMLModelElementNode
     implements IDrawingAreaEventsSink
 {
@@ -343,12 +341,12 @@ public final class UMLDiagramsRootNode extends UMLModelElementNode
     // implmentations of interface IDrawingAreaEventsSink
     /////////////////////////////////////////////////////
     
-    public void onDrawingAreaTooltipPreDisplay(
-        IDiagram pParentDiagram, 
-        IPresentationElement pPE, 
-        IToolTipData pTooltip, 
-        IResultCell cell) 
-    {}
+//    public void onDrawingAreaTooltipPreDisplay(
+//        IDiagram pParentDiagram, 
+//        IPresentationElement pPE, 
+//        IToolTipData pTooltip, 
+//        IResultCell cell) 
+//    {}
 
     public void onDrawingAreaPreSave(
         IProxyDiagram pParentDiagram, IResultCell cell)
@@ -361,15 +359,15 @@ public final class UMLDiagramsRootNode extends UMLModelElementNode
     public void onDrawingAreaPreFileRemoved(String sFilename, IResultCell cell)
     {}
 
-    public void onDrawingAreaPreDrop(
-        IDiagram pParentDiagram, 
-        IDrawingAreaDropContext pContext, 
-        IResultCell cell)
-    {}
-
-    public void onDrawingAreaPreCreated(
-        IDrawingAreaControl pDiagramControl, IResultCell cell)
-    {}
+//    public void onDrawingAreaPreDrop(
+//        IDiagram pParentDiagram, 
+//        IDrawingAreaDropContext pContext, 
+//        IResultCell cell)
+//    {}
+//
+//    public void onDrawingAreaPreCreated(
+//        IDrawingAreaControl pDiagramControl, IResultCell cell)
+//    {}
 
     public void onDrawingAreaPostSave(
         IProxyDiagram pParentDiagram, IResultCell cell)
@@ -379,14 +377,13 @@ public final class UMLDiagramsRootNode extends UMLModelElementNode
         IProxyDiagram pProxyDiagram, int nPropertyKindChanged, IResultCell cell)
     {}
 
-    public void onDrawingAreaPostDrop(
-        IDiagram pParentDiagram, 
-        IDrawingAreaDropContext pContext, 
-        IResultCell cell)
-    {}
-
-    public void onDrawingAreaPostCreated(
-        IDrawingAreaControl pDiagramControl, IResultCell cell)
+//    public void onDrawingAreaPostDrop(
+//        IDiagram pParentDiagram, 
+//        IDrawingAreaDropContext pContext, 
+//        IResultCell cell)
+//    {}
+//
+    public void onDrawingAreaPostCreated(DataObject obj, IResultCell cell)
     {}
 
     public void onDrawingAreaOpened(

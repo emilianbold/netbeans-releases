@@ -62,9 +62,7 @@ import org.netbeans.modules.uml.core.support.umlsupport.IETRect;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.reporting.ReportTask;
-import org.netbeans.modules.uml.ui.controls.drawingarea.UIDiagram;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeDiagram;
-import org.netbeans.modules.uml.ui.swing.drawingarea.SaveAsGraphicKind;
 import org.openide.util.NbBundle;
 
 /**
@@ -99,18 +97,18 @@ public class DiagramData extends ElementDataObject
         return pProxyDiagram.getDiagram();
     }
     
-    private double getFitToWindowScale(IDiagram diagram)
-    {
-        if (diagram instanceof UIDiagram)
-        {
-            double width = ((UIDiagram)diagram).getFrameWidth();
-            double height = ((UIDiagram)diagram).getFrameHeight();
-            double scale1 = VIEWPORT_WIDTH/width;
-            double scale2 = VIEWPORT_HEIGHT/height;
-            return scale1 > scale2 ? scale2 : scale1 ;
-        }
-        return 1;
-    }
+//    private double getFitToWindowScale(IDiagram diagram)
+//    {
+//        if (diagram instanceof UIDiagram)
+//        {
+//            double width = ((UIDiagram)diagram).getFrameWidth();
+//            double height = ((UIDiagram)diagram).getFrameHeight();
+//            double scale1 = VIEWPORT_WIDTH/width;
+//            double scale2 = VIEWPORT_HEIGHT/height;
+//            return scale1 > scale2 ? scale2 : scale1 ;
+//        }
+//        return 1;
+//    }
     
     
     private void createFullDiagramFile(IDiagram pDiagram, IGraphicExportDetails pDetails)
@@ -135,7 +133,7 @@ public class DiagramData extends ElementDataObject
             
             if (diagName != null && diagName.length() > 0)
             {
-                page.append("<HR><H2>" + pDiagram.getDiagramKind2() + " " + diagName + "</H2>"); // NOI18N
+                page.append("<HR><H2>" + pDiagram.getDiagramKindAsString() + " " + diagName + "</H2>"); // NOI18N
                 page.append("<P>" + doc + "</P>\r\n"); // NOI18N
                 
                 page.append("<P ALIGN=\"CENTER\"><A HREF=\"" + name + FIT_TO_WINDOW_DIAGRAM_FILE_SUFFIX + // NOI18N
@@ -393,7 +391,7 @@ public class DiagramData extends ElementDataObject
         catch (IOException e)
         {
             Logger.getLogger(ElementDataObject.class.getName()).log(
-                    Level.SEVERE, getDiagram().getDiagramKind2() + " - " + getDiagram().getName(), e);
+                    Level.SEVERE, getDiagram().getDiagramKindAsString() + " - " + getDiagram().getName(), e);
         }
         return result;
     }
@@ -481,7 +479,7 @@ public class DiagramData extends ElementDataObject
         StringBuilder buffer = ReportTask.readTemplate("org/netbeans/modules/uml/reporting/templates/body_template.html"); // NOI18N
         body = buffer.toString();
         body = body.replaceAll("SCRIPT_PATH", scriptPath); // NOI18N
-        body = body.replaceAll("%DIAGRAM_NAME%", getDiagram().getDiagramKind2() + " " + diagramName); // NOI18N
+        body = body.replaceAll("%DIAGRAM_NAME%", getDiagram().getDiagramKindAsString() + " " + diagramName); // NOI18N
         
         body = body.replaceAll("%DIAGRAM_DOC%", getDiagram().getDocumentation()); // NOI18N
         
@@ -523,9 +521,9 @@ public class DiagramData extends ElementDataObject
                 String filename = pDiagram.getFilename();
                 String name = StringUtilities.getFileName(filename);
                 
-                double fitScale = getFitToWindowScale(pDiagram);
+                double fitScale = 1.0; // getFitToWindowScale(pDiagram);
                 
-                double currentZoom = pDiagram.getCurrentZoom();
+                double currentZoom = 1.0; // pDiagram.getCurrentZoom();
                 currentZoom = currentZoom>1?1:currentZoom;
                 double[] scales = {0.5*currentZoom, currentZoom, fitScale};
                 Arrays.sort(scales);
@@ -543,8 +541,9 @@ public class DiagramData extends ElementDataObject
                 for (int i=0;i<scales.length; i++)
                 {
                     String imageName = getDirectoryPath() + File.separator + name + "_" + i + ReportTask.IMAGE_EXT;
-                    
-                    IGraphicExportDetails pDetails = pDiagram.saveAsGraphic2(imageName, SaveAsGraphicKind.SAFK_PNG, scales[i]);
+                    // TODO: meteora
+//                    IGraphicExportDetails pDetails = pDiagram.saveAsGraphic2(imageName, SaveAsGraphicKind.SAFK_PNG, scales[i]);
+                    IGraphicExportDetails pDetails = pDiagram.saveAsGraphic(imageName, 0, scales[i]);
                     if (pDetails!=null)
                     {
                         int width = (int) (pDetails.getFrameBoundingRect().getWidth() * scales[i]);

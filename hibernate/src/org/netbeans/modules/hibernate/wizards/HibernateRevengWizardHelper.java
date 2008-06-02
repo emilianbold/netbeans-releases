@@ -58,7 +58,10 @@ public class HibernateRevengWizardHelper {
     private String packageName;    
     private boolean domainGen;
     private boolean hbmGen;
+    private boolean javaSyntax;
+    private boolean ejbAnnotation;
     private FileObject confFile;
+    private String schemaName;
 
     public HibernateRevengWizardHelper(Project project) {
         this.project = project;
@@ -118,12 +121,36 @@ public class HibernateRevengWizardHelper {
         this.hbmGen = value;
     }   
     
+    public void setJavaSyntax(boolean value) {
+        this.javaSyntax = value;
+    }
+    
+    public boolean getJavaSyntax() {
+        return javaSyntax;
+    }
+    
+    public void setEjbAnnotation(boolean value) {
+        this.ejbAnnotation = value;
+    }
+    
+    public boolean getEjbAnnotation() {
+        return ejbAnnotation;
+    }
+    
     public void setConfigurationFile(FileObject confFile) {
         this.confFile = confFile;
     }
     
     public FileObject getConfigurationFile() {
         return confFile;
+    }
+    
+    public void setSchemaName(String schemaName) {
+        this.schemaName = schemaName;
+    }
+    
+    public String getSchemaName() {
+        return schemaName;
     }
     
 }

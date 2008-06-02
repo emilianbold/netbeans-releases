@@ -112,10 +112,10 @@ public class GsfCompletionProvider implements CompletionProvider {
     private static boolean expectingCreateTask;
         
     public static CodeCompletionHandler getCompletable(CompilationInfo info, int offset) {
-        try {
-            return getCompletable(info.getDocument(), offset);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+        Document document = info.getDocument();
+        if (document != null) {
+            return getCompletable(document,offset);
+        } else {
             return null;
         }
     }
@@ -656,7 +656,7 @@ public class GsfCompletionProvider implements CompletionProvider {
                 }
                 if (prefix == null) {
                     int[] blk =
-                        org.netbeans.editor.Utilities.getIdentifierBlock((BaseDocument)controller.getDocument(),
+                        org.netbeans.editor.Utilities.getIdentifierBlock((BaseDocument)doc,
                             offset);
 
                     if (blk != null) {
@@ -664,16 +664,14 @@ public class GsfCompletionProvider implements CompletionProvider {
 
                         if (start < offset ) {
                             if (upToOffset) {
-                                prefix = controller.getDocument().getText(start, offset - start);
+                                prefix = doc.getText(start, offset - start);
                             } else {
-                                prefix = controller.getDocument().getText(start, blk[1]-start);
+                                prefix = doc.getText(start, blk[1]-start);
                             }
                         }
                     }
                 }
             } catch (BadLocationException ex) {
-                ErrorManager.getDefault().notify(ex);
-            } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
             

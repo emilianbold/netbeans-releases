@@ -47,6 +47,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.visual.router.OrthogonalSearchRouter.Solution;
 
 /**
  * @author David Kaspar
@@ -86,12 +87,32 @@ final class OrthogonalSearchRouterCore {
     }
 
     public OrthogonalSearchRouter.Solution route () {
-        sourceBoundaryPoint = findBoundaryPoint (sourcePoint, sourceDirection);
-        targetBoundaryPoint = findBoundaryPoint (targetPoint, targetDirection);
+        sourceBoundaryPoint = findBoundaryPoint(sourcePoint, sourceDirection);
+        targetBoundaryPoint = findBoundaryPoint(targetPoint, targetDirection);
 
-        search (new OrthogonalSearchRouterRegion (/*null, */sourceBoundaryPoint.x, sourceBoundaryPoint.y, 0, 0, sourceDirection, 0));
+        //fixing a routing bug. If the x or y coordinates are on top of each other,
+        // it causes a division by zero later on. So i force them to be slightly
+        // offset at all times.
+        if (sourceBoundaryPoint.x == targetBoundaryPoint.x) {
+            targetBoundaryPoint.x += 1;
+        }
+        if (sourceBoundaryPoint.y == targetBoundaryPoint.y) {
+            targetBoundaryPoint.y += 1;
+        }
 
-        return bestControlPoints != null ? new OrthogonalSearchRouter.Solution (bestControlPointsPrice, Arrays.asList (bestControlPoints)) : null;
+        OrthogonalSearchRouterRegion region =
+                new OrthogonalSearchRouterRegion(sourceBoundaryPoint.x, sourceBoundaryPoint.y, 
+                0, 0, sourceDirection, 0);
+
+        search(region);
+
+        //something went wrong in the search
+        if (bestControlPoints == null) return null ;
+        
+        Solution solution = 
+                new OrthogonalSearchRouter.Solution(bestControlPointsPrice, Arrays.asList(bestControlPoints)) ;
+        
+        return solution ;
     }
 
     private Point findBoundaryPoint (Point point, Anchor.Direction direction) {
@@ -204,20 +225,9 @@ final class OrthogonalSearchRouterCore {
 
             //        tryNearestSubRegion and maybeOthersSubRegions
             if (! subRegions.isEmpty ()) {
-//                OrthogonalLinkRouterRegion r0 = (OrthogonalLinkRouterRegion) subRegions.get (0);
-//                if (subRegions.size () > 1) {
-//                    int dist0 = r0.getDistance (targetBoundaryPoint);
-//                    final OrthogonalLinkRouterRegion r1 = (OrthogonalLinkRouterRegion) subRegions.get (subRegions.size () - 1);
-//                    int dist1 = r1.getDistance (targetBoundaryPoint);
-//                    if (dist1 < dist0)
-//                        r0 = r1;
-//                    search (r0);
                 for (OrthogonalSearchRouterRegion subRegion : subRegions) {
-//                        if (subRegion != r0)
                     search (subRegion);
                 }
-//                } else
-//                    search (r0);
             }
         }
 
@@ -299,24 +309,25 @@ final class OrthogonalSearchRouterCore {
         else
             controlPoints[depth + 1].x = controlPoints[depth + 2].x;
 
-        if (OPTIMALIZE_REGIONS) {
-            for (int a = depth; a > 0; a --) {
-//                if (infiniteY[a]) {
-                final int newY = controlPoints[a + 3].y;
-                final OrthogonalSearchRouterRegion regionY = regions[a];
-                final OrthogonalSearchRouterRegion regionY1 = regions[a - 1];
-                if (newY >= regionY.y && newY < regionY.y + regionY.height && newY >= regionY1.y && newY < regionY1.y + regionY1.height)
-                    controlPoints[a + 1].y = controlPoints[a + 2].y = newY;
-//                }
-//                if (infiniteX[a]) {
-                final int newX = controlPoints[a + 3].x;
-                final OrthogonalSearchRouterRegion regionX = regions[a];
-                final OrthogonalSearchRouterRegion regionX1 = regions[a - 1];
-                if (newX >= regionX.x && newX < regionX.x + regionX.width && newX >= regionX1.x && newX < regionX1.x + regionX1.width)
-                    controlPoints[a + 1].x = controlPoints[a + 2].x = newX;
-//                }
-            }
-        }
+        //KRIS: this is never used since OPTIMALIZE_REGIONS is false always
+//        if (OPTIMALIZE_REGIONS) {
+//            for (int a = depth; a > 0; a --) {
+////                if (infiniteY[a]) {
+//                final int newY = controlPoints[a + 3].y;
+//                final OrthogonalSearchRouterRegion regionY = regions[a];
+//                final OrthogonalSearchRouterRegion regionY1 = regions[a - 1];
+//                if (newY >= regionY.y && newY < regionY.y + regionY.height && newY >= regionY1.y && newY < regionY1.y + regionY1.height)
+//                    controlPoints[a + 1].y = controlPoints[a + 2].y = newY;
+////                }
+////                if (infiniteX[a]) {
+//                final int newX = controlPoints[a + 3].x;
+//                final OrthogonalSearchRouterRegion regionX = regions[a];
+//                final OrthogonalSearchRouterRegion regionX1 = regions[a - 1];
+//                if (newX >= regionX.x && newX < regionX.x + regionX.width && newX >= regionX1.x && newX < regionX1.x + regionX1.width)
+//                    controlPoints[a + 1].x = controlPoints[a + 2].x = newX;
+////                }
+//            }
+//        }
 
         int controlPointsLength = removeDuplicateControlPoints (controlPoints);
 
@@ -341,45 +352,59 @@ final class OrthogonalSearchRouterCore {
 
     private int removeDuplicateControlPoints (Point[] controlPoints) {
         int newPointsLength = 0;
-        for (int a = 1; a < controlPoints.length - 1; a ++) {
+        for (int a = 1; a < controlPoints.length - 1; a++) {
             Point p0 = controlPoints[newPointsLength];
             Point p1 = controlPoints[a];
             Point p2 = controlPoints[a + 1];
-
-            if (p0.x == p1.x && p1.x == p2.x)
+            
+            int epsilon = 2 ;
+            if (Math.abs (p0.x - p1.x) < epsilon && Math.abs (p1.x - p2.x) < epsilon) {
                 continue;
-            if (p0.y == p1.y && p1.y == p2.y)
+            }
+            if (Math.abs (p0.y - p1.y) < epsilon && Math.abs (p1.y - p2.y) < epsilon) {
                 continue;
-
-            newPointsLength ++;
-            if (newPointsLength != a)
+            }
+            
+            newPointsLength++;
+            if (newPointsLength != a) {
                 controlPoints[newPointsLength] = p1;
+            }
         }
-        newPointsLength ++;
-        if (newPointsLength < controlPoints.length - 1)
-            controlPoints[newPointsLength ++] = controlPoints[controlPoints.length - 1];
+        newPointsLength++;
+        if (newPointsLength < controlPoints.length - 1) {
+            controlPoints[newPointsLength++] = controlPoints[controlPoints.length - 1];
+        }
         return newPointsLength;
     }
 
     private int calculatePrice (int controlPointsLength, Point[] controlPoints) {
         int price = 0;
-        for (int a = 1; a < controlPointsLength; a ++) {
+        int numberOfLegs = controlPointsLength - 1 ;
+        
+        //add the lengths of the legs (cheap distance formula) and a corner value
+        //for each control point (each turn).
+        for (int a = 1; a < controlPointsLength; a++) {
             final Point p1 = controlPoints[a - 1];
             final Point p2 = controlPoints[a];
-            price += Math.abs (p2.y - p1.y) + Math.abs (p2.x - p1.x) + CORNER_LENGTH;
+            price += Math.abs(p2.y - p1.y) + Math.abs(p2.x - p1.x) + CORNER_LENGTH;
         }
+        
+        //paths that have leg lengths out of proportion (non-square'ish), have a 
+        //higher price.
         if (controlPointsLength > 0) {
-            int average = price / controlPointsLength;
+            
+            int average = price / numberOfLegs ;
             int diff = 0;
-            for (int a = 1; a < controlPointsLength; a ++) {
+            for (int a = 1; a < controlPointsLength; a++) {
                 final Point p1 = controlPoints[a - 1];
                 final Point p2 = controlPoints[a];
-                diff += Math.abs (Math.abs (p2.y - p1.y) + Math.abs (p2.x - p1.x) - average);
+                diff += Math.abs(Math.abs(p2.y - p1.y) + Math.abs(p2.x - p1.x) - average);
             }
-            diff /= controlPointsLength;
+            
+            diff /= numberOfLegs;
             price += diff;
         }
-//        price += depth * CORNER_LENGTH;
+        
         return price;
     }
 

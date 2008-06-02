@@ -85,8 +85,8 @@ public class AccidentalAssignment extends JsErrorRule {
             range = StrictWarning.limitErrorToLine(doc, range, astOffset);
 
             List<HintFix> fixList = new ArrayList<HintFix>(2);
-            fixList.add(new ConvertAssignmentFix(info, node, error, false));
-            fixList.add(new ConvertAssignmentFix(info, node, error, true));
+            fixList.add(new ConvertAssignmentFix(context, node, error, false));
+            fixList.add(new ConvertAssignmentFix(context, node, error, true));
             Hint desc = new Hint(this, getDisplayName(), info.getFileObject(), range, fixList, 500);
             result.add(desc);
         }
@@ -126,13 +126,13 @@ public class AccidentalAssignment extends JsErrorRule {
 
     private static class ConvertAssignmentFix implements PreviewableFix {
 
-        private CompilationInfo info;
-        private Node assignment;
-        private Error error;
-        private boolean ignore;
+        private final JsRuleContext context;
+        private final Node assignment;
+        private final Error error;
+        private final boolean ignore;
 
-        public ConvertAssignmentFix(CompilationInfo info, Node assignment, Error error, boolean ignore) {
-            this.info = info;
+        public ConvertAssignmentFix(JsRuleContext context, Node assignment, Error error, boolean ignore) {
+            this.context = context;
             this.assignment = assignment;
             this.error = error;
             this.ignore = ignore;
@@ -151,7 +151,8 @@ public class AccidentalAssignment extends JsErrorRule {
         }
 
         public EditList getEditList() throws Exception {
-            BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = context.doc;
+            CompilationInfo info = context.compilationInfo;
             EditList list = new EditList(doc);
             OffsetRange astRange = AstUtilities.getNameRange(assignment);
             OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);

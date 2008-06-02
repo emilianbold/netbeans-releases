@@ -135,7 +135,7 @@ public class WebProjectValidation extends JellyTestCase {
         suite.addTest(new WebProjectValidation("testRegisterTomcat"));
         suite.addTest(new WebProjectValidation("testNewJSP"));
         suite.addTest(new WebProjectValidation("testNewJSP2"));
-        suite.addTest(new WebProjectValidation("testJSPNavigator"));
+//        suite.addTest(new WebProjectValidation("testJSPNavigator"));
         suite.addTest(new WebProjectValidation("testNewServlet"));
         suite.addTest(new WebProjectValidation("testNewServlet2"));
         suite.addTest(new WebProjectValidation("testBuildProject"));
@@ -150,7 +150,7 @@ public class WebProjectValidation extends JellyTestCase {
         suite.addTest(new WebProjectValidation("testCreateTagHandler"));
         suite.addTest(new WebProjectValidation("testRunTag"));
         suite.addTest(new WebProjectValidation("testNewHTML"));
-        suite.addTest(new WebProjectValidation("testHTMLNavigator"));
+//        suite.addTest(new WebProjectValidation("testHTMLNavigator"));
         suite.addTest(new WebProjectValidation("testRunHTML"));
         suite.addTest(new WebProjectValidation("testNewSegment"));
         suite.addTest(new WebProjectValidation("testNewDocument"));
@@ -848,7 +848,7 @@ public class WebProjectValidation extends JellyTestCase {
         }
     }
     
-    private void logAndCloseOutputs() {
+    public void logAndCloseOutputs() {
         OutputTabOperator outputTab;
         long timeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
@@ -869,20 +869,20 @@ public class WebProjectValidation extends JellyTestCase {
         }
     }
     
-    private void waitBuildSuccessful() {
+    public void waitBuildSuccessful() {
         OutputTabOperator console = new OutputTabOperator(PROJECT_NAME);
         console.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 180000);
         console.waitText(BUILD_SUCCESSFUL);
     }
     
-    private void initDisplayer() {
+    public void initDisplayer() {
         if (urlDisplayer == null) {
             urlDisplayer = TestURLDisplayer.getInstance();
         }
         urlDisplayer.invalidateURL();
     }
     
-    private void assertDisplayerContent(String substr) {
+    public void assertDisplayerContent(String substr) {
         try {
             urlDisplayer.waitURL();
         } catch (InterruptedException ex) {
@@ -897,7 +897,7 @@ public class WebProjectValidation extends JellyTestCase {
         assertTrue("The '"+urlDisplayer.getURL()+"' page does not contain '"+substr+"'", contains);
     }
     
-    private void assertContains(String text, String value) {
+    public void assertContains(String text, String value) {
         assertTrue("Assertation failed, cannot find:\n"+value+"\nin the following text:\n"+text, text.contains(value));
     }
     

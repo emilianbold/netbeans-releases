@@ -61,7 +61,7 @@ public class RubyParseResult extends ParserResult {
     private String source;
     private OffsetRange sanitizedRange = OffsetRange.NONE;
     private String sanitizedContents;
-    private StructureAnalyzer.AnalysisResult analysisResult;
+    private RubyStructureAnalyzer.AnalysisResult analysisResult;
     private RubyParser.Sanitize sanitized;
     private RubyParserResult jrubyResult;
     private boolean commentsAdded;
@@ -133,14 +133,14 @@ public class RubyParseResult extends ParserResult {
         return jrubyResult;
     }
 
-    public void setStructure(@NonNull StructureAnalyzer.AnalysisResult result) {
+    public void setStructure(@NonNull RubyStructureAnalyzer.AnalysisResult result) {
         this.analysisResult = result;
     }
 
     @NonNull
-    public StructureAnalyzer.AnalysisResult getStructure() {
+    public RubyStructureAnalyzer.AnalysisResult getStructure() {
         if (analysisResult == null) {
-            analysisResult = new StructureAnalyzer().analyze(this, getInfo());
+            analysisResult = new RubyStructureAnalyzer().analyze(this, getInfo());
         }
         return analysisResult;
     }

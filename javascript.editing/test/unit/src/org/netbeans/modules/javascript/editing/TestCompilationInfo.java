@@ -74,8 +74,4 @@ TranslatedSource translatedSource = null; // TODO
         
         return embeddedResults.get(embeddedMimeType);
     }
-
-    public String getPreferredMimeType() {
-        return JsTokenId.JAVASCRIPT_MIME_TYPE;
-    }
 }
