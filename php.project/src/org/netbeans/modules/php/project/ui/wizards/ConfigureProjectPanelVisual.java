@@ -54,7 +54,6 @@ import org.netbeans.modules.php.project.ui.LocalServerController;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.Utils.EncodingModel;
 import org.netbeans.modules.php.project.ui.Utils.EncodingRenderer;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
@@ -272,14 +271,14 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
     }
 
     public String getProjectFolder() {
-        return getProjectFolderFile().getAbsolutePath();
+        return projectFolderTextField.getText().trim();
     }
 
     /**
-     * @return normalized file for the project folder.
+     * @return <b>non-normalized</b> {@link File file} for project folder.
      */
     public File getProjectFolderFile() {
-        return FileUtil.normalizeFile(new File(projectFolderTextField.getText().trim()));
+        return new File(getProjectFolder());
     }
 
     public void setProjectName(String projectName) {

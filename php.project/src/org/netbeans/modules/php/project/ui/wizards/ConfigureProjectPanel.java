@@ -81,8 +81,9 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
     private final String[] steps;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private ConfigureProjectPanelVisual configureProjectPanelVisual;
-    private WizardDescriptor descriptor;
+    private ConfigureProjectPanelVisual configureProjectPanelVisual = null;
+    private WizardDescriptor descriptor = null;
+    private String originalProjectName = null;
 
     static {
         String msg = NbBundle.getMessage(ConfigureProjectPanel.class, "LBL_UseProjectFolder",
@@ -115,7 +116,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         // project
         configureProjectPanelVisual.setProjectName(getProjectName());
         configureProjectPanelVisual.setProjectFolder(getProjectFolder().getAbsolutePath());
-        adjustProjectNameAndLocation();
 
         // sources
         configureProjectPanelVisual.setLocalServerModel(getLocalServers());
@@ -152,7 +152,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
     public void storeSettings(WizardDescriptor settings) {
         // project
-        settings.putProperty(PROJECT_DIR, configureProjectPanelVisual.getProjectFolderFile());
+        settings.putProperty(PROJECT_DIR, FileUtil.normalizeFile(configureProjectPanelVisual.getProjectFolderFile()));
         settings.putProperty(PROJECT_NAME, configureProjectPanelVisual.getProjectName());
 
         // sources
@@ -228,15 +228,14 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             // this can happen only for the first time
             projectName = getDefaultFreeName(ProjectChooser.getProjectsFolder());
             descriptor.putProperty(PROJECT_NAME, projectName);
+            originalProjectName = projectName;
         }
         return projectName;
     }
 
     private File getProjectFolder() {
         File projectFolder = (File) descriptor.getProperty(PROJECT_DIR);
-        if (projectFolder == null
-                || projectFolder.getParentFile() == null
-                || !projectFolder.isDirectory()) {
+        if (projectFolder == null) {
             projectFolder = new File(ProjectChooser.getProjectsFolder(), getProjectName());
             descriptor.putProperty(PROJECT_DIR, projectFolder);
         }
@@ -391,7 +390,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         String cpTarget = normalized.getAbsolutePath();
         return Utils.validateSourcesAndCopyTarget(sourcesSrcRoot, cpTarget);
     }
-    
+
     // type - Project | Sources
     private void warnIfNotEmpty(String location, String type) {
         // warn if the folder is not empty
@@ -404,8 +403,30 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         }
     }
 
+    // we will do this only if the name equals to the project directory and not vice versa
     private void adjustProjectNameAndLocation() {
-        // XXX
+        assert originalProjectName != null;
+        String projectName = configureProjectPanelVisual.getProjectName();
+        if (projectName.length() == 0) {
+            // invalid situation, do not change anything
+            return;
+        }
+        if (originalProjectName.equals(projectName)) {
+            // no change in project name
+            return;
+        }
+        File projectFolderFile = configureProjectPanelVisual.getProjectFolderFile();
+        String projectFolder = projectFolderFile.getName();
+        if (!originalProjectName.equals(projectFolder)) {
+            // already "disconnected"
+            return;
+        }
+        originalProjectName = projectName;
+        File newProjecFolder = new File(projectFolderFile.getParentFile(), projectName);
+        // because JTextField.setText() calls document.remove() and then document.insert() (= 2 events!), just remove and readd the listener
+        configureProjectPanelVisual.removeConfigureProjectListener(this);
+        configureProjectPanelVisual.setProjectFolder(newProjecFolder.getAbsolutePath());
+        configureProjectPanelVisual.addConfigureProjectListener(this);
     }
 
     public void stateChanged(ChangeEvent e) {
