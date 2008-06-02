@@ -348,7 +348,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
      */
     private void paintButtonGroups(Graphics2D g) {
         Iterator metacomps = formDesigner.getSelectedComponents().iterator();
-        Map<Object, java.util.List<JRadioButton>> buttonGroups = null;
+        Map<Object, java.util.List<AbstractButton>> buttonGroups = null;
         
         // Find buttonGroups of all selected components.
         while (metacomps.hasNext()) {
@@ -356,11 +356,11 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             Object buttonGroup = buttonGroupOfComponent(metacomp);
             if (buttonGroup != null) {
                 if (buttonGroups == null) {
-                    buttonGroups = new HashMap<Object, java.util.List<JRadioButton>>();
+                    buttonGroups = new HashMap<Object, java.util.List<AbstractButton>>();
                 }
-                java.util.List<JRadioButton> members = buttonGroups.get(buttonGroup);
+                java.util.List<AbstractButton> members = buttonGroups.get(buttonGroup);
                 if (members == null) {
-                    members = new LinkedList<JRadioButton>();
+                    members = new LinkedList<AbstractButton>();
                     buttonGroups.put(buttonGroup, members);
                 }
             }
@@ -371,16 +371,18 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             for (RADComponent metacomp : getFormModel().getComponentList()) {
                 Object buttonGroup = buttonGroupOfComponent(metacomp);
                 if (buttonGroup != null) {
-                    java.util.List<JRadioButton> members = buttonGroups.get(buttonGroup);
-                    members.add((JRadioButton)formDesigner.getComponent(metacomp));
+                    java.util.List<AbstractButton> members = buttonGroups.get(buttonGroup);
+                    if (members != null) { // Can be null if no button from this group is selected
+                        members.add((AbstractButton)formDesigner.getComponent(metacomp));
+                    }
                 }
             }
             
             // Visualize individual button groups
-            for (java.util.List<JRadioButton> buttons : buttonGroups.values()) {
+            for (java.util.List<AbstractButton> buttons : buttonGroups.values()) {
                 if (buttons.size() > 1) {
-                    Map<JRadioButton, Rectangle> bounds = new IdentityHashMap<JRadioButton, Rectangle>();
-                    for (JRadioButton button : buttons) {
+                    Map<AbstractButton, Rectangle> bounds = new IdentityHashMap<AbstractButton, Rectangle>();
+                    for (AbstractButton button : buttons) {
                         Point shift = formDesigner.pointFromComponentToHandleLayer(new Point(0,0), button);
                         Rectangle bound = new Rectangle(shift.x, shift.y, button.getWidth(), button.getHeight());
                         bounds.put(button, bound);
@@ -397,14 +399,14 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
      * @param metacomp component whose button group should be returned.
      * @return button group assigned to the given component
      * or <code>null</code> if no button group is assigned
-     * or if the component is not a subclass of <code>JRadioButton</code>.
+     * or if the component is not a subclass of <code>AbstractButton</code>.
      */
     private Object buttonGroupOfComponent(RADComponent metacomp) {
         if (!(metacomp instanceof RADVisualComponent)
                 || !formDesigner.isInDesigner((RADVisualComponent)metacomp)) {
             return null;
         }
-        if (JRadioButton.class.isAssignableFrom(metacomp.getBeanClass())) {
+        if (AbstractButton.class.isAssignableFrom(metacomp.getBeanClass())) {
             FormProperty prop = (FormProperty)metacomp.getPropertyByName("buttonGroup"); // NOI18N
             try {
                 return prop.getRealValue();
@@ -427,12 +429,12 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
      * @return the lowest x-coordinate (resp. y-coordinate) of the group
      * if column is set to <code>true</code> (resp. <code>false</code>).
      */
-    private int paintButtonGroup(Graphics g, java.util.List<JRadioButton> buttons,
-            boolean columns, boolean root, Map<JRadioButton, Rectangle> compBounds) {
+    private int paintButtonGroup(Graphics g, java.util.List<AbstractButton> buttons,
+            boolean columns, boolean root, Map<AbstractButton, Rectangle> compBounds) {
         // Preprocessing of information about starts/ends of individual buttons.
         // maps coordinates to the number of buttons starting/ending at this coordinate
         SortedMap<Integer, int[]> bounds = new TreeMap<Integer, int[]>();
-        for (JRadioButton button : buttons) {
+        for (AbstractButton button : buttons) {
             Rectangle bound = compBounds.get(button);
             int start, end;
             if (columns) {
@@ -459,11 +461,11 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         }
 
         // Cut into sub-groups
-        java.util.List<JRadioButton>[] groups = new java.util.List[cuts.size()];
+        java.util.List<AbstractButton>[] groups = new java.util.List[cuts.size()];
         for (int i=0; i<cuts.size(); i++) {
-            groups[i] = new LinkedList<JRadioButton>();
+            groups[i] = new LinkedList<AbstractButton>();
         }
-        for (JRadioButton button : buttons) {
+        for (AbstractButton button : buttons) {
             Rectangle bound = compBounds.get(button);
             int start = columns ? bound.x : bound.y;
             int index = 0;
@@ -500,42 +502,46 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         for (Integer cut : cuts) {
             int off = 0;
             if (groups[count].size() == 1) {
-                JRadioButton button = groups[count].get(0);
+                AbstractButton button = groups[count].get(0);
                 Rectangle bound = compBounds.get(button);
-                Dimension dim = button.getPreferredSize();
-                Insets insets = button.getInsets();
-                int textPos = columns ? button.getHorizontalTextPosition() : button.getVerticalTextPosition();
-                Icon icon = button.getIcon();
-                if (icon == null) {
-                    icon = UIManager.getIcon("RadioButton.icon"); // NOI18N
-                }
-                if (icon != null) {
-                    off = columns ? icon.getIconWidth() : icon.getIconHeight();
-                    off /= 2;
-                    if ((textPos == SwingConstants.LEADING) || (textPos == SwingConstants.TOP) || (textPos == SwingConstants.LEFT)) {
-                        off = (columns ? dim.width : dim.height) - off;
-                        off -= columns ? insets.right : insets.bottom;
-                    } else if (textPos == SwingConstants.CENTER) {
-                        off = columns ? (dim.width + insets.left - insets.right)/2
-                                : (dim.height + insets.top - insets.bottom)/2;
-                    } else {
-                        off += columns ? insets.left : insets.top;
+                if ((button instanceof JRadioButton) || (button instanceof JCheckBox)) {
+                    Dimension dim = button.getPreferredSize();
+                    Insets insets = button.getInsets();
+                    int textPos = columns ? button.getHorizontalTextPosition() : button.getVerticalTextPosition();
+                    Icon icon = button.getIcon();
+                    if (icon == null) {
+                        icon = UIManager.getIcon((button instanceof JRadioButton) ? "RadioButton.icon" : "CheckBox.icon"); // NOI18N
                     }
-                }
-                starts[count] += columns ? insets.top : insets.left;
-                int diff = columns ? (bound.width - dim.width) : (bound.height - dim.height);
-                int alignment = columns ? button.getHorizontalAlignment() : button.getVerticalAlignment();
-                if ((alignment == SwingConstants.TRAILING) || (alignment == SwingConstants.BOTTOM) || (alignment == SwingConstants.RIGHT)) {
-                    off += diff;
-                } else if (alignment == SwingConstants.CENTER) {
-                    off += diff/2;
-                }
-                int oppDiff = columns ? (bound.height - dim.height) : (bound.width - dim.width);
-                int oppAlignment = columns ? button.getVerticalAlignment() : button.getHorizontalAlignment();
-                if ((oppAlignment == SwingConstants.TRAILING) || (oppAlignment == SwingConstants.BOTTOM) || (oppAlignment == SwingConstants.RIGHT)) {
-                    starts[count] += oppDiff;
-                } else if (oppAlignment == SwingConstants.CENTER) {
-                    starts[count] += oppDiff/2;
+                    if (icon != null) {
+                        off = columns ? icon.getIconWidth() : icon.getIconHeight();
+                        off /= 2;
+                        if ((textPos == SwingConstants.LEADING) || (textPos == SwingConstants.TOP) || (textPos == SwingConstants.LEFT)) {
+                            off = (columns ? dim.width : dim.height) - off;
+                            off -= columns ? insets.right : insets.bottom;
+                        } else if (textPos == SwingConstants.CENTER) {
+                            off = columns ? (dim.width + insets.left - insets.right)/2
+                                    : (dim.height + insets.top - insets.bottom)/2;
+                        } else {
+                            off += columns ? insets.left : insets.top;
+                        }
+                    }
+                    starts[count] += columns ? insets.top : insets.left;
+                    int diff = columns ? (bound.width - dim.width) : (bound.height - dim.height);
+                    int alignment = columns ? button.getHorizontalAlignment() : button.getVerticalAlignment();
+                    if ((alignment == SwingConstants.TRAILING) || (alignment == SwingConstants.BOTTOM) || (alignment == SwingConstants.RIGHT)) {
+                        off += diff;
+                    } else if (alignment == SwingConstants.CENTER) {
+                        off += diff/2;
+                    }
+                    int oppDiff = columns ? (bound.height - dim.height) : (bound.width - dim.width);
+                    int oppAlignment = columns ? button.getVerticalAlignment() : button.getHorizontalAlignment();
+                    if ((oppAlignment == SwingConstants.TRAILING) || (oppAlignment == SwingConstants.BOTTOM) || (oppAlignment == SwingConstants.RIGHT)) {
+                        starts[count] += oppDiff;
+                    } else if (oppAlignment == SwingConstants.CENTER) {
+                        starts[count] += oppDiff/2;
+                    }
+                } else {
+                    off = (columns ? bound.width : bound.height)/2;
                 }
             } else {
                 off = -BUTTON_GROUP_OFFSET;
