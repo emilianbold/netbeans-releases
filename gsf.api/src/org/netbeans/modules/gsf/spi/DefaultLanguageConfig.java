@@ -147,6 +147,17 @@ public abstract class DefaultLanguageConfig implements GsfLanguage {
     }
 
     /**
+     * Return true iff the {@link #getFormatter} method
+     * will return a formatter
+     * 
+     * @return true iff this language configuration provides a
+     *  formatter.
+     */
+    public boolean hasFormatter() {
+        return false;
+    }
+
+    /**
      * A Formatter for this language, or null if none is available
      * @return the formatter
      */
@@ -172,6 +183,17 @@ public abstract class DefaultLanguageConfig implements GsfLanguage {
     public Indexer getIndexer() {
         return null;
     }
+    
+    /**
+     * Return true iff the {@link #getStructureScanner} method
+     * will return a structure scanner.
+     * 
+     * @return true iff this language configuration provides a
+     *  structure scanner.
+     */
+    public boolean hasStructureScanner() {
+        return false;
+    }
 
     /**
      * A StructureScanner for this language, or null if none is available
@@ -183,12 +205,34 @@ public abstract class DefaultLanguageConfig implements GsfLanguage {
     }
 
     /**
+     * Return true iff the {@link #getHintsProvider} method
+     * will return a hints provider.
+     * 
+     * @return true iff this language configuration provides a
+     *  hints provider.
+     */
+    public boolean hasHintsProvider() {
+        return false;
+    }
+    
+    /**
      * A HintsProvider for this language, or null if none is available
      * @return the hints provider
      */
     @CheckForNull
     public HintsProvider getHintsProvider() {
         return null;
+    }
+
+    /**
+     * Return true iff the {@link #getOccurrencesFinder} method
+     * will return an occurrences finder.
+     * 
+     * @return true iff this language configuration provides an
+     *  occurrences finder
+     */
+    public boolean hasOccurrencesFinder() {
+        return false;
     }
 
     /**

@@ -9,6 +9,9 @@
                 <file name="language.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.css.gsf.CSSLanguage"/>
                 </file>
+                <file name="structure.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.css.gsf.CSSStructureScanner"/>
+                </file>
             </folder>
         </folder>
     </folder>

@@ -829,7 +829,7 @@ public class RubyKeystrokeHandler implements org.netbeans.modules.gsf.api.Keystr
             if (token != null) {
                 TokenId id = token.id();
                 if (id == RubyTokenId.LINE_COMMENT || id == RubyTokenId.DOCUMENTATION) {
-                    new ReflowParagraphAction().reflowEditedComment(target);
+                    ReflowParagraphAction.reflowEditedComment(target);
                 }
             }
         }

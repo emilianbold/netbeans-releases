@@ -77,17 +77,17 @@ public abstract class JsTestBase extends GsfTestBase {
     
     @Override
     protected void initializeClassPaths() {
-        String jsDir = System.getProperty("xtest.js.home");
-        if (jsDir == null) {
-            throw new RuntimeException("xtest.js.home property has to be set when running within binary distribution");
-        }
-        File clusterDir = new File(jsDir);
-        if (clusterDir.exists()) {
-            FileObject preindexed = FileUtil.toFileObject(clusterDir).getFileObject("preindexed");
-            if (preindexed != null) {
-                JsIndexer.setPreindexedDb(preindexed);
-            }
-        }
+//        String jsDir = System.getProperty("xtest.js.home");
+//        if (jsDir == null) {
+//            throw new RuntimeException("xtest.js.home property has to be set when running within binary distribution");
+//        }
+//        File clusterDir = new File(jsDir);
+//        if (clusterDir.exists()) {
+//            FileObject preindexed = FileUtil.toFileObject(clusterDir).getFileObject("preindexed");
+//            if (preindexed != null) {
+//                JsIndexer.setPreindexedDb(preindexed);
+//            }
+//        }
         
         initializeRegistry();
         // Force classpath initialization

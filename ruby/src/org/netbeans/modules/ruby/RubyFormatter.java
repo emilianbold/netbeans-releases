@@ -684,8 +684,7 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
             rightMargin = style.getRightMargin();
         }
 
-        ReflowParagraphAction action = new ReflowParagraphAction();
-        action.reflowComments(doc, start, end, rightMargin);
+        ReflowParagraphAction.reflowComments(doc, start, end, rightMargin);
     }
     
     /**

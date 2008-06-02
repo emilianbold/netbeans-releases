@@ -156,6 +156,11 @@ public class JsLanguage extends DefaultLanguageConfig {
     }
 
     @Override
+    public boolean hasFormatter() {
+        return true;
+    }
+
+    @Override
     public Formatter getFormatter() {
         return new JsFormatter();
     }
@@ -168,6 +173,11 @@ public class JsLanguage extends DefaultLanguageConfig {
     @Override
     public CodeCompletionHandler getCompletionHandler() {
         return new JsCodeCompletion();
+    }
+
+    @Override
+    public boolean hasStructureScanner() {
+        return true;
     }
 
     @Override
@@ -188,6 +198,11 @@ public class JsLanguage extends DefaultLanguageConfig {
     @Override
     public SemanticAnalyzer getSemanticAnalyzer() {
         return new JsSemanticAnalyzer();
+    }
+
+    @Override
+    public boolean hasOccurrencesFinder() {
+        return true;
     }
 
     @Override

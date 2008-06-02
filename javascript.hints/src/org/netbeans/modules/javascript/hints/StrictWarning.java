@@ -61,6 +61,7 @@ import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.javascript.editing.AstUtilities;
 import org.netbeans.modules.javascript.editing.BrowserVersion;
 import org.netbeans.modules.javascript.editing.SupportedBrowsers;
+import org.netbeans.modules.javascript.editing.embedding.JsModel;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.javascript.hints.infrastructure.JsErrorRule;
@@ -170,6 +171,15 @@ public class StrictWarning extends JsErrorRule {
             if (node.getType() == Token.EMPTY && !JsTokenId.JAVASCRIPT_MIME_TYPE.equals(info.getFileObject().getMIMEType())) {
                 context.remove = true;
                 return;
+            }
+            
+            if (node.getType() == Token.EXPR_VOID) {
+                Node firstChild = node.getFirstChild();
+                if (firstChild != null && firstChild.getType() == Token.NAME &&
+                        JsModel.isGeneratedIdentifier(firstChild.getString())) {
+                    context.remove = true;
+                    return;
+                }
             }
 
             OffsetRange astRange = AstUtilities.getRange(node);

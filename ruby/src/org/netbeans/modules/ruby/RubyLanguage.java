@@ -117,6 +117,11 @@ public class RubyLanguage extends DefaultLanguageConfig {
     }
 
     @Override
+    public boolean hasFormatter() {
+        return true;
+    }
+
+    @Override
     public Formatter getFormatter() {
         return new RubyFormatter();
     }
@@ -137,6 +142,11 @@ public class RubyLanguage extends DefaultLanguageConfig {
     }
 
     @Override
+    public boolean hasOccurrencesFinder() {
+        return true;
+    }
+
+    @Override
     public OccurrencesFinder getOccurrencesFinder() {
         return new RubyOccurrencesFinder();
     }
@@ -149,6 +159,11 @@ public class RubyLanguage extends DefaultLanguageConfig {
     @Override
     public SemanticAnalyzer getSemanticAnalyzer() {
         return new RubySemanticAnalyzer();
+    }
+
+    @Override
+    public boolean hasStructureScanner() {
+        return true;
     }
 
     @Override

@@ -173,7 +173,7 @@ public class CreateBundleAction extends WizardAction {
             progress.setDetail(StringUtils.format(
                     getProperty(PROGRESS_ADD_ENGINE_DETAIL_PROPERTY)));
             
-            engine = new JarFile(Installer.cacheInstallerEngine(new Progress()));
+            engine = new JarFile(Installer.getInstance().cacheInstallerEngine(new Progress()));
             output = new JarOutputStream(new FileOutputStream(targetFile));
             
             // transfer the engine, skipping existing bundled components
