@@ -53,9 +53,7 @@ public class NewProjectWizardOperatorTest extends JellyTestCase {
 
     public static NewProjectWizardOperator op;
     // "Java Application"
-    private static final String javaApplicationLabel =
-            Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle",
-                             "Templates/Project/Standard/emptyJ2SE.xml");
+    private static String javaApplicationLabel;
     
     /** Use for internal test execution inside IDE
      * @param args command line arguments
@@ -68,6 +66,7 @@ public class NewProjectWizardOperatorTest extends JellyTestCase {
      * @return  created suite
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new NewProjectWizardOperatorTest("testInvokeTitle"));
         suite.addTest(new NewProjectWizardOperatorTest("testInvoke"));
@@ -75,10 +74,18 @@ public class NewProjectWizardOperatorTest extends JellyTestCase {
         suite.addTest(new NewProjectWizardOperatorTest("testVerify"));
         suite.addTest(new NewProjectWizardOperatorTest("testGetDescription"));
         return suite;
+         */
+        return createModuleTest(NewProjectWizardOperatorTest.class,
+                "testInvokeTitle", "testInvoke",
+                "testSelectCategoryAndProject",
+                "testVerify", "testGetDescription");
     }
     
     protected void setUp() {
         System.out.println("### "+getName()+" ###");
+        javaApplicationLabel =
+            Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle",
+                             "Templates/Project/Standard/emptyJ2SE.xml");
     }
     
     /** Constructor required by JUnit.

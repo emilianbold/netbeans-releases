@@ -42,6 +42,7 @@
 package org.netbeans.jellytools;
 
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -49,6 +50,8 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestSuite;
 
 /** Test of HelpOperator.
@@ -68,6 +71,7 @@ public class HelpOperatorTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new HelpOperatorTest("testInvoke"));
         suite.addTest(new HelpOperatorTest("testContentsSelection"));
@@ -77,11 +81,22 @@ public class HelpOperatorTest extends JellyTestCase {
         suite.addTest(new HelpOperatorTest("testPageSetup"));
         suite.addTest(new HelpOperatorTest("testClose"));
         return suite;
+         */
+        return (NbTest) NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(HelpOperatorTest.class).
+                addTest("testInvoke").
+                addTest("testContentsSelection").
+                addTest("testSearchFind").
+                addTest("testPreviousAndNext").
+                addTest("testPrint").
+                addTest("testPageSetup").
+                addTest("testClose").
+                enableModules(".*").clusters(".*"));
     }
     
     /** Print out test name. */
     @Override
-    public void setUp() {
+    public void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
         // find help window if not found before
         if(help == null && !getName().equals("testInvoke")) {

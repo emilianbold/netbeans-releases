@@ -69,6 +69,7 @@ public class PropertySheetOperatorTest extends JellyTestCase {
      * @return  created suite
      */
     public static NbTestSuite suite() {
+        /*
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new PropertySheetOperatorTest("testInvoke"));
         suite.addTest(new PropertySheetOperatorTest("testTblSheet"));
@@ -82,6 +83,19 @@ public class PropertySheetOperatorTest extends JellyTestCase {
         // have to be the last
         suite.addTest(new PropertySheetOperatorTest("testClose"));
         return suite;
+         */
+        return (NbTestSuite) createModuleTest(PropertySheetOperatorTest.class, 
+        "testInvoke",
+        "testTblSheet",
+        "testGetDescriptionHeader",
+        "testGetDescription",
+        "testSortByName",
+        "testSortByCategory",
+        "testShowDescriptionArea",
+        "testHelp",
+        "testVerify",
+        // have to be the last
+        "testClose");
     }
 
     private static String SAMPLE_NODE_NAME = "SampleClass1.java";
@@ -91,6 +105,7 @@ public class PropertySheetOperatorTest extends JellyTestCase {
     @Override
     protected void setUp() throws Exception {
         System.out.println("### "+getName()+" ###");  // NOI18N
+        openDataProjects("SampleProject");
         if(pso == null && !getName().equals("testInvoke")) {    // NOI18N
             // opens properties window
             Node sample1 = new Node(new SourcePackagesNode("SampleProject"), "sample1");  // NOI18N

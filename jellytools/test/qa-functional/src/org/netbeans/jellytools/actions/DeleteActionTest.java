@@ -40,6 +40,7 @@
  */
 package org.netbeans.jellytools.actions;
 
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -67,12 +68,16 @@ public class DeleteActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new DeleteActionTest("testPerformPopup"));
         suite.addTest(new DeleteActionTest("testPerformMenu"));
         suite.addTest(new DeleteActionTest("testPerformAPI"));
         suite.addTest(new DeleteActionTest("testPerformShortcut"));
         return suite;
+         */
+        return createModuleTest(DeleteActionTest.class, "testPerformPopup", 
+                "testPerformMenu", "testPerformAPI", "testPerformShortcut");
     }
     
     /** Use for internal test execution inside IDE
@@ -84,8 +89,9 @@ public class DeleteActionTest extends JellyTestCase {
     
     private static Node node;
     
-    public void setUp() {
+    public void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");  // NOI18N
+        openDataProjects("SampleProject");
         if(node == null) {
             node = new Node(new SourcePackagesNode("SampleProject"), "sample1|SampleClass1.java"); // NOI18N
         }

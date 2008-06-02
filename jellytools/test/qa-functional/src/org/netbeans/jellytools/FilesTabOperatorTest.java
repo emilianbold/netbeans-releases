@@ -40,6 +40,8 @@
  */
 package org.netbeans.jellytools;
 
+import java.io.IOException;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestSuite;
 
@@ -58,6 +60,7 @@ public class FilesTabOperatorTest extends JellyTestCase {
     }
 
     public static NbTest suite() {
+        /*
         NbTestSuite suite = new NbTestSuite();
         // suites have to be in particular order
         suite.addTest(new FilesTabOperatorTest("testInvoke"));
@@ -65,11 +68,20 @@ public class FilesTabOperatorTest extends JellyTestCase {
         suite.addTest(new FilesTabOperatorTest("testGetProjectNode"));
         suite.addTest(new FilesTabOperatorTest("testVerify"));
         return suite;
+         */
+        return (NbTest) NbModuleSuite.create(
+        NbModuleSuite.createConfiguration(FilesTabOperatorTest.class).
+                addTest("testInvoke").
+                addTest("testTree").
+                addTest("testGetProjectNode").
+                addTest("testVerify").
+                enableModules(".*").clusters(".*"));
     }
     
     /** Print out test name. */
-    public void setUp() {
+    public void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
+        openDataProjects("SampleProject");
     }
     
     private static FilesTabOperator filesOper;

@@ -62,6 +62,7 @@ public class NewProjectNameLocationStepOperatorTest extends JellyTestCase {
      * @return  created suite
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new NewProjectNameLocationStepOperatorTest("testJavaApplicationPanel"));
         suite.addTest(new NewProjectNameLocationStepOperatorTest("testJavaAntProjectPanel"));
@@ -69,11 +70,18 @@ public class NewProjectNameLocationStepOperatorTest extends JellyTestCase {
         suite.addTest(new NewProjectNameLocationStepOperatorTest("testJavaWithExistingSourcesPanel"));
         suite.addTest(new NewProjectNameLocationStepOperatorTest("testWebApplication"));
         return suite;
+         */
+        return createModuleTest(NewProjectNameLocationStepOperatorTest.class, 
+                "testJavaApplicationPanel", "testJavaAntProjectPanel",
+                "testJavaLibraryPanel", "testJavaWithExistingSourcesPanel",
+                "testWebApplication");
     }
     
     @Override
     protected void setUp() {
         System.out.println("### "+getName()+" ###");
+        standardLabel = Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", 
+                                                                 "Templates/Project/Standard");
     }
     
     /** Constructor required by JUnit.
@@ -84,8 +92,7 @@ public class NewProjectNameLocationStepOperatorTest extends JellyTestCase {
     }
     
     // Standard
-    private static final String standardLabel = Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", 
-                                                                 "Templates/Project/Standard");
+    private static String standardLabel;
     
     /** Test components on Java Application panel */
     public void testJavaApplicationPanel() {

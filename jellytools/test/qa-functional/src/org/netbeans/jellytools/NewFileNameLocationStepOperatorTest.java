@@ -40,6 +40,7 @@
  */
 package org.netbeans.jellytools;
 
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -64,14 +65,19 @@ public class NewFileNameLocationStepOperatorTest extends JellyTestCase {
      * @return  created suite
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new NewFileNameLocationStepOperatorTest("testInvoke"));
         suite.addTest(new NewFileNameLocationStepOperatorTest("testComponents"));
         return suite;
+         */
+        return createModuleTest(NewFileNameLocationStepOperatorTest.class, 
+                "testInvoke", "testComponents");
     }
     
-    protected void setUp() {
+    protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
+        openDataProjects("SampleProject");
     }
     
     /** Constructor required by JUnit.

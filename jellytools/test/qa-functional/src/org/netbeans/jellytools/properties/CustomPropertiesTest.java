@@ -41,7 +41,9 @@
 package org.netbeans.jellytools.properties;
 
 import java.io.File;
+import java.io.IOException;
 import javax.swing.JDialog;
+import junit.framework.TestSuite;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.properties.editors.FontCustomEditorOperator;
@@ -69,6 +71,8 @@ public class CustomPropertiesTest extends org.netbeans.jellytools.JellyTestCase 
     /** method used for explicit testsuite definition
      */
     public static junit.framework.Test suite() {
+        return new TestSuite();
+        /*
         junit.framework.TestSuite suite = new org.netbeans.junit.NbTestSuite();
         suite.addTest(new CustomPropertiesTest("testStringProperty"));
         suite.addTest(new CustomPropertiesTest("testStringArrayProperty"));
@@ -83,11 +87,28 @@ public class CustomPropertiesTest extends org.netbeans.jellytools.JellyTestCase 
         suite.addTest(new CustomPropertiesTest("testServiceTypeProperty"));
         suite.addTest(new CustomPropertiesTest("testClose"));
         return suite;
+         */
+        /*
+        return createModuleTest(CustomPropertiesTest.class, 
+        "testStringProperty",
+        "testStringArrayProperty",
+        "testPointProperty",
+        "testDimensionProperty",
+        "testRectangleProperty",
+        "testColorProperty",
+        "testFontProperty",
+        "testFileProperty",
+        "testClasspathProperty",
+        "testProcessDescriptorProperty",
+        "testServiceTypeProperty",
+        "testClose");
+         */
     }
     
     /** Method called before each testcase. */
-    protected void setUp() {
+    protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");  // NOI18N
+        openDataProjects("SampleProject");
         if(testNode == null) {
             testNode = new TestNode();
             testNode.showProperties();

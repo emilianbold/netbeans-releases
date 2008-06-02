@@ -58,6 +58,7 @@ public class RuntimeTabOperatorTest extends JellyTestCase {
     }
 
     public static NbTest suite() {
+        /*
         NbTestSuite suite = new NbTestSuite();
         // suites have to be in particular order
         suite.addTest(new RuntimeTabOperatorTest("testInvoke"));
@@ -65,6 +66,13 @@ public class RuntimeTabOperatorTest extends JellyTestCase {
         suite.addTest(new RuntimeTabOperatorTest("testGetRootNode"));
         suite.addTest(new RuntimeTabOperatorTest("testVerify"));
         return suite;
+         */
+        return (NbTest) createModuleTest(RuntimeTabOperatorTest.class, 
+        "testInvoke",
+        "testTree",
+        "testGetRootNode",
+        "testVerify");
+                
     }
     
     /** Print out test name. */

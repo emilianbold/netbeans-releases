@@ -58,32 +58,36 @@ public class BundleTest extends JellyTestCase {
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(suite());
     }
-    
+
     /** Method used for explicit testsuite definition
      * @return  created suite
      */
     public static Test suite() {
-        TestSuite suite = new NbTestSuite(BundleTest.class);
-        return suite;
+        //TestSuite suite = new NbTestSuite(BundleTest.class);
+        //return suite;
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(BundleTest.class).
+                addTest("testGetBundle").addTest("testGetString").
+                addTest("testGetStringParams").addTest("testGetStringTrimmed").
+                addTest("testGetStringTrimmedParams").enableModules(".*").clusters(".*"));
     }
-    
+
     /** Redirect output to log files, wait before each test case and
      * show dialog to test. */
     protected void setUp() {
-        System.out.println("### "+getName()+" ###");
+        System.out.println("### " + getName() + " ###");
     }
-    
+
     /** Clean up after each test case. */
     protected void tearDown() {
     }
-    
+
     /** Constructor required by JUnit.
      * @param testName method name to be used as testcase
      */
     public BundleTest(java.lang.String testName) {
         super(testName);
     }
-    
+
     /** Test of getBundle method. */
     public void testGetBundle() {
         try {
@@ -105,7 +109,7 @@ public class BundleTest extends JellyTestCase {
             // right, should fail
         }
     }
-    
+
     /** Test of getString method. Tests also negative cases */
     public void testGetString() {
         try {
@@ -128,38 +132,38 @@ public class BundleTest extends JellyTestCase {
             // right, should fail
         }
         try {
-            Bundle.getString((ResourceBundle)null, "OK_OPTION_CAPTION");
+            Bundle.getString((ResourceBundle) null, "OK_OPTION_CAPTION");
             fail("Should not accept null ResourceBundle parameter.");
         } catch (JemmyException e) {
             // right, should fail
         }
     }
-    
+
     /** Test of getString method with parameter to format. */
     public void testGetStringParams() {
         String pattern = Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_LocalProperties");
-        Object[] params = new Object[] {new Integer(1), "AnObject"};
+        Object[] params = new Object[]{new Integer(1), "AnObject"};
         String value = Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_LocalProperties", params);
         String expected = java.text.MessageFormat.format(pattern, params);
         assertEquals("Parameters not properly formattted.", expected, value);
     }
-    
+
     /** Test of getStringTrimmed method. */
     public void testGetStringTrimmed() {
         //Saving {0} ...
         String valueRaw = Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_SavingMessage");
         String value = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "CTL_FMT_SavingMessage");
-        assertTrue("Characters '{' should be cut off from \""+valueRaw+"\".", value.indexOf('{') == -1);
+        assertTrue("Characters '{' should be cut off from \"" + valueRaw + "\".", value.indexOf('{') == -1);
         // "&Help"
         valueRaw = Bundle.getString("org.netbeans.core.Bundle", "Menu/Help");
         value = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Help");
-        assertTrue("Characters '&' should be removed from \""+valueRaw+"\".", value.indexOf('&') == -1);
+        assertTrue("Characters '&' should be removed from \"" + valueRaw + "\".", value.indexOf('&') == -1);
     }
-    
+
     /** Test of getStringTrimmed method with parameter to format. */
     public void testGetStringTrimmedParams() {
         String pattern = Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_LocalProperties");
-        Object[] params = new Object[] {new Integer(1), "AnOb&ject"};
+        Object[] params = new Object[]{new Integer(1), "AnOb&ject"};
         String value = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "CTL_FMT_LocalProperties", params);
         String expected = java.text.MessageFormat.format(pattern, params);
         expected = new StringBuffer(expected).deleteCharAt(expected.indexOf('&')).toString();

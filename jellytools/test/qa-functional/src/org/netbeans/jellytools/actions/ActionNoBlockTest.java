@@ -42,6 +42,7 @@
 package org.netbeans.jellytools.actions;
 
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -72,6 +73,7 @@ public class ActionNoBlockTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new ActionNoBlockTest("testPerformMenu"));
         suite.addTest(new ActionNoBlockTest("testPerformPopupOnNodes"));
@@ -79,6 +81,17 @@ public class ActionNoBlockTest extends JellyTestCase {
         suite.addTest(new ActionNoBlockTest("testPerformAPI"));
         suite.addTest(new ActionNoBlockTest("testPerformShortcut"));
         return suite;
+         */
+        return createModuleTest(ActionNoBlockTest.class, 
+        "testPerformMenu",
+        "testPerformPopupOnNodes",
+        "testPerformPopupOnComponent",
+        "testPerformAPI",
+        "testPerformShortcut");
+    }
+    
+    public void setUp() throws IOException {
+        openDataProjects("SampleProject");
     }
     
     /** Use for internal test execution inside IDE

@@ -41,6 +41,7 @@
 
 package org.netbeans.jellytools.actions;
 
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -68,9 +69,17 @@ public class AddLocaleActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new AddLocaleActionTest("testPerformPopup"));
         return suite;
+         */
+        return createModuleTest(AddLocaleActionTest.class, "testPerformPopup");
+    }
+
+    @Override
+    protected void setUp() throws IOException  {
+        openDataProjects("SampleProject");
     }
     
     /** Use for internal test execution inside IDE

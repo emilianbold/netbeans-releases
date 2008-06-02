@@ -41,6 +41,7 @@
 package org.netbeans.jellytools.nodes;
 
 import java.awt.Toolkit;
+import java.io.IOException;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.FilesTabOperator;
@@ -70,8 +71,9 @@ public class FolderNodeTest extends org.netbeans.jellytools.JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static junit.framework.Test suite() {
+        /*
         junit.framework.TestSuite suite = new org.netbeans.junit.NbTestSuite();
-        // Cannot test because folder at different view has different items. */
+        // Cannot test because folder at different view has different items. 
         // suite.addTest(new FolderNodeTest("testVerifyPopup"));
         // Explore from here is used on web services node but to create such
         // a node you need application server installed. For now we skip this test.
@@ -86,6 +88,17 @@ public class FolderNodeTest extends org.netbeans.jellytools.JellyTestCase {
         suite.addTest(new FolderNodeTest("testProperties"));
         suite.addTest(new FolderNodeTest("testNewFile"));
         return suite;
+         */
+        return createModuleTest(FolderNodeTest.class, 
+        "testFind",
+        "testCompile",
+        "testCut",
+        "testCopy",
+        "testPaste",
+        "testDelete",
+        "testRename",
+        "testProperties",
+        "testNewFile");
     }
     
     /** Use for internal test execution inside IDE
@@ -97,8 +110,9 @@ public class FolderNodeTest extends org.netbeans.jellytools.JellyTestCase {
     
     /** Test case setup. */
     @Override
-    protected void setUp() {
+    protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
+        openDataProjects("SampleProject");
     }
     
     /** Test verifyPopup method.

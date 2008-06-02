@@ -41,6 +41,7 @@
 
 package org.netbeans.jellytools.actions;
 
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -68,12 +69,16 @@ public class PasteActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new PasteActionTest("testPerformPopup"));
         suite.addTest(new PasteActionTest("testPerformMenu"));
         suite.addTest(new PasteActionTest("testPerformAPI"));
         suite.addTest(new PasteActionTest("testPerformShortcut"));
         return suite;
+         */
+        return createModuleTest(PasteActionTest.class, "testPerformPopup", 
+                "testPerformMenu", "testPerformAPI", "testPerformShortcut");
     }
     
     /** Use for internal test execution inside IDE
@@ -89,8 +94,9 @@ public class PasteActionTest extends JellyTestCase {
     private static final String SAMPLE_FILE = "properties.properties";  //NOI18N
     private static final String PASTED_FILE = "properties1.properties";  //NOI18N
     
-    public void setUp() {
+    public void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");  // NOI18N
+        openDataProjects("SampleProject");
         if(sample1Node == null) {
             sample1Node = new Node(new SourcePackagesNode("SampleProject"), "sample1"); // NOI18N
         }

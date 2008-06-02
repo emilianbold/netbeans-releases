@@ -40,6 +40,7 @@
  */
 package org.netbeans.jellytools.actions;
 
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -67,11 +68,15 @@ public class ReplaceActionTest extends JellyTestCase {
     
     /** method used for explicit testsuite definition */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new ReplaceActionTest("testPerformMenu"));
         suite.addTest(new ReplaceActionTest("testPerformAPI"));
         suite.addTest(new ReplaceActionTest("testPerformShortcut"));
         return suite;
+         */
+        return createModuleTest(ReplaceActionTest.class, 
+                "testPerformMenu", "testPerformAPI", "testPerformShortcut");
     }
     
     /** Use for internal test execution inside IDE
@@ -86,8 +91,9 @@ public class ReplaceActionTest extends JellyTestCase {
     private static EditorOperator eo;
     
     /** Opens sample class and finds EditorOperator instance */
-    protected void setUp() {
+    protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
+        openDataProjects("SampleProject");
         if(eo == null) {
             Node sample1 = new Node(new SourcePackagesNode("SampleProject"), "sample1");  // NOI18N
             JavaNode sampleClass1 = new JavaNode(sample1, SAMPLE_CLASS_1);

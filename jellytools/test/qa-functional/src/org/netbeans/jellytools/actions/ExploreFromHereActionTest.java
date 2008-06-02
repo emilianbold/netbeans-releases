@@ -40,6 +40,7 @@
  */
 package org.netbeans.jellytools.actions;
 
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -70,6 +71,7 @@ public class ExploreFromHereActionTest extends JellyTestCase {
     
     /** method used for explicit testsuite definition */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new ExploreFromHereActionTest("testInit"));
         // Explore from here is used on web services node but to create such
@@ -77,6 +79,8 @@ public class ExploreFromHereActionTest extends JellyTestCase {
         //suite.addTest(new ExploreFromHereActionTest("testPerformPopup"));
         //suite.addTest(new ExploreFromHereActionTest("testPerformAPI"));
         return suite;
+         */
+        return createModuleTest(ExploreFromHereActionTest.class, "testInit");
     }
     
     /** Use for internal test execution inside IDE
@@ -97,6 +101,13 @@ public class ExploreFromHereActionTest extends JellyTestCase {
     public void testInit() {
         new ExploreFromHereAction();
     }
+
+    @Override
+    protected void setUp() throws IOException {
+        openDataProjects("SampleProject");
+    }
+    
+    
     
     /** Test performPopup */
     public void testPerformPopup() throws Exception {

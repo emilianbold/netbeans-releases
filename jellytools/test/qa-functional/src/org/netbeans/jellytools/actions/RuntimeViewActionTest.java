@@ -65,11 +65,15 @@ public class RuntimeViewActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new RuntimeViewActionTest("testPerformMenu"));
         suite.addTest(new RuntimeViewActionTest("testPerformAPI"));
 //        suite.addTest(new RuntimeViewActionTest("testPerformShortcut"));
         return suite;
+         */
+        return createModuleTest(RuntimeViewActionTest.class, 
+                "testPerformMenu", "testPerformAPI");
     }
     
     /** Use for internal test execution inside IDE

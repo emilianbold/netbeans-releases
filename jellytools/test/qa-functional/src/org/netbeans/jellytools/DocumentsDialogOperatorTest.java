@@ -40,7 +40,16 @@
  */
 package org.netbeans.jellytools;
 
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import junit.framework.TestSuite;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.jellytools.actions.CopyAction;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -48,8 +57,19 @@ import org.netbeans.jellytools.actions.PasteActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTest;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.project.ui.actions.TestSupport;
+import org.netbeans.spi.project.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
+import org.netbeans.spi.project.ProjectFactory;
+import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /** Test DocumentsDialogOperator.
  *
@@ -66,6 +86,7 @@ public class DocumentsDialogOperatorTest extends JellyTestCase {
     }
     
     public static NbTest suite() {
+        /*
         NbTestSuite suite = new NbTestSuite();
         // test cases have to be in particular order
         suite.addTest(new DocumentsDialogOperatorTest("testInvoke"));
@@ -77,13 +98,26 @@ public class DocumentsDialogOperatorTest extends JellyTestCase {
         suite.addTest(new DocumentsDialogOperatorTest("testCloseDocuments"));
         suite.addTest(new DocumentsDialogOperatorTest("testSwitchToDocument"));
         return suite;
+         */
+        return (NbTest) NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(DocumentsDialogOperatorTest.class).
+                    addTest("testInvoke").
+                    addTest("testVerify").
+                    addTest("testSelectDocument").
+                    addTest("testSelectDocuments").
+                    addTest("testGetDescription").
+                    addTest("testSaveDocuments").
+                    addTest("testCloseDocuments").
+                    addTest("testSwitchToDocument").enableModules(".*").clusters(".*"));
     }
     
     /** Print out test name. */
-    public void setUp() {
-        System.out.println("### "+getName()+" ###");
+    public void setUp() throws IOException {
+        openDataProjects("SampleProject");
+        closeOpenedProjects();
+        openDataProjects("SampleProject");
     }
-
+    
     private static DocumentsDialogOperator documentsOper;
     private static Node editableSourceNode;
     
@@ -197,4 +231,60 @@ public class DocumentsDialogOperatorTest extends JellyTestCase {
         String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_SafeDel"); // NOI18N
         new NbDialogOperator(safeDeleteTitle).ok();
     }
+    
+    private static class P implements Project, ProjectConfigurationProvider {
+        Lookup l = Lookups.singleton(this);
+        FileObject fo;
+        PC conf = new PC();
+        
+        public P(File dir) throws IOException {
+            fo = FileUtil.createFolder(dir);
+        }
+
+        public FileObject getProjectDirectory() {
+            return fo;
+        }
+
+        public Lookup getLookup() {
+            return l;
+        }
+
+        public Collection getConfigurations() {
+            return Collections.singleton(conf);
+        }
+
+        public ProjectConfiguration getActiveConfiguration() {
+            return conf;
+        }
+
+        public void setActiveConfiguration(ProjectConfiguration configuration) throws IllegalArgumentException, IOException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean hasCustomizer() {
+            return true;
+        }
+
+        public void customize() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean configurationsAffectAction(String command) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener lst) {
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener lst) {
+        }
+    }
+    
+    private static final class PC implements ProjectConfiguration {
+        public String getDisplayName() {
+            return "Default";
+        }
+        
+    }
+
 }

@@ -69,6 +69,7 @@ public class PluginsOperatorTest extends JellyTestCase {
      * @return suite.
      */
     public static NbTest suite() {
+        /*
         NbTestSuite suite = new NbTestSuite();
         // test cases have to be in particular order
         suite.addTest(new PluginsOperatorTest("testInvoke"));
@@ -79,6 +80,15 @@ public class PluginsOperatorTest extends JellyTestCase {
         suite.addTest(new PluginsOperatorTest("testDowloaded"));
         suite.addTest(new PluginsOperatorTest("testClose"));
         return suite;
+         */
+        return (NbTest) createModuleTest(PluginsOperatorTest.class, 
+        "testInvoke",
+        "testInstall",
+        "testUninstall",
+        "testDeactivate",
+        "testSettings",
+        "testDowloaded",
+        "testClose");
     }
 
     /** Print out test name. */

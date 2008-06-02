@@ -40,6 +40,7 @@
  */
 package org.netbeans.jellytools.actions;
 
+import java.io.IOException;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 
@@ -65,6 +66,7 @@ public class SaveActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         NbTestSuite suite = new NbTestSuite();
         // at the Save action is not used anywhere in IDE
         // suite.addTest(new SaveActionTest("testPerformPopup"));
@@ -72,6 +74,9 @@ public class SaveActionTest extends JellyTestCase {
         suite.addTest(new SaveActionTest("testPerformAPI"));
         suite.addTest(new SaveActionTest("testPerformShortcut"));
         return suite;
+         */
+        return createModuleTest(ReplaceActionTest.class, 
+                "testPerformMenu", "testPerformAPI", "testPerformShortcut");
     }
     
     /** Use for internal test execution inside IDE
@@ -84,8 +89,9 @@ public class SaveActionTest extends JellyTestCase {
     private static EditorOperator eo;
     
     /** Open a osurce in editor and modify something. */
-    protected void setUp() {
+    protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
+        openDataProjects("SampleProject");
         Node node = new Node(new SourcePackagesNode("SampleProject"), "sample1|SampleClass1.java"); // NOI18N
         new OpenAction().perform(node);
         eo = new EditorOperator("SampleClass1.java");   // NOI18N

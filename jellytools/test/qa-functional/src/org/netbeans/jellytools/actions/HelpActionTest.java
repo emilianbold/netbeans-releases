@@ -66,11 +66,15 @@ public class HelpActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new HelpActionTest("testPerformMenu"));
         suite.addTest(new HelpActionTest("testPerformShortcut"));
         suite.addTest(new HelpActionTest("testPerformPopupOnPropertySheet"));
         return suite;
+         */
+        return createModuleTest(HelpActionTest.class, "testPerformMenu", 
+                "testPerformShortcut", "testPerformPopupOnPropertySheet");
     }
     
     /** Use for internal test execution inside IDE

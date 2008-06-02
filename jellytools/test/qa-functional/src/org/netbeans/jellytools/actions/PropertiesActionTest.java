@@ -40,6 +40,7 @@
  */
 package org.netbeans.jellytools.actions;
 
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -66,12 +67,16 @@ public class PropertiesActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new PropertiesActionTest("testPerformMenu"));
         suite.addTest(new PropertiesActionTest("testPerformPopup"));
         suite.addTest(new PropertiesActionTest("testPerformAPI"));
         suite.addTest(new PropertiesActionTest("testPerformShortcut"));
         return suite;
+         */
+        return createModuleTest(PropertiesActionTest.class, "testPerformPopup", 
+                "testPerformMenu", "testPerformAPI", "testPerformShortcut");
     }
     
     /** Use for internal test execution inside IDE
@@ -83,8 +88,9 @@ public class PropertiesActionTest extends JellyTestCase {
     
     private static Node node;
     
-    public void setUp() {
+    public void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");  // NOI18N
+        openDataProjects("SampleProject");
         if(node == null) {
             node = new Node(new SourcePackagesNode("SampleProject"), "sample1|SampleClass1.java"); // NOI18N
         }
