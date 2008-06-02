@@ -1,3 +1,4 @@
+org.netbeans.modules.editor.impl.EditorActionsProvider
 org.netbeans.modules.editor.impl.GlyphGutterActionsProvider
 org.netbeans.modules.editor.impl.PopupMenuActionsProvider
 org.netbeans.modules.editor.impl.SideBarFactoriesProvider

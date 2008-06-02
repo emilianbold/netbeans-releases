@@ -43,8 +43,8 @@ package org.netbeans.modules.ruby;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.Map;
-
 import org.jruby.ast.AliasNode;
 import org.jruby.ast.ArgsNode;
 import org.jruby.ast.ArgumentNode;
@@ -79,16 +79,17 @@ import org.netbeans.modules.ruby.lexer.LexUtilities;
  * @todo I can do faster tree walking with a quick integer set of node types I'm
  *   interested in, or more specifically a set of node types I know I can prune:
  *   ArgNodes etc. 
+ * @todo Stash unused variables in a list I can reference from a quickfix!
  * @author Tor Norbye
  */
 public class SemanticAnalysis implements SemanticAnalyzer {
     private boolean cancelled;
-    private Map<OffsetRange, ColoringAttributes> semanticHighlights;
+    private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
 
     public SemanticAnalysis() {
     }
 
-    public Map<OffsetRange, ColoringAttributes> getHighlights() {
+    public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
         return semanticHighlights;
     }
 
@@ -121,8 +122,8 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             return;
         }
 
-        Map<OffsetRange, ColoringAttributes> highlights =
-            new HashMap<OffsetRange, ColoringAttributes>(100);
+        Map<OffsetRange, Set<ColoringAttributes>> highlights =
+            new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
 
         AstPath path = new AstPath();
         path.descend(root);
@@ -135,8 +136,8 @@ public class SemanticAnalysis implements SemanticAnalyzer {
 
         if (highlights.size() > 0) {
             if (rpr.getTranslatedSource() != null) {
-                Map<OffsetRange, ColoringAttributes> translated = new HashMap<OffsetRange,ColoringAttributes>(2*highlights.size());
-                for (Map.Entry<OffsetRange,ColoringAttributes> entry : highlights.entrySet()) {
+                Map<OffsetRange, Set<ColoringAttributes>> translated = new HashMap<OffsetRange,Set<ColoringAttributes>>(2*highlights.size());
+                for (Map.Entry<OffsetRange,Set<ColoringAttributes>> entry : highlights.entrySet()) {
                     OffsetRange range = LexUtilities.getLexerOffsets(info, entry.getKey());
                     if (range != OffsetRange.NONE) {
                         translated.put(range, entry.getValue());
@@ -154,7 +155,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
 
     /** Find unused local and dynamic variables */
     @SuppressWarnings("unchecked")
-    private void annotate(Node node, Map<OffsetRange, ColoringAttributes> highlights, AstPath path,
+    private void annotate(Node node, Map<OffsetRange,Set<ColoringAttributes>> highlights, AstPath path,
         List<String> parameters, boolean isParameter) {
         switch (node.nodeId) {
         case ARGSNODE: {
@@ -169,15 +170,13 @@ public class SemanticAnalysis implements SemanticAnalyzer {
 
             if (!isUsed) {
                 OffsetRange range = AstUtilities.getLValueRange(lasgn);
-                highlights.put(range, ColoringAttributes.UNUSED);
+                highlights.put(range, ColoringAttributes.UNUSED_SET);
             } else if (parameters != null) {
                 String name = ((LocalAsgnNode)node).getName();
 
                 if (parameters.contains(name)) {
-                    OffsetRange range = AstUtilities.getRange(node);
-                    // Adjust end offset to only include the left hand size
-                    range = new OffsetRange(range.getStart(), range.getStart() + name.length());
-                    highlights.put(range, ColoringAttributes.PARAMETER);
+                    OffsetRange range = AstUtilities.getNameRange(node);
+                    highlights.put(range, ColoringAttributes.PARAMETER_SET);
                 }
             }
             break;
@@ -191,7 +190,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
 
             if (!isUsed) {
                 OffsetRange range = AstUtilities.getLValueRange(dasgn);
-                highlights.put(range, ColoringAttributes.UNUSED);
+                highlights.put(range, ColoringAttributes.UNUSED_SET);
             }
             
             break;
@@ -235,7 +234,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             if (parameters != null) {
                 if (parameters.contains(((LocalVarNode)node).getName())) {
                     OffsetRange range = AstUtilities.getRange(node);
-                    highlights.put(range, ColoringAttributes.PARAMETER);
+                    highlights.put(range, ColoringAttributes.PARAMETER_SET);
                 }
             }
             break;
@@ -246,7 +245,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         case VCALLNODE: {
             // CallNode seems overly aggressive - it will show all operators for example
             OffsetRange range = AstUtilities.getCallRange(node);
-            highlights.put(range, ColoringAttributes.METHOD);
+            highlights.put(range, ColoringAttributes.METHOD_SET);
             break;
         }
         }
@@ -262,7 +261,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
 
     @SuppressWarnings("unchecked")
     private void annotateParameters(MethodDefNode node,
-        Map<OffsetRange, ColoringAttributes> highlights, List<String> usedParameterNames) {
+        Map<OffsetRange, Set<ColoringAttributes>> highlights, List<String> usedParameterNames) {
         List<Node> nodes = (List<Node>)node.childNodes();
 
         for (Node c : nodes) {
@@ -280,12 +279,12 @@ public class SemanticAnalysis implements SemanticAnalyzer {
                                 if (arg2.nodeId == NodeType.ARGUMENTNODE) {
                                     if (usedParameterNames.contains(((ArgumentNode)arg2).getName())) {
                                         OffsetRange range = AstUtilities.getRange(arg2);
-                                        highlights.put(range, ColoringAttributes.PARAMETER);
+                                        highlights.put(range, ColoringAttributes.PARAMETER_SET);
                                     }
                                 } else if (arg2.nodeId == NodeType.LOCALASGNNODE) {
                                     if (usedParameterNames.contains(((LocalAsgnNode)arg2).getName())) {
-                                        OffsetRange range = AstUtilities.getRange(arg2);
-                                        highlights.put(range, ColoringAttributes.PARAMETER);
+                                        OffsetRange range = AstUtilities.getNameRange(arg2);
+                                        highlights.put(range, ColoringAttributes.PARAMETER_SET);
                                     }
                                 }
                             }
@@ -299,7 +298,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
 
                     if (usedParameterNames.contains(bn.getName())) {
                         OffsetRange range = AstUtilities.getRange(bn);
-                        highlights.put(range, ColoringAttributes.PARAMETER);
+                        highlights.put(range, ColoringAttributes.PARAMETER_SET);
                     }
                 }
 
@@ -309,7 +308,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
 
                     if (usedParameterNames.contains(bn.getName())) {
                         OffsetRange range = AstUtilities.getRange(bn);
-                        highlights.put(range, ColoringAttributes.PARAMETER);
+                        highlights.put(range, ColoringAttributes.PARAMETER_SET);
                     }
                 }
 
@@ -319,7 +318,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
 
                     if (usedParameterNames.contains(bn.getName())) {
                         OffsetRange range = AstUtilities.getRange(bn);
-                        highlights.put(range, ColoringAttributes.PARAMETER);
+                        highlights.put(range, ColoringAttributes.PARAMETER_SET);
                     }
                 }
             }
@@ -328,7 +327,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
 
     @SuppressWarnings("unchecked")
     private void annotateUnusedParameters(MethodDefNode node,
-        Map<OffsetRange, ColoringAttributes> highlights, List<String> names) {
+        Map<OffsetRange, Set<ColoringAttributes>> highlights, List<String> names) {
         List<Node> nodes = (List<Node>)node.childNodes();
 
         for (Node c : nodes) {
@@ -346,12 +345,12 @@ public class SemanticAnalysis implements SemanticAnalyzer {
                                 if (arg2.nodeId == NodeType.ARGUMENTNODE) {
                                     if (names.contains(((ArgumentNode)arg2).getName())) {
                                         OffsetRange range = AstUtilities.getRange(arg2);
-                                        highlights.put(range, ColoringAttributes.UNUSED);
+                                        highlights.put(range, ColoringAttributes.UNUSED_SET);
                                     }
                                 } else if (arg2.nodeId == NodeType.LOCALASGNNODE) {
                                     if (names.contains(((LocalAsgnNode)arg2).getName())) {
-                                        OffsetRange range = AstUtilities.getRange(arg2);
-                                        highlights.put(range, ColoringAttributes.UNUSED);
+                                        OffsetRange range = AstUtilities.getNameRange(arg2);
+                                        highlights.put(range, ColoringAttributes.UNUSED_SET);
                                     }
                                 }
                             }
@@ -365,7 +364,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
 
                     if (names.contains(bn.getName())) {
                         OffsetRange range = AstUtilities.getRange(bn);
-                        highlights.put(range, ColoringAttributes.UNUSED);
+                        highlights.put(range, ColoringAttributes.UNUSED_SET);
                     }
                 }
 
@@ -374,7 +373,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
 
                     if (names.contains(bn.getName())) {
                         OffsetRange range = AstUtilities.getRange(bn);
-                        highlights.put(range, ColoringAttributes.UNUSED);
+                        highlights.put(range, ColoringAttributes.UNUSED_SET);
                     }
                 }
             }
@@ -450,12 +449,12 @@ public class SemanticAnalysis implements SemanticAnalyzer {
     }
 
     @SuppressWarnings("unchecked")
-    private void highlightMethodName(Node node, Map<OffsetRange, ColoringAttributes> highlights) {
+    private void highlightMethodName(Node node, Map<OffsetRange, Set<ColoringAttributes>> highlights) {
         OffsetRange range = AstUtilities.getFunctionNameRange(node);
 
         if (range != OffsetRange.NONE) {
             if (!highlights.containsKey(range)) { // Don't block out already annotated private methods
-                highlights.put(range, ColoringAttributes.METHOD);
+                highlights.put(range, ColoringAttributes.METHOD_SET);
             }
         }
     }

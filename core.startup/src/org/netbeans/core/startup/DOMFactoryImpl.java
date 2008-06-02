@@ -138,7 +138,11 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
     }
     
     private DocumentBuilder tryCreate() throws ParserConfigurationException, IllegalArgumentException {
-        for (Iterator<Class<? extends DocumentBuilderFactory>> it = new LazyIterator<DocumentBuilderFactory>(getFirst(), DocumentBuilderFactory.class, DOMFactoryImpl.class); it.hasNext(); ) {
+        for (
+            Iterator<Class<? extends DocumentBuilderFactory>> it 
+                = new LazyIterator(getFirst(), DocumentBuilderFactory.class, DOMFactoryImpl.class); 
+            it.hasNext(); 
+        ) {
             try {
                 DocumentBuilder builder = tryCreate(it.next());
                 return builder;

@@ -64,11 +64,6 @@ public class StaticCredsPanel extends javax.swing.JPanel implements PanelEnabler
         this.enable = enable;
                
         initComponents();
-        
-//        passwdHandlerField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-//        passwdHandlerLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-//        usernameHandlerField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-//        usernameHandlerLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         sync();
     }
     
@@ -108,8 +103,7 @@ public class StaticCredsPanel extends javax.swing.JPanel implements PanelEnabler
     public void setValue(javax.swing.JComponent source, Object value) {
         if (inSync) {
             return;
-        }
-            
+        }        
         if (source.equals(defaultUsernameTextField)) {
             String u = getDefaultUsername();
             if ((u != null) && (u.length() == 0)) {

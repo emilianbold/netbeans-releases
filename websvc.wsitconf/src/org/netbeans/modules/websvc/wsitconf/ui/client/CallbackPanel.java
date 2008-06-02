@@ -74,11 +74,13 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.ui.client.subpanels.DynamicCredsPanel;
+import org.netbeans.modules.websvc.wsitconf.ui.client.subpanels.KerberosConfigPanel;
 import org.netbeans.modules.websvc.wsitconf.ui.client.subpanels.StaticCredsPanel;
-import org.netbeans.modules.websvc.wsitconf.ui.service.ServicePanel;
+import org.netbeans.modules.websvc.wsitconf.ui.service.BindingPanel;
 import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.KeystorePanel;
 import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.TruststorePanel;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
@@ -312,14 +314,22 @@ public class CallbackPanel extends SectionInnerPanel {
 
             boolean trustStoreConfigRequired = true;
             boolean keyStoreConfigRequired = true;
+            boolean kerberosConfigRequired = false;
+            
             if (ComboConstants.PROF_USERNAME.equals(profile)) {
-                keyStoreConfigRequired = false;
+                    keyStoreConfigRequired = false;
             }
             if (ComboConstants.PROF_MSGAUTHSSL.equals(profile)) {
+                    trustStoreConfigRequired = false;
+            }
+            if (ComboConstants.PROF_KERBEROS.equals(profile)) {
                 trustStoreConfigRequired = false;
+                keyStoreConfigRequired = false;
+                kerberosConfigRequired = true;
             }
             keyStoreButton.setEnabled(keyStoreConfigRequired && !defaults);
             trustStoreButton.setEnabled(trustStoreConfigRequired && !defaults);
+            kerberosCfgButton.setEnabled(kerberosConfigRequired && !defaults);
 
             if (ComboConstants.PROF_USERNAME.equals(profile) || 
                 ComboConstants.PROF_STSISSUED.equals(profile) || 
@@ -421,7 +431,7 @@ public class CallbackPanel extends SectionInnerPanel {
         }
         return true;
     }
-
+    
     private void setCallbackHandler(String classname) {
         this.samlHandlerField.setText(classname);
     }
@@ -442,9 +452,11 @@ public class CallbackPanel extends SectionInnerPanel {
                         .add(12, 12, 12)
                         .add(keyStoreButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(trustStoreButton))
+                        .add(trustStoreButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(kerberosCfgButton))
                     .add(devDefaultsChBox))
-                .add(284, 284, 284))
+                .add(175, 175, 175))
             .add(layout.createSequentialGroup()
                 .add(24, 24, 24)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -465,9 +477,12 @@ public class CallbackPanel extends SectionInnerPanel {
                                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .add(samlBrowseButton))
                                 .add(cbTimestampField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 78, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 475, Short.MAX_VALUE))
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE))
                 .addContainerGap())
         );
+
+        layout.linkSize(new java.awt.Component[] {kerberosCfgButton, keyStoreButton, trustStoreButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
@@ -476,7 +491,8 @@ public class CallbackPanel extends SectionInnerPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(keyStoreButton)
-                    .add(trustStoreButton))
+                    .add(trustStoreButton)
+                    .add(kerberosCfgButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -496,6 +512,21 @@ public class CallbackPanel extends SectionInnerPanel {
                     .add(cbTimestampField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        layout.linkSize(new java.awt.Component[] {kerberosCfgButton, keyStoreButton, trustStoreButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
+
+        samlHandlerLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_KeyStorePanel_SamlLabel_ACSN")); // NOI18N
+        samlHandlerLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_KeyStorePanel_SamlLabel_ACSD")); // NOI18N
+        samlBrowseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_AuthPanel_SCHBrowseButton_ACSN")); // NOI18N
+        samlBrowseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_AuthPanel_SCHBrowseButton_ACSD")); // NOI18N
+        credTypeLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_KeyStorePanel_AuthTypeLabel_ACSN")); // NOI18N
+        credTypeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_KeyStorePanel_AuthTypeLabel_ACSD")); // NOI18N
+        keyStoreButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_KeyStore_ACSN")); // NOI18N
+        keyStoreButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_KeyStore_ACSD")); // NOI18N
+        trustStoreButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_Truststore_ACSN")); // NOI18N
+        trustStoreButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_Truststore_ACSD")); // NOI18N
+        devDefaultsChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_DevDefaults_ACSN")); // NOI18N
+        devDefaultsChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_DevDefaults_ACSD")); // NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -518,6 +549,7 @@ public class CallbackPanel extends SectionInnerPanel {
         jSeparator1 = new javax.swing.JSeparator();
         cbTimestampLbl = new javax.swing.JLabel();
         cbTimestampField = new javax.swing.JFormattedTextField();
+        kerberosCfgButton = new javax.swing.JButton();
 
         addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -581,6 +613,13 @@ public class CallbackPanel extends SectionInnerPanel {
 
         cbTimestampField.setFormatterFactory(tstampff);
 
+        org.openide.awt.Mnemonics.setLocalizedText(kerberosCfgButton, org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_KerberosCfg")); // NOI18N
+        kerberosCfgButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                kerberosCfgButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -592,9 +631,11 @@ public class CallbackPanel extends SectionInnerPanel {
                         .add(12, 12, 12)
                         .add(keyStoreButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(trustStoreButton))
+                        .add(trustStoreButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(kerberosCfgButton))
                     .add(devDefaultsChBox))
-                .add(284, 284, 284))
+                .add(175, 175, 175))
             .add(layout.createSequentialGroup()
                 .add(24, 24, 24)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -615,9 +656,12 @@ public class CallbackPanel extends SectionInnerPanel {
                                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .add(samlBrowseButton))
                                 .add(cbTimestampField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 78, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 475, Short.MAX_VALUE))
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE))
                 .addContainerGap())
         );
+
+        layout.linkSize(new java.awt.Component[] {kerberosCfgButton, keyStoreButton, trustStoreButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
@@ -626,7 +670,8 @@ public class CallbackPanel extends SectionInnerPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(keyStoreButton)
-                    .add(trustStoreButton))
+                    .add(trustStoreButton)
+                    .add(kerberosCfgButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -647,6 +692,8 @@ public class CallbackPanel extends SectionInnerPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        layout.linkSize(new java.awt.Component[] {kerberosCfgButton, keyStoreButton, trustStoreButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
+
         samlHandlerLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_KeyStorePanel_SamlLabel_ACSN")); // NOI18N
         samlHandlerLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_KeyStorePanel_SamlLabel_ACSD")); // NOI18N
         samlBrowseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_AuthPanel_SCHBrowseButton_ACSN")); // NOI18N
@@ -663,9 +710,10 @@ public class CallbackPanel extends SectionInnerPanel {
 
 private void trustStoreButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_trustStoreButtonActionPerformed
     boolean jsr109 = isJsr109Supported();
-    TruststorePanel storePanel = new TruststorePanel(binding, project, jsr109, profile, true);
+    ConfigVersion configVersion = PolicyModelHelper.getConfigVersion(binding);
+    TruststorePanel storePanel = new TruststorePanel(binding, project, jsr109, profile, true, configVersion);
     DialogDescriptor dlgDesc = new DialogDescriptor(storePanel, 
-            NbBundle.getMessage(ServicePanel.class, "LBL_Truststore_Panel_Title")); //NOI18N
+            NbBundle.getMessage(BindingPanel.class, "LBL_Truststore_Panel_Title")); //NOI18N
     Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
 
     dlg.setVisible(true); 
@@ -676,9 +724,10 @@ private void trustStoreButtonActionPerformed(java.awt.event.ActionEvent evt) {//
 
 private void keyStoreButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyStoreButtonActionPerformed
     boolean jsr109 = isJsr109Supported();
-    KeystorePanel storePanel = new KeystorePanel(binding, project, jsr109, true);
+    ConfigVersion configVersion = PolicyModelHelper.getConfigVersion(binding);
+    KeystorePanel storePanel = new KeystorePanel(binding, project, jsr109, true, configVersion);
     DialogDescriptor dlgDesc = new DialogDescriptor(storePanel, 
-            NbBundle.getMessage(ServicePanel.class, "LBL_Keystore_Panel_Title")); //NOI18N
+            NbBundle.getMessage(BindingPanel.class, "LBL_Keystore_Panel_Title")); //NOI18N
     Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
 
     dlg.setVisible(true); 
@@ -725,12 +774,26 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
                 Set<String> selectedClasses = classDialog.getSelectedClasses();
                 for (String selectedClass : selectedClasses) {
                     setCallbackHandler(selectedClass);
-                    ProprietarySecurityPolicyModelHelper.setCallbackHandler(binding, CallbackHandler.SAML_CBHANDLER, selectedClass, null, true);          
+//                    ConfigVersion configVersion = PolicyModelHelper.getConfigVersion(binding);
+                    ProprietarySecurityPolicyModelHelper.setCallbackHandler(binding, CallbackHandler.SAML_CBHANDLER, selectedClass, null, true);
                     break;
                 }
             }
         }
     }//GEN-LAST:event_samlBrowseButtonActionPerformed
+
+    private void kerberosCfgButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_kerberosCfgButtonActionPerformed
+        KerberosConfigPanel panel = new KerberosConfigPanel(binding, project);
+        DialogDescriptor dlgDesc = new DialogDescriptor(panel, 
+                NbBundle.getMessage(BindingPanel.class, "LBL_KerberosConfig_Panel_Title")); //NOI18N
+        Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
+
+        dlg.setVisible(true); 
+
+        if (dlgDesc.getValue() == DialogDescriptor.OK_OPTION) {
+            panel.storeState();
+        }
+}//GEN-LAST:event_kerberosCfgButtonActionPerformed
         
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JFormattedTextField cbTimestampField;
@@ -740,6 +803,7 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     private javax.swing.JLabel credTypeLabel;
     private javax.swing.JCheckBox devDefaultsChBox;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JButton kerberosCfgButton;
     private javax.swing.JButton keyStoreButton;
     private javax.swing.JButton samlBrowseButton;
     private javax.swing.JTextField samlHandlerField;

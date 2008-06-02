@@ -49,6 +49,7 @@ import org.w3c.dom.Element;
 import javax.xml.namespace.QName;
 import java.util.Collections;
 import java.util.Set;
+import org.netbeans.modules.websvc.wsitmodelext.rm.impl.AllowDuplicatesImpl;
 
 public class RMSunFactories {
 
@@ -57,13 +58,21 @@ public class RMSunFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(RMSunQName.ORDERED.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new OrderedImpl(context.getModel()));
-        }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new OrderedImpl(context.getModel(), element);
         }
     }
 
+    public static class AllowDuplicatesFactory extends ElementFactory {
+        @Override
+        public Set<QName> getElementQNames() {
+            return Collections.singleton(RMSunQName.ALLOWDUPLICATES.getQName());
+        }
+        @Override
+        public WSDLComponent create(WSDLComponent context, Element element) {
+            return new AllowDuplicatesImpl(context.getModel(), element);
+        }
+    }
+    
 }

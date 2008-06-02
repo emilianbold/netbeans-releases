@@ -151,6 +151,15 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.core.utilities</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.dd</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -158,29 +167,20 @@ made subject to such option by the copyright holder.
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
-                 <dependency>
-                     <code-name-base>org.netbeans.modules.j2ee.persistence</code-name-base>
-                     <build-prerequisite/>
-                     <compile-dependency/>
-                     <run-dependency>
-                         <specification-version>1.0</specification-version>
-                     </run-dependency>
-                 </dependency>
-                 <dependency>
-                     <code-name-base>org.netbeans.modules.j2ee.persistenceapi</code-name-base>
-                     <build-prerequisite/>
-                     <compile-dependency/>
-                     <run-dependency>
-                         <release-version>1</release-version>
-                     </run-dependency>
-                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.j2ee.core.utilities</code-name-base>
+                    <code-name-base>org.netbeans.modules.j2ee.persistence</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>0-1</release-version>
                         <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.persistenceapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -413,7 +413,9 @@ made subject to such option by the copyright holder.
                     <code-name-base>org.openide.loaders</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency/>
+                    <run-dependency>
+                        <specification-version>7.0</specification-version>
+                    </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.openide.nodes</code-name-base>

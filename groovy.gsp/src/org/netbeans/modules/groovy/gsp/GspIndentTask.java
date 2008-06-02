@@ -41,11 +41,19 @@
 
 package org.netbeans.modules.groovy.gsp;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
+import org.netbeans.modules.groovy.gsp.lexer.api.GspTokenId;
 
 /**
  * Indent task for GSP.
@@ -77,21 +85,49 @@ public class GspIndentTask implements IndentTask {
         //doc.putProperty(HTMLLexerFormatter.HTML_FORMATTER_ACTS_ON_TOP_LEVEL, Boolean.TRUE);
         doc.putProperty("HTML_FORMATTER_ACTS_ON_TOP_LEVEL", Boolean.TRUE);
         
-        // It appears that I no longer need to do this; leaving around a little while longer
-        // while the dust settles...
-        //        int offset = Utilities.getRowStart(doc, end);
-        //        org.netbeans.editor.Formatter editorFormatter = doc.getFormatter();
-        //        while (offset >= start) {
-        //            editorFormatter.changeRowIndent(doc, offset, 0);
-        //
-        //            if (offset > 0) {
-        //                // XXX >= ? What about empty first line?
-        //                offset--;
-        //                offset = Utilities.getRowStart(doc, offset);
-        //            } else {
-        //                break;
-        //            }
-        //        }
+        TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+        TokenSequence<?extends GspTokenId> ts = th.tokenSequence(GspTokenId.language());
+        if (ts == null) {
+            return;
+        }
+        
+        int offset = Utilities.getRowStart(doc, end);
+        org.netbeans.editor.Formatter editorFormatter = doc.getFormatter();
+        List<Integer> offsets = new ArrayList<Integer>();
+        boolean prevWasNonHtml = false;
+        while (offset >= start) {
+            int lineStart = Utilities.getRowFirstNonWhite(doc, offset);
+            if (lineStart != -1) {
+                prevWasNonHtml = false;
+                ts.move(lineStart);
+                if (ts.moveNext()) {
+                    TokenId id = ts.token().id();
+                    if (id != GspTokenId.HTML) {
+                        prevWasNonHtml = true;
+                        offsets.add(offset);
+                    }
+                }
+            } else if (prevWasNonHtml) {
+                // Include blank lines leading up to a non-html block since HTML
+                // will treat these as part of the block to be indented
+                offsets.add(offset);
+            }
+            
+            if (offset > 0) {
+                // XXX >= ? What about empty first line?
+                offset--;
+                offset = Utilities.getRowStart(doc, offset);
+            } else {
+                break;
+            }
+        }
+
+        // Process offsets to be reformatted
+        if (offsets.size() > 0) {
+            for (Integer lineOffset : offsets) {
+                editorFormatter.changeRowIndent(doc, lineOffset, 0);
+            }
+        }
     }
 
     public ExtraLock indentLock() {

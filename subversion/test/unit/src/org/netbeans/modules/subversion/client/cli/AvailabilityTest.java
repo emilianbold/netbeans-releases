@@ -68,7 +68,7 @@ public class AvailabilityTest extends AbstractCLITest {
 
     public void testVersion() throws Exception {
         CommandlineClient c = new CommandlineClient();
-        assertTrue(c.isSupportedVersion());
+        assertTrue(c.checkSupportedVersion());
     }
     
     public void testWrongPath() throws Exception {
@@ -77,7 +77,7 @@ public class AvailabilityTest extends AbstractCLITest {
         
         Exception ex = null;
         try {
-            c.isSupportedVersion();
+            c.checkSupportedVersion();
         } catch (SVNClientException e) {
             ex = e;
         }
@@ -95,7 +95,7 @@ public class AvailabilityTest extends AbstractCLITest {
         
         Exception ex = null;
         try {
-            assertTrue(c.isSupportedVersion());
+            assertTrue(c.checkSupportedVersion());
         } catch (SVNClientException e) {
             ex = e;
         }
@@ -108,7 +108,7 @@ public class AvailabilityTest extends AbstractCLITest {
         }
 
         try {
-            assertTrue(c.isSupportedVersion());
+            assertTrue(c.checkSupportedVersion());
         } catch (SVNClientException e) {
             ex = e;
         }
@@ -125,7 +125,7 @@ public class AvailabilityTest extends AbstractCLITest {
         
         Exception ex = null;
         try {
-            assertTrue(c.isSupportedVersion());
+            assertTrue(c.checkSupportedVersion());
         } catch (SVNClientException e) {
             ex = e;
         }

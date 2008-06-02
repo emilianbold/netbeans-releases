@@ -370,7 +370,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(rbRegisteredLibrary)
                     .add(cbLibraries, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(1, 1, 1)
                 .add(rbNewLibrary)
                 .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jbBrowse)
@@ -379,7 +379,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jtNewLibraryName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(lVersion))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(1, 1, 1)
                 .add(rbNoneLibrary)
                 .addContainerGap())
         );
@@ -510,6 +510,9 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
                 return false;
             }
             if (!webModule25Version) {
+                if (jsfLibraries.size() == 0) {
+                    return false;
+                }
                 int index = cbLibraries.getSelectedIndex();
                 JSFVersion libraryVersion = jsfLibraries.get(index).getVersion();
                 if (libraryVersion.compareTo(JSFVersion.JSF_1_1) > 0) {
@@ -557,7 +560,15 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
         return true;
     }
     
-    private boolean isPatternValid(String pattern){
+    private static final char[] INVALID_PATTERN_CHARS = {'%', '+'}; // NOI18N
+
+    private boolean isPatternValid(String pattern) {
+        for (char c : INVALID_PATTERN_CHARS) {
+            if (pattern.indexOf(c) != -1) {
+                return false;
+            }
+        }
+        
         if (pattern.startsWith("*.")){
             String p = pattern.substring(2);
             if (p.indexOf('.') == -1 && p.indexOf('*') == -1

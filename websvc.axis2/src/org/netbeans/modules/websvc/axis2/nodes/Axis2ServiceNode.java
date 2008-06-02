@@ -41,6 +41,8 @@
 package org.netbeans.modules.websvc.axis2.nodes;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -116,7 +118,11 @@ public class Axis2ServiceNode extends AbstractNode implements OpenCookie {
         Preferences preferences = NbPreferences.forModule(Axis2ServiceNode.class);
         String axisURL = preferences.get("AXIS_URL",null); //NOI18N
         if (axisURL!=null) {
-            return axisURL+"/services/"+service.getNameAttr()+"?wsdl"; //NOI18N
+            String serviceName = service.getNameAttr();
+            try {
+                serviceName = URLEncoder.encode(serviceName, "UTF-8"); //NOI18N
+            } catch (UnsupportedEncodingException ex) {}            
+            return axisURL+"/services/"+serviceName+"?wsdl"; //NOI18N
         } else {
             return service.getServiceClass();
         }       

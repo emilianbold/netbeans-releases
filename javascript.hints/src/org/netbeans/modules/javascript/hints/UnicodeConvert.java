@@ -41,15 +41,16 @@ import org.mozilla.javascript.Token;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.EditList;
+import org.netbeans.modules.gsf.api.HintFix;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.PreviewableFix;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.javascript.editing.AstUtilities;
-import org.netbeans.modules.javascript.hints.spi.AstRule;
-import org.netbeans.modules.javascript.hints.spi.Description;
-import org.netbeans.modules.javascript.hints.spi.EditList;
-import org.netbeans.modules.javascript.hints.spi.Fix;
-import org.netbeans.modules.javascript.hints.spi.HintSeverity;
-import org.netbeans.modules.javascript.hints.spi.PreviewableFix;
-import org.netbeans.modules.javascript.hints.spi.RuleContext;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
+import org.netbeans.modules.javascript.hints.infrastructure.JsAstRule;
+import org.netbeans.modules.javascript.hints.infrastructure.JsRuleContext;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -59,11 +60,11 @@ import org.openide.util.NbBundle;
  * 
  * @author Tor Norbye
  */
-public class UnicodeConvert implements AstRule {
+public class UnicodeConvert extends JsAstRule {
     public UnicodeConvert() {
     }
 
-    public boolean appliesTo(CompilationInfo info) {
+    public boolean appliesTo(RuleContext context) {
         return true;
     }
 
@@ -71,7 +72,7 @@ public class UnicodeConvert implements AstRule {
         return Collections.singleton(Token.STRING);
     }
     
-    public void run(RuleContext context, List<Description> result) {
+    public void run(JsRuleContext context, List<Hint> result) {
         CompilationInfo info = context.compilationInfo;
         Node node = context.node;
         
@@ -103,11 +104,11 @@ public class UnicodeConvert implements AstRule {
                 lexOffset += i;
                 
                 OffsetRange range = new OffsetRange(lexOffset, lexOffset+1);
-                List<Fix> fixList = new ArrayList<Fix>();
+                List<HintFix> fixList = new ArrayList<HintFix>();
                 fixList.add(new ConvertFix(info, lexOffset, c));
                 fixList.add(new MoreInfoFix("unicodeconvert")); // NOI18N
                 String displayName = getDisplayName();
-                Description desc = new Description(this, displayName, info.getFileObject(), range, fixList, 1500);
+                Hint desc = new Hint(this, displayName, info.getFileObject(), range, fixList, 1500);
                 result.add(desc);
             }
         }
@@ -123,14 +124,14 @@ public class UnicodeConvert implements AstRule {
 //                OffsetRange range = AstUtilities.getNameRange(node);
 //                range = LexUtilities.getLexerOffsets(info, range);
 //                if (range != OffsetRange.NONE) {
-//                    List<Fix> fixList = new ArrayList<Fix>(2);
+//                    List<HintFix> fixList = new ArrayList<HintFix>(2);
 //                    Node root = AstUtilities.getRoot(info);
 //                    AstPath childPath = new AstPath(root, node); // TODO - make a simple clone method to clone AstPath path
 //                    if (node.nodeId == NodeTypes.LOCALASGNNODE) {
 //                        fixList.add(new RenameFix(info, childPath, RubyUtils.camelToUnderlinedName(name)));
 //                    }
 //                    fixList.add(new RenameFix(info, childPath, null));
-//                    Description desc = new Description(this, displayName, info.getFileObject(), range, fixList, 1500);
+//                    Hint desc = new Hint(this, displayName, info.getFileObject(), range, fixList, 1500);
 //                    result.add(desc);
 //                }
 //                return;

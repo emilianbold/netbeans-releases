@@ -46,6 +46,7 @@ import groovy.lang.MetaMethod;
 import groovy.util.Node;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -79,6 +80,7 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.reflection.CachedClass;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
@@ -87,6 +89,7 @@ import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class CodeCompleter implements CodeCompletionHandler {
@@ -97,6 +100,7 @@ public class CodeCompleter implements CodeCompletionHandler {
     private final Logger LOG = Logger.getLogger(CodeCompleter.class.getName());
     private String jdkJavaDocBase = null;
     private String groovyJavaDocBase = null;
+    private String gapiDocBase = null;
 
     public CodeCompleter() {
         // LOG.setLevel(Level.FINEST);
@@ -106,35 +110,43 @@ public class CodeCompleter implements CodeCompletionHandler {
         List<URL> docfolder = platform.getJavadocFolders();
 
         for (URL url : docfolder) {
-            LOG.log(Level.FINEST, "JavaDoc path from PlatformManager: " + url.toString());
+            LOG.log(Level.FINEST, "JDK Doc path: {0}", url.toString()); // NOI18N
             jdkJavaDocBase = url.toString();
         }
 
         GroovySettings groovySettings = new GroovySettings();
+        String docroot = groovySettings.getGroovyDoc() + "/";
 
-        // FIXME: Here we only care for the GDK, but not for the additional
-        // Groovy classes. I have to add those as well.
+        groovyJavaDocBase = directoryNameToUrl(docroot + "groovy-jdk/"); // NOI18N
+        gapiDocBase = directoryNameToUrl(docroot + "gapi/"); // NOI18N
 
-        String gHomeDoc = groovySettings.getGroovyHome() + "/" + "html" + "/" + "groovy-jdk/";
-        File gdoc = new File(gHomeDoc);
-
-        if (gdoc.exists() && gdoc.isDirectory()) {
-
-            String fileURL = "";
-
-            if (Utilities.isWindows()) {
-                gHomeDoc = gHomeDoc.replace("\\", "/");
-                fileURL = "file:/";
-            } else {
-                fileURL = "file://";
-            }
-
-            groovyJavaDocBase = fileURL + gHomeDoc;
-            LOG.log(Level.FINEST, "GDK Doc path: " + groovyJavaDocBase);
-        }
-
+        LOG.log(Level.FINEST, "GDK Doc path: {0}", groovyJavaDocBase);
+        LOG.log(Level.FINEST, "GAPI Doc path: {0}", gapiDocBase);
     }
 
+    String directoryNameToUrl(String dirname) {
+        if (dirname == null) {
+            return "";
+        }
+
+        File dirFile = new File(dirname);
+
+        if (dirFile != null && dirFile.exists() && dirFile.isDirectory()) {
+            String fileURL = "";
+            if (Utilities.isWindows()) {
+                dirname = dirname.replace("\\", "/");
+                fileURL = "file:/"; // NOI18N
+            } else {
+                fileURL = "file://"; // NOI18N
+            }
+            return fileURL + dirname;
+        } else {
+            return "";
+        }
+    }
+    
+    
+    
     private void populateProposal(Class clz, Object method, CompletionRequest request, List<CompletionProposal> proposals, boolean isGDK) {
         if (method != null && (method instanceof MetaMethod)) {
             MetaMethod mm = (MetaMethod) method;
@@ -154,9 +166,14 @@ public class CodeCompleter implements CodeCompletionHandler {
     private void printASTNodeInformation(ASTNode node) {
 
         LOG.log(Level.FINEST, "--------------------------------------------------------");
-        LOG.log(Level.FINEST, "Node.getText()  : " + node.getText());
-        LOG.log(Level.FINEST, "Node.toString() : " + node.toString());
-        LOG.log(Level.FINEST, "Node.getClass() : " + node.getClass());
+
+        if (node == null) {
+            LOG.log(Level.FINEST, "node == null");
+        } else {
+            LOG.log(Level.FINEST, "Node.getText()  : " + node.getText());
+            LOG.log(Level.FINEST, "Node.toString() : " + node.toString());
+            LOG.log(Level.FINEST, "Node.getClass() : " + node.getClass());
+        }
     }
 
     private void printMethod(MetaMethod mm) {
@@ -202,7 +219,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
     private boolean completeMethods(List<CompletionProposal> proposals, CompletionRequest request) {
 
-        LOG.log(Level.FINEST, "completeMethods(...)");
+        LOG.log(Level.FINEST, "completeMethods(...)"); // NOI18N
 
         // figure out which class we are dealing with:
         ASTNode root = AstUtilities.getRoot(request.info);
@@ -211,7 +228,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         // therefore we can not complete. See # 131317
 
         if (root == null) {
-            LOG.log(Level.FINEST, "root == null");
+            LOG.log(Level.FINEST, "root == null"); // NOI18N
             return false;
         }
 
@@ -224,7 +241,6 @@ public class CodeCompleter implements CodeCompletionHandler {
             closest = path.leafParent();
         }
 
-
         LOG.log(Level.FINEST, "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         LOG.log(Level.FINEST, "(leaf): ");
         printASTNodeInformation(closest);
@@ -235,10 +251,22 @@ public class CodeCompleter implements CodeCompletionHandler {
         ClassNode declClass = null;
 
         if (closest instanceof AnnotatedNode) {
-            declClass = ((AnnotatedNode) closest).getDeclaringClass();
+            LOG.log(Level.FINEST, "closest: AnnotatedNode"); // NOI18N
+
+            // if this AnnotetedNode happens to be a ClassNode then 
+            // just cast it. Otherwise try to find declaring class
+
+            if (closest instanceof ClassNode) {
+                declClass = (ClassNode) closest;
+                
+            } else {
+                declClass = ((AnnotatedNode) closest).getDeclaringClass();
+            }
         } else if (closest instanceof Expression) {
+            LOG.log(Level.FINEST, "closest: Expression"); // NOI18N
             declClass = ((Expression) closest).getType();
         } else if (closest instanceof ExpressionStatement) {
+            LOG.log(Level.FINEST, "closest: ExpressionStatement"); // NOI18N
             Expression expr = ((ExpressionStatement) closest).getExpression();
             if (expr instanceof PropertyExpression) {
                 declClass = ((PropertyExpression) expr).getObjectExpression().getType();
@@ -246,13 +274,21 @@ public class CodeCompleter implements CodeCompletionHandler {
                 return false;
             }
         } else {
+            LOG.log(Level.FINEST, "Found nothing to work on"); // NOI18N
             return false;
         }
 
-        if (declClass != null) {
+        if (declClass == null) {
+            LOG.log(Level.FINEST, "No declaring class found"); // NOI18N
+            return false;            
+        }
+        
+        if (clz == null) {
             try {
                 clz = Class.forName(declClass.getName());
             } catch (Exception e) {
+                LOG.log(Level.FINEST, "Class.forName() failed: {0}", e.getMessage()); // NOI18N
+                return false;
             }
         }
 
@@ -268,7 +304,6 @@ public class CodeCompleter implements CodeCompletionHandler {
                     populateProposal(clz, method, request, proposals, false);
                 }
             }
-
         }
 
         return true;
@@ -285,7 +320,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
 
-        LOG.log(Level.FINEST, "complete(...), prefix: " + prefix);
+        LOG.log(Level.FINEST, "complete(...), prefix: {0}", prefix); // NOI18N
 
 
         // Avoid all those annoying null checks
@@ -350,31 +385,63 @@ public class CodeCompleter implements CodeCompletionHandler {
 
     /**
      * create the signature-string of this method usable as a 
-    Javadoc URL suffix (behind the # ) 
-    
-    This was needed since from groovy 1.5.4 to 
-    1.5.5 the MetaMethod.getSignature() changed from
-    human-readable to Class.getName() output.
-    
+     * Javadoc URL suffix (behind the # ) 
+     *    
+     * This was needed, since from groovy 1.5.4 to 
+     * 1.5.5 the MetaMethod.getSignature() changed from
+     * human-readable to Class.getName() output.
+     * 
+     * To make matters worse, we have some subtle 
+     * differences between JDK and GDK MetaMethods
+     * 
+     * method.getSignature for the JDK gives the return-
+     * value right behind the method and encodes like Class.getName():
+     *   
+     * codePointCount(II)I
+     *    
+     * GDK-methods look like this:
+     * java.lang.String center(java.lang.Number, java.lang.String)
+     * 
+     * TODO: if groovy folks ever change this (again), we're falling
+     * flat on our face.
+     * 
      */
-    String getMethodSignature(MetaMethod method, boolean forURL) {
+    String getMethodSignature(MetaMethod method, boolean forURL, boolean isGDK) {
         String methodSignature = method.getSignature();
         methodSignature = methodSignature.trim();
 
-        String parts[] = methodSignature.split("[()]");
+        if (isGDK) {
+            // remove return value
+            int firstSpace = methodSignature.indexOf(" ");
 
-        if (parts.length < 2) {
-            return "";
+            if (firstSpace != -1) {
+                methodSignature = methodSignature.substring(firstSpace + 1);
+            }
+
+            if (forURL) {
+                methodSignature = methodSignature.replaceAll(", ", ",%20");
+            }
+
+            return methodSignature;
+
+        } else {
+            String parts[] = methodSignature.split("[()]");
+
+            if (parts.length < 2) {
+                return "";
+            }
+
+            String paramsBody = decodeTypes(parts[1], forURL);
+
+            return parts[0] + "(" + paramsBody + ")";
         }
-
-        String paramsBody = decodeTypes(parts[1], forURL);
-
-        return parts[0] + "(" + paramsBody + ")";
     }
 
+    /**
+     * This is more a less the reverse function for Class.getName() 
+     */
     String decodeTypes(final String encodedType, boolean forURL) {
 
-        /* This is more a less the reverse function for Class.getName() */
 
         String DELIMITER = ",";
 
@@ -389,7 +456,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         for (int i = 0; i < encodedType.length(); i++) {
             char c = encodedType.charAt(i);
-            
+
             if (c == '[') {
                 nextIsAnArray = true;
                 continue;
@@ -418,11 +485,11 @@ public class CodeCompleter implements CodeCompletionHandler {
                 sb.append(typeName);
                 i = semicolon;
             }
-            
-            if(nextIsAnArray){
+
+            if (nextIsAnArray) {
                 sb.append("[]");
                 nextIsAnArray = false;
-            }  
+            }
 
             if (i < encodedType.length() - 1) {
                 sb.append(DELIMITER);
@@ -436,8 +503,8 @@ public class CodeCompleter implements CodeCompletionHandler {
     public String document(CompilationInfo info, ElementHandle element) {
         LOG.log(Level.FINEST, "document(), ElementHandle : {0}", element);
 
-        String ERROR = "<h2>Not found.</h2>";
-        String doctext = ERROR;
+        String ERROR = "<h2>" + NbBundle.getMessage(CodeCompleter.class, "CodeCompleter_NoJavaDocFound") + "</h2>";
+        String doctext = null;
 
         if (element instanceof AstMethodElement) {
             AstMethodElement ame = (AstMethodElement) element;
@@ -454,56 +521,88 @@ public class CodeCompleter implements CodeCompletionHandler {
             }
 
             MetaMethod mm = ame.getMethod();
-            
+
             // enable this to troubleshoot subtle differences in JDK/GDK signatures
             printMethod(mm);
 
-            // some (artificial) methods are declared on other Classes
-            // we have to figure this out.
+            // figure out who originally defined this method
 
-            Class clz;
+            String className = null;
 
             if (ame.isGDK()) {
-                clz = mm.getDeclaringClass().getCachedClass();
+                className = mm.getDeclaringClass().getCachedClass().getName();
             } else {
-                clz = ame.getClz();
+
+                String declName = null;
+
+                if (mm != null) {
+                    CachedClass cc = mm.getDeclaringClass();
+                    if (cc != null) {
+                        Class clz = cc.getCachedClass();
+                        if (clz != null) {
+                            declName = clz.getName();
+                        }
+                    }
+                }
+
+                if (declName != null) {
+                    className = declName;
+                } else {
+                    className = ame.getClz().getName();
+                }
             }
 
-            // LOG.log(Level.FINEST, "clz = {0}", clz.getName());
-            
             // create path from fq java package name:
             // java.lang.String -> java/lang/String.html
-            String classNamePath = clz.getName().replace(".", "/");
-            classNamePath = classNamePath + ".html";
+            String classNamePath = className.replace(".", "/");
+            classNamePath = classNamePath + ".html"; // NOI18N
+            
+            // if the file can be located in the GAPI folder prefer it
+            // over the JDK
+            if (!ame.isGDK()) {
+                
+                URL url;
+                File testFile;
+                
+                try {
+                    url = new URL(gapiDocBase + classNamePath);
+                    testFile = new File(url.toURI());
+                } catch (MalformedURLException ex) {
+                    LOG.log(Level.FINEST, "MalformedURLException: {0}", ex);
+                    return ERROR;
+                } catch (URISyntaxException uriEx) {
+                    LOG.log(Level.FINEST, "URISyntaxException: {0}", uriEx);
+                    return ERROR;
+                }
+         
+                if(testFile != null && testFile.exists()){
+                    base = gapiDocBase;
+                } 
+            }
 
             // create the signature-string of the method
-            String sig = getMethodSignature(ame.getMethod(), true);
-            String printSig = getMethodSignature(ame.getMethod(), false);
+            String sig = getMethodSignature(ame.getMethod(), true, ame.isGDK());
+            String printSig = getMethodSignature(ame.getMethod(), false, ame.isGDK());
 
             String urlName = base + classNamePath + "#" + sig;
 
             try {
-                LOG.log(Level.FINEST, "Trying to load URL = {0}", urlName);
+                LOG.log(Level.FINEST, "Trying to load URL = {0}", urlName); // NOI18N
                 doctext = HTMLJavadocParser.getJavadocText(
                     new URL(urlName),
                     false,
                     ame.isGDK());
             } catch (MalformedURLException ex) {
-                LOG.log(Level.FINEST, "document(), URL trouble: {0}", ex);
+                LOG.log(Level.FINEST, "document(), URL trouble: {0}", ex); // NOI18N
                 return ERROR;
             }
 
-            // If we could not find a suitable JavaDoc for the method
-            // say so. 
-
+            // If we could not find a suitable JavaDoc for the method - say so. 
             if (doctext == null) {
-                doctext = "Sorry, I'm unable to find the documentation.";
+                return ERROR;
             }
 
-            doctext = "<h2>" + clz.getName() + "</h2><BR>" +
-                "<h3>" + printSig + "</h3><BR>" +
-                doctext;
-
+            doctext = "<h3>" + className + "." + printSig + "</h3><BR>" + doctext;
         }
         return doctext;
     }
@@ -517,6 +616,12 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
 
     public QueryType getAutoQuery(JTextComponent component, String typedText) {
+        char c = typedText.charAt(0);
+
+        if (c == '.') {
+            return QueryType.COMPLETION;
+        }
+
         return QueryType.NONE;
     }
 
@@ -587,8 +692,8 @@ public class CodeCompleter implements CodeCompletionHandler {
         }
 
         public ElementHandle getElement() {
-            LOG.log(Level.FINEST, "getElement() request.info : " + request.info);
-            LOG.log(Level.FINEST, "getElement() element : " + element);
+            LOG.log(Level.FINEST, "getElement() request.info : {0}", request.info);
+            LOG.log(Level.FINEST, "getElement() element : {0}", element);
 
             return null;
         }
@@ -695,7 +800,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
             if (isGDK) {
                 formatter.appendText(method.getName().toString());
-                
+
                 // construct signature by removing package names.
 
                 String signature = method.getSignature();
@@ -715,7 +820,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
                 formatter.appendText("(" + simpleSig + ")");
             } else {
-                formatter.appendText(getMethodSignature(method, false));
+                formatter.appendText(getMethodSignature(method, false, isGDK));
             }
 
 

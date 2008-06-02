@@ -47,7 +47,6 @@ import java.util.logging.Level;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNPromptUserPassword;
 import org.tigris.subversion.svnclientadapter.SVNClientAdapterFactory;
@@ -94,8 +93,8 @@ public class SvnClientFactory {
     public synchronized static void init() {                        
         if(instance == null) {
             instance = new SvnClientFactory();
-            instance.setup();
         }
+        instance.setup();        
     }    
     
     /**
@@ -213,6 +212,13 @@ public class SvnClientFactory {
     
     public void setupCommandline () throws SVNClientException {
         exception = null;
+        CommandlineClient cc = new CommandlineClient();
+        try {
+            cc.checkSupportedVersion();
+        } catch (SVNClientException ex) {
+            exception = ex;
+            return;
+        }
         factory = new ClientAdapterFactory() {
             protected ISVNClientAdapter createAdapter() {
                 return new CommandlineClient(); //SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);

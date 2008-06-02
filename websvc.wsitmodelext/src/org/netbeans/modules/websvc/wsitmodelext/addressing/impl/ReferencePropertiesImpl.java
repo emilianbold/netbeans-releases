@@ -41,10 +41,8 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.addressing.impl;
 
-import org.netbeans.modules.websvc.wsitmodelext.addressing.AddressingQName;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.ReferenceProperties;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -54,16 +52,12 @@ import org.w3c.dom.Element;
 public class ReferencePropertiesImpl extends AddressingComponentImpl implements ReferenceProperties {
     
     /**
-     * Creates a new instance of AddressImpl
+     * Creates a new instance of ReferencePropertiesImpl
      */
     public ReferencePropertiesImpl(WSDLModel model, Element e) {
         super(model, e);
     }
     
-    public ReferencePropertiesImpl(WSDLModel model){
-        this(model, createPrefixedElement(AddressingQName.REFERENCEPROPERTIES.getQName(), model));
-    }
-
     public void setReferenceProperties(String referenceProperties) {
         setText(REFERENCEPROPERTIES_CONTENT_VALUE_PROPERTY, referenceProperties);
     }
@@ -72,9 +66,4 @@ public class ReferencePropertiesImpl extends AddressingComponentImpl implements 
         return getText();
     }
 
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-    
 }

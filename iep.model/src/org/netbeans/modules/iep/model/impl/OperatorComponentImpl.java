@@ -179,6 +179,23 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
         return outputSchema;
     }
 
+    public void setOutputSchemaId(SchemaComponent sc) {
+        String outputschemaId = "";
+        if(sc != null) {
+            outputschemaId = sc.getName();
+        }
+        
+        Property p = getProperty(PROP_OUTPUT_SCHEMA_ID);
+        if(p == null) {
+            p = getModel().getFactory().createProperty(getModel());
+            p.setName(PROP_OUTPUT_SCHEMA_ID);
+            addProperty(p);
+        }
+        
+        p.setValue(outputschemaId);
+    }
+
+    
     public OperatorType getOutputType() {
         if(mAllowedOutputType == null) {
             Property p = getProperty(PROP_OUTPUTTYPE);

@@ -117,7 +117,6 @@
         <variable name="CancelAirlineIn" messageType="ares:CancelAirlineIn"/>
         <variable name="ItineraryIn" messageType="tres:ItineraryIn"/>
         <variable name="ItineraryOut" messageType="tres:ItineraryOut"/>
-        <variable name="ItineraryFault" messageType="tres:ItineraryFault"/>
         <variable name="ReserveAirlineIn" messageType="ares:ReserveAirlineIn"/>
         <variable name="AirlineReservedIn" messageType="ares:AirlineReservedIn"/>
         <variable name="ReserveVehicleIn" messageType="vres:ReserveVehicleIn"/>
@@ -407,12 +406,12 @@
                             </assign>
 
                             <invoke
-                              name="CancelHotel" 
-                              partnerLink="Hotel" 
-                              portType="hres:HotelReservationPortType" 
-                              operation="cancelHotel" 
-                              inputVariable="CancelHotelIn" 
-                              outputVariable="CancelHotelOut"/>
+                                name="CancelHotel" 
+                                partnerLink="Hotel" 
+                                portType="hres:HotelReservationPortType" 
+                                operation="cancelHotel" 
+                                inputVariable="CancelHotelIn" 
+                                outputVariable="CancelHotelOut"/>
                         </sequence>
                     </onAlarm>
                 </pick>
