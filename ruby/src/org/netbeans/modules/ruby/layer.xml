@@ -133,7 +133,7 @@
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyLanguage"/>
                 </file>
                 <file name="structure.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.StructureAnalyzer"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyStructureAnalyzer"/>
                 </file> 
             </folder>
         </folder>
