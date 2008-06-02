@@ -76,16 +76,20 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
  */
 public class ADTransferable implements Transferable
 {
-   ArrayList < IElement >             m_ModelElements = null;
-   ArrayList < IPresentationElement > m_PresentationElements = null;
-   ArrayList < String >               m_DiagramLocations = null;
-   ArrayList < String >               m_GenericElements = null;
+   ArrayList < IElement >             m_ModelElements = new ArrayList < IElement >();
+   ArrayList < IPresentationElement > m_PresentationElements = new ArrayList < IPresentationElement >();
+   ArrayList < String >               m_DiagramLocations = new ArrayList < String >();
+   ArrayList < String >               m_GenericElements = new ArrayList < String >();
    String                             m_TransferOperation = "";
    
    public final static DataFlavor ADDataFlavor = new DataFlavor(ADTransferData.class, 
                                                                 "ADTransfer Data");
    private DataFlavor[] m_SupportedFlavors = { DataFlavor.stringFlavor, 
                                                ADDataFlavor };
+   private Object engine;
+   public final static int CUT = 0;
+   public final static int COPY = 1;
+   private int transferType = COPY;
    
    /** 
     * Create a new transferable object.  The ADTransferable transerable know
@@ -99,7 +103,7 @@ public class ADTransferable implements Transferable
     */
    public ADTransferable(String operation)
    {
-      setTransferOperation(operation);
+       setTransferOperation(operation);
    }
    
    /**
@@ -109,10 +113,10 @@ public class ADTransferable implements Transferable
     */
    public void addModelElement(IElement element)
    {
-      if(m_ModelElements == null)
-      {
-         m_ModelElements = new ArrayList < IElement >();
-      }
+//      if(m_ModelElements == null)
+//      {
+//         m_ModelElements = new ArrayList < IElement >();
+//      }
       
       if(m_ModelElements.contains(element) == false)
       {
@@ -176,11 +180,11 @@ public class ADTransferable implements Transferable
     */
    public void addPresentationElement(IPresentationElement element)
    {
-      if(m_PresentationElements == null)
-      {
-         m_PresentationElements = new ArrayList < IPresentationElement >();
-      }
-   
+//      if(m_PresentationElements == null)
+//      {
+//         m_PresentationElements = new ArrayList < IPresentationElement >();
+//      }
+//   
       if(m_PresentationElements.contains(element) == false)
       {
          m_PresentationElements.add(element);
@@ -194,10 +198,10 @@ public class ADTransferable implements Transferable
     */
    public void addDiagramLocation(String location)
    {
-      if(m_DiagramLocations == null)
-      {
-         m_DiagramLocations = new ArrayList < String >();
-      }
+//      if(m_DiagramLocations == null)
+//      {
+//         m_DiagramLocations = new ArrayList < String >();
+//      }
 
       if(m_DiagramLocations.contains(location) == false)
       {
@@ -212,10 +216,10 @@ public class ADTransferable implements Transferable
     */
    public void addGenericElement(String genericString)
    {
-      if(m_GenericElements == null)
-      {
-         m_GenericElements = new ArrayList < String >();
-      }
+//      if(m_GenericElements == null)
+//      {
+//         m_GenericElements = new ArrayList < String >();
+//      }
 
       if(m_GenericElements.contains(genericString) == false)
       {
@@ -289,7 +293,14 @@ public class ADTransferable implements Transferable
    {
       m_TransferOperation = string;
    }
+   
+   
       
+   public void setTransferType(int type)
+   {
+       transferType = type;
+   }
+   
    //**************************************************
    // Helper Methods
    //**************************************************
@@ -443,6 +454,11 @@ public class ADTransferable implements Transferable
       return retVal;
    }   
    
+   public void setDiagramEngine(Object engine)
+   {
+       this.engine = engine;
+   }
+   
    /**
     * The data for the "ADTransfer Data" DataFlavor.
     * 
@@ -509,5 +525,16 @@ public class ADTransferable implements Transferable
       {
          return m_GenericElements;
       }
+      
+       public Object getDiagramEngine()
+       {
+           return engine;
+       }
+
+       public int getTransferType()
+       {
+           return transferType;
+       }
+
    }
 }

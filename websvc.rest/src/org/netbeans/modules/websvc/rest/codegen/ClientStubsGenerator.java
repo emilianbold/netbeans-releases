@@ -68,6 +68,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.websvc.rest.RestUtils;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel.*;
@@ -390,28 +391,20 @@ public class ClientStubsGenerator extends AbstractGenerator {
         return files;
     }
     
-    private FileObject rF0 = null;
     private FileObject createDataObjectFromTemplate(final String template, final FileObject dir, 
             final String fileName, final String ext, final boolean overwrite) throws IOException {
-        FileSystem targetFS = dir.getFileSystem();
-        targetFS.runAtomicAction(new FileSystem.AtomicAction() {
-            public void run() throws IOException {
-                try {
-                    rF0 = dir.getFileObject(fileName, ext);
-                    if (rF0 != null) {
-                        if (overwrite) {
-                            rF0.delete();
-                        } else {
-                            return;
-                        }
-                    }
-                    DataObject d0 = RestUtils.createDataObjectFromTemplate(template, dir, fileName);
-                    rF0 = d0.getPrimaryFile();
-                } finally {
-                }
+        FileObject rF0 = dir.getFileObject(fileName, ext);
+        if(rF0 != null) {
+            if(overwrite) {
+                DataObject d = DataObject.find(rF0);
+                if(d != null)
+                    d.delete();
+            } else {
+                return rF0;
             }
-        });
-        return rF0;
+        }
+        DataObject d0 = RestUtils.createDataObjectFromTemplate(template, dir, fileName);
+        return d0.getPrimaryFile();
     }
     
     private void copyDojoLibs() throws FileNotFoundException, IOException {
@@ -496,8 +489,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
     
     private void initJs(Project p) throws IOException {
         createDataObjectFromTemplate(JS_TESTSTUBS_TEMPLATE, rjsDir, JS_TESTSTUBS, HTML, false);
-        createDataObjectFromTemplate(JS_STUBSUPPORT_TEMPLATE, rjsDir, JS_SUPPORT, JS, canOverwrite());  
-        createDataObjectFromTemplate(JS_README_TEMPLATE, rjsDir, JS_README, TXT, canOverwrite());
+        createDataObjectFromTemplate(JS_STUBSUPPORT_TEMPLATE, rjsDir, JS_SUPPORT, JS, false);  
+        createDataObjectFromTemplate(JS_README_TEMPLATE, rjsDir, JS_README, TXT, false);
     }
 
     private void initDojo(Project p, List<Resource> resourceList) throws IOException {

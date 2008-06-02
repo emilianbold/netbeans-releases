@@ -43,6 +43,7 @@ package org.netbeans.modules.uml.core;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -90,9 +91,9 @@ public class QueryManager implements IQueryManager, ICoreProductInitEventsSink,
     public static final String QUERY_CACHE = ".QueryCache"; //NOI18N
     private boolean m_deInitialized = false;
     private String m_CacheDir = "";
-
-    //Hashtable<String, ETList<IQueryUpdater>> m_Updaters = null;
-    private Hashtable m_Updaters = new Hashtable();
+	
+	//Hashtable<String, ETList<IQueryUpdater>> m_Updaters = null;
+	private Hashtable m_Updaters = new Hashtable();
 	
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.IQueryManager#initialize()
@@ -999,9 +1000,10 @@ public class QueryManager implements IQueryManager, ICoreProductInitEventsSink,
 		try
 		{
 			File f = new File(fileName);
-			if (f.exists())
+                         FileObject fo=FileUtil.toFileObject(f);
+			if (fo!=null)
 			{
-				FileInputStream fis = new FileInputStream(f);
+				InputStream fis = fo.getInputStream();
 				byte[] buffer = new byte[1000];
 				CRC32 crc = new CRC32();
 				int bytesRead;

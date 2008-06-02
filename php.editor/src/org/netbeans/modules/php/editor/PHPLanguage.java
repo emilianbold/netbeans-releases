@@ -40,8 +40,29 @@
 package org.netbeans.modules.php.editor;
 
 import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
+import org.netbeans.modules.gsf.api.DeclarationFinder;
+import org.netbeans.modules.gsf.api.Formatter;
+import org.netbeans.modules.gsf.api.HintsProvider;
+import org.netbeans.modules.gsf.api.Indexer;
+import org.netbeans.modules.gsf.api.InstantRenamer;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
+import org.netbeans.modules.gsf.api.OccurrencesFinder;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+import org.netbeans.modules.php.editor.indent.PHPBracketCompleter;
+import org.netbeans.modules.php.editor.indent.PHPFormatter;
+import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.nav.DeclarationFinderImpl;
+import org.netbeans.modules.php.editor.nav.InstantRenamerImpl;
+import org.netbeans.modules.php.editor.nav.OccurrencesFinderImpl;
+import org.netbeans.modules.php.editor.parser.GSFPHPParser;
+import org.netbeans.modules.php.editor.parser.PhpStructureScanner;
+import org.netbeans.modules.php.editor.parser.SemanticAnalysis;
+import org.netbeans.modules.php.editor.verification.PHPHintsProvider;
 
 /**
  *
@@ -74,5 +95,82 @@ public class PHPLanguage extends DefaultLanguageConfig {
     @Override
     public String getPreferredExtension() {
         return "php"; // NOI18N
+    }
+    
+    // Service Registrations
+
+    @Override
+    public Parser getParser() {
+        return new GSFPHPParser();
+    }
+
+    @Override
+    public CodeCompletionHandler getCompletionHandler() {
+        return new PHPCodeCompletion();
+    }
+
+    @Override
+    public Indexer getIndexer() {
+        return new PHPIndexer();
+    }
+
+    @Override
+    public SemanticAnalyzer getSemanticAnalyzer() {
+        return new SemanticAnalysis();
+    }
+
+    @Override
+    public boolean hasStructureScanner() {
+        return true;
+    }
+
+    @Override
+    public StructureScanner getStructureScanner() {
+        return new PhpStructureScanner();
+    }
+
+    @Override
+    public DeclarationFinder getDeclarationFinder() {
+        return new DeclarationFinderImpl();
+    }
+
+    @Override
+    public boolean hasOccurrencesFinder() {
+        return true;
+    }
+
+    @Override
+    public OccurrencesFinder getOccurrencesFinder() {
+        return new OccurrencesFinderImpl();
+    }
+
+    @Override
+    public boolean hasFormatter() {
+        return true;
+    }
+
+    @Override
+    public Formatter getFormatter() {
+        return new PHPFormatter();
+    }
+
+    @Override
+    public KeystrokeHandler getKeystrokeHandler() {
+        return new PHPBracketCompleter();
+    }
+
+    @Override
+    public InstantRenamer getInstantRenamer() {
+        return new InstantRenamerImpl();
+    }
+
+    @Override
+    public boolean hasHintsProvider() {
+        return true;
+    }
+
+    @Override
+    public HintsProvider getHintsProvider() {
+        return new PHPHintsProvider();
     }
 }

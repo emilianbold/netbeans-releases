@@ -50,6 +50,7 @@ package org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.trans
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.logging.Level;
@@ -139,7 +140,6 @@ public class TopLevelStateHandler extends StateHandler
             }
         }
     }
-    
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.statehandlers.ITopLevelStateHandler#getLanguage()

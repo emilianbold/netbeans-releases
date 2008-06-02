@@ -42,12 +42,12 @@
 
 
 package org.netbeans.test.umllib.customelements;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
+
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.test.umllib.DiagramElementChooser;
 import org.netbeans.test.umllib.DiagramElementOperator;
 import org.netbeans.test.umllib.DiagramOperator;
+import org.netbeans.test.umllib.UMLWidgetOperator;
 import org.netbeans.test.umllib.ElementTypes;
 import org.netbeans.test.umllib.exceptions.NotFoundException;
 
@@ -71,22 +71,18 @@ public class ExpressionOperator extends DiagramElementOperator{
             this.name = name;
         }
         
-        public boolean checkElement(IETGraphObject graphObject) {
+         public boolean checkElement(Widget graphObject) {
             
-
-            String eName = graphObject.getText();
-            String eType = graphObject.getEngine().getElementType();
-            
+             UMLWidgetOperator graphObjecOpr = new UMLWidgetOperator(graphObject);
+             String eName = graphObjecOpr.getName();
+             String eType = graphObjecOpr.getElementType();
+             
             return ElementTypes.EXPRESSION.toString().equals(eType) && name.equals(eName);
-            
+ 
         }
         
         public String getDescription() {
             return "Chooser for Expression Element: " + name ;
         }
-        
-        
-    }
-    
-    
+    }       
 }
