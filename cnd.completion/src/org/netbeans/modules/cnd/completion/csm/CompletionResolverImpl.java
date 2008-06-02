@@ -50,11 +50,13 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.QueryScope;
@@ -205,20 +207,48 @@ public class CompletionResolverImpl implements CompletionResolver {
         Collection libFuns        = null;
         Collection libNSs         = null; 
         Collection libNsAliases   = null; // NOT YET IMPL
+
+        Collection templateParameters  = null; // NOT YET IMPL
         
         CsmProject prj = file != null ? file.getProject() : null;
         if (prj == null) {
             return;
         }
                 
+        boolean needTemplateParameters = false;
         //long timeStart = System.nanoTime();
         if (needClasses(context, offset)) {
             // list of classesEnumsTypedefs
             classesEnumsTypedefs = getClassesEnums(context, prj, strPrefix, match, offset,false);
+            needTemplateParameters = true;
         } else if (needContextClasses(context, offset)) {
             classesEnumsTypedefs = getClassesEnums(context, prj, strPrefix, match, offset,true);           
+            needTemplateParameters = true;
         }
         
+        if (needTemplateParameters) {
+            needTemplateParameters = false;
+            CsmFunction fun = CsmContextUtilities.getFunction(context);
+            CsmClass clazz = fun == null ? null : CsmBaseUtilities.getFunctionClass(fun);
+            clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false);
+            if (CsmKindUtilities.isTemplate(clazz)){
+                if (templateParameters == null) {
+                    templateParameters = new ArrayList<CsmTemplateParameter>();
+                }
+                for(CsmTemplateParameter elem : ((CsmTemplate)clazz).getTemplateParameters()){
+                    templateParameters.add(elem);
+                }
+            }  
+            if (CsmKindUtilities.isTemplate(fun)){
+                if (templateParameters == null) {
+                    templateParameters = new ArrayList<CsmTemplateParameter>();
+                }
+                for(CsmTemplateParameter elem : ((CsmTemplate)fun).getTemplateParameters()){
+                    templateParameters.add(elem);
+                }
+            }
+            
+        }
         if (needLocalVars(context, offset)) {
             fileLocalEnumerators = contResolver.getFileLocalEnumerators(context, strPrefix, match);            
             CsmFunction fun = CsmContextUtilities.getFunction(context);
@@ -244,7 +274,15 @@ public class CompletionResolverImpl implements CompletionResolver {
                         }
                         fileLocalEnumerators.add(elem);
                     }
-                }                   
+                }
+                if (CsmKindUtilities.isTemplate(fun) && needTemplateParameters){
+                    if (templateParameters == null) {
+                        templateParameters = new ArrayList<CsmTemplateParameter>();
+                    }
+                    for(CsmTemplateParameter elem : ((CsmTemplate)fun).getTemplateParameters()){
+                        templateParameters.add(elem);
+                    }
+                }
             }
 
             if (needClassElements(context, offset)) {
@@ -258,10 +296,18 @@ public class CompletionResolverImpl implements CompletionResolver {
 
                     // get class methods visible in this method
                     classMethods = contResolver.getMethods(clazz, fun, strPrefix, staticContext, match, true,false);
+                    if (CsmKindUtilities.isTemplate(clazz) && needTemplateParameters){
+                        if (templateParameters == null) {
+                            templateParameters = new ArrayList<CsmTemplateParameter>();
+                        }
+                        for(CsmTemplateParameter elem : ((CsmTemplate)clazz).getTemplateParameters()){
+                            templateParameters.add(elem);
+                        }
+                    }
                 }
             }
         } else if (needClassElements(context, offset)) {
-            CsmFunction fun = CsmContextUtilities.getFunction(context);
+             CsmFunction fun = CsmContextUtilities.getFunction(context);
             CsmClass clazz = fun == null ? null : CsmBaseUtilities.getFunctionClass(fun);
             clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false);
             if (clazz != null) {
@@ -288,6 +334,14 @@ public class CompletionResolverImpl implements CompletionResolver {
                         classesEnumsTypedefs = new ArrayList<CsmDeclaration>();
                     }
                     classesEnumsTypedefs.addAll(innerCls);
+                }
+                if (CsmKindUtilities.isTemplate(clazz) && needTemplateParameters){
+                    if (templateParameters == null) {
+                        templateParameters = new ArrayList<CsmTemplateParameter>();
+                    }
+                    for(CsmTemplateParameter elem : ((CsmTemplate)clazz).getTemplateParameters()){
+                        templateParameters.add(elem);
+                    }
                 }
             }
         }
@@ -356,7 +410,8 @@ public class CompletionResolverImpl implements CompletionResolver {
                 libClasses, 
                 fileLibMacros, globLibMacros, 
                 libVars, libEnumerators, libFuns, 
-                libNSs, libNsAliases);
+                libNSs, libNsAliases,
+                templateParameters);
         //long timeEnd = System.nanoTime();
         //System.out.println("get gesolve list time "+(timeEnd -timeStart)+" objects "+result.size()); //NOI18N
         //System.out.println("get global macro time "+(timeGlobMacroEnd -timeGlobMacroStart)+" objects "+ //NOI18N
@@ -411,7 +466,8 @@ public class CompletionResolverImpl implements CompletionResolver {
             Collection libClasses,             
             Collection fileLibMacros, Collection globLibMacros,
             Collection libVars, Collection libEnumerators, Collection libFuns, 
-            Collection libNSs, Collection libNsAliases) {
+            Collection libNSs, Collection libNsAliases,
+            Collection templateParameters) {
         // local vars
         int fullSize = 0;
         if (DEBUG || STAT_COMPLETION) { fullSize += trace(localVars, "Local variables");} //NOI18N
@@ -476,8 +532,8 @@ public class CompletionResolverImpl implements CompletionResolver {
                     libClasses,
                     fileLibMacros, globLibMacros,
                     libVars, libEnumerators, libFuns, 
-                    libNSs, libNsAliases
-                            );
+                    libNSs, libNsAliases,
+                    templateParameters);
         return out;
     }
     
@@ -828,6 +884,13 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
         return false;
     }
+
+    private boolean needTemplateParameters(CsmContext context, int offset) {
+        if ((hideTypes & resolveTypes & RESOLVE_TEMPLATE_PARAMETERS) == RESOLVE_TEMPLATE_PARAMETERS) {
+            return true;
+        }
+        return false;
+    }
     
 
     // ====================== Debug support ===================================
@@ -879,6 +942,8 @@ public class CompletionResolverImpl implements CompletionResolver {
         private final Collection libFuns;
         private final Collection libNSs;    
         private final Collection libNsAliases;    
+        
+        private final Collection templateParameters;
 
         private ResultImpl(
                     Collection localVars,
@@ -910,7 +975,8 @@ public class CompletionResolverImpl implements CompletionResolver {
                     Collection libEnumerators,
                     Collection libFuns,
                     Collection libNSs,
-                    Collection libNsAliases 
+                    Collection libNsAliases,
+                    Collection templateParameters
                             ) {
             this.localVars = localVars;
             
@@ -942,6 +1008,8 @@ public class CompletionResolverImpl implements CompletionResolver {
             this.libFuns = libFuns;
             this.libNSs = libNSs;
             this.libNsAliases = libNsAliases;
+            
+            this.templateParameters = templateParameters;
         }
         
         public Collection getLocalVariables() {
@@ -1040,6 +1108,10 @@ public class CompletionResolverImpl implements CompletionResolver {
             return maskNull(libNsAliases);
         }
         
+        public Collection getTemplateparameters() {
+            return maskNull(templateParameters);
+        }
+
         public Collection addResulItemsToCol(Collection orig) {
             assert orig != null;
             return appendResult(orig, this);
@@ -1096,6 +1168,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             }
             return size;
         }
+
     }
     
     private static final Result EMPTY_RESULT = new EmptyResultImpl();
@@ -1203,7 +1276,10 @@ public class CompletionResolverImpl implements CompletionResolver {
         public Collection getLibNamespaceAliases() {
             return Collections.EMPTY_LIST;
         }
-        
+
+        public Collection getTemplateparameters() {
+            return Collections.EMPTY_LIST;
+        }
     }
     
     private static Collection maskNull(Collection list) {

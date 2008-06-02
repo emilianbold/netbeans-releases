@@ -295,7 +295,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         setFlags(FLAGS_TEMPLATE, _template);
         if (_template) {
-            this.templateParams = TemplateUtils.getTemplateParameters(node.getFirstChild(), this);
+            //AST ast, CsmFile file, CsmScope scope, String name
+            this.templateParams = TemplateUtils.getTemplateParameters(node.getFirstChild(), getContainingFile(), this);
         }
     }
     
