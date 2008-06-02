@@ -53,7 +53,6 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
 import org.netbeans.modules.uml.ui.support.NewPackageKind;
-import org.netbeans.modules.uml.ui.swing.drawingarea.DiagramEngine;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -458,7 +457,7 @@ public final class AddPackageVisualPanel1 extends JPanel
              break;
           case PACKAGE_NAME_CONFLICT:
              errorMsg = NbBundle.getMessage(
-                   DiagramEngine.class, "IDS_NAMESPACECOLLISION");
+                   NewElementUI.class, "IDS_NAMESPACECOLLISION");
              break;
           case INVALID_DIAGRAME_NAME:
              errorMsg = NbBundle.getMessage(AddPackageVisualPanel1.class,

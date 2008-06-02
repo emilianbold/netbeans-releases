@@ -45,41 +45,141 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.gsf.api.GsfLanguage;
+import org.netbeans.modules.gsf.api.HintsProvider;
+import org.openide.filesystems.FileObject;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
+import org.netbeans.modules.gsf.api.DeclarationFinder;
+import org.netbeans.modules.gsf.api.Formatter;
+import org.netbeans.modules.gsf.api.Indexer;
+import org.netbeans.modules.gsf.api.InstantRenamer;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
+import org.netbeans.modules.gsf.api.OccurrencesFinder;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.gsf.api.StructureScanner;
+import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
+import org.netbeans.modules.groovy.editor.StructureAnalyzer;
 import org.netbeans.modules.groovy.editor.GroovyUtils;
 import org.netbeans.modules.groovy.gsp.lexer.api.GspTokenId;
-import org.openide.filesystems.FileObject;
 
-public class GspLanguage implements GsfLanguage {
+
+public class GspLanguage extends DefaultLanguageConfig {
 
     public GspLanguage() {
     }
 
+    @Override
     public String getLineCommentPrefix() {
         return GroovyUtils.getLineCommentPrefix();
     }
 
+    @Override
     public boolean isIdentifierChar(char c) {
         return GroovyUtils.isIdentifierChar(c);
     }
 
+    @Override
     public Language getLexerLanguage() {
         return GspTokenId.language();
     }
 
+    @Override
     public Collection<FileObject> getCoreLibraries() {
         return Collections.<FileObject>emptyList();
     }
 
+    @Override
     public String getDisplayName() {
         return "GSP";
     }
 
+    @Override
     public String getPreferredExtension() {
         return "gsp"; // NOI18N
     }
 
+    @Override
     public Map<String,String> getSourceGroupNames() {
         return Collections.emptyMap();
+    }
+    
+    @Override
+    public boolean isUsingCustomEditorKit() {
+        return true;
+    }
+
+    @Override
+    public CodeCompletionHandler getCompletionHandler() {
+        return null;
+    }
+
+    @Override
+    public DeclarationFinder getDeclarationFinder() {
+        return null;
+    }
+
+    @Override
+    public boolean hasFormatter() {
+        return false;
+    }
+    
+    @Override
+    public Formatter getFormatter() {
+        return null;
+    }
+
+    @Override
+    public Indexer getIndexer() {
+        return null;
+    }
+
+    @Override
+    public InstantRenamer getInstantRenamer() {
+        return null;
+    }
+
+    @Override
+    public KeystrokeHandler getKeystrokeHandler() {
+        return null;
+    }
+
+    @Override
+    public boolean hasOccurrencesFinder() {
+        return false;
+    }
+
+    @Override
+    public OccurrencesFinder getOccurrencesFinder() {
+        return null;
+    }
+
+    @Override
+    public Parser getParser() {
+        return null;
+    }
+
+    @Override
+    public SemanticAnalyzer getSemanticAnalyzer() {
+        return null;
+    }
+
+    @Override
+    public boolean hasStructureScanner() {
+        return true;
+    }
+    
+    @Override
+    public StructureScanner getStructureScanner() {
+        return new StructureAnalyzer();
+    }
+
+    @Override
+    public boolean hasHintsProvider() {
+        return false;
+    }
+
+    @Override
+    public HintsProvider getHintsProvider() {
+        return null;
     }
 }

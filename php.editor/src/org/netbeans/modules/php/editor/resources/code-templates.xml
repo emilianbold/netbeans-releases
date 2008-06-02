@@ -67,8 +67,7 @@ ${cursor}]]>
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.echo" abbreviation="eco">
         <code>
 <![CDATA[echo("${message}");
-${cursor}
-]]>
+${cursor}]]>
         </code>
     </codetemplate>
     

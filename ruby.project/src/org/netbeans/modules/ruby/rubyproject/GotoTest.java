@@ -388,8 +388,6 @@ public class GotoTest implements TestLocator {
                                 }
                             } catch (BadLocationException ble) {
                                 Exceptions.printStackTrace(ble);
-                            } catch (IOException ioe) {
-                                Exceptions.printStackTrace(ioe);
                             }
                         }
 

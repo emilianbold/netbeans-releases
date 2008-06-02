@@ -61,8 +61,6 @@ import org.netbeans.modules.uml.core.support.umlutils.IDataFormatter;
 import org.netbeans.modules.uml.core.workspacemanagement.IWorkspace;
 
 import org.netbeans.modules.uml.ui.support.applicationmanager.IAcceleratorManager;
-import org.netbeans.modules.uml.ui.support.applicationmanager.IPresentationResourceMgr;
-import org.netbeans.modules.uml.ui.support.applicationmanager.IPresentationTypesMgr;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProduct;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProductDiagramManager;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProductProjectManager;
@@ -73,8 +71,8 @@ import org.netbeans.modules.uml.ui.support.messaging.IProgressDialog;
 import org.netbeans.modules.uml.ui.support.messaging.IMessenger;
 import org.netbeans.modules.uml.core.scm.ISCMIntegrator;
 import org.netbeans.modules.uml.ui.swing.propertyeditor.IPropertyEditor;
-import org.netbeans.modules.uml.ui.addins.diagramcreator.IDiagCreatorAddIn;
-import org.netbeans.modules.uml.ui.addins.diagramcreator.DiagCreatorAddIn;
+//import org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator.IDiagCreatorAddIn;
+//import org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator.DiagCreatorAddIn;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeModel;
 import org.openide.util.NbPreferences;
 
@@ -465,9 +463,9 @@ public class ProductHelper
 //		return null;
 //	}
         
-        public static IDiagCreatorAddIn getDiagCreatorAddIn() {
-            return new DiagCreatorAddIn();
-        }
+//        public static IDiagCreatorAddIn getDiagCreatorAddIn() {
+//            return new DiagCreatorAddIn();
+//        }
 
 	/// Returns the unnamed element (also called default element name)
 	public String getDefaultElementName()
@@ -524,31 +522,32 @@ public class ProductHelper
       // TODO Auto-generated method stub
       
    }
-
-   public static IPresentationTypesMgr getPresentationTypesMgr()
-   {
-		IPresentationTypesMgr pPresentationTypesMgr = null;
-		
-		IProduct pProduct = getProduct();
-		if (pProduct != null)
-		{
-			pPresentationTypesMgr = pProduct.getPresentationTypesMgr();
-		}
-		
-		return pPresentationTypesMgr;
-   }
+// not used
+//   public static IPresentationTypesMgr getPresentationTypesMgr()
+//   {
+//		IPresentationTypesMgr pPresentationTypesMgr = null;
+//		
+//		IProduct pProduct = getProduct();
+//		if (pProduct != null)
+//		{
+//			pPresentationTypesMgr = pProduct.getPresentationTypesMgr();
+//		}
+//		
+//		return pPresentationTypesMgr;
+//   }
    
-   public static IPresentationResourceMgr getPresentationResourceMgr()
-   {
-   		IPresentationResourceMgr pMgr = null;
-
-		IProduct pProduct = getProduct();
-		if (pProduct != null)
-		{
-			pMgr = pProduct.getPresentationResourceMgr();
-		}
-		return pMgr;
-   }
+   // TODO: meteora
+//   public static IPresentationResourceMgr getPresentationResourceMgr()
+//   {
+//   		IPresentationResourceMgr pMgr = null;
+//
+//		IProduct pProduct = getProduct();
+//		if (pProduct != null)
+//		{
+//			pMgr = pProduct.getPresentationResourceMgr();
+//		}
+//		return pMgr;
+//   }
    
 	/// The name of the application IDE that this DLL is running in
 	//CComBSTR m_bsApplicationIDEName; // access only via GetApplicationIDEName()

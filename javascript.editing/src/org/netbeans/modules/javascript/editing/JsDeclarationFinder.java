@@ -69,7 +69,6 @@ import org.netbeans.modules.javascript.editing.lexer.Call;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -217,13 +216,11 @@ public class JsDeclarationFinder implements DeclarationFinder {
 
     public DeclarationLocation findDeclaration(CompilationInfo info, int lexOffset) {
 
-        final Document document;
-        try {
-            document = info.getDocument();
-        } catch (Exception e) {
-            Exceptions.printStackTrace(e);
+        final Document document = info.getDocument();
+        if (document == null) {
             return DeclarationLocation.NONE;
         }
+
         final BaseDocument doc = (BaseDocument)document;
 
         JsParseResult parseResult = AstUtilities.getParseResult(info);

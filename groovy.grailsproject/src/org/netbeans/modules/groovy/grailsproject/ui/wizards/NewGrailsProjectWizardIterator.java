@@ -34,25 +34,28 @@ import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.groovy.grailsproject.execution.LineSnooper;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import org.openide.util.NbBundle;
 import java.io.File;
+import java.nio.charset.Charset;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import java.util.concurrent.Callable;
+import org.netbeans.modules.extexecution.api.Descriptor;
+import org.netbeans.modules.extexecution.api.ExecutionService;
+import org.netbeans.modules.extexecution.api.input.InputProcessor;
+import org.netbeans.modules.extexecution.api.input.InputProcessors;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.GrailsProjectSettings;
-import org.netbeans.modules.groovy.grailsproject.execution.Descriptor;
-import org.netbeans.modules.groovy.grailsproject.execution.ExecutionService;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.util.Task;
+import org.openide.windows.InputOutput;
 
 
 
@@ -98,7 +101,7 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
             Callable<Process> callable = ExecutionSupport.getInstance().createCreateApp(
                     (File) wiz.getProperty("projectFolder")); // NOI18N
             ExecutionService service = new ExecutionService(callable, displayName,
-                    new CreateDescriptor(new ProgressSnooper(handle, 100, 2)));
+                    new CreateDescriptor(InputProcessors.bridge(new ProgressSnooper(handle, 100, 2))));
 
             Task task = service.run();
             task.waitFinished();
@@ -217,18 +220,22 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
 
     private static class CreateDescriptor implements Descriptor {
 
-        private final LineSnooper snooper;
+        private final InputProcessor processor;
 
-        public CreateDescriptor(LineSnooper snooper) {
-            this.snooper = snooper;
+        public CreateDescriptor(InputProcessor processor) {
+            this.processor = processor;
         }
-        
+
+        public InputOutput getInputOutput() {
+            return null;
+        }
+
         public FileObject getFileObject() {
             return null;
         }
 
-        public LineSnooper getOutputSnooper() {
-            return snooper;
+        public InputProcessor getOutputSnooper() {
+            return processor;
         }
 
         public Runnable getPostExecution() {

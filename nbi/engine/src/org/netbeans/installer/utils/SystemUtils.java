@@ -105,9 +105,6 @@ public final class SystemUtils {
     
     private static Platform currentPlatform;
     
-    private static File localDirectory;
-    private static FinishHandler finishHandler;
-    
     // string resolution ////////////////////////////////////////////////////////////
     public static String resolveString(String string) {
         return resolveString(string, SystemUtils.class.getClassLoader());
@@ -120,16 +117,23 @@ public final class SystemUtils {
             return null;
         }
         // N for Name
-        try {
-            parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{install\\}", StringUtils.escapeRegExp(getDefaultApplicationsLocation().getAbsolutePath()));
-        } catch (NativeException e) {
-            ErrorManager.notifyError(ResourceUtils.getString(SystemUtils.class,
-                    ERROR_CANNOT_GET_DEFAULT_APPS_LOCATION_KEY), e);
+        if (parsed.contains("$N{install}")) {
+            try {
+                parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{install\\}", StringUtils.escapeRegExp(getDefaultApplicationsLocation().getAbsolutePath()));
+            } catch (NativeException e) {
+                ErrorManager.notifyError(ResourceUtils.getString(SystemUtils.class,
+                        ERROR_CANNOT_GET_DEFAULT_APPS_LOCATION_KEY), e);
+            }
         }
-        
-        parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{home\\}", StringUtils.escapeRegExp(getUserHomeDirectory().getAbsolutePath()));
-        parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{temp\\}", StringUtils.escapeRegExp(getTempDirectory().getAbsolutePath()));
-        parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{current\\}", StringUtils.escapeRegExp(getCurrentDirectory().getAbsolutePath()));
+        if (parsed.contains("$N{home}")) {
+            parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{home\\}", StringUtils.escapeRegExp(getUserHomeDirectory().getAbsolutePath()));
+        }
+        if (parsed.contains("$N{temp}")) {
+            parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{temp\\}", StringUtils.escapeRegExp(getTempDirectory().getAbsolutePath()));
+        }
+        if (parsed.contains("$N{current}")) {
+            parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{current\\}", StringUtils.escapeRegExp(getCurrentDirectory().getAbsolutePath()));
+        }
         
         Matcher matcher;
         

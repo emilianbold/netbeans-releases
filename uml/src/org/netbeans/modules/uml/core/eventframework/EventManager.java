@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.uml.core.eventframework;
 
+import java.util.ArrayList;
 import org.netbeans.modules.uml.common.ETSystem;
 
 import java.lang.ref.WeakReference;
@@ -228,11 +229,21 @@ public class EventManager<Element>
 			{
 				//validateSink(obj);
 				func.execute(m_listeners.elementAt(i).get());
-				//check the result and if required call dispatchCancelEvent
 				
+                                //check the result and if required call dispatchCancelEvent
 				if (!func.isResultOK())
 				{
-					//DispatchCancelledEvent( i, event );
+                                    // We should notify every the listeners
+                                    // that have already accepted the change.
+                                    // However, since I do not have a use case
+                                    // to use this feature, and I do not have
+                                    // a test case to make sure I am not about
+                                    // to mess anything up, I am going to 
+                                    // comment this code out.  
+                                    // 
+                                    // If we ever need this feature simply 
+                                    // uncomment the following line.
+//                                    dispatchCancelledEvent( i, func );
 					break;
 				}
 			}
@@ -245,6 +256,25 @@ public class EventManager<Element>
 		}
 	}
 	
+        private void dispatchCancelledEvent(int whoCancelled, EventFunctor func)
+        {
+            // Since the notifyListenersWithQualifiedProceed iterates
+            // backward, I have to get the last few listeners
+            
+            ArrayList< Object > notifiedList = new ArrayList < Object >();
+            for(int i = m_listeners.size() - 1; i > whoCancelled; i--)
+            {
+                notifiedList.add(m_listeners.elementAt(i).get());
+            }
+            
+            Object[] notifiedListeners = new Object[notifiedList.size()];
+            notifiedList.toArray(notifiedListeners);
+            
+            Object canceledListener = m_listeners.elementAt(whoCancelled).get();
+            m_dispatcher.fireEventDispatchCancelled(notifiedListeners, 
+                                                    canceledListener, 
+                                                    null);
+        }
 	/**
 	 * @return
 	 */

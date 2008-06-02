@@ -188,11 +188,11 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
             //write the default/fixed value of the element, if any
             writer.write(getComponentValue(element));
         }
-        if(component instanceof AnyElement) {
-            AnyElement element = (AnyElement)component;
-            buffer.append((getTab() == null) ? element : getTab() + element);
-            writer.write(buffer.toString() + "\n");
-        }
+//        if(component instanceof AnyElement) {
+//            AnyElement element = (AnyElement)component;
+//            buffer.append((getTab() == null) ? element : getTab() + element);
+//            writer.write(buffer.toString() + "\n");
+//        }
         
         
     }

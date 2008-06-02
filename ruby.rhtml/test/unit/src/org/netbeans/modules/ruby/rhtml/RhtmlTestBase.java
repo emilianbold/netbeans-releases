@@ -45,8 +45,8 @@ import org.netbeans.modules.gsf.GsfIndentTaskFactory;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
-import org.netbeans.modules.ruby.BracketCompleter;
-import org.netbeans.modules.ruby.RenameHandler;
+import org.netbeans.modules.ruby.RubyKeystrokeHandler;
+import org.netbeans.modules.ruby.RubyRenameHandler;
 import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.modules.ruby.rhtml.editor.RhtmlKit;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
@@ -55,7 +55,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.modules.gsf.api.GsfLanguage;
+import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 
 /**
  *
@@ -71,7 +71,7 @@ public abstract class RhtmlTestBase extends RubyTestBase {
     }
 
     @Override
-    protected GsfLanguage getPreferredLanguage() {
+    protected DefaultLanguageConfig getPreferredLanguage() {
         return new RhtmlLanguage();
     }
     
@@ -101,8 +101,8 @@ public abstract class RhtmlTestBase extends RubyTestBase {
         if (!LanguageRegistry.getInstance().isSupported(RhtmlTokenId.MIME_TYPE)) {
             Language dl = new Language("org/netbeans/modules/ruby/jrubydoc.png", RhtmlTokenId.MIME_TYPE, 
                     actions, new RhtmlLanguage(), 
-                    null, new RhtmlCompleter(), new RenameHandler(), new RhtmlFinder(), 
-                    null, new BracketCompleter(), null, null, null, true);
+                    null, new RhtmlCompleter(), new RubyRenameHandler(), new RhtmlFinder(), 
+                    null, new RubyKeystrokeHandler(), null, null, null, true);
             List<Language> languages = new ArrayList<Language>();
             languages.add(dl);
             registry.addLanguages(languages);
