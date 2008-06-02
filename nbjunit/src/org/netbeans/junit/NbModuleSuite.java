@@ -507,12 +507,19 @@ public class NbModuleSuite {
         
         static void preparePatches(String path, Properties prop) {
             Pattern tests = Pattern.compile(".*\\" + File.separator + "([^\\" + File.separator + "]+)\\" + File.separator + "tests\\.jar");
+            StringBuilder sb = new StringBuilder();
+            String sep = "";
             for (String jar : path.split(File.pathSeparator)) {
                 Matcher m = tests.matcher(jar);
                 if (m.matches()) {
-                    prop.setProperty("netbeans.patches." + m.group(1).replace('-', '.'), jar);
+                    // in case we need it one day, let's add a switch to Configuration
+                    // and choose the following line instead of netbeans.systemclassloader.patches
+                    // prop.setProperty("netbeans.patches." + m.group(1).replace('-', '.'), jar);
+                    sb.append(sep).append(jar);
+                    sep = File.pathSeparator;
                 }
             }
+            prop.setProperty("netbeans.systemclassloader.patches", sb.toString());
         }
 
         private static String asString(InputStream is, boolean close) throws IOException {

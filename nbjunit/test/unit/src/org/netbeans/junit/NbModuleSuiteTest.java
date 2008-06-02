@@ -39,15 +39,14 @@
 
 package org.netbeans.junit;
 
+import test.pkg.not.in.junit.NbModuleSuiteIns;
+import test.pkg.not.in.junit.NbModuleSuiteT;
 import java.io.File;
 import org.netbeans.testjunit.AskForOrgOpenideUtilEnumClass;
-import java.lang.reflect.Field;
 import java.util.Properties;
 import java.util.Set;
 import junit.framework.Test;
 import junit.framework.TestCase;
-import org.netbeans.insane.scanner.ObjectMap;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -75,7 +74,7 @@ public class NbModuleSuiteTest extends TestCase {
     }
 
     public void testRun() {
-        Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(T.class).gui(false));
+        Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(NbModuleSuiteT.class).gui(false));
         junit.textui.TestRunner.run(instance);
         
         assertEquals("OK", System.getProperty("t.one"));
@@ -85,24 +84,29 @@ public class NbModuleSuiteTest extends TestCase {
     public void testPreparePathes() {
         Properties p = new Properties();
         
-        NbModuleSuite.S.preparePatches(
-            File.separator + "x" + File.separator + "c:org-openide-util.jar" + File.pathSeparator + 
+        String prop = File.separator + "x" + File.separator + "c:org-openide-util.jar" + File.pathSeparator + 
             File.separator + "x" + File.separator + "org-openide-nodes.jar" + File.pathSeparator +
             File.separator + "x" + File.separator + "org-openide-util" + File.separator  + "tests.jar" + File.pathSeparator +
-            File.separator + "x" + File.separator + "org-openide-filesystems.jar", p);
+            File.separator + "x" + File.separator + "org-openide-filesystems.jar";
+        
+        NbModuleSuite.S.preparePatches(prop, p);
         
         
+        assertNull(
+            p.getProperty("netbeans.patches.org.openide.util")
+        );
         assertEquals(
             File.separator + "x" + File.separator + "org-openide-util" + File.separator  + "tests.jar",
-            p.getProperty("netbeans.patches.org.openide.util")
+            p.getProperty("netbeans.systemclassloader.patches")
         );
     }
 
-    public void testAccessToInsane() {
-        Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(Ins.class).gui(false));
+    public void testAccessToInsaneAndFS() {
+        Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(NbModuleSuiteIns.class).gui(false).enableModules(".*"));
         junit.textui.TestRunner.run(instance);
         
         assertProperty("ins.one", "OK");
+        assertProperty("ins.fs", "OK");
     }
 
     public void testOneCanEnumerateMethodsFromTheSuite() {
@@ -114,8 +118,9 @@ public class NbModuleSuiteTest extends TestCase {
         
         
         Test instance = NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(Ins.class).addTest("testOne").
+            NbModuleSuite.createConfiguration(NbModuleSuiteIns.class).addTest("testOne").
             addTest("testThree").gui(false)
+        
         );
         junit.textui.TestRunner.run(instance);
         
@@ -195,111 +200,6 @@ public class NbModuleSuiteTest extends TestCase {
         assertTrue("Util: " + s, s.contains("org.openide.util"));
         assertTrue("JUnit: " + s, s.contains("org.netbeans.libs.junit4"));
         assertTrue("insane: " + s, s.contains("org.netbeans.insane"));
-    }
-/*    
-    private static class ManifestClassLoader extends ClassLoader {
-        private final String manifest;
-        public ManifestClassLoader(ClassLoader parent, String manifest) {
-            super(parent);
-            this.manifest = manifest;
-        }
-
-        @Override
-        protected URL findResource(String name) {
-            try {
-                class H extends URLStreamHandler {
-
-                    @Override
-                    protected URLConnection openConnection(URL u) throws IOException {
-                        return new C(u);
-                    }
-
-                    class C extends URLConnection {
-
-                        StringBufferInputStream buf;
-
-                        public C(URL url) {
-                            super(url);
-                            buf = new StringBufferInputStream(url.getHost());
-                        }
-
-                        @Override
-                        public InputStream getInputStream() throws IOException {
-                            return buf;
-                        }
-
-                        @Override
-                        public void connect() throws IOException {
-                        }
-                    }
-                }
-
-                URL u = new URL("text:", manifest, 0, "", new H());
-                return u;
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            }
-        }
-
-        @Override
-        protected Enumeration<URL> findResources(String name) throws IOException {
-            return Collections.enumeration(Collections.singleton(findResource(name)));
-        }
-        
-    }
-*/    
-    public static class T extends TestCase {
-        public T(String t) {
-            super(t);
-        }
-
-        public void testOne() {
-            System.setProperty("t.one", "OK");
-        }
-
-        public void testFullhack() {
-            System.setProperty("t.hack", System.getProperty("netbeans.full.hack"));
-        }
-    }
-
-    public static class Ins extends TestCase 
-    implements org.netbeans.insane.scanner.Visitor {
-        public Ins(String t) {
-            super(t);
-        }
-
-        public void testOne() {
-            try {
-                Class<?> access = Class.forName("org.netbeans.insane.model.Support");
-                System.setProperty("ins.one", "OK");
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        
-        public void testSecond() {
-            System.setProperty("ins.two", "OK");
-        }
-
-        public void testThree() {
-            System.setProperty("ins.three", "OK");
-        }
-
-        public void visitClass(Class cls) {
-        }
-
-        public void visitObject(ObjectMap map, Object object) {
-        }
-
-        public void visitObjectReference(ObjectMap map, Object from, Object to, Field ref) {
-        }
-
-        public void visitArrayReference(ObjectMap map, Object from, Object to, int index) {
-        }
-
-        public void visitStaticReference(ObjectMap map, Object to, Field ref) {
-        }
     }
     
 }
