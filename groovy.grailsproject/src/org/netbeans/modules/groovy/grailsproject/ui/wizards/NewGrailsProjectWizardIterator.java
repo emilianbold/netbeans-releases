@@ -101,7 +101,7 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
             Callable<Process> callable = ExecutionSupport.getInstance().createCreateApp(
                     (File) wiz.getProperty("projectFolder")); // NOI18N
             ExecutionService service = new ExecutionService(callable, displayName,
-                    new CreateDescriptor(InputProcessors.bridge(new ProgressSnooper(handle, 100, 2), Charset.defaultCharset())));
+                    new CreateDescriptor(InputProcessors.bridge(new ProgressSnooper(handle, 100, 2))));
 
             Task task = service.run();
             task.waitFinished();

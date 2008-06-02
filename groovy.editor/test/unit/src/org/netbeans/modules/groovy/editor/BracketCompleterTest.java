@@ -46,7 +46,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 
 /**
@@ -60,11 +59,6 @@ public class BracketCompleterTest extends GroovyTestBase {
         super(testName);
     }
     
-    @Override
-    protected KeystrokeHandler getBracketCompletion() {
-        return new BracketCompleter();
-    }
-
     private void match(String original) throws BadLocationException {
         super.assertMatches(original);
     }

@@ -126,7 +126,7 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
                         serverCommand, GrailsProjectConfig.forProject(project), pls.getDomainClassName());
                 ExecutionService service = new ExecutionService(callable, displayName,
                         new DefaultDescriptor(project,
-                            InputProcessors.bridge(new ProgressSnooper(handle, 100, 2), Charset.defaultCharset()),
+                            InputProcessors.bridge(new ProgressSnooper(handle, 100, 2)),
                             null, false, false, true, true, false));
 
                 Task task = service.run();

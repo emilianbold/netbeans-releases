@@ -86,7 +86,7 @@ public class CreateWarFileAction extends AbstractAction implements LineProcessor
         Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
                 command, GrailsProjectConfig.forProject(prj)); // NOI18N
         ExecutionService service = new ExecutionService(callable, displayName,
-                new DefaultDescriptor(prj, autodeploy ? InputProcessors.bridge(this, Charset.defaultCharset()) : null, null, false));
+                new DefaultDescriptor(prj, autodeploy ? InputProcessors.bridge(this) : null, null, false));
 
         service.run();
     }

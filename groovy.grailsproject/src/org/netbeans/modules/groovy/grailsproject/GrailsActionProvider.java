@@ -151,7 +151,7 @@ public class GrailsActionProvider implements ActionProvider {
 
         ExecutionService service = new ExecutionService(callable, displayName,
                 new DefaultDescriptor(project,
-                    InputProcessors.bridge(new ServerURLProcessor(project), Charset.defaultCharset()),
+                    InputProcessors.bridge(new ServerURLProcessor(project)),
                     runnable, true));
 
         service.run();

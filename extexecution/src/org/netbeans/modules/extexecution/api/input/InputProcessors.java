@@ -40,12 +40,14 @@
 package org.netbeans.modules.extexecution.api.input;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.charset.Charset;
+import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.extexecution.api.print.ConvertedLine;
+import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.netbeans.modules.extexecution.input.LineParsingHelper;
 import org.openide.util.Parameters;
 import org.openide.windows.OutputWriter;
@@ -62,39 +64,44 @@ public final class InputProcessors {
         super();
     }
 
-    public static InputProcessor bridge(LineProcessor lineProcessor, Charset charset) {
-        return new Bridge(lineProcessor, charset);
+    public static InputProcessor bridge(LineProcessor lineProcessor) {
+        return new Bridge(lineProcessor);
     }
 
     public static InputProcessor proxy(InputProcessor... processors) {
-        return new ProxyOutputProcessor(processors);
+        return new ProxyInputProcessor(processors);
     }
 
-    public static InputProcessor copying(OutputStream out) {
-        return new CopyingOutputProcessor(out);
+    public static InputProcessor copying(Writer writer) {
+        return new CopyingInputProcessor(writer);
     }
 
-    public static InputProcessor printing(OutputWriter out, Charset charset, boolean resetEnabled) {
-        return new PrintingOutputProcessor(out, charset, resetEnabled);
+    public static InputProcessor printing(OutputWriter out, boolean resetEnabled) {
+        return printing(out, null, resetEnabled);
+    }
+    
+    public static InputProcessor ansiStripping(InputProcessor delegate) {
+        return new AnsiStrippingInputProcessor(delegate);
+    }
+
+    public static InputProcessor printing(OutputWriter out, LineConvertor convertor, boolean resetEnabled) {
+        return new PrintingInputProcessor(out, convertor, resetEnabled);
     }
 
     private static class Bridge implements InputProcessor {
 
         private final LineProcessor lineProcessor;
 
-        private final Charset charset;
-
         private final LineParsingHelper helper = new LineParsingHelper();
 
-        public Bridge(LineProcessor lineProcessor, Charset charset) {
-            Parameters.notNull("charset", charset);
+        public Bridge(LineProcessor lineProcessor) {
+            Parameters.notNull("lineProcessor", lineProcessor);
 
             this.lineProcessor = lineProcessor;
-            this.charset = charset;
         }
 
-        public final void processInput(byte[] bytes) {
-            String[] lines = helper.parse(bytes, charset);
+        public final void processInput(char[] chars) {
+            String[] lines = helper.parse(chars);
             for (String line : lines) {
                 lineProcessor.processLine(line);
             }
@@ -109,11 +116,11 @@ public final class InputProcessors {
         }
     }
 
-    private static class ProxyOutputProcessor implements InputProcessor {
+    private static class ProxyInputProcessor implements InputProcessor {
 
         private final List<InputProcessor> processors = new ArrayList<InputProcessor>();
 
-        public ProxyOutputProcessor(InputProcessor... processors) {
+        public ProxyInputProcessor(InputProcessor... processors) {
             for (InputProcessor processor : processors) {
                 if (processor != null) {
                     this.processors.add(processor);
@@ -121,9 +128,9 @@ public final class InputProcessors {
             }
         }
 
-        public void processInput(byte[] bytes) throws IOException {
+        public void processInput(char[] chars) throws IOException {
             for (InputProcessor processor : processors) {
-                processor.processInput(bytes);
+                processor.processInput(chars);
             }
         }
 
@@ -134,41 +141,44 @@ public final class InputProcessors {
         }
     }
 
-    private static class PrintingOutputProcessor implements InputProcessor {
+    private static class PrintingInputProcessor implements InputProcessor {
 
         private final OutputWriter out;
 
-        private final Charset charset;
+        private final LineConvertor convertor;
 
         private final boolean resetEnabled;
 
         private final LineParsingHelper helper = new LineParsingHelper();
 
-        public PrintingOutputProcessor(OutputWriter out, Charset charset, boolean resetEnabled) {
+        public PrintingInputProcessor(OutputWriter out, LineConvertor convertor,
+                boolean resetEnabled) {
+
             assert out != null;
 
             this.out = out;
-            this.charset = charset;
+            this.convertor = convertor;
             this.resetEnabled = resetEnabled;
         }
 
-        public void processInput(byte[] bytes) {
-            assert bytes != null;
+        public void processInput(char[] chars) {
+            assert chars != null;
 
-            String[] lines = helper.parse(bytes, charset);
+            String[] lines = helper.parse(chars);
             for (String line : lines) {
-                LOGGER.log(Level.FINEST, "{0} \\n", line);
+                LOGGER.log(Level.FINEST, "{0}\\n", line);
 
-                out.println(line);
+                convert(line);
                 out.flush();
             }
+
             String line = helper.getTrailingLine(true);
             if (line != null) {
                 LOGGER.log(Level.FINEST, line);
 
                 out.print(line);
+                out.flush();
             }
-            out.flush();
         }
 
         public void reset() throws IOException {
@@ -178,24 +188,99 @@ public final class InputProcessors {
 
             out.reset();
         }
+
+        private void convert(String line) {
+            if (convertor != null) {
+                for (ConvertedLine converted : convertor.convert(line)) {
+                    if (converted.getListener() == null) {
+                        out.println(converted.getText());
+                    } else {
+                        try {
+                            out.println(converted.getText(), converted.getListener());
+                        } catch (IOException ex) {
+                            LOGGER.log(Level.INFO, null, ex);
+                            out.println(converted.getText());
+                        }
+                    }
+                }
+            } else {
+                out.println(line);
+            }
+        }
     }
 
-    private static class CopyingOutputProcessor implements InputProcessor {
+    private static class CopyingInputProcessor implements InputProcessor {
 
-        private final OutputStream os;
+        private final Writer writer;
 
-        public CopyingOutputProcessor(OutputStream os) {
-            this.os = os;
+        public CopyingInputProcessor(Writer writer) {
+            this.writer = writer;
         }
 
-        public void processInput(byte[] bytes) throws IOException {
-            os.write(bytes);
-            os.flush();
+        public void processInput(char[] chars) throws IOException {
+            LOGGER.log(Level.FINEST, Arrays.toString(chars));
+            writer.write(chars);
+            writer.flush();
         }
 
         public void reset() {
             // noop
         }
 
+    }
+    
+    private static class AnsiStrippingInputProcessor implements InputProcessor {
+        
+        private final InputProcessor delegate;
+
+        public AnsiStrippingInputProcessor(InputProcessor delegate) {
+            this.delegate = delegate;
+        }
+
+        public void processInput(char[] chars) throws IOException {
+            // FIXME optimize me
+            String sequence = new String(chars);
+            if (containsAnsiColors(sequence)) {
+                sequence = stripAnsiColors(sequence);
+            }
+            delegate.processInput(sequence.toCharArray());
+        }
+
+        public void reset() throws IOException {
+            // noop
+        }
+        
+        private static boolean containsAnsiColors(String sequence) {
+            // RSpec will color output with ANSI color sequence terminal escapes
+            return sequence.indexOf("\033[") != -1; // NOI18N
+        }
+
+        private static String stripAnsiColors(String sequence) {
+            StringBuilder sb = new StringBuilder(sequence.length());
+            int index = 0;
+            int max = sequence.length();
+            while (index < max) {
+                int nextEscape = sequence.indexOf("\033[", index); // NOI18N
+                if (nextEscape == -1) {
+                    nextEscape = sequence.length();
+                }
+
+                for (int n = (nextEscape == -1) ? max : nextEscape; index < n; index++) {
+                    sb.append(sequence.charAt(index));
+                }
+
+                if (nextEscape != -1) {
+                    for (; index < max; index++) {
+                        char c = sequence.charAt(index);
+                        if (c == 'm') {
+                            index++;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return sb.toString();
+        }        
     }
 }
