@@ -114,12 +114,19 @@ public final class AnalyzeFolder extends AbstractAction implements ContextAwareA
     
     public final static class ToolsAction extends SystemAction implements ContextAwareAction {
 
+        private Action delegate;
+        
         public ToolsAction() {
-            setEnabled(false);
+            delegate = new AnalyzeFolder();
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return delegate.isEnabled();
         }
 
         public void actionPerformed(ActionEvent e) {
-            throw new IllegalStateException();
+            delegate.actionPerformed(e);
         }
 
         public Action createContextAwareInstance(Lookup actionContext) {
