@@ -333,6 +333,16 @@ public class ProjectsRootNodeTest extends NbTestCase {
         assertEquals("Prj <mod>", node.getHtmlDisplayName());
         assertTrue(node.getIcon(BeanInfo.ICON_COLOR_16x16) instanceof BadgedImage);
         assertEquals(new HashSet<FileObject>(Arrays.asList(k1, k2)), fs.badgedFiles);
+        FileObject k3 = root.createData("again");
+        fs.nameBadge = " +";
+        fs.fireChange(false, true, k3);
+        node.task.waitFinished();
+        assertEquals(2, nameChanges.intValue());
+        assertEquals(1, iconChanges.intValue());
+        assertEquals("Prj +", node.getDisplayName());
+        assertEquals("Prj <mod>", node.getHtmlDisplayName());
+        assertTrue(node.getIcon(BeanInfo.ICON_COLOR_16x16) instanceof BadgedImage);
+        assertEquals(new HashSet<FileObject>(Arrays.asList(k1, k2, k3)), fs.badgedFiles);
     }
 
 }
