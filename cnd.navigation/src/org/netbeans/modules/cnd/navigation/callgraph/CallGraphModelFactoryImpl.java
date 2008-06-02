@@ -37,65 +37,61 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.callgraph.cndimpl;
+package org.netbeans.modules.cnd.navigation.callgraph;
 
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.callgraph.api.Call;
-import org.netbeans.modules.cnd.callgraph.api.Function;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
+import org.netbeans.modules.cnd.callgraph.api.CallModel;
+import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphModelFactory;
+import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphUI;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author Alexander Simon
  */
-public class CallImpl implements Call {
+public class CallGraphModelFactoryImpl extends CallGraphModelFactory {
 
-    private Function owner;
-    private CsmReference reference;
-    private Function function;
-    private boolean nameOrder;
-    
-    public CallImpl(CsmFunction owner, CsmReference reference, CsmFunction function, boolean nameOrder){
-        this.owner = new FunctionImpl(owner);
-        this.reference = reference;
-        this.function = new FunctionImpl(function);
-        this.nameOrder = nameOrder;
-    }
-
-    public Object getReferencedCall() {
-        return reference;
-    }
-
-    public void open() {
-        CsmUtilities.openSource(reference);
-    }
-
-    public Function getCallee() {
-        return function;
-    }
-
-    public Function getCaller() {
-        return owner;
-    }
-
-    public int compareTo(Call o) {
-        if (nameOrder) {
-            return getCaller().getName().compareTo(o.getCaller().getName());
+    @Override
+    public CallModel getModel(Node[] activatedNodes) {
+        if (activatedNodes == null || activatedNodes.length == 0) {
+            return null;
         }
-        int diff = reference.getStartOffset() - ((CallImpl)o).reference.getStartOffset();
-        if (diff == 0) {
-             return getCallee().getName().compareTo(o.getCallee().getName());
-       }
-        return diff;
+        CsmFunction function = null;
+        CsmProject project = null;
+        CsmReference ref = CsmReferenceResolver.getDefault().findReference(activatedNodes[0]);
+        if (ref == null) {
+            return null;
+        }
+        project = ref.getContainingFile().getProject();
+        CsmObject obj = ref.getOwner();
+        if (CsmKindUtilities.isFunction(obj)) {
+            function = (CsmFunction) obj;
+        } else {
+            obj = ref.getReferencedObject();
+            if (CsmKindUtilities.isFunction(obj)) {
+                function = (CsmFunction) obj;
+            }
+        }
+        if (function != null) {
+            return new CallModelImpl(project, function);
+        }
+        return null;
     }
 
     @Override
-    public String toString() {
-        if (nameOrder) {
-            return getCallee().getName()+"<-"+getCaller().getName();
-        } else {
-            return getCaller().getName()+"->"+getCallee().getName();
+    public CallGraphUI getUI(CallModel model) {
+        if (model instanceof CallModelImpl) {
+            return new CallGraphUI(){
+                public boolean showGraph() {
+                    return Boolean.getBoolean("cnd.callgraph.showgraph");
+                }
+            };
         }
+        return null;
     }
 }

@@ -37,7 +37,7 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.callgraph.cndimpl;
+package org.netbeans.modules.cnd.navigation.callgraph;
 
 import java.util.ArrayList;
 import java.util.Collection;
