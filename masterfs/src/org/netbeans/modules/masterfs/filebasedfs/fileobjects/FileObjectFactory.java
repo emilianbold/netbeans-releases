@@ -196,45 +196,39 @@ public final class FileObjectFactory {
     }
 
 
-    private boolean checkCacheState(boolean exist, File file, Caller caller) {        
-        return checkCacheState(exist, file, caller, false);
-    }
-
-    private boolean checkCacheState(boolean exist, File file, Caller caller, boolean afterRecovering) {
-        if (!exist && (caller.equals(Caller.GetParent) || caller.equals(Caller.ToFileObject))) {
+    /** 
+     * Check cache consistence. It is called only from assertion, so it can be disabled
+     * from command line. Given file should or shouldn't exist according to given 
+     * expectedExists parameter. If the state is different than expected, it prints
+     * warning to console. It can happen when some module doesn't use filesystems API
+     * to handle files but directly uses java.io.File.
+     * @param expectedExists whether given file is expected to exist
+     * @param file checked file
+     * @param caller caller of this method
+     * @return always true.
+     */
+    private boolean checkCacheState(boolean expectedExists, File file, Caller caller) {
+        if (!expectedExists && (caller.equals(Caller.GetParent) || caller.equals(Caller.ToFileObject))) {
             return true;
         }
         if (isWarningEnabled() && caller != null && !caller.equals(Caller.GetChildern)) {
             boolean realExists = file.exists();
-            boolean notsame = exist != realExists;
-            if (!realExists) {
-                //test for broken symlinks
-                File p = file.getParentFile();
-                if (p != null) {
-                    File[] childs = p.listFiles();
-                    if (childs != null && Arrays.asList(childs).contains(p)) {                    
-                        return true;
-                    }
-                }                    
-            }
+            boolean notsame = expectedExists != realExists;
             if (notsame) {
-                if (afterRecovering) {
-                    printWarning(file, Status.RecoverFail);
-                } else {
-                    printWarning(file, Status.NoRecover);
+                if (!realExists) {
+                    //test for broken symlinks
+                    File p = file.getParentFile();
+                    if (p != null) {
+                        File[] children = p.listFiles();
+                        if (children != null && Arrays.asList(children).contains(file)) {
+                            return true;
+                        }
+                    }                    
                 }
-            } else {
-                if (afterRecovering) {
-                    printWarning(file, Status.RecoverSuccess);
-                }
+                printWarning(file);
             }
         }
         return true;
-    }
-
-    public static enum Status {
-
-        RecoverSuccess, RecoverFail, NoRecover
     }
 
     private Integer initRealExists(int initTouch) {
@@ -242,7 +236,7 @@ public final class FileObjectFactory {
         return retval;
     }
 
-    private void printWarning(File file, Status stat) {
+    private void printWarning(File file) {
         StringBuilder sb = new StringBuilder("WARNING(please REPORT):  Externally ");
         sb.append(file.exists() ? "created " : "deleted "); //NOI18N
         sb.append(file.isDirectory() ? "folder: " : "file: "); //NOI18N
