@@ -60,7 +60,7 @@ import org.netbeans.modules.gsf.api.HintFix;
 import org.netbeans.modules.gsf.api.HintSeverity;
 import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.Formatter;
+import org.netbeans.modules.ruby.RubyFormatter;
 import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.infrastructure.RubySelectionRule;
@@ -114,7 +114,7 @@ public class IntroduceHint extends RubySelectionRule {
                 return;
             }
             
-            if (Formatter.getTokenBalance(doc, start, end, true, RubyUtils.isRhtmlDocument(doc)) != 0) {
+            if (RubyFormatter.getTokenBalance(doc, start, end, true, RubyUtils.isRhtmlDocument(doc)) != 0) {
                 return;
             }
             

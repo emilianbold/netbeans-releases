@@ -749,6 +749,7 @@ public class SecurityPolicyModelHelper {
         if ("AckRequested".equals(name)) return new MessageHeader(MessageHeader.RM_ACKREQUESTED);   //NOI18N
         if ("SequenceAcknowledgement".equals(name)) return new MessageHeader(MessageHeader.RM_SEQUENCEACK);   //NOI18N
         if ("Sequence".equals(name)) return new MessageHeader(MessageHeader.RM_SEQUENCE);           //NOI18N
+        if ("CreateSequence".equals(name)) return new MessageHeader(MessageHeader.RM_CREATESEQUENCE);           //NOI18N
         return null;
     }
 
@@ -799,6 +800,10 @@ public class SecurityPolicyModelHelper {
         }
         if (MessageHeader.RM_SEQUENCE.equals(item)) {
             h.setName("Sequence");  //NOI18N
+            h.setNamespace(rmNspace);
+        }
+        if (MessageHeader.RM_CREATESEQUENCE.equals(item)) {
+            h.setName("CreateSequence");  //NOI18N
             h.setNamespace(rmNspace);
         }
         if (h != null) {

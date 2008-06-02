@@ -878,4 +878,20 @@ public class TokenFactories {
             return new WssGssKerberosV5ApReqToken11Impl(context.getModel(), element);
         }
     }    
+
+    public static class HashPasswordFactory extends ElementFactory {
+        @Override
+        public Set<QName> getElementQNames() {
+           HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.HASHPASSWORD.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
+        }
+        @Override
+        public WSDLComponent create(WSDLComponent context, Element element) {
+            return new HashPasswordImpl(context.getModel(), element);
+        }
+    }    
+    
 }

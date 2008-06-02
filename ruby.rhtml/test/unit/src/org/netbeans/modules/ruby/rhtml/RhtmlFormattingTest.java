@@ -32,7 +32,7 @@ import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.ruby.Formatter;
+import org.netbeans.modules.ruby.RubyFormatter;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -55,7 +55,7 @@ public class RhtmlFormattingTest extends RhtmlTestBase {
         
         BaseDocument bdoc = (BaseDocument) pane.getDocument();
 
-        Formatter formatter = getFormatter(preferences);
+        RubyFormatter formatter = getFormatter(preferences);
         String formatted = bdoc.getText(0, bdoc.getLength());
         
         doc.remove(0, doc.getLength());
