@@ -105,7 +105,10 @@ import org.openide.util.Utilities;
 
 public class CodeCompleter implements CodeCompletionHandler {
 
-    private static ImageIcon keywordIcon;
+    private static ImageIcon classIcon;
+    private static ImageIcon interfaceIcon;
+    private static ImageIcon packageIcon;
+    
     private boolean caseSensitive;
     private int anchor;
     private final Logger LOG = Logger.getLogger(CodeCompleter.class.getName());
@@ -375,39 +378,36 @@ public class CodeCompleter implements CodeCompletionHandler {
                             }
                         }
                         
-                        // If we found no packages, there might be some classes to propose ...
+                        // There might be some classes to propose. This is a pretty stupid way of getting
+                        // all types in a given package: Retrieve *all* types from the CL and filter-out
+                        // everything you are not interested in. 
 
-                        if(proposals.isEmpty()) {
-                            LOG.log(Level.FINEST, "No package proposal, looking for types ...");
-                            
-                            if(pkgPrefix.endsWith(".")){
-                                pkgPrefix = pkgPrefix.substring(0, pkgPrefix.length() -1 );
-                            }
-                            
-                            LOG.log(Level.FINEST, "Prefix = {0}", pkgPrefix);
-                            
-                            Set<org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement>> typeNames;
-                            typeNames = pathInfo.getClassIndex().getDeclaredTypes(pkgPrefix, org.netbeans.api.java.source.ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX,
-                                EnumSet.allOf(ClassIndex.SearchScope.class));
+                        LOG.log(Level.FINEST, "Now looking for types ...");
+                        LOG.log(Level.FINEST, "Prefix = >{0}<", pkgPrefix);
 
-                            for (org.netbeans.api.java.source.ElementHandle<TypeElement> typeName : typeNames) {
-                                LOG.log(Level.FINEST, "Found type: {0}", typeName.getQualifiedName());
+                        Set<org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement>> typeNames;
+
+                        typeNames = pathInfo.getClassIndex().getDeclaredTypes(".*", org.netbeans.api.java.source.ClassIndex.NameKind.CASE_INSENSITIVE_REGEXP,
+                            EnumSet.allOf(ClassIndex.SearchScope.class));
+
+                        for (org.netbeans.api.java.source.ElementHandle<TypeElement> typeName : typeNames) {
+
+                            String fqn = typeName.getQualifiedName();
+                            if (fqn.startsWith(pkgPrefix) && 
+                                !fqn.matches(".*\\.\\d$")) {
                                 
-//                                
-//                                javax.lang.model.element.ElementKind ek = typeName.getKind();
-//
-//                                if (ek == javax.lang.model.element.ElementKind.CLASS ||
-//                                    ek == javax.lang.model.element.ElementKind.INTERFACE) {
-//                                    String fqnName = typeName.getQualifiedName();
-//                                    LOG.log(Level.FINEST, "Found     : " + fqnName);
-// 
-//                                }
+                                if(!isPackageAlreadyProposed(pkgSet, fqn)){
+                                    javax.lang.model.element.ElementKind ek = typeName.getKind();
 
+                                    if (ek == javax.lang.model.element.ElementKind.CLASS ||
+                                        ek == javax.lang.model.element.ElementKind.INTERFACE) {
+                                        LOG.log(Level.FINEST, "Kind/Name: {0}/{1}", new Object[]{ek, fqn});
+                                        fqn = fqn.substring(pkgPrefix.length());
+                                        proposals.add(new TypeItem(fqn, anchor, request, ek));
+                                    }
+                                }
                             }
-                            
-
                         }
-                        
                         return true;
                     }
                 
@@ -415,12 +415,20 @@ public class CodeCompleter implements CodeCompletionHandler {
                 LOG.log(Level.FINEST, "BadLocationException: {0}", ex);
                 return false;
             }
-            
         }
-
         return false;
     }
 
+    
+    boolean isPackageAlreadyProposed (Set<String> pkgSet, String prefix ) {
+        for (String singlePackage : pkgSet) {
+            if(prefix.startsWith(singlePackage)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     
     /**
      * Complete the methods invocable on a class.
@@ -867,7 +875,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         public String getInsertPrefix() {
             if (symbol) {
-                return ":" + getName();
+                return "." + getName();
             } else {
                 return getName();
             }
@@ -1001,7 +1009,7 @@ public class CodeCompleter implements CodeCompletionHandler {
                     if (!simpleSig.equals("")) {
                         simpleSig = simpleSig + ", ";
                     }
-                    simpleSig = simpleSig + stripPackage(param);
+                    simpleSig = simpleSig + NbUtilities.stripPackage(param);
                 }
 
                 formatter.appendText("(" + simpleSig + ")");
@@ -1025,7 +1033,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             // no FQN return types but only the classname, please:
 
             String retType = method.getReturnType().toString();
-            retType = stripPackage(retType);
+            retType = NbUtilities.stripPackage(retType);
 
             formatter.appendHtml(retType);
 
@@ -1039,30 +1047,16 @@ public class CodeCompleter implements CodeCompletionHandler {
                 return null;
             }
 
-            if (keywordIcon == null) {
-                keywordIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GROOVY_METHOD));
+            if (classIcon == null) {
+                classIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GROOVY_METHOD));
             }
 
-            return keywordIcon;
+            return classIcon;
         }
 
         @Override
         public Set<Modifier> getModifiers() {
             return Collections.emptySet();
-        }
-
-        private String stripPackage(String retType) {
-
-            if (retType.contains(".")) {
-                int idx = retType.lastIndexOf(".");
-                retType = retType.substring(idx + 1);
-            }
-
-            // every now and than groovy comes with tailing
-            // semicolons. We got to get rid of them.
-
-            retType.replace(";", "");
-            return retType;
         }
 
         @Override
@@ -1114,11 +1108,11 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         @Override
         public ImageIcon getIcon() {
-            if (keywordIcon == null) {
-                keywordIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GROOVY_KEYWORD));
+            if (classIcon == null) {
+                classIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GROOVY_KEYWORD));
             }
 
-            return keywordIcon;
+            return classIcon;
         }
 
         @Override
@@ -1159,11 +1153,11 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         @Override
         public ImageIcon getIcon() {
-            if (keywordIcon == null) {
-                keywordIcon = new ImageIcon(org.openide.util.Utilities.loadImage(PACKAGE_BADGE));
+            if (packageIcon == null) {
+                packageIcon = new ImageIcon(org.openide.util.Utilities.loadImage(PACKAGE_BADGE));
             }
 
-            return keywordIcon;
+            return packageIcon;
         }
 
         @Override
@@ -1175,6 +1169,61 @@ public class CodeCompleter implements CodeCompletionHandler {
         public ElementHandle getElement() {
             // For completion documentation
             return GroovyParser.createHandle(request.info, new KeywordElement(keyword));
+        }
+    }
+    private class TypeItem extends GroovyCompletionItem {
+
+        private static final String CLASS_BADGE = "org/netbeans/modules/groovy/editor/resources/class.png"; //NOI18N
+        private static final String INTERFACE_BADGE = "org/netbeans/modules/groovy/editor/resources/interface.png"; //NOI18N
+        
+        private final String name;
+        private final javax.lang.model.element.ElementKind ek;
+
+        TypeItem(String name, int anchorOffset, CompletionRequest request, javax.lang.model.element.ElementKind ek) {
+            super(null, anchorOffset, request);
+            this.name = name;
+            this.ek = ek;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.KEYWORD;
+        }
+
+        @Override
+        public String getRhsHtml() {
+            return null;
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            if (ek == javax.lang.model.element.ElementKind.CLASS) {
+                if (classIcon == null) {
+                    classIcon = new ImageIcon(org.openide.util.Utilities.loadImage(CLASS_BADGE));
+                }
+                return classIcon;
+            } else {
+                if (interfaceIcon == null) {
+                    interfaceIcon = new ImageIcon(org.openide.util.Utilities.loadImage(INTERFACE_BADGE));
+                }
+                return interfaceIcon;
+            }
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public ElementHandle getElement() {
+            // For completion documentation
+            return GroovyParser.createHandle(request.info, new KeywordElement(name));
         }
     }
 }
