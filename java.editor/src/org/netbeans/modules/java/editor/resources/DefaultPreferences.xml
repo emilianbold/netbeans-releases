@@ -44,61 +44,64 @@ made subject to such option by the copyright holder.
 
 <editor-preferences>
 
-    <entry category="private" javaType="methodvalue" name="abbrev-reset-acceptor" xml:space="preserve">
+    <entry javaType="methodvalue" name="abbrev-reset-acceptor">
         <value><![CDATA[org.netbeans.modules.editor.java.NbJavaSettingsInitializer.getAbbrevResetAcceptor]]></value>
     </entry>
-    <entry category="private" javaType="java.lang.Boolean" name="code-folding-collapse-comment" xml:space="preserve">
+    <entry javaType="java.lang.Boolean" name="code-folding-collapse-comment">
         <value><![CDATA[false]]></value>
     </entry>
-    <entry category="private" javaType="java.lang.Boolean" name="code-folding-collapse-innerclass" xml:space="preserve">
+    <entry javaType="java.lang.Boolean" name="code-folding-collapse-innerclass">
         <value><![CDATA[false]]></value>
     </entry>
-    <entry category="private" javaType="java.lang.Boolean" name="code-folding-collapse-import" xml:space="preserve">
+    <entry javaType="java.lang.Boolean" name="code-folding-collapse-import">
         <value><![CDATA[false]]></value>
     </entry>
-    <entry category="private" javaType="java.lang.Boolean" name="code-folding-collapse-javadoc" xml:space="preserve">
+    <entry javaType="java.lang.Boolean" name="code-folding-collapse-javadoc">
         <value><![CDATA[false]]></value>
     </entry>
-    <entry category="private" javaType="java.lang.Boolean" name="code-folding-collapse-method" xml:space="preserve">
+    <entry javaType="java.lang.Boolean" name="code-folding-collapse-method">
         <value><![CDATA[false]]></value>
     </entry>
-    <entry category="private" javaType="java.lang.Boolean" name="code-folding-enable" xml:space="preserve">
+    <entry javaType="java.lang.Boolean" name="code-folding-enable">
         <value><![CDATA[true]]></value>
     </entry>
-    <entry category="private" javaType="java.lang.Boolean" name="goto-class-case-sensitive" xml:space="preserve">
+    <entry category="private" javaType="java.lang.Boolean" name="goto-class-case-sensitive">
         <value><![CDATA[false]]></value>
     </entry>
-    <entry category="private" javaType="java.lang.Boolean" name="goto-class-show-inner-classes" xml:space="preserve">
+    <entry category="private" javaType="java.lang.Boolean" name="goto-class-show-inner-classes">
         <value><![CDATA[false]]></value>
     </entry>
-    <entry category="private" javaType="java.lang.Boolean" name="goto-class-show-library-classes" xml:space="preserve">
+    <entry category="private" javaType="java.lang.Boolean" name="goto-class-show-library-classes">
         <value><![CDATA[true]]></value>
     </entry>
-    <entry category="private" javaType="java.lang.Boolean" name="guessMethodArguments" xml:space="preserve">
+    <entry category="private" javaType="java.lang.Boolean" name="guessMethodArguments">
         <value><![CDATA[true]]></value>
     </entry>
-    <entry category="private" javaType="methodvalue" name="identifier-acceptor" xml:space="preserve">
+    <entry javaType="methodvalue" name="identifier-acceptor">
         <value><![CDATA[org.netbeans.modules.editor.java.NbJavaSettingsInitializer.getIdentifierAcceptor]]></value>
     </entry>
-    <entry category="private" javaType="methodvalue" name="indent-hot-chars-acceptor" xml:space="preserve">
+    <entry javaType="methodvalue" name="indentEngine" >
+        <value><![CDATA[org.netbeans.modules.editor.java.NbJavaSettingsInitializer.getIndentEngine]]></value>
+    </entry>
+    <entry javaType="methodvalue" name="indent-hot-chars-acceptor">
         <value><![CDATA[org.netbeans.modules.editor.java.NbJavaSettingsInitializer.getIndentHotCharsAcceptor]]></value>
     </entry>
-    <entry category="private" javaType="java.lang.Boolean" name="pair-character-completion" xml:space="preserve">
+    <entry javaType="java.lang.Boolean" name="pair-character-completion">
         <value><![CDATA[true]]></value>
     </entry>
-    <entry category="private" javaType="java.lang.Boolean" name="reindent-with-text-before" xml:space="preserve">
+    <entry javaType="java.lang.Boolean" name="reindent-with-text-before">
         <value><![CDATA[false]]></value>
     </entry>
-    <entry category="private" javaType="java.lang.Boolean" name="show-deprecated-members" xml:space="preserve">
+    <entry javaType="java.lang.Boolean" name="show-deprecated-members">
         <value><![CDATA[true]]></value>
     </entry>
-    <entry category="private" javaType="methodvalue" name="token-context-list" xml:space="preserve">
+    <entry javaType="methodvalue" name="token-context-list">
         <value><![CDATA[org.netbeans.modules.editor.java.NbJavaSettingsInitializer.getTokenContextList]]></value>
     </entry>
-    <entry category="private" javaType="java.lang.Boolean" name="word-match-match-case" xml:space="preserve">
+    <entry javaType="java.lang.Boolean" name="word-match-match-case">
         <value><![CDATA[true]]></value>
     </entry>
-    <entry category="private" javaType="java.lang.String" name="word-match-static-words" xml:space="preserve">
+    <entry javaType="java.lang.String" name="word-match-static-words">
         <value><![CDATA[Exception IntrospectionException FileNotFoundException IOException ArrayIndexOutOfBoundsException ClassCastException ClassNotFoundException CloneNotSupportedException NullPointerException NumberFormatException SQLException IllegalAccessException IllegalArgumentException]]></value>
     </entry>
 

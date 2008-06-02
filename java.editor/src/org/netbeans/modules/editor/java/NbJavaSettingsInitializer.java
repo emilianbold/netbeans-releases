@@ -48,6 +48,7 @@ import org.netbeans.editor.AcceptorFactory;
 import org.netbeans.editor.TokenContext;
 import org.netbeans.editor.ext.java.JavaLayerTokenContext;
 import org.netbeans.editor.ext.java.JavaTokenContext;
+import org.openide.text.IndentEngine;
 
 /**
 * Nb settings for Java.
@@ -72,6 +73,9 @@ public final class NbJavaSettingsInitializer {
             JavaTokenContext.context,
             JavaLayerTokenContext.context
         });
+    }
+    public static IndentEngine getIndentEngine() {
+        return new JavaIndentEngine();
     }
     
     private NbJavaSettingsInitializer() {
