@@ -43,11 +43,14 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -113,5 +116,16 @@ public class TemplateParameterImpl extends OffsetableBase implements CsmTemplate
 
     public CsmTemplateParameter.Kind getKind() {
         return CsmTemplateParameter.Kind.TEMPLATE; //FIXME
+    }
+
+    @Override
+    public String toString() {
+        CsmScope s = scope.getObject();
+        if (CsmKindUtilities.isFunction(s)) {
+            return ((CsmFunction)s).getQualifiedName()+"::"+name;
+        } else if (CsmKindUtilities.isClass(s)) {
+            return ((CsmClass)s).getQualifiedName()+"::"+name;
+        }
+        return name.toString();
     }
 }
