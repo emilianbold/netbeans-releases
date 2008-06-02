@@ -280,8 +280,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     private File getJavaFirstItemInTheList() {
         if(jdkLocations.size() == 0) {
             return null;
-        }
-        File java = null;
+        }        
         if(isJreAllowed()) {
             for(File f : jdkLocations) {
                 if(!FileUtils.exists(f) || JavaUtils.isJdk(f)) {
