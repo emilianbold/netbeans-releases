@@ -79,7 +79,7 @@ public final class NewComponentDescriptor implements WizardDescriptor.Instantiat
     public static final String COMPONENT_PRODUCER_POSTFIX 
                                                 = "Producer";                   // NOI18N 
     public static final String COMPONENT_DECRIPTOR_DEFAULT_PARENT
-                                                = "DisplayableCD";              // NOI18N 
+        = "org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD";// NOI18N 
     
     // properties - common
     public static final String HELPER           = "custCompHelper";             // NOI18N 
