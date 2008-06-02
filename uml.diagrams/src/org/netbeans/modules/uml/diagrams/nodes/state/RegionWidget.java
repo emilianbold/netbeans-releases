@@ -39,7 +39,6 @@
 package org.netbeans.modules.uml.diagrams.nodes.state;
 
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -63,6 +62,7 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IRegion;
+import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.ITransition;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.diagrams.UMLRelationshipDiscovery;
@@ -321,6 +321,8 @@ public class RegionWidget extends Widget implements PropertyChangeListener
         Point point = new Point(10,10);
         for (IElement element : region.getElements())
         {
+            if (element instanceof ITransition)
+                continue;
             IPresentationElement presentation = Util.createNodePresentationElement();
             presentation.addSubject(element);
 
@@ -333,9 +335,6 @@ public class RegionWidget extends Widget implements PropertyChangeListener
                 point = new Point(point.x + 50, point.y + 50);
             }
         }
-
-        UMLRelationshipDiscovery relationshipD = new UMLRelationshipDiscovery((GraphScene) scene);
-        relationshipD.discoverCommonRelations(region.getElements());
     }
     
     

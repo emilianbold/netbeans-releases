@@ -50,6 +50,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -112,6 +113,7 @@ public abstract class UMLNodeWidget extends Widget
     public static String DEFAULT="default";
     protected boolean useGradient = NbPreferences.forModule(DummyCorePreference.class).getBoolean("UML_Gradient_Background", true);
     private ResourceTable localResourceTable = null;
+    private IPresentationElement pe;
     
     public UMLNodeWidget(Scene scene)
     {
@@ -204,7 +206,7 @@ public abstract class UMLNodeWidget extends Widget
     
     public void initializeNode(IPresentationElement element)
     {
-        
+        pe = element;
     }
     
     // display full view widget for preference preview, child class should
@@ -782,9 +784,30 @@ public abstract class UMLNodeWidget extends Widget
     
     public void remove()
     {
-        scene.removeNodeWithEdges(getObject()); 
+        // remove all node object that are associated with child widget 
+        for (Object o : getAllChildren(new ArrayList<Object>(), this))
+        {
+            if (scene.isNode(o))
+                scene.removeNodeWithEdges(o);
+        }
+            
     }
     
+    private List<Object> getAllChildren(List<Object> list, Widget widget)         
+    {
+        for (Widget child : widget.getChildren())
+        {
+          Object pe = scene.findObject(widget);
+          if (scene.isNode(pe))
+          {
+              list.add(pe);
+          }
+          list = getAllChildren(list, child);
+        }
+        return list;
+    }
+    
+   
     protected String getResourcePath()
     {
         return getWidgetID() + "." + DEFAULT;
