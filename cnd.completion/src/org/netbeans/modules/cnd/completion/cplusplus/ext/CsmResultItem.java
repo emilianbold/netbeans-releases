@@ -86,6 +86,7 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
@@ -582,6 +583,37 @@ public abstract class CsmResultItem
             macroPaintComp.setParams(getParams());
             macroPaintComp.setSelected(isSelected);
             return macroPaintComp;
+        }
+    }
+  
+    public static class TemplateParameterResultItem extends CsmResultItem {
+        private String parName;
+        private static CsmPaintComponent.TemplateParameterPaintComponent parPaintComp = null;
+        
+        public TemplateParameterResultItem(CsmTemplateParameter par, int priotity) {
+            super(par, priotity);
+            this.parName = par.getName().toString();
+        }
+
+        private String getName(){
+            return parName;
+        }
+        
+        public String getItemText() {
+            return getName();
+        }
+        
+        protected CsmPaintComponent.TemplateParameterPaintComponent createPaintComponent(){
+            return new CsmPaintComponent.TemplateParameterPaintComponent();
+        }
+
+        public Component getPaintComponent(boolean isSelected) {
+            if (parPaintComp == null) {
+                parPaintComp = createPaintComponent();
+            }
+            parPaintComp.setName(getName());
+            parPaintComp.setSelected(isSelected);
+            return parPaintComp;
         }
     }
     

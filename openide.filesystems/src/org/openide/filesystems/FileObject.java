@@ -655,13 +655,17 @@ public abstract class FileObject extends Object implements Serializable {
     * @exception IllegalArgumentException if <code>this</code> is not a folder
     */
     public FileObject getFileObject(String relativePath) {
-        if (relativePath.startsWith("/")) {
+        if (relativePath.startsWith("/") && !relativePath.startsWith("//")) {
             relativePath = relativePath.substring(1);
         }
 
         FileObject myObj = this;
         StringTokenizer st = new StringTokenizer(relativePath, "/");
-
+        
+        if(relativePath.startsWith("//")) {
+            // if it is UNC absolute path, start with //ComputerName/sharedFolder
+            myObj = myObj.getFileObject("//"+st.nextToken()+"/"+st.nextToken(), null);
+        }
         while ((myObj != null) && st.hasMoreTokens()) {
             String nameExt = st.nextToken();
             myObj = myObj.getFileObject(nameExt, null);

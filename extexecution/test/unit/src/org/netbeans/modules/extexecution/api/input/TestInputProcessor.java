@@ -51,7 +51,7 @@ public class TestInputProcessor implements InputProcessor {
 
     private final boolean cleanBytesOnReset;
 
-    private ByteArrayOutputStream bytesProcessed = new ByteArrayOutputStream();
+    private StringBuilder charsProcessed = new StringBuilder();
 
     private int resetCount = 0;
 
@@ -59,23 +59,19 @@ public class TestInputProcessor implements InputProcessor {
         this.cleanBytesOnReset = cleanBytesOnReset;
     }
 
-    public void processInput(byte[] bytes) {
-        try {
-            bytesProcessed.write(bytes);
-        } catch (IOException ex) {
-            throw new IllegalStateException(ex);
-        }
+    public void processInput(char[] chars) {
+        charsProcessed.append(chars);
     }
 
     public void reset() {
         resetCount++;
         if (cleanBytesOnReset) {
-            bytesProcessed.reset();
+            charsProcessed.setLength(0);
         }
     }
 
-    public byte[] getBytesProcessed() {
-        return bytesProcessed.toByteArray();
+    public char[] getCharsProcessed() {
+        return charsProcessed.toString().toCharArray();
     }
 
     public int getResetCount() {

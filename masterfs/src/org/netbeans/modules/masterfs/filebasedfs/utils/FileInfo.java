@@ -43,7 +43,6 @@ package org.netbeans.modules.masterfs.filebasedfs.utils;
 
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.WriteLockUtils;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
-import org.netbeans.modules.masterfs.filebasedfs.naming.UNCName;
 
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
@@ -149,7 +148,7 @@ public final class FileInfo {
 
     public boolean isUNCFolder() {
         if (isUNC == -1) {
-            isUNC = ((getFile() instanceof UNCName.UNCFile) || ((isWindows() && !isFile() && !isDirectory() && !exists() && isComputeNode()))) ? 1 : 0;
+            isUNC = ((isWindows() && !isFile() && !isDirectory() && !exists() && isComputeNode())) ? 1 : 0;
         }                
         return (isUNC == 1) ? true : false;
     }
@@ -183,8 +182,7 @@ public final class FileInfo {
                 !WriteLockUtils.hasActiveLockFileSigns(getFile().getAbsolutePath()) && 
                 (getFile().getParent() != null || !isWindowsFloppy())) ;
     }
-
-
+    
     public FileInfo getRoot() {
         if (root == null) {
             File tmp = getFile();
@@ -192,6 +190,18 @@ public final class FileInfo {
             while (tmp != null) {
                 retVal = tmp;
                 tmp = tmp.getParentFile();
+            }
+            if ("\\\\".equals(retVal.getPath())) {  // NOI18N
+                // UNC paths => return \\computerName\sharedFolder (or \\ if path is only \\ or \\computerName)
+                String filename = getFile().getAbsolutePath();
+                int firstSlash = filename.indexOf("\\", 2);  //NOI18N
+                if(firstSlash != -1) {
+                    int secondSlash = filename.indexOf("\\", firstSlash+1);  //NOI18N
+                    if(secondSlash != -1) {
+                        filename = filename.substring(0, secondSlash);
+                    }
+                    retVal = new File(filename);
+                }
             }
             
             root = new FileInfo (retVal);

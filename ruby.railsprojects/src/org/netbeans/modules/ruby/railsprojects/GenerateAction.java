@@ -51,12 +51,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.gsf.api.EditorAction;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
@@ -80,11 +80,30 @@ import org.openide.util.NbBundle;
 import org.openide.util.Task;
 import org.openide.util.Utilities;
 import org.openide.util.actions.NodeAction;
+import org.openide.util.actions.SystemAction;
 
 
-public final class GenerateAction extends NodeAction implements EditorAction {
+public final class GenerateAction extends NodeAction {
+    public static final String EDITOR_ACTION_NAME = "rails-generator";
     private boolean forcing;
     private boolean preview;
+    
+    /** Editor action which lets you open the dialog as an editor action */
+    public static class EditorAction extends BaseAction {
+        public EditorAction() {
+            super(EDITOR_ACTION_NAME, 0);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent evt, final JTextComponent target) {
+            SystemAction.get(GenerateAction.class).actionPerformed(evt, target);
+        }
+        
+        @Override
+        public Class getShortDescriptionBundleClass() {
+            return GenerateAction.class;
+        }
+    }
     
     @Override
     protected void performAction(Node[] activatedNodes) {
@@ -298,11 +317,7 @@ public final class GenerateAction extends NodeAction implements EditorAction {
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(GenerateAction.class,  getActionName());
-    }
-
-    public String getActionName() {
-        return "rails-generator";
+        return NbBundle.getMessage(GenerateAction.class,  EDITOR_ACTION_NAME);
     }
 
     @Override
@@ -377,10 +392,6 @@ public final class GenerateAction extends NodeAction implements EditorAction {
         }
     }
 
-    public Class getShortDescriptionBundleClass() {
-        return GenerateAction.class;
-    }
-    
     public boolean appliesTo(String mimeType) {
         return RubyInstallation.RHTML_MIME_TYPE.equals(mimeType) ||
                 RubyInstallation.RUBY_MIME_TYPE.equals(mimeType);

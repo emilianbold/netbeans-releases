@@ -45,7 +45,6 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.AbstractAction;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -54,11 +53,9 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.NbUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
-import org.netbeans.modules.gsf.api.EditorAction;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
@@ -74,21 +71,18 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Tor Norbye
  */
-public class RunFocusedTest extends AbstractAction implements EditorAction {
+public class RunFocusedTest extends BaseAction {
 
     public RunFocusedTest() {
-        super(NbBundle.getMessage(RunFocusedTest.class, "run-focused-spec")); 
-        putValue("PopupMenuText", NbBundle.getBundle(RunFocusedTest.class).getString("popup-run-focused-spec")); // NOI18N
+        super("run-focused-spec", 0); // NOI18N
     }
 
+    @Override
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
         runTest(target, false);
     }
 
-    public String getActionName() {
-        return "run-focused-spec"; // NOI18N
-    }
-
+    @Override
     public Class getShortDescriptionBundleClass() {
         return RunFocusedTest.class;
     }
@@ -96,14 +90,6 @@ public class RunFocusedTest extends AbstractAction implements EditorAction {
     @Override
     public boolean isEnabled() {
         return true;
-    }
-
-    public void actionPerformed(ActionEvent ev) {
-        JTextComponent pane = NbUtilities.getOpenPane();
-
-        if (pane != null) {
-            runTest(pane, false);
-        }
     }
 
     static void runTest(JTextComponent target, boolean debug) {
@@ -229,10 +215,5 @@ public class RunFocusedTest extends AbstractAction implements EditorAction {
             desc.addOutputRecognizer(new TestNotifier(true, true));
         }
         new RubyExecution(desc, charsetName).run();
-    }
-    
-    public boolean appliesTo(String mimeType) {
-        return RubyInstallation.RHTML_MIME_TYPE.equals(mimeType) ||
-                RubyInstallation.RUBY_MIME_TYPE.equals(mimeType);
     }
 }
