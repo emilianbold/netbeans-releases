@@ -47,6 +47,7 @@ import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.model.ObjectState;
+import org.netbeans.api.visual.widget.LabelWidget.Alignment;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
@@ -73,6 +74,7 @@ public abstract class FeatureWidget extends CustomizableWidget
 {
     private EditableCompartmentWidget label = null;
     public static final String ID = "feature";
+    private Alignment alignment = Alignment.LEFT;
     
     public FeatureWidget(Scene scene)
     {
@@ -93,6 +95,16 @@ public abstract class FeatureWidget extends CustomizableWidget
             chain.addAction(objScene.createSelectAction());
             chain.addAction(DefaultDiagramEngine.POPUP_ACTION);
         }
+    }
+    
+    public void setAlignment(Alignment alignment)
+    {
+        if(alignment == Alignment.CENTER)
+        {
+            setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 0));
+        }
+        
+        this.alignment = alignment;
     }
     
     @Override
@@ -146,10 +158,17 @@ public abstract class FeatureWidget extends CustomizableWidget
         removeChildren();
 
         label = new EditableCompartmentWidget(getScene(), this, ID);
+        label.setAlignment(alignment);
         label.setLabel(formatElement());
         addChild(label);
         
+        if(alignment == Alignment.CENTER)
+        {
+            setChildConstraint(label, 100);
+        }
+        
         setBorder(BorderFactory.createEmptyBorder(1));
+        
     }
     
     protected void setText(String value)

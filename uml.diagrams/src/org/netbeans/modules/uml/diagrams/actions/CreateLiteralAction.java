@@ -59,10 +59,7 @@ public final class CreateLiteralAction extends CookieAction
             IEnumerationLiteral literal = activatedNodes[0].getLookup().lookup(IEnumerationLiteral.class);
             if(literal != null)
             {
-                if(literal.getOwner() instanceof IEnumeration)
-                {
-                    enumeration = (IEnumeration) literal.getOwner();
-                }
+                enumeration = literal.getEnumeration();
             }
         }
         
