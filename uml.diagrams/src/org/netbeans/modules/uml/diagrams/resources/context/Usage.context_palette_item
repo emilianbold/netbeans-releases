@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<palette_item version="1.0">
+  <element name="Usage" />
+  <icon16 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/usage.png" />
+  <icon32 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/usage-32.png" />
+
+  <description localizing-bundle="org.netbeans.modules.uml.diagrams.resources.context.Bundle"
+               display-name-key="NAME_Usage" 
+               tooltip-key="HINT_Usage" />
+</palette_item>

@@ -93,7 +93,7 @@ public class OptionsDisplayerImpl {
         return dialog != null;
     }
         
-    public void showOptionsDialog (String categoryID) {
+    public void showOptionsDialog (String categoryID, String subpath) {
         if (isOpen()) {
             // dialog already opened
             dialog.setVisible (true);
@@ -137,9 +137,9 @@ public class OptionsDisplayerImpl {
         }
         
         dialog = DialogDisplayer.getDefault ().createDialog (descriptor);
-        optionsPanel.initCurrentCategory(categoryID);
+        optionsPanel.initCurrentCategory(categoryID, subpath);
         dialog.addWindowListener (new MyWindowListener (optionsPanel));
-        dialog.setVisible (true);        
+        dialog.setVisible (true);     
     }
     
     private static String loc (String key) {

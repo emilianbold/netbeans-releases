@@ -47,10 +47,10 @@ import org.netbeans.modules.websvc.wsitconf.util.TestCatalogModel;
 import org.netbeans.modules.websvc.wsitconf.util.TestUtil;
 import org.netbeans.modules.websvc.wsitmodelext.policy.All;
 import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyReference;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
 /**
@@ -72,31 +72,32 @@ public class PolicyTest extends TestCase {
         TestCatalogModel.getDefault().setDocumentPooling(false);
     }
 
-    public void testWrite() throws Exception {
+    public void testWrite10() throws Exception {
         TestCatalogModel.getDefault().setDocumentPooling(true);
         WSDLModel model = TestUtil.loadWSDLModel("../wsdlmodelext/resources/policy.xml");
-        WSDLComponentFactory fact = model.getFactory();
         
         model.startTransaction();
 
         Definitions d = model.getDefinitions();
         Binding b = (Binding) d.getBindings().toArray()[0];
         
-        PolicyModelHelper.createPolicy(b, true);
+        PolicyModelHelper pmh = PolicyModelHelper.getInstance(ConfigVersion.CONFIG_1_0);
+        
+        pmh.createPolicy(b, true);
         
         Collection<BindingOperation> bindingops = b.getBindingOperations();
         for (BindingOperation bo : bindingops) {
-            PolicyModelHelper.createPolicy(bo.getBindingInput(), false);
-            PolicyModelHelper.createPolicy(bo.getBindingOutput(), false);
+            pmh.createPolicy(bo.getBindingInput(), false);
+            pmh.createPolicy(bo.getBindingOutput(), false);
         }
 
         model.endTransaction();
 
         TestUtil.dumpToFile(model.getBaseDocument(), new File("C:\\HelloService.wsdl"));
-        readAndCheck(model);
+        readAndCheck10(model);
     }
 
-    private void readAndCheck(WSDLModel model) {
+    private void readAndCheck10(WSDLModel model) {
         
         // the model operation is not enclosed in transaction inorder to catch 
         // whether the operations do not try to create non-existing elements
@@ -104,7 +105,12 @@ public class PolicyTest extends TestCase {
         Definitions d = model.getDefinitions();
         Binding b = (Binding) d.getBindings().toArray()[0];
         
-        All all = PolicyModelHelper.createPolicy(b, true);
+        ConfigVersion cfgVersion = PolicyModelHelper.getConfigVersion(b);
+        assertEquals(cfgVersion, ConfigVersion.CONFIG_1_0);
+        
+        PolicyModelHelper pmh = PolicyModelHelper.getInstance(cfgVersion);
+
+        All all = pmh.createPolicy(b, true);
         assertNotNull("Top Level Policy", all);
         
         Collection<PolicyReference> polRefs = b.getExtensibilityElements(PolicyReference.class);
@@ -113,10 +119,10 @@ public class PolicyTest extends TestCase {
         
         Collection<BindingOperation> bindingops = b.getBindingOperations();
         for (BindingOperation bo : bindingops) {
-            all = PolicyModelHelper.createPolicy(bo.getBindingInput(), false);
+            all = pmh.createPolicy(bo.getBindingInput(), false);
             assertNotNull("Binding Input Policy", all);
             
-            all = PolicyModelHelper.createPolicy(bo.getBindingOutput(), false);
+            all = pmh.createPolicy(bo.getBindingOutput(), false);
             assertNotNull("Binding Output Policy", all);
         }
         

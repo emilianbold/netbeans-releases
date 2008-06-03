@@ -140,7 +140,7 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
         details.setDefaultCapable (false);
 
         output = new JTextPane() {
-            public boolean getScrollableTracksViewportWidth() {
+            public @Override boolean getScrollableTracksViewportWidth() {
                 return false;
             }
         };
@@ -218,7 +218,7 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
             }
         }
         
-        arr.add(DialogDescriptor.CLOSED_OPTION);
+        arr.add(NotifyDescriptor.CANCEL_OPTION);
         return arr.toArray();
     }
     
@@ -486,7 +486,8 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
     //
 
     public void actionPerformed(final java.awt.event.ActionEvent ev) {
-        if (ev.getSource () == next && exceptions.setNextElement() || ev.getSource () == previous && exceptions.setPreviousElement()) {
+        Object source = ev.getSource();
+        if (source == next && exceptions.setNextElement() || source == previous && exceptions.setPreviousElement()) {
             current = exceptions.get();
             LogRecord rec = new LogRecord(Level.CONFIG, "NotifyExcPanel: " + ev.getActionCommand());// NOI18N
             String message = current.getMessage();
@@ -504,7 +505,7 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
             return;
         }
 
-        if (ev.getSource () == details) {
+        if (source == details) {
             showDetails = !showDetails;
             lastBounds = null;
             try {
@@ -522,7 +523,7 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
         }
 
         // bugfix #40834, remove all exceptions to notify when close a dialog
-        if (ev.getSource () == DialogDescriptor.OK_OPTION || ev.getSource () == DialogDescriptor.CLOSED_OPTION) {
+        if (source == NotifyDescriptor.OK_OPTION || source == NotifyDescriptor.CLOSED_OPTION || source == NotifyDescriptor.CANCEL_OPTION) {
             try {
                 exceptions.removeAll();
             //Fixed bug #9435, call of setVisible(false) replaced by call of dispose()

@@ -42,18 +42,17 @@
 package org.netbeans.modules.j2ee.deployment.impl.projects;
 
 import org.netbeans.modules.j2ee.deployment.execution.*;
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.shared.ModuleType;
 import org.openide.filesystems.FileUtil;
-import java.util.*;
 import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.config.*;
+import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.openide.util.NbBundle;
 

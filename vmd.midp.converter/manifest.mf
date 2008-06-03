@@ -5,8 +5,3 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/vmd/midp/converter/resour
 OpenIDE-Module-Specification-Version: 1.2
 OpenIDE-Module-Needs: javax.script.ScriptEngine.freemarker
 AutoUpdate-Show-In-Client: false
-
-Name: org/netbeans/modules/vmd/midp/converter/io/MVDDataLoader.class
-OpenIDE-Module-Class: Loader
-Install-Before: org.netbeans.modules.mobility.editor.pub.J2MEDataObject
-Install-After: org.netbeans.modules.vmd.io.javame.MEDesignDataObject

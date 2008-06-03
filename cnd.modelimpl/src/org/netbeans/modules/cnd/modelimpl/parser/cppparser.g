@@ -406,6 +406,7 @@ tokens {
 	protected static final  int ANSI_C	= 0x4;
 	protected static final  int KandR_C	= 0x8;
 
+        protected static final int ERROR_LIMIT = 100;
 	private int errorCount = 0;
 
 	public int getErrorCount() {
@@ -413,11 +414,21 @@ tokens {
 	    return cnt;
 	}
 
+        public boolean shouldProceed() {
+            boolean res = errorCount < ERROR_LIMIT;
+            if (!res) {
+                reportError("Too many errors. Parsing is being stopped."); // NOI18N
+            }
+            return res;
+        }
+
 	public void reportError(RecognitionException e) {
             // Do not report errors that we had reported already
             if (lastRecoveryPosition == inputState.input.index()) {
                 return;
             }
+
+            onError(e);
             
             if (Diagnostic.needStatistics()) Diagnostic.onParserError(e);
 
@@ -637,6 +648,9 @@ tokens {
 	protected void printf (String pattern, int i1, int i2, int i3, String s) { /*TODO: implement*/ throw new NotImplementedException(); }
 
 	protected void balanceBraces(int left, int right) throws RecognitionException, TokenStreamException { throw new NotImplementedException(); };
+
+        /** Is called when an error occurred */
+        protected void onError(RecognitionException e) {}
 }
 
 public translation_unit:
@@ -644,8 +658,10 @@ public translation_unit:
                 /* Do not generate ambiguity warnings: we intentionally want to match everything that
                    can not be matched in external_declaration in the second alternative */
 		(options{generateAmbigWarnings = false;}:
+                    {shouldProceed()}?
                     external_declaration 
                     | 
+                    {shouldProceed()}?
                     /* Here we match everything that can not be matched by external_declaration rule,
                        report it as an error and not include in AST */
                     .! { reportError(new NoViableAltException(LT(0), getFilename())); }

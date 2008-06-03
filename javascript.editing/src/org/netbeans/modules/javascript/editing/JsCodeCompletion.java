@@ -399,15 +399,9 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             prefix = "";
         }
 
-        final Document document;
-        try {
-            document = info.getDocument();
-            if (document == null) {
-                return null;
-            }
-        } catch (Exception e) {
-            Exceptions.printStackTrace(e);
-            return null;
+        final Document document = info.getDocument();
+        if (document == null) {
+            return CodeCompletionResult.NONE;
         }
         final BaseDocument doc = (BaseDocument)document;
 
@@ -420,7 +414,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             Node root = parseResult.getRootNode();
             final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
             if (astOffset == -1) {
-                return null;
+                return CodeCompletionResult.NONE;
             }
             final TokenHierarchy<Document> th = TokenHierarchy.get(document);
             final FileObject fileObject = info.getFileObject();
@@ -448,26 +442,33 @@ public class JsCodeCompletion implements CodeCompletionHandler {
 
             Token<? extends TokenId> token = LexUtilities.getToken(doc, lexOffset);
             if (token == null) {
-                return completionResult;
-            }
-            
-            TokenId id = token.id();
-            if (id == JsTokenId.LINE_COMMENT) {
-                // TODO - Complete symbols in comments?
-                return completionResult;
-            } else if (id == JsTokenId.BLOCK_COMMENT) {
-                try {
-                    completeComments(proposals, request);
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
+                if (JsUtils.isJsFile(fileObject)) {
+                    return completionResult;
                 }
-                return completionResult;
-            } else if (id == JsTokenId.STRING_LITERAL || id == JsTokenId.STRING_END) {
-                completeStrings(proposals, request);
-                return completionResult;
-            } else if (id == JsTokenId.REGEXP_LITERAL || id == JsTokenId.REGEXP_END) {
-                completeRegexps(proposals, request);
-                return completionResult;
+
+                // Embedding? Possibly in something like an EMPTY JAvaScript attribute,
+                // e.g.   <input onclick="|"> - there's no token here. We have to
+                // instead assume an empty prefix.
+                request.prefix = prefix = "";
+            } else {
+                TokenId id = token.id();
+                if (id == JsTokenId.LINE_COMMENT) {
+                    // TODO - Complete symbols in comments?
+                    return completionResult;
+                } else if (id == JsTokenId.BLOCK_COMMENT) {
+                    try {
+                        completeComments(proposals, request);
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    return completionResult;
+                } else if (id == JsTokenId.STRING_LITERAL || id == JsTokenId.STRING_END) {
+                    completeStrings(proposals, request);
+                    return completionResult;
+                } else if (id == JsTokenId.REGEXP_LITERAL || id == JsTokenId.REGEXP_END) {
+                    completeRegexps(proposals, request);
+                    return completionResult;
+                }
             }
             
             if (root != null) {
@@ -1206,8 +1207,6 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                 doc.readUnlock();
             }
             // Else: normal identifier: just return null and let the machinery do the rest
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
         }
@@ -2094,6 +2093,9 @@ public class JsCodeCompletion implements CodeCompletionHandler {
 
             // Adjust offset to the left
             BaseDocument doc = (BaseDocument) info.getDocument();
+            if (doc == null) {
+                return false;
+            }
             int newLexOffset = LexUtilities.findSpaceBegin(doc, lexOffset);
             if (newLexOffset < lexOffset) {
                 astOffset -= (lexOffset-newLexOffset);
@@ -2380,9 +2382,6 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                 anchorOffset = call.getSourceStart(); // TODO - compute
             }
             anchorOffsetHolder[0] = anchorOffset;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return false;
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
             return false;

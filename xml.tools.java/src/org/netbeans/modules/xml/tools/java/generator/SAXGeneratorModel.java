@@ -65,6 +65,9 @@ public class SAXGeneratorModel implements java.io.Serializable {
     public static final int SAX_2_0 = 2;
 
     /** Holds value of property handler. */
+    private java.io.File parentFolder;
+    
+    /** Holds value of property handler. */
     private String handler;
     
     /** Holds value of property stub. */
@@ -98,10 +101,8 @@ public class SAXGeneratorModel implements java.io.Serializable {
     private boolean propagateSAX;
     
     private String bindings;
-   
-    public SAXGeneratorModel() {
-        this(""); // NOI18N
-    }
+    
+    private String packageName;
    
     public String toString() {
         StringBuffer sb = new StringBuffer();
@@ -113,23 +114,30 @@ public class SAXGeneratorModel implements java.io.Serializable {
         return sb.toString();
     }
  
-    /** Creates new SAXGeneratorModel */
-    public SAXGeneratorModel(String prefix) {
-        this(prefix, new ElementDeclarations(null), new ElementBindings(), new ParsletBindings());
+    public SAXGeneratorModel(java.io.File folder, String prefix,
+            ElementDeclarations eld, ElementBindings elb,
+            ParsletBindings pab, String packageName) {
+        this.parentFolder = folder;
+        this.handler = getValidName(prefix + "Handler", ".java"); // NOI18N
+        this.stub = getValidName(prefix + "Parser", ".java"); // NOI18N
+        this.parslet = getValidName(prefix + "Parslet", ".java"); // NOI18N
+        this.parsletImpl = getValidName(prefix + "ParsletImpl", ".java"); // NOI18N
+        this.handlerImpl = getValidName(prefix + "HandlerImpl", ".java"); // NOI18N
+        this.SAXversion = SAX_1_0;
+        this.JAXPversion = JAXP_1_1;
+        this.elementBindings = elb;
+        this.parsletBindings = pab;
+        this.elementDeclarations = eld;
+        this.bindings = getValidName(prefix + "SAXBindings", ".xml"); // NOI18N
+        this.packageName = packageName;
     }
-
-    public SAXGeneratorModel(String prefix, ElementDeclarations eld, ElementBindings elb, ParsletBindings pab) {
-        handler = prefix + "Handler"; // NOI18N
-        stub = prefix + "Parser"; // NOI18N
-        parslet = prefix + "Parslet"; // NOI18N
-        parsletImpl = prefix + "ParsletImpl"; // NOI18N
-        handlerImpl = prefix + "HandlerImpl"; // NOI18N
-        SAXversion = SAX_1_0;
-        JAXPversion = JAXP_1_1;
-        elementBindings = elb;
-        parsletBindings = pab;
-        elementDeclarations = eld;
-        bindings = prefix + "SAXBindings"; // NOI18N
+    
+    /**
+     * Returns the package name.
+     * @return Value of package.
+     */
+    public String getJavaPackage() {
+        return packageName;
     }
     
     /** Getter for property handler.
@@ -335,4 +343,28 @@ public class SAXGeneratorModel implements java.io.Serializable {
             }
         }
     }
+    
+    private String getValidName(String name, String extension) {
+        java.io.File file = new java.io.File(parentFolder, name + extension); //NOI18N
+        while(file.exists()) {
+            int suffix = 1;
+            int index = name.lastIndexOf("_"); //NOI18N
+            if(index != -1) {
+                //find the suffix integer value
+                String str = name.substring(index+1);
+                try {
+                    suffix = Integer.valueOf(str).intValue()+1;
+                } catch (NumberFormatException ex) {
+                    //str was a not an integer
+                }
+                //trim the last integer
+                name = name.substring(0, index);
+            }
+            //new name = old name (without the last integer) + new integer.
+            name =  name + "_" + suffix; //NOI18N
+            file = new java.io.File(parentFolder, name + extension);
+        }
+        return name;
+    }
+    
 }

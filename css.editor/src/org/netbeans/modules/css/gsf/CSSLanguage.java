@@ -42,8 +42,17 @@ package org.netbeans.modules.css.gsf;
 
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
+import org.netbeans.modules.gsf.api.Formatter;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 
+/**
+ * Configuration for CSS
+ */
 public class CSSLanguage extends DefaultLanguageConfig {
     
     public CSSLanguage() {
@@ -71,5 +80,47 @@ public class CSSLanguage extends DefaultLanguageConfig {
     @Override
     public String getPreferredExtension() {
         return "css"; // NOI18N
+    }
+
+    // Service Registrations
+    
+    @Override
+    public SemanticAnalyzer getSemanticAnalyzer() {
+        return new CSSSemanticAnalyzer();
+    }
+
+    @Override
+    public Parser getParser() {
+        return new CSSGSFParser();
+    }
+
+    @Override
+    public boolean hasStructureScanner() {
+        return true;
+    }
+
+    @Override
+    public StructureScanner getStructureScanner() {
+        return new CSSStructureScanner();
+    }
+
+    @Override
+    public boolean hasFormatter() {
+        return true;
+    }
+
+    @Override
+    public Formatter getFormatter() {
+        return new CSSFormatter();
+    }
+
+    @Override
+    public CodeCompletionHandler getCompletionHandler() {
+        return new CSSCompletion();
+    }
+
+    @Override
+    public KeystrokeHandler getKeystrokeHandler() {
+        return new CssBracketCompleter();
     }
 }

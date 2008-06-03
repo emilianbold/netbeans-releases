@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import org.netbeans.modules.gsf.api.SemanticAnalyzer;
-
 /**
  *
  * @author tor
@@ -51,11 +49,6 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
         super(testName);
     }           
     
-    @Override
-    protected SemanticAnalyzer getSemanticAnalyzer() {
-        return new JsSemanticAnalyzer();
-    }
-
     public void testSemantic1() throws Exception {
         checkSemantic("testfiles/semantic1.js");
     }

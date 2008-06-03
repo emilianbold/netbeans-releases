@@ -398,7 +398,7 @@ public final class ReverseEngineerAction extends AbstractAction
         putValue(NAME, name);
         return name; 
     }
-    
+        
     /* NB60TBD
     protected Class[] cookieClasses()
     {

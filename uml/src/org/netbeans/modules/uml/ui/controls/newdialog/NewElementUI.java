@@ -77,7 +77,6 @@ import org.netbeans.modules.uml.ui.support.wizard.IWizardSheet;
 import org.netbeans.modules.uml.ui.support.wizard.WizardInteriorPage;
 import org.netbeans.modules.uml.ui.support.wizard.WizardSheet;
 import org.netbeans.modules.uml.ui.swing.commondialogs.SwingErrorDialog;
-import org.netbeans.modules.uml.ui.swing.drawingarea.DiagramEngine;
 import org.netbeans.modules.uml.util.StringTokenizer2;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -849,7 +848,7 @@ public class NewElementUI extends WizardInteriorPage
 							bDataIsValid = false;
 							DialogDisplayer.getDefault().notify(
 								new NotifyDescriptor.Message(NbBundle.getMessage(
-								DiagramEngine.class, "IDS_NAMESPACECOLLISION")));
+								NewElementUI.class, "IDS_NAMESPACECOLLISION")));
 						}
 					}	
 				}

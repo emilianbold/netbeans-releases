@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,7 +44,6 @@ package org.netbeans.api.options;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import javax.swing.Icon;
@@ -76,6 +75,7 @@ public final class RegisteredCategory extends OptionsCategory {
     }
     
 
+    @Override
     public Icon getIcon() {
         if (icon == null) {
             Image image = Utilities.loadImage("org/netbeans/modules/options/resources/generalOptions.png");
@@ -105,6 +105,8 @@ public final class RegisteredCategory extends OptionsCategory {
         TestCase.assertTrue(calls.contains("applyChanges()"));
         
     }
+
+    public static String subcategoryID;
 
     public OptionsPanelController create() {
         return new OptionsPanelController() {
@@ -140,6 +142,7 @@ public final class RegisteredCategory extends OptionsCategory {
                 return null;
             }
             
+            @Override
             public Lookup getLookup() {
                 TestCase.assertFalse(SwingUtilities.isEventDispatchThread());
                 calls.add("getLookup()");                
@@ -151,6 +154,11 @@ public final class RegisteredCategory extends OptionsCategory {
                 TestCase.assertTrue(SwingUtilities.isEventDispatchThread());
                 calls.add("getComponent()");
                 return new JLabel();
+            }
+            
+            @Override
+            public void setCurrentSubcategory(String id) {
+                subcategoryID = id;
             }
 
             public void addPropertyChangeListener(PropertyChangeListener l) {

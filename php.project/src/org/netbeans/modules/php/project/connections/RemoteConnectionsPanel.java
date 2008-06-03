@@ -41,34 +41,55 @@
 
 package org.netbeans.modules.php.project.connections;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.AbstractListModel;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.plaf.UIResource;
+import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.modules.php.project.connections.RemoteConnections.ConnectionType;
 import org.openide.util.ChangeSupport;
 
 /**
  * @author Tomas Mysik
  */
-public class RemoteConnectionsPanel extends JPanel {
+class RemoteConnectionsPanel extends JPanel {
     private static final long serialVersionUID = -286345875298064616L;
 
-    final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final ConfigListModel configListModel = new ConfigListModel();
 
-    public RemoteConnectionsPanel() {
+    RemoteConnectionsPanel() {
         initComponents();
         errorLabel.setText(" "); // NOI18N
+        warningLabel.setText(" "); // NOI18N
 
         // init
+        configList.setModel(configListModel);
+        configList.setCellRenderer(new ConfigListRenderer());
+
         setEnabledLoginCredentials();
+        setEnabledRemoveButton();
         for (ConnectionType connectionType : ConnectionType.values()) {
             typeComboBox.addItem(connectionType);
         }
+
+        // initial disabled status
+        setEnabledFields(false);
 
         // listeners
         registerListeners();
@@ -82,135 +103,167 @@ public class RemoteConnectionsPanel extends JPanel {
         changeSupport.removeChangeListener(listener);
     }
 
+    public void addAddButtonActionListener(ActionListener listener) {
+        addButton.addActionListener(listener);
+    }
+
+    public void removeAddButtonActionListener(ActionListener listener) {
+        addButton.removeActionListener(listener);
+    }
+
+    public void addRemoveButtonActionListener(ActionListener listener) {
+        removeButton.addActionListener(listener);
+    }
+
+    public void removeRemoveButtonActionListener(ActionListener listener) {
+        removeButton.removeActionListener(listener);
+    }
+
+    public void addConfigListListener(ListSelectionListener listener) {
+        configList.addListSelectionListener(listener);
+    }
+
+    public void removeConfigListListener(ListSelectionListener listener) {
+        configList.removeListSelectionListener(listener);
+    }
+
+    public void addConfiguration(ConfigManager.Configuration configuration) {
+        addConfiguration(configuration, true);
+    }
+
+    public void addConfiguration(ConfigManager.Configuration configuration, boolean select) {
+        assert configListModel.indexOf(configuration) == -1 : "Configuration already in the list: " + configuration;
+        configListModel.addElement(configuration);
+        if (select) {
+            configList.setSelectedValue(configuration, true);
+        }
+    }
+
+    public void selectConfiguration(int index) {
+        configList.setSelectedIndex(index);
+    }
+
+    public void selectConfiguration(Configuration configuration) {
+        configList.setSelectedValue(configuration, true);
+    }
+
+    public ConfigManager.Configuration getSelectedConfiguration() {
+        return (Configuration) configList.getSelectedValue();
+    }
+
+    public List<Configuration> getConfigurations() {
+        return configListModel.getElements();
+    }
+
+    public void setConfigurations(List<Configuration> configurations) {
+        configListModel.setElements(configurations);
+    }
+
+    public void removeConfiguration(ConfigManager.Configuration configuration) {
+        assert configListModel.indexOf(configuration) != -1 : "Configuration not in the list: " + configuration;
+        // select another config if possible
+        int toSelect = -1;
+        int idx = configListModel.indexOf(configuration);
+        if (idx + 1 < configListModel.getSize()) {
+            // select the next element
+            toSelect = idx;
+        } else if (configListModel.getSize() > 1) {
+            // select the previous element
+            toSelect = idx - 1;
+        }
+        configListModel.removeElement(configuration);
+        if (toSelect != -1) {
+            configList.setSelectedIndex(toSelect);
+        }
+    }
+
+    public void setEnabledFields(boolean enabled) {
+        typeComboBox.setEnabled(enabled);
+        hostTextField.setEnabled(enabled);
+        portTextField.setEnabled(enabled);
+        userTextField.setEnabled(enabled);
+        passwordTextField.setEnabled(enabled);
+        anonymousCheckBox.setEnabled(enabled);
+        initialDirectoryTextField.setEnabled(enabled);
+        timeoutTextField.setEnabled(enabled);
+    }
+
+    public void resetFields() {
+        connectionTextField.setText(null);
+        hostTextField.setText(null);
+        portTextField.setText(null);
+        userTextField.setText(null);
+        passwordTextField.setText(null);
+        anonymousCheckBox.setSelected(false);
+        initialDirectoryTextField.setText(null);
+        timeoutTextField.setText(null);
+        // reset error and warning as well
+        setWarning(null);
+        setError(null);
+    }
+
     public void setError(String msg) {
         errorLabel.setText(" "); // NOI18N
-        errorLabel.setForeground(UIManager.getColor("nb.errorForeground"));
+        errorLabel.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
         errorLabel.setText(msg);
     }
 
     public void setWarning(String msg) {
-        errorLabel.setText(" "); // NOI18N
-        errorLabel.setForeground(UIManager.getColor("nb.warningForeground"));
-        errorLabel.setText(msg);
-    }
-
-    public JList getConfigList() {
-        return configList;
-    }
-
-    public void setConfigList(JList configList) {
-        this.configList = configList;
-    }
-
-    public String getConnectionName() {
-        return connectionTextField.getText();
-    }
-
-    public void setConnectionName(String connectionName) {
-        connectionTextField.setText(connectionName);
-    }
-
-    public ConnectionType getTypeComboBox() {
-        return (ConnectionType) typeComboBox.getSelectedItem();
-    }
-
-    public void setTypeComboBox(ConnectionType connectionType) {
-        typeComboBox.setSelectedItem(connectionType);
-    }
-
-    public String getHostName() {
-        return hostTextField.getText();
-    }
-
-    public void setHostName(String hostName) {
-        hostTextField.setText(hostName);
-    }
-
-    public String getPort() {
-        return portTextField.getText();
-    }
-
-    public void setPort(String port) {
-        portTextField.setText(port);
-    }
-
-    public String getUserName() {
-        return userTextField.getText();
-    }
-
-    public void setUserName(String userName) {
-        userTextField.setText(userName);
-    }
-
-    public String getPassword() {
-        return new String(passwordTextField.getPassword());
-    }
-
-    public void setPassword(String password) {
-        passwordTextField.setText(password);
-    }
-
-    public boolean isRememberPassword() {
-        return rememberPasswordCheckBox.isSelected();
-    }
-
-    public void setRememberPassword(boolean rememberPassword) {
-        rememberPasswordCheckBox.setSelected(rememberPassword);
-    }
-
-    public boolean isAnonymousLogin() {
-        return anonymousCheckBox.isSelected();
-    }
-
-    public void setAnonymousLogin(boolean anonymousLogin) {
-        anonymousCheckBox.setSelected(anonymousLogin);
-    }
-
-    public String getInitialDirectory() {
-        return initialDirectoryTextField.getText();
-    }
-
-    public void setInitialDirectory(String initialDirectory) {
-        initialDirectoryTextField.setText(initialDirectory);
-    }
-
-    public String getTimeout() {
-        return timeoutTextField.getText();
-    }
-
-    public void setTimeout(String timeout) {
-        timeoutTextField.setText(timeout);
+        warningLabel.setText(" "); // NOI18N
+        warningLabel.setForeground(UIManager.getColor("nb.warningForeground")); // NOI18N
+        warningLabel.setText(msg);
     }
 
     private void registerListeners() {
         DocumentListener documentListener = new DefaultDocumentListener();
         ActionListener actionListener = new DefaultActionListener();
-        connectionTextField.getDocument().addDocumentListener(documentListener);
         typeComboBox.addActionListener(actionListener);
         hostTextField.getDocument().addDocumentListener(documentListener);
         portTextField.getDocument().addDocumentListener(documentListener);
         userTextField.getDocument().addDocumentListener(documentListener);
         passwordTextField.getDocument().addDocumentListener(documentListener);
-        rememberPasswordCheckBox.addActionListener(actionListener);
         anonymousCheckBox.addActionListener(actionListener);
         initialDirectoryTextField.getDocument().addDocumentListener(documentListener);
         timeoutTextField.getDocument().addDocumentListener(documentListener);
 
+        // internals
         anonymousCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 setEnabledLoginCredentials();
             }
         });
+        configList.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                setEnabledRemoveButton();
+            }
+        });
+    }
+
+    void refreshConfigList() {
+        configList.repaint();
+    }
+
+    void setEnabledRemoveButton() {
+        setEnabledRemoveButton(configList.getSelectedIndex() != -1);
+    }
+
+    private void setEnabledRemoveButton(boolean enabled) {
+        removeButton.setEnabled(enabled);
     }
 
     void setEnabledLoginCredentials() {
         setEnabledLoginCredentials(!anonymousCheckBox.isSelected());
     }
 
+    void fireChange() {
+        changeSupport.fireChange();
+        // because of correct coloring of list items (invalid configurations)
+        refreshConfigList();
+    }
+
     private void setEnabledLoginCredentials(boolean enabled) {
         userTextField.setEnabled(enabled);
         passwordTextField.setEnabled(enabled);
-        rememberPasswordCheckBox.setEnabled(enabled);
     }
 
     /** This method is called from within the constructor to
@@ -240,14 +293,15 @@ public class RemoteConnectionsPanel extends JPanel {
         anonymousCheckBox = new javax.swing.JCheckBox();
         passwordLabel = new javax.swing.JLabel();
         passwordTextField = new javax.swing.JPasswordField();
-        rememberPasswordCheckBox = new javax.swing.JCheckBox();
         initialDirectoryLabel = new javax.swing.JLabel();
         initialDirectoryTextField = new javax.swing.JTextField();
         timeoutLabel = new javax.swing.JLabel();
         timeoutTextField = new javax.swing.JTextField();
         separator = new javax.swing.JSeparator();
+        warningLabel = new javax.swing.JLabel();
         errorLabel = new javax.swing.JLabel();
 
+        configList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         configScrollPane.setViewportView(configList);
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Add")); // NOI18N
@@ -256,6 +310,8 @@ public class RemoteConnectionsPanel extends JPanel {
 
         connectionLabel.setLabelFor(connectionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(connectionLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_ConnectionName")); // NOI18N
+
+        connectionTextField.setEnabled(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(typeLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Type")); // NOI18N
 
@@ -273,13 +329,13 @@ public class RemoteConnectionsPanel extends JPanel {
         passwordLabel.setLabelFor(passwordTextField);
         org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Password")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(rememberPasswordCheckBox, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_RememberPassword")); // NOI18N
-
         initialDirectoryLabel.setLabelFor(initialDirectoryTextField);
         org.openide.awt.Mnemonics.setLocalizedText(initialDirectoryLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_InitialDirectory")); // NOI18N
 
         timeoutLabel.setLabelFor(timeoutTextField);
         org.openide.awt.Mnemonics.setLocalizedText(timeoutLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Timeout")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(warningLabel, "warning"); // NOI18N
 
         org.jdesktop.layout.GroupLayout detailsPanelLayout = new org.jdesktop.layout.GroupLayout(detailsPanel);
         detailsPanel.setLayout(detailsPanelLayout);
@@ -288,7 +344,7 @@ public class RemoteConnectionsPanel extends JPanel {
             .add(detailsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(separator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 427, Short.MAX_VALUE)
+                    .add(separator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE)
                     .add(detailsPanelLayout.createSequentialGroup()
                         .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(connectionLabel)
@@ -299,32 +355,26 @@ public class RemoteConnectionsPanel extends JPanel {
                             .add(initialDirectoryLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(typeComboBox, 0, 302, Short.MAX_VALUE)
-                            .add(connectionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
+                            .add(typeComboBox, 0, 303, Short.MAX_VALUE)
+                            .add(connectionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, detailsPanelLayout.createSequentialGroup()
                                 .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(initialDirectoryTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
-                                    .add(userTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
-                                    .add(hostTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
-                                    .add(passwordTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE))
+                                    .add(userTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
+                                    .add(hostTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
+                                    .add(passwordTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
+                                    .add(initialDirectoryTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                        .add(detailsPanelLayout.createSequentialGroup()
-                                            .add(portLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 28, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                            .add(portTextField))
-                                        .add(org.jdesktop.layout.GroupLayout.TRAILING, detailsPanelLayout.createSequentialGroup()
-                                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                            .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                                .add(rememberPasswordCheckBox)
-                                                .add(detailsPanelLayout.createSequentialGroup()
-                                                    .add(timeoutLabel)
-                                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                    .add(timeoutTextField)))))
+                                .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                                     .add(detailsPanelLayout.createSequentialGroup()
+                                        .add(portLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 28, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(anonymousCheckBox)))))))
+                                        .add(portTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 99, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                    .add(detailsPanelLayout.createSequentialGroup()
+                                        .add(timeoutLabel)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(timeoutTextField))
+                                    .add(anonymousCheckBox)))))
+                    .add(warningLabel))
                 .addContainerGap())
         );
         detailsPanelLayout.setVerticalGroup(
@@ -354,7 +404,6 @@ public class RemoteConnectionsPanel extends JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(passwordLabel)
-                    .add(rememberPasswordCheckBox)
                     .add(passwordTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -362,11 +411,12 @@ public class RemoteConnectionsPanel extends JPanel {
                     .add(timeoutLabel)
                     .add(initialDirectoryTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(timeoutTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(36, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 9, Short.MAX_VALUE)
+                .add(warningLabel)
+                .addContainerGap())
         );
 
-        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, "dummy"); // NOI18N
-        errorLabel.setEnabled(false);
+        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, "error"); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -425,7 +475,6 @@ public class RemoteConnectionsPanel extends JPanel {
     private javax.swing.JPasswordField passwordTextField;
     private javax.swing.JLabel portLabel;
     private javax.swing.JTextField portTextField;
-    private javax.swing.JCheckBox rememberPasswordCheckBox;
     private javax.swing.JButton removeButton;
     private javax.swing.JSeparator separator;
     private javax.swing.JLabel timeoutLabel;
@@ -434,7 +483,81 @@ public class RemoteConnectionsPanel extends JPanel {
     private javax.swing.JLabel typeLabel;
     private javax.swing.JLabel userLabel;
     private javax.swing.JTextField userTextField;
+    private javax.swing.JLabel warningLabel;
     // End of variables declaration//GEN-END:variables
+
+    public String getConnectionName() {
+        return connectionTextField.getText();
+    }
+
+    public void setConnectionName(String connectionName) {
+        connectionTextField.setText(connectionName);
+    }
+
+    public ConnectionType getType() {
+        return (ConnectionType) typeComboBox.getSelectedItem();
+    }
+
+    public void setType(ConnectionType connectionType) {
+        typeComboBox.setSelectedItem(connectionType);
+    }
+
+    public String getHostName() {
+        return hostTextField.getText();
+    }
+
+    public void setHostName(String hostName) {
+        hostTextField.setText(hostName);
+    }
+
+    public String getPort() {
+        return portTextField.getText();
+    }
+
+    public void setPort(String port) {
+        portTextField.setText(port);
+    }
+
+    public String getUserName() {
+        return userTextField.getText();
+    }
+
+    public void setUserName(String userName) {
+        userTextField.setText(userName);
+    }
+
+    public String getPassword() {
+        return new String(passwordTextField.getPassword());
+    }
+
+    public void setPassword(String password) {
+        passwordTextField.setText(password);
+    }
+
+    public boolean isAnonymousLogin() {
+        return anonymousCheckBox.isSelected();
+    }
+
+    public void setAnonymousLogin(boolean anonymousLogin) {
+        anonymousCheckBox.setSelected(anonymousLogin);
+        setEnabledLoginCredentials();
+    }
+
+    public String getInitialDirectory() {
+        return initialDirectoryTextField.getText();
+    }
+
+    public void setInitialDirectory(String initialDirectory) {
+        initialDirectoryTextField.setText(initialDirectory);
+    }
+
+    public String getTimeout() {
+        return timeoutTextField.getText();
+    }
+
+    public void setTimeout(String timeout) {
+        timeoutTextField.setText(timeout);
+    }
 
     private class DefaultDocumentListener implements DocumentListener {
         public void insertUpdate(DocumentEvent e) {
@@ -447,13 +570,101 @@ public class RemoteConnectionsPanel extends JPanel {
             processUpdate();
         }
         private void processUpdate() {
-            changeSupport.fireChange();
+            fireChange();
         }
     }
 
     private class DefaultActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            changeSupport.fireChange();
+            fireChange();
+        }
+    }
+
+    public static class ConfigListRenderer extends JLabel implements ListCellRenderer, UIResource {
+        private static final long serialVersionUID = 3196531352192214602L;
+
+        public ConfigListRenderer() {
+            setOpaque(true);
+        }
+
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            assert value instanceof ConfigManager.Configuration;
+            setName("ComboBox.listRenderer"); // NOI18N
+            Color errorColor = UIManager.getColor("nb.errorForeground"); // NOI18N
+            ConfigManager.Configuration cfg = (ConfigManager.Configuration) value;
+            setText(cfg.getDisplayName());
+            setIcon(null);
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(cfg.isValid() ? list.getSelectionForeground() : errorColor);
+            } else {
+                setBackground(list.getBackground());
+                setForeground(cfg.isValid() ? list.getForeground() : errorColor);
+            }
+            return this;
+        }
+
+        @Override
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name; // NOI18N
+        }
+    }
+
+    public class ConfigListModel extends AbstractListModel {
+        private static final long serialVersionUID = -194518992310432557L;
+
+        private final List<Configuration> data = new ArrayList<Configuration>();
+
+        public int getSize() {
+            return data.size();
+        }
+
+        public Configuration getElementAt(int index) {
+            return data.get(index);
+        }
+
+        public boolean addElement(Configuration configuration) {
+            assert configuration != null;
+            if (!data.add(configuration)) {
+                return false;
+            }
+            Collections.sort(data, ConfigManager.getConfigurationComparator());
+            int idx = indexOf(configuration);
+            fireIntervalAdded(this, idx, idx);
+            return true;
+        }
+
+        public int indexOf(Configuration configuration) {
+            return data.indexOf(configuration);
+        }
+
+        public boolean removeElement(Configuration configuration) {
+            int idx = indexOf(configuration);
+            if (idx == -1) {
+                return false;
+            }
+            boolean result = data.remove(configuration);
+            assert result;
+            fireIntervalRemoved(this, idx, idx);
+            return true;
+        }
+
+        public List<Configuration> getElements() {
+            return Collections.unmodifiableList(data);
+        }
+
+        public void setElements(List<Configuration> configurations) {
+            int size = data.size();
+            data.clear();
+            if (size > 0) {
+                fireIntervalRemoved(this, 0, size - 1);
+            }
+            if (configurations.size() > 0) {
+                data.addAll(configurations);
+                Collections.sort(data, ConfigManager.getConfigurationComparator());
+                fireIntervalAdded(this, 0, data.size() - 1);
+            }
         }
     }
 }

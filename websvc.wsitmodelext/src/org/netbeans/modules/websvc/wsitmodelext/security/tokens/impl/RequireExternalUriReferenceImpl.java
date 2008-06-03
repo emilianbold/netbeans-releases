@@ -41,17 +41,16 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.tokens.impl;
 
+import org.netbeans.modules.websvc.wsitmodelext.security.impl.SecurityPolicyComponentImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.RequireExternalUriReference;
-import org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokensQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author Martin Grebac
  */
-public class RequireExternalUriReferenceImpl extends TokensComponentImpl implements RequireExternalUriReference {
+public class RequireExternalUriReferenceImpl extends SecurityPolicyComponentImpl implements RequireExternalUriReference {
     
     /**
      * Creates a new instance of RequireExternalUriReferenceImpl
@@ -60,13 +59,4 @@ public class RequireExternalUriReferenceImpl extends TokensComponentImpl impleme
         super(model, e);
     }
     
-    public RequireExternalUriReferenceImpl(WSDLModel model){
-        this(model, createPrefixedElement(TokensQName.REQUIREEXTERNALURIREFERENCE.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
 }

@@ -27,15 +27,9 @@
  */
 package org.netbeans.modules.groovy.editor.hints;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.groovy.editor.hints.spi.Description;
-import org.netbeans.modules.groovy.editor.hints.spi.HintSeverity;
-import org.netbeans.modules.groovy.editor.hints.spi.RuleContext;
-import org.netbeans.modules.groovy.editor.hints.spi.SelectionRule;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.codehaus.groovy.ast.ASTNode;
@@ -43,33 +37,31 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.groovy.editor.AstUtilities;
 import org.netbeans.modules.groovy.editor.Formatter;
-import org.netbeans.modules.groovy.editor.hints.spi.EditList;
-import org.netbeans.modules.groovy.editor.hints.spi.Fix;
+import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyRuleContext;
+import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovySelectionRule;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.EditList;
+import org.netbeans.modules.gsf.api.HintFix;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.openide.util.NbBundle;
 
-public class CommentOutRule implements SelectionRule {
+public class CommentOutRule extends GroovySelectionRule {
     
     public static final Logger LOG = Logger.getLogger(CommentOutRule.class.getName()); // NOI18N
     String bulbDesc = NbBundle.getMessage(CommentOutRule.class, "CommentOutRuleDescription");
     
     enum OPERATION { COMMENT_OUT, ADD_IF };
 
-    public void run(RuleContext context, List<Description> result) {
+    public void run(GroovyRuleContext context, List<Hint> result) {
         CompilationInfo info = context.compilationInfo;
         int start = context.selectionStart;
         int end = context.selectionEnd;
         
         assert start < end;
         
-        BaseDocument baseDoc;
-        try {
-            baseDoc = (BaseDocument) info.getDocument();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return;
-        }
+        BaseDocument baseDoc = context.doc;
         
         if (end > baseDoc.getLength()) {
             return;
@@ -95,23 +87,23 @@ public class CommentOutRule implements SelectionRule {
         return;
     }
     
-    Description getDescriptor(OPERATION operation, String bulbDescriptionMsgBundle, RuleContext context,
+    Hint getDescriptor(OPERATION operation, String bulbDescriptionMsgBundle, GroovyRuleContext context,
             BaseDocument baseDoc, OffsetRange range) {
 
         int DEFAULT_PRIORITY = 292;
         String descriptionString = NbBundle.getMessage(CommentOutRule.class, bulbDescriptionMsgBundle);
-        Fix fixToApply = new SimpleFix(operation, descriptionString, baseDoc, context);
+        HintFix fixToApply = new SimpleFix(operation, descriptionString, baseDoc, context);
 
-        List<Fix> fixList = new ArrayList<Fix>(1);
+        List<HintFix> fixList = new ArrayList<HintFix>(1);
         fixList.add(fixToApply);
-        Description descriptor = new Description(this, fixToApply.getDescription(), context.compilationInfo.getFileObject(), range,
+        Hint descriptor = new Hint(this, fixToApply.getDescription(), context.compilationInfo.getFileObject(), range,
                 fixList, DEFAULT_PRIORITY);
 
         return descriptor;
     }
     
 
-    public boolean appliesTo(CompilationInfo compilationInfo) {
+    public boolean appliesTo(RuleContext context) {
         return true;
     }
 
@@ -128,13 +120,13 @@ public class CommentOutRule implements SelectionRule {
     }
     
     
-    private class SimpleFix implements Fix {
+    private class SimpleFix implements HintFix {
         BaseDocument baseDoc;
         String desc;
-        RuleContext context;
+        GroovyRuleContext context;
         OPERATION operation;
 
-        public SimpleFix(OPERATION operation ,String desc, BaseDocument baseDoc, RuleContext context) {
+        public SimpleFix(OPERATION operation ,String desc, BaseDocument baseDoc, GroovyRuleContext context) {
             this.desc = desc;
             this.baseDoc = baseDoc;
             this.context = context;
@@ -172,7 +164,7 @@ public class CommentOutRule implements SelectionRule {
                     int startOfRow = Utilities.getRowStart(baseDoc, start);
                     
                     edits.replace(startOfRow, 0, START_INSERT, false, 1);
-                    edits.format();
+                    edits.setFormatter(new Formatter(), true);
                     edits.apply();
                     
                     component.setCaretPosition(start + 4);

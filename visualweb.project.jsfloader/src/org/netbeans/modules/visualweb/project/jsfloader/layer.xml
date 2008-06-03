@@ -49,11 +49,6 @@ made subject to such option by the copyright holder.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsfloader.codeclips.Bundle"/>
             <attr name="isExpanded" boolvalue="true"/>
             <attr name="isReadonly" boolvalue="true"/>
-            
-            <!-- Ordering -->  
-              
-            <!-- End Ordering -->
-            
             <file name="CurrentDate.xml" url="codeclips/CurrentDate.xml">
                 <attr name="position" intvalue="300"/>
             </file>
@@ -76,20 +71,10 @@ made subject to such option by the copyright holder.
 
 
     <folder name="CreatorJavaPalette">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsfloader.codeclips.Bundle"/>
-        
         <folder name="ApplicationData">    
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsfloader.codeclips.Bundle"/>
             <attr name="isExpanded" boolvalue="true"/>
             <attr name="isReadonly" boolvalue="true"/>
-            
-            <!-- Ordering -->     
-             
-             
-             
-             
-            <!-- End Ordering -->
-        
             <attr name="position" intvalue="200"/>
             <file name="RetValFromSession.xml" url="codeclips/RetValFromSession.xml">
                 <attr name="position" intvalue="100"/>
@@ -114,10 +99,6 @@ made subject to such option by the copyright holder.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsfloader.codeclips.Bundle"/>
             <attr name="isExpanded" boolvalue="true"/>
             <attr name="isReadonly" boolvalue="true"/>
-            
-            <!-- Ordering -->  
-            <!-- End Ordering -->
-           
             <attr name="position" intvalue="300"/>
             <file name="LogMessages.xml" url="codeclips/LogMessages.xml">
                 <attr name="position" intvalue="200"/>
@@ -131,19 +112,6 @@ made subject to such option by the copyright holder.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsfloader.codeclips.Bundle"/>
             <attr name="isExpanded" boolvalue="true"/>
             <attr name="isReadonly" boolvalue="true"/>
-            
-            <!-- Ordering -->  
-             
-              
-              
-              
-              
-              
-              
-              
-              
-            <!-- End Ordering -->
-            
             <attr name="position" intvalue="400"/>
             <file name="AccessJavaBean.xml" url="codeclips/AccessJavaBean.xml">
                 <attr name="position" intvalue="100"/>
@@ -181,20 +149,10 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     <folder name="CreatorJavaPalette5">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsfloader.codeclips.Bundle"/>        
-        
         <folder name="ApplicationData">    
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsfloader.codeclips.Bundle"/>
             <attr name="isExpanded" boolvalue="true"/>
             <attr name="isReadonly" boolvalue="true"/>
-            
-            <!-- Ordering -->     
-             
-             
-             
-             
-            <!-- End Ordering -->
-        
             <attr name="position" intvalue="200"/>
             <file name="RetValFromSession.xml" url="codeclips/RetValFromSession.xml">
                 <attr name="position" intvalue="100"/>
@@ -219,10 +177,6 @@ made subject to such option by the copyright holder.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsfloader.codeclips.Bundle"/>
             <attr name="isExpanded" boolvalue="true"/>
             <attr name="isReadonly" boolvalue="true"/>
-            
-            <!-- Ordering -->  
-            <!-- End Ordering -->
-           
             <attr name="position" intvalue="300"/>
             <file name="LogMessages.xml" url="codeclips/LogMessages.xml">
                 <attr name="position" intvalue="200"/>
@@ -236,19 +190,6 @@ made subject to such option by the copyright holder.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsfloader.codeclips.Bundle"/>
             <attr name="isExpanded" boolvalue="true"/>
             <attr name="isReadonly" boolvalue="true"/>
-            
-            <!-- Ordering -->  
-             
-              
-              
-              
-              
-              
-              
-              
-              
-            <!-- End Ordering -->
-            
             <attr name="position" intvalue="400"/>
             <file name="AccessJavaBean.xml" url="codeclips/AccessJavaBean.xml">
                 <attr name="position" intvalue="500"/>
@@ -289,7 +230,20 @@ made subject to such option by the copyright holder.
     <!-- Adjusting the actions shown on jsp object from web/core/src/org/netbeans/modules/web/core/resources/layer.xml -->
     <folder name="Loaders">
         <folder name="text">
+            <folder name="x-java">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-visualweb-project-jsfloader-JsfJavaDataLoader.instance">
+                        <attr name="position" intvalue="74999"/>
+                    </file>
+                </folder>
+            </folder>
             <folder name="x-jsp">
+                <folder name="Factories">
+                     <file name="org-netbeans-modules-visualweb-project-jsfloader-JsfJspDataLoader.instance">
+                         <attr name="position" intvalue="2000"/>
+                     </file>
+                </folder>
+                
               <folder name="visual">
                 <folder name="Actions">
                   <!-- <RAVE> Add Set As Start Page action -->

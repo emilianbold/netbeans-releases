@@ -46,13 +46,15 @@ import java.awt.Dialog;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
-import javax.swing.AbstractListModel;
-import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
 
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.vmd.componentssupport.ui.UIUtils;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -63,13 +65,34 @@ public class JavaMELibsVisualPanel extends JPanel {
     private static final String CONTENT_NUMBERED  = "WizardPanel_contentNumbered";  // NOI18N
     private static final String CONTENT_DISPLAYED = "WizardPanel_contentDisplayed"; // NOI18N
     private static final String AUTO_WIZARD_STYLE = "WizardPanel_autoWizardStyle";  // NOI18N
+
+    private static final String DLD_DELETE_TITLE = "MSG_LibraryDeleteTitle";  // NOI18N
+    private static final String DLD_DELETE_MSG = "MSG_LibraryDeleteMsg";  // NOI18N
     
     /** Creates new form JavaMELibsVisualPanel */
     public JavaMELibsVisualPanel() {
         initComponents();
         
         myLibDescList.setModel( new LibraryListModel() );
+        myLibDescList.getSelectionModel().setSelectionMode(
+                ListSelectionModel.SINGLE_SELECTION);
+        myLibDescList.getSelectionModel().addListSelectionListener(
+                new ListSelectionListener() {
+                    public void valueChanged(ListSelectionEvent e) {
+                        updateRemoveButton();
+                    }
+                });
+        updateRemoveButton();
     }
+
+    private void updateRemoveButton(){
+        if (myLibDescList.isSelectionEmpty()) {
+            myRemoveButton.setEnabled(false);
+        } else {
+            myRemoveButton.setEnabled(true);
+        }
+    }
+    
 
     void readData( WizardDescriptor settings ) {
         myWizardDescriptor = settings;
@@ -83,89 +106,6 @@ public class JavaMELibsVisualPanel extends JPanel {
     }
 
     
-    private class LibraryListModel extends AbstractListModel{
-
-        private Vector delegate = new Vector();
-
-        public void updateModel(List<String> libNames,  List<String> libDisplayNames){
-            // clean
-            removeAllElements();
-            // fil with new elements
-            if (libNames == null || libDisplayNames == null ){
-                return;
-            }
-            assert libNames.size() == libDisplayNames.size() 
-                    : "libraries data is not consistent";
-            
-            Iterator<String> itN = libNames.iterator();
-            Iterator<String> itDN = libDisplayNames.iterator();
-            while (itN.hasNext()){
-                String name = itN.next();
-                String displayName = itDN.next();
-                addElement(displayName + " [ " + name + " ]"); // NOI18N 
-            }
-            
-        }
-                
-        /**
-         * Adds the specified component to the end of this list. 
-         *
-         * @param   obj   the component to be added
-         * @see Vector#addElement(Object)
-         */
-        public void addElement(Object obj) {
-            int index = delegate.size();
-            delegate.addElement(obj);
-            fireIntervalAdded(this, index, index);
-        }
-
-        /**
-         * Removes all components from this list and sets its size to zero.
-         * <blockquote>
-         * <b>Note:</b> Although this method is not deprecated, the preferred
-         *    method to use is <code>clear</code>, which implements the 
-         *    <code>List</code> interface defined in the 1.2 Collections framework.
-         * </blockquote>
-         *
-         * @see #clear()
-         * @see Vector#removeAllElements()
-         */
-        public void removeAllElements() {
-            int index1 = delegate.size() - 1;
-            delegate.removeAllElements();
-            if (index1 >= 0) {
-                fireIntervalRemoved(this, 0, index1);
-            }
-        }
-
-        /**
-         * Removes the element at the specified position in this list.
-         * Returns the element that was removed from the list.
-         * <p>
-         * Throws an <code>ArrayIndexOutOfBoundsException</code>
-         * if the index is out of range
-         * (<code>index &lt; 0 || index &gt;= size()</code>).
-         *
-         * @param index the index of the element to removed
-         */
-        public Object remove(int index) {
-            Object rv = delegate.elementAt(index);
-            delegate.removeElementAt(index);
-            fireIntervalRemoved(this, index, index);
-            return rv;
-        }
-
-        public int getSize() {
-            return delegate.size();
-        }
-
-        public Object getElementAt(int index) {
-            return delegate.elementAt(index);
-        }
-
-
-    }
-            
     void storeData( WizardDescriptor settings ) {
         /*
          * nothing to save. 
@@ -226,30 +166,26 @@ public class JavaMELibsVisualPanel extends JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(myAddButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(myRemoveButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .add(myDescLabel))
-                .addContainerGap())
+                    .add(myDescLabel)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                    .add(myAddButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(myRemoveButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(myDescLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(6, 6, 6)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(myAddButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(myRemoveButton))
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE))
-                .addContainerGap())
+                        .add(myRemoveButton)
+                        .addContainerGap(230, Short.MAX_VALUE))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)))
         );
 
         myDescLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JavaMELibsVisualPanel.class, "ACSN_DescLabel")); // NOI18N
@@ -273,13 +209,22 @@ private void addPressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPr
 
 private void removePressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removePressed
     int index = myLibDescList.getSelectedIndex();
-    // remove in UI
-    ((LibraryListModel)myLibDescList.getModel()).remove(index);
-    // remove from WizardDescriptor
     List<String> libNames = (List<String>)myWizardDescriptor.getProperty( 
                 CustomComponentWizardIterator.LIB_NAMES);
     List<String> libDisplayNames = (List<String>)myWizardDescriptor.getProperty( 
                 CustomComponentWizardIterator.LIB_DISPLAY_NAMES);
+
+    // remove in UI
+    String name = libNames.get(index);
+    
+    String title = getMessage(DLD_DELETE_TITLE);
+    String msg = getMessage(DLD_DELETE_MSG, name);
+    if (!UIUtils.userConfirmOkCancel(title, msg)){
+        return;
+    }
+    
+    ((LibraryListModel)myLibDescList.getModel()).remove(index);
+    // remove from WizardDescriptor
     libNames.remove(index);
     libDisplayNames.remove(index);
     
@@ -294,6 +239,34 @@ private void removePressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_re
     private javax.swing.JButton myRemoveButton;
     // End of variables declaration//GEN-END:variables
 
+    private static String getMessage(String key, Object... args) {
+        return NbBundle.getMessage(JavaMELibsVisualPanel.class, key, args);
+    }
+    
+    private class LibraryListModel extends EditableListModel{
+
+        public void updateModel(List<String> libNames,  List<String> libDisplayNames){
+            // clean
+            removeAllElements();
+            // fill with new elements
+            if (libNames == null || libDisplayNames == null ){
+                return;
+            }
+            assert libNames.size() == libDisplayNames.size() 
+                    : "libraries data is not consistent";
+            
+            Iterator<String> itN = libNames.iterator();
+            Iterator<String> itDN = libDisplayNames.iterator();
+            while (itN.hasNext()){
+                String name = itN.next();
+                String displayName = itDN.next();
+                addElement(displayName + " [ " + name + " ]"); // NOI18N 
+            }
+            
+        }
+                
+    }
+            
     private WizardDescriptor myWizardDescriptor;
     private WizardDescriptor myInnerDescriptor;
 

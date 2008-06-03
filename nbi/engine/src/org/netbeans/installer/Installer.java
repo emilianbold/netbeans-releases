@@ -119,8 +119,7 @@ public class Installer implements FinishHandler {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    private File localDirectory =
-            new File(DEFAULT_LOCAL_DIRECTORY_PATH).getAbsoluteFile();
+    private File localDirectory = null;
     
     // Constructor //////////////////////////////////////////////////////////////////
     /**
@@ -157,22 +156,22 @@ public class Installer implements FinishHandler {
         
         parseArguments(arguments);
         loadEngineProperties();
-        setLocalDirectory();
+        initializeLocalDirectory();
         
         // once we have set the local directory (and therefore devised the log
         // file path) we can start logging safely
-        LogManager.setLogFile(new File(localDirectory, LOG_FILE_NAME));
+        LogManager.setLogFile(new File(getLocalDirectory(), LOG_FILE_NAME));
         LogManager.start();
         
         // initialize the download manager module
         final DownloadManager downloadManager = DownloadManager.getInstance();
-        downloadManager.setLocalDirectory(localDirectory);
+        downloadManager.setLocalDirectory(getLocalDirectory());
         downloadManager.setFinishHandler(this);
         downloadManager.init();
         
         // initialize the product registry module
         final Registry registry = Registry.getInstance();
-        registry.setLocalDirectory(localDirectory);
+        registry.setLocalDirectory(getLocalDirectory());
         registry.setFinishHandler(this);
         
         // initialize the wizard module
@@ -251,6 +250,9 @@ public class Installer implements FinishHandler {
     }
     
     public File getLocalDirectory() {
+        if(localDirectory==null) {
+            initializeLocalDirectory();
+        }
         return localDirectory;
     }
     
@@ -794,22 +796,30 @@ public class Installer implements FinishHandler {
                 "... finished parsing command line arguments"); // NOI18N
     }
     
-    private void setLocalDirectory() {
+    private void initializeLocalDirectory() {
+        if(localDirectory!=null) {
+            return;
+        }
         LogManager.logIndent("initializing the local directory"); // NOI18N
-        
+
         if (System.getProperty(LOCAL_DIRECTORY_PATH_PROPERTY) != null) {
-            localDirectory = new File(System.getProperty(
-                    LOCAL_DIRECTORY_PATH_PROPERTY)).getAbsoluteFile();
+            String path = System.getProperty(LOCAL_DIRECTORY_PATH_PROPERTY);
+            LogManager.log("... local directory path (initial) : " + path);
+            path = SystemUtils.resolveString(path);
+            LogManager.log("... local directory path (resolved): " + path);
+            localDirectory = new File(path).getAbsoluteFile();
         } else {
             LogManager.log("... custom local directory was " + // NOI18N
-                    "not specified, using the default"); // NOI18N
-            
+                        "not specified, using the default"); // NOI18N
+
             localDirectory =
-                    new File(DEFAULT_LOCAL_DIRECTORY_PATH).getAbsoluteFile();
+                        new File(DEFAULT_LOCAL_DIRECTORY_PATH).getAbsoluteFile();
             System.setProperty(
                     LOCAL_DIRECTORY_PATH_PROPERTY,
                     localDirectory.getAbsolutePath());
+            
         }
+        
         
         LogManager.log("... local directory: " + localDirectory); // NOI18N
         
@@ -845,7 +855,7 @@ public class Installer implements FinishHandler {
         LogManager.logIndent("creating lock file"); // NOI18N
         
         if (System.getProperty(IGNORE_LOCK_FILE_PROPERTY) == null) {
-            final File lock = new File(localDirectory, LOCK_FILE_NAME);
+            final File lock = new File(getLocalDirectory(), LOCK_FILE_NAME);
             
             if (lock.exists()) {
                 LogManager.log("... lock file already exists"); // NOI18N
@@ -909,14 +919,12 @@ public class Installer implements FinishHandler {
     /**
      * Cache installer at NBI`s home directory.
      */
-    public static File cacheInstallerEngine(Progress progress) throws IOException {
+    public File cacheInstallerEngine(Progress progress) throws IOException {
         final String propName = EngineResources.LOCAL_ENGINE_PATH_PROPERTY;
         File cachedEngine = null;
         
         if ( System.getProperty(propName) == null ) {
-            cachedEngine = new File(System.getProperty(
-                    LOCAL_DIRECTORY_PATH_PROPERTY),
-                    "nbi-engine.jar");
+            cachedEngine = new File(getLocalDirectory(), "nbi-engine.jar");
             System.setProperty(propName, cachedEngine.getAbsolutePath());
         }  else {
             cachedEngine = new File(System.getProperty(propName));
@@ -929,7 +937,7 @@ public class Installer implements FinishHandler {
         return new File(System.getProperty(propName));
     }
     
-    private static void cacheInstallerEngineJar(File dest, Progress progress) throws IOException {
+    private void cacheInstallerEngineJar(File dest, Progress progress) throws IOException {
         LogManager.log("... starting copying engine content to the new jar file");
         String [] entries = StringUtils.splitByLines(
                 StreamUtils.readStream(
@@ -994,7 +1002,7 @@ public class Installer implements FinishHandler {
     
     
     
-    public static void cacheInstallerEngine(File dest, Progress progress) throws IOException {
+    public void cacheInstallerEngine(File dest, Progress progress) throws IOException {
         LogManager.logIndent("cache engine data locally to run uninstall in the future");
         
         String filePrefix = "file:";

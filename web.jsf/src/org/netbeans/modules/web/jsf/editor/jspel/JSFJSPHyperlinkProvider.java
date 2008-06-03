@@ -292,7 +292,7 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
                         EditCookie editCookie = dobj.getCookie(EditCookie.class);
                         if (editorCookie != null) {
                             StyledDocument document = editorCookie.openDocument();
-                            int[] definition = JSFEditorUtilities.getManagedBeanDefinition((BaseDocument)document, beanName);
+                            int[] definition = JSFEditorUtilities.getManagedBeanDefinition((BaseDocument)document, "managed-bean-name", beanName); //NOI18N
                             // line number in the document
                             int lineNumber = NbDocument.findLineNumber(document, definition[0]);
                             int lineOffset = NbDocument.findLineOffset(document, lineNumber);

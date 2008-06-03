@@ -45,7 +45,6 @@ package org.netbeans.modules.uml.ui.support.presentationnavigation;
 
 import org.netbeans.modules.uml.ui.products.ad.projecttreedefaultengine.FilteredItemManager;
 import java.awt.datatransfer.Transferable;
-
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProductInitEventsSink;
 import org.netbeans.modules.uml.core.coreapplication.INavigator;
@@ -76,23 +75,24 @@ import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
 import org.netbeans.modules.uml.ui.support.DispatchHelper;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProduct;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IToolTipData;
-import org.netbeans.modules.uml.ui.swing.drawingarea.ICompartmentEventsSink;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaSelectionEventsSink;
+//import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
+//import org.netbeans.modules.uml.ui.support.viewfactorysupport.IToolTipData;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.ICompartmentEventsSink;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaSelectionEventsSink;
 
 /**
  * @author sumitabhk
  *
- * 
+ * TODO: meteora 
  */
-public class NavigationController implements IDrawingAreaSelectionEventsSink,
-											 ICompartmentEventsSink, 
+public class NavigationController implements 
+//        IDrawingAreaSelectionEventsSink,
+//											 ICompartmentEventsSink, 
 											 ICoreProductInitEventsSink, 
-											 IDrawingAreaEventsSink, 
+//											 IDrawingAreaEventsSink, 
 											 IDocumentationModifiedEventsSink, 
 											 IArtifactEventsSink, 
 											 IElementLifeTimeEventsSink, 
@@ -133,9 +133,9 @@ public class NavigationController implements IDrawingAreaSelectionEventsSink,
 		{
 			DispatchHelper helper = new DispatchHelper();
 			helper.registerForDocumentationModifiedEvents(this);
-			helper.registerDrawingAreaEvents(this);
-			helper.registerDrawingAreaSelectionEvents(this);
-			helper.registerDrawingAreaCompartmentEvents(this);
+//			helper.registerDrawingAreaEvents(this);
+//			helper.registerDrawingAreaSelectionEvents(this);
+//			helper.registerDrawingAreaCompartmentEvents(this);
 			helper.registerForInitEvents(this);
 			helper.registerForArtifactEvents(this);
 			helper.registerForLifeTimeEvents(this);
@@ -155,9 +155,9 @@ public class NavigationController implements IDrawingAreaSelectionEventsSink,
 			try
 			{
 				helper.revokeDocumentationModifiedSink(this);
-				helper.revokeDrawingAreaSink(this);
-				helper.revokeDrawingAreaSelectionSink(this);
-				helper.revokeDrawingAreaCompartmentSink(this);
+//				helper.revokeDrawingAreaSink(this);
+//				helper.revokeDrawingAreaSelectionSink(this);
+//				helper.revokeDrawingAreaCompartmentSink(this);
 				helper.revokeInitSink(this);
 				helper.revokeArtifactSink(this);
 				helper.revokeLifeTimeSink(this);
@@ -182,7 +182,7 @@ public class NavigationController implements IDrawingAreaSelectionEventsSink,
 	 * 
 	 * @return HRESULT
 	 */
-	public void onSelect(IDiagram pParentDiagram, ETList<IPresentationElement> selectedItems, ICompartment pComp, IResultCell cell)
+	public void onSelect(IDiagram pParentDiagram, ETList<IPresentationElement> selectedItems,/* ICompartment pComp,*/ IResultCell cell)
 	{
 		if (selectedItems != null)
 		{
@@ -233,28 +233,28 @@ public class NavigationController implements IDrawingAreaSelectionEventsSink,
 	 * 
 	 * @return HRESULT
 	 */
-	public void onCompartmentSelected(ICompartment pCompartment, boolean bSelected, IResultCell cell)
-	{
-		if (bSelected)
-		{
-			if (pCompartment != null)
-			{
-				IElement pCompartmentEle = pCompartment.getModelElement();
-				if (pCompartmentEle != null)
-				{
-					onNavigateToElement(pCompartmentEle);
-				}
-			}
-		}
-	}
+//	public void onCompartmentSelected(ICompartment pCompartment, boolean bSelected, IResultCell cell)
+//	{
+//		if (bSelected)
+//		{
+//			if (pCompartment != null)
+//			{
+//				IElement pCompartmentEle = pCompartment.getModelElement();
+//				if (pCompartmentEle != null)
+//				{
+//					onNavigateToElement(pCompartmentEle);
+//				}
+//			}
+//		}
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.ICompartmentEventsSink#onCompartmentCollapsed(org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment, boolean, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
 	 */
-	public void onCompartmentCollapsed(ICompartment pCompartment, boolean bCollapsed, IResultCell cell)
-	{
-		//nothing to do
-	}
+//	public void onCompartmentCollapsed(ICompartment pCompartment, boolean bCollapsed, IResultCell cell)
+//	{
+//		//nothing to do
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.core.coreapplication.ICoreProductInitEventsSink#onCoreProductPreInit(org.netbeans.modules.uml.core.coreapplication.ICoreProduct, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
@@ -305,18 +305,18 @@ public class NavigationController implements IDrawingAreaSelectionEventsSink,
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPreCreated(org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
 	 */
-	public void onDrawingAreaPreCreated(IDrawingAreaControl pDiagramControl, IResultCell cell)
-	{
-		//nothing to do
-	}
+//	public void onDrawingAreaPreCreated(IDrawingAreaControl pDiagramControl, IResultCell cell)
+//	{
+//		//nothing to do
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPostCreated(org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
 	 */
-	public void onDrawingAreaPostCreated(IDrawingAreaControl pDiagramControl, IResultCell cell)
-	{
-		//nothing to do
-	}
+//	public void onDrawingAreaPostCreated(IDrawingAreaControl pDiagramControl, IResultCell cell)
+//	{
+//		//nothing to do
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaOpened(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
@@ -377,10 +377,10 @@ public class NavigationController implements IDrawingAreaSelectionEventsSink,
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaTooltipPreDisplay(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement, org.netbeans.modules.uml.ui.support.viewfactorysupport.IToolTipData, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
 	 */
-	public void onDrawingAreaTooltipPreDisplay(IDiagram pParentDiagram, IPresentationElement pPE, IToolTipData pTooltip, IResultCell cell)
-	{
-		//nothing to do
-	}
+//	public void onDrawingAreaTooltipPreDisplay(IDiagram pParentDiagram, IPresentationElement pPE, IToolTipData pTooltip, IResultCell cell)
+//	{
+//		//nothing to do
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaActivated(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
@@ -393,18 +393,18 @@ public class NavigationController implements IDrawingAreaSelectionEventsSink,
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPreDrop(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
 	 */
-	public void onDrawingAreaPreDrop(IDiagram pParentDiagram, IDrawingAreaDropContext pContext, IResultCell cell)
-	{
-		//nothing to do
-	}
+//	public void onDrawingAreaPreDrop(IDiagram pParentDiagram, IDrawingAreaDropContext pContext, IResultCell cell)
+//	{
+//		//nothing to do
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPostDrop(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
 	 */
-	public void onDrawingAreaPostDrop(IDiagram pParentDiagram, IDrawingAreaDropContext pContext, IResultCell cell)
-	{
-		//nothing to do
-	}
+//	public void onDrawingAreaPostDrop(IDiagram pParentDiagram, IDrawingAreaDropContext pContext, IResultCell cell)
+//	{
+//		//nothing to do
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPreFileRemoved(java.lang.String, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)

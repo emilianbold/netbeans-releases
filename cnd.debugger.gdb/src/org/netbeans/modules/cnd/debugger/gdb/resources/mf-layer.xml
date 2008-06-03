@@ -58,6 +58,7 @@ made subject to such option by the copyright holder.
                 <folder name="GlyphGutterActions">
                     <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file>
                 </folder>
                 <folder name="Popup">
@@ -89,6 +90,7 @@ made subject to such option by the copyright holder.
                 <folder name="GlyphGutterActions">
                     <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file>
                 </folder>
                 <folder name="Popup">
@@ -121,6 +123,7 @@ made subject to such option by the copyright holder.
                 <folder name="GlyphGutterActions">
                     <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file>
                 </folder>
                 <folder name="Popup">
@@ -219,7 +222,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="2000"/>
             </file>
             <folder name="Stack">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.debugger.gdb.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/debugger/resources/actions/Folder.gif"/>
                 <attr name="position" intvalue="2100"/>
                 

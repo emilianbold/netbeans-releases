@@ -263,7 +263,7 @@
                           <Component id="rbRegisteredLibrary" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="cbLibraries" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="1" pref="1" max="1" attributes="0"/>
                       <Component id="rbNewLibrary" min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="jbBrowse" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -274,7 +274,7 @@
                           <Component id="jtNewLibraryName" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="lVersion" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="1" pref="1" max="1" attributes="0"/>
                       <Component id="rbNoneLibrary" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>

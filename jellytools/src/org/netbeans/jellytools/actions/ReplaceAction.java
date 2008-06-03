@@ -52,7 +52,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
  */
 public class ReplaceAction extends ActionNoBlock {
     // "Edit|Replace..."
-    private static final String replaceMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Edit")
+    private static final String replaceMenu = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Edit")
                                               + "|"
                                               + Bundle.getStringTrimmed("org.openide.actions.Bundle", "Replace");
     

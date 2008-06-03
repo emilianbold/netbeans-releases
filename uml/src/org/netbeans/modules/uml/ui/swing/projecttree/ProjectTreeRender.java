@@ -50,17 +50,10 @@ import java.awt.Component;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
 
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
-import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
-import org.netbeans.modules.uml.core.support.umlutils.IDataFormatter;
-import org.netbeans.modules.uml.core.workspacemanagement.IWSElement;
-import org.netbeans.modules.uml.ui.controls.drawingarea.IUIDiagram;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
 import org.netbeans.modules.uml.ui.controls.projecttree.ProjectTreeNode;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
@@ -69,17 +62,11 @@ import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeDiagram;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeFolder;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
 import org.netbeans.modules.uml.core.scm.ISCMIntegrator;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
-import java.awt.Dimension;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
-import java.awt.Insets;
-import java.awt.Rectangle;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.uml.core.support.Debug;
 
 /**

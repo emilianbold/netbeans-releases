@@ -612,8 +612,9 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(jLabel2, gridBagConstraints);
 
-        languagesComboBox.setMinimumSize(new java.awt.Dimension(100, 18));
-        languagesComboBox.setPreferredSize(new java.awt.Dimension(100, 22));
+        languagesComboBox.setMaximumSize(new java.awt.Dimension(100, 25));
+        languagesComboBox.setMinimumSize(new java.awt.Dimension(100, 25));
+        languagesComboBox.setPreferredSize(new java.awt.Dimension(100, 25));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
