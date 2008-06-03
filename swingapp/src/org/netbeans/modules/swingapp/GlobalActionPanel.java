@@ -619,6 +619,9 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         if(fileObject == null) {
             fileObject = actionManager.getApplicationClassFile();
         }
+        if (fileObject == null) {
+            return; // Issue 134163
+        }
         ActionEditor editor = new ActionEditor(fileObject);
         editor.setValue(act);
         ActionPropertyEditorPanel comp = (ActionPropertyEditorPanel) editor.getCustomEditor();
