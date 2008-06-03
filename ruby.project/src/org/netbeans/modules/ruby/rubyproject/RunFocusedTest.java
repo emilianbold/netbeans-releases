@@ -121,8 +121,13 @@ public class RunFocusedTest extends BaseAction {
                             LifecycleManager.getDefault().saveAll();
 
                             // Line+1: spec seems to be 1-based rather than 0-based (first line is 1)
-                            rspec.runRSpec(null, file, line+1, file.getName(), locator, true, debug);
-                                return;
+                            if (!debug) {
+                                TestRunner runner = getTestRunner(TestRunner.TestType.RSPEC);
+                                runner.runSingleTest(file, String.valueOf(line + 1));
+                            } else {
+                                rspec.runRSpec(null, file, line + 1, file.getName(), locator, true, debug);
+                            }
+                            return;
                         }
                     } else {
                         // Regular Test::Unit? Find the test surrounding the caret.
