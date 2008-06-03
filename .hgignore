@@ -327,6 +327,9 @@ derby\.log
 ^xtest/server/logs$
 ^xtest/server/build-info$
 ^xtest/test/instance/results$
+^hibernate/src/org/netbeans/modules/hibernate/mapping/model$
+^hibernate/src/org/netbeans/modules/hibernate/cfg/model$
+^hibernate/src/org/netbeans/modules/hibernate/reveng/model$
 \.orig\..*$
 \.chg\..*$
 \.conflict\~$

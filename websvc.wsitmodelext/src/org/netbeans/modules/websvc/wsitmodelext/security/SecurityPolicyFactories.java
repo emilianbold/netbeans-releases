@@ -460,6 +460,21 @@ public class SecurityPolicyFactories {
         }
     }
 
+    public static class AttachmentsFactory extends ElementFactory {
+        @Override
+        public Set<QName> getElementQNames() {
+            HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.ATTACHMENTS.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
+        }
+        @Override
+        public WSDLComponent create(WSDLComponent context, Element element) {
+            return new AttachmentsImpl(context.getModel(), element);
+        }
+    }
+    
     public static class XPathFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {

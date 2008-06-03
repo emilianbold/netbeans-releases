@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,65 +37,25 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.test.refactoring.operators;
+package org.netbeans.modules.websvc.wsitmodelext.security.impl;
 
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.modules.websvc.wsitmodelext.security.Attachments;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.w3c.dom.Element;
 
 /**
  *
- * @author Jiri Prox Jiri.Prox@Sun.COM
+ * @author Martin Grebac
  */
-public class ParametersPanelOperator extends JDialogOperator {
-
-    public ParametersPanelOperator(String name) {
-        super(name);
+public class AttachmentsImpl extends SecurityPolicyComponentImpl implements Attachments {
+    
+    /**
+     * Creates a new instance of AttachmentsImpl
+     */
+    public AttachmentsImpl(WSDLModel model, Element e) {
+        super(model, e);
     }
     
-    private JButtonOperator back;
-    private JButtonOperator preview;
-    private JButtonOperator refactor;
-    
-    public JButtonOperator getBack() {
-        if(back==null) {
-            back = new JButtonOperator(this, "< Back");            
-        }
-        return back;
-    }
-    
-    public JButtonOperator getPreview() {
-        if(preview==null) {
-            preview = new JButtonOperator(this, "Preview");            
-        }
-        return preview;
-    }
-    
-    public JButtonOperator getRefactor() {
-        if(refactor==null) {
-            refactor = new JButtonOperator(this, "Refactor");            
-        }
-        return refactor;
-    }
-    
-    public FindUsagesClassOperator getFindUsagesClassOperator() {
-        return null;
-        //return new FindUsagesClassOperator()
-    }
-
-    protected String getBungleText(String bundlePath, String bundleKey) {
-        String bundleText = java.util.ResourceBundle.getBundle(bundlePath).getString(bundleKey);
-        int index = bundleText.indexOf('&');
-        if (index == -1) {
-            return bundleText;
-        }
-        return bundleText.substring(0, index) + bundleText.substring(index + 1);
-    }
-
 }

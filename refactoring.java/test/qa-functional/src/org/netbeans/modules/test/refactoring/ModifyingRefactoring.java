@@ -36,60 +36,50 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.test.refactoring;
 
-package org.netbeans.modules.test.refactoring.operators;
-
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
+import java.util.List;
+import javax.swing.JTree;
+import javax.swing.tree.TreeModel;
 
 /**
  *
- * @author Jiri Prox Jiri.Prox@Sun.COM
+ * @author Jiri Prox Jiri.Prox@SUN.Com
  */
-public class ParametersPanelOperator extends JDialogOperator {
+public class ModifyingRefactoring extends RefactoringTestCase {
 
-    public ParametersPanelOperator(String name) {
+
+    public ModifyingRefactoring(String name) {
         super(name);
     }
-    
-    private JButtonOperator back;
-    private JButtonOperator preview;
-    private JButtonOperator refactor;
-    
-    public JButtonOperator getBack() {
-        if(back==null) {
-            back = new JButtonOperator(this, "< Back");            
-        }
-        return back;
-    }
-    
-    public JButtonOperator getPreview() {
-        if(preview==null) {
-            preview = new JButtonOperator(this, "Preview");            
-        }
-        return preview;
-    }
-    
-    public JButtonOperator getRefactor() {
-        if(refactor==null) {
-            refactor = new JButtonOperator(this, "Refactor");            
-        }
-        return refactor;
-    }
-    
-    public FindUsagesClassOperator getFindUsagesClassOperator() {
-        return null;
-        //return new FindUsagesClassOperator()
-    }
 
-    protected String getBungleText(String bundlePath, String bundleKey) {
-        String bundleText = java.util.ResourceBundle.getBundle(bundlePath).getString(bundleKey);
-        int index = bundleText.indexOf('&');
-        if (index == -1) {
-            return bundleText;
-        }
-        return bundleText.substring(0, index) + bundleText.substring(index + 1);
+    @Override
+    public String getProjectName() {
+        return "RefactoringTest";
+
     }
+    List<String> modificatedFiles;
+
+    
+    public void storeModifiedFiles(JTree tree) {
+        TreeModel model = tree.getModel();
+        browseForFiles(model.getRoot(), tree, 0);
+    }
+    
+    private void browseForFiles(Object root, JTree tree,int level) {
+        if(level==2) {
+            System.out.println(root.getClass().getName());
+            String filename = (String) getPreviewItemLabel(root);
+            modificatedFiles.add(filename);
+            return;
+        }
+        TreeModel model = tree.getModel();
+        for(int i =0; i<model.getChildCount(root);i++) {
+            browseForFiles(model.getChild(root, i), tree, level+1);
+        }        
+    }
+    
+    
 
 }
+
