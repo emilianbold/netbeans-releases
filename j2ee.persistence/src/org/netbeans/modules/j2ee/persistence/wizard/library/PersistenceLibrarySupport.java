@@ -279,6 +279,14 @@ public class PersistenceLibrarySupport  {
      * is defined, or null none could be found.
      */
     public static Library getLibrary(Provider provider){
+       
+        // Speical case for Hibernate
+        if(provider.getProviderClass().equals("org.hibernate.ejb.HibernatePersistence")) {
+            LibraryManager libraryManager = LibraryManager.getDefault();
+            Library hibernateLibrary = libraryManager.getLibrary("hibernate-jpa");  //NOI18N
+            return hibernateLibrary;
+        }
+        
         List<ProviderLibrary> libraries = createLibraries();
         for (ProviderLibrary each : libraries){
             if (provider.equals(each.getProvider())){

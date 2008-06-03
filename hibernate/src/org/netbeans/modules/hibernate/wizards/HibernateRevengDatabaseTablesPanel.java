@@ -86,6 +86,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final DBSchemaManager dbschemaManager = new DBSchemaManager();
     private DatabaseConnection dbconn;
+    private String schemaName;
     private boolean sourceSchemaUpdateEnabled;
     private Project project;
     org.netbeans.modules.hibernate.service.HibernateEnvironment env;
@@ -160,6 +161,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
             dbconn = HibernateUtil.getDBConnection(hibConf);
             if (dbconn != null) {
                 sourceSchemaElement = dbschemaManager.getSchemaElement(dbconn);
+                schemaName = dbconn.getSchema();
             }
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
@@ -222,6 +224,10 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
 
     public TableClosure getTableClosure() {
         return tableClosure;
+    }
+    
+    public String getSchemaName() {
+        return schemaName;
     }
 
     private static void notify(String message) {

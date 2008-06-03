@@ -57,6 +57,7 @@ import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.*;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
+import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
 
 /**
  * Central part of Subversion status management, deduces and caches statuses of files under version control.
@@ -452,6 +453,26 @@ public class FileStatusCache {
         }                       
         return fi;
     }    
+
+    public void patchRevision(File[] fileArray, Number revision) {        
+        for (File file : fileArray) {            
+            synchronized(this) {        
+                FileInformation status = getCachedStatus(file);
+                ISVNStatus entry = status != null ? status.getEntry(file) : null;
+                if(entry != null) {
+                    Number rev = entry.getRevision();
+                    if(rev.getNumber() != revision.getNumber()) {
+                        FileInformation info = createFileInformation(file, new FakeRevisionStatus(entry, revision), REPOSITORY_STATUS_UNKNOWN);
+                        File dir = file.getParentFile();
+                        Map<File, FileInformation> files = getScannedFiles(dir);
+                        Map<File, FileInformation> newFiles = new HashMap<File, FileInformation>(files);
+                        newFiles.put(file, info);
+                        turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
+                    }
+                }
+            }
+        }
+    }
     
     /**
      * Two FileInformation objects are equivalent if their status contants are equal AND they both reperesent a file (or
@@ -874,4 +895,82 @@ public class FileStatusCache {
             return Collections.emptySet();
         }
     }
+
+    private class FakeRevisionStatus implements ISVNStatus {
+        private ISVNStatus value;
+        private Number revision;
+        public FakeRevisionStatus(ISVNStatus value, Number revision) {
+            this.value = value;
+            this.revision = revision;           
+        }
+        public boolean isWcLocked() {
+            return value.isWcLocked();
+        }
+        public boolean isSwitched() {
+            return value.isSwitched();
+        }
+        public boolean isCopied() {
+            return value.isCopied();
+        }
+        public String getUrlString() {
+            return value.getUrlString();
+        }
+        public SVNUrl getUrlCopiedFrom() {
+            return value.getUrlCopiedFrom();
+        }
+        public SVNUrl getUrl() {
+            return value.getUrl();
+        }
+        public SVNStatusKind getTextStatus() {
+            return value.getTextStatus();
+        }
+        public Number getRevision() {                        
+            return revision;
+        }
+        public SVNStatusKind getRepositoryTextStatus() {
+            return value.getRepositoryTextStatus();
+        }
+        public SVNStatusKind getRepositoryPropStatus() {
+            return value.getRepositoryPropStatus();
+        }
+        public SVNStatusKind getPropStatus() {
+            return value.getPropStatus();
+        }
+        public String getPath() {
+            return value.getPath();
+        }
+        public SVNNodeKind getNodeKind() {
+            return value.getNodeKind();
+        }
+        public String getLockOwner() {
+            return value.getLockOwner();
+        }
+        public Date getLockCreationDate() {
+            return value.getLockCreationDate();
+        }
+        public String getLockComment() {
+            return value.getLockComment();
+        }
+        public String getLastCommitAuthor() {
+            return value.getLastCommitAuthor();
+        }
+        public Number getLastChangedRevision() {
+            return value.getLastChangedRevision();
+        }
+        public Date getLastChangedDate() {
+            return value.getLastChangedDate();
+        }
+        public File getFile() {
+            return value.getFile();
+        }
+        public File getConflictWorking() {
+            return value.getConflictWorking();
+        }
+        public File getConflictOld() {
+            return value.getConflictOld();
+        }
+        public File getConflictNew() {
+            return value.getConflictNew();
+        }
+    }    
 }

@@ -48,14 +48,13 @@
 package org.netbeans.test.umllib;
 import java.awt.Frame;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.Timeout;
 import org.netbeans.jemmy.drivers.DriverManager;
 import org.netbeans.jemmy.drivers.input.KeyRobotDriver;
+import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JComponentOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTextAreaOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.modules.uml.ui.controls.editcontrol.EditControlImpl;
@@ -64,52 +63,54 @@ import org.netbeans.modules.uml.ui.controls.editcontrol.EditControlImpl;
  * class handles current EditControl
  * @author psb
  */
-public class EditControlOperator extends JDialogOperator {
+public class EditControlOperator extends JComponentOperator {
     
     static{
         DriverManager.setKeyDriver(new KeyRobotDriver(new Timeout("autoDelay",50)));     
     }
     
-    private JDialogOperator ecFrame=null;
+   
     
     /** 
      * Creates a new instance of first visible EditControlOperator 
      */
     public EditControlOperator() {
-       super(new checkForEditControlDialog());
-       ecFrame=new JDialogOperator((JDialog)(this.getSource()));
+        this(MainWindowOperator.getDefault());
     }
-    /**
+
+    public EditControlOperator(ContainerOperator cont) {
+        super(cont, new EditControlChooser());
+    }
+        /**
      * Creates a new instance of EditControlOperator
      * use case insensitive an
-     * @param text in dialog
+     * @param text in panel
      */
      public EditControlOperator(String text) {
-       super(new checkForEditControlDialogByText(text));
-       ecFrame=new JDialogOperator((JDialog)(this.getSource()));
+       super(MainWindowOperator.getDefault(), new EditControlChooserByText(text));
+        
     }
     /**
      * Creates a new instance of EditControlOperator 
-     * @param text in dialog
+     * @param text in panel
      * @param ce -compare exactly
      * @param cs - case sensitive
      */
      public EditControlOperator(String text, boolean ce, boolean cs) {
-       super(new checkForEditControlDialogByText(text,ce,cs));
-       ecFrame=new JDialogOperator((JDialog)(this.getSource()));
+       super(MainWindowOperator.getDefault(), new EditControlChooserByText(text,ce,cs));  
     }
    /**
-     * Find textfield in edit control dialog
-     * we assume only one textfield in dialog for now
-     * @return JTextFieldOperator for first textfield in edit control dialog
+     * Find textfield in edit control panel
+     * we assume only one textfield in panel for now
+     * @return JTextFieldOperator for first textfield in edit control panel
      */
     public JTextFieldOperator getTextFieldOperator() {
         return new JTextFieldOperator(this);
     }
    /**
-     * Find textfield in edit control dialog
-     * we assume only one textfield in dialog for now
-     * @return JTextFieldOperator for first textfield in edit control dialog
+     * Find textfield in edit control panel
+     * we assume only one textfield in panel for now
+     * @return JTextFieldOperator for first textfield in edit control panel
      */
     public JTextAreaOperator getTextAreaOperator() {
         return new JTextAreaOperator(this);
@@ -128,15 +129,15 @@ public class EditControlOperator extends JDialogOperator {
 
 
 /**
- * Findder for Edit Control dialog (based on current realization)
+ * Findder for Edit Control panel (based on current realization)
  */
-class checkForEditControlDialog implements ComponentChooser
+class EditControlChooser implements ComponentChooser
 {
     private String frameTitle=MainWindowOperator.getDefault().getTitle();
      /**
       * chooser with all default values
       */
-     checkForEditControlDialog(){}
+     EditControlChooser(){}
      //
     /**
      * 
@@ -145,7 +146,7 @@ class checkForEditControlDialog implements ComponentChooser
      */
      public boolean checkComponent(java.awt.Component comp)
      {
-         javax.swing.JDialog cmp=(javax.swing.JDialog)comp;
+          javax.swing.JRootPane cmp=(javax.swing.JRootPane)comp;
          JComponent ec=JComponentOperator.findJComponent(cmp,new checkETEditControlObject());
         return ec!=null && cmp.isShowing() && ((Frame)(comp.getParent())).getTitle().equals(frameTitle);
      }
@@ -155,20 +156,21 @@ class checkForEditControlDialog implements ComponentChooser
      */
      public String	getDescription()
      {
-         return "Try to find UML Edit Control Dialog.";
+         return "Try to find UML Edit Control Panel.";
      }
 }
-class checkForEditControlDialogByText implements ComponentChooser
+class EditControlChooserByText implements ComponentChooser
 {
     private String text=null;
     private boolean cs=false;
     private boolean ce=false;
     private String frameTitle=MainWindowOperator.getDefault().getTitle();
-   /**
-     * find specific dialog with param name
+   
+    /**
+     * find specific panel with param name
      * @param txt 
      */
-     checkForEditControlDialogByText(String txt)
+     EditControlChooserByText(String txt)
      {
         text=txt;
      }
@@ -178,7 +180,7 @@ class checkForEditControlDialogByText implements ComponentChooser
      * @param e 
      * @param s 
      */
-     checkForEditControlDialogByText(String txt, boolean e, boolean s)
+     EditControlChooserByText(String txt, boolean e, boolean s)
      {
          ce=e;
          cs=s;
@@ -192,7 +194,7 @@ class checkForEditControlDialogByText implements ComponentChooser
      */
      public boolean checkComponent(java.awt.Component comp)
      {
-        javax.swing.JDialog cmp=(javax.swing.JDialog)comp;
+        javax.swing.JRootPane cmp=(javax.swing.JRootPane)comp;
         JComponent ec=JComponentOperator.findJComponent(cmp,new checkETEditControlObject());
          return ec!=null  && ((Frame)(comp.getParent())).getTitle().equals(frameTitle) && JTextFieldOperator.findJTextField(cmp,text,ce,cs)!=null;
      }
@@ -202,7 +204,7 @@ class checkForEditControlDialogByText implements ComponentChooser
      */
      public String	getDescription()
      {
-         return "Try to find UML Edit Control Dialog.";
+         return "Try to find UML Edit Control panel.";
      }
 }
 

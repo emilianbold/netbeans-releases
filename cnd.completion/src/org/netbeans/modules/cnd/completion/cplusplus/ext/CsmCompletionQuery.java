@@ -71,8 +71,11 @@ import org.netbeans.editor.TokenID;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtSettingsDefaults;
 import org.netbeans.editor.ext.ExtSettingsNames;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateParameterResultItem;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 import org.openide.util.NbBundle;
 
@@ -1249,6 +1252,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 if (item.getParameterCount() > 0) {
                     lastType = resolveType(item.getParameter(0));
                     staticOnly = false;
+                    lastType = getOperatorReturnType(lastType, "*");
                     // TODO: need to convert lastType into reference based on item token '&' or '*'
                     // and nested pointer expressions
                 }
@@ -1279,7 +1283,10 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                     if (nrTokens > 1) {
                         String varName = item.getTokenText(nrTokens - 1);
                         int varPos = item.getTokenOffset(nrTokens - 1);
-                        compResolver.setResolveTypes(CompletionResolver.RESOLVE_LOCAL_VARIABLES | CompletionResolver.RESOLVE_CLASSES);
+                        compResolver.setResolveTypes(CompletionResolver.RESOLVE_LOCAL_VARIABLES
+                                                     | CompletionResolver.RESOLVE_CLASSES 
+                                                     | CompletionResolver.RESOLVE_GLOB_NAMESPACES
+                                                     );
                         if (compResolver.refresh() && compResolver.resolve(varPos, varName, false)) {
                             res = compResolver.getResult();
                             if (findType) {
@@ -1481,6 +1488,53 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 cont = false;
             }
             return cont;
+        }
+    
+        private CsmType getOperatorReturnType(CsmType type, String unaryOperator){
+            if (type == null){
+                return type;
+            }
+            CsmClassifier cls = type.getClassifier();
+            for (int i = 0; i < 5; i++) {
+                // For performance issues do not use set. 5 guarantees anti loop.
+                if (CsmKindUtilities.isTypedef(cls)) {
+                    CsmTypedef def = (CsmTypedef) cls;
+                    CsmType t = def.getType();
+                    if (t != null){
+                        cls = t.getClassifier();
+                        continue;
+                    }
+                }
+                break;
+            }
+            if (!CsmKindUtilities.isClass(cls)) {
+                return type;
+            }
+            CsmClass c = (CsmClass) cls;
+            for(CsmMember m : c.getMembers()){
+                if (CsmKindUtilities.isOperator(m)){
+                    CsmFunction f = (CsmFunction) m;
+                    String name = f.getName().toString();
+                    if (name.equals("operator "+unaryOperator)) { // NOI18N
+                        CsmType t = f.getReturnType();
+                        if (t != null){
+                            type = t;
+                            CsmClassifier c1 = type.getClassifier();
+                            if (CsmKindUtilities.isTypedef(c1)) {
+                                CsmTypedef def = (CsmTypedef) c1;
+                                CsmType tt = def.getType();
+                                if (tt != null){
+                                    CsmClassifier c2 = tt.getClassifier();
+                                    return tt;
+                                }
+                            }
+                        }
+                        return type;
+                    }
+                }
+            }
+            // TODO: What about friends?
+            return type;
         }
 
         private CsmNamespace findExactNamespace(final String var, final int varPos) {
@@ -1726,6 +1780,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         
         public CsmResultItem.MacroResultItem createFileLocalMacroResultItem(CsmMacro mac);
         public CsmResultItem.MacroResultItem createFileIncludedProjectMacroResultItem(CsmMacro mac);
+
+        public CsmResultItem.TemplateParameterResultItem createTemplateParameterResultItem(CsmTemplateParameter par);
         
         public CsmResultItem.GlobalVariableResultItem createGlobalVariableResultItem(CsmVariable var);
         public CsmResultItem.EnumeratorResultItem createGlobalEnumeratorResultItem(CsmEnumerator enm, int enumtrDisplayOffset, boolean displayFQN);
@@ -1866,6 +1922,10 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         public CsmResultItem.NamespaceAliasResultItem createLibNamespaceAliasResultItem(CsmNamespaceAlias alias, boolean displayFullNamespacePath) {
             return createNamespaceAliasResultItem(alias, displayFullNamespacePath);
         }
+
+        public TemplateParameterResultItem createTemplateParameterResultItem(CsmTemplateParameter par) {
+            return this.createTemplateParameterResultItem(par);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -1939,6 +1999,13 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         CsmResultItem item;
         for (CsmVariable elem : res.getLocalVariables()) {
             item = factory.createLocalVariableResultItem(elem);
+            assert item != null;
+            item.setSubstituteOffset(substituteOffset);
+            out.add(item);
+        }
+
+        for (CsmTemplateParameter elem : res.getTemplateparameters()) {
+            item = factory.createTemplateParameterResultItem(elem);
             assert item != null;
             item.setSubstituteOffset(substituteOffset);
             out.add(item);

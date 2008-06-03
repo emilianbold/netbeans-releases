@@ -61,6 +61,7 @@ import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.javascript.editing.AstUtilities;
 import org.netbeans.modules.javascript.editing.BrowserVersion;
 import org.netbeans.modules.javascript.editing.SupportedBrowsers;
+import org.netbeans.modules.javascript.editing.embedding.JsModel;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.javascript.hints.infrastructure.JsErrorRule;
@@ -171,6 +172,15 @@ public class StrictWarning extends JsErrorRule {
                 context.remove = true;
                 return;
             }
+            
+            if (node.getType() == Token.EXPR_VOID) {
+                Node firstChild = node.getFirstChild();
+                if (firstChild != null && firstChild.getType() == Token.NAME &&
+                        JsModel.isGeneratedIdentifier(firstChild.getString())) {
+                    context.remove = true;
+                    return;
+                }
+            }
 
             OffsetRange astRange = AstUtilities.getRange(node);
             range = LexUtilities.getLexerOffsets(info, astRange);
@@ -204,7 +214,7 @@ public class StrictWarning extends JsErrorRule {
             if (key.equals(TRAILING_COMMA)) { // NOI18N
 
                 fixList = new ArrayList<HintFix>(2);
-                fixList.add(new RemoveTrailingCommaFix(info, lexOffset));
+                fixList.add(new RemoveTrailingCommaFix(context, lexOffset));
                 fixList.add(new MoreInfoFix(key));
             } else {
                 fixList = Collections.<HintFix>singletonList(new MoreInfoFix(key));
@@ -288,11 +298,11 @@ public class StrictWarning extends JsErrorRule {
 
     private static class RemoveTrailingCommaFix implements PreviewableFix {
 
-        private CompilationInfo info;
-        private int offset;
+        private final JsRuleContext context;
+        private final int offset;
 
-        public RemoveTrailingCommaFix(CompilationInfo info, int offset) {
-            this.info = info;
+        public RemoveTrailingCommaFix(JsRuleContext context, int offset) {
+            this.context = context;
             this.offset = offset;
         }
 
@@ -308,7 +318,7 @@ public class StrictWarning extends JsErrorRule {
         }
 
         public EditList getEditList() throws Exception {
-            BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = context.doc;
             EditList list = new EditList(doc);
             list.replace(offset, 1, null, false, 0);
 

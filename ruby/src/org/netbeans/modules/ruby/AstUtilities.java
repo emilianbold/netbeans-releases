@@ -352,22 +352,17 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
     }
 
     public static int boundCaretOffset(CompilationInfo info, int caretOffset) {
-        Document doc = null;
+        Document doc = info.getDocument();
+        if (doc != null) {
+            // If you invoke code completion while indexing is in progress, the
+            // completion job (which stores the caret offset) will be delayed until
+            // indexing is complete - potentially minutes later. When the job
+            // is finally run we need to make sure the caret position is still valid.
+            int length = doc.getLength();
 
-        try {
-            doc = info.getDocument();
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
-        }
-
-        // If you invoke code completion while indexing is in progress, the
-        // completion job (which stores the caret offset) will be delayed until
-        // indexing is complete - potentially minutes later. When the job
-        // is finally run we need to make sure the caret position is still valid.
-        int length = doc.getLength();
-
-        if (caretOffset > length) {
-            caretOffset = length;
+            if (caretOffset > length) {
+                caretOffset = length;
+            }
         }
 
         return caretOffset;
@@ -417,10 +412,12 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             return;
         }
 
-        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             addRequires(child, requires);
         }
     }
@@ -437,10 +434,12 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             }
         }
 
-        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             MethodDefNode match = findMethod(child, name, arity);
 
             if (match != null) {
@@ -642,7 +641,6 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
      * @param namesOnly If true, return only the parameter names for rest args and
      *  blocks. If false, include "*" and "&".
      */
-    @SuppressWarnings("unchecked")
     public static List<String> getDefArgs(MethodDefNode node, boolean namesOnly) {
         // TODO - do anything special about (&), blocks, argument lists (*), etc?
         List<Node> nodes = (List<Node>)node.childNodes();
@@ -728,7 +726,6 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
      * Look for the caret offset in the parameter list; return the
      * index of the parameter that contains it.
      */
-    @SuppressWarnings("unchecked")
     public static int findArgumentIndex(Node node, int offset) {
         switch (node.nodeId) {
         case FCALLNODE: {
@@ -774,6 +771,9 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
 
                 for (int index = 0; index < children.size(); index++) {
                     Node child = children.get(index);
+                    if (child.isInvisible()) {
+                        continue;
+                    }
                     if (child.nodeId == NodeType.HASHNODE) {
                         // Invalid offsets - the hashnode often has the wrong offset
                         OffsetRange range = AstUtilities.getRange(child);
@@ -820,6 +820,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
 
         if (node instanceof ListNode) {
             List children = node.childNodes();
+// TODO - if one of the children is Node.INVALID_POSITION perhaps I need to reduce the count            
 
             return children.size();
         } else {
@@ -1026,10 +1027,12 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             }
             break;
         }
-        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             Node match = findBySignature(child, signature, name);
 
             if (match != null) {
@@ -1050,7 +1053,6 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
     /**
      * Return a range that matches the given node's source buffer range
      */
-    @SuppressWarnings("unchecked")
     public static OffsetRange getRange(Node node) {
         if (node.nodeId == NodeType.NOTNODE) {
             ISourcePosition pos = node.getPosition();
@@ -1166,7 +1168,6 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         return new OffsetRange(start, end);
     }
 
-    @SuppressWarnings("unchecked")
     public static OffsetRange getFunctionNameRange(Node node) {
         // TODO - enforce MethodDefNode and call getNameNode on it!
         for (Node child : (List<Node>)node.childNodes()) {
@@ -1275,10 +1276,12 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             classes.add((ClassNode)node);
         }
 
-        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             addClasses(child, classes);
         }
     }
@@ -1378,7 +1381,6 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         return false;
     }
 
-    @SuppressWarnings("unchecked")
     public static SymbolNode[] getAttrSymbols(Node node) {
         assert isAttr(node);
 
@@ -1444,12 +1446,14 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         Set<String> privateMethodSymbols = new HashSet<String>();
         Set<Node> publicMethods = new HashSet<Node>();
 
-        @SuppressWarnings("unchecked")
         List<Node> list = clz.childNodes();
 
         Modifier access = Modifier.PUBLIC;
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             access = getMethodAccess(child, access, publicMethodSymbols, protectedMethodSymbols,
                     privateMethodSymbols, publicMethods, protectedMethods, privateMethods);
         }
@@ -1492,7 +1496,6 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
      * @param access The "current" known access level (PUBLIC, PROTECTED or PRIVATE)
      * @return the access level to continue with at this syntactic level
      */
-    @SuppressWarnings("unchecked")
     private static Modifier getMethodAccess(Node node, Modifier access,
         Set<String> publicMethodSymbols, Set<String> protectedMethodSymbols,
         Set<String> privateMethodSymbols, Set<Node> publicMethods, Set<Node> protectedMethods,
@@ -1587,10 +1590,12 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             return access;
         }
 
-        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             access = getMethodAccess(child, access, publicMethodSymbols, protectedMethodSymbols,
                     privateMethodSymbols, publicMethods, protectedMethods, privateMethods);
         }
@@ -1638,17 +1643,17 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                             // The latter isn't very likely, but the former can
                             // happen, so let's check the method bodies at the
                             // end of the current line
-                            try {
-                                BaseDocument doc = (BaseDocument)info.getDocument();
-                                int endOffset = Utilities.getRowEnd(doc, offset);
+                            BaseDocument doc = (BaseDocument)info.getDocument();
+                            if (doc != null) {
+                                try {
+                                    int endOffset = Utilities.getRowEnd(doc, offset);
 
-                                if (endOffset != offset) {
-                                    method = AstUtilities.findMethodAtOffset(root, endOffset);
+                                    if (endOffset != offset) {
+                                        method = AstUtilities.findMethodAtOffset(root, endOffset);
+                                    }
+                                } catch (BadLocationException ble) {
+                                    Exceptions.printStackTrace(ble);
                                 }
-                            } catch (BadLocationException ble) {
-                                Exceptions.printStackTrace(ble);
-                            } catch (IOException ioe) {
-                                Exceptions.printStackTrace(ioe);
                             }
                         }
 
@@ -1715,10 +1720,12 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             }
         }
 
-        @SuppressWarnings("unchecked")
         List<Node> list = root.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             addNodesByType(child, nodeIds, result);
         }
     }
@@ -1785,7 +1792,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         Set<IndexedMethod>[] alternatesHolder = new Set[1];
         int[] paramIndexHolder = new int[1];
         int[] anchorOffsetHolder = new int[1];
-        if (!CodeCompleter.computeMethodCall(info, lexRange.getStart(), astRange.getStart(),
+        if (!RubyCodeCompleter.computeMethodCall(info, lexRange.getStart(), astRange.getStart(),
                 methodHolder, paramIndexHolder, anchorOffsetHolder, alternatesHolder)) {
 
             return guessedName;
@@ -1849,11 +1856,11 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         Node method = AstUtilities.findLocalScope(closest, path);
         Map<String, Node> variables = new HashMap<String, Node>();
         // Add locals
-        CodeCompleter.addLocals(method, variables);
+        RubyCodeCompleter.addLocals(method, variables);
 
         List<Node> applicableBlocks = AstUtilities.getApplicableBlocks(path, false);
         for (Node block : applicableBlocks) {
-            CodeCompleter.addDynamic(block, variables);
+            RubyCodeCompleter.addDynamic(block, variables);
         }
         
         return variables.keySet();

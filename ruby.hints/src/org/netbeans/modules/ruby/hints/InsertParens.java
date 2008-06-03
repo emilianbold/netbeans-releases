@@ -93,7 +93,7 @@ public class InsertParens extends RubyErrorRule {
                     callNode = node;
                 }
                 if (callNode != null) {
-                    HintFix fix = new InsertParenFix(info, callNode);
+                    HintFix fix = new InsertParenFix(context, callNode);
                     List<HintFix> fixList = Collections.singletonList(fix);
                     range = LexUtilities.getLexerOffsets(info, range);
                     if (range != OffsetRange.NONE) {
@@ -125,11 +125,11 @@ public class InsertParens extends RubyErrorRule {
 
     private static class InsertParenFix implements PreviewableFix {
 
-        private final CompilationInfo info;
+        private final RubyRuleContext context;
         private final Node node;
 
-        InsertParenFix(CompilationInfo info, Node node) {
-            this.info = info;
+        InsertParenFix(RubyRuleContext context, Node node) {
+            this.context = context;
             this.node = node;
         }
 
@@ -144,7 +144,7 @@ public class InsertParens extends RubyErrorRule {
         public EditList getEditList() throws Exception {
             ISourcePosition pos = node.getPosition();
             int endOffset = pos.getEndOffset();
-            BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = context.doc;
             EditList edits = new EditList(doc);
             if (endOffset > doc.getLength()) {
                 return edits;
@@ -153,7 +153,7 @@ public class InsertParens extends RubyErrorRule {
             // Insert parentheses
             assert AstUtilities.isCall(node);
             OffsetRange astRange = AstUtilities.getCallRange(node);
-            OffsetRange range = LexUtilities.getLexerOffsets(info, astRange);
+            OffsetRange range = LexUtilities.getLexerOffsets(context.compilationInfo, astRange);
             if (range == OffsetRange.NONE) {
                 return edits;
             }

@@ -378,14 +378,15 @@ public class EventLoggingAddin
 		if (m_EventsSink != null)
 		{
 			DispatchHelper helper = new DispatchHelper();
-			helper.registerDrawingAreaEvents(m_EventsSink);
-			helper.registerDrawingAreaSynchEvents(m_EventsSink);
-			helper.registerDrawingAreaContextMenuEvents(m_EventsSink);
-			helper.registerDrawingAreaSelectionEvents(m_EventsSink);
-			helper.registerDrawingAreaAddNodeEvents(m_EventsSink);
-			helper.registerDrawingAreaAddEdgeEvents(m_EventsSink);
-			helper.registerDrawingAreaReconnectEdgeEvents(m_EventsSink);
-			helper.registerDrawingAreaCompartmentEvents(m_EventsSink);
+                        // TODO: meteora
+//			helper.registerDrawingAreaEvents(m_EventsSink);
+//			helper.registerDrawingAreaSynchEvents(m_EventsSink);
+//			helper.registerDrawingAreaContextMenuEvents(m_EventsSink);
+//			helper.registerDrawingAreaSelectionEvents(m_EventsSink);
+//			helper.registerDrawingAreaAddNodeEvents(m_EventsSink);
+//			helper.registerDrawingAreaAddEdgeEvents(m_EventsSink);
+//			helper.registerDrawingAreaReconnectEdgeEvents(m_EventsSink);
+//			helper.registerDrawingAreaCompartmentEvents(m_EventsSink);
 		}
 	}
 
@@ -700,14 +701,15 @@ public class EventLoggingAddin
 	public void unregisterToDrawingAreaDispatcher()
 	{
 		DispatchHelper helper = new DispatchHelper();
-		helper.revokeDrawingAreaSink(m_EventsSink);
-		helper.revokeDrawingAreaSynchSink(m_EventsSink);
-		helper.revokeDrawingAreaContextMenuSink(m_EventsSink);
-		helper.revokeDrawingAreaSelectionSink(m_EventsSink);
-		helper.revokeDrawingAreaAddNodeSink(m_EventsSink);
-		helper.revokeDrawingAreaAddEdgeSink(m_EventsSink);
-		helper.revokeDrawingAreaReconnectEdgeSink(m_EventsSink);
-		helper.revokeDrawingAreaCompartmentSink(m_EventsSink);
+                // TODO: meteora
+//		helper.revokeDrawingAreaSink(m_EventsSink);
+//		helper.revokeDrawingAreaSynchSink(m_EventsSink);
+//		helper.revokeDrawingAreaContextMenuSink(m_EventsSink);
+//		helper.revokeDrawingAreaSelectionSink(m_EventsSink);
+//		helper.revokeDrawingAreaAddNodeSink(m_EventsSink);
+//		helper.revokeDrawingAreaAddEdgeSink(m_EventsSink);
+//		helper.revokeDrawingAreaReconnectEdgeSink(m_EventsSink);
+//		helper.revokeDrawingAreaCompartmentSink(m_EventsSink);
 	}
 
 	/**

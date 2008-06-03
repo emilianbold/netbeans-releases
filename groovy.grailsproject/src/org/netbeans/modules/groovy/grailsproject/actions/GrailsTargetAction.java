@@ -31,13 +31,12 @@ import java.awt.event.ActionEvent;
 import java.util.concurrent.Callable;
 import javax.swing.AbstractAction;
 import org.netbeans.api.project.Project;
-import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.extexecution.api.DefaultDescriptor;
+import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
-import org.netbeans.modules.groovy.grailsproject.execution.DefaultDescriptor;
-import org.netbeans.modules.groovy.grailsproject.execution.ExecutionService;
 
 public class GrailsTargetAction extends AbstractAction {
 
