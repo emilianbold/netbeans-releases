@@ -41,6 +41,7 @@
 
 package org.netbeans.editor;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -99,8 +100,22 @@ import org.openide.util.WeakListeners;
 public class CodeFoldingSideBar extends JComponent implements Accessible {
 
     private static final Logger LOG = Logger.getLogger(CodeFoldingSideBar.class.getName());
+
+    /** This field should be treated as final. Subclasses are forbidden to change it. 
+     * @deprecated Without any replacement.
+     */
+    protected Color backColor;
+    /** This field should be treated as final. Subclasses are forbidden to change it. 
+     * @deprecated Without any replacement.
+     */
+    protected Color foreColor;
+    /** This field should be treated as final. Subclasses are forbidden to change it. 
+     * @deprecated Without any replacement.
+     */
+    protected Font font;
     
-    protected final JTextComponent component;
+    /** This field should be treated as final. Subclasses are forbidden to change it. */
+    protected /*final*/ JTextComponent component;
     private volatile AttributeSet attribs;
     private Lookup.Result<? extends FontColorSettings> fcsLookupResult;
     private final LookupListener fcsTracker = new LookupListener() {
@@ -130,11 +145,12 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         public void preferenceChange(PreferenceChangeEvent evt) {
             String key = evt == null ? null : evt.getKey();
             if (key == null || SimpleValueNames.CODE_FOLDING_ENABLE.equals(key)) {
+                updateColors();
+                
                 boolean newEnabled = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, EditorPreferencesDefaults.defaultCodeFoldingEnable);
                 if (enabled != newEnabled) {
                     enabled = newEnabled;
                     updatePreferredSize();
-                    revalidate();
                 }
             }
             SettingsConversions.callSettingsChange(CodeFoldingSideBar.this);
@@ -198,6 +214,49 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
             setMaximumSize(new Dimension(0,0));
         }
         revalidate();
+    }
+
+    private void updateColors() {
+        Coloring c = getColoring();
+        this.backColor = c.getBackColor();
+        this.foreColor = c.getForeColor();
+        this.font = c.getFont();
+    }
+
+    /**
+     * This method should be treated as final. Subclasses are forbidden to override it.
+     * @return The background color used for painting this component.
+     * @deprecated Without any replacement.
+     */
+    protected Color getBackColor() {
+        if (backColor == null) {
+            updateColors();
+        }
+        return backColor;
+    }
+    
+    /**
+     * This method should be treated as final. Subclasses are forbidden to override it.
+     * @return The foreground color used for painting this component.
+     * @deprecated Without any replacement.
+     */
+    protected Color getForeColor() {
+        if (foreColor == null) {
+            updateColors();
+        }
+        return foreColor;
+    }
+    
+    /**
+     * This method should be treated as final. Subclasses are forbidden to override it.
+     * @return The font used for painting this component.
+     * @deprecated Without any replacement.
+     */
+    protected Font getColoringFont() {
+        if (font == null) {
+            updateColors();
+        }
+        return font;
     }
     
     // overriding due to issue #60304
