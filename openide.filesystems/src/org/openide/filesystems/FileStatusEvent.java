@@ -38,10 +38,12 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.openide.filesystems;
 
+import java.util.Collections;
 import java.util.EventObject;
-
+import java.util.Set;
 
 /** Event describing a change in annotation of files.
 *
@@ -51,7 +53,7 @@ public final class FileStatusEvent extends EventObject {
     static final long serialVersionUID = -6428208118782405291L;
 
     /** changed files */
-    private java.util.Set files;
+    private Set<? extends FileObject> files;
 
     /** icon changed? */
     private boolean icon;
@@ -65,7 +67,7 @@ public final class FileStatusEvent extends EventObject {
     * @param icon has icon changed?
     * @param name has name changed?
     */
-    public FileStatusEvent(FileSystem fs, java.util.Set files, boolean icon, boolean name) {
+    public FileStatusEvent(FileSystem fs, Set<? extends FileObject> files, boolean icon, boolean name) {
         super(fs);
         this.files = files;
         this.icon = icon;
@@ -79,7 +81,7 @@ public final class FileStatusEvent extends EventObject {
     * @param name has name changed?
     */
     public FileStatusEvent(FileSystem fs, FileObject file, boolean icon, boolean name) {
-        this(fs, java.util.Collections.singleton(file), icon, name);
+        this(fs, Collections.singleton(file), icon, name);
     }
 
     /** Creates new FileStatusEvent. This does not specify the
@@ -92,7 +94,7 @@ public final class FileStatusEvent extends EventObject {
     * @param name has name changed?
     */
     public FileStatusEvent(FileSystem fs, boolean icon, boolean name) {
-        this(fs, (java.util.Set) null, icon, name);
+        this(fs, (Set<FileObject>) null, icon, name);
     }
 
     /** Getter for filesystem that caused the change.

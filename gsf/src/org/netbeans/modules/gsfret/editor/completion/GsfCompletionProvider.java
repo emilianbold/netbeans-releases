@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JToolTip;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
@@ -567,26 +568,45 @@ public class GsfCompletionProvider implements CompletionProvider {
             CodeCompletionHandler completer = env.getCompletable();
 
             if (completer != null) {
-                CodeCompletionContext context = new CodeCompletionContextImpl(offset, controller, prefix, 
-                        isCaseSensitive() ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX,
-                        QueryType.COMPLETION, new CompletionFormatter());
-                CodeCompletionResult result = completer.complete(context);
-                assert result != null : completer.getClass().getName() + " should return CodeCompletionResult.NONE rather than null";
+                int size = results.size();
+                addCodeCompletionItems(controller, completer, offset, prefix);
 
-                if (result != CodeCompletionResult.NONE) {
-                    for (CompletionProposal proposal : result.getItems()) {
-                        GsfCompletionItem item = GsfCompletionItem.createItem(proposal, result, controller);
+                // If we automatically queried, and there were no hits, take it down
+                if (isAutoQuery && (results.size() == size)) {
+                    Completion.get().hideCompletion();
+                    expectingCreateTask = false;
+                }
+            }
+        }
+        
+        private void addCodeCompletionItems(CompilationController controller, CodeCompletionHandler completer, int offset, String prefix) {
+            CodeCompletionContext context = new CodeCompletionContextImpl(offset, controller, prefix, 
+                    isCaseSensitive() ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX,
+                    QueryType.COMPLETION, new CompletionFormatter());
+            CodeCompletionResult result = completer.complete(context);
+            assert result != null : completer.getClass().getName() + " should return CodeCompletionResult.NONE rather than null";
 
-                        if (item != null) {
-                            results.add(item);
-                        }
+            if (result != CodeCompletionResult.NONE) {
+                for (CompletionProposal proposal : result.getItems()) {
+                    GsfCompletionItem item = GsfCompletionItem.createItem(proposal, result, controller);
+
+                    if (item != null) {
+                        results.add(item);
                     }
                 }
 
-                // If we automatically queried, and there were no hits, take it down
-                if (isAutoQuery && (result == CodeCompletionResult.NONE || result.getItems().size() == 0)) {
-                    Completion.get().hideCompletion();
-                    expectingCreateTask = false;
+                // Go into embedded results. NOT allowed to recurse!!
+                Set<String> embeddedTypes = result.embeddedTypes();
+                if (embeddedTypes != null) {
+                    for (String mimeType : embeddedTypes) {
+                        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+                        if (language != null) {
+                            CodeCompletionHandler handler = language.getCompletionProvider();
+                            if (handler != null) {
+                                addCodeCompletionItems(controller, handler, offset, prefix);
+                            }
+                        }
+                    }
                 }
             }
         }

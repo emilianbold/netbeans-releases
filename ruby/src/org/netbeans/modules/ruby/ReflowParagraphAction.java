@@ -41,19 +41,14 @@
 package org.netbeans.modules.ruby;
 
 import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.JEditorPane;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.ruby.options.CodeStyle;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 import javax.swing.text.BadLocationException;
-import org.netbeans.modules.gsf.api.EditorAction;
-import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
@@ -67,39 +62,19 @@ import org.openide.util.Exceptions;
  * 
  * @author Tor Norbye
  */
-public class ReflowParagraphAction extends AbstractAction implements EditorAction {
+public class ReflowParagraphAction extends BaseAction {
 
     public ReflowParagraphAction() {
-        super(NbBundle.getMessage(ReflowParagraphAction.class, "ruby-reflow-paragraph")); // NOI18N
-        putValue("PopupMenuText", NbBundle.getBundle(ReflowParagraphAction.class).getString("editor-popup-ruby-reflow-paragraph")); // NOI18N
+        super("ruby-reflow-paragraph", 0); // NOI18N
     }
 
-    public void actionPerformed(ActionEvent evt, JTextComponent target) {
-        actionPerformed(target);
-    }
-
-    public String getActionName() {
-        return "ruby-reflow-paragraph";
-    }
-
+    @Override
     public Class getShortDescriptionBundleClass() {
         return ReflowParagraphAction.class;
     }
 
     @Override
-    public boolean isEnabled() {
-        return true;
-    }
-
-    public void actionPerformed(ActionEvent ev) {
-        JTextComponent pane = NbUtilities.getOpenPane();
-
-        if (pane != null) {
-            actionPerformed(pane);
-        }
-    }
-
-    void actionPerformed(final JTextComponent target) {
+    public void actionPerformed(ActionEvent evt, final JTextComponent target) {
         if (target.getCaret() == null) {
             return;
         }
@@ -112,7 +87,7 @@ public class ReflowParagraphAction extends AbstractAction implements EditorActio
         }
     }
     
-    public void reflowEditedComment(JTextComponent target) {
+    public static void reflowEditedComment(JTextComponent target) {
         if (target.getCaret() == null) {
             return;
         }
@@ -121,13 +96,13 @@ public class ReflowParagraphAction extends AbstractAction implements EditorActio
         new ParagraphFormatter(true, target, null, -1).reflowParagraph(offset);
     }
 
-    public void reflowComments(BaseDocument doc, int start, int end, int rightMargin) {
+    public static void reflowComments(BaseDocument doc, int start, int end, int rightMargin) {
         // Locate all comments in the given document and format them
          ParagraphFormatter formatter = new ParagraphFormatter(false, null, doc, rightMargin);
          formatter.reflow(start, end);
     }
     
-    private class ParagraphFormatter {
+    private static class ParagraphFormatter {
         private JTextComponent target;
         private BaseDocument doc;
         private int oldCaretPosition = -1;
@@ -730,10 +705,5 @@ public class ReflowParagraphAction extends AbstractAction implements EditorActio
             sb.append("\n");
             buffer.setLength(0);
         }
-    }
-    
-    public boolean appliesTo(String mimeType) {
-        return RubyInstallation.RHTML_MIME_TYPE.equals(mimeType) ||
-                RubyInstallation.RUBY_MIME_TYPE.equals(mimeType);
     }
 }

@@ -40,17 +40,21 @@
 package org.netbeans.modules.gsf.spi;
 
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.gsf.api.CompletionProposal;
 
 /**
- * Default implementation of the CodeCompletionResult class.
+ * Default implementation of the CodeCompletionResult class. All the 
+ * attributes of a CodeCompletionResult is configurable by the client
+ * of this class.
  *
  * @author Tor Norbye
  */
 public class DefaultCompletionResult extends CodeCompletionResult {
-    private boolean truncated;
-    private List<CompletionProposal> list;
+    protected boolean truncated;
+    protected List<CompletionProposal> list;
+    protected Set<String> embeddedTypes;
     
     public DefaultCompletionResult(List<CompletionProposal> list, boolean truncated) {
         this.list = list;
@@ -69,5 +73,14 @@ public class DefaultCompletionResult extends CodeCompletionResult {
 
     public void setTruncated(boolean truncated) {
         this.truncated = truncated;
+    }
+    
+    public void setEmbeddedTypes(Set<String> embeddedTypes) {
+        this.embeddedTypes = embeddedTypes;
+    }
+
+    @Override
+    public Set<String> embeddedTypes() {
+        return embeddedTypes;
     }
 }
