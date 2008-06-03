@@ -366,6 +366,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         boundComponentList = new javax.swing.JList();
         viewSourceButton = new javax.swing.JButton();
+        refreshButton = new javax.swing.JButton();
 
         newActionButton.setMnemonic('N');
         newActionButton.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.newActionButton.text")); // NOI18N
@@ -469,15 +470,15 @@ public class GlobalActionPanel extends javax.swing.JPanel {
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel2Layout.createSequentialGroup()
                 .add(jLabel3)
-                .addContainerGap(68, Short.MAX_VALUE))
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
+                .addContainerGap(102, Short.MAX_VALUE))
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel2Layout.createSequentialGroup()
                 .add(jLabel3)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 123, Short.MAX_VALUE))
         );
 
         jSplitPane1.setRightComponent(jPanel2);
@@ -508,6 +509,17 @@ public class GlobalActionPanel extends javax.swing.JPanel {
             }
         });
 
+        refreshButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/swingapp/resources/refresh.png"))); // NOI18N
+        refreshButton.setToolTipText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.refreshButton.toolTipText")); // NOI18N
+        refreshButton.setBorderPainted(false);
+        refreshButton.setFocusPainted(false);
+        refreshButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        refreshButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refreshButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -520,7 +532,9 @@ public class GlobalActionPanel extends javax.swing.JPanel {
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(classCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 349, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(refreshButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 382, Short.MAX_VALUE)
                 .add(jLabel2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(filterTextfield, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -532,7 +546,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
                 .add(viewSourceButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(deleteActionButton)
-                .addContainerGap(313, Short.MAX_VALUE))
+                .addContainerGap(340, Short.MAX_VALUE))
             .add(jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -544,7 +558,8 @@ public class GlobalActionPanel extends javax.swing.JPanel {
                     .add(jLabel4)
                     .add(projectCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(filterTextfield, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel2))
+                    .add(jLabel2)
+                    .add(refreshButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -718,6 +733,10 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
             reloadTable();
         }
     }//GEN-LAST:event_classComboActionPerformed
+
+private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
+    refresh();
+}//GEN-LAST:event_refreshButtonActionPerformed
     
     // just reload the table
     private void reloadTable() {
@@ -823,6 +842,7 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JButton newActionButton;
     private javax.swing.JComboBox projectCombo;
+    private javax.swing.JButton refreshButton;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JButton viewSourceButton;
     // End of variables declaration//GEN-END:variables
