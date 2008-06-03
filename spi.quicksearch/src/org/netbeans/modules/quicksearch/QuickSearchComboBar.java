@@ -39,12 +39,16 @@
 
 package org.netbeans.modules.quicksearch;
 
+import java.awt.Color;
 import java.awt.Point;
+import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.lang.ref.WeakReference;
+import javax.swing.JWindow;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.windows.TopComponent;
@@ -55,8 +59,8 @@ import org.openide.windows.TopComponent;
  */
 public class QuickSearchComboBar extends javax.swing.JPanel {
     
-    Popup popup;
-    QuickSearchPopup displayer = new QuickSearchPopup();
+    JWindow popup;
+    QuickSearchPopup displayer = new QuickSearchPopup(this);
     WeakReference<TopComponent> caller;
     
     /** Creates new form SilverLightComboBar */
@@ -81,10 +85,14 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
 
     private void processCommand(String text) {
         if (popup == null && !"".equals(command.getText())) {
-            Point where = new Point(0, jPanel1.getSize().height);
-            SwingUtilities.convertPointToScreen(where, jLabel2);
-            popup = PopupFactory.getSharedInstance().getPopup(command, displayer, where.x, where.y);
-            popup.show();
+            Point where = new Point(0, jPanel1.getSize().height - 1);
+            Window parent = SwingUtilities.windowForComponent(this);
+            SwingUtilities.convertPointToScreen(where, jPanel1);
+            //popup = PopupFactory.getSharedInstance().getPopup(command, displayer, where.x, where.y);
+            popup = new JWindow(parent);
+            popup.getContentPane().add(displayer);
+            popup.setLocation(where);
+            popup.setVisible(true);
             command.requestFocus();
         }
         displayer.update(text);
@@ -98,10 +106,13 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel1 = new javax.swing.JPanel();
-        command = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        command = new javax.swing.JTextArea();
+        jSeparator1 = new javax.swing.JSeparator();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(6, 1, 6, 1));
         setMaximumSize(new java.awt.Dimension(200, 2147483647));
@@ -114,12 +125,30 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         });
         setLayout(new java.awt.BorderLayout(10, 10));
 
-        jPanel1.setBackground(javax.swing.UIManager.getDefaults().getColor("TextPane.background"));
-        jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("TextField.shadow")));
+        jPanel1.setBackground(getTextBackground());
+        jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(getShadowColor()));
         jPanel1.setName("jPanel1"); // NOI18N
-        jPanel1.setLayout(new java.awt.BorderLayout());
+        jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        command.setBorder(null);
+        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/quicksearch/resources/find.png"))); // NOI18N
+        jLabel2.setToolTipText(org.openide.util.NbBundle.getMessage(QuickSearchComboBar.class, "QuickSearchComboBar.jLabel2.toolTipText")); // NOI18N
+        jLabel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        jLabel2.setName("jLabel2"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 1, 0, 0);
+        jPanel1.add(jLabel2, gridBagConstraints);
+
+        jScrollPane1.setBorder(null);
+        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        jScrollPane1.setViewportBorder(null);
+        jScrollPane1.setName("jScrollPane1"); // NOI18N
+
+        command.setColumns(15);
+        command.setRows(1);
+        command.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         command.setName("command"); // NOI18N
         command.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
@@ -131,13 +160,26 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
                 commandKeyPressed(evt);
             }
         });
-        jPanel1.add(command, java.awt.BorderLayout.CENTER);
+        jScrollPane1.setViewportView(command);
 
-        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/quicksearch/resources/find.png"))); // NOI18N
-        jLabel2.setToolTipText(org.openide.util.NbBundle.getMessage(QuickSearchComboBar.class, "QuickSearchComboBar.jLabel2.toolTipText")); // NOI18N
-        jLabel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        jLabel2.setName("jLabel2"); // NOI18N
-        jPanel1.add(jLabel2, java.awt.BorderLayout.WEST);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        jPanel1.add(jScrollPane1, gridBagConstraints);
+
+        jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
+        jSeparator1.setName("jSeparator1"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 3);
+        jPanel1.add(jSeparator1, gridBagConstraints);
 
         add(jPanel1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
@@ -181,17 +223,18 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
             }
         }
 
-    popup = null;
+        popup = null;
     }
-
 }//GEN-LAST:event_commandKeyPressed
 
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField command;
+    private javax.swing.JTextArea command;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JSeparator jSeparator1;
     // End of variables declaration//GEN-END:variables
 
 
@@ -201,4 +244,23 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
         super.requestFocus();
         command.requestFocus();
     }
+    
+    JWindow getPopup () {
+        return popup;
+    }
+    
+    static Color getShadowColor () {
+        Color shadow = UIManager.getColor("controlShadow");
+        return shadow != null ? shadow : Color.GRAY;
+    }
+    
+    static Color getTextBackground () {
+        Color textB = UIManager.getColor("TextPane.background");
+        return textB != null ? textB : Color.WHITE;
+    }
+    
+    static Color getResultBackground () {
+        return getTextBackground();
+    }
+    
 }

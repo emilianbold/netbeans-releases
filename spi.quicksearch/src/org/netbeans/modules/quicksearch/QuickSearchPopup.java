@@ -40,6 +40,7 @@
 
 package org.netbeans.modules.quicksearch;
 
+import javax.swing.JWindow;
 import org.netbeans.modules.quicksearch.recent.RecentSearches;
 import org.netbeans.spi.quicksearch.SearchResult;
 
@@ -48,9 +49,12 @@ import org.netbeans.spi.quicksearch.SearchResult;
  * @author  Jan Becicka
  */
 public class QuickSearchPopup extends javax.swing.JPanel {
+    
+    private QuickSearchComboBar comboBar;
 
     /** Creates new form SilverPopup */
-    public QuickSearchPopup() {
+    public QuickSearchPopup (QuickSearchComboBar comboBar) {
+        this.comboBar = comboBar;
         initComponents();
         jList1.setCellRenderer(new SearchResultRender());
     }
@@ -73,6 +77,11 @@ public class QuickSearchPopup extends javax.swing.JPanel {
         //should update existing, not create new
         jList1.setModel(new ResultsModel(text));
         jList1.setSelectedIndex(0);
+        JWindow popup = comboBar.getPopup();
+        if (popup != null) {
+            jList1.setVisibleRowCount(jList1.getModel().getSize());
+            popup.setSize(jList1.getPreferredScrollableViewportSize());
+        }
     }
     
 
@@ -88,18 +97,13 @@ public class QuickSearchPopup extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList();
 
+        setLayout(new java.awt.BorderLayout());
+
+        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
         jScrollPane1.setViewportView(jList1);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
-        );
+        add(jScrollPane1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
 

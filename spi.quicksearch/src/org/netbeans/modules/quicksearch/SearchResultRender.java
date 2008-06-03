@@ -39,10 +39,10 @@
 package org.netbeans.modules.quicksearch;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -69,28 +69,35 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
             categoryLabel.setOpaque(true);
             rendererComponent.add(categoryLabel, BorderLayout.WEST);
             categoryLabel.setPreferredSize(new JLabel("XXXXXXXXXXXXX").getPreferredSize());
-            categoryLabel.setForeground(Color.GRAY);
+            categoryLabel.setForeground(QuickSearchComboBar.getShadowColor());
             JLabel itemLabel = new JLabel(((SearchResult) value).getDisplayName());
-            itemLabel.setBorder(new EmptyBorder(0, 5, 0, 0));
+            itemLabel.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 2));
             ListModel model = list.getModel();
             if (model instanceof ResultsModel && ((ResultsModel) model).isFirstinCat((SearchResult) value)) {
                 ProviderModel.Category cat = ((ResultsModel) model).getCategory((SearchResult) value);
                 categoryLabel.setText(cat.getDisplayName());
-                JPanel x = new JPanel();
-                x.setBackground(Color.GRAY);
-                x.setPreferredSize(new Dimension(x.getPreferredSize().width, 1));
-                rendererComponent.add(x, BorderLayout.NORTH);
+                if (index > 0) {
+                    JPanel x = new JPanel();
+                    x.setBackground(QuickSearchComboBar.getShadowColor());
+                    x.setPreferredSize(new Dimension(x.getPreferredSize().width, 1));
+                    rendererComponent.add(x, BorderLayout.NORTH);
+                }
             } else {
                 categoryLabel.setText("");
             }
 
-            rendererComponent.add(itemLabel, BorderLayout.CENTER);
+            JPanel itemPanel = new JPanel();
+            itemPanel.setBackground(QuickSearchComboBar.getResultBackground());
+            itemPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 1, 2));
+            itemPanel.setLayout(new BorderLayout());
+            itemPanel.add(itemLabel, BorderLayout.CENTER);
+            rendererComponent.add(itemPanel, BorderLayout.CENTER);
 
             if (isSelected) {
                 itemLabel.setBackground(list.getSelectionBackground());
                 itemLabel.setForeground(list.getSelectionForeground());
             } else {
-                itemLabel.setBackground(list.getBackground());
+                itemLabel.setBackground(QuickSearchComboBar.getResultBackground());
                 itemLabel.setForeground(list.getForeground());
             }
             ((JComponent) itemLabel).setOpaque(true);
