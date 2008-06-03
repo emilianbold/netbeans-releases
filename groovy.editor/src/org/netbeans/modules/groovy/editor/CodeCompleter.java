@@ -79,7 +79,10 @@ import java.util.logging.Level;
 import javax.lang.model.element.TypeElement;
 import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
@@ -88,6 +91,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -106,9 +110,6 @@ import org.openide.util.Utilities;
 public class CodeCompleter implements CodeCompletionHandler {
 
     private static ImageIcon classIcon;
-    private static ImageIcon interfaceIcon;
-    private static ImageIcon packageIcon;
-    
     private boolean caseSensitive;
     private int anchor;
     private final Logger LOG = Logger.getLogger(CodeCompleter.class.getName());
@@ -142,7 +143,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         if (dirname == null) {
             return "";
         }
-
+        
         File dirFile = new File(dirname);
 
         if (dirFile != null && dirFile.exists() && dirFile.isDirectory()) {
@@ -187,6 +188,11 @@ public class CodeCompleter implements CodeCompletionHandler {
             LOG.log(Level.FINEST, "Node.getText()  : " + node.getText());
             LOG.log(Level.FINEST, "Node.toString() : " + node.toString());
             LOG.log(Level.FINEST, "Node.getClass() : " + node.getClass());
+            
+            if(node instanceof ModuleNode) {
+                LOG.log(Level.FINEST, "ModuleNode.getClasses() : " + ((ModuleNode)node).getClasses());
+                LOG.log(Level.FINEST, "SourceUnit.getName() : " + ((ModuleNode)node).getContext().getName());
+            }
         }
     }
 
@@ -239,6 +245,12 @@ public class CodeCompleter implements CodeCompletionHandler {
         printASTNodeInformation(closest);
         LOG.log(Level.FINEST, "(parentLeaf): ");
         printASTNodeInformation(path.leafParent());
+        
+        // we gotta make sure not to catch the parameterts as closest node
+        if (closest instanceof ConstantExpression &&
+            path.leafParent() instanceof MethodNode) {
+            return path.leafParent();
+        }
         
         return closest;
     }    
@@ -294,6 +306,28 @@ public class CodeCompleter implements CodeCompletionHandler {
         return false;
     }
 
+    private boolean completeFields(List<CompletionProposal> proposals, CompletionRequest request) {
+        LOG.log(Level.FINEST, "completeFields(...)"); // NOI18N
+
+        ASTNode closest = getClosestNode(request);
+        ClassNode declClass = getDeclaringClass(closest);
+        
+        if(declClass == null){
+            LOG.log(Level.FINEST, "No declaring class found, bail out ..."); // NOI18N
+            return false;
+        }
+        
+        LOG.log(Level.FINEST, "Declaring class is : {0}", declClass); // NOI18N
+        
+        List<FieldNode> fields = declClass.getFields();
+        
+        for (FieldNode field : fields) {
+            proposals.add(new FieldItem(field.getName(), anchor, request, javax.lang.model.element.ElementKind.FIELD, field.getType()));
+        }
+
+        return false;
+    }
+    
     /**
      * Complete potential import statements if we're invoced from a suitable
      * position (outside method or class, right behind an import statement)
@@ -384,6 +418,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
                         LOG.log(Level.FINEST, "Now looking for types ...");
                         LOG.log(Level.FINEST, "Prefix = >{0}<", pkgPrefix);
+                        
 
                         Set<org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement>> typeNames;
 
@@ -430,21 +465,9 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
     
     
-    /**
-     * Complete the methods invocable on a class.
-     * @param proposals the CompletionProposal List we populate (return value)
-     * @param request location information used as input
-     * @return true if we found something usable
-     */
-    private boolean completeMethods(List<CompletionProposal> proposals, CompletionRequest request) {
-
-        LOG.log(Level.FINEST, "completeMethods(...)"); // NOI18N
-
-        ASTNode closest = getClosestNode(request);
-
-        Class clz = null;
+    private ClassNode getDeclaringClass(ASTNode closest) {
         ClassNode declClass = null;
-
+        
         if (closest != null && closest instanceof AnnotatedNode) {
             LOG.log(Level.FINEST, "closest: AnnotatedNode"); // NOI18N
 
@@ -466,12 +489,31 @@ public class CodeCompleter implements CodeCompletionHandler {
             if (expr instanceof PropertyExpression) {
                 declClass = ((PropertyExpression) expr).getObjectExpression().getType();
             } else {
-                return false;
+                return null;
             }
         } else {
             LOG.log(Level.FINEST, "Found nothing to work on"); // NOI18N
-            return false;
+            return null;
         }
+        
+        return declClass;
+    }
+    
+    
+    /**
+     * Complete the methods invocable on a class.
+     * @param proposals the CompletionProposal List we populate (return value)
+     * @param request location information used as input
+     * @return true if we found something usable
+     */
+    private boolean completeMethods(List<CompletionProposal> proposals, CompletionRequest request) {
+
+        LOG.log(Level.FINEST, "completeMethods(...)"); // NOI18N
+
+        ASTNode closest = getClosestNode(request);
+
+        Class clz = null;
+        ClassNode declClass = getDeclaringClass(closest);
 
         if (declClass == null) {
             LOG.log(Level.FINEST, "No declaring class found"); // NOI18N
@@ -569,6 +611,10 @@ public class CodeCompleter implements CodeCompletionHandler {
 
             // complete imports
             completeImports(proposals, request);
+            
+            // complete fields
+            completeFields(proposals, request); 
+           
 
             return new DefaultCompletionResult(proposals, false);
         } finally {
@@ -1126,9 +1172,11 @@ public class CodeCompleter implements CodeCompletionHandler {
             return GroovyParser.createHandle(request.info, new KeywordElement(keyword));
         }
     }
+    
+    /**
+     * 
+     */
     private class PackageItem extends GroovyCompletionItem {
-
-        private static final String PACKAGE_BADGE = "org/netbeans/modules/groovy/editor/resources/package.gif"; //NOI18N
         private final String keyword;
 
         PackageItem(String keyword, int anchorOffset, CompletionRequest request) {
@@ -1143,7 +1191,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         @Override
         public ElementKind getKind() {
-            return ElementKind.KEYWORD;
+            return ElementKind.PACKAGE;
         }
 
         @Override
@@ -1153,11 +1201,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         @Override
         public ImageIcon getIcon() {
-            if (packageIcon == null) {
-                packageIcon = new ImageIcon(org.openide.util.Utilities.loadImage(PACKAGE_BADGE));
-            }
-
-            return packageIcon;
+            return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.PACKAGE, null);
         }
 
         @Override
@@ -1171,11 +1215,11 @@ public class CodeCompleter implements CodeCompletionHandler {
             return GroovyParser.createHandle(request.info, new KeywordElement(keyword));
         }
     }
+    
+    /**
+     * 
+     */
     private class TypeItem extends GroovyCompletionItem {
-
-        private static final String CLASS_BADGE = "org/netbeans/modules/groovy/editor/resources/class.png"; //NOI18N
-        private static final String INTERFACE_BADGE = "org/netbeans/modules/groovy/editor/resources/interface.png"; //NOI18N
-        
         private final String name;
         private final javax.lang.model.element.ElementKind ek;
 
@@ -1202,17 +1246,56 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         @Override
         public ImageIcon getIcon() {
-            if (ek == javax.lang.model.element.ElementKind.CLASS) {
-                if (classIcon == null) {
-                    classIcon = new ImageIcon(org.openide.util.Utilities.loadImage(CLASS_BADGE));
-                }
-                return classIcon;
-            } else {
-                if (interfaceIcon == null) {
-                    interfaceIcon = new ImageIcon(org.openide.util.Utilities.loadImage(INTERFACE_BADGE));
-                }
-                return interfaceIcon;
-            }
+            return (ImageIcon) ElementIcons.getElementIcon(ek, null);
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public ElementHandle getElement() {
+            // For completion documentation
+            return GroovyParser.createHandle(request.info, new KeywordElement(name));
+        }
+    }
+
+    /**
+     * 
+     */    
+    private class FieldItem extends GroovyCompletionItem {
+
+        private final String name;
+        private final javax.lang.model.element.ElementKind ek;
+        private final ClassNode type;
+
+        FieldItem(String name, int anchorOffset, CompletionRequest request, javax.lang.model.element.ElementKind ek, ClassNode type) {
+            super(null, anchorOffset, request);
+            this.name = name;
+            this.ek = ek;
+            this.type = type;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.FIELD;
+        }
+
+        @Override
+        public String getRhsHtml() {
+            return type.getNameWithoutPackage();
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            // todo: what happens, if i get a CCE here?
+            return (ImageIcon) ElementIcons.getElementIcon(ek, null);
         }
 
         @Override
