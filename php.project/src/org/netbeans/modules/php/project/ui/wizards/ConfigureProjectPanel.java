@@ -152,7 +152,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
     public void storeSettings(WizardDescriptor settings) {
         // project
-        settings.putProperty(PROJECT_DIR, FileUtil.normalizeFile(configureProjectPanelVisual.getProjectFolderFile()));
+        settings.putProperty(PROJECT_DIR, FileUtil.normalizeFile(getProjectFolderFile()));
         settings.putProperty(PROJECT_NAME, configureProjectPanelVisual.getProjectName());
 
         // sources
@@ -168,6 +168,17 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
         // set as main project
         settings.putProperty(SET_AS_MAIN, configureProjectPanelVisual.isSetAsMain());
+    }
+
+    /**
+     * @return <b>non-normalized</b> {@link File file} for project folder or <code>null</code> if no text is present.
+     */
+    public File getProjectFolderFile() {
+        String projectFolder = configureProjectPanelVisual.getProjectFolder();
+        if (projectFolder.length() == 0) {
+            return null;
+        }
+        return new File(projectFolder);
     }
 
     public boolean isValid() {
@@ -310,16 +321,16 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         if (projectName.trim().length() == 0) {
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectName");
         }
-        File projectFolder = configureProjectPanelVisual.getProjectFolderFile();
-        if (!Utils.isValidFileName(projectFolder)) {
+        File projectFolder = getProjectFolderFile();
+        if (projectFolder == null
+                || !Utils.isValidFileName(projectFolder)) {
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectFolder");
         }
-        String projectPath = projectFolder.getAbsolutePath();
-        String err = Utils.validateProjectDirectory(projectPath, "Project", true, false);
+        String err = Utils.validateProjectDirectory(projectFolder, "Project", true, false);
         if (err != null) {
             return err;
         }
-        warnIfNotEmpty(projectPath, "Project"); // NOI18N
+        warnIfNotEmpty(projectFolder.getAbsolutePath(), "Project"); // NOI18N
         return null;
     }
 
@@ -381,7 +392,8 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         LocalServer sources = configureProjectPanelVisual.getSourcesLocation();
         String sourcesSrcRoot = sources.getSrcRoot();
         if (isProjectFolder(sources)) {
-            File project = configureProjectPanelVisual.getProjectFolderFile();
+            File project = getProjectFolderFile();
+            assert project != null;
             File src = new File(project, DEFAULT_SOURCES_FOLDER);
             sourcesSrcRoot = src.getAbsolutePath();
         }
@@ -415,7 +427,11 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             // no change in project name
             return;
         }
-        File projectFolderFile = configureProjectPanelVisual.getProjectFolderFile();
+        File projectFolderFile = getProjectFolderFile();
+        if (projectFolderFile == null) {
+            // invalid folder given, just ignore it
+            return;
+        }
         String projectFolder = projectFolderFile.getName();
         if (!originalProjectName.equals(projectFolder)) {
             // already "disconnected"

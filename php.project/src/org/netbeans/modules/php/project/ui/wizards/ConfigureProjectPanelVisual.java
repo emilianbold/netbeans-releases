@@ -41,7 +41,6 @@ package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.nio.charset.Charset;
 import javax.swing.JPanel;
 import javax.swing.MutableComboBoxModel;
@@ -272,13 +271,6 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
 
     public String getProjectFolder() {
         return projectFolderTextField.getText().trim();
-    }
-
-    /**
-     * @return <b>non-normalized</b> {@link File file} for project folder.
-     */
-    public File getProjectFolderFile() {
-        return new File(getProjectFolder());
     }
 
     public void setProjectName(String projectName) {
