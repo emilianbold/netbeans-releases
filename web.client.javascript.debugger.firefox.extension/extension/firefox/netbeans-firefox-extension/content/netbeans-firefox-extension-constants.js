@@ -79,6 +79,11 @@ NetBeans.Constants = {
     get ConsoleServiceIF() { return Components.interfaces.nsIConsoleService; },
 
     get ScriptErrorIF() { return Components.interfaces.nsIScriptError; },
+    
+    //Observer
+    get ObserverServiceCID() { return '@mozilla.org/observer-service;1';},
+
+    get ObserverServiceIF() { return Components.interfaces.nsIObserverService; },
 
     // Shell
     get ShellServiceCID() { return '@mozilla.org/browser/shell-service;1'; },

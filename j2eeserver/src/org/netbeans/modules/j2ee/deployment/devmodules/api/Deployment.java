@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -339,8 +340,12 @@ public final class Deployment {
         ServerInstance instance = ServerRegistry.getInstance().getServerInstance(instanceId);
         if (null != instance) {
             IncrementalDeployment incr = instance.getIncrementalDeployment();
-            if (null != incr) {
-                retVal = incr.canFileDeploy(null, mod);
+            try {
+                if (null != incr && null != mod.getContentDirectory()) {
+                    retVal = incr.canFileDeploy(null, mod);
+                }
+            } catch (IOException ioe) {
+                java.util.logging.Logger.getLogger("global").log(Level.FINER,"",ioe); // NOI18N                
             }
         }
         return retVal;

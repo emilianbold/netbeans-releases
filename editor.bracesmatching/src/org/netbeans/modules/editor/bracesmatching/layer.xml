@@ -43,6 +43,14 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Editors">
+        <folder name="Actions">
+            <file name="org-netbeans-modules-editor-bracesmatching-BracesMatchAction-navigate.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.bracesmatching.BracesMatchAction.createNavigateAction"/>
+            </file>
+            <file name="org-netbeans-modules-editor-bracesmatching-BracesMatchAction-select.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.bracesmatching.BracesMatchAction.createSelectAction"/>
+            </file>
+        </folder>
         <folder name="FontsColors">
             <folder name="NetBeans">
                 <folder name="Defaults">

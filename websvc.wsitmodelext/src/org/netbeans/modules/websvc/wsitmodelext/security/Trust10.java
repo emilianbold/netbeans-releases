@@ -46,5 +46,4 @@ package org.netbeans.modules.websvc.wsitmodelext.security;
  * @author Martin Grebac
  */
 public interface Trust10 extends TrustElement {
-    public static final String TRUST_PROPERTY = "WSS10_PROPERTY";     //NOI18N    
 }

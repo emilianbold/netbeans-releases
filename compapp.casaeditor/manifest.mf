@@ -4,7 +4,3 @@ OpenIDE-Module-Layer: org/netbeans/modules/compapp/casaeditor/resources/layer.xm
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/compapp/casaeditor/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.1
 AutoUpdate-Show-In-Client: false
-
-Name: org/netbeans/modules/compapp/casaeditor/CasaDataLoader.class
-OpenIDE-Module-Class: Loader
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject, com.stc.projects.icanpro.ui.portmap.PortMapDataObject

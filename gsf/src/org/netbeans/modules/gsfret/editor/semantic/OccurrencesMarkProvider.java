@@ -40,18 +40,26 @@
  */
 package org.netbeans.modules.gsfret.editor.semantic;
 
+import java.awt.Color;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Position;
+import javax.swing.text.StyledDocument;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
-import org.netbeans.modules.editor.highlights.spi.Highlight;
+import org.netbeans.modules.editor.errorstripe.privatespi.Status;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -92,40 +100,107 @@ public class OccurrencesMarkProvider extends MarkProvider {
         return joint;
     }
     
-    public synchronized void setSematic(Collection<Highlight> s) {
-        semantic = new ArrayList<Mark>();
+    public void setSematic(Collection<Mark> s) {
+        List<Mark> old;
+        List<Mark> nue;
         
-        for (Highlight h : s) {
-            if (h != null && h instanceof Mark && ((Mark) h).getEnhancedColor() != null)
-                semantic.add((Mark) h);
+        synchronized (this) {
+            semantic = new ArrayList<Mark>(s);
+            
+            old = joint;
+            
+            nue = joint = new ArrayList<Mark>();
+            
+            joint.addAll(semantic);
+            joint.addAll(occurrences);
         }
         
-        List<Mark> old = joint;
-        
-        joint = new ArrayList<Mark>();
-        
-        joint.addAll(semantic);
-        joint.addAll(occurrences);
-        
-        firePropertyChange(PROP_MARKS, old, joint);
+        //#85919: fire outside the lock:
+        firePropertyChange(PROP_MARKS, old, nue);
     }
     
-    public synchronized void setOccurrences(Collection<Highlight> s) {
-        occurrences = new ArrayList<Mark>();
+    public void setOccurrences(Collection<Mark> s) {
+        List<Mark> old;
+        List<Mark> nue;
         
-        for (Highlight h : s) {
-            if (h != null && h instanceof Mark && ((Mark) h).getEnhancedColor() != null)
-                occurrences.add((Mark) h);
+        synchronized (this) {
+            occurrences = new ArrayList<Mark>(s);
+            
+            old = joint;
+            
+            nue = joint = new ArrayList<Mark>();
+            
+            joint.addAll(semantic);
+            joint.addAll(occurrences);
         }
         
-        List<Mark> old = joint;
-        
-        joint = new ArrayList<Mark>();
-        
-        joint.addAll(semantic);
-        joint.addAll(occurrences);
-        
-        firePropertyChange(PROP_MARKS, old, joint);
+        //#85919: fire outside the lock:
+        firePropertyChange(PROP_MARKS, old, nue);
     }
     
+    //public static Collection<Mark> createMarks(final Document doc, final List<int[]> bag, final Color color, final String tooltip) {
+    public static Collection<Mark> createMarks(final Document doc, final List<OffsetRange> bag, final Color color, final String tooltip) {
+        final List<Mark> result = new LinkedList<Mark>();
+        
+        doc.render(new Runnable() {
+            public void run() {
+                //for (int[] span : bag) {
+                for (OffsetRange span : bag) {
+                    try {
+                        //if (span[0] < doc.getLength()) {
+                        if (span.getStart() < doc.getLength()) {
+                            //result.add(new MarkImpl(doc, doc.createPosition(span[0]), color, tooltip));
+                            result.add(new MarkImpl(doc, doc.createPosition(span.getStart()), color, tooltip));
+                        }
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        });
+        
+        return result;
+    }
+    
+    private static final class MarkImpl implements Mark {
+
+        private Document doc;
+        private Position startOffset;
+        private Color color;
+        private String tooltip;
+
+        public MarkImpl(Document doc, Position startOffset, Color color, String tooltip) {
+            this.doc = doc;
+            this.startOffset = startOffset;
+            this.color = color;
+            this.tooltip = tooltip;
+        }
+
+        public int getType() {
+            return TYPE_ERROR_LIKE;
+        }
+
+        public Status getStatus() {
+            return Status.STATUS_OK;
+        }
+
+        public int getPriority() {
+            return PRIORITY_DEFAULT;
+        }
+
+        public Color getEnhancedColor() {
+            return color;
+        }
+
+        public int[] getAssignedLines() {
+            int line = NbDocument.findLineNumber((StyledDocument) doc, startOffset.getOffset());
+            
+            return new int[] {line, line};
+        }
+
+        public String getShortDescription() {
+            return tooltip;
+        }
+        
+    }
 }

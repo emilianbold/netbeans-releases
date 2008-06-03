@@ -95,4 +95,32 @@ public class OffsetRangeTest extends NbTestCase {
         assertFalse(range.containsInclusive(5));
         assertFalse(range.containsInclusive(0));
     }
+    
+    public void testEquals() {
+        assertEquals(new OffsetRange(1,3), new OffsetRange(1,3));
+        assertEquals(new OffsetRange(0,0), new OffsetRange(0,0));
+        assertFalse(new OffsetRange(1,3).equals(new Object()));
+
+        boolean success = false;
+        try {
+            // Should generate an assertion!
+            new OffsetRange(9,8);
+        } catch (AssertionError e) {
+            success = true;
+        }
+        assertTrue(success);
+    }
+    
+    public void testComparator() {
+        assertTrue(new OffsetRange(1,3).compareTo(new OffsetRange(3,5)) < 0);
+        assertTrue(new OffsetRange(3,5).compareTo(new OffsetRange(1,3)) > 0);
+        assertTrue(new OffsetRange(3,5).compareTo(new OffsetRange(3,5)) == 0);
+        assertTrue(new OffsetRange(1,3).compareTo(new OffsetRange(1,5)) < 0);
+        assertTrue(new OffsetRange(1,5).compareTo(new OffsetRange(1,3)) > 0);
+    }
+    
+    public void testEmpty() {
+        assertTrue(new OffsetRange(5,5).isEmpty());
+        assertFalse(new OffsetRange(5,6).isEmpty());
+    }
 }

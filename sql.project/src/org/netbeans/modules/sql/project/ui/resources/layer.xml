@@ -23,6 +23,9 @@
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-sql">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-sql-project-ui-SQLDataLoader.instance"/>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">
                         <attr name="position" intvalue="500"/>
@@ -95,9 +98,6 @@
         </folder>
         <folder name="Project">
             <folder name="SOA">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.sql.project.ui.wizards.Bundle"/>
-                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/sql/project/ui/resources/sqlpro.html"/>
-                
                 <!-- Add template for the J2SE project -->
                 <file name="emptySQLpro.xml">
                     <attr name="template" boolvalue="true"/>

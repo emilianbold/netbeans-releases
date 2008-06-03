@@ -64,7 +64,7 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.SaveAsCapable;
-import org.openide.nodes.CookieSet.Factory;
+import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditor;
@@ -84,7 +84,7 @@ public final class JavaDataObject extends MultiDataObject {
                 createJavaEditorSupport().saveAs( folder, fileName );
             }
         });
-        getCookieSet().add(JavaEditorSupport.class, new Factory() {
+        getCookieSet().add(JavaEditorSupport.class, new CookieSet.Factory() {
             public <T extends Cookie> T createCookie(Class<T> klass) {
                 return klass.cast(createJavaEditorSupport ());
             }

@@ -55,17 +55,18 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.ParseTreeWalker;
-import org.netbeans.modules.ruby.hints.spi.AstRule;
-import org.netbeans.modules.ruby.hints.spi.Description;
-import org.netbeans.modules.ruby.hints.spi.EditList;
-import org.netbeans.modules.ruby.hints.spi.Fix;
-import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.NbBundle;
 import org.jruby.ast.types.INameNode;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.EditList;
+import org.netbeans.modules.gsf.api.HintFix;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.PreviewableFix;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.ruby.ParseTreeVisitor;
-import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
-import org.netbeans.modules.ruby.hints.spi.RuleContext;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 
 /**
  * Identify "accidental" assignments of the form "if (a = b)" which should have been "if (a == b)"
@@ -74,14 +75,14 @@ import org.netbeans.modules.ruby.hints.spi.RuleContext;
  * 
  * @author Tor Norbye
  */
-public class AccidentalAssignment implements AstRule {
+public class AccidentalAssignment extends RubyAstRule {
 
     public Set<NodeType> getKinds() {
         return Collections.singleton(NodeType.IFNODE);
     }
 
-    public void run(RuleContext context,
-            List<Description> result) {
+    public void run(RubyRuleContext context,
+            List<Hint> result) {
         Node node = context.node;
         AstPath path = context.path;
         CompilationInfo info = context.compilationInfo;
@@ -104,9 +105,9 @@ public class AccidentalAssignment implements AstRule {
                 OffsetRange range = AstUtilities.getRange(condition);
                 range = LexUtilities.getLexerOffsets(info, range);
                 if (range != OffsetRange.NONE) {
-                    List<Fix> fixList = new ArrayList<Fix>(2);
+                    List<HintFix> fixList = new ArrayList<HintFix>(2);
                     fixList.add(new ConvertAssignmentFix(info, condition));
-                    Description desc = new Description(this, displayName, info.getFileObject(),
+                    Hint desc = new Hint(this, displayName, info.getFileObject(),
                             range, fixList, 600);
                     result.add(desc);
                 }
@@ -138,7 +139,7 @@ public class AccidentalAssignment implements AstRule {
         return null;
     }
 
-    public boolean appliesTo(CompilationInfo info) {
+    public boolean appliesTo(RuleContext context) {
         return true;
     }
 

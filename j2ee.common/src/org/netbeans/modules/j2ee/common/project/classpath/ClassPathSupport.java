@@ -157,7 +157,16 @@ public final class ClassPathSupport {
                     AntArtifact artifact = (AntArtifact)ret[0];
                     URI uri = (URI)ret[1];
                     File usedFile = antProjectHelper.resolveFile(evaluator.evaluate(pe[i]));
-                    File artifactFile = new File (artifact.getScriptLocation().toURI().resolve(uri).normalize());
+                    /* Workaround for http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4723726 (URI.normalize() ruins URI built from UNC File) */
+                    File artifactFile = null;
+                    if(uri.isAbsolute()) {
+                        artifactFile = new File(uri);
+                    } else {
+                        artifactFile = new File(artifact.getScriptLocation().getParent(), uri.getPath());
+                    }
+                    artifactFile = FileUtil.normalizeFile(artifactFile);
+                    //File artifactFile = new File (artifact.getScriptLocation().toURI().resolve(uri).normalize());
+                    /* End of UNC workaround */
                     if (usedFile.equals(artifactFile)) {
                         item = Item.create( artifact, uri, pe[i]);
                     }

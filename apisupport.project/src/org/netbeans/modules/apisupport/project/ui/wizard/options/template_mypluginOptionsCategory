@@ -14,6 +14,7 @@ import org.openide.util.Utilities;
 
 public final class ${OptionsCategory_CLASS_NAME} extends OptionsCategory {
 
+    @Override
     public Icon getIcon() {
         return new ImageIcon(Utilities.loadImage("${ICON_PATH}"));
     }
@@ -27,7 +28,7 @@ public final class ${OptionsCategory_CLASS_NAME} extends OptionsCategory {
     }
 
     public OptionsPanelController create() {
-        return new ${OptionsPanelController_CLASS_NAME}();
+        return ${OptionsPanelController_INSTANCE};
     }
 
 }

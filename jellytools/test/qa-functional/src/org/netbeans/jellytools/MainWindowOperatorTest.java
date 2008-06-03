@@ -172,7 +172,7 @@ public class MainWindowOperatorTest extends JellyTestCase {
     public void testPushToolbarPopupMenu() {
         int expectedToolbarsCount = mainWindowOper.getToolbarCount();
         // "File"
-        String popupPath = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Toolbars/File");
+        String popupPath = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Toolbars/File");
         mainWindowOper.pushToolbarPopupMenu(popupPath);
         int actualToolbarCount = mainWindowOper.getToolbarCount();
         mainWindowOper.pushToolbarPopupMenu(popupPath);
@@ -184,7 +184,7 @@ public class MainWindowOperatorTest extends JellyTestCase {
         // at the time no item in menu is blocking so we use testPushToolbarPopupMenu
         int expectedToolbarsCount = mainWindowOper.getToolbarCount();
         // "File"
-        String popupPath = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Toolbars/File");
+        String popupPath = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Toolbars/File");
         mainWindowOper.pushToolbarPopupMenuNoBlock(popupPath);
         new EventTool().waitNoEvent(500);
         int actualToolbarCount = mainWindowOper.getToolbarCount();

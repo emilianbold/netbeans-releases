@@ -40,22 +40,18 @@
  */
 package org.netbeans.modules.gsfret.editor.semantic;
 
-import java.awt.Color;
+
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.Position;
-import javax.swing.text.Position.Bias;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.gsf.api.ColoringAttributes;
-import org.netbeans.editor.Coloring;
-import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
-import org.netbeans.modules.editor.errorstripe.privatespi.Status;
-import org.netbeans.modules.editor.highlights.spi.Highlight;
-import org.netbeans.modules.gsf.Language;
 import org.openide.text.NbDocument;
 
 /**
@@ -67,144 +63,40 @@ import org.openide.text.NbDocument;
  *
  * @author Jan Lahoda
  */
-final class HighlightImpl implements Mark, Highlight {
+public final class HighlightImpl {
     
     private Document doc;
-    private Position start;
-    private Position start2;
-    private Position end;
-    private Position end2;
+    private int start;
+    private int end;
     private Collection<ColoringAttributes> colorings;
-    private Color    esColor;
-    private Language language;
     
-    public HighlightImpl(Document doc, Position start, Position end, Collection<ColoringAttributes> colorings) {
-        this(doc, start, end, colorings, null);
+    public HighlightImpl(Document doc, Token token, Collection<ColoringAttributes> colorings) {
+        this.doc       = doc;
+        this.start     = token.offset(null);
+        this.end       = token.offset(null) + token.text().length();
+        this.colorings = colorings;
     }
     
-    /** Creates a new instance of Highlight */
-    public HighlightImpl(Document doc, Position start, Position end, Collection<ColoringAttributes> colorings, Color esColor) {
+    public HighlightImpl(Document doc, int start, int end, Collection<ColoringAttributes> colorings) {
         this.doc = doc;
         this.start = start;
         this.end = end;
         this.colorings = colorings;
-        this.esColor = esColor;
     }
-
-    public HighlightImpl(Language language, Document doc, int start, int end, Collection<ColoringAttributes> colorings, Color esColor) throws BadLocationException {
-        this.language = language;
-        this.doc = doc;
-        this.start = NbDocument.createPosition(doc, start, Bias.Forward);
-        this.start = NbDocument.createPosition(doc, start, Bias.Backward);
-        this.end = NbDocument.createPosition(doc, end, Bias.Backward);
-        this.end2 = NbDocument.createPosition(doc, end, Bias.Forward);
-        this.colorings = colorings;
-        this.esColor = esColor;
+    
+    public int getStart() {
+        return start;
     }
     
     public int getEnd() {
-        int endPos = end.getOffset();
-        
-        if (end2 == null)
-            return endPos;
-        
-        int endPos2 = end2.getOffset();
-        
-        if (endPos == endPos2)
-            return endPos;
-        
-        try {
-            String added = doc.getText(endPos, endPos2 - endPos);
-            int newEndPos = endPos;
-            
-            for (char c : added.toCharArray()) {
-                if (Character.isJavaIdentifierPart(c))
-                    newEndPos++;
-            }
-            
-            if (newEndPos != endPos) {
-                end = NbDocument.createPosition(doc, newEndPos, Bias.Backward);
-                end2 = NbDocument.createPosition(doc, newEndPos, Bias.Forward);
-            }
-            
-            return newEndPos;
-        } catch (BadLocationException e) {
-            Logger.getLogger("global").log(Level.FINE, e.getMessage(), e);
-            return endPos;
-        }
-    }
-
-    public int getStart() {
-        int startPos = start.getOffset();
-        
-        if (start2 == null)
-            return startPos;
-        
-        int startPos2 = start2.getOffset();
-        
-        if (startPos == startPos2)
-            return startPos;
-        
-        try {
-            String added = doc.getText(startPos, startPos2 - startPos);
-            int newStartPos = startPos;
-            
-            for (char c : added.toCharArray()) {
-                if (Character.isJavaIdentifierPart(c))
-                    newStartPos++;
-            }
-            
-            if (newStartPos != startPos) {
-                start = NbDocument.createPosition(doc, newStartPos, Bias.Forward);
-                start2 = NbDocument.createPosition(doc, newStartPos, Bias.Backward);
-            }
-            
-            return newStartPos;
-        } catch (BadLocationException e) {
-            Logger.getLogger("global").log(Level.FINE, e.getMessage(), e);
-            return startPos;
-        }
-    }
-
-    public Coloring getColoring() {
-        return language.getColoringManager().getColoring(colorings);
-    }
-    
-    public String toString() {
-        return "Highlight: [" + colorings + ", " + start.getOffset() + "-" + end.getOffset() + "]";
-    }
-    
-    public int getType() {
-        return TYPE_ERROR_LIKE;
-    }
-    
-    public Status getStatus() {
-        return Status.STATUS_OK;
-    }
-    
-    public int getPriority() {
-        return PRIORITY_DEFAULT;
-    }
-    
-    public Color getEnhancedColor() {
-        return esColor;
-    }
-    
-    public int[] getAssignedLines() {
-        int line = NbDocument.findLineNumber((StyledDocument) doc, start.getOffset());
-        
-        return new int[] {line, line};
-    }
-    
-    public String getShortDescription() {
-        return "...";
+        return end;
     }
     
     public String getHighlightTestData() {
-        int lineStart = NbDocument.findLineNumber((StyledDocument) doc, start.getOffset());
-        int columnStart = NbDocument.findLineColumn((StyledDocument) doc, start.getOffset());
-        int lineEnd = NbDocument.findLineNumber((StyledDocument) doc, end.getOffset());
-        int columnEnd = NbDocument.findLineColumn((StyledDocument) doc, end.getOffset());
+        int lineStart = NbDocument.findLineNumber((StyledDocument) doc, start);
+        int columnStart = NbDocument.findLineColumn((StyledDocument) doc, start);
+        int lineEnd = NbDocument.findLineNumber((StyledDocument) doc, end);
+        int columnEnd = NbDocument.findLineColumn((StyledDocument) doc, end);
         
         return coloringsToString() + ", " + lineStart + ":" + columnStart + "-" + lineEnd + ":" + columnEnd;
     }
@@ -232,59 +124,61 @@ final class HighlightImpl implements Mark, Highlight {
     }
     
     Collection<ColoringAttributes> coloringsAttributesOrder = Arrays.asList(new ColoringAttributes[] {
-        ColoringAttributes.STATIC, 
         ColoringAttributes.ABSTRACT,
-        
-        ColoringAttributes.PUBLIC,
-        ColoringAttributes.PROTECTED,
-        ColoringAttributes.PACKAGE_PRIVATE,
-        ColoringAttributes.PRIVATE,
-        
-        ColoringAttributes.DEPRECATED,
-        
-        ColoringAttributes.FIELD,
-        ColoringAttributes.LOCAL_VARIABLE,
-        ColoringAttributes.PARAMETER,
-        ColoringAttributes.METHOD,
-        ColoringAttributes.CONSTRUCTOR,
+        ColoringAttributes.ANNOTATION_TYPE,
         ColoringAttributes.CLASS,
-                
-        ColoringAttributes.UNUSED,
-
+        ColoringAttributes.CONSTRUCTOR,
+        ColoringAttributes.CUSTOM1,
+        ColoringAttributes.CUSTOM2,
+        ColoringAttributes.CUSTOM3,
+        ColoringAttributes.DECLARATION,
+        ColoringAttributes.DEPRECATED,
+        ColoringAttributes.ENUM,
+        ColoringAttributes.FIELD,
+        ColoringAttributes.GLOBAL,
+        ColoringAttributes.INTERFACE,
+        ColoringAttributes.LOCAL_VARIABLE,
+        ColoringAttributes.MARK_OCCURRENCES,
+        ColoringAttributes.METHOD,
+        ColoringAttributes.PACKAGE_PRIVATE,
+        ColoringAttributes.PARAMETER,
+        ColoringAttributes.PRIVATE,
+        ColoringAttributes.PROTECTED,
+        ColoringAttributes.PUBLIC,
+        ColoringAttributes.REGEXP,
+        ColoringAttributes.STATIC,
         ColoringAttributes.TYPE_PARAMETER_DECLARATION,
         ColoringAttributes.TYPE_PARAMETER_USE,
-
         ColoringAttributes.UNDEFINED,
-
-        ColoringAttributes.MARK_OCCURRENCES,
+        ColoringAttributes.UNUSED,
     });
  
-//    public static HighlightImpl parse(StyledDocument doc, String line) throws ParseException, BadLocationException {
-//        MessageFormat f = new MessageFormat("[{0}], {1,number,integer}:{2,number,integer}-{3,number,integer}:{4,number,integer}");
-//        Object[] args = f.parse(line);
-//        
-//        String attributesString = (String) args[0];
-//        int    lineStart  = ((Long) args[1]).intValue();
-//        int    columnStart  = ((Long) args[2]).intValue();
-//        int    lineEnd  = ((Long) args[3]).intValue();
-//        int    columnEnd  = ((Long) args[4]).intValue();
-//        
-//        String[] attrElements = attributesString.split(",");
-//        List<ColoringAttributes> attributes = new ArrayList<ColoringAttributes>();
-//        
-//        for (String a : attrElements) {
-//            a = a.trim();
-//            
-//            attributes.add(ColoringAttributes.valueOf(a));
-//        }
-//        
-//        if (attributes.contains(null))
-//            throw new NullPointerException();
-//        
-//        int offsetStart = NbDocument.findLineOffset(doc, lineStart) + columnStart;
-//        int offsetEnd = NbDocument.findLineOffset(doc, lineEnd) + columnEnd;
-//        
-//        return new HighlightImpl(doc, doc.createPosition(offsetStart), doc.createPosition(offsetEnd), attributes, null);
-//    }
+    public static HighlightImpl parse(StyledDocument doc, String line) throws ParseException, BadLocationException {
+        MessageFormat f = new MessageFormat("[{0}], {1,number,integer}:{2,number,integer}-{3,number,integer}:{4,number,integer}");
+        Object[] args = f.parse(line);
+        
+        String attributesString = (String) args[0];
+        int    lineStart  = ((Long) args[1]).intValue();
+        int    columnStart  = ((Long) args[2]).intValue();
+        int    lineEnd  = ((Long) args[3]).intValue();
+        int    columnEnd  = ((Long) args[4]).intValue();
+        
+        String[] attrElements = attributesString.split(",");
+        List<ColoringAttributes> attributes = new ArrayList<ColoringAttributes>();
+        
+        for (String a : attrElements) {
+            a = a.trim();
+            
+            attributes.add(ColoringAttributes.valueOf(a));
+        }
+        
+        if (attributes.contains(null))
+            throw new NullPointerException();
+        
+        int offsetStart = NbDocument.findLineOffset(doc, lineStart) + columnStart;
+        int offsetEnd = NbDocument.findLineOffset(doc, lineEnd) + columnEnd;
+        
+        return new HighlightImpl(doc, offsetStart, offsetEnd, attributes);
+    }
     
 }

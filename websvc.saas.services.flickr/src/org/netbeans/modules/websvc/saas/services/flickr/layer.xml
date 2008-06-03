@@ -46,7 +46,6 @@
     
     <folder name="Templates">
         <folder name="SaaSServices">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.flickr.Bundle"/>
             <file name="FlickrAuthenticator.java" 
                   url="/org/netbeans/modules/websvc/saas/services/flickr/resources/web/FlickrAuthenticator.template">
                 <attr name="position" intvalue="3710"/>

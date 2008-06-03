@@ -191,8 +191,8 @@ public final class DurationDialog extends JDialog {
       check(day, "ERR_invalid_day", myDay) && // NOI18N
       check(hour, "ERR_invalid_hour", myHour) && // NOI18N
       check(minute, "ERR_invalid_minute", myMinute) && // NOI18N
-      check(second, "ERR_invalid_second", mySecond)) // NOI18N
-    {
+      check(second, "ERR_invalid_second", mySecond) // NOI18N
+    ) {
       myDuration = DurationUtil.getContent(true, year, month, day, hour, minute, second);
       return true;
     }

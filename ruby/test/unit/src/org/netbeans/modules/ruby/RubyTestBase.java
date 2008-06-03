@@ -56,7 +56,6 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.DefaultLanguage;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
@@ -126,9 +125,9 @@ TranslatedSource translatedSource = null; // TODO
     @Override
     protected void initializeRegistry() {
         LanguageRegistry registry = LanguageRegistry.getInstance();
-        List<Action> actions = Collections.emptyList();
         if (!LanguageRegistry.getInstance().isSupported(RubyInstallation.RUBY_MIME_TYPE)) {
-            org.netbeans.modules.gsf.Language dl = new DefaultLanguage("org/netbeans/modules/ruby/jrubydoc.png", "text/x-ruby", actions, new RubyLanguage(), new RubyParser(), new CodeCompleter(), new RenameHandler(), new DeclarationFinder(), new Formatter(), new BracketCompleter(), new RubyIndexer(), new StructureAnalyzer(), null, false);
+            List<Action> actions = Collections.emptyList();
+            org.netbeans.modules.gsf.Language dl = new Language("org/netbeans/modules/ruby/jrubydoc.png", "text/x-ruby", actions, new RubyLanguage(), new RubyParser(), new CodeCompleter(), new RenameHandler(), new DeclarationFinder(), new Formatter(), new BracketCompleter(), new RubyIndexer(), new StructureAnalyzer(), null, false);
             List<org.netbeans.modules.gsf.Language> languages = new ArrayList<org.netbeans.modules.gsf.Language>();
             languages.add(dl);
             registry.addLanguages(languages);
