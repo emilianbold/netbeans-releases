@@ -349,6 +349,11 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     /** Length of the (shortest) lines in <code>ButtonGroup</code> visualization. */
     private static final int BUTTON_GROUP_OFFSET = 5;
     /**
+     * Determines whether the primary division (in visualization
+     * of <code>ButtonGroup</code>s) should be into columns or rows.
+     */
+    private static final boolean BUTTON_GROUP_COLUMNS_FIRST = false;
+    /**
      * Visualization of <code>ButtonGroup</code>s.
      * 
      * @param g graphics object.
@@ -394,7 +399,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                         Rectangle bound = new Rectangle(shift.x, shift.y, button.getWidth(), button.getHeight());
                         bounds.put(button, bound);
                     }
-                    paintButtonGroup(g, buttons, false, true, bounds);
+                    paintButtonGroup(g, buttons, BUTTON_GROUP_COLUMNS_FIRST, true, bounds, true);
                 }
             }
         }
@@ -433,11 +438,13 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
      * into columns (or rows) primarily.
      * @param root determines whether the whole button group is visualized or just a part.
      * @param compBounds bounds of buttons in the group.
+     * @param lastSuccessful determines whether the last division into columns/rows
+     * was successful, see issue 136370
      * @return the lowest x-coordinate (resp. y-coordinate) of the group
      * if column is set to <code>true</code> (resp. <code>false</code>).
      */
     private int paintButtonGroup(Graphics g, java.util.List<AbstractButton> buttons,
-            boolean columns, boolean root, Map<AbstractButton, Rectangle> compBounds) {
+            boolean columns, boolean root, Map<AbstractButton, Rectangle> compBounds, boolean lastSuccessful) {
         // Preprocessing of information about starts/ends of individual buttons.
         // maps coordinates to the number of buttons starting/ending at this coordinate
         SortedMap<Integer, int[]> bounds = new TreeMap<Integer, int[]>();
@@ -485,22 +492,58 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             }
             groups[--index].add(button);
         }
+
+        // Issue 136370, this set of components cannot be separated neither
+        // into columns not into rows. We split them manually into singletons.
+        if (!lastSuccessful && (cuts.size() == 1)) {
+            return -1;
+        }
         
         // Visualize sub-groups
-        int[] starts = new int[cuts.size()];
-        int minStart = Integer.MAX_VALUE;
-        for (int i=0; i<cuts.size(); i++) {
-            if (groups[i].size() > 1) {
-                starts[i] = paintButtonGroup(g, groups[i], !columns, root && (cuts.size() == 1), compBounds);
-            } else {
-                Rectangle bound = compBounds.get(groups[i].get(0));
-                starts[i] = columns ? bound.y : bound.x;
+        int[] starts;
+        int minStart;
+        boolean ok = false;
+        out: do {
+            starts = new int[cuts.size()];
+            minStart = Integer.MAX_VALUE;
+            boolean succesful = (cuts.size() > 1);
+            for (int i=0; i<cuts.size(); i++) {
+                if (groups[i].size() > 1) {
+                    starts[i] = paintButtonGroup(g, groups[i], !columns, root && !succesful, compBounds, succesful);
+                    if (starts[i] == -1) { // Issue 136370
+                        assert (cuts.size() == 1);
+                        // Cuts must be sorted
+                        java.util.List<int[]> cutOrder = new ArrayList<int[]>(buttons.size());
+                        for (int j=0; j<buttons.size(); j++) {
+                            AbstractButton button = buttons.get(j);
+                            Rectangle bound = compBounds.get(button);
+                            cutOrder.add(new int[] {columns ? bound.x : bound.y, j});
+                        }
+                        Collections.sort(cutOrder, new Comparator<int[]>() {
+                            public int compare(int[] i1, int[] i2) {
+                                return (i1[0] == i2[0]) ? (i1[1] - i2[1]) : (i1[0] - i2[0]);
+                            }
+                        });
+                        cuts = new ArrayList<Integer>(buttons.size());
+                        groups = new java.util.List[buttons.size()];
+                        for (int[] ii : cutOrder) {
+                            AbstractButton button = buttons.get(ii[1]);
+                            groups[cuts.size()] = Collections.singletonList(button);
+                            cuts.add(ii[0]);
+                        }
+                        continue out;
+                    }
+                } else {
+                    Rectangle bound = compBounds.get(groups[i].get(0));
+                    starts[i] = columns ? bound.y : bound.x;
+                }
+                if (minStart > starts[i]) {
+                    minStart = starts[i];
+                }
             }
-            if (minStart > starts[i]) {
-                minStart = starts[i];
-            }
-        }
-        minStart -= BUTTON_GROUP_OFFSET;
+            minStart -= BUTTON_GROUP_OFFSET;
+            ok = true;
+        } while (!ok);
         
         // Visualize connection of sub-groups
         int count = 0;

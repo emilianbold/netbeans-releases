@@ -50,13 +50,13 @@ import org.openide.windows.InputOutput;
 public interface Descriptor {
 
         InputOutput getInputOutput();
-        
+
         FileObject getFileObject();
 
         InputProcessor getOutputSnooper();
 
         boolean isControlable();
-        
+
         /* Select the tab on run */
         boolean isFrontWindow();
 

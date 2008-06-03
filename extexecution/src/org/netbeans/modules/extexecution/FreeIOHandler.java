@@ -39,17 +39,18 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.extexecution.api;
+package org.netbeans.modules.extexecution;
 
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.WeakHashMap;
+import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 
-final class FreeIOHandler {
+public final class FreeIOHandler {
     
     /**
      * All tabs which were used for some process which has now ended.
@@ -68,23 +69,23 @@ final class FreeIOHandler {
         this.data = data;
     }
     
-    InputOutput getIO() {
+    public InputOutput getIO() {
         return io;
     }
 
-    String getDisplayName() {
+    public String getDisplayName() {
         return data.displayName;
     }
 
-    StopAction getStopAction() {
+    public StopAction getStopAction() {
         return data.stopAction;
     }
 
-    RerunAction getRerunAction() {
+    public RerunAction getRerunAction() {
         return data.rerunAction;
     }
     
-    static void addFreeIO(InputOutput io, String displayName, StopAction stopAction, RerunAction rerunAction) {
+    public static void addFreeIO(InputOutput io, String displayName, StopAction stopAction, RerunAction rerunAction) {
         synchronized (FREE_IOS) {
             FREE_IOS.put(io, new Data(displayName, stopAction, rerunAction));
         }
@@ -96,7 +97,7 @@ final class FreeIOHandler {
      * @param name the name of the free tab. Other free tabs are ignored.
      * @return free tab and its current display name or <tt>null</tt>
      */
-    static FreeIOHandler findFreeIO(final String name, boolean actions) {
+    public static FreeIOHandler findFreeIO(final String name, boolean actions) {
         FreeIOHandler result = null;
         synchronized (FREE_IOS) {
             for (Iterator<Entry<InputOutput, Data>> it = FREE_IOS.entrySet().iterator(); it.hasNext();) {
@@ -108,7 +109,7 @@ final class FreeIOHandler {
                     continue;
                 }
 
-                if (result == null && ExecutionService.isAppropriateName(name, data.displayName)) {
+                if (result == null && isAppropriateName(name, data.displayName)) {
                     if ((actions && data.rerunAction != null && data.stopAction != null)
                             || !actions && data.rerunAction == null && data.stopAction == null) {
                         // Reuse it.
@@ -131,6 +132,13 @@ final class FreeIOHandler {
         return result;
     }
 
+    private static boolean isAppropriateName(String base, String toMatch) {
+        if (!toMatch.startsWith(base)) {
+            return false;
+        }
+        return toMatch.substring(base.length()).matches("^(\\ #[0-9]+)?$"); // NOI18N
+    }
+    
     private static class Data {
         
         final String displayName;
