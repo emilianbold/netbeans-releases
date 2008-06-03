@@ -60,7 +60,7 @@ public class NbModuleSuiteTest extends TestCase {
     }            
     
     public static Test suite() {
-        //return new NbModuleSuiteTest("testAccessExtraDefinedAutoload");
+        //return new NbModuleSuiteTest("testTwoClassesAtOnce");
         return new NbTestSuite(NbModuleSuiteTest.class);
     }
 
@@ -188,8 +188,29 @@ public class NbModuleSuiteTest extends TestCase {
         String v = System.getProperty(name);
         assertEquals("Property " + name, value, v);
     }
+    
+    public void testTwoClassesAtOnce() throws Exception {
+        System.setProperty("ins.one", "No");
+        System.setProperty("ins.two", "No");
+        System.setProperty("ins.three", "No");
+        System.setProperty("en.one", "No");
+        
+        NbModuleSuite.Configuration config = NbModuleSuite.Configuration.create(
+            AskForOrgOpenideUtilEnumClass.class
+        ).enableModules("org.openide.util.enumerations").gui(false)
+        .addTest(NbModuleSuiteIns.class, "testSecond");
+        Test instance = NbModuleSuite.create(config);
+        junit.textui.TestRunner.run(instance);
+        
+        assertProperty("en.one", "OK");
+        assertProperty("ins.one", "No");
+        assertProperty("ins.two", "OK");
+        assertProperty("ins.three", "No");
+    }
 
     public void testAccessExtraDefinedAutoload() {
+        System.setProperty("en.one", "No");
+        
         NbModuleSuite.Configuration config = NbModuleSuite.Configuration.create(AskForOrgOpenideUtilEnumClass.class);
         NbModuleSuite.Configuration addEnum = config.enableModules("org.openide.util.enumerations");
         Test instance = NbModuleSuite.create(addEnum.gui(false));

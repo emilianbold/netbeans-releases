@@ -51,9 +51,12 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -98,19 +101,17 @@ public class NbModuleSuite {
      * 
      */
     public static final class Configuration extends Object {
-        final Class<?> clazz;
+        final Map<Class<?>,String[]> tests;
         final String clusterRegExp;
         final String moduleRegExp;
         final ClassLoader parentClassLoader;
-        final LinkedHashSet<String> tests;
         final boolean gui;
 
         private Configuration(
-            Class<?> clazz, String clusterRegExp, 
+            String clusterRegExp, 
             String moduleRegExp, ClassLoader parent, 
-            LinkedHashSet<String> tests, boolean gui
+            Map<Class<?>,String[]> tests, boolean gui
         ) {
-            this.clazz = clazz;
             this.clusterRegExp = clusterRegExp;
             this.moduleRegExp = moduleRegExp;
             this.parentClassLoader = parent;
@@ -119,7 +120,8 @@ public class NbModuleSuite {
         }
 
         static Configuration create(Class<? extends TestCase> clazz) {
-            return new Configuration(clazz, null, null, ClassLoader.getSystemClassLoader().getParent(), null, true);
+            Map<Class<?>,String[]> single = Collections.<Class<?>,String[]>singletonMap(clazz, null);
+            return new Configuration(null, null, ClassLoader.getSystemClassLoader().getParent(), single, true);
         }
         
         /** Regular expression to match clusters that shall be enabled.
@@ -132,7 +134,7 @@ public class NbModuleSuite {
          * @return clone of this configuration with cluster set to regExp value
          */
         public Configuration clusters(String regExp) {
-            return new Configuration(clazz, regExp, moduleRegExp, parentClassLoader, tests, gui);
+            return new Configuration(regExp, moduleRegExp, parentClassLoader, tests, gui);
         }
 
         /** By default only modules on classpath of the test are enabled, 
@@ -143,11 +145,11 @@ public class NbModuleSuite {
          * @return clone of this configuration with enable modules set to regExp value
          */
         public Configuration enableModules(String regExp) {
-            return new Configuration(clazz, clusterRegExp, regExp, parentClassLoader, tests, gui);
+            return new Configuration(clusterRegExp, regExp, parentClassLoader, tests, gui);
         }
 
         Configuration classLoader(ClassLoader parent) {
-            return new Configuration(clazz, clusterRegExp, moduleRegExp, parent, tests, gui);
+            return new Configuration(clusterRegExp, moduleRegExp, parent, tests, gui);
         }
 
         /** Adds new test name, or array of names into the configuration. By 
@@ -162,12 +164,35 @@ public class NbModuleSuite {
          *    list of executed tests
          */
         public Configuration addTest(String... testNames) {
+            Class[] all = tests.keySet().toArray(new Class[0]);
+            Class<?> key = all[all.length - 1];
+            return addTest(key.asSubclass(TestCase.class), testNames);
+        }
+        
+        /** Adds new test class to run, together with a list of its methods
+         * that shall be executed. The list can be empty and if so, the 
+         * the suite executes all <code>testXYZ</code> 
+         * methods present in the test class.
+         * 
+         * @param test the class to also execute in this suite
+         * @param testNames list names to add to the test execution
+         * @return clone of this configuration with testNames test added to the 
+         *    list of executed tests
+         * @since 1.50
+         */
+        public Configuration addTest(Class<? extends TestCase> test, String... testNames) {
             LinkedHashSet<String> tmp = new LinkedHashSet<String>();
-            if (tests != null) {
-                tmp.addAll(tests);
+            String[] current = tests.get(test);
+            if (current != null) {
+                tmp.addAll(Arrays.asList(current));
             }
             tmp.addAll(Arrays.asList(testNames));
-            return new Configuration(clazz, clusterRegExp, moduleRegExp, parentClassLoader, tmp, gui);
+            
+            LinkedHashMap<Class<?>,String[]> newTmp = new LinkedHashMap<Class<?>, String[]>();
+            newTmp.putAll(tests);
+            newTmp.put(test, tmp.isEmpty() ? null : tmp.toArray(new String[0]));
+            
+            return new Configuration(clusterRegExp, moduleRegExp, parentClassLoader, newTmp, gui);
         }
         
         /** Should the system run with GUI or without? The default behaviour
@@ -180,7 +205,7 @@ public class NbModuleSuite {
          * @return clone of this configuration with gui mode associated
          */
         public Configuration gui(boolean gui) {
-            return new Configuration(clazz, clusterRegExp, moduleRegExp, parentClassLoader, tests, gui);
+            return new Configuration(clusterRegExp, moduleRegExp, parentClassLoader, tests, gui);
         }
     }
 
@@ -373,20 +398,25 @@ public class NbModuleSuite {
             ClassLoader global = Thread.currentThread().getContextClassLoader();
             Assert.assertNotNull("Global classloader is initialized", global);
 
-            URL[] testCP = preparePath(config.clazz);
+            URL[] testCP = preparePath(config.tests.keySet().toArray(new Class[0]));
             ClassLoader testLoader = new URLClassLoader(testCP, global);
             try {
                 testLoader.loadClass("junit.framework.Test");
                 testLoader.loadClass("org.netbeans.junit.NbTestSuite");
-                Class<? extends TestCase> sndClazz = 
-                    testLoader.loadClass(config.clazz.getName()).asSubclass(TestCase.class);
-                NbTestSuite toRun;
-                if (config.tests == null) {
-                    toRun = new NbTestSuite(sndClazz);
-                } else {
-                    toRun = new NbTestSuite();
-                    toRun.addTests(sndClazz, config.tests.toArray(new String[0]));
+                NbTestSuite toRun = new NbTestSuite();
+                
+                for (Map.Entry<Class<?>, String[]> entry : config.tests.entrySet()) {
+                    Class<? extends TestCase> sndClazz =
+                        testLoader.loadClass(entry.getKey().getName()).asSubclass(TestCase.class);
+                    if (entry.getValue() == null) {
+                        toRun.addTest(new NbTestSuite(sndClazz));
+                    } else {
+                        NbTestSuite t = new NbTestSuite();
+                        t.addTests(sndClazz, entry.getValue());
+                        toRun.addTest(t);
+                    }
                 }
+                
                 toRun.run(result);
             } catch (ClassNotFoundException ex) {
                 result.addError(this, ex);
