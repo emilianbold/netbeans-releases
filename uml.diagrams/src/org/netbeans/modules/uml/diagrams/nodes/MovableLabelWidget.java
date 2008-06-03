@@ -269,6 +269,9 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
         nodeWriter.endGraphNode();
     }
     
+    public void saveChildren(Widget widget, NodeWriter nodeWriter) {
+        //not applicable
+    }
 
     private class LabelMoveSupport implements MoveStrategy, MoveProvider
     {

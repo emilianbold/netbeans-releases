@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.uml.diagrams.nodes.sqd;
 
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.api.visual.action.WidgetAction;
@@ -70,10 +68,6 @@ public class ExpressionWidget extends FeatureWidget implements PropertyChangeLis
         
         WidgetAction action = ((ObjectScene)scene).createSelectAction();
         createActions(DesignerTools.SELECT).addAction(action);
-    }
-
-    public void save(NodeWriter nodeWriter) {
-        //throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
@@ -158,6 +152,11 @@ public class ExpressionWidget extends FeatureWidget implements PropertyChangeLis
     
     public String getWidgetID() {
         return UMLWidgetIDString.EXPRESSIONWIDGET.toString();
+    }
+
+    @Override
+    public void save(NodeWriter nodeWriter) {
+        super.save(nodeWriter);
     }
 
 }

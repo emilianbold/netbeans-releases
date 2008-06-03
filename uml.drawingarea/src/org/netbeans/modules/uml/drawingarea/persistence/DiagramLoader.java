@@ -82,6 +82,7 @@ import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeReader;
 import org.netbeans.modules.uml.drawingarea.persistence.data.ConnectorInfo;
 import org.netbeans.modules.uml.drawingarea.persistence.data.EdgeInfo;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
+import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.support.ProxyPresentationElement;
 import org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator.SQDDiagramEngineExtension;
 import org.netbeans.modules.uml.drawingarea.ui.trackbar.JTrackBar;
@@ -543,6 +544,25 @@ class DiagramLoader
                         nodeProperties = processProperties();
                         nodeInfo.setProperties(nodeProperties);
                     }
+                    else if (reader.getName().getLocalPart().equalsIgnoreCase("SimpleSemanticModelElement"))
+                    {
+                        String typeInfo = reader.getAttributeValue(null, "typeinfo");
+                        if (typeInfo.length() > 0)
+                        {
+                            NodeInfo.NodeLabel nLabel = new NodeInfo.NodeLabel();
+                            nLabel.setLabel(typeInfo);
+                            nLabel.setPosition(nodeInfo.getPosition());
+                            nLabel.setSize(nodeInfo.getSize());
+                            if (getParent() != null)
+                            {
+                                nodeInfo.getLabels().add(nLabel);
+                            }
+//                            else
+//                            {
+//                                mostRecentEnd.getEndEdgeLabels().add(eLabel);
+//                            }
+                        }
+                    }
                     else if (reader.getName().getLocalPart().equalsIgnoreCase("Uml2SemanticModelBridge.element"))
                     {
                         reader.nextTag();
@@ -621,6 +641,10 @@ class DiagramLoader
                     //add this PE to the presLIst
                     presEltList.add(pE);
                 }
+            }
+            else
+            {
+                System.out.println("  engine.createWidget is returning null.... ");
             }
         }
         catch (Exception e)
@@ -961,10 +985,7 @@ class DiagramLoader
      private void processGraphNodeInsideEdge(EdgeInfo edgeReader)
     {
         try
-        {
-            Point pt = null;
-            Dimension d = null;
-            
+        {           
             NodeInfo nodeInfo = new NodeInfo();
             nodeInfo.setPEID(reader.getAttributeValue(null, "xmi.id"));
             while (reader.hasNext())
@@ -993,8 +1014,8 @@ class DiagramLoader
 
                             EdgeInfo.EdgeLabel eLabel = edgeReader.new EdgeLabel();
                             eLabel.setLabel(typeInfo);
-                            eLabel.setPosition(pt);
-                            eLabel.setSize(d);
+                            eLabel.setPosition(nodeInfo.getPosition());
+                            eLabel.setSize(nodeInfo.getSize());
                             if (mostRecentEnd == null)
                             {
                                 edgeReader.getLabels().add(eLabel);

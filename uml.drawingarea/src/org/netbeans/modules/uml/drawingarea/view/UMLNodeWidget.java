@@ -404,7 +404,7 @@ public abstract class UMLNodeWidget extends Widget
 
     }
     
-    protected void saveChildren(Widget widget, NodeWriter nodeWriter) {
+    public void saveChildren(Widget widget, NodeWriter nodeWriter) {
         if (widget == null || nodeWriter == null)
             return;
         

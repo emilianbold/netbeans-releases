@@ -41,6 +41,7 @@
 package org.netbeans.modules.uml.diagrams.nodes;
 
 import java.awt.Color;
+import java.util.List;
 import javax.swing.UIManager;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.border.BorderFactory;
@@ -57,6 +58,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElem
 import org.netbeans.modules.uml.core.support.umlutils.DataFormatter;
 import org.netbeans.modules.uml.diagrams.engines.DefaultDiagramEngine;
 import org.netbeans.modules.uml.drawingarea.persistence.EdgeWriter;
+import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
@@ -289,6 +291,36 @@ public abstract class FeatureWidget extends CustomizableWidget
         edgeWriter.setHasPositionSize(true);
         edgeWriter.beginGraphNode();
         edgeWriter.endGraphNode();
+    }
+
+    public void save(NodeWriter nodeWriter) {
+        setNodeWriterValues(nodeWriter, this);
+        nodeWriter.beginGraphNodeWithModelBridge();
+        nodeWriter.beginContained();
+        //write contained
+        saveChildren(this, nodeWriter);
+        nodeWriter.endContained();     
+        nodeWriter.endGraphNode();
+    }
+
+    public void saveChildren(Widget widget, NodeWriter nodeWriter) {
+        if (widget == null || nodeWriter == null)
+            return;
+        
+        List<Widget> widList = widget.getChildren();
+        for (Widget child : widList) {
+            if (child instanceof DiagramNodeWriter) {
+                ((DiagramNodeWriter) child).save(nodeWriter);
+            } else {
+                saveChildren(child, nodeWriter);
+            }
+        }
+    }
+    
+    protected void setNodeWriterValues(NodeWriter nodeWriter, Widget widget) {
+        nodeWriter = PersistenceUtil.populateNodeWriter(nodeWriter, widget);
+        nodeWriter.setHasPositionSize(true);
+        PersistenceUtil.populateProperties(nodeWriter, widget);
     }
     
     protected String formatElement()

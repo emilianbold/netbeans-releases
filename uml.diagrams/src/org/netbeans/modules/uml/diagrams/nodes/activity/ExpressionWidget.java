@@ -44,12 +44,7 @@ import org.netbeans.modules.uml.diagrams.nodes.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
-import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
-import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
-import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
-import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 
 /**
@@ -76,29 +71,6 @@ public class ExpressionWidget extends FeatureWidget implements PropertyChangeLis
         if (eventName.equals(ModelElementChangedKind.ELEMENTMODIFIED.toString())) {
             updateUI();
         }
-    }
-
-    public void save(NodeWriter nodeWriter) {
-        
-            setNodeWriterValues(nodeWriter, this);
-            nodeWriter.setHasPositionSize(false);
-            //clear all existing properties
-            PersistenceUtil.clearProperties(nodeWriter);
-            //populate properties key/val
-            PersistenceUtil.populateProperties(nodeWriter, this);
-            nodeWriter.beginGraphNodeWithModelBridge();
-            nodeWriter.beginContained();
-            nodeWriter.endContained();
-            nodeWriter.endGraphNode();
-    }
-
-    private void setNodeWriterValues(NodeWriter nodeWriter, Widget widget) {
-        nodeWriter.setRootNode(false); //This is NOT a Scene / Diagram
-        nodeWriter.setLocation(widget.getLocation());
-        nodeWriter.setSize(widget.getBounds().getSize());
-        nodeWriter.setPEID(PersistenceUtil.getPEID(widget));
-        nodeWriter.setMEID(PersistenceUtil.getMEID(widget));
-        nodeWriter.setElementType(PersistenceUtil.getModelElement(widget).getElementType());
     }
 
     public String getWidgetID() {

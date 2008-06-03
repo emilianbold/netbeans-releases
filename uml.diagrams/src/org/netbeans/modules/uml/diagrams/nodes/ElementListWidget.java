@@ -132,6 +132,10 @@ public class ElementListWidget extends ListWidget implements DiagramNodeWriter, 
     String typeInfo = "";
     
 
+    public void saveChildren(Widget widget, NodeWriter nodeWriter) {
+        //not applicable //TOD: need to remove writeChildren and update it with saveChildren
+    } 
+    
     private void writeChildren(NodeWriter nodeWriter) {
             List<Widget> children = getChildren();
             if (children != null & children.size() > 0) {
