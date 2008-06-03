@@ -130,6 +130,22 @@ public class NbModuleSuiteTest extends TestCase {
         assertProperty("ins.three", "OK");
     }
     
+    public void testOneCanEnumerateMethodsFromTheSuiteWithANewMethod() {
+        System.setProperty("ins.one", "No");
+        System.setProperty("ins.two", "No");
+        System.setProperty("ins.three", "No");
+
+        
+        
+        
+        Test instance = NbModuleSuite.create(NbModuleSuiteIns.class, null, null, "testOne", "testThree");
+        junit.textui.TestRunner.run(instance);
+        
+        assertProperty("ins.one", "OK");
+        assertProperty("ins.two", "No");
+        assertProperty("ins.three", "OK");
+    }
+    
     private static void assertProperty(String name, String value) {
         String v = System.getProperty(name);
         assertEquals("Property " + name, value, v);

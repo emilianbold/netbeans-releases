@@ -208,6 +208,32 @@ public class NbModuleSuite {
         return new S(Configuration.create(clazz).clusters(clustersRegExp).enableModules(moduleRegExp));
     }
     
+    /** Factory method to create wrapper test that knows how to setup proper
+     * NetBeans Runtime Container environment. 
+     * Wraps the provided class into a test that set ups properly the
+     * testing environment. The set of enabled modules is going to be
+     * determined from the actual classpath of a module, which is common
+     * when in all NetBeans tests. All other modules are kept disabled.
+     * In addition,it allows one limit the clusters that shall be made available.
+     * For example <code>ide.*|java.*</code> will start the container just
+     * with platform, ide and java clusters.
+     * 
+     * 
+     * @param clazz the class with bunch of testXYZ methods
+     * @param clustersRegExp regexp to apply to name of cluster to find out if it is supposed to be included
+     *    in the runtime container setup or not
+     * @param moduleRegExp by default all modules on classpath are turned on,
+     *    however this regular expression can specify additional ones. If not
+     *    null, the specified cluster will be searched for modules with such
+     *    codenamebase and those will be turned on
+     * @param tests names of test methods to execute from the <code>clazz</code>
+     * @return runtime container ready test
+     * @since 1.49
+     */
+    public static Test create(Class<? extends Test> clazz, String clustersRegExp, String moduleRegExp, String... tests) {
+        return new S(Configuration.create(clazz).clusters(clustersRegExp).enableModules(moduleRegExp).addTest(tests));
+    }
+    
     /** Creates default configuration wrapping a class that can be executed
      * with the {@link NbModuleSuite} support.
      * 
