@@ -37,59 +37,16 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.test.refactoring.operators;
+package org.netbeans.modules.test.refactoring.actions;
 
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jellytools.EditorOperator;
 
 /**
  *
- * @author Jiri Prox Jiri.Prox@Sun.COM
+ * @author Jiri Prox Jiri.Prox@SUN.Com
  */
-public class ParametersPanelOperator extends JDialogOperator {
+public interface TestAction {
 
-    public ParametersPanelOperator(String name) {
-        super(name);
-    }
-    
-    private JButtonOperator back;
-    private JButtonOperator preview;
-    private JButtonOperator refactor;
-    
-    public JButtonOperator getBack() {
-        if(back==null) {
-            back = new JButtonOperator(this, "< Back");            
-        }
-        return back;
-    }
-    
-    public JButtonOperator getPreview() {
-        if(preview==null) {
-            preview = new JButtonOperator(this, "Preview");            
-        }
-        return preview;
-    }
-    
-    public JButtonOperator getRefactor() {
-        if(refactor==null) {
-            refactor = new JButtonOperator(this, "Refactor");            
-        }
-        return refactor;
-    }
-    
-    public FindUsagesClassOperator getFindUsagesClassOperator() {
-        return null;
-        //return new FindUsagesClassOperator()
-    }
-
-    protected String getBungleText(String bundlePath, String bundleKey) {
-        String bundleText = java.util.ResourceBundle.getBundle(bundlePath).getString(bundleKey);
-        int index = bundleText.indexOf('&');
-        if (index == -1) {
-            return bundleText;
-        }
-        return bundleText.substring(0, index) + bundleText.substring(index + 1);
-    }
+    void perform(Object parameter);
 
 }
