@@ -44,97 +44,90 @@ package org.netbeans.performance.visualweb.actions;
 import org.netbeans.performance.visualweb.VWPUtilities;
 import org.netbeans.performance.visualweb.windows.WebFormDesignerOperator;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class ViewSwitchTest extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
+public class PageSwitch extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
     
     private String targetProject = "UltraLargeWA";
     private ProjectsTabOperator pto;
-    private String pageToOpen = "Page1_2";
-    private WebFormDesignerOperator testPage;
-    private EditorOperator editorOperator;
-    private int caretBlinkRate;   
+    private String[] pagesToOpen = new String[] {"Page1", "Page1_1"};
+    private WebFormDesignerOperator page1Op;
+    private WebFormDesignerOperator page2Op;
     public static final String suiteName="UI Responsiveness VisualWeb Actions suite";
-    public ViewSwitchTest(String testName) {
+    
+    public PageSwitch(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=4000;             
+        WAIT_AFTER_OPEN=4000;          
     }
-    public ViewSwitchTest(String testName, String perfomanceDataName) {
-        super(testName, perfomanceDataName);
+    public PageSwitch(String testName, String performanceDataName) {
+        super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=4000;             
+        WAIT_AFTER_OPEN=4000;          
     }
     
-    public void testViewSwitchTest() {
-        doMeasurement();
-    }
     
     @Override
     public void initialize() {
+        //super.initialize(); 
         log("::initialize");  
         EditorOperator.closeDiscardAll();
-        pto = VWPUtilities.invokePTO();  
+        pto = VWPUtilities.invokePTO();
+        long oldTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitStateTimeout");
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 120000);        
+        for(String namme: pagesToOpen) {
+            Node docNode = new Node(pto.getProjectRootNode(targetProject),org.netbeans.performance.visualweb.VWPUtilities.WEB_PAGES + "|"+namme+".jsp");
+            new OpenAction().performAPI(docNode);
+            WebFormDesignerOperator.findWebFormDesignerOperator(namme);
+        }
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", oldTimeout);        
     }
-    
     public void prepare() {
-        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);         
-        OpenTestPage();          
-        testPage.switchToJSPView();
-        editorOperator = EditorWindowOperator.getEditor(pageToOpen); 
-        
-        caretBlinkRate =  editorOperator.txtEditorPane().getCaret().getBlinkRate();
-        editorOperator.txtEditorPane().getCaret().setBlinkRate(0);
-        
-        editorOperator.makeComponentVisible();
-        editorOperator.typeKey('z');        
+        log("::prepare");
+        page2Op = WebFormDesignerOperator.findWebFormDesignerOperator("Page1_1");
+        page1Op = WebFormDesignerOperator.findWebFormDesignerOperator("Page1");
+        log("prepare completed");
     }
 
     
     public ComponentOperator open() {
-        testPage.switchToDesignView();
+        System.out.println(System.currentTimeMillis());        
+        page1Op.setVisible(true);
+        System.out.println(System.currentTimeMillis());
         return null;
     }
-    
-    
-    
     @Override
     public void close() {
         log("::close");
-        editorOperator.txtEditorPane().getCaret().setBlinkRate(caretBlinkRate);
-        repaintManager().resetRegionFilters();
-        testPage.closeDiscard();
-        EditorOperator.closeDiscardAll();          
+        EditorOperator.closeDiscardAll();  
     }
-
-    private void OpenTestPage() {
-        long oldTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitStateTimeout");
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 120000);
-
-        Node docNode = new Node(pto.getProjectRootNode(targetProject), org.netbeans.performance.visualweb.VWPUtilities.WEB_PAGES + "|" + pageToOpen + ".jsp");
-        new OpenAction().performAPI(docNode);
-        testPage = WebFormDesignerOperator.findWebFormDesignerOperator(pageToOpen);
-
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", oldTimeout);
+    
+    @Override
+    public void shutdown() {
+        EditorOperator.closeDiscardAll();        
     }
-    public static NbTestSuite suite() {
+    
+    public void testPageSwitch() {
+        System.out.println("Do test");
+        doMeasurement();
+    }
+    /** Creates suite from particular test cases. You can define order of testcases here. */
+    public static NbTestSuite suite() { 
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ViewSwitchTest("doMeasurement","Test view switch time"));
-        return suite;
-    }    
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite());        
+        suite.addTest(new PageSwitch("testPageSwitch"));
+        return suite;        
     }
-
+    
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(suite());
+    }
 }

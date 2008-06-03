@@ -45,7 +45,12 @@ Microsystems, Inc. All Rights Reserved.If you wish your version of this file to 
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.performance</code-name-base>
                         <compile-dependency/>
-                    </test-dependency>                   
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.projectui</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>                     
                 </test-type>
             </test-dependencies>
             <public-packages/>

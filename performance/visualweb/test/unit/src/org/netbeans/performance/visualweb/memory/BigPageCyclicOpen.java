@@ -41,37 +41,37 @@
 
 package org.netbeans.performance.visualweb.memory;
 
-
 import org.netbeans.performance.visualweb.windows.WebFormDesignerOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
-
+import org.netbeans.modules.project.ui.test.ProjectSupport;
 /**
  *
- * @author mkhramov@netbeans.org
+ * @author mkhramov@@netbeans.org
  */
-public class MultyViewSwitchMemTest extends org.netbeans.modules.performance.utilities.MemoryFootprintTestCase {
+public class BigPageCyclicOpen extends org.netbeans.modules.performance.utilities.MemoryFootprintTestCase {
+    
     private Node pagesRoot = null;
     private long oldTimeout;
-    private WebFormDesignerOperator designer;
-    private Runtime rt = Runtime.getRuntime();
-    public MultyViewSwitchMemTest(String testName) {
+    
+    public BigPageCyclicOpen(String testName) {
         super(testName);
-        repeat_memory = 1;        
+        repeat_memory = 1;
     }
-    public MultyViewSwitchMemTest(String testName, String performanceDataName) {
+    public BigPageCyclicOpen(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         repeat_memory = 1;        
     }
     @Override
     public void initialize() {
-        super.initialize();
-        //ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+ java.io.File.separatorChar +"UltraLargeWA");        
+      
+        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+ java.io.File.separatorChar +"UltraLargeWA");
     }
     
     @Override
@@ -80,40 +80,55 @@ public class MultyViewSwitchMemTest extends org.netbeans.modules.performance.uti
         ProjectsTabOperator.invoke();
         Node projectRoot = new ProjectsTabOperator().getProjectRootNode("UltraLargeWA");
         pagesRoot = new Node(projectRoot, "Web Pages");
-        Node PageNode = new Node(pagesRoot, "Page1.jsp");
-
         
         oldTimeout = JemmyProperties.getCurrentTimeouts().getTimeout("ComponentOperator.WaitComponentTimeout");
         JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout",120000);
-        PageNode.performPopupActionNoBlock("Open");
-        try {
-            designer = WebFormDesignerOperator.findWebFormDesignerOperator("Page1");
-        } catch(TimeoutExpiredException tex) {
-            log("timeout for Opening page expired");
-        }
-        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout",oldTimeout);        
+
     }
 
     @Override
     public ComponentOperator open() {
-        for(int i=0;i<100;i++) {
-            designer.switchToJSPView();            
-            designer.switchToCodeView();
-            designer.switchToDesignView();
-            logJVMStats(i);
+        log("Begin cyclic page open test");
+
+        
+        for(int bigloop=0; bigloop<3; bigloop++)
+        {
+            log(bigloop+" pass");
+            for(int innerloop=0;innerloop<100;innerloop++)
+            {
+                doPageOpenCloseAttempt(innerloop);
+            }
+            log(bigloop+" pass completed");
         }
         return null;
-
+    }
+    private void doPageOpenCloseAttempt(int attempt) {
+        String openPage = "Page1_"+(attempt+1);
+        log("Opening "+openPage+".jsp ...");
+        System.out.println(" Opening Page1_"+(attempt+1));
+        
+        Node PageNode = new Node(pagesRoot, openPage+".jsp");
+        PageNode.select();
+        long timestart = System.currentTimeMillis();
+        PageNode.performPopupActionNoBlock("Open");
+        try {
+            WebFormDesignerOperator.findWebFormDesignerOperator(openPage);
+        } catch(TimeoutExpiredException tex) {
+            log("timeout for Opening page expired");
+        }
+        long timestop = System.currentTimeMillis();
+        System.out.println("Page opened in: "+(timestop-timestart)+" ms");
+        new CloseAllDocumentsAction().performAPI();
     }
     @Override
     public void close() {
-        designer.closeDiscard();
+        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout",oldTimeout);        
+        new CloseAllDocumentsAction().performAPI();                
     }
-    private void logJVMStats(int attempt) {
-        long totalmemory = rt.totalMemory();
-        long freememory = rt.freeMemory();
-        long usedmemory = (totalmemory - freememory) / 1024;        
-        log("Attempt: "+attempt+"Used memory: "+usedmemory);
+    @Override
+    public void shutdown() {
+        ProjectSupport.closeProject("UltraLargeWA");
+        
     }
     public void testMem() {
         doMeasurement();
@@ -121,12 +136,13 @@ public class MultyViewSwitchMemTest extends org.netbeans.modules.performance.uti
     /** Creates suite from particular test cases. You can define order of testcases here. */
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new MultyViewSwitchMemTest("testMem","Memory footprint test"));
+        suite.addTest(new BigPageCyclicOpen("testMem","Memory footprint test"));
         return suite;
-    }     
+    } 
     /* Method allowing test execution directly from the IDE. */
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(suite());
 
-    }
+    }    
+   
 }

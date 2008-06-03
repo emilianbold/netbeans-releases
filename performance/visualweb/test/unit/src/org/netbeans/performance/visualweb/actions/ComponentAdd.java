@@ -43,9 +43,7 @@ package org.netbeans.performance.visualweb.actions;
 
 import org.netbeans.performance.visualweb.windows.PaletteComponentOperator;
 import org.netbeans.performance.visualweb.windows.WebFormDesignerOperator;
-import org.netbeans.jellytools.PaletteOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jemmy.JemmyProperties;
@@ -59,7 +57,7 @@ import org.netbeans.junit.NbTestSuite;
  *
  * @author mkhramov@netbeans.org, mmirilovic@netbeans.org
  */
-public class ComponentAddTest extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
+public class ComponentAdd extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
     private PaletteComponentOperator palette;
     private WebFormDesignerOperator surface;
     private String categoryName;
@@ -71,7 +69,7 @@ public class ComponentAddTest extends org.netbeans.modules.performance.utilities
      * @param testName 
      * 
      */
-    public ComponentAddTest(String testName) {
+    public ComponentAdd(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=4000;
@@ -83,7 +81,7 @@ public class ComponentAddTest extends org.netbeans.modules.performance.utilities
      * @param performanceDataName
      * 
      */    
-    public ComponentAddTest(String testName, String performanceDataName) {
+    public ComponentAdd(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=4000;
@@ -91,9 +89,9 @@ public class ComponentAddTest extends org.netbeans.modules.performance.utilities
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ComponentAddTest("testAddTableComponent","Adding Table Component"));
-        suite.addTest(new ComponentAddTest("testAddButtonComponent","Adding Button Component"));
-        suite.addTest(new ComponentAddTest("testAddListboxComponent","Adding Listbox Component"));
+        suite.addTest(new ComponentAdd("testAddTableComponent","Adding Table Component"));
+        suite.addTest(new ComponentAdd("testAddButtonComponent","Adding Button Component"));
+        suite.addTest(new ComponentAdd("testAddListboxComponent","Adding Listbox Component"));
         return suite;
     }
     

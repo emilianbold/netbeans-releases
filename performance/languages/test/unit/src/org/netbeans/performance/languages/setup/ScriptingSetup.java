@@ -45,7 +45,7 @@ package org.netbeans.performance.languages.setup;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
@@ -54,11 +54,11 @@ import org.netbeans.performance.languages.ScriptingUtilities;
  *
  * @author mkhramov@netbeans.org
  */
-public class ScriptingSetupTest extends JellyTestCase {
+public class ScriptingSetup extends JellyTestCase {
     public static final String suiteName="Scripting UI Responsiveness Setup suite";
     private String workdir;
     
-    public ScriptingSetupTest(String testName) {
+    public ScriptingSetup(String testName) {
         super(testName);
         workdir = System.getProperty("nbjunit.workdir");
         try {

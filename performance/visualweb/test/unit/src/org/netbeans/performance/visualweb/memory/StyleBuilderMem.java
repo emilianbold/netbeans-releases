@@ -63,7 +63,7 @@ import org.netbeans.junit.NbTestSuite;
  *
  * @author mkhramov@netbeans.org
  */
-public class StyleBuilderMemTest extends org.netbeans.modules.performance.utilities.MemoryFootprintTestCase {
+public class StyleBuilderMem extends org.netbeans.modules.performance.utilities.MemoryFootprintTestCase {
     
     private String category, project, project_name, project_type;
     private NewProjectNameLocationStepOperator wizard_location;
@@ -80,12 +80,12 @@ public class StyleBuilderMemTest extends org.netbeans.modules.performance.utilit
     private String componentID;    
     
     
-    public StyleBuilderMemTest(String testName) {
+    public StyleBuilderMem(String testName) {
         super(testName);
         repeat_memory = 1; // Perform single test pass
         
     }
-    public StyleBuilderMemTest(String testName, String performanceDataName) {
+    public StyleBuilderMem(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         repeat_memory = 1; // Perform single test pass
     }
@@ -232,7 +232,7 @@ public class StyleBuilderMemTest extends org.netbeans.modules.performance.utilit
     /** Creates suite from particular test cases. You can define order of testcases here. */
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new StyleBuilderMemTest("testMem","Memory footprint test"));
+        suite.addTest(new StyleBuilderMem("testMem","Memory footprint test"));
         return suite;
     }    
     /* Method allowing test execution directly from the IDE. */

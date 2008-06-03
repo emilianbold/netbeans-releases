@@ -44,16 +44,16 @@ package org.netbeans.performance.visualweb;
 
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.performance.visualweb.actions.CSSRuleAddTest;
-import org.netbeans.performance.visualweb.actions.ComponentAddTest;
+import org.netbeans.performance.visualweb.actions.CSSRuleAdd;
+import org.netbeans.performance.visualweb.actions.ComponentAdd;
 import org.netbeans.performance.visualweb.actions.CreateWebPackFiles;
 import org.netbeans.performance.visualweb.actions.CreateWebPackProject;
 import org.netbeans.performance.visualweb.actions.OpenBeanFiles;
 import org.netbeans.performance.visualweb.actions.OpenNavigationPage;
 import org.netbeans.performance.visualweb.actions.OpenProjectFirstPage;
-import org.netbeans.performance.visualweb.actions.PageSwitchTest;
+import org.netbeans.performance.visualweb.actions.PageSwitch;
 import org.netbeans.performance.visualweb.actions.PasteCSSText;
-import org.netbeans.performance.visualweb.actions.ViewSwitchTest;
+import org.netbeans.performance.visualweb.actions.ViewSwitch;
 import org.netbeans.performance.visualweb.windows.DatabaseTableDrop;
 
 
@@ -71,7 +71,7 @@ public class VWPMeasureActions  {
         
         suite.addTest(NbModuleSuite.create(OpenProjectFirstPage.class, ".*", ".*"));
 
-        suite.addTest(NbModuleSuite.create(CSSRuleAddTest.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(CSSRuleAdd.class, ".*", ".*"));
         suite.addTest(NbModuleSuite.create(PasteCSSText.class, ".*", ".*"));
         
         suite.addTest(NbModuleSuite.create(OpenBeanFiles.class, ".*", ".*"));
@@ -81,11 +81,11 @@ public class VWPMeasureActions  {
         suite.addTest(NbModuleSuite.create(CreateWebPackFiles.class, ".*", ".*"));	
 
      
-	suite.addTest(NbModuleSuite.create(ComponentAddTest.class, ".*", ".*"));        
+	suite.addTest(NbModuleSuite.create(ComponentAdd.class, ".*", ".*"));        
         suite.addTest(NbModuleSuite.create(DatabaseTableDrop.class, ".*", ".*"));         
 
-        suite.addTest(NbModuleSuite.create(PageSwitchTest.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(ViewSwitchTest.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(PageSwitch.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(ViewSwitch.class, ".*", ".*"));
         suite.addTest(NbModuleSuite.create(CreateWebPackProject.class, ".*", ".*")); 
         
 //      manual results differ from automated        

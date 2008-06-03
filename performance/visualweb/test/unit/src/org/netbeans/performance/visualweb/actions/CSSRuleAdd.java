@@ -60,31 +60,31 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
  *
  * @author mkhramov@netbeans.org
  */
-public class CSSRuleAddTest  extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
+public class CSSRuleAdd  extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
 
     public static final String suiteName="UI Responsiveness VisualWeb Actions suite";
     
     private String fileName;
     private String projectName = "VisualWebProject";    
-    private String styledocfolder = VWPUtilities.WEB_PAGES+"|"+"resources"; // NOI18N
+    private String styledocfolder;
     //private String styledocfolder = "Web Pages"+"|"+"resources"; // NOI18N
     
     /** Node to be opened/edited */
     private static Node openNode ;       
-    protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");    
+    protected static String OPEN;
     //protected static String OPEN = "Open";
     
     private EditorOperator cssEditor = null;
     private NbDialogOperator createRuleDialog = null;
     
-    public CSSRuleAddTest(String testName)
+    public CSSRuleAdd(String testName)
     {
         super(testName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=4000;        
     }
     
-    public CSSRuleAddTest(String testName, String performanceDataName)
+    public CSSRuleAdd(String testName, String performanceDataName)
     {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
@@ -98,6 +98,8 @@ public class CSSRuleAddTest  extends org.netbeans.modules.performance.utilities.
     @Override
     public void initialize() {
         log("::initialize");
+        styledocfolder = VWPUtilities.WEB_PAGES+"|"+"resources"; // NOI18N
+        OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
         fileName = "stylesheet.css";  //NO18N  
         EditorOperator.closeDiscardAll();        
         
@@ -224,7 +226,7 @@ public class CSSRuleAddTest  extends org.netbeans.modules.performance.utilities.
     private static final int POSITION_COMBO_INDEX = 16;
     
     public static void main(String[] args) {
-        junit.textui.TestRunner.run(new CSSRuleAddTest("doMeasurement"));        
+        junit.textui.TestRunner.run(new CSSRuleAdd("doMeasurement"));        
     }
 
 }

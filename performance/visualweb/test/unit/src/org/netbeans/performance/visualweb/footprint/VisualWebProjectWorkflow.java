@@ -48,7 +48,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 
-import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.modules.project.ui.test.ProjectSupport;
 
 
 /**
