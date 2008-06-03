@@ -1162,7 +1162,8 @@ member_declaration
 		// This is separated out otherwise the next alternative
 		// would look for "class A { ... } f() {...}" which is
 		// an unacceptable level of backtracking.
-		( (LITERAL_typedef)? class_head) => 
+                // we need "static" here for the case "static struct XX {...} myVar; - see issue #135149
+		( (LITERAL_typedef | LITERAL_static)? class_head) => 
 		{if (statementTrace>=1) 
 			printf("member_declaration_1[%d]: Class definition\n",
 				LT(1).getLine());

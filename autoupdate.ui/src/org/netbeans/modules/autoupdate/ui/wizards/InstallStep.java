@@ -606,7 +606,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                     public void actionPerformed (ActionEvent e) {
                         confirmOnClick.run ();
                     }
-                }, 30000);
+                }, Utilities.getShowingBalloonTimeout ());
             }
         };
         if (showToolTip) {

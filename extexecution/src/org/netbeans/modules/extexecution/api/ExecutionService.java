@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.extexecution.api;
 
+import org.netbeans.modules.extexecution.FreeIOHandler;
+import org.netbeans.modules.extexecution.StopAction;
+import org.netbeans.modules.extexecution.RerunAction;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -94,6 +97,17 @@ import org.openide.windows.OutputWriter;
  */
 public class ExecutionService {
 
+    static {
+        RerunAction.Accessor.DEFAULT = new RerunAction.Accessor() {
+
+            @Override
+            public Task rerun(ExecutionService service) {
+                return service.rerun();
+            }
+
+        };
+    }
+    
     public static final Logger LOGGER = Logger.getLogger(ExecutionService.class.getName());
 
     static {
@@ -376,14 +390,6 @@ public class ExecutionService {
                 FileUtil.refreshFor(FileUtil.toFile(toRefresh));
             }
         }
-    }
-
-    
-    static boolean isAppropriateName(String base, String toMatch) {
-        if (!toMatch.startsWith(base)) {
-            return false;
-        }
-        return toMatch.substring(base.length()).matches("^(\\ #[0-9]+)?$"); // NOI18N
     }
 
     private static String getNonActiveDisplayName(final String displayNameBase) {

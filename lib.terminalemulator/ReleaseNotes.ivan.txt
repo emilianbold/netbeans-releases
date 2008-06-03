@@ -1,3 +1,7 @@
+nobugid (StreamTerm to handle IOExceptions better)
+	See comments in StreamTerm.OutputMonitor.run().
+
+================================================================================
 tag: ivan_25
 
 nobugid (de-publicize all ACT_ classes)
