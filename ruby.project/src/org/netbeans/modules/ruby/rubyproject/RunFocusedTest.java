@@ -121,8 +121,8 @@ public class RunFocusedTest extends BaseAction {
                             LifecycleManager.getDefault().saveAll();
 
                             // Line+1: spec seems to be 1-based rather than 0-based (first line is 1)
-                            if (!debug) {
-                                TestRunner runner = getTestRunner(TestRunner.TestType.RSPEC);
+                            TestRunner runner = getTestRunner(TestRunner.TestType.RSPEC);
+                            if (!debug && runner != null) {
                                 runner.runSingleTest(file, String.valueOf(line + 1));
                             } else {
                                 rspec.runRSpec(null, file, line + 1, file.getName(), locator, true, debug);
@@ -142,8 +142,8 @@ public class RunFocusedTest extends BaseAction {
                             
                             // Save all files first - this spec file could be accessing other files being tested
                             LifecycleManager.getDefault().saveAll();
-                            if (!debug) {
-                                TestRunner runner = getTestRunner(TestRunner.TestType.TEST_UNIT);
+                            TestRunner runner = getTestRunner(TestRunner.TestType.TEST_UNIT);
+                            if (!debug && runner != null) {
                                 runner.runSingleTest(file, testName);
                             } else {
                                 runTest(project, null, file, testName, file.getName(), locator, true, debug);
