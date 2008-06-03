@@ -81,7 +81,7 @@ public class CreateBundleCommand extends OneArgumentCommand {
     public static final String CREATE_BUNDLE_ARG =
             "--create-bundle";// NOI18N
     private static final String WARNING_BUNDLE_FILE_EXISTS_KEY =
-            "I.warning.bundle.file.exists"; // NOI18N
+            "C.warning.bundle.file.exists"; // NOI18N
     private static final String WARNING_BAD_CREATE_BUNDLE_ARG_KEY =
-            "I.warning.bad.create.bundle.arg"; // NOI18N
+            "C.warning.bad.create.bundle.arg"; // NOI18N
 }

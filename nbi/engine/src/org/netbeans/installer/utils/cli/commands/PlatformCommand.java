@@ -66,5 +66,5 @@ public class PlatformCommand extends OneArgumentCommand {
     public static final String PLATFORM_ARG =
             "--platform";// NOI18N
     private static final String WARNING_BAD_PLATFORM_ARG_KEY =
-            "I.warning.bad.platform.arg"; // NOI18N
+            "C.warning.bad.platform.arg"; // NOI18N
 }

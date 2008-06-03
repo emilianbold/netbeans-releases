@@ -66,5 +66,5 @@ public class BundlePropertiesCommand extends OneArgumentCommand {
     public static final String BUNDLE_PROPERTIES_ARG = 
             "--bundle-properties"; // NOI18N
     private static final String WARNING_BAD_BUNDLE_PROPERTIES_ARG_KEY =
-            "I.warning.bad.bundle.properties.arg"; // NOI18N
+            "C.warning.bad.bundle.properties.arg"; // NOI18N
 }

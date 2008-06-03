@@ -86,5 +86,5 @@ public class RegistryCommand extends OneArgumentCommand {
     public static final String REGISTRY_ARG = 
             "--registry";// NOI18N
     private static final String WARNING_BAD_REGISTRY_ARG_KEY =
-            "I.warning.bad.registry.arg"; // NOI18N
+            "C.warning.bad.registry.arg"; // NOI18N
 }
