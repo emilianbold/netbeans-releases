@@ -152,9 +152,11 @@ public class TomcatIncrementalDeployment extends IncrementalDeployment {
     }
 
     @Override
-    public void notifyArtifactsUpdated(TargetModuleID module, Iterable<File> artifacts) {
+    public ProgressObject reloadArtifacts(TargetModuleID module, Iterable<File> artifacts) {
         TomcatManagerImpl tmi = new TomcatManagerImpl (tm);
         tmi.reload ((TomcatModule)module);
+        // FIXME
+        return null;
     }
 
     private static class P implements ProgressObject {

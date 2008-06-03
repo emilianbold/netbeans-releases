@@ -44,6 +44,8 @@ package org.netbeans.modules.j2ee.deployment.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -71,6 +73,7 @@ import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
@@ -94,6 +97,8 @@ import org.openide.util.Exceptions;
  *      deploymentTarget.setTargetModules(tms);
  */
 public class TargetServer {
+    
+    private static final Logger LOGGER = Logger.getLogger(TargetServer.class.getName());
     
     private Target[] targets;
     private final ServerInstance instance;
@@ -596,24 +601,106 @@ public class TargetServer {
         || acd.ejbsChanged() || acd.serverDescriptorChanged());
     }
     
-    public void notifyArtifactsUpdated(Iterable<File> artifacts) {
+    public void notifyArtifactsUpdated(Iterable<File> artifacts) {        
         try {
             init(null, false, false);
         } catch (ServerException ex) {
             // this should never occur
             Exceptions.printStackTrace(ex);
         }
-        
-        TargetModule[] modules = getArtifactRealodCandidates();
+     
         // FIXME more precise check
-        if (incremental != null) {
-            for (TargetModule module : modules) {
-                incremental.notifyArtifactsUpdated(module.delegate(), artifacts);
-            }        
+        if (incremental == null) { 
+            return;
+        }        
+        
+        TargetModule[] modules = getDeploymentDirectoryModules();
+        
+        /*
+         * The following code is written to match (in general) behaviour of
+         * the InitialFileDistributor. This is needed because the plugin is
+         * saying to us where is the right directory for classes. 
+         */
+        ModuleConfigurationProvider deployment = dtarget.getModuleConfigurationProvider();
+        // FIXME target
+        File dir = incremental.getDirectoryForNewApplication(dtarget.getDeploymentName(),
+                dtarget.getTargetModules()[0].getTarget(), deployment.getModuleConfiguration());            
+        LOGGER.log(Level.INFO, dir == null ? "In place deployment" : dir.getAbsolutePath());
+
+        if (dir != null) {
+            Map<FileObject, File> contentDirs = new HashMap<FileObject, File>();
+            try {
+                FileObject contentDir = dtarget.getModule().getContentDirectory();
+                if (contentDir != null) {
+                    contentDirs.put(contentDir, dir);
+                }
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+            
+            if (dtarget.getModule() instanceof J2eeApplication) {
+                for (J2eeModule module : ((J2eeApplication) dtarget.getModule()).getModules()) {
+                    // TODO what is this url stuff
+                    try {
+                        if (module.getContentDirectory() != null) {
+                            String uri = module.getUrl();
+                            J2eeModule childModule = deployment.getJ2eeModule(uri);
+                            File subdir = incremental.getDirectoryForNewModule(dir,
+                                    uri, childModule, deployment.getModuleConfiguration());                    
+                            contentDirs.put(module.getContentDirectory(), subdir);
+                        }
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                    }
+                }
+            }
+            
+            for (File file : artifacts) {
+                for (Map.Entry<FileObject, File> content : contentDirs.entrySet()) {
+                    FileObject artifact = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+                    if (artifact != null) {
+                        String relative = FileUtil.getRelativePath(content.getKey(), artifact);
+                        if (relative != null) {
+                            //copy
+                            try {
+                                updateDeploymentDirectory(content.getValue(), relative, file);
+                            } catch (IOException ex) {
+                                LOGGER.log(Level.INFO, null, ex);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        for (TargetModule module : modules) {
+            // FIXME send real artifacts
+            incremental.reloadArtifacts(module.delegate(), artifacts);
+        }        
+    }
+    
+    private void updateDeploymentDirectory(File targetDir, String relativePath, File artifact) throws IOException {
+        FileObject destRoot = FileUtil.createFolder(targetDir);
+        FileObject destObject = FileUtil.createData(destRoot, relativePath);
+        FileObject artifactObject = FileUtil.toFileObject(FileUtil.normalizeFile(artifact));
+        
+        if (artifactObject != null && artifactObject.isData()) {
+            InputStream is = artifactObject.getInputStream();
+            try {
+                OutputStream os = destObject.getOutputStream();
+                try {
+                    FileUtil.copy(is, os);
+                } finally {
+                    os.close();
+                }
+            } finally {
+                is.close();
+            }
         }
     }
     
-    private TargetModule[] getArtifactRealodCandidates() {
+    private TargetModule[] getDeploymentDirectoryModules() {
         TargetModule[] modules = dtarget.getTargetModules();
         
         ServerInstance serverInstance = dtarget.getServer().getServerInstance();

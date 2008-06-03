@@ -338,10 +338,7 @@ public class ServerFileDistributor extends ServerProgress {
         if (parentRelativePath == null)
             return dest;
         
-        FileObject folder = dest.getFileObject(relativePath);
-        if (folder == null) {
-            folder = FileUtil.createFolder(dest, parentRelativePath.getPath());
-        }
+        FileObject folder = FileUtil.createFolder(dest, parentRelativePath.getPath());
         if (folder.isData()) {
             Logger.getLogger(ServerFileDistributor.class.getName()).finer("found file "+
                     folder.getPath()+"when a folder was expecetd");

@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -243,6 +245,24 @@ class EjbJarActionProvider implements ActionProvider {
                 }
             }
         } else if (command.equals(COMMAND_RUN) || command.equals(EjbProjectConstants.COMMAND_REDEPLOY)) {
+            StringBuilder sroots = new StringBuilder();
+            boolean first = true;
+            
+            for (URL u : project.getSourceRoots().getRootURLs()) {
+                File f = FileUtil.archiveOrDirForURL(u);
+                
+                if (f != null) {
+                    if (!first) {
+                        sroots.append(":");
+                    }
+                    
+                    sroots.append(f.getAbsolutePath());
+                    first = false;
+                }
+            }
+            
+            p.setProperty("ensure.built.source.roots", sroots.toString());
+            
             if (!isSelectedServer()) {
                 return null;
             }
