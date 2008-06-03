@@ -63,17 +63,6 @@ public class MorePropertySheetTest extends NbTestCase {
     protected void setUp() throws Exception {
     }
     
-    public void testRemoveNotifyClearsHelperNodes() throws Exception {
-        final PropertySheet ps = new PropertySheet();
-        Node n = new AbstractNode( Children.LEAF );
-        ps.setNodes( new Node[] {n} );
-        JWindow window = new JWindow();
-        window.add( ps );
-        window.setVisible(true);
-        window.remove( ps );
-        assertGC("PropertySheet still holds some Nodes even when not in component hierarchy", ps.helperNodes);
-    }
-    
     public void testSetNodesSurvivesMultipleAdd_RemoveNotifyCalls() throws Exception {
         final PropertySheet ps = new PropertySheet();
         Node n = new AbstractNode( Children.LEAF );
@@ -88,7 +77,7 @@ public class MorePropertySheetTest extends NbTestCase {
         window.setVisible(true);
         assertNotNull(ps.helperNodes);
         assertEquals("Helper nodes are still available even after several addNotify()/removeNotify() calls",
-                ps.helperNodes.get()[0], n);
+                ps.helperNodes[0], n);
     }
     
     public void testSheetCleared_126818 () throws Exception {
