@@ -419,6 +419,17 @@ public class UMLDiagramManager
                 {
                     if (diagramFile.endsWith(FileExtensions.DIAGRAM_TS_LAYOUT_EXT))
                     {
+                        // ignore those unsupported diagram types for 6.5 M1
+                        IProxyDiagramManager proxyDiaMgr = ProxyDiagramManager.instance();
+                        IProxyDiagram pDia = proxyDiaMgr.getDiagram(diagramFile);
+                        int kind = pDia.getDiagramKind();
+                        if (kind == IDiagramKind.DK_COLLABORATION_DIAGRAM ||
+                            kind == IDiagramKind.DK_COMPONENT_DIAGRAM ||
+                            kind == IDiagramKind.DK_DEPLOYMENT_DIAGRAM )
+                        {
+                            return;
+                        }
+        
                         //is TS diagram; must convert to Meteora first
                         Preferences prefs = NbPreferences.forModule (DummyCorePreference.class) ;
                         String str = prefs.get ("UML_Convert_61_Diagram_To_65_Format", "PSK_ASK") ;

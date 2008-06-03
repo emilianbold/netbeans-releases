@@ -234,6 +234,18 @@ public class UMLDiagramNode extends UMLElementNode
     }
     
     
+    public Action getPreferredAction()
+    {
+        // disable double click open action for those unsupported diagram types for 6.5 M1
+        int kind = getDiagram().getDiagramKind();
+        if (kind != IDiagramKind.DK_COLLABORATION_DIAGRAM &&
+            kind != IDiagramKind.DK_COMPONENT_DIAGRAM &&
+            kind != IDiagramKind.DK_DEPLOYMENT_DIAGRAM )
+            return super.getPreferredAction();
+        else
+            return null;
+    }
+    
     
     public Action[] getActions(boolean context)
     {
