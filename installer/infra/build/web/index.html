@@ -202,7 +202,7 @@
 							</span>
                           		            </p>
 			                            <p style="width: 95%">							                                
-                                          		<script type="text/javascript">message(SOURCE_BINARY_LABEL)</script>
+                                          		<script type="text/javascript">message(SOURCE_BINARY_LABEL.replace("{0}",BINARIES_LOCATION)</script>
 							<script type="text/javascript">message(BUILD_WIKI_LABEL.replace("{0}",INSTALL_NOTES_LINK))</script>                                
                           		            </p>
                           	        	</div>
@@ -289,9 +289,11 @@
 					<td  class="valign-center ">
 						<a href="http://java.net/"><img alt="" src="http://www.netbeans.org/images/v6/javanet.gif" border="0" width="80" heigh="36"></a>&nbsp;&nbsp;
 					</td>
-	                                
+					<td  class="valign-center">
+						<a href="http://www.virtualbox.org/wiki/VirtualBox"><img alt="Virtual Box - full virtualizer" title="Virtual Box - full virtualizer" src="http://www.netbeans.org/images/v6/vbox.gif" border="0" width="108" heigh="35"></a>
+					</td>
 					<td  class="valign-center b-green-right" style="padding-right:20px;">
-						<a href="https://open-esb.dev.java.net/"><img alt="" src="http://www.netbeans.org/images/v6/open-esb.gif" border="0" width="143" heigh="30"></a>
+						<a href="https://open-esb.dev.java.net/"><img alt="" src="http://www.netbeans.org/images/v6/open-esb.gif" border="0" width="92" heigh="30"></a>
 					</td>
 					<td  class="companions-right b-green-right valign-center align-center">Powered by<br>&nbsp;<img src="http://www.netbeans.org/images/v6/poweredby.gif"  width="70" height="14"/>&nbsp;</td>
 				</tr>
@@ -309,13 +311,11 @@
 	<!-- Begin Google webtracking analytics -->
 	<script type="text/javascript">
 		if(LOAD_GOOGLE_ANALYTICS_CODE==1) {
-
 			load_js(GOOGLE_ANALYTICS_JS);
 			var pageTracker = _gat._getTracker("UA-2149007-1");
 			pageTracker._setDomainName("netbeans.org");
 			pageTracker._initData();
 			pageTracker._trackPageview();
-			alert('HI');
 		}
 	
 	</script>

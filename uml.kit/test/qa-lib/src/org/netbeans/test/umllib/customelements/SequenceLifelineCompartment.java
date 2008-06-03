@@ -42,11 +42,12 @@
 
 package org.netbeans.test.umllib.customelements;
 import java.awt.Rectangle;
-import org.netbeans.modules.uml.core.support.umlsupport.IETRect;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
+import org.netbeans.api.visual.widget.Widget;
+//6.0import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
 import org.netbeans.test.umllib.CompartmentOperator;
 import org.netbeans.test.umllib.CompartmentTypes;
 import org.netbeans.test.umllib.DiagramElementOperator;
+import org.netbeans.test.umllib.UMLWidgetOperator;
 import org.netbeans.test.umllib.exceptions.NotFoundException;
 
 public class SequenceLifelineCompartment extends CompartmentOperator{
@@ -87,7 +88,7 @@ public class SequenceLifelineCompartment extends CompartmentOperator{
      * @param el Instance of DiagramElementOperator
      * @param co Instance of ICompartment
      */
-    public SequenceLifelineCompartment(DiagramElementOperator el, ICompartment co){
+   public SequenceLifelineCompartment(DiagramElementOperator el, Widget co){
         super(el, co);
     }
     
@@ -96,19 +97,18 @@ public class SequenceLifelineCompartment extends CompartmentOperator{
      *@return logical bounding rectangle
      *
      */
-    public Rectangle getLogicalRectangle(){
-        IETRect rect =  sourceCompartment.getEngine().getLogicalBoundingRect(true);
-        return rect.getRectangle();
+    public Rectangle getLogicalRectangle() {
+        Rectangle rect = (new UMLWidgetOperator(sourceCompartment)).getRectangle();
+        return rect;
+
     }
-    
+
     /**
      *
      * @return  bounding rectangle for compartment
      */
     public Rectangle getRectangle() {
-        IETRect rect =  sourceCompartment.getEngine().getLogicalBoundingRect(true);
-        return sourceElement.getDiagram().getDrawingAreaControl().logicalToDeviceRect(rect).getRectangle();        
-              
+        return ((Widget)sourceElement.getGraphObject()).getBounds();        
     }
     
 }

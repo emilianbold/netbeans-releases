@@ -2233,51 +2233,52 @@ public class DataReporter
          printLine(file, 0, " Diagram: " + iDiag.getQualifiedName());
          printLine(file, 0, PRINT_LINE80EL);
 
-         switch (iDiag.getLayoutStyle())
-         {
-            case ILayoutKind.LK_CIRCULAR_LAYOUT :
-               sTemp = "circular";
-               break;
-
-            case ILayoutKind.LK_GLOBAL_LAYOUT :
-               sTemp = "global";
-               break;
-
-            case ILayoutKind.LK_HIERARCHICAL_LAYOUT :
-               sTemp = "hierarchical";
-               break;
-
-            case ILayoutKind.LK_INCREMENTAL_LAYOUT :
-               sTemp = "incremental";
-               break;
-
-            case ILayoutKind.LK_NO_LAYOUT :
-               sTemp = "no layout";
-               break;
-
-            case ILayoutKind.LK_ORTHOGONAL_LAYOUT :
-               sTemp = "orthogonal";
-               break;
-
-            case ILayoutKind.LK_SEQUENCEDIAGRAM_LAYOUT :
-               sTemp = "sequence";
-               break;
-
-            case ILayoutKind.LK_SYMMETRIC_LAYOUT :
-               sTemp = "symmetric";
-               break;
-
-            case ILayoutKind.LK_TREE_LAYOUT :
-               sTemp = "tree";
-               break;
-
-            case ILayoutKind.LK_UNKNOWN_LAYOUT :
-               sTemp = "unknown";
-               break;
-         }
-
-         printLine(file, 1, "Diagram Layout Style: " + sTemp);
-         printLine(file, 1, "Diagram Kind: " + iDiag.getDiagramKind2());
+         // TODO: meteora
+//         switch (iDiag.getLayoutStyle())
+//         {
+//            case ILayoutKind.LK_CIRCULAR_LAYOUT :
+//               sTemp = "circular";
+//               break;
+//
+//            case ILayoutKind.LK_GLOBAL_LAYOUT :
+//               sTemp = "global";
+//               break;
+//
+//            case ILayoutKind.LK_HIERARCHICAL_LAYOUT :
+//               sTemp = "hierarchical";
+//               break;
+//
+//            case ILayoutKind.LK_INCREMENTAL_LAYOUT :
+//               sTemp = "incremental";
+//               break;
+//
+//            case ILayoutKind.LK_NO_LAYOUT :
+//               sTemp = "no layout";
+//               break;
+//
+//            case ILayoutKind.LK_ORTHOGONAL_LAYOUT :
+//               sTemp = "orthogonal";
+//               break;
+//
+//            case ILayoutKind.LK_SEQUENCEDIAGRAM_LAYOUT :
+//               sTemp = "sequence";
+//               break;
+//
+//            case ILayoutKind.LK_SYMMETRIC_LAYOUT :
+//               sTemp = "symmetric";
+//               break;
+//
+//            case ILayoutKind.LK_TREE_LAYOUT :
+//               sTemp = "tree";
+//               break;
+//
+//            case ILayoutKind.LK_UNKNOWN_LAYOUT :
+//               sTemp = "unknown";
+//               break;
+//         }
+//
+//         printLine(file, 1, "Diagram Layout Style: " + sTemp);
+//         printLine(file, 1, "Diagram Kind: " + iDiag.getDiagramKind2());
          printLine(file, 1, "Diagram Documentation: " + iDiag.getDocumentation());
          //associated diagrams
          ETList < IProxyDiagram > proxDiags = iDiag.getAssociatedDiagrams();
@@ -2347,7 +2348,7 @@ public class DataReporter
 
          printMainDiagramDetails(file, iDiag);
 
-         if (iDiag.getDiagramKind2().equals("Sequence Diagram"))
+         if (iDiag.getDiagramKindAsString().equals("Sequence Diagram"))
          {
             // TODO ahRSQD.diagramReportSQD(iDiag);
          }

@@ -185,7 +185,7 @@ public class JsParseResult extends ParserResult {
                         }
                         
                         @Override
-                        public Document getDocument() throws IOException {
+                        public Document getDocument() {
                             if (doc == null) {
                                 doc = NbUtilities.getDocument(getFileObject(), true);
                             }

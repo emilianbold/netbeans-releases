@@ -63,12 +63,9 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElementModifiedE
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IExpression;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-//import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
-//import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
-//import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttributeEventsSink;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
@@ -77,7 +74,6 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperationEventsSink;
 import org.netbeans.modules.uml.core.preferenceframework.IPreferenceManagerEventsSink;
 import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
-import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.IPropertyDefinition;
 import org.netbeans.modules.uml.core.support.umlutils.IPropertyElement;
@@ -86,7 +82,6 @@ import org.netbeans.modules.uml.core.workspacemanagement.IWSProjectEventsSink;
 import org.netbeans.modules.uml.core.workspacemanagement.IWorkspace;
 import org.netbeans.modules.uml.core.workspacemanagement.IWorkspaceEventsSink;
 import org.netbeans.modules.uml.core.workspacemanagement.IWorkspacePreCreateEventPayload;
-import org.netbeans.modules.uml.ui.controls.drawingarea.DiagramAreaEnumerations;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeDragVerify;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeEditVerify;
@@ -94,14 +89,6 @@ import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeEventsSink;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeExpandingContext;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeHandled;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
-//import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IToolTipData;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
-import org.netbeans.modules.uml.ui.swing.drawingarea.ICompartmentEventsSink;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaSelectionEventsSink;
 
 /**
  * @author sumitabhk
@@ -109,13 +96,13 @@ import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaSelectionEvents
  */
 public class PropertyEditorEventsSink
    implements
-      IDrawingAreaSelectionEventsSink,
-      IDrawingAreaEventsSink,
+//      IDrawingAreaSelectionEventsSink,
+//      IDrawingAreaEventsSink,
       IElementModifiedEventsSink,
       IProjectTreeEventsSink,
       IElementLifeTimeEventsSink,
       IClassifierTransformEventsSink,
-      ICompartmentEventsSink,
+//      ICompartmentEventsSink,
       IWorkspaceEventsSink,
       IAttributeEventsSink,
       IOperationEventsSink,
@@ -148,7 +135,8 @@ public class PropertyEditorEventsSink
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaSelectionEventsSink#onSelect(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement[], org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
     */
-   public void onSelect(final IDiagram pParentDiagram, final ETList < IPresentationElement > selectedItems, final ICompartment pCompartment, IResultCell cell)
+   //TODO
+   public void onSelect(final IDiagram pParentDiagram, final ETList < IPresentationElement > selectedItems,/* final ICompartment pCompartment,*/ IResultCell cell)
    {
       try
       {
@@ -158,14 +146,14 @@ public class PropertyEditorEventsSink
             {
                public void run()
                {
-                  if (pCompartment == null)
-                  {
-                     m_PropertyEditor.onDrawingAreaSelect(pParentDiagram, selectedItems);
-                  }
-                  else
-                  {
-                     m_PropertyEditor.onCompartmentSelect(pCompartment);
-                  }
+//                  if (pCompartment == null)
+//                  {
+//                     m_PropertyEditor.onDrawingAreaSelect(pParentDiagram, selectedItems);
+//                  }
+//                  else
+//                  {
+//                     m_PropertyEditor.onCompartmentSelect(pCompartment);
+//                  }
                }
             });
          }
@@ -185,18 +173,18 @@ public class PropertyEditorEventsSink
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPreCreated(org.netbeans.modules.uml.ui.swing.drawingarea.IAxDrawingAreaControl, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
     */
-   public void onDrawingAreaPreCreated(IDrawingAreaControl pDiagramControl, IResultCell cell)
-   {
-      //nothing to do
-   }
+//   public void onDrawingAreaPreCreated(IDrawingAreaControl pDiagramControl, IResultCell cell)
+//   {
+//      //nothing to do
+//   }
 
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPostCreated(org.netbeans.modules.uml.ui.swing.drawingarea.IAxDrawingAreaControl, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
     */
-   public void onDrawingAreaPostCreated(IDrawingAreaControl pDiagramControl, IResultCell cell)
-   {
-      //nothing to do
-   }
+//   public void onDrawingAreaPostCreated(IDrawingAreaControl pDiagramControl, IResultCell cell)
+//   {
+//      //nothing to do
+//   }
 
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaOpened(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
@@ -287,41 +275,41 @@ public class PropertyEditorEventsSink
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPrePropertyChange(org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram, int, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
     */
-   public void onDrawingAreaPrePropertyChange(IProxyDiagram pProxyDiagram, int nPropertyKindChanged, IResultCell cell)
-   {
-      //nothing to do
-   }
+//   public void onDrawingAreaPrePropertyChange(IProxyDiagram pProxyDiagram, int nPropertyKindChanged, IResultCell cell)
+//   {
+//      //nothing to do
+//   }
 
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPostPropertyChange(org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram, int, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
     */
-   public void onDrawingAreaPostPropertyChange(IProxyDiagram pProxyDiagram, int nPropertyKindChanged, IResultCell cell)
-   {
-      if (pProxyDiagram != null && m_PropertyEditor != null)
-      {
-         if (nPropertyKindChanged == DiagramAreaEnumerations.DAPK_LAYOUT)
-         {
-            final IProxyDiagram diagram = pProxyDiagram;
-            SwingUtilities.invokeLater(new Runnable()
-            {
-               public void run()
-               {
-                  m_PropertyEditor.reloadElement(diagram);
-
-               }
-            });
-            
-         }
-      }
-   }
+//   public void onDrawingAreaPostPropertyChange(IProxyDiagram pProxyDiagram, int nPropertyKindChanged, IResultCell cell)
+//   {
+//      if (pProxyDiagram != null && m_PropertyEditor != null)
+//      {
+//         if (nPropertyKindChanged == DiagramAreaEnumerations.DAPK_LAYOUT)
+//         {
+//            final IProxyDiagram diagram = pProxyDiagram;
+//            SwingUtilities.invokeLater(new Runnable()
+//            {
+//               public void run()
+//               {
+//                  m_PropertyEditor.reloadElement(diagram);
+//
+//               }
+//            });
+//            
+//         }
+//      }
+//   }
 
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaTooltipPreDisplay(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement, org.netbeans.modules.uml.ui.support.viewfactorysupport.IToolTipData, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
     */
-   public void onDrawingAreaTooltipPreDisplay(IDiagram pParentDiagram, IPresentationElement pPE, IToolTipData pTooltip, IResultCell cell)
-   {
-      //nothing to do
-   }
+//   public void onDrawingAreaTooltipPreDisplay(IDiagram pParentDiagram, IPresentationElement pPE, IToolTipData pTooltip, IResultCell cell)
+//   {
+//      //nothing to do
+//   }
 
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaActivated(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
@@ -334,18 +322,18 @@ public class PropertyEditorEventsSink
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPreDrop(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
     */
-   public void onDrawingAreaPreDrop(IDiagram pParentDiagram, IDrawingAreaDropContext pContext, IResultCell cell)
-   {
-      //nothing to do
-   }
+//   public void onDrawingAreaPreDrop(IDiagram pParentDiagram, IDrawingAreaDropContext pContext, IResultCell cell)
+//   {
+//      //nothing to do
+//   }
 
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPostDrop(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
     */
-   public void onDrawingAreaPostDrop(IDiagram pParentDiagram, IDrawingAreaDropContext pContext, IResultCell cell)
-   {
-      //nothing to do
-   }
+//   public void onDrawingAreaPostDrop(IDiagram pParentDiagram, IDrawingAreaDropContext pContext, IResultCell cell)
+//   {
+//      //nothing to do
+//   }
 
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPreFileRemoved(java.lang.String, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
@@ -633,59 +621,59 @@ public class PropertyEditorEventsSink
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.swing.drawingarea.ICompartmentEventsSink#onCompartmentSelected(org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment, boolean, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
     */
-   public void onCompartmentSelected(final ICompartment pItem, boolean bSelected, IResultCell cell)
-   {
-      if (m_PropertyEditor != null)
-      {
-         if (bSelected)
-         {
-            SwingUtilities.invokeLater(new Runnable()
-            {
-               public void run()
-               {
-                  m_PropertyEditor.onCompartmentSelect(pItem);
-
-               }
-            });
-            
-         }
-      }
-   }
+//   public void onCompartmentSelected(final ICompartment pItem, boolean bSelected, IResultCell cell)
+//   {
+//      if (m_PropertyEditor != null)
+//      {
+//         if (bSelected)
+//         {
+//            SwingUtilities.invokeLater(new Runnable()
+//            {
+//               public void run()
+//               {
+//                  m_PropertyEditor.onCompartmentSelect(pItem);
+//
+//               }
+//            });
+//            
+//         }
+//      }
+//   }
 
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.swing.drawingarea.ICompartmentEventsSink#onCompartmentCollapsed(org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment, boolean, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
     */
-   public void onCompartmentCollapsed(ICompartment pCompartment, boolean bCollapsed, IResultCell cell)
-   {
-      try
-      {
-         if (m_PropertyEditor != null)
-         {
-            //				 if (pCompartment instanceof IADExtensionPointListCompartment)
-            //				 {
-            //				 }
-            //				 else if (pCompartment instanceof IADOperationListCompartment )
-            //				 {
-            //				 }
-            //				 else
-            //				 {
-            
-            SwingUtilities.invokeLater(new Runnable()
-            {
-               public void run()
-               {
-                  m_PropertyEditor.clear();
-
-               }
-            });
-            
-            //				 }
-         }
-      }
-      catch (Exception err)
-      {
-      }
-   }
+//   public void onCompartmentCollapsed(ICompartment pCompartment, boolean bCollapsed, IResultCell cell)
+//   {
+//      try
+//      {
+//         if (m_PropertyEditor != null)
+//         {
+//            //				 if (pCompartment instanceof IADExtensionPointListCompartment)
+//            //				 {
+//            //				 }
+//            //				 else if (pCompartment instanceof IADOperationListCompartment )
+//            //				 {
+//            //				 }
+//            //				 else
+//            //				 {
+//            
+//            SwingUtilities.invokeLater(new Runnable()
+//            {
+//               public void run()
+//               {
+//                  m_PropertyEditor.clear();
+//
+//               }
+//            });
+//            
+//            //				 }
+//         }
+//      }
+//      catch (Exception err)
+//      {
+//      }
+//   }
 
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.core.workspacemanagement.IWorkspaceEventsSink#onWorkspacePreCreate(org.netbeans.modules.uml.core.workspacemanagement.IWorkspacePreCreateEventPayload, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
@@ -744,6 +732,7 @@ public class PropertyEditorEventsSink
    }
 
    /* (non-Javadoc)
+
     * @see org.netbeans.modules.uml.core.workspacemanagement.IWorkspaceEventsSink#onWorkspaceClosed(org.netbeans.modules.uml.core.workspacemanagement.IWorkspace, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
     */
    public void onWorkspaceClosed(IWorkspace space, IResultCell cell)

@@ -131,6 +131,7 @@ final class ComponentFinalVisualPanel extends JPanel {
         addCDToList(created, modified);
         addProducerToList(created, modified);
         addLayerXmlToList(created, modified);
+        addBundleToList(created, modified);
         addIconsToList(created, modified);
 
         // publish
@@ -166,11 +167,22 @@ final class ComponentFinalVisualPanel extends JPanel {
     }
     
     private void addLayerXmlToList(List<String> created, List<String> modified){
+        
         String dotCodeNameBase = getCodeNameBase();
         
         String codeNameBase = dotCodeNameBase.replace('.', '/'); // NOI18N
         modified.add(
                 codeNameBase + "/" + CustomComponentWizardIterator.LAYER_XML); // NOI18N
+    }
+    
+    private void addBundleToList(List<String> created, List<String> modified){
+        String dotCodeNameBase = getCodeNameBase();
+        
+        String codeNameBase = dotCodeNameBase.replace('.', '/'); // NOI18N
+        String bundle = codeNameBase + "/" +                                    // NOI18N
+                CustomComponentWizardIterator.BUNDLE_PROPERTIES;
+        // simply add to modified, while for the first producer it will be created.
+        modified.add(bundle);
     }
     
     private void addIconsToList(List<String> created, List<String> modified){

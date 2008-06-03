@@ -53,7 +53,6 @@ import org.dom4j.Branch;
 import org.dom4j.Document;
 import org.dom4j.DocumentFactory;
 import org.dom4j.Element;
-import org.openide.util.Exceptions;
 import org.dom4j.Node;
 import org.dom4j.dom.DOMDocumentFactory;
 import org.dom4j.tree.DefaultDocument;
@@ -87,8 +86,6 @@ import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.typemanagement.ITypeManager;
-import org.netbeans.modules.uml.ui.support.applicationmanager.IGraphPresentation;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -1102,7 +1099,6 @@ public class UMLXMLManip
       }
    }
 
-
    /**
     *  an index machinery for search in replaceReferences getAllAffectedElements() call
     */
@@ -1788,6 +1784,7 @@ public class UMLXMLManip
    public static void setNodeTextValue(Node curNode, String query, String newVal, boolean useCData)
    {
       XMLManip.setNodeTextValue(curNode, query, newVal, useCData);
+      
    }
 
    public static void setNodeTextValue(IVersionableElement elem, String query, String newVal, boolean useCData)
@@ -2050,6 +2047,7 @@ public class UMLXMLManip
                retElems = manager.getLocalCachedTypesByName(typeName);
          }
          else
+
          {
             retElems = findByNameInDocument(doc, typeName);
          }
@@ -2175,9 +2173,11 @@ public class UMLXMLManip
                IPresentationElement pEle = pElems.get(i);
                IPresentationElement pNewPE = pEle.transform(typeName);
                // 87522
-               IGraphPresentation pres = TypeConversions.getETElement(pNewPE);
-               if (pres != null)
-                   pres.setModelElement(elem);
+               // TODO: meteora
+              
+//               IGraphPresentation pres = TypeConversions.getETElement(pNewPE);
+//               if (pres != null)
+//                   pres.setModelElement(elem);
             }
          }
       }
@@ -2958,9 +2958,6 @@ public class UMLXMLManip
             
             if ( sourceFO != null)
             {
-    //            BufferedInputStream in = new BufferedInputStream(new FileInputStream(sourceFile));
-    //            BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(targetFile));
-                
                 in = new BufferedInputStream(sourceFO.getInputStream());
                 out = new BufferedOutputStream(targetFO.getOutputStream());
 
@@ -3034,7 +3031,8 @@ public class UMLXMLManip
          // Argh! Messy, but what else to do?
          out.append(new String(buf));
       }
-      is.close();
+      bufis.close();
+      //is.close();
 
       return out.toString();
    }

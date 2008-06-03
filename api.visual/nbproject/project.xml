@@ -76,6 +76,8 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.api.visual.vmd</package>
                 <package>org.netbeans.api.visual.widget</package>
                 <package>org.netbeans.api.visual.widget.general</package>
+                <package>org.netbeans.api.visual.export</package>
+                <package>org.netbeans.api.visual.print</package>
             </public-packages>
         </data>
     </configuration>

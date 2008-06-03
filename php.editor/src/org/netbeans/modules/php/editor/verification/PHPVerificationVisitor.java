@@ -57,6 +57,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
@@ -286,6 +287,12 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
                 
                 if (formalParameter.getParameterName() instanceof Variable) {
                     variable = (Variable) formalParameter.getParameterName();
+                } else if (formalParameter.getParameterName() instanceof Reference) {
+                    Reference reference = (Reference) formalParameter.getParameterName();
+                    
+                    if (reference.getExpression() instanceof Variable) {
+                        variable = (Variable) reference.getExpression();   
+                    }
                 }
             }
             

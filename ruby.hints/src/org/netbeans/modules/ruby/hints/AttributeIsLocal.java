@@ -54,7 +54,7 @@ import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyParseResult;
-import org.netbeans.modules.ruby.StructureAnalyzer.AnalysisResult;
+import org.netbeans.modules.ruby.RubyStructureAnalyzer.AnalysisResult;
 import org.netbeans.modules.ruby.elements.AstAttributeElement;
 import org.netbeans.modules.ruby.elements.AstClassElement;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
@@ -175,8 +175,8 @@ public class AttributeIsLocal extends RubyAstRule {
             OffsetRange range = AstUtilities.getNameRange(node);
             List<HintFix> fixList = new ArrayList<HintFix>(1);
             fixList.add(new ShowAttributeFix(info, element));
-            fixList.add(new AttributeConflictFix(info, node, true));
-            fixList.add(new AttributeConflictFix(info, node, false));
+            fixList.add(new AttributeConflictFix(context, node, true));
+            fixList.add(new AttributeConflictFix(context, node, false));
             range = LexUtilities.getLexerOffsets(info, range);
             if (range != OffsetRange.NONE) {
                 Hint desc = new Hint(this, getDisplayName(), info.getFileObject(), range, fixList, 50);
@@ -215,12 +215,12 @@ public class AttributeIsLocal extends RubyAstRule {
     
     private static class AttributeConflictFix implements PreviewableFix {
 
-        private final CompilationInfo info;
+        private final RubyRuleContext context;
         private final boolean fixSelf;
         private final Node node;
 
-        AttributeConflictFix(CompilationInfo info, Node node, boolean fixSelf) {
-            this.info = info;
+        AttributeConflictFix(RubyRuleContext context, Node node, boolean fixSelf) {
+            this.context = context;
             this.node = node;
             this.fixSelf = fixSelf;
         }
@@ -244,7 +244,8 @@ public class AttributeIsLocal extends RubyAstRule {
         }
 
         private EditList createEditList(boolean doit) throws Exception {
-            BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = context.doc;
+            CompilationInfo info = context.compilationInfo;
             EditList edits = new EditList(doc);
             
             if (fixSelf) {
@@ -288,16 +289,18 @@ public class AttributeIsLocal extends RubyAstRule {
         private void addLocalRegions(Node node, String name, Set<OffsetRange> ranges) {
             if ((node.nodeId == NodeType.LOCALASGNNODE || node.nodeId == NodeType.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
                 OffsetRange range = AstUtilities.getNameRange(node);
-                range = LexUtilities.getLexerOffsets(info, range);
+                range = LexUtilities.getLexerOffsets(context.compilationInfo, range);
                 if (range != OffsetRange.NONE) {
                     ranges.add(range);
                 }
             }
 
-            @SuppressWarnings(value = "unchecked")
             List<Node> list = node.childNodes();
 
             for (Node child : list) {
+                if (child.isInvisible()) {
+                    continue;
+                }
 
                 // Skip inline method defs
                 if (child instanceof MethodDefNode) {

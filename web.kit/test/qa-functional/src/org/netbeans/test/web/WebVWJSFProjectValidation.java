@@ -66,18 +66,13 @@ public class WebVWJSFProjectValidation extends WebProjectValidationEE5 {
 
     static {
         PROJECT_NAME = "WebVWJSFProject";
-        PROJECT_FOLDER = PROJECT_LOCATION + File.separator + PROJECT_NAME;
+//        PROJECT_FOLDER = PROJECT_LOCATION + File.separator + PROJECT_NAME;
     }
 
     // name of sample project
     
     protected static String URL_PATTERN_NULL = "The URL Pattern has to be entered.";
     protected static String URL_PATTERN_INVALID = "The URL Pattern is not valid.";
-    // folder of sample project
-    protected TestURLDisplayer urlDisplayer;
-    private static final String BUILD_SUCCESSFUL = "BUILD SUCCESSFUL";
-//    private ServerInstance server;
-    protected static int logIdx = 0;
 
     /** Need to be defined because of JUnit */
     public WebVWJSFProjectValidation(String name) {
@@ -88,6 +83,7 @@ public class WebVWJSFProjectValidation extends WebProjectValidationEE5 {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new WebVWJSFProjectValidation("testPreconditions"));
         suite.addTest(new WebVWJSFProjectValidation("testNewVWJSFWebProject"));
+        suite.addTest(new WebVWJSFProjectValidation("testRedeployProject"));
 //        suite.addTest(new WebVWJSFProjectValidation("testNewJSP"));
 //        suite.addTest(new WebVWJSFProjectValidation("testNewJSP2"));
 //        suite.addTest(new WebVWJSFProjectValidation("testJSPNavigator"));
@@ -109,7 +105,7 @@ public class WebVWJSFProjectValidation extends WebProjectValidationEE5 {
 //        suite.addTest(new WebVWJSFProjectValidation("testRunHTML"));
 //        suite.addTest(new WebVWJSFProjectValidation("testNewSegment"));
 //        suite.addTest(new WebVWJSFProjectValidation("testNewDocument"));
-//        suite.addTest(new WebVWJSFProjectValidation("testStopServer"));
+        suite.addTest(new WebVWJSFProjectValidation("testStopServer"));
 //        suite.addTest(new WebVWJSFProjectValidation("testStartServer"));
 //        suite.addTest(new WebVWJSFProjectValidation("testBrowserSettings"));
 //        suite.addTest(new WebVWJSFProjectValidation("testFinish"));
@@ -137,7 +133,8 @@ public class WebVWJSFProjectValidation extends WebProjectValidationEE5 {
         nameStep.txtProjectName().setText("");
         nameStep.txtProjectName().typeText(PROJECT_NAME);
         nameStep.txtProjectLocation().setText("");
-        nameStep.txtProjectLocation().typeText(getProjectFolder(PROJECT_NAME));
+        String sFolder = getProjectFolder(PROJECT_NAME);
+        nameStep.txtProjectLocation().typeText(sFolder);
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
         serverStep.selectServer("GlassFish V2");

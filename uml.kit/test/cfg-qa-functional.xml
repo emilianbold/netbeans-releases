@@ -1387,7 +1387,7 @@ made subject to such option by the copyright holder.
 	Tutorial: Reverse Engineering section
    -->
    
-   <testbag testattribs="all,tutorials" executor="ide" name="Tutorial: RE Java Application">
+   <testbag testattribs="all,tutorials, sherry" executor="ide" name="Tutorial: RE Java Application">
         <testset dir="qa-functional/src">
             <patternset>               
               <include name="**/tutorial/reverseeng/REJavaApplication*"/>

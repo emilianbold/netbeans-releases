@@ -97,6 +97,11 @@ public class UpdateCommand extends SvnCommand {
     @Override
     protected void notify(Line line) {
         if(line.getRevision() != -1) {
+            // XXX - doesn't work with externals            
+            // Fetching external item into '/foo/beer'
+            // External at revision 3120.
+            // At revision 24051.            
+            
             if(revision != -1) {
                 Subversion.LOG.warning(
                         "Revision notified more times : " + revision + ", " + 
