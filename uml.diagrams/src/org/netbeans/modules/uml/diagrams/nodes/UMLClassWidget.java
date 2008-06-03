@@ -574,6 +574,7 @@ public class UMLClassWidget  extends SwitchableWidget
             {
                 updateRedefinesCompartment((IClassifier)event.getNewValue());
             }
+            updateSizeWithOptions();
         }
     }
 

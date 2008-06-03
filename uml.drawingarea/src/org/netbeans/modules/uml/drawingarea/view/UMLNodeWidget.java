@@ -71,6 +71,8 @@ import org.netbeans.api.visual.widget.ResourceTable;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
+import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 import org.netbeans.modules.uml.drawingarea.actions.ResizeAction;
 import org.netbeans.modules.uml.drawingarea.actions.ResizeStrategyProvider;
 import org.netbeans.modules.uml.drawingarea.actions.WindowStyleResizeProvider;
@@ -96,6 +98,8 @@ public abstract class UMLNodeWidget extends Widget
         implements DiagramNodeWriter, DiagramNodeReader, PropertyChangeListener, UMLWidget
 {   
     private static final int RESIZE_SIZE = 5;
+    private boolean resizedManually=false;
+    private boolean initialized;
         
     protected enum ButtonLocation {Left, op, Right, Bottom};
     public enum RESIZEMODE{PREFERREDBOUNDS,PREFERREDSIZE,MINIMUMSIZE};
@@ -114,6 +118,12 @@ public abstract class UMLNodeWidget extends Widget
     protected boolean useGradient = NbPreferences.forModule(DummyCorePreference.class).getBoolean("UML_Gradient_Background", true);
     private ResourceTable localResourceTable = null;
     private IPresentationElement pe;
+    
+    public final String PSK_RESIZE_ASNEEDED = "PSK_RESIZE_ASNEEDED";
+    public final String PSK_RESIZE_EXPANDONLY = "PSK_RESIZE_EXPANDONLY";
+    public final String PSK_RESIZE_UNLESSMANUAL = "PSK_RESIZE_UNLESSMANUAL";
+    public final String PSK_RESIZE_NEVER = "PSK_RESIZE_NEVER";    
+
     
     public UMLNodeWidget(Scene scene)
     {
@@ -207,6 +217,7 @@ public abstract class UMLNodeWidget extends Widget
     public void initializeNode(IPresentationElement element)
     {
         pe = element;
+        initialized=true;
     }
     
     // display full view widget for preference preview, child class should
@@ -857,4 +868,88 @@ public abstract class UMLNodeWidget extends Widget
     {
         return true;
     }
+    
+ 
+    public boolean isManuallyResized() {
+       return resizedManually;
+    }
+    public void setIsManuallyResized(boolean manuallyResized)
+    {
+        resizedManually=manuallyResized;
+    }
+    protected boolean isInitialized()
+    {
+        return initialized;
+    }
+    protected void setIsInitialized(boolean isInitialized)
+    {
+        initialized=isInitialized;
+    }
+   /**
+     * update nodes after changes in node according to global resizing options
+     */
+    public void updateSizeWithOptions()
+    {
+        //resize only for already loaded/initialized nodes
+            if(isInitialized())new AfterValidationExecutor(new ActionProvider() {
+                public void perfomeAction() {
+                String resOption=NbPreferences.forModule(DummyCorePreference.class).get("UML_Automatically_Size_Elements", PSK_RESIZE_ASNEEDED);
+                if(PSK_RESIZE_NEVER.equals(resOption) || (PSK_RESIZE_UNLESSMANUAL.equals(resOption) && isManuallyResized()))
+                {
+                    //do nothing
+                    //or may be can set pref bounds to current
+                }
+                else if(PSK_RESIZE_EXPANDONLY.equals(resOption))
+                {
+                    setResizeMode(UMLNodeWidget.RESIZEMODE.MINIMUMSIZE);
+                    setPreferredBounds(null);
+                    setPreferredSize(null);
+                    setMinimumSize(null);
+                    switch(getResizeMode())//get mode, it may be different from one we attempt to set
+                    {
+                        case MINIMUMSIZE:
+                            setMinimumSize(getBounds().getSize());
+                            break;
+//                        case PREFERREDBOUNDS:
+//                            setPreferredBounds(new Rectangle(new Point(),getBounds().getSize()));
+//                            break;
+//                        case PREFERREDSIZE:
+//                            setPreferredSize(getBounds().getSize());
+//                            break;
+                    }
+                    new AfterValidationExecutor(new ActionProvider() {
+                        public void perfomeAction() {
+                        }
+                    }, getScene());
+                    getScene().validate();
+                }
+                else if(PSK_RESIZE_ASNEEDED.equals(resOption))
+                {
+                    setResizeMode(UMLNodeWidget.RESIZEMODE.MINIMUMSIZE);
+                    setPreferredBounds(null);
+                    setPreferredSize(null);
+                    setMinimumSize(null);
+                    switch(getResizeMode())//get mode, it may be different from one we attempt to set
+                    {
+                        case MINIMUMSIZE:
+                            setMinimumSize(getDefaultMinimumSize());
+                            break;
+//                        case PREFERREDBOUNDS:
+//                            setPreferredBounds(new Rectangle(new Point(),getDefaultMinimumSize()));
+//                            break;
+//                        case PREFERREDSIZE:
+//                            setPreferredSize(getPreferredSize());
+//                            break;
+                    }
+                    new AfterValidationExecutor(new ActionProvider() {
+                        public void perfomeAction() {
+                        }
+                    }, getScene());
+                    getScene().validate();
+                }
+                         }
+                    }, getScene());
+            revalidate();
+            getScene().validate();
+   }
 }
