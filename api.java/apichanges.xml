@@ -73,7 +73,22 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
-
+        <change id="classpath-api-module">
+            <api name="classpath"/>
+            <summary>Splitting the java API to independent ClassPath API and the rest of the java API</summary>
+            <version major="1" minor="18"/>
+            <date day="5" month="6" year="2008"/>
+            <author login="tzezula"/>
+            <compatibility addition="no" modification="no" semantic="compatible" source="incompatible" binary="compatible"/>
+            <description>
+                <p>
+                    The copy of the ClassPath API was used by generic scripting framework, which cannot depend on the java cluster.
+                    To remove this copy of the ClassPath API the java API needs to be splitted into the ClassPath API (IDE cluster)
+                    and the rest of the java API (java cluster).
+                </p>
+            </description>
+            <issue number="136169"/>
+        </change>
         <change id="ClassPath.string">
             <api name="classpath"/>
             <summary>Interconversions with string-format classpaths</summary>
@@ -92,22 +107,6 @@ made subject to such option by the copyright holder.
             <class package="org.netbeans.api.java.classpath" name="ClassPath"/>
             <class package="org.netbeans.spi.java.classpath.support" name="ClassPathSupport"/>
             <issue number="59311"/>
-        </change>
-        <change id="classpath-api-module">
-            <api name="classpath"/>
-            <summary>Splitting the java API to independent ClassPath API and the rest of the java API</summary>
-            <version major="1" minor="18"/>
-            <date day="5" month="6" year="2008"/>
-            <author login="tzezula"/>
-            <compatibility addition="no" modification="no" semantic="compatible" source="incompatible" binary="compatible"/>
-            <description>
-                <p>
-                    The copy of the ClassPath API was used by generic scripting framework, which cannot depend on the java cluster.
-                    To remove this copy of the ClassPath API the java API needs to be splitted into the ClassPath API (IDE cluster)
-                    and the rest of the java API (java cluster).
-                </p>
-            </description>
-            <issue number="129884"/>
         </change>
         <change id="queries-spi-support">
             <api name="queries"/>

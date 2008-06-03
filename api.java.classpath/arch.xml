@@ -68,7 +68,7 @@ made subject to such option by the copyright holder.
         </question>
 -->
  <answer id="arch-overall">
-  <api group="java" name="JavaSupportAPIs" type="export" category="official">
+  <api group="java" name="ClassPathAPIs" type="export" category="official">
    The ClassPath APIs provides java classpath like ordered collection of (source)
    roots with ability to listen on changes and helper methods like finding the file
    under the roots, returning a path from root to given file. It also provides a
