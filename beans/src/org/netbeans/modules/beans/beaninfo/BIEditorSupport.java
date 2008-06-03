@@ -87,6 +87,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
+import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.CloneableEditorSupport.Pane;
@@ -335,7 +336,13 @@ final class BIEditorSupport extends DataEditorSupport
 
         public MultiViewElement createElement() {
             BIEditorSupport support = findEditor(dataObject);
-            return new JavaElement(support);
+            JavaElement javaElement = new JavaElement(support);
+            // #133931: another multiview trap
+            Node[] nodes = javaElement.getActivatedNodes();
+            if ((nodes == null) || (nodes.length == 0)) {
+                javaElement.setActivatedNodes(new Node[] {dataObject.getNodeDelegate()});
+            }
+            return javaElement;
         }
         
         private void writeObject(ObjectOutputStream out) throws IOException {
