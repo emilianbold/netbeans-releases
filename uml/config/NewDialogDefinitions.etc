@@ -15,10 +15,12 @@
 	<aDefinition name="Diagram" displayName="PSK_DIAGRAM" image="">
 		<aDefinition name="Activity Diagram" displayName="PSK_ACTIVITY_DIAGRAM" image="org/netbeans/modules/uml/resources/images/activity-diagram.png"/>
 		<aDefinition name="Class Diagram" displayName="PSK_CLASS_DIAGRAM" image="org/netbeans/modules/uml/resources/images/class-diagram.png"/>
-		<aDefinition name="Collaboration Diagram" displayName="PSK_COLLABORATION_DIAGRAM" image="org/netbeans/modules/uml/resources/images/collaboration-diagram.png"/>
+                <!-- temporarily take out of the diagram list for 6.5 M1
+                <aDefinition name="Collaboration Diagram" displayName="PSK_COLLABORATION_DIAGRAM" image="org/netbeans/modules/uml/resources/images/collaboration-diagram.png"/>
 		<aDefinition name="Component Diagram" displayName="PSK_COMPONENT_DIAGRAM" image="org/netbeans/modules/uml/resources/images/component-diagram.png"/>
 		<aDefinition name="Deployment Diagram" displayName="PSK_DEPLOYMENT_DIAGRAM" image="org/netbeans/modules/uml/resources/images/deployment-diagram.png"/>
-		<aDefinition name="Sequence Diagram" displayName="PSK_SEQUENCE_DIAGRAM" image="org/netbeans/modules/uml/resources/images/sequence-diagram.png"/>
+                -->
+                <aDefinition name="Sequence Diagram" displayName="PSK_SEQUENCE_DIAGRAM" image="org/netbeans/modules/uml/resources/images/sequence-diagram.png"/>
 		<aDefinition name="State Diagram" displayName="PSK_STATE_DIAGRAM" image="org/netbeans/modules/uml/resources/images/state-diagram.png"/>
 		<aDefinition name="Use Case Diagram" displayName="PSK_USE_CASE_DIAGRAM" image="org/netbeans/modules/uml/resources/images/use-case-diagram.png"/>
 	</aDefinition>

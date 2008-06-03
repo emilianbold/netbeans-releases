@@ -239,9 +239,16 @@ public class UMLDiagramNode extends UMLElementNode
     {
         ArrayList<Action> actions = new ArrayList <Action>();
         
-        actions.add(SystemAction.get(OpenAction.class));
-        actions.add(null);
         int kind = getDiagram().getDiagramKind();
+        // temporarily take out open action from those three diagram types for 6.5 M1
+        if (kind != IDiagramKind.DK_COLLABORATION_DIAGRAM &&
+            kind != IDiagramKind.DK_COMPONENT_DIAGRAM &&
+            kind != IDiagramKind.DK_DEPLOYMENT_DIAGRAM )
+        {
+            actions.add(SystemAction.get(OpenAction.class));
+            actions.add(null);
+        }
+        
         // see #102294
         if ( kind != IDiagramKind.DK_SEQUENCE_DIAGRAM &&
                 kind != IDiagramKind.DK_COLLABORATION_DIAGRAM )
@@ -259,7 +266,7 @@ public class UMLDiagramNode extends UMLElementNode
         actions.toArray(retVal);
         return retVal;
     }
-    
+      
     //**************************************************
     // Helper Methods
     //**************************************************
