@@ -211,6 +211,17 @@ public class AutoupdateCheckScheduler {
                     if (operationInfo == null) {
                         continue;
                     }
+                    boolean skip = false;
+                    for (UpdateElement tmpEl : operationInfo.getRequiredElements ()) {
+                       if (tmpEl.getUpdateUnit ().isPending ()) {
+                           err.log (Level.WARNING, "Plugin " + element + // NOI18N
+                                   " depends on " + tmpEl + " in pending state.");                           
+                           skip = true;
+                       } 
+                    }
+                    if (skip) {
+                        continue;
+                    }
                     oc.add (operationInfo.getRequiredElements ());
                     Collection<String> brokenDeps = new HashSet<String> ();
                     for (OperationInfo<InstallSupport> info : oc.listAll ()) {
@@ -428,7 +439,7 @@ public class AutoupdateCheckScheduler {
         boolean wasFlashing = flasher != null;
         flasher = AvailableUpdatesNotification.getFlasher (onMouseClick);
         assert flasher != null : "Updates Flasher cannot be null.";
-        flasher.startFlashing ();
+                flasher.startFlashing ();
         final Runnable showBalloon = new Runnable() {
             public void run() {
                 JLabel balloon = new JLabel( units.size() == 1 ?
