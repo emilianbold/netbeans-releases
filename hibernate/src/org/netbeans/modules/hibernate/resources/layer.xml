@@ -236,14 +236,19 @@ made subject to such option by the copyright holder.
         <folder name="MIMEResolver">
             <file name="HibernateCfgResolver.xml" url="HibernateCfgResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>
+                <attr name="position" intvalue="1500"/>
             </file>
             <file name="HibernateMappingResolver.xml" url="HibernateMappingResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>
+                <attr name="position" intvalue="1550"/>
             </file>
             <file name="HibernateRevengResolver.xml" url="HibernateRevengResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>
+                <attr name="position" intvalue="1600"/>
             </file>
-            <file name="text-hql-mime-resolver.xml" url="text-hql-mime-resolver.xml"/>
+            <file name="text-hql-mime-resolver.xml" url="text-hql-mime-resolver.xml">
+                <attr name="position" intvalue="1650"/>
+            </file>
         </folder>
     </folder>
     <folder name="Plugins">
@@ -264,7 +269,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>                
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.hibernate.wizards.HibernateConfigurationWizard.create"/>
-                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="templateCategory" stringvalue="web-types,gui-java-application,java-forms,java-awt-forms"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/hibernate/resources/HibernateConfigurationFile.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>                                		
             </file>
@@ -272,7 +277,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>                
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.hibernate.wizards.HibernateMappingWizard.create"/>
-                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="templateCategory" stringvalue="web-types,gui-java-application,java-forms,java-awt-forms"/>
    		<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/hibernate/resources/HibernateMappingFile.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>
             </file>
@@ -280,7 +285,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.hibernate.wizards.HibernateRevengWizard.create"/>
-                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="templateCategory" stringvalue="web-types,gui-java-application,java-forms,java-awt-forms"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/hibernate/resources/HibernateRevengFile.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>         
             </file>
@@ -290,7 +295,7 @@ made subject to such option by the copyright holder.
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="templateCategory" stringvalue="web-types,gui-java-application,java-forms,java-awt-forms"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/hibernate/resources/HibernateUtilFile.html"/>
                 <attr name="position" intvalue="400"/>
             </file>            
@@ -327,6 +332,11 @@ made subject to such option by the copyright holder.
    </folder>
    <folder name="Projects">
         <folder name="org-netbeans-modules-web-project">
+            <folder name="Lookup">
+                <file name="org.netbeans.modules.hibernate.service.HibernateProjectLookupExtender.instance"/>
+            </folder>
+        </folder>
+        <folder name="org-netbeans-modules-java-j2seproject">
             <folder name="Lookup">
                 <file name="org.netbeans.modules.hibernate.service.HibernateProjectLookupExtender.instance"/>
             </folder>

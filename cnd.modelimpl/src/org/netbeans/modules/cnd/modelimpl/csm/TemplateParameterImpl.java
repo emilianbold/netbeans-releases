@@ -79,8 +79,10 @@ public class TemplateParameterImpl extends OffsetableBase implements CsmTemplate
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof CsmTemplateParameter) {
-            return this.getName().equals(((CsmTemplateParameter)obj).getName());
+        if (obj instanceof TemplateParameterImpl) {
+            if (this.getName().equals(((TemplateParameterImpl)obj).getName())){
+                return scope != null && scope.equals(((TemplateParameterImpl)obj).scope);
+            }
         }
         return false;
     }
@@ -105,14 +107,11 @@ public class TemplateParameterImpl extends OffsetableBase implements CsmTemplate
         this.name = NameCache.getManager().getString(input.readUTF());
         this.scope = UIDObjectFactory.getDefaultFactory().readUID(input);
     }
-    
-    public CharSequence getQualifiedName() {
-        return name;
-    }
 
-    public CsmScope getScope() {
-        return scope.getObject();
-    }
+    //    TODO: It seems CsmScopeElement    
+//    public CsmScope getScope() {
+//        return scope.getObject();
+//    }
 
     public CsmTemplateParameter.Kind getKind() {
         return CsmTemplateParameter.Kind.TEMPLATE; //FIXME
