@@ -48,18 +48,13 @@ import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
-import java.util.zip.ZipEntry;
-import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.StringUtils;
-
 import org.netbeans.installer.utils.applications.JavaUtils;
-import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.helper.EngineResources;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.JavaCompatibleProperties;
@@ -383,9 +378,18 @@ public abstract class CommonLauncher extends Launcher {
                 }
             }
         }
+        if (majorVersion == -1) {
+            try {
+                final String resource = CommonLauncher.class.getName().replace(".", "/") + ".class";
+                majorVersion = getMajorVersion(ResourceUtils.getResource(resource));
+            } catch (IOException e) {
+                LogManager.log(e);
+            }
+        }
+        
         return Version.getVersion((majorVersion == -1) ?
-            System.getProperty("java.specification.version") : 
-            "1." + majorVersion);
+             System.getProperty("java.specification.version") :
+                 "1." + majorVersion);
     }
     protected void checkTestJVMFile()   throws IOException {
         LogManager.log(ErrorLevel.DEBUG, "Checking testJVM file...");

@@ -337,8 +337,7 @@ public class HibernateUtil {
             DatabaseConnection[] dbConnections = ConnectionManager.getDefault().getConnections();
             for(DatabaseConnection dbConn : dbConnections) {
                 if(dbConn.getDatabaseURL().equals(driverURL) &&
-                        dbConn.getUser().equals(username) &&
-                        dbConn.getPassword().equals(password)) {
+                        dbConn.getUser().equals(username)) {
                     Logger.getLogger(HibernateUtil.class.getName()).info("Found pre-existing database connection.");
                     return checkAndConnect(dbConn);
                 }
