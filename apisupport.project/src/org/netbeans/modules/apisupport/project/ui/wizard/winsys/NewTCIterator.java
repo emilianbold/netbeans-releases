@@ -98,6 +98,7 @@ final class NewTCIterator extends BasicWizardIterator {
         private String icon;
         private String mode;
         private boolean opened = false;
+        private boolean keepPrefSize = false;
         
         private CreatedModifiedFiles files;
         
@@ -153,6 +154,13 @@ final class NewTCIterator extends BasicWizardIterator {
             this.opened = opened;
         }
         
+        public boolean isKeepPrefSize() {
+            return keepPrefSize;
+        }
+
+        public void setKeepPrefSize(boolean keepPrefSize) {
+            this.keepPrefSize = keepPrefSize;
+        }
     }
     
     public static void generateFileChanges(DataModel model) {
@@ -168,6 +176,9 @@ final class NewTCIterator extends BasicWizardIterator {
         replaceTokens.put("PACKAGENAME", packageName);//NOI18N
         replaceTokens.put("MODE", mode); //NOI18N
         replaceTokens.put("OPENED", model.isOpened() ? "true" : "false"); //NOI18N
+        replaceTokens.put("KEEPPREFSIZE", model.isKeepPrefSize() //NOI18N
+                ? "putClientProperty(\"netbeans.winsys.tc.keep_preferred_size_when_slided_in\", Boolean.TRUE);"  //NOI18N
+                : ""); //NOI18N
 
         // 0. move icon file if necessary
         String icon = model.getIcon();

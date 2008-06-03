@@ -492,7 +492,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         }
     }
-    
+
     private void createProjectFilesIfNeed(NativeProject nativeProject) {
         
         if( TraceFlags.TIMING ) {
@@ -655,7 +655,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             fileAndHandler.preprocHandler = createPreprocHandler(nativeFile);
         }
         if (isSourceFile || needParseOrphan) {
-            ParserQueue.instance().addLast(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState());
+            ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
         }
         
         if( validator != null ) {
@@ -1114,7 +1114,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     // NB: parse only after putting into a map
                     if( scheduleParseIfNeed ) {
                         APTPreprocHandler.State ppState = preprocHandler == null ? null : preprocHandler.getState();
-                        ParserQueue.instance().addLast(impl, ppState);
+                        ParserQueue.instance().add(impl, ppState, ParserQueue.Position.TAIL);
                     }
                 }
             }

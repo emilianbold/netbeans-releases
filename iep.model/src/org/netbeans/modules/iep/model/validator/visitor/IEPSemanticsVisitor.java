@@ -27,6 +27,7 @@ import org.netbeans.modules.iep.model.Property;
 import org.netbeans.modules.iep.model.SchemaAttribute;
 import org.netbeans.modules.iep.model.SchemaComponent;
 import org.netbeans.modules.iep.model.SchemaComponentContainer;
+import org.netbeans.modules.iep.model.TableInputOperatorComponent;
 import org.netbeans.modules.iep.model.lib.TcgComponentType;
 import org.netbeans.modules.iep.model.lib.TcgPropertyType;
 import org.netbeans.modules.xml.xam.Model;
@@ -192,10 +193,14 @@ public class IEPSemanticsVisitor implements IEPVisitor {
 
         //inputs
         List<InputOperatorComponent> inputs = model.getInputList();
+        
         if (inputs.size() == 0) {
-            String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.atleast_one_input_required");
-            ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
-            mResultItems.add(item);
+            List<TableInputOperatorComponent> tableInputs = model.getPlanComponent().getOperatorComponentContainer().getTableInputOperatorComponent();
+            if(tableInputs.size() == 0) {
+                String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.atleast_one_input_required");
+                ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
+                mResultItems.add(item);
+            }
 
         }
 

@@ -148,7 +148,7 @@ public abstract class NativeUtils {
         final File engine = new File(descriptor.getInstallPath(),
                 "uninstall.jar");
         try {
-            Installer.cacheInstallerEngine(engine, new Progress());
+            Installer.getInstance().cacheInstallerEngine(engine, new Progress());
             
             final LauncherProperties props = new LauncherProperties();
             
@@ -161,9 +161,7 @@ public abstract class NativeUtils {
                 "-Xmx256m",
                 "-Xms64m",
                 "-D" + Installer.LOCAL_DIRECTORY_PATH_PROPERTY +
-                        "=" + new File(System.getProperty(
-                        Installer.LOCAL_DIRECTORY_PATH_PROPERTY)).
-                        getAbsolutePath()});
+                        "=" + Installer.getInstance().getLocalDirectory()});
             props.setMainClass(Installer.class.getName());
             
             if (uninstall) {

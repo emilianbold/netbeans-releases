@@ -1803,6 +1803,8 @@ public class Registry implements PropertyContainer {
     
     public static final String CREATE_BUNDLE_PATH_PROPERTY =
             "nbi.create.bundle.path";
+    public static final String CREATE_BUNDLE_SKIP_NATIVE_LAUNCHER_PROPERTY =
+            "nbi.create.bundle.skip.native.launcher";
     
     public static final String LAZY_LOAD_ICONS_PROPERTY =
             "nbi.product.lazy.load.icons";

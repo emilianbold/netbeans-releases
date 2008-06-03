@@ -122,6 +122,11 @@ import javax.swing.table.TableCellRenderer;
  *          certain rows from the model (see setQuickFilter()). </LI>
  *     <LI> 
  * </UL>
+ * 
+ * <p><b>Note:</b> This API is still under development and may change even in
+ * incompatible way during its stabilization phase. The API will be finalized in
+ * NetBeans version 6.5.</p>
+ * 
  * @author David Strupl
  */
 public class ETable extends JTable {

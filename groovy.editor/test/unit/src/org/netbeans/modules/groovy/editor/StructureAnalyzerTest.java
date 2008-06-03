@@ -41,77 +41,14 @@
 
 package org.netbeans.modules.groovy.editor;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Comparator;
-import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import org.netbeans.modules.gsf.api.StructureScanner;
 
-/**
- *
- * @author Tor Norbye
- */
 public class StructureAnalyzerTest extends GroovyTestBase {
     
     public StructureAnalyzerTest(String testName) {
         super(testName);
     }
 
-    @Override
-    public StructureScanner getStructureScanner() {
-        return new StructureAnalyzer();
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-    
-    private void annotate(int indent, StringBuilder sb, Document document, List<? extends StructureItem> structure) {
-        for (StructureItem element : structure) {
-            for (int i = 0; i < indent; i++) {
-                sb.append("  ");
-            }
-            sb.append(element.getName());
-            sb.append(":");
-            sb.append(element.getKind());
-            sb.append(":");
-            sb.append(element.getModifiers());
-            sb.append(":");
-            sb.append(element.getHtml());
-            sb.append(":");
-            sb.append("\n");
-            List<? extends StructureItem> children = element.getNestedItems();
-            if (children != null && children.size() > 0) {
-                List<? extends StructureItem> c = new ArrayList<StructureItem>(children);
-                // Sort children to make tests more stable
-                Collections.sort(c, new Comparator<StructureItem>() {
-                    public int compare(StructureItem s1, StructureItem s2) {
-                        return s1.getName().compareTo(s2.getName());
-                    }
-                    
-                });
-                
-                annotate(indent+1, sb, document, c);
-            }
-        }
-    }
-
-    private String annotate(Document document, List<? extends StructureItem> structure) {
-        StringBuilder sb = new StringBuilder();
-        annotate(0, sb, document, structure);
-        
-        return sb.toString();
-    }
-    
     public void testFolds1() throws Exception {
         checkFolds("testfiles/BookmarkController.groovy");
     }

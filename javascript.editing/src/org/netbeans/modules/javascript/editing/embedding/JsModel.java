@@ -51,12 +51,9 @@ import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.javascript.editing.JsAnalyzer;
 import org.netbeans.modules.javascript.editing.JsUtils;
-import org.netbeans.modules.javascript.editing.NbUtilities;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -80,7 +77,9 @@ public class JsModel {
     private static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
     private static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
     
-    private static final String GENERATED_IDENTIFIER = " __UNKNOWN__ ";
+    // If you change this, update the testcase reference 
+    // in javascript.hints/test/unit/data/testfiles/generated.js
+    private static final String GENERATED_IDENTIFIER = " __UNKNOWN__ "; // NOI18N
     
     private final Document doc;
     private final ArrayList<CodeBlockData> codeBlocks = new ArrayList<CodeBlockData>();

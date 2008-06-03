@@ -40,21 +40,17 @@
  */
 package org.netbeans.jellytools.actions;
 
-import java.awt.event.KeyEvent;
-import javax.swing.KeyStroke;
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.Action;
 
-/** Used to call "Debug" popup menu item on project's root node,
- * "Run|Debug Main Project" main menu item or Ctrl+F5 shortcut.
+/** Used to call "Undeploy and Deploy" popup menu item on project's root node,
  * @see Action
  * @see org.netbeans.jellytools.nodes.ProjectRootNode
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @author Jiri.Skrivanek@sun.com
+ * @author Dan.Kolar@sun.com
  */
 public class RedeployProjectAction extends Action {
 
-    // "Debug"
+    // "Undeploy and Deploy"
     private static final String redeployProjectPopup = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.Bundle", "LBL_RedeployAction_Name");
     /** creates new RedeployProjectAction instance */    
     public RedeployProjectAction() {
