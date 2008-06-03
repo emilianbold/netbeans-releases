@@ -104,6 +104,19 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="Adding.thick.line.caret">
+            <summary>Adding SimpleValueNames.THICK_CARET_WIDTH</summary>
+            <version major="1" minor="21"/>
+            <date day="3" month="6" year="2008"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no"/>
+            <description>
+            <p>
+                Adding new constant <code>SimpleValueNames.THICK_CARET_WIDTH</code>.
+            </p>
+            </description>
+        </change>
+        
         <change id="added.EditorStyleConstants.RenderingHints">
             <summary>Added EditorStyleConstants.RenderingHints constant</summary>
             <version major="1" minor="20"/>

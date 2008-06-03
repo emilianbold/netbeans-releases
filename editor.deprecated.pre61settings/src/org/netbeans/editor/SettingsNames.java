@@ -156,10 +156,16 @@ public class SettingsNames {
     *   Currently supported types are:
     *     org.netbeans.editor.BaseCaret.LINE_CARET - default 2point caret
     *     org.netbeans.editor.BaseCaret.THIN_LINE_CARET - swing like thin caret
+    *     org.netbeans.editor.BaseCaret.THICK_LINE_CARET - a thicker caret, but not necessarily a block caret
     *     org.netbeans.editor.BaseCaret.BLOCK_CARET - block covering whole character
     */
     public static final String CARET_TYPE_INSERT_MODE = EditorPreferencesKeys.CARET_TYPE_INSERT_MODE; // NOI18N
 
+    /** Width of caret when THICK_LINE_CARET is selected
+    * Values: java.lang.Integer instances
+    */
+    public static final String THICK_CARET_WIDTH = EditorPreferencesKeys.THICK_CARET_WIDTH;
+    
     /** Type of caret for over write mode.
     * Values: java.lang.String instances
     *   Currently supported types are:

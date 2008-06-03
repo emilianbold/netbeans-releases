@@ -109,6 +109,12 @@ public final class SimpleValueNames {
      */
     public static final String CARET_TYPE_OVERWRITE_MODE = "caret-type-overwrite-mode"; // NOI18N
 
+    /** Width of caret when <code>thick-line-caret</code> is selected
+     * Values: java.lang.Integer instances
+     * @since 1.21
+     */
+    public static final String THICK_CARET_WIDTH = "thick-caret-width"; // NOI18N
+    
     /**
      * If true, the insert mode caret will be italicized if the underlying font is italic.
      * Values: java.lang.Boolean instances

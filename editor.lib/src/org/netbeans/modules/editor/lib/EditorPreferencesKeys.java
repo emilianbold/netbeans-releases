@@ -76,6 +76,7 @@ public final class EditorPreferencesKeys {
     public static final String CARET_ITALIC_OVERWRITE_MODE = SimpleValueNames.CARET_ITALIC_OVERWRITE_MODE;
     public static final String CARET_TYPE_INSERT_MODE = SimpleValueNames.CARET_TYPE_INSERT_MODE;
     public static final String CARET_TYPE_OVERWRITE_MODE = SimpleValueNames.CARET_TYPE_OVERWRITE_MODE;
+    public static final String THICK_CARET_WIDTH = SimpleValueNames.THICK_CARET_WIDTH;
     public static final String CODE_FOLDING_ENABLE = SimpleValueNames.CODE_FOLDING_ENABLE;
     public static final String EXPAND_TABS = SimpleValueNames.EXPAND_TABS;
     public static final String HYPERLINK_ACTIVATION_MODIFIERS = SimpleValueNames.HYPERLINK_ACTIVATION_MODIFIERS;

@@ -297,6 +297,7 @@ AtomicLockListener, FoldHierarchyListener {
             } else { // insert mode
                 newType = prefs.get(SimpleValueNames.CARET_TYPE_INSERT_MODE, EditorPreferencesDefaults.defaultCaretTypeInsertMode);
                 newItalic = prefs.getBoolean(SimpleValueNames.CARET_ITALIC_INSERT_MODE, EditorPreferencesDefaults.defaultCaretItalicInsertMode);
+                newWidth = prefs.getInt(SimpleValueNames.THICK_CARET_WIDTH, EditorPreferencesDefaults.defaultThickCaretWidth);
             }
 
             FontColorSettings fcs = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(c)).lookup(FontColorSettings.class);

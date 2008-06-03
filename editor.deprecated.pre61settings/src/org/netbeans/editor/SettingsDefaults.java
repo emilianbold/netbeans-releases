@@ -179,6 +179,7 @@ public class SettingsDefaults {
     public static final Boolean defaultExpandTabs = EditorPreferencesDefaults.defaultExpandTabs;
 
     public static final String defaultCaretTypeInsertMode = EditorPreferencesDefaults.defaultCaretTypeInsertMode;
+    public static final Integer defaultThickCaretWidth = EditorPreferencesDefaults.defaultThickCaretWidth;
     public static final String defaultCaretTypeOverwriteMode = EditorPreferencesDefaults.defaultCaretTypeOverwriteMode;
     public static final Color defaultCaretColorInsertMode = Color.black;
     public static final Color defaultCaretColorOvwerwriteMode = Color.black;
