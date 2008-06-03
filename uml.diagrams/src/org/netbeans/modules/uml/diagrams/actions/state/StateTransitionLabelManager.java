@@ -40,7 +40,7 @@ package org.netbeans.modules.uml.diagrams.actions.state;
 
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.EnumSet;
 import javax.swing.Action;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
@@ -52,6 +52,8 @@ import org.netbeans.modules.uml.diagrams.edges.BasicUMLLabelManager;
 import org.netbeans.modules.uml.diagrams.nodes.EditableCompartmentWidget;
 import org.netbeans.modules.uml.drawingarea.LabelManager.LabelType;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
+import org.netbeans.modules.uml.drawingarea.actions.ToggleLabelAction;
+import org.netbeans.modules.uml.drawingarea.support.ModelElementBridge;
 import org.openide.util.NbBundle;
 
 /**
@@ -73,17 +75,19 @@ public final class StateTransitionLabelManager extends BasicUMLLabelManager
     @Override
     public Action[] getContextActions(LabelType type)
     {
-        if (contextActions == null)
+        // ToggleLabelAction needs to be created each time popup is invoked to calculating allShowing var
+        // inefficient, seems a bug to me
+//        if (contextActions == null)
         {
             ArrayList<Action> actions = new ArrayList<Action>();
-//            actions.addAll(Arrays.asList(super.getContextActions(type)));
             
-            actions.add(new ToggleConditionLabelAction(this, NAME, LabelType.EDGE,
-                    NbBundle.getMessage(BasicUMLLabelManager.class, "LBL_NAME_LABEL")));
-            actions.add(new ToggleConditionLabelAction(this, PRECONDITION, LabelType.SOURCE,
+            
+            actions.add(new ToggleLabelAction(this, PRECONDITION, EnumSet.of(LabelType.SOURCE),
                     NbBundle.getMessage(StateTransitionLabelManager.class, "CTL_PreCondition")));
-            actions.add(new ToggleConditionLabelAction(this, POSTCONDITION, LabelType.TARGET,
+            actions.add(new ToggleLabelAction(this, POSTCONDITION, EnumSet.of(LabelType.TARGET),
                     NbBundle.getMessage(StateTransitionLabelManager.class, "CTL_PostCondition")));
+            actions.add(new ToggleLabelAction(this, NAME, EnumSet.of(LabelType.EDGE),
+                    NbBundle.getMessage(BasicUMLLabelManager.class, "LBL_NAME_LABEL")));
 
             contextActions = new Action[actions.size()];
             actions.toArray(contextActions);
@@ -127,15 +131,14 @@ public final class StateTransitionLabelManager extends BasicUMLLabelManager
             getModelElement().addOwnedConstraint(constraint);
             String text = getCondition(constraint);
 
-            EditableCompartmentWidget widget = new EditableCompartmentWidget(getScene(), constraint, "dummy", text);
+            EditableCompartmentWidget widget = new EditableCompartmentWidget(getScene(), constraint, null, null);
+            widget.setLabel(text);
             return widget;
 
         } else
         {
             return super.createLabel(name, type);
         }
-
-
     }
 
     private String getCondition(IConstraint constraint)
@@ -147,4 +150,19 @@ public final class StateTransitionLabelManager extends BasicUMLLabelManager
         }
         return text;
     }
+    
+
+     protected Object createAttachedData(String name, LabelType type)
+     {
+         if (type == LabelType.SOURCE)
+         {
+             return new ModelElementBridge(((ITransition)getModelElement()).getPreCondition());
+         }
+         else if (type == LabelType.TARGET)
+         {
+             return new ModelElementBridge(((ITransition)getModelElement()).getPostCondition());
+         }
+       
+         return new ModelElementBridge((getModelElement()));
+     }
 }
