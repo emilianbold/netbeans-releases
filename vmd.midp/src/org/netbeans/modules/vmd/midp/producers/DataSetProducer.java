@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,35 +31,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */package org.netbeans.modules.vmd.databinding.categories;
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ */
+package org.netbeans.modules.vmd.midp.producers;
 
-import org.netbeans.modules.vmd.api.io.DataObjectContext;
-import org.netbeans.modules.vmd.api.io.serialization.ComponentElement;
-import org.netbeans.modules.vmd.api.io.serialization.DocumentSerializationController;
-import org.netbeans.modules.vmd.api.io.serialization.PropertyElement;
+import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
-
-
-import java.util.Collection;
-import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
-import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
+import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
+import org.netbeans.modules.vmd.midp.components.DataSetCD;
+import org.netbeans.modules.vmd.midp.palette.DatabindingPaletteProvider;
+import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
+import org.openide.util.NbBundle;
 
 /**
+ *
  * @author Karol Harezlak
  */
-public class DatabindingCustomDocumentSerializationController extends DocumentSerializationController {
+public class DataSetProducer extends ComponentProducer {
 
-    public void approveComponents (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, Collection<ComponentElement> componentElements, DocumentErrorHandler errorHandler) {
-      
+    public static final String DATABINDING_CATEGORY = NbBundle.getMessage(DatabindingPaletteProvider.class, "vmd-midp/palette/databinding");
+
+    public DataSetProducer() {
+        super(DataSetCD.TYPEID.toString(), DataSetCD.TYPEID, new PaletteDescriptor(DATABINDING_CATEGORY, "DataSet", "DataSet", DataSetCD.ICON_PATH, null));
     }
 
-    public void approveProperties (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, DesignComponent component, Collection<PropertyElement> propertyElements, DocumentErrorHandler errorHandler) {
-      
+    @Override
+    public Result postInitialize(DesignDocument document, DesignComponent mainComponent) {
+        MidpProjectSupport.addLibraryToProject(document, "DataBindingME"); //NOI18N
+        return super.postInitialize(document, mainComponent);
     }
 
-    public void postValidateDocument (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, DocumentErrorHandler errorHandler) {
-        MidpDocumentSupport.getCategoryComponent(loadingDocument, DatabindingCategoryCD.TYPEID);
+    @Override
+    public Boolean checkValidity(DesignDocument document, boolean useCachedValue) {
+        return true;
     }
-
 }

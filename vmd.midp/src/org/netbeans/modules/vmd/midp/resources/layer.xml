@@ -127,6 +127,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-vmd-midp-components-categories-DisplayablesCategoryCD.instance"/>
             <file name="org-netbeans-modules-vmd-midp-components-categories-PointsCategoryCD.instance"/>
             <file name="org-netbeans-modules-vmd-midp-components-categories-ResourcesCategoryCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-categories-DatabindingCategoryCD.instance"/>
 
             <file name="org-netbeans-modules-vmd-midp-components-resources-ResourceCD.instance"/>
             <file name="org-netbeans-modules-vmd-midp-components-resources-FontCD.instance"/>
@@ -190,6 +191,8 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-vmd-midp-components-listeners-CommandListenerCD.instance"/>
             <file name="org-netbeans-modules-vmd-midp-components-listeners-ItemCommandListenerCD.instance"/>
             <file name="org-netbeans-modules-vmd-midp-components-listeners-ItemStateListenerCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-DataSetCD.instance"/>
+            
 
         </folder>
 
@@ -222,6 +225,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-vmd-midp-producers-MidpComponentProducer$Image.instance"/>
             <file name="org-netbeans-modules-vmd-midp-producers-MidpComponentProducer$Ticker.instance"/>
             <file name="org-netbeans-modules-vmd-midp-producers-MidpComponentProducer$TextField.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-DataSetProducer.instance"/>
         </folder>
         
         <folder name="inspectorfolders">

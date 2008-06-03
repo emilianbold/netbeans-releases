@@ -57,6 +57,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
+import org.netbeans.modules.vmd.midp.components.categories.DatabindingCategoryCD;
 
 
 /**
@@ -133,6 +134,7 @@ public class MidpDocumentSerializationController extends DocumentSerializationCo
         MidpDocumentSupport.getCategoryComponent(loadingDocument, DisplayablesCategoryCD.TYPEID);
         MidpDocumentSupport.getCategoryComponent(loadingDocument, PointsCategoryCD.TYPEID);
         MidpDocumentSupport.getCategoryComponent(loadingDocument, ResourcesCategoryCD.TYPEID);
+        MidpDocumentSupport.getCategoryComponent(loadingDocument, DatabindingCategoryCD.TYPEID);
         //checkInstanceNames(rootComponent.getComponents(), errorHandler);
     }
     
