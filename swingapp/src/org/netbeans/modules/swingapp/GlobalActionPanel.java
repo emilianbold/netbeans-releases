@@ -195,14 +195,14 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         actionTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 ProxyAction act = getSelectedAction();
+                DefaultListModel mod = new DefaultListModel();
                 if(act != null) {
                     List<RADComponent> list = actionManager.getBoundComponents(act);
-                    DefaultListModel mod = new DefaultListModel();
                     for(Object o : list) {
                         mod.addElement(o);
                     }
-                    boundComponentList.setModel(mod);
                 }
+                boundComponentList.setModel(mod);
             }
         });
         
