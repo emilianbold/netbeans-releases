@@ -87,6 +87,11 @@ public class StrictWarningTest extends HintTestBase {
         checkHints(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/sideeffects.js", null);
     }
 
+    public void testSideEffects2() throws Exception {
+        goldenfileSuffix = "";
+        checkHints(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/generated.js", null);
+    }
+
     // Test no false return warnings
     public void testReturnAnalysis() throws Exception {
         goldenfileSuffix = "";

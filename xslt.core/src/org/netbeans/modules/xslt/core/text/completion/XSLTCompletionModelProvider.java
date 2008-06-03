@@ -64,7 +64,6 @@ public class XSLTCompletionModelProvider extends CompletionModelProvider {
         FILE_XSLT_1_0_SCHEMA = "xslt_1_0.xsd", // NOI18N
         FILE_XSLT_1_1_SCHEMA = "xslt_1_1.xsd", // NOI18N
         FILE_XSLT_2_0_SCHEMA = "xslt_2_0.xsd"; // NOI18N
-
     public List<CompletionModel> getModels(CompletionContext context) {
         // Fix for IZ#  93505
         if (! isXsltFile(context)) return null;
@@ -101,7 +100,9 @@ public class XSLTCompletionModelProvider extends CompletionModelProvider {
     private static SchemaModel createMetaSchemaModel() {
         InputStream inputStream = null;
         try {
-            String resourcePath = RESOURCES_DIR + "/" + FILE_XSLT_1_0_SCHEMA;
+//********????????? String resourcePath = RESOURCES_DIR + "/" + FILE_XSLT_1_0_SCHEMA;
+String resourcePath = RESOURCES_DIR + "/" + FILE_XSLT_2_0_SCHEMA;
+            
             inputStream = XSLTDataLoader.class.getResourceAsStream(
                 resourcePath);
 
