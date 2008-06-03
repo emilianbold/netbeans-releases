@@ -37,59 +37,32 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.test.refactoring.operators;
+package org.netbeans.modules.test.refactoring.actions;
 
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
+import java.awt.event.KeyEvent;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
 /**
  *
  * @author Jiri Prox Jiri.Prox@Sun.COM
  */
-public class ParametersPanelOperator extends JDialogOperator {
+public class FindUsagesAction implements TestAction {
+            
+    public static final String popupPath = "Find Usages";
 
-    public ParametersPanelOperator(String name) {
-        super(name);
+    public FindUsagesAction() {
+        
     }
     
-    private JButtonOperator back;
-    private JButtonOperator preview;
-    private JButtonOperator refactor;
-    
-    public JButtonOperator getBack() {
-        if(back==null) {
-            back = new JButtonOperator(this, "< Back");            
-        }
-        return back;
-    }
-    
-    public JButtonOperator getPreview() {
-        if(preview==null) {
-            preview = new JButtonOperator(this, "Preview");            
-        }
-        return preview;
-    }
-    
-    public JButtonOperator getRefactor() {
-        if(refactor==null) {
-            refactor = new JButtonOperator(this, "Refactor");            
-        }
-        return refactor;
-    }
-    
-    public FindUsagesClassOperator getFindUsagesClassOperator() {
-        return null;
-        //return new FindUsagesClassOperator()
+    public void perform(EditorOperator editor) {
+        editor.pushKey(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK);        
+        JPopupMenuOperator jpmo = new JPopupMenuOperator();
+        jpmo.pushMenuNoBlock(new String[]{popupPath});        
     }
 
-    protected String getBungleText(String bundlePath, String bundleKey) {
-        String bundleText = java.util.ResourceBundle.getBundle(bundlePath).getString(bundleKey);
-        int index = bundleText.indexOf('&');
-        if (index == -1) {
-            return bundleText;
-        }
-        return bundleText.substring(0, index) + bundleText.substring(index + 1);
+    public void perform(Object parameter) {
+        perform((EditorOperator)parameter);
     }
-
+    
 }

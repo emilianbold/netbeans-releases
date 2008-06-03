@@ -39,31 +39,44 @@
 
 package org.netbeans.modules.test.refactoring.operators;
 
-import java.awt.event.KeyEvent;
-import javax.swing.JPopupMenu;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import javax.swing.JLabel;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 /**
  *
- * @author Jiri Prox Jiri.Prox@Sun.COM
+ * @author Jiri Prox Jiri.Prox@SUN.Com
  */
-public class FindUsagesAction extends Action {
+public class RenameOperator extends ParametersPanelOperator{
+    private JTextFieldOperator textField;
+    private JCheckBoxOperator commments;
+    private JLabelOperator error;
     
-    public static final String menuPath = null;
     
-    public static final String popupPath = "Find Usages";
+    public RenameOperator() {
+        super("Rename");
+    }
 
-    public FindUsagesAction() {
-        super(menuPath, popupPath);        
+    public JTextFieldOperator getNewName() {
+        if(textField==null) {
+            textField = new JTextFieldOperator(this);
+        }
+        return textField;
     }
-    
-    public void performPopup(EditorOperator editor) {
-        editor.pushKey(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK);        
-        JPopupMenuOperator jpmo = new JPopupMenuOperator();
-        jpmo.pushMenuNoBlock(new String[]{popupPath});        
+
+    public JCheckBoxOperator getComments() {
+        if(commments==null) {
+            commments = new JCheckBoxOperator(this);
+        }
+        return commments;
     }
-    
+
+    public JLabelOperator getError() {
+        if(error==null) {
+            error = new JLabelOperator(this);
+        }
+        return error;
+    }
+           
 }
