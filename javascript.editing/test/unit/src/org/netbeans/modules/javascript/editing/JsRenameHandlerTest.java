@@ -112,4 +112,8 @@ public class JsRenameHandlerTest extends JsTestBase {
     public void testRename14() throws Exception {
         checkRenameSections("testfiles/webuifunc.js", " @param test^param");
     }
+
+    public void testOffsets136162() throws Exception {
+        checkRenameSections("testfiles/rename2.js", "f^oo = \"bar\";");
+    }
 }
