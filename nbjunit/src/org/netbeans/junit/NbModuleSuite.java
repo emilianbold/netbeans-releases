@@ -118,7 +118,7 @@ public class NbModuleSuite {
             this.gui = gui;
         }
 
-        static Configuration create(Class<? extends Test> clazz) {
+        static Configuration create(Class<? extends TestCase> clazz) {
             return new Configuration(clazz, null, null, ClassLoader.getSystemClassLoader().getParent(), null, true);
         }
         
@@ -204,7 +204,7 @@ public class NbModuleSuite {
      *    codenamebase and those will be turned on
      * @return runtime container ready test
      */
-    public static Test create(Class<? extends Test> clazz, String clustersRegExp, String moduleRegExp) {
+    public static Test create(Class<? extends TestCase> clazz, String clustersRegExp, String moduleRegExp) {
         return new S(Configuration.create(clazz).clusters(clustersRegExp).enableModules(moduleRegExp));
     }
     
@@ -231,7 +231,7 @@ public class NbModuleSuite {
      * @return runtime container ready test
      * @since 1.49
      */
-    public static Test create(Class<? extends Test> clazz, String clustersRegExp, String moduleRegExp, String... tests) {
+    public static Test create(Class<? extends TestCase> clazz, String clustersRegExp, String moduleRegExp, String... tests) {
         Configuration conf = Configuration.create(clazz).clusters(clustersRegExp).enableModules(moduleRegExp);
         if (tests.length > 0) {
             conf = conf.addTest(tests);
@@ -250,7 +250,7 @@ public class NbModuleSuite {
      * @return runtime container ready test
      * @since 1.49
      */
-    public static Test allModules(Class<? extends Test> clazz, String... tests) {
+    public static Test allModules(Class<? extends TestCase> clazz, String... tests) {
         return create(clazz, ".*", ".*", tests);
     }
     
@@ -263,7 +263,7 @@ public class NbModuleSuite {
      *   be altered with its addition instance methods
      * @since 1.48
      */
-    public static Configuration createConfiguration(Class<? extends Test> clazz) {
+    public static Configuration createConfiguration(Class<? extends TestCase> clazz) {
         return Configuration.create(clazz);
     }
     
