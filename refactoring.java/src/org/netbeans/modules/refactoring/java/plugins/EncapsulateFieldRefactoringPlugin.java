@@ -885,10 +885,8 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                         null);
                 newNode = GeneratorUtilities.get(workingCopy).insertClassMember(newNode == null? node: newNode, setter);
             }
-            if (newNode == null) {
-                node = newNode;
-            }
-            return newNode;
+            
+            return newNode != null ? newNode : node;
         }
         
         private void resolveFieldDeclaration(VariableTree node, EncapsulateDesc desc) {
