@@ -118,6 +118,24 @@ public class LibrariesSupportTest extends NbTestCase {
                 f.toURI().toURL(), 
                 new URI(null, null, "ber tie.jar!/main/ja va", null));
         assertEquals(new URI("jar:"+ (new File(f.getParentFile(), f2.getName()).toURI().toString()) + "!/main/ja%20va"), u);
+        // UNC paths
+        if(System.getProperty("java.version").startsWith("1.5")) {
+            // URI.toURL() doesn't work for UNC on 1.5.
+            return;
+        }
+        URI uncBaseURI = URI.create("file:////computerName/sharedFolder/a/b/c/d.properties");
+        URI uncEntryURI = URI.create("e/e.jar");
+        URI expectedURI = new File(new File(uncBaseURI).getParent(), uncEntryURI.getPath()).toURI();
+        URI resolvedURI = LibrariesSupport.resolveLibraryEntryURI(uncBaseURI.toURL(), uncEntryURI);
+        assertEquals("UNC entry wrongly resolved.", expectedURI, resolvedURI);
+        uncEntryURI = new URI(null, null, "e/e.jar!/f f/f", null);
+        expectedURI = URI.create("jar:"+new File(new File(uncBaseURI).getParent(), uncEntryURI.getPath()).toURI().toString());
+        resolvedURI = LibrariesSupport.resolveLibraryEntryURI(uncBaseURI.toURL(), uncEntryURI);
+        assertEquals("UNC jar entry wrongly resolved.", expectedURI, resolvedURI);
+        uncEntryURI = new URI(null, null, "e/e.jar!/", null);
+        expectedURI = URI.create("jar:"+new File(new File(uncBaseURI).getParent()).toURI().toString()+"/e/e.jar!/");
+        resolvedURI = LibrariesSupport.resolveLibraryEntryURI(uncBaseURI.toURL(), uncEntryURI);
+        assertEquals("UNC jar entry wrongly resolved.", expectedURI, resolvedURI);   
     }
 
 }
