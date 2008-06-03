@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.extexecution.api;
+package org.netbeans.modules.extexecution;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -47,6 +47,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 
+import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileAttributeEvent;
@@ -58,6 +59,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
+import org.openide.util.Task;
 import org.openide.util.Utilities;
 
 
@@ -69,7 +71,7 @@ import org.openide.util.Utilities;
  *
  * @author Tor Norbye
  */
-final class RerunAction extends AbstractAction implements FileChangeListener {
+public final class RerunAction extends AbstractAction implements FileChangeListener {
     private ExecutionService prototype;
     private FileObject fileObject;
 
@@ -110,7 +112,8 @@ final class RerunAction extends AbstractAction implements FileChangeListener {
             }
         }
 
-        prototype.rerun();
+        Accessor.DEFAULT.rerun(prototype);
+        //prototype.rerun();
     }
 
     public void fileDeleted(FileEvent fe) {
@@ -136,4 +139,27 @@ final class RerunAction extends AbstractAction implements FileChangeListener {
         // #84874: should be disabled in case the original Ant script is now gone.
         return super.isEnabled() && ((fileObject == null) || fileObject.isValid());
     }
+    
+    /**
+     * The accessor pattern class.
+     */
+    public abstract static class Accessor {
+
+        /** The default accessor. */
+        public static Accessor DEFAULT;
+
+        static {
+            // invokes static initializer of GrailsRuntime.class
+            // that will assign value to the DEFAULT field above
+            Class c = ExecutionService.class;
+            try {
+                Class.forName(c.getName(), true, c.getClassLoader());
+            } catch (ClassNotFoundException ex) {
+                assert false : ex;
+            }
+        }
+
+        public abstract Task rerun(ExecutionService service);
+
+    }    
 }

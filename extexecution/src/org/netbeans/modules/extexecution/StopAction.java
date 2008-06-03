@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.extexecution.api;
+package org.netbeans.modules.extexecution;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
@@ -55,7 +55,7 @@ import org.openide.util.Utilities;
  *
  * @author Tor Norbye
  */
-final class StopAction extends AbstractAction {
+public final class StopAction extends AbstractAction {
 
     private Process process;
 
