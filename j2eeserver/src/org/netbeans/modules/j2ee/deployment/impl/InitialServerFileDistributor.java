@@ -44,9 +44,12 @@ package org.netbeans.modules.j2ee.deployment.impl;
 
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.channels.FileChannel;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.jar.JarOutputStream;
@@ -233,19 +236,42 @@ public class InitialServerFileDistributor extends ServerProgress {
         notify(createCompletedProgressEvent(CommandType.DISTRIBUTE, message)); 
     }
 
-    private void copyFile(FileObject sourceObject, File directory, String relativePath) throws IOException {     
-        FileObject targetObject = FileUtil.createData(new File(directory, relativePath));
-                
-        InputStream is = sourceObject.getInputStream();
+    // Make this method speedie quick... since folks can have large
+    // projects, but expect the IDE to be as fast or faster that zip or jar
+    //
+    private void copyFile(FileObject sourceObject, File directory, String relativePath) throws IOException {  
+        File destFile = new File(directory, relativePath);
+        FileObject targetObject = FileUtil.createData(destFile);
+        FileOutputStream os = new FileOutputStream(destFile);
+        FileInputStream fis = null;
+        InputStream is = null;
+        FileChannel in = null;
+        FileChannel out = null;
         try {
-            OutputStream os = targetObject.getOutputStream();
-            try {
+            File sourceFile = FileUtil.toFile(sourceObject);
+            if (null != sourceFile && sourceFile.canRead()) {
+                // we are coming from a readable file
+                fis = new FileInputStream(sourceFile);
+                in = fis.getChannel();
+                out = os.getChannel();
+                
+                long fileSize = sourceFile.length();
+                long bufSize = Math.min(65536,fileSize);
+                long offset = 0;
+                
+                do {
+                    offset += in.transferTo(offset, bufSize, out);
+                } while (offset < fileSize);
+            } else {
+                is = sourceObject.getInputStream();
                 FileUtil.copy(is, os);
-            } finally {
-                os.close();
             }
         } finally {
-            is.close();
+            if (null != out) { try { out.close(); } catch (IOException ioe) {} }
+            if (null != in) {try { in.close(); } catch (IOException ioe) {} }
+            if (null != is) { try { is.close(); } catch (IOException ioe) {} }
+            if (null != fis) { try { fis.close(); } catch (IOException ioe) {} }
+            if (null != os) { try { os.close(); } catch (IOException ioe) {} }
         }
     }
 

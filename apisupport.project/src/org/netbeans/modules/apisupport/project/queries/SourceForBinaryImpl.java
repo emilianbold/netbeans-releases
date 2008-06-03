@@ -142,7 +142,7 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
     private URL getClassesUrl() {
         if (classesUrl == null) {
             File classesDir = project.getClassesDirectory();
-            classesUrl = FileUtil.urlForArchiveOrDir(classesDir);
+            classesUrl = classesDir != null ? FileUtil.urlForArchiveOrDir(classesDir) : null;
         }
         return classesUrl;
     }
@@ -150,7 +150,7 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
     private URL getTestClassesUrl() {
         if (testClassesUrl == null && project.supportsUnitTests()) {
             File testClassesDir = project.getTestClassesDirectory();
-            testClassesUrl = FileUtil.urlForArchiveOrDir(testClassesDir);
+            testClassesUrl = testClassesDir != null ? FileUtil.urlForArchiveOrDir(testClassesDir) : null;
         }
         return testClassesUrl;
     }

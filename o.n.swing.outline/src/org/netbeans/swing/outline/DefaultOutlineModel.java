@@ -131,8 +131,11 @@ public class DefaultOutlineModel implements OutlineModel {
     /** Create an OutlineModel using the supplied tree model and row model,
      * specifying if it is a large-model tree */
     public static OutlineModel createOutlineModel(TreeModel treeModel, RowModel rowModel, boolean isLargeModel, String nodesColumnLabel) {
-        TableModel tableModel = new ProxyTableModel(rowModel);
-        return new DefaultOutlineModel (treeModel, tableModel, isLargeModel, nodesColumnLabel);
+        return new DefaultOutlineModel (treeModel, rowModel, isLargeModel, nodesColumnLabel);
+    }
+    
+    protected DefaultOutlineModel(TreeModel treeModel, RowModel rowModel, boolean largeModel, String nodesColumnLabel) {
+        this( treeModel, new ProxyTableModel(rowModel), largeModel, nodesColumnLabel );
     }
     
     /** Creates a new instance of DefaultOutlineModel.  <strong><b>Note</b> 

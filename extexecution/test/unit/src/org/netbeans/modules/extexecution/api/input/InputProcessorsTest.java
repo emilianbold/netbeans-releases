@@ -41,8 +41,8 @@ package org.netbeans.modules.extexecution.api.input;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
@@ -53,30 +53,24 @@ import org.netbeans.junit.NbTestCase;
  */
 public class InputProcessorsTest extends NbTestCase {
 
-    private static final byte[] PROXY_BYTES_CHUNK1 = new byte[] {
-        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09
-    };
+    private static final char[] PROXY_CHARS_CHUNK1 = "abcdefghij".toCharArray();
 
-    private static final byte[] PROXY_BYTES_CHUNK2 = new byte[] {
-        0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00
-    };
+    private static final char[] PROXY_CHARS_CHUNK2 = "jihgfedcba".toCharArray();
 
-    private static final byte[][] PROXY_TEST_BYTES = new byte[][] {
-        PROXY_BYTES_CHUNK1, PROXY_BYTES_CHUNK2
+    private static final char[][] PROXY_TEST_CHARS = new char[][] {
+        PROXY_CHARS_CHUNK1, PROXY_CHARS_CHUNK2
     };
-
-    private static final Charset TEST_CHARSET = Charset.forName("UTF-8");
 
     private static final List<String> BRIDGE_TEST_LINES = new ArrayList<String>();
 
-    private static final byte[][] BRIDGE_TEST_BYTES;
+    private static final char[][] BRIDGE_TEST_CHARS;
 
     static {
         Collections.addAll(BRIDGE_TEST_LINES, "test1", "test2");
 
-        BRIDGE_TEST_BYTES = new byte[BRIDGE_TEST_LINES.size()][];
+        BRIDGE_TEST_CHARS = new char[BRIDGE_TEST_LINES.size()][];
         for (int i = 0; i < BRIDGE_TEST_LINES.size(); i++) {
-            BRIDGE_TEST_BYTES[i] = TEST_CHARSET.encode(BRIDGE_TEST_LINES.get(i) + "\n").array();
+            BRIDGE_TEST_CHARS[i] = (BRIDGE_TEST_LINES.get(i) + "\n").toCharArray();
         }
     }
 
@@ -86,9 +80,9 @@ public class InputProcessorsTest extends NbTestCase {
 
     public void testBridge() throws IOException {
         TestLineProcessor processor = new TestLineProcessor(false);
-        InputProcessor bridge = InputProcessors.bridge(processor, TEST_CHARSET);
+        InputProcessor bridge = InputProcessors.bridge(processor);
 
-        for (byte[] chunk : BRIDGE_TEST_BYTES) {
+        for (char[] chunk : BRIDGE_TEST_CHARS) {
             bridge.processInput(chunk);
         }
 
@@ -105,14 +99,14 @@ public class InputProcessorsTest extends NbTestCase {
 
         InputProcessor proxy = InputProcessors.proxy(processor1, processor2);
         int size = 0;
-        for (byte[] chunk : PROXY_TEST_BYTES) {
+        for (char[] chunk : PROXY_TEST_CHARS) {
             proxy.processInput(chunk);
             size += chunk.length;
         }
 
-        byte[] expected = new byte[size];
+        char[] expected = new char[size];
         int position = 0;
-        for (byte[] chunk : PROXY_TEST_BYTES) {
+        for (char[] chunk : PROXY_TEST_CHARS) {
             System.arraycopy(chunk, 0, expected, position, chunk.length);
             position += chunk.length;
         }
@@ -120,8 +114,8 @@ public class InputProcessorsTest extends NbTestCase {
         assertEquals(0, processor1.getResetCount());
         assertEquals(0, processor2.getResetCount());
 
-        assertEquals(expected, processor1.getBytesProcessed());
-        assertEquals(expected, processor2.getBytesProcessed());
+        assertTrue(Arrays.equals(expected, processor1.getCharsProcessed()));
+        assertTrue(Arrays.equals(expected, processor2.getCharsProcessed()));
 
         proxy.reset();
 
@@ -131,29 +125,22 @@ public class InputProcessorsTest extends NbTestCase {
 
     public void testPrinting() throws IOException {
         TestInputWriter writer = new TestInputWriter(new PrintWriter(System.out));
-        InputProcessor processor = InputProcessors.printing(writer, TEST_CHARSET, true);
+        InputProcessor processor = InputProcessors.printing(writer, true);
 
-        processor.processInput(TEST_CHARSET.encode("pre").array());
+        processor.processInput("pre".toCharArray());
         assertEquals("pre", writer.getPrintedRaw());
-        processor.processInput(TEST_CHARSET.encode("test1\n").array());
+        processor.processInput("test1\n".toCharArray());
         assertEquals("pretest1\n", writer.getPrintedRaw());
-        processor.processInput(TEST_CHARSET.encode("test2\n").array());
+        processor.processInput("test2\n".toCharArray());
         assertEquals("pretest1\ntest2\n", writer.getPrintedRaw());
-        processor.processInput(TEST_CHARSET.encode("test3").array());
+        processor.processInput("test3".toCharArray());
         assertEquals("pretest1\ntest2\ntest3", writer.getPrintedRaw());
 
         assertEquals(0, writer.getResetsProcessed());
         processor.reset();
         assertEquals(1, writer.getResetsProcessed());
-        
-        processor.processInput(TEST_CHARSET.encode("\n").array());
-    }
 
-    private static <T> void assertEquals(byte[] expected, byte[] value) {
-        assertEquals(expected.length, value.length);
-        for (int i = 0; i < expected.length; i++) {
-            assertEquals(expected[i], value[i]);
-        }
+        processor.processInput("\n".toCharArray());
     }
 
     private static <T> void assertEquals(List<T> expected, List<T> value) {
