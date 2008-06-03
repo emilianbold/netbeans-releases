@@ -140,6 +140,17 @@ made subject to such option by the copyright holder.
     <folder name="Editors">
         <folder name="application">
             <folder name="x-httpd-eruby">
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <file name="org-netbeans-modules-ruby-railsprojects-keybindings.xml" url="DefaultKeyBindings.xml"/>
+                        <file name="org-netbeans-modules-ruby-railsprojects-keybindings-mac.xml" url="DefaultKeyBindings-Mac.xml">
+                            <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                        </file>
+                    </folder>
+                </folder>
+                <folder name="Actions">
+                    <file name="org-netbeans-modules-ruby-railsprojects-GenerateAction$EditorAction.instance"/>
+                </folder>
                 <folder name="Popup">
                     <folder name="goto">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.railsprojects.Bundle"/>
@@ -158,6 +169,17 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="text">
             <folder name="x-ruby"> 
+                <folder name="Actions">
+                    <file name="org-netbeans-modules-ruby-railsprojects-GenerateAction$EditorAction.instance"/>
+                </folder>
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <file name="org-netbeans-modules-ruby-railsprojects-keybindings.xml" url="DefaultKeyBindings.xml"/>
+                        <file name="org-netbeans-modules-ruby-railsprojects-keybindings-mac.xml" url="DefaultKeyBindings-Mac.xml">
+                            <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                        </file>
+                    </folder>
+                </folder>
                 <folder name="Popup">
                     <folder name="goto">
                         <file name="org-netbeans-modules-ruby-railsprojects-GotoActionView.shadow">

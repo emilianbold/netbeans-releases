@@ -207,9 +207,9 @@ public class PropertyTest extends JellyTestCase {
         optionsOperator.switchToClassicView();
         // "IDE Configuration|System|Print Settings"
         String printSettingsPath = 
-                Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration")+"|"+
-                Bundle.getString("org.netbeans.core.Bundle", "UI/Services/IDEConfiguration/System")+"|"+
-                Bundle.getString("org.netbeans.core.Bundle", "Services/org-openide-text-PrintSettings.settings");
+                Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration")+"|"+
+                Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration/System")+"|"+
+                Bundle.getString("org.netbeans.core.ui.resources.Bundle", "Services/org-openide-text-PrintSettings.settings");
         PropertySheetOperator printPso = optionsOperator.getPropertySheet(printSettingsPath);
         try{
             // test boolean property

@@ -113,6 +113,7 @@ import org.netbeans.modules.gsf.api.Rule.ErrorRule;
 import org.netbeans.modules.gsf.api.Rule.SelectionRule;
 import org.netbeans.modules.gsf.api.Rule.UserConfigurableRule;
 import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.modules.gsfret.hints.infrastructure.GsfHintsManager;
 import org.netbeans.modules.gsfret.hints.infrastructure.HintsSettings;
 import org.netbeans.napi.gsfret.source.Source;
@@ -523,7 +524,7 @@ public abstract class GsfTestBase extends NbTestCase {
         return null;
     }
 
-    protected GsfLanguage getPreferredLanguage() {
+    protected DefaultLanguageConfig getPreferredLanguage() {
         return null;
     }
     
@@ -577,17 +578,18 @@ public abstract class GsfTestBase extends NbTestCase {
     }
     
     ////////////////////////////////////////////////////////////////////////////
-    // Bracket completion tests
+    // Keystroke completion tests
     ////////////////////////////////////////////////////////////////////////////
-    protected KeystrokeHandler getBracketCompletion() {
-        return null;
+    protected KeystrokeHandler getKeystrokeHandler() {
+        KeystrokeHandler handler = getPreferredLanguage().getKeystrokeHandler();
+        assertNotNull("You must override getKeystrokeHandler, either from your GsfLanguage or your test class", handler);
+        return handler;
     }
 
     // Also requires getFormatter(IndentPref) defined below under the formatting tests
     
     protected void assertMatches(String original) throws BadLocationException {
-        KeystrokeHandler bc = getBracketCompletion();
-        assertNotNull("getBracketCompletion() must be implemented!", bc);
+        KeystrokeHandler bc = getKeystrokeHandler();
         int caretPos = original.indexOf('^');
         
         original = original.substring(0, caretPos) + original.substring(caretPos+1);
@@ -617,8 +619,8 @@ public abstract class GsfTestBase extends NbTestCase {
     }
     
     protected void insertBreak(String original, String expected) throws BadLocationException {
-        KeystrokeHandler bc = getBracketCompletion();
-        assertNotNull("getBracketCompletion() must be implemented!", bc);
+        KeystrokeHandler bc = getKeystrokeHandler();
+        assertNotNull("getKeystrokeHandler() must be implemented!", bc);
         
         int insertOffset = original.indexOf('^');
         int finalCaretPos = expected.indexOf('^');
@@ -690,8 +692,8 @@ public abstract class GsfTestBase extends NbTestCase {
     }
 
     protected void insertChar(String original, char insertText, String expected, String selection, boolean codeTemplateMode) throws BadLocationException {
-        KeystrokeHandler bc = getBracketCompletion();
-        assertNotNull("getBracketCompletion() must be implemented!", bc);
+        KeystrokeHandler bc = getKeystrokeHandler();
+        assertNotNull("getKeystrokeHandler() must be implemented!", bc);
         
         int insertOffset = original.indexOf('^');
         int finalCaretPos = expected.indexOf('^');
@@ -747,8 +749,8 @@ public abstract class GsfTestBase extends NbTestCase {
     }
 
     protected void deleteChar(String original, String expected) throws BadLocationException {
-        KeystrokeHandler bc = getBracketCompletion();
-        assertNotNull("getBracketCompletion() must be implemented!", bc);
+        KeystrokeHandler bc = getKeystrokeHandler();
+        assertNotNull("getKeystrokeHandler() must be implemented!", bc);
 
         int afterRemoveOffset = original.indexOf('^');
         int finalCaretPos = expected.indexOf('^');
@@ -782,8 +784,8 @@ public abstract class GsfTestBase extends NbTestCase {
     }
     
     protected void deleteWord(String original, String expected) throws BadLocationException {
-        KeystrokeHandler bc = getBracketCompletion();
-        assertNotNull("getBracketCompletion() must be implemented!", bc);
+        KeystrokeHandler bc = getKeystrokeHandler();
+        assertNotNull("getKeystrokeHandler() must be implemented!", bc);
 
         int afterRemoveOffset = original.indexOf('^');
         int finalCaretPos = expected.indexOf('^');
@@ -821,8 +823,8 @@ public abstract class GsfTestBase extends NbTestCase {
     }
 
     protected void assertLogicalRange(String source, boolean up, String expected) throws Exception {
-        KeystrokeHandler completer = getBracketCompletion();
-        assertNotNull("getBracketCompletion() must be implemented!", completer);
+        KeystrokeHandler completer = getKeystrokeHandler();
+        assertNotNull("getKeystrokeHandler() must be implemented!", completer);
 
         String BEGIN = "%<%"; // NOI18N
         String END = "%>%"; // NOI18N
@@ -913,7 +915,9 @@ public abstract class GsfTestBase extends NbTestCase {
     // Mark Occurrences Tests
     ////////////////////////////////////////////////////////////////////////////
     protected OccurrencesFinder getOccurrencesFinder() {
-        return null;
+        OccurrencesFinder handler = getPreferredLanguage().getOccurrencesFinder();
+        assertNotNull("You must override getOccurrencesFinder, either from your GsfLanguage or your test class", handler);
+        return handler;
     }
     
     /** Test the occurrences to make sure they equal the golden file.
@@ -1013,7 +1017,9 @@ public abstract class GsfTestBase extends NbTestCase {
     // Semantic Highlighting Tests
     ////////////////////////////////////////////////////////////////////////////
     protected SemanticAnalyzer getSemanticAnalyzer() {
-        return null;
+        SemanticAnalyzer handler = getPreferredLanguage().getSemanticAnalyzer();
+        assertNotNull("You must override getSemanticAnalyzer, either from your GsfLanguage or your test class", handler);
+        return handler;
     }
     
     protected void checkSemantic(String relFilePath, String caretLine) throws Exception {
@@ -1115,7 +1121,9 @@ public abstract class GsfTestBase extends NbTestCase {
     // Rename Handling Tests
     ////////////////////////////////////////////////////////////////////////////
     protected InstantRenamer getRenameHandler() {
-        return null;
+        InstantRenamer handler = getPreferredLanguage().getInstantRenamer();
+        assertNotNull("You must override getRenameHandler, either from your GsfLanguage's getInstantRenamer or your test class", handler);
+        return handler;
     }
 
     protected void checkRenameSections(String relFilePath, String caretLine) throws Exception {
@@ -1192,7 +1200,9 @@ public abstract class GsfTestBase extends NbTestCase {
     // Indexing Tests
     ////////////////////////////////////////////////////////////////////////////
     public Indexer getIndexer() {
-        return null;
+        Indexer handler = getPreferredLanguage().getIndexer();
+        assertNotNull("You must override getIndexer, either from your GsfLanguage or your test class", handler);
+        return handler;
     }
     
     protected List<IndexDocument> indexFile(String relFilePath) throws Exception {
@@ -1393,7 +1403,9 @@ public abstract class GsfTestBase extends NbTestCase {
     // Structure Analyzer Tests
     ////////////////////////////////////////////////////////////////////////////
     public StructureScanner getStructureScanner() {
-        return null;
+        StructureScanner handler = getPreferredLanguage().getStructureScanner();
+        assertNotNull("You must override getStructureScanner, either from your GsfLanguage or your test class", handler);
+        return handler;
     }
     
     protected void checkStructure(String relFilePath) throws Exception {
@@ -1609,7 +1621,9 @@ public abstract class GsfTestBase extends NbTestCase {
     // Formatting Tests
     ////////////////////////////////////////////////////////////////////////////
     protected Formatter getFormatter(IndentPrefs preferences) {
-        return null;
+        Formatter formatter = getPreferredLanguage().getFormatter();
+        assertNotNull("You must override getFormatter, either from your GsfLanguage or your test class", formatter);
+        return formatter;
     }
 
     public class IndentPrefs {
@@ -1720,7 +1734,9 @@ public abstract class GsfTestBase extends NbTestCase {
     // Code Completion Tests
     ////////////////////////////////////////////////////////////////////////////
     protected CodeCompletionHandler getCodeCompleter() {
-        return null;
+        CodeCompletionHandler handler = getPreferredLanguage().getCompletionHandler();
+        assertNotNull("You must override getCompletionHandler, either from your GsfLanguage or your test class", handler);
+        return handler;
     }
 
     protected String describe(String caretLine, NameKind kind, QueryType type, List<CompletionProposal> proposals, 
@@ -2420,15 +2436,13 @@ public abstract class GsfTestBase extends NbTestCase {
         return sb.toString();
     }
     
-    
-    
-    
-    
     ////////////////////////////////////////////////////////////////////////////
     // Hints / Quickfix Tests
     ////////////////////////////////////////////////////////////////////////////
     protected HintsProvider getHintsProvider() {
-        throw new RuntimeException("You must override getHintsProvider before runnign hints tests!");
+        HintsProvider provider = getPreferredLanguage().getHintsProvider();
+        assertNotNull("You must override getHintsProvider, either from your GsfLanguage or your test class", provider);
+        return provider;
     }
 
     private GsfHintsManager getHintsManager(org.netbeans.modules.gsf.Language language) {

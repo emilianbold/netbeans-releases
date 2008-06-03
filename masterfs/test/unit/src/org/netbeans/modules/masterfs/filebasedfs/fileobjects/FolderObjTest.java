@@ -634,8 +634,8 @@ public class FolderObjTest extends NbTestCase {
                 fs.getRoot().getFileObject(f.getAbsolutePath().replace('\\','/'));
             }
             assertSame(fo.toString(), fo0, fo);
-            
-            if (f.getParentFile() != null) {
+
+            if(!f.getParentFile().equals(FileUtil.toFile(FileObjectFactory.getInstance(f).getRoot()))) {
                 FileObject parent = fo.getParent();
                 assertNotNull(parent);
                 String nameExt = fo.getNameExt();
@@ -652,11 +652,12 @@ public class FolderObjTest extends NbTestCase {
                 fo = null; fo0 = null; fo2 = null; parent = null;fos = null; list = null;
                 assertGC(msg, ref);                
             } else {
-                //dsik roots are kept by hard reference
+                //disk roots are kept by hard reference
                 WeakReference ref = new WeakReference (fo);
                 String msg = fo.toString();
                 fo = null; fo0 = null; 
                 assertNotNull(msg, ref.get());                                
+                break;
             }
             
             f = f.getParentFile();
@@ -710,7 +711,7 @@ public class FolderObjTest extends NbTestCase {
         FileSystem fs = FileBasedFileSystem.getInstance();
         assertNotNull(fs);
         
-        while (f != null) {            
+        while (f != null && f.exists()) {            
             FileObject fo = FileBasedFileSystem.getFileObject(f);
             assertNotNull(f.getAbsolutePath(),fo);
             assertEquals(f.isFile(), fo.isData());
@@ -730,7 +731,7 @@ public class FolderObjTest extends NbTestCase {
         FileSystem fs = FileBasedFileSystem.getInstance();
         assertNotNull(fs);
         
-        while (f != null) {            
+        while (f != null && f.exists()) {            
             FileObject fo = FileBasedFileSystem.getFileObject(f);
             assertNotNull(f.getAbsolutePath(),fo);
             if (fo.isFolder() && !fo.isRoot()) {
@@ -749,7 +750,7 @@ public class FolderObjTest extends NbTestCase {
         FileSystem fs = FileBasedFileSystem.getInstance();
         assertNotNull(fs);
         FileObject fo = null;
-        while (f != null) {            
+        while (f != null && f.exists()) {
             fo = FileBasedFileSystem.getFileObject(f);
             assertNotNull(f.getAbsolutePath(),fo);
             f = f.getParentFile();            
@@ -775,7 +776,7 @@ public class FolderObjTest extends NbTestCase {
         FileSystem fs = FileBasedFileSystem.getInstance();
         assertNotNull(fs);
         
-        while (f != null) {            
+        while (f != null && f.exists()) {
             FileObject fo = FileBasedFileSystem.getFileObject(f);
             assertNotNull(f.getAbsolutePath(),fo);
             FileObject parent = fo.getParent();

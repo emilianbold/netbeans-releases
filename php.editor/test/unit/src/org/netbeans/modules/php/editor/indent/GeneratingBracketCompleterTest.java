@@ -216,6 +216,7 @@ public class GeneratingBracketCompleterTest extends TestBase {
         PHPBracketCompleter bc = new PHPBracketCompleter();
         
         BaseDocument doc = (BaseDocument) info.getDocument();//PHPBracketCompleterTest.getDocument(original);
+        assertNotNull(doc);
 
         doc.putProperty(org.netbeans.api.lexer.Language.class, PHPTokenId.language());
         doc.putProperty("mimeType", PHPLanguage.PHP_MIME_TYPE);

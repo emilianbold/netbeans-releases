@@ -2012,41 +2012,87 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </pathconvert>
   </target>
   
-  <target name="gen-sigtests" depends="sigtests-init">
+  <target name="gen-sigtests" depends="sigtests-init"
+    description="Generates snaphost of API of all modules"
+  >
     <echo message="Generating signature files for ${cluster.config} modules"/>
+    <property name="sigtest.basedir" location="build/sigtest/snapshot"/>
+    
+    <subant target="gen-sigtest" buildpath="${modules.fullpath}">
+      <property name="ant.core.lib" value="${ant.core.lib}"/>
+      <property name="sigtest.basedir" value="${sigtest.basedir}"/>
+    </subant>
+  </target>
+
+  <target name="gen-sigtests-release" depends="bootstrap"
+    description="Generates signature files into stable API modules directories"
+  >
+    <echo message="Generating signature files into stable API modules directories"/>
+
+    <pathconvert property="modules.fullpath" >
+        <path>
+            <dirset dir="${nb_all}" includes="${config.javadoc.stable}" />
+        </path>
+        <mapper type="identity" />
+    </pathconvert>
     
     <subant target="gen-sigtest" buildpath="${modules.fullpath}">
       <property name="ant.core.lib" value="${ant.core.lib}"/>
     </subant>
   </target>
-
-  <target name="check-sigtests" depends="sigtests-init">
-    <echo message="Checking signature files for ${cluster.config} modules"/>
+  
+  <target name="check-sigtests-release" depends="bootstrap"
+    description="Checks signature files of stable API modules"
+  >
+    <echo message="Checking signature files of stable API modules"/>
     
-    <property name="sigtest.output.dir" location="build/sigtestscheck"/>
+    <property name="sigtest.output.dir" location="build/sigtest/check-release"/>
+    <delete dir="${sigtest.output.dir}"/>
+    <mkdir dir="${sigtest.output.dir}"/>
+    <pathconvert property="modules.fullpath" >
+        <path>
+            <dirset dir="${nb_all}" includes="${config.javadoc.stable}" />
+        </path>
+        <mapper type="identity" />
+    </pathconvert>
+    <subant target="check-sigtest" buildpath="${modules.fullpath}">
+        <property name="sigtest.output.dir" value="${sigtest.output.dir}"/>
+        <property name="ant.core.lib" value="${ant.core.lib}"/>
+    </subant>
+  </target>
+
+  <target name="check-sigtests">
+    <echo message="Checking signature files for ${cluster.config} modules"/>
+    <property name="sigtest.output.dir" location="build/sigtest/check-snapshot"/>
+    <antcall target="-do-check-sigtests">
+        <param name="sigtest.check.type" value="strictcheck"/>
+        <param name="sigtest.fail.on.error" value="false"/>
+        <param name="sigtest.output.dir" value="${sigtest.output.dir}"/>
+    </antcall>
+    <junitreport todir="${sigtest.output.dir}">
+        <fileset dir="${sigtest.output.dir}">
+            <include name="*.xml"/>
+        </fileset>
+        <report todir="${sigtest.output.dir}/html" format="frames"/>
+    </junitreport>
+    <echo message="Report generated to ${sigtest.output.dir}/html/index.html"/>
+  </target>
+  
+  <target name="-do-check-sigtests" depends="sigtests-init">
+    <fail unless="sigtest.check.type"/>
+    <fail unless="sigtest.fail.on.error"/>
+    <fail unless="sigtest.output.dir"/>
+
+    <property name="sigtest.basedir" location="build/sigtest/snapshot"/>
+    
+    <mkdir dir="${sigtest.basedir}"/>
     <delete dir="${sigtest.output.dir}"/>
     <mkdir dir="${sigtest.output.dir}"/>
     <subant target="check-sigtest" buildpath="${modules.fullpath}">
         <property name="sigtest.output.dir" value="${sigtest.output.dir}"/>
         <property name="ant.core.lib" value="${ant.core.lib}"/>
+        <property name="sigtest.basedir" value="${sigtest.basedir}"/>
     </subant>
-    
-    <concat destfile="${sigtest.output.dir}/all">
-        <fileset dir="${sigtest.output.dir}">
-            <include name="*"/>
-            <exclude name="all"/>
-        </fileset>
-    </concat>
-    
-    <loadfile property="sigtest.output" srcfile="${sigtest.output.dir}/all" failonerror="false"/>
-    <property name="sigtest.output" value=""/>
-    <delete file="${sigtest.output.dir}/all"/>
-    
-    <fail message="Sigtest failed${line.separator}${sigtest.output}">
-        <condition>
-            <not><equals arg1="" arg2="${sigtest.output}"/></not>
-        </condition>
-    </fail>
   </target>
 
   <target name="findbugs">

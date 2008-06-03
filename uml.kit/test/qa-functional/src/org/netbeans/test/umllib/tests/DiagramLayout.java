@@ -61,7 +61,7 @@ import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.modules.uml.ui.products.ad.graphobjects.ETEdge;
+//6.0import org.netbeans.modules.uml.ui.products.ad.graphobjects.ETEdge;
 import org.netbeans.test.umllib.DiagramElementOperator;
 import org.netbeans.test.umllib.DiagramOperator;
 import org.netbeans.test.umllib.DiagramToolbarOperator;
@@ -72,7 +72,7 @@ import org.netbeans.test.umllib.exceptions.NotFoundException;
 import org.netbeans.test.umllib.exceptions.UMLCommonException;
 import org.netbeans.test.umllib.testcases.UMLTestCase;
 import org.netbeans.test.umllib.util.JPopupByPointChooser;
-import com.tomsawyer.drawing.geometry.TSConstPoint;
+//6.0 import com.tomsawyer.drawing.geometry.TSConstPoint;
 
 /**
  *
@@ -546,21 +546,21 @@ public abstract class DiagramLayout extends UMLTestCase {
         if(fromouter) lnks=new LinkOperator[]{new LinkOperator(o1,cntr),new LinkOperator(o2,cntr),new LinkOperator(o3,cntr)};
         else lnks=new LinkOperator[]{new LinkOperator(cntr,o1),new LinkOperator(cntr,o2),new LinkOperator(cntr,o3)};
         //
-        for(int i=0;i<lnks.length;i++)
-        {
-            ArrayList<TSConstPoint> pnts=new ArrayList<TSConstPoint>();
-            pnts.add(((ETEdge)(lnks[i].getSource())).getSourceClippingPoint());
-            for(int j=0;j<lnks[i].getBends().size();j++)
-            {
-                pnts.add((TSConstPoint)(lnks[i].getBends().get(j)));
-            }
-            pnts.add(((ETEdge)(lnks[i].getSource())).getTargetClippingPoint());
-            //
-            for(int j=1;j<pnts.size();j++)
-            {
-                assertTrue("Pairs of bends/target/source points on link do not on same axe",pnts.get(j).getX()==pnts.get(j-1).getX() || pnts.get(j).getY()==pnts.get(j-1).getY());
-            }
-        }
+//6.0        for(int i=0;i<lnks.length;i++)
+//        {
+//            ArrayList<TSConstPoint> pnts=new ArrayList<TSConstPoint>();
+//            pnts.add(((ETEdge)(lnks[i].getSource())).getSourceClippingPoint());
+//            for(int j=0;j<lnks[i].getBends().size();j++)
+//            {
+//                pnts.add((TSConstPoint)(lnks[i].getBends().get(j)));
+//            }
+//            pnts.add(((ETEdge)(lnks[i].getSource())).getTargetClippingPoint());
+//            //
+//            for(int j=1;j<pnts.size();j++)
+//            {
+//                assertTrue("Pairs of bends/target/source points on link do not on same axe",pnts.get(j).getX()==pnts.get(j-1).getX() || pnts.get(j).getY()==pnts.get(j-1).getY());
+//            }
+//6.0        }
         //
         int top=0;
         int left=0;
@@ -784,85 +784,85 @@ public abstract class DiagramLayout extends UMLTestCase {
     private void verifyIncremental(String diagramName)
     {
         //
-        JDialogOperator lt=new JDialogOperator("Layout");
-        new JButtonOperator(lt,"Yes").push();
-        lt.waitClosed();
-        try{Thread.sleep(1000);}catch(Exception ex){}
-        DiagramOperator dgr=new DiagramOperator(diagramName);
-        DiagramElementOperator cntr=new DiagramElementOperator(dgr,"CENTER",centerElement);
-        DiagramElementOperator o1=new DiagramElementOperator(dgr,"OUT1",outerElement);
-        DiagramElementOperator o2=new DiagramElementOperator(dgr,"OUT2",outerElement);
-        DiagramElementOperator o3=new DiagramElementOperator(dgr,"OUT3",outerElement);
-        DiagramElementOperator o4=new DiagramElementOperator(dgr,"OUT4",outerElement);
-        //
-        int maxX=Math.max(Math.max(Math.max(o1.getCenterPoint().x,o2.getCenterPoint().x),o3.getCenterPoint().x),o4.getCenterPoint().x);
-        int minX=Math.min(Math.min(Math.min(o1.getCenterPoint().x,o2.getCenterPoint().x),o3.getCenterPoint().x),o4.getCenterPoint().x);
-        int maxY=Math.max(Math.max(Math.max(o1.getCenterPoint().y,o2.getCenterPoint().y),o3.getCenterPoint().y),o4.getCenterPoint().y);
-        int minY=Math.min(Math.min(Math.min(o1.getCenterPoint().y,o2.getCenterPoint().y),o3.getCenterPoint().y),o4.getCenterPoint().y);
-        assertTrue("Center element should be between \"outer\" elements on x or y axe, now: "+cntr.getCenterPoint().x+" vs "+o1.getCenterPoint().x+";"+o2.getCenterPoint().x+";"+o3.getCenterPoint().x,(maxX>cntr.getCenterPoint().x && minX<cntr.getCenterPoint().x) || (maxY>cntr.getCenterPoint().y && minY<cntr.getCenterPoint().y));
-        //verify links are orthogonal
-        LinkOperator lnks[]=null;
-        if(fromouter) lnks=new LinkOperator[]{new LinkOperator(o1,cntr),new LinkOperator(o2,cntr),new LinkOperator(o3,cntr),new LinkOperator(o4,cntr)};
-        else lnks=new LinkOperator[]{new LinkOperator(cntr,o1),new LinkOperator(cntr,o2),new LinkOperator(cntr,o3),new LinkOperator(cntr,o4)};
-        //
-        for(int i=0;i<lnks.length;i++)
-        {
-            ArrayList<TSConstPoint> pnts=new ArrayList<TSConstPoint>();
-            pnts.add(((ETEdge)(lnks[i].getSource())).getSourceClippingPoint());
-            for(int j=0;j<lnks[i].getBends().size();j++)
-            {
-                pnts.add((TSConstPoint)(lnks[i].getBends().get(j)));
-            }
-            pnts.add(((ETEdge)(lnks[i].getSource())).getTargetClippingPoint());
-            //
-            for(int j=1;j<pnts.size();j++)
-            {
-                assertTrue("Pairs of bends/target/source points on link do not on same axe",pnts.get(j).getX()==pnts.get(j-1).getX() || pnts.get(j).getY()==pnts.get(j-1).getY());
-            }
-        }
-        //verify buttons, properties etc
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
-        }
-        dgr.getDrawingArea().clickMouse();
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
-        }
-        //properties
-        PropertySheetOperator ps=new PropertySheetOperator();
-        assertTrue("Property sheet isn't for "+diagramName+", but for "+ps.getName(),(diagramName+" - Properties").equals(ps.getName()));
-        Property pr=new Property(ps,"Layout Style");
-        assertTrue("Layout style isn't orthogonal in properties","orthogonal".equals(pr.getValue()));
-        //context menu
-        JMenuItemOperator mi=null;
-        JPopupMenuOperator popm=dgr.getDrawingArea().getPopup();
-        try
-        {
-            mi=popm.showMenuItem("Layout");
-        }
-        catch(TimeoutExpiredException e)
-        {
-            //do nothing, null check is below
-        }
-        //do not check if there is no item, fail should be in another place of test
-        if(mi!=null)
-        {
-            mi.pushNoBlock();
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
-            JPopupMenuOperator pmo=new JPopupMenuOperator(MainWindowOperator.getDefault(),new JPopupByPointChooser(mi.getWidth()+30,mi.getHeight()/2,mi.getSource(),0));
-            JCheckBoxMenuItemOperator cmi=new JCheckBoxMenuItemOperator(pmo,"Orthogonal");
-            assertTrue("Layout|Orthogonal isn't checked",cmi.isSelected());
-        }
-        //toolbar
-        assertTrue(100638,"Orthogonal on toolbar isn't selected",dgr.toolbar().getToggleButtonByTooltip(DiagramToolbarOperator.ORTHOGONAL_LAYOUT_TOOL).isSelected());
+//6.0        JDialogOperator lt=new JDialogOperator("Layout");
+//        new JButtonOperator(lt,"Yes").push();
+//        lt.waitClosed();
+//        try{Thread.sleep(1000);}catch(Exception ex){}
+//        DiagramOperator dgr=new DiagramOperator(diagramName);
+//        DiagramElementOperator cntr=new DiagramElementOperator(dgr,"CENTER",centerElement);
+//        DiagramElementOperator o1=new DiagramElementOperator(dgr,"OUT1",outerElement);
+//        DiagramElementOperator o2=new DiagramElementOperator(dgr,"OUT2",outerElement);
+//        DiagramElementOperator o3=new DiagramElementOperator(dgr,"OUT3",outerElement);
+//        DiagramElementOperator o4=new DiagramElementOperator(dgr,"OUT4",outerElement);
+//        //
+//        int maxX=Math.max(Math.max(Math.max(o1.getCenterPoint().x,o2.getCenterPoint().x),o3.getCenterPoint().x),o4.getCenterPoint().x);
+//        int minX=Math.min(Math.min(Math.min(o1.getCenterPoint().x,o2.getCenterPoint().x),o3.getCenterPoint().x),o4.getCenterPoint().x);
+//        int maxY=Math.max(Math.max(Math.max(o1.getCenterPoint().y,o2.getCenterPoint().y),o3.getCenterPoint().y),o4.getCenterPoint().y);
+//        int minY=Math.min(Math.min(Math.min(o1.getCenterPoint().y,o2.getCenterPoint().y),o3.getCenterPoint().y),o4.getCenterPoint().y);
+//        assertTrue("Center element should be between \"outer\" elements on x or y axe, now: "+cntr.getCenterPoint().x+" vs "+o1.getCenterPoint().x+";"+o2.getCenterPoint().x+";"+o3.getCenterPoint().x,(maxX>cntr.getCenterPoint().x && minX<cntr.getCenterPoint().x) || (maxY>cntr.getCenterPoint().y && minY<cntr.getCenterPoint().y));
+//        //verify links are orthogonal
+//        LinkOperator lnks[]=null;
+//        if(fromouter) lnks=new LinkOperator[]{new LinkOperator(o1,cntr),new LinkOperator(o2,cntr),new LinkOperator(o3,cntr),new LinkOperator(o4,cntr)};
+//        else lnks=new LinkOperator[]{new LinkOperator(cntr,o1),new LinkOperator(cntr,o2),new LinkOperator(cntr,o3),new LinkOperator(cntr,o4)};
+//        //
+//        for(int i=0;i<lnks.length;i++)
+//        {
+//            ArrayList<TSConstPoint> pnts=new ArrayList<TSConstPoint>();
+//            pnts.add(((ETEdge)(lnks[i].getSource())).getSourceClippingPoint());
+//            for(int j=0;j<lnks[i].getBends().size();j++)
+//            {
+//                pnts.add((TSConstPoint)(lnks[i].getBends().get(j)));
+//            }
+//            pnts.add(((ETEdge)(lnks[i].getSource())).getTargetClippingPoint());
+//            //
+//            for(int j=1;j<pnts.size();j++)
+//            {
+//                assertTrue("Pairs of bends/target/source points on link do not on same axe",pnts.get(j).getX()==pnts.get(j-1).getX() || pnts.get(j).getY()==pnts.get(j-1).getY());
+//            }
+//        }
+//        //verify buttons, properties etc
+//        try {
+//            Thread.sleep(100);
+//        } catch (InterruptedException ex) {
+//            ex.printStackTrace();
+//        }
+//        dgr.getDrawingArea().clickMouse();
+//        try {
+//            Thread.sleep(100);
+//        } catch (InterruptedException ex) {
+//            ex.printStackTrace();
+//        }
+//        //properties
+//        PropertySheetOperator ps=new PropertySheetOperator();
+//        assertTrue("Property sheet isn't for "+diagramName+", but for "+ps.getName(),(diagramName+" - Properties").equals(ps.getName()));
+//        Property pr=new Property(ps,"Layout Style");
+//        assertTrue("Layout style isn't orthogonal in properties","orthogonal".equals(pr.getValue()));
+//        //context menu
+//        JMenuItemOperator mi=null;
+//        JPopupMenuOperator popm=dgr.getDrawingArea().getPopup();
+//        try
+//        {
+//            mi=popm.showMenuItem("Layout");
+//        }
+//        catch(TimeoutExpiredException e)
+//        {
+//            //do nothing, null check is below
+//        }
+//        //do not check if there is no item, fail should be in another place of test
+//        if(mi!=null)
+//        {
+//            mi.pushNoBlock();
+//            try {
+//                Thread.sleep(100);
+//            } catch (InterruptedException ex) {
+//                ex.printStackTrace();
+//            }
+//            JPopupMenuOperator pmo=new JPopupMenuOperator(MainWindowOperator.getDefault(),new JPopupByPointChooser(mi.getWidth()+30,mi.getHeight()/2,mi.getSource(),0));
+//            JCheckBoxMenuItemOperator cmi=new JCheckBoxMenuItemOperator(pmo,"Orthogonal");
+//            assertTrue("Layout|Orthogonal isn't checked",cmi.isSelected());
+//        }
+//        //toolbar
+//6.0        assertTrue(100638,"Orthogonal on toolbar isn't selected",dgr.toolbar().getToggleButtonByTooltip(DiagramToolbarOperator.ORTHOGONAL_LAYOUT_TOOL).isSelected());
     }
     
     public void tearDown() {

@@ -49,7 +49,6 @@ import javax.swing.JDialog;
 
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.common.generics.ETTripleT;
-import org.netbeans.modules.uml.ui.products.ad.diagramengines.DiagramEngineResources;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProxyUserInterface;
 import org.netbeans.modules.uml.ui.support.commondialogs.IPreferenceQuestionDialog;
 import org.netbeans.modules.uml.ui.support.commondialogs.IQuestionDialog;

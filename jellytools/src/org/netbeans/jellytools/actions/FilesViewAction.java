@@ -48,7 +48,7 @@ import org.netbeans.jellytools.Bundle;
  * @author Jiri.Skrivanek@sun.com
  */
 public class FilesViewAction extends Action {
-    private static final String filesMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window")
+    private static final String filesMenu = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window")
                                            + "|"
                                            + Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "LBL_projectTab_tc");
 

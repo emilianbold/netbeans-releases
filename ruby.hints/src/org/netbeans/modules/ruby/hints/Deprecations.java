@@ -54,7 +54,7 @@ import org.netbeans.modules.gsf.api.HintSeverity;
 import org.netbeans.modules.gsf.api.PreviewableFix;
 import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.Formatter;
+import org.netbeans.modules.ruby.RubyFormatter;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
@@ -172,10 +172,10 @@ public class Deprecations extends RubyAstRule {
 
                 List<HintFix> fixes = new ArrayList<HintFix>();
                 if (!isRequire) {
-                    fixes.add(new DeprecationCallFix(info, node, deprecation, false));
+                    fixes.add(new DeprecationCallFix(context, node, deprecation, false));
                 }
                 if (deprecation.helpUrl != null) {
-                    fixes.add(new DeprecationCallFix(info, node, deprecation, true));
+                    fixes.add(new DeprecationCallFix(context, node, deprecation, true));
                 }
                 
                 Hint desc = new Hint(this, message, info.getFileObject(), range, fixes, 100);
@@ -244,13 +244,13 @@ public class Deprecations extends RubyAstRule {
     
     private static class DeprecationCallFix implements PreviewableFix {
 
-        private CompilationInfo info;
-        private Node node;
-        private Deprecation deprecation;
-        private boolean help;
+        private final RubyRuleContext context;
+        private final Node node;
+        private final Deprecation deprecation;
+        private final boolean help;
 
-        public DeprecationCallFix(CompilationInfo info, Node node, Deprecation deprecation, boolean help) {
-            this.info = info;
+        public DeprecationCallFix(RubyRuleContext context, Node node, Deprecation deprecation, boolean help) {
+            this.context = context;
             this.node = node;
             this.deprecation = deprecation;
             this.help = help;
@@ -278,7 +278,7 @@ public class Deprecations extends RubyAstRule {
         }
 
         public EditList getEditList() throws Exception {
-            BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = context.doc;
             OffsetRange range = AstUtilities.getCallRange(node);
             
             EditList list = new EditList(doc);
@@ -292,7 +292,7 @@ public class Deprecations extends RubyAstRule {
                     if (gemName != null) {
                         list.replace(rowEnd, 0, "\nrequire \"" + gemName + "\"", false, 1); // NOI18N
                     }
-                    list.setFormatter(new Formatter(), true);
+                    list.setFormatter(new RubyFormatter(), true);
                 } else {
                     list.replace(range.getStart(), range.getLength(), deprecation.newName, false, 0);
                 }

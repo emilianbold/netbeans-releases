@@ -60,7 +60,7 @@ import org.netbeans.modules.gsf.api.HintFix;
 import org.netbeans.modules.gsf.api.HintSeverity;
 import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.Formatter;
+import org.netbeans.modules.ruby.RubyFormatter;
 import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.infrastructure.RubySelectionRule;
@@ -103,7 +103,7 @@ public class IntroduceHint extends RubySelectionRule {
         assert start < end;
 
         try {
-            BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = context.doc;
             if (end > doc.getLength()) {
                 return;
             }
@@ -114,7 +114,7 @@ public class IntroduceHint extends RubySelectionRule {
                 return;
             }
             
-            if (Formatter.getTokenBalance(doc, start, end, true, RubyUtils.isRhtmlDocument(doc)) != 0) {
+            if (RubyFormatter.getTokenBalance(doc, start, end, true, RubyUtils.isRhtmlDocument(doc)) != 0) {
                 return;
             }
             
@@ -183,7 +183,7 @@ public class IntroduceHint extends RubySelectionRule {
             }
             
             for (IntroduceKind kind : kinds) {
-                IntroduceFix fix = new IntroduceFix(info, nodes, lexOffsets, astOffsets, kind);
+                IntroduceFix fix = new IntroduceFix(context, nodes, lexOffsets, astOffsets, kind);
                 List<HintFix> fixList = new ArrayList<HintFix>(1);
                 fixList.add(fix);
                 String displayName = fix.getDescription();
@@ -192,8 +192,6 @@ public class IntroduceHint extends RubySelectionRule {
                 result.add(desc);
             }
         } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
@@ -275,10 +273,12 @@ public class IntroduceHint extends RubySelectionRule {
      * is invalid, or NODESEARCH_NOT_FOUND if no matches were found.
      */
     private void findApplicableNodes(Node node, int start, int end, Map<Integer,List<Node>> result, int depth) {
-        @SuppressWarnings(value = "unchecked")
         List<Node> list = node.childNodes();
         
         for ( Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             if (child.nodeId == NodeType.NEWLINENODE || child.nodeId == NodeType.HASHNODE) {
                 // Newlines and hasnodes have incorrect offsets, so always search their children
                 // instead of applying below search pruning logic

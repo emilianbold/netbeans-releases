@@ -57,7 +57,7 @@
                       <Component id="myValidityPanel" alignment="0" max="32767" attributes="0"/>
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="1" attributes="0">
-                              <Component id="myCPAddLibDepChk" alignment="0" min="-2" max="-2" attributes="1"/>
+                              <Component id="myCPAddLibDependencyChk" alignment="0" min="-2" max="-2" attributes="1"/>
                               <Component id="myLibNamePanel" alignment="0" max="32767" attributes="1"/>
                               <Group type="102" alignment="0" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
@@ -130,7 +130,7 @@
                       <Component id="myCPLargeIconPath" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="myCPAddLibDepChk" min="-2" max="-2" attributes="0"/>
+                  <Component id="myCPAddLibDependencyChk" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="myLibNamePanel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
@@ -335,7 +335,7 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="myCPLargeIconPathButtonActionPerformed"/>
           </Events>
         </Component>
-        <Component class="javax.swing.JCheckBox" name="myCPAddLibDepChk">
+        <Component class="javax.swing.JCheckBox" name="myCPAddLibDependencyChk">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/vmd/componentssupport/ui/wizard/Bundle.properties" key="LBL_CP_AddLibraryChk" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

@@ -42,7 +42,10 @@
 
 
 package org.netbeans.test.umllib;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
+//import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
+
+import org.netbeans.api.visual.widget.Widget;
+
 
 /**
  * Common interface for the digram elemnt choosers
@@ -54,7 +57,7 @@ public interface DiagramElementChooser {
      * @param obj object to check
      * @return true if this object is suitable and false otherwise
      */
-    public boolean checkElement(IETGraphObject obj);
+     public boolean checkElement( Widget widget);
     
     /**
      * Returns description for this chooser

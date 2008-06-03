@@ -46,7 +46,7 @@ import org.dom4j.Document;
 import org.dom4j.Node;
 
 import java.io.File;
-import java.util.List;
+import java.util.List; 
 
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchNameKeeper;
@@ -893,6 +893,7 @@ public class Package extends Namespace implements IPackage, IAutonomousElement
                         setAttributeValue("sourceDir", newSrcDir);
                         if (disp != null)
                         {
+
                             IEventPayload payload = disp.createPayload("SourceDirModified");
                             disp.fireSourceDirModified(this, payload);
                         }

@@ -41,8 +41,8 @@
 
 package org.netbeans.modules.autoupdate.ui.actions;
 
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -55,9 +55,12 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.ToolTipManager;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
@@ -93,6 +96,8 @@ public class AutoupdateCheckScheduler {
     private static final RequestProcessor REGULARLY_CHECK_TIMER = 
         new RequestProcessor("auto-checker-reqularly-timer", 1, true); // NOI18N
     private static final Logger err = Logger.getLogger (AutoupdateCheckScheduler.class.getName ());
+    
+    private static boolean wasRealCheckUpdateCenters = false;
 
     private AutoupdateCheckScheduler () {
     }
@@ -212,7 +217,8 @@ public class AutoupdateCheckScheduler {
                         continue;
                     }
                     boolean skip = false;
-                    for (UpdateElement tmpEl : operationInfo.getRequiredElements ()) {
+                    Collection<UpdateElement> reqs = new HashSet<UpdateElement> (operationInfo.getRequiredElements ());
+                    for (UpdateElement tmpEl : reqs) {
                        if (tmpEl.getUpdateUnit ().isPending ()) {
                            err.log (Level.WARNING, "Plugin " + element + // NOI18N
                                    " depends on " + tmpEl + " in pending state.");                           
@@ -222,7 +228,7 @@ public class AutoupdateCheckScheduler {
                     if (skip) {
                         continue;
                     }
-                    oc.add (operationInfo.getRequiredElements ());
+                    oc.add (reqs);
                     Collection<String> brokenDeps = new HashSet<String> ();
                     for (OperationInfo<InstallSupport> info : oc.listAll ()) {
                         brokenDeps.addAll (info.getBrokenDependencies ());
@@ -233,7 +239,7 @@ public class AutoupdateCheckScheduler {
                         oc.removeAll ();
                         if (! brokenDeps.isEmpty ()) {
                             err.log (Level.WARNING, "Plugin " + element + // NOI18N
-                                    " cannot be installed, some dependencies can be satisfied: " + brokenDeps); // NOI18N
+                                    " cannot be installed because some dependencies cannot be satisfied: " + brokenDeps); // NOI18N
                         } else {
                             err.log (Level.WARNING, "Plugin " + element + // NOI18N
                                     " cannot be installed, Install Container contains invalid elements " + oc.listInvalid ()); // NOI18N
@@ -349,6 +355,7 @@ public class AutoupdateCheckScheduler {
             }
             if (timeToCheck ()) {
                 scheduleRefreshProviders ();
+                wasRealCheckUpdateCenters = true;
                 if (getWaitPeriod () > 0 && regularlyCheck != null && regularlyCheck.getDelay () <= 0) {
                     regularlyCheck = REGULARLY_CHECK_TIMER.post (doCheck, getWaitPeriod (), Thread.MIN_PRIORITY);
                 }
@@ -430,8 +437,6 @@ public class AutoupdateCheckScheduler {
                         }
                         BalloonManager.dismiss ();
                         RequestProcessor.getDefault ().post (doCheckAvailableUpdates);
-                    } else {
-                        // notify available plugins/updates in the future
                     }
                 }
             }
@@ -442,12 +447,7 @@ public class AutoupdateCheckScheduler {
                 flasher.startFlashing ();
         final Runnable showBalloon = new Runnable() {
             public void run() {
-                JLabel balloon = new JLabel( units.size() == 1 ?
-                            NbBundle.getMessage(AutoupdateCheckScheduler.class,
-                                "AutoupdateCheckScheduler_UpdateFound_ToolTip", units.size()) : // NOI18N
-                            NbBundle.getMessage(AutoupdateCheckScheduler.class,
-                                "AutoupdateCheckScheduler_UpdatesFound_ToolTip", units.size())); // NOI18N
-                BalloonManager.show( flasher, balloon, new AbstractAction() {
+                BalloonManager.show( flasher, createBalloonContent( units.size() ), new AbstractAction() {
                     public void actionPerformed(ActionEvent e) {
                         onMouseClick.run();
                     }
@@ -455,31 +455,57 @@ public class AutoupdateCheckScheduler {
             }
         };
         if (! wasFlashing) {
-            SwingUtilities.invokeLater( showBalloon );
+            if (canShowBalloon ()) {
+                SwingUtilities.invokeLater( showBalloon );
+            }
             flasher.addMouseListener( new MouseAdapter() {
-                    Timer t;
+                    RequestProcessor.Task t = null;
+                    private RequestProcessor RP = new RequestProcessor ("balloon-manager"); // NOI18N
+                    
                     @Override
                     public void mouseEntered(MouseEvent e) {
-                        if( null != t ) {
-                            t.stop();
-                        }
-                        t = new Timer( ToolTipManager.sharedInstance().getInitialDelay(), new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                showBalloon.run();
+                        t = RP.post (new Runnable () {
+                            public void run () {
+                                showBalloon.run ();
+                                BalloonManager.stopDismissSlowly ();
                             }
-                        });
-                        t.start();
+                        }, ToolTipManager.sharedInstance ().getInitialDelay ());
                     }
+                    
                     @Override
                     public void mouseExited(MouseEvent e) {
                         if( null != t ) {
-                            t.stop();
+                            t.cancel ();
                             t = null;
+                            BalloonManager.dismissSlowly ();
                         }
                     }
-                }    
-            );
+            });
         }
     }
     
+    private static boolean canShowBalloon () {
+        if (Utilities.allowShowingBalloon () != null) {
+            return Utilities.allowShowingBalloon ();
+        }
+        return wasRealCheckUpdateCenters;
+    }
+    
+    private static JComponent createBalloonContent( int updateCount ) {
+        JPanel panel = new JPanel( new BorderLayout() );
+        panel.setBorder( BorderFactory.createEmptyBorder(0,4,4,4) );
+        panel.setOpaque( false );
+        JLabel top = new JLabel( updateCount == 1 ?
+                    NbBundle.getMessage(AutoupdateCheckScheduler.class,
+                        "AutoupdateCheckScheduler_UpdateFound_ToolTip", updateCount) : // NOI18N
+                    NbBundle.getMessage(AutoupdateCheckScheduler.class,
+                        "AutoupdateCheckScheduler_UpdatesFound_ToolTip", updateCount)); // NOI18N
+        top.setIcon( new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/autoupdate/ui/resources/info_icon.png")) );
+        top.setIconTextGap(10);
+        panel.add( top, BorderLayout.CENTER );
+        
+        panel.add( new JLabel(NbBundle.getMessage(AutoupdateCheckScheduler.class,
+                        "AutoupdateCheckScheduler_UpdateFound_Hint") ), BorderLayout.SOUTH ); //NOI18N
+        return panel;
+    }
 }

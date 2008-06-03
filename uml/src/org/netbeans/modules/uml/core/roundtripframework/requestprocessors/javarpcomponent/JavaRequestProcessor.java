@@ -1443,7 +1443,7 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
                             }
                         }
                         
-                        String showMePref = prefs.get ("UML_ShowMe_Transform_When_Elements_May_Be_Lost", "PSK_ASK") ;
+                                String showMePref = prefs.get ("UML_ShowMe_Transform_When_Elements_May_Be_Lost", "PSK_ASK") ;
                         if (showMePref.equals ("PSK_NEVER")) {
                             cell.setContinue(false);
                             checkWithUser = false;

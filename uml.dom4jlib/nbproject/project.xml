@@ -51,6 +51,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.uml.designpattern</friend>
                 <friend>org.netbeans.modules.uml.integration</friend>
                 <friend>org.netbeans.modules.uml.kit</friend>
+                <friend>org.netbeans.modules.uml.drawingarea</friend>
                 <friend>org.netbeans.modules.uml.palette</friend>
                 <friend>org.netbeans.modules.uml.parser.java</friend>
                 <friend>org.netbeans.modules.uml.project</friend>

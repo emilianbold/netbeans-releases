@@ -44,12 +44,8 @@ package org.netbeans.modules.uml.ui.support.helpers;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-
-import org.omg.CORBA.UNKNOWN;
-
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.ui.support.helpers.IGUIBlocker.GBK;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
 
 /**
  * @author brettb
@@ -179,14 +175,7 @@ public class GUIBlocker implements IGUIBlocker
       m_diagram = diagram;
    }
    
-   public void setDiagramContext(IDrawingAreaControl control)
-   {
-      if( control != null )
-      {
-         m_diagram = control.getDiagram();
-      }
-   }
-
+  
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.ui.support.helpers.IGUIBlocker#getKindIsBlocked(long)
     */
@@ -267,7 +256,8 @@ public class GUIBlocker implements IGUIBlocker
       {
          // Flush any events prior to unlocking the project tree so the user sees the
          // diagram update.
-         m_diagram.pumpMessages(false);
+          //TODO: meteora, do we need this?
+//         m_diagram.pumpMessages(false);
       }
 
 /* TODO

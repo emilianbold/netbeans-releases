@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import antlr.collections.AST;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
@@ -127,9 +129,9 @@ public class TemplateUtils {
 	return false;
     }
     
-    public static List<CsmTemplateParameter> getTemplateParameters(AST ast, CsmTemplate template) {
+    public static List<CsmTemplateParameter> getTemplateParameters(AST ast, CsmFile file, CsmDeclaration template) {
         assert (ast != null && ast.getType() == CPPTokenTypes.LITERAL_template);
-        List<CsmTemplateParameter> res = new ArrayList();
+        List<CsmTemplateParameter> res = new ArrayList<CsmTemplateParameter>();
         for (AST child = ast.getFirstChild(); child != null; child = child.getNextSibling()) {
             switch (child.getType()) {
                 case CPPTokenTypes.LITERAL_typename:
@@ -138,7 +140,7 @@ public class TemplateUtils {
                     break;
                 case CPPTokenTypes.ID:
                     // now create parameter
-                    res.add(new TemplateParameterImpl(child.getText()));
+                    res.add(new TemplateParameterImpl(child, file, (CsmScope)template));
                     break;
                 case CPPTokenTypes.CSM_PARAMETER_DECLARATION:
                     // now create parameter
@@ -148,7 +150,7 @@ public class TemplateUtils {
                             case CPPTokenTypes.CSM_TYPE_COMPOUND:
                                 AST typeName = paramChild.getFirstChild();
                                 if (typeName != null) {
-                                    res.add(new TemplateParameterImpl(typeName.getText()));
+                                    res.add(new TemplateParameterImpl(typeName, file, (CsmScope)template));
                                 }
                                 break;
                         }
@@ -185,5 +187,8 @@ public class TemplateUtils {
         }
         
         return type;
+    }
+
+    private TemplateUtils() {
     }
 }
