@@ -777,13 +777,10 @@ private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     
     // rescan for actions, reload the class combo, and call reloadTable();
     public void refresh() {
-        // rescan the actions
-        if(true) {
-            actionManager.rescan();
-            reloadProjectsCombo();
-            reloadClassesCombo();
-            reloadTable();
-        }
+        actionManager.rescan();
+        reloadProjectsCombo();
+        reloadClassesCombo();
+        reloadTable();
     }
     
     private void setSelectedProject(Project project) {
