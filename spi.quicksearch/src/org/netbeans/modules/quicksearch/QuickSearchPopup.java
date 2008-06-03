@@ -40,6 +40,8 @@
 
 package org.netbeans.modules.quicksearch;
 
+import java.awt.Dimension;
+import javax.swing.JList;
 import javax.swing.JWindow;
 import org.netbeans.modules.quicksearch.recent.RecentSearches;
 import org.netbeans.spi.quicksearch.SearchResult;
@@ -73,6 +75,10 @@ public class QuickSearchPopup extends javax.swing.JPanel {
         jList1.setSelectedIndex(jList1.getSelectedIndex()-1);
     }
 
+    public JList getList() {
+        return jList1;
+    }
+    
     void update(String text) {
         //should update existing, not create new
         jList1.setModel(new ResultsModel(text));
@@ -80,7 +86,14 @@ public class QuickSearchPopup extends javax.swing.JPanel {
         JWindow popup = comboBar.getPopup();
         if (popup != null) {
             jList1.setVisibleRowCount(jList1.getModel().getSize());
-            popup.setSize(jList1.getPreferredScrollableViewportSize());
+            final Dimension preferredSize = jList1.getPreferredSize();
+            popup.setSize(preferredSize.width, preferredSize.height + 3);
+            if(text.equals(""))
+                popup.setVisible(false);
+            else {
+                popup.setVisible(true);
+                comboBar.getCommand().requestFocus();   
+            }
         }
     }
     

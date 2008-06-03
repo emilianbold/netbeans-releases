@@ -44,9 +44,8 @@ import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.lang.ref.WeakReference;
+import javax.swing.JTextArea;
 import javax.swing.JWindow;
-import javax.swing.Popup;
-import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
@@ -143,7 +142,6 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         jScrollPane1.setBorder(null);
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-        jScrollPane1.setViewportBorder(null);
         jScrollPane1.setName("jScrollPane1"); // NOI18N
 
         command.setColumns(15);
@@ -190,12 +188,6 @@ private void formFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_for
     popup = null;
 }//GEN-LAST:event_formFocusLost
 
-private void commandFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_commandFocusLost
-    if (popup!=null)
-        popup.hide();
-    popup = null;
-}//GEN-LAST:event_commandFocusLost
-
 private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_commandKeyPressed
     if (evt.getKeyCode()==KeyEvent.VK_DOWN) {
         displayer.selectNext();
@@ -227,6 +219,14 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
     }
 }//GEN-LAST:event_commandKeyPressed
 
+private void commandFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_commandFocusLost
+    if(popup != null && evt.getOppositeComponent() != null) {
+        if (!evt.getOppositeComponent().equals(displayer.getList())) {
+            popup.setVisible(false);
+            popup = null;
+        }
+    }
+}//GEN-LAST:event_commandFocusLost
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -247,6 +247,10 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
     
     JWindow getPopup () {
         return popup;
+    }
+    
+    JTextArea getCommand() {
+        return command;
     }
     
     static Color getShadowColor () {
