@@ -37,33 +37,65 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.test.refactoring.operators;
-
-import java.awt.event.KeyEvent;
-import javax.swing.JPopupMenu;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
+package org.netbeans.modules.java.hints.analyzer.ui;
+import javax.swing.event.ChangeListener;
+import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
+import org.openide.util.ChangeSupport;
 
 /**
  *
- * @author Jiri Prox Jiri.Prox@Sun.COM
+ * @author Jan Lahoda
  */
-public class FindUsagesAction extends Action {
-    
-    public static final String menuPath = null;
-    
-    public static final String popupPath = "Find Usages";
+public class FixDescription {
 
-    public FindUsagesAction() {
-        super(menuPath, popupPath);        
+    private ErrorDescription err;
+    private final Fix fix;
+    private boolean selected;
+    private boolean fixed;
+    private ChangeSupport cs = new ChangeSupport(this);
+
+    public FixDescription(ErrorDescription err, Fix fix) {
+        this.err = err;
+        this.fix = fix;
+    }
+
+    public boolean isSelected() {
+        return selected && !fixed;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+        cs.fireChange();
+    }
+
+//    public Fix getFix() {
+//        return fix;
+//    }
+
+    public String getText() {
+        return fix.getText();
     }
     
-    public void performPopup(EditorOperator editor) {
-        editor.pushKey(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK);        
-        JPopupMenuOperator jpmo = new JPopupMenuOperator();
-        jpmo.pushMenuNoBlock(new String[]{popupPath});        
+    public void addChangeListener(ChangeListener l) {
+        cs.addChangeListener(l);
     }
     
+    public void removeChangeListener(ChangeListener l) {
+        cs.removeChangeListener(l);
+    }
+    
+    public void implement() throws Exception {
+        fix.implement();
+        fixed = true;
+        cs.fireChange();
+    }
+    
+    public boolean isFixed() {
+        return fixed;
+    }
+    
+    public ErrorDescription getErrors() {
+        return err;
+    }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,46 +31,75 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.extexecution.api;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ImageIcon;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+package org.netbeans.modules.php.editor.codegen;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * The StopAction is placed into the I/O window, allowing the user to halt
- * execution.
  *
- * Based on the equivalent StopAction in the ant support.
- *
- * @author Tor Norbye
+ * @author Andrei Badea
  */
-final class StopAction extends AbstractAction {
+public abstract class DatabaseURL {
 
-    private Process process;
+    public enum Server {
 
-    public StopAction() {
-        setEnabled(false); // initially, until ready
-        putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage(
-                "org/netbeans/modules/groovy/grailsproject/resources/StopIcon.gif"))); // NOI18N
-        putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(StopAction.class, "Stop"));
+        MYSQL
     }
 
-    public synchronized Process getProcess() {
-        return process;
+    public static DatabaseURL detect(String url) {
+        MySQLURL mySQL = new MySQLURL(url);
+        return mySQL.matches() ? mySQL : null;
     }
 
-    public synchronized void setProcess(Process process) {
-        this.process = process;
-    }
+    abstract boolean matches();
 
-    public synchronized void actionPerformed(ActionEvent e) {
-        setEnabled(false); // discourage repeated clicking
-        process.destroy();
-    }
+    public abstract Server getServer();
 
+    public abstract String getHostAndPort();
+
+    public abstract String getDatabase();
+
+    private static final class MySQLURL extends DatabaseURL {
+
+        private static final Pattern PATTERN = Pattern.compile("jdbc:mysql://([^/]+)(/(.*))?"); // NOI18N
+
+        private final String url;
+        private final Matcher matcher;
+
+        public MySQLURL(String url) {
+            this.url = url;
+            matcher = PATTERN.matcher(url);
+        }
+
+        @Override
+        boolean matches() {
+            return matcher.matches();
+        }
+
+        @Override
+        public Server getServer() {
+            return Server.MYSQL;
+        }
+
+        @Override
+        public String getHostAndPort() {
+            return matcher.group(1);
+        }
+
+        @Override
+        public String getDatabase() {
+            String database = matcher.group(3);
+            if (database != null && database.length() == 0) {
+                database = null;
+            }
+            return database;
+        }
+    }
 }
