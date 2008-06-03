@@ -79,8 +79,8 @@ public final class RerunAction extends AbstractAction implements FileChangeListe
         this.prototype = prototype;
         setEnabled(false); // initially, until ready
         putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage(
-                "org/netbeans/modules/groovy/grailsproject/resources/RerunIcon.png")));
-        putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(ExecutionService.class, "Rerun"));
+                "org/netbeans/modules/extexecution/resources/RerunIcon.png")));
+        putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(RerunAction.class, "Rerun"));
 
         this.fileObject = fileObject;
 
