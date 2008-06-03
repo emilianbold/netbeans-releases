@@ -46,6 +46,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
@@ -55,6 +57,11 @@ import org.openide.util.Utilities;
  */
 public final class ExternalProcessBuilder {
 
+    // FIXME: get rid of those proxy constants as soon as some NB Proxy API is available
+    private static final String USE_PROXY_AUTHENTICATION = "useProxyAuthentication"; // NOI18N
+    private static final String PROXY_AUTHENTICATION_USERNAME = "proxyAuthenticationUsername"; // NOI18N
+    private static final String PROXY_AUTHENTICATION_PASSWORD = "proxyAuthenticationPassword"; // NOI18N
+    
     private final String command;
 
     private File pwd;
@@ -153,7 +160,7 @@ public final class ExternalProcessBuilder {
 //            Map<String, String> env = pb.environment();
 //            setupProcessEnvironment(env);
 //        }
-        Util.adjustProxy(pb);
+        adjustProxy(pb);
         return pb.start();
     }
 
@@ -222,4 +229,54 @@ public final class ExternalProcessBuilder {
         return ret;
     }
 
+    public static void adjustProxy(final ProcessBuilder pb) {
+        String proxy = getNetBeansHttpProxy();
+        if (proxy != null) {
+            Map<String, String> env = pb.environment();
+            if ((env.get("HTTP_PROXY") == null) && (env.get("http_proxy") == null)) { // NOI18N
+                env.put("HTTP_PROXY", proxy); // NOI18N
+                env.put("http_proxy", proxy); // NOI18N
+            }
+            // PENDING - what if proxy was null so the user has TURNED off
+            // proxies while there is still an environment variable set - should
+            // we honor their environment, or honor their NetBeans proxy
+            // settings (e.g. unset HTTP_PROXY in the environment before
+            // launching plugin?
+        }
+    }
+
+    /**
+     * FIXME: get rid of the whole method as soon as some NB Proxy API is
+     * available.
+     */
+    private static String getNetBeansHttpProxy() {
+        String host = System.getProperty("http.proxyHost"); // NOI18N
+
+        if (host == null) {
+            return null;
+        }
+
+        String portHttp = System.getProperty("http.proxyPort"); // NOI18N
+        int port;
+
+        try {
+            port = Integer.parseInt(portHttp);
+        } catch (NumberFormatException e) {
+            port = 8080;
+        }
+
+        Preferences prefs = NbPreferences.root().node("org/netbeans/core"); // NOI18N
+        boolean useAuth = prefs.getBoolean(USE_PROXY_AUTHENTICATION, false);
+        String auth = "";
+        if (useAuth) {
+            auth = prefs.get(PROXY_AUTHENTICATION_USERNAME, "") + ":" + prefs.get(PROXY_AUTHENTICATION_PASSWORD, "") + '@'; // NOI18N
+        }
+
+        // Gem requires "http://" in front of the port name if it's not already there
+        if (host.indexOf(':') == -1) {
+            host = "http://" + auth + host; // NOI18N
+        }
+
+        return host + ":" + port; // NOI18N
+    }    
 }
