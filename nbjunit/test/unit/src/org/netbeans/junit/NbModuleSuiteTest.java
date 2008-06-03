@@ -103,10 +103,35 @@ public class NbModuleSuiteTest extends TestCase {
     }
 
     public void testAccessToInsaneAndFS() {
+        System.setProperty("ins.one", "no");
+        System.setProperty("ins.fs", "no");
+        
         Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(NbModuleSuiteIns.class).gui(false).enableModules(".*"));
         junit.textui.TestRunner.run(instance);
         
         assertProperty("ins.one", "OK");
+        assertProperty("ins.fs", "OK");
+    }
+
+    public void testAccessToInsaneAndFSWithAllModules() {
+        System.setProperty("ins.one", "no");
+        System.setProperty("ins.fs", "no");
+
+        Test instance = NbModuleSuite.allModules(NbModuleSuiteIns.class);
+        junit.textui.TestRunner.run(instance);
+        
+        assertProperty("ins.one", "OK");
+        assertProperty("ins.fs", "OK");
+    }
+
+    public void testAccessToInsaneAndFSWithAllModulesEnumerated() {
+        System.setProperty("ins.one", "no");
+        System.setProperty("ins.fs", "no");
+
+        Test instance = NbModuleSuite.allModules(NbModuleSuiteIns.class, "testFS");
+        junit.textui.TestRunner.run(instance);
+        
+        assertProperty("ins.one", "no");
         assertProperty("ins.fs", "OK");
     }
 
@@ -143,6 +168,19 @@ public class NbModuleSuiteTest extends TestCase {
         
         assertProperty("ins.one", "OK");
         assertProperty("ins.two", "No");
+        assertProperty("ins.three", "OK");
+    }
+
+    public void testEmptyArrayMeansAll() {
+        System.setProperty("ins.one", "No");
+        System.setProperty("ins.two", "No");
+        System.setProperty("ins.three", "No");
+        
+        Test instance = NbModuleSuite.create(NbModuleSuiteIns.class, null, null, new String[0]);
+        junit.textui.TestRunner.run(instance);
+        
+        assertProperty("ins.one", "OK");
+        assertProperty("ins.two", "OK");
         assertProperty("ins.three", "OK");
     }
     

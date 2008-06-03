@@ -226,12 +226,32 @@ public class NbModuleSuite {
      *    however this regular expression can specify additional ones. If not
      *    null, the specified cluster will be searched for modules with such
      *    codenamebase and those will be turned on
-     * @param tests names of test methods to execute from the <code>clazz</code>
+     * @param tests names of test methods to execute from the <code>clazz</code>, if
+     *    no test methods are specified, all tests in the class are executed
      * @return runtime container ready test
      * @since 1.49
      */
     public static Test create(Class<? extends Test> clazz, String clustersRegExp, String moduleRegExp, String... tests) {
-        return new S(Configuration.create(clazz).clusters(clustersRegExp).enableModules(moduleRegExp).addTest(tests));
+        Configuration conf = Configuration.create(clazz).clusters(clustersRegExp).enableModules(moduleRegExp);
+        if (tests.length > 0) {
+            conf = conf.addTest(tests);
+        } 
+        return new S(conf);
+    }
+    
+    /** Factory method to create wrapper test that knows how to setup proper
+     * NetBeans Runtime Container environment. 
+     * Wraps the provided class into a test that set ups properly the
+     * testing environment. All modules, in all clusters, 
+     * in the tested applicationwill be included in the test. 
+     * 
+     * @param clazz the class with bunch of testXYZ methods
+     * @param tests names of test methods to execute from the <code>clazz</code>
+     * @return runtime container ready test
+     * @since 1.49
+     */
+    public static Test allModules(Class<? extends Test> clazz, String... tests) {
+        return create(clazz, ".*", ".*", tests);
     }
     
     /** Creates default configuration wrapping a class that can be executed
