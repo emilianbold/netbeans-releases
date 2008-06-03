@@ -1962,7 +1962,7 @@
 		options = {
 			cut = NO;
 			copy = NO;
-			delete = YES;
+			delete = NO;
 		};
 		actions = (
 //			{
@@ -1974,13 +1974,7 @@
 			{
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
-			},
-			delimiter,
-			{
-				name = "RemoveProcedure";
-				class = org.openide.actions.DeleteAction;
-				system = YES;
-			},
+			},			
                         {
                                 name = "Properties";
                                 class = org.openide.actions.PropertiesAction;
