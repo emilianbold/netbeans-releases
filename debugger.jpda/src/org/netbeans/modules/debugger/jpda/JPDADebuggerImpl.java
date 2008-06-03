@@ -555,9 +555,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
             oldT = currentThread;
             currentThread = (JPDAThreadImpl) thread;
         }
-        if (thread != oldT)
+        PropertyChangeEvent event = updateCurrentCallStackFrameNoFire(thread);
+        if (thread != oldT) {
             firePropertyChange (PROP_CURRENT_THREAD, oldT, currentThread);
-        updateCurrentCallStackFrame (thread);
+        }
+        if (event != null) {
+            firePropertyChange(event);
+        }
         if (thread.isSuspended()) {
             setStoppedState(((JPDAThreadImpl) thread).getThreadReference());
         }
@@ -1487,14 +1491,14 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     private void updateCurrentCallStackFrame (JPDAThread thread) {
-        if ( (thread == null) ||
-             (thread.getStackDepth () < 1))
+        if ((thread == null) || (thread.getStackDepth () < 1)) {
             setCurrentCallStackFrame (null);
-        else
-        try {
-            setCurrentCallStackFrame (thread.getCallStack (0, 1) [0]);
-        } catch (AbsentInformationException e) {
-            setCurrentCallStackFrame (null);
+        } else {
+            try {
+                setCurrentCallStackFrame (thread.getCallStack (0, 1) [0]);
+            } catch (AbsentInformationException e) {
+                setCurrentCallStackFrame (null);
+            }
         }
     }
 
