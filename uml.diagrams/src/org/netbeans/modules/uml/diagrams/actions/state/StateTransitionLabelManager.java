@@ -146,9 +146,9 @@ public final class StateTransitionLabelManager extends BasicUMLLabelManager
         String text = constraint.getExpression();
         if (text == null || text.equals(""))
         {
-            return retrieveDefaultName();
+            return "[ ]";
         }
-        return text;
+        return "[ " + text + " ]";
     }
     
 
