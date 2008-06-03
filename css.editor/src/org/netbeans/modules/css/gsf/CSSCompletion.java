@@ -465,6 +465,11 @@ public class CSSCompletion implements CodeCompletionHandler {
         }
         
         @Override
+        public String getInsertPrefix() {
+            return getName() + ";";
+        }
+        
+        @Override
         public String getLhsHtml() {
             Property owningProperty = ((CssValueElement)getElement()).property();
             String initialValue = owningProperty.initialValue();
