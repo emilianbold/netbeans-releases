@@ -229,7 +229,7 @@ public final class ExternalProcessBuilder {
         return ret;
     }
 
-    public static void adjustProxy(final ProcessBuilder pb) {
+    private static void adjustProxy(final ProcessBuilder pb) {
         String proxy = getNetBeansHttpProxy();
         if (proxy != null) {
             Map<String, String> env = pb.environment();
