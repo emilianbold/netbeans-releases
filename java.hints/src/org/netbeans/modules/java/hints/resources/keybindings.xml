@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -40,10 +40,11 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-<settings version="1.0">
-    <module name="org.netbeans.modules.hibernate" spec="1.0"/>
-    <instanceof class="org.openide.windows.TopComponent"/>
-    <instanceof class="org.netbeans.modules.hibernate.hqleditor.ui.HQLEditorTopComponent"/>
-    <instance class="org.netbeans.modules.hibernate.hqleditor.ui.HQLEditorTopComponent" method="getInstance"/>
-</settings>
+<!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN" "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
+
+<bindings>
+    <bind actionName="introduce-method" key="OS-M"/>
+    <bind actionName="introduce-constant" key="OS-C"/>
+    <bind actionName="introduce-field" key="OS-E"/>
+    <bind actionName="introduce-variable" key="OS-V"/>
+</bindings>

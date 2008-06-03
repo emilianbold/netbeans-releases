@@ -37,59 +37,52 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.test.refactoring.operators;
+package org.netbeans.modules.test.refactoring;
 
-import org.netbeans.jellytools.NbDialogOperator;
+import junit.textui.TestRunner;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.modules.test.refactoring.actions.RenamePopupAction;
+import org.netbeans.modules.test.refactoring.operators.FindUsagesResultOperator;
+import org.netbeans.modules.test.refactoring.operators.RenameOperator;
 
 /**
  *
- * @author Jiri Prox Jiri.Prox@Sun.COM
+ * @author Jiri Prox Jiri.Prox@SUN.Com
  */
-public class ParametersPanelOperator extends JDialogOperator {
+public class RenameTest extends ModifyingRefactoring {
 
-    public ParametersPanelOperator(String name) {
+    public RenameTest(String name) {
         super(name);
     }
-    
-    private JButtonOperator back;
-    private JButtonOperator preview;
-    private JButtonOperator refactor;
-    
-    public JButtonOperator getBack() {
-        if(back==null) {
-            back = new JButtonOperator(this, "< Back");            
-        }
-        return back;
-    }
-    
-    public JButtonOperator getPreview() {
-        if(preview==null) {
-            preview = new JButtonOperator(this, "Preview");            
-        }
-        return preview;
-    }
-    
-    public JButtonOperator getRefactor() {
-        if(refactor==null) {
-            refactor = new JButtonOperator(this, "Refactor");            
-        }
-        return refactor;
-    }
-    
-    public FindUsagesClassOperator getFindUsagesClassOperator() {
-        return null;
-        //return new FindUsagesClassOperator()
-    }
 
-    protected String getBungleText(String bundlePath, String bundleKey) {
-        String bundleText = java.util.ResourceBundle.getBundle(bundlePath).getString(bundleKey);
-        int index = bundleText.indexOf('&');
-        if (index == -1) {
-            return bundleText;
-        }
-        return bundleText.substring(0, index) + bundleText.substring(index + 1);
+    public void testRenameClass() {       
+        String fileName = "Rename";        
+        openSourceFile("renameClass", fileName);        
+        EditorOperator editor = new EditorOperator(fileName);
+        editor.setCaretPosition(3, 17);
+        new RenamePopupAction().perform(editor);
+        new EventTool().waitNoEvent(1000);
+        RenameOperator ro = new  RenameOperator();
+        new EventTool().waitNoEvent(1000);
+        ro.getNewName().typeText("Renamed");
+        ro.getPreview().push();        
+        new EventTool().waitNoEvent(1000);                
+        FindUsagesResultOperator result = FindUsagesResultOperator.getPreview();
+        result.test(result.getSource(), 0, 0);
+        
+        JButtonOperator jbo = new JButtonOperator(result.getRefresh());
+        jbo.pushNoBlock();
+        new EventTool().waitNoEvent(1000);                
+        //result.test(result.getJToolbar(), 0, 0);
+        
+
+    }
+    
+    public static void main(String[] args) {
+        TestRunner.run(RenameTest.class);
+        
     }
 
 }

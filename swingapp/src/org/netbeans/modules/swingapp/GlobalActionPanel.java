@@ -195,14 +195,14 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         actionTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 ProxyAction act = getSelectedAction();
+                DefaultListModel mod = new DefaultListModel();
                 if(act != null) {
                     List<RADComponent> list = actionManager.getBoundComponents(act);
-                    DefaultListModel mod = new DefaultListModel();
                     for(Object o : list) {
                         mod.addElement(o);
                     }
-                    boundComponentList.setModel(mod);
                 }
+                boundComponentList.setModel(mod);
             }
         });
         
@@ -619,6 +619,9 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         if(fileObject == null) {
             fileObject = actionManager.getApplicationClassFile();
         }
+        if (fileObject == null) {
+            return; // Issue 134163
+        }
         ActionEditor editor = new ActionEditor(fileObject);
         editor.setValue(act);
         ActionPropertyEditorPanel comp = (ActionPropertyEditorPanel) editor.getCustomEditor();
@@ -774,13 +777,10 @@ private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     
     // rescan for actions, reload the class combo, and call reloadTable();
     public void refresh() {
-        // rescan the actions
-        if(true) {
-            actionManager.rescan();
-            reloadProjectsCombo();
-            reloadClassesCombo();
-            reloadTable();
-        }
+        actionManager.rescan();
+        reloadProjectsCombo();
+        reloadClassesCombo();
+        reloadTable();
     }
     
     private void setSelectedProject(Project project) {
