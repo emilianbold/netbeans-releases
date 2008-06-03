@@ -234,7 +234,12 @@ public final class EditMediator implements ActionListener, ListSelectionListener
 
         if ( source == addJar ) { 
             // Let user search for the Jar file
-            FileChooser chooser = new FileChooser(helper, true);
+            FileChooser chooser;
+            if (helper.isSharableProject()) {
+                chooser = new FileChooser(helper, true);
+            } else {
+                chooser = new FileChooser(FileUtil.toFile(project.getProjectDirectory()), null);
+            }
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setFileSelectionMode(fileSelectionMode);
             chooser.setMultiSelectionEnabled( true );

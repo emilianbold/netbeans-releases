@@ -712,7 +712,12 @@ final class LibrariesNode extends AbstractNode {
             assert cpProvider != null;
             final J2SEProjectClassPathModifier cpMod = project.getProjectClassPathModifier();
             assert cpMod != null;
-            FileChooser chooser = new FileChooser(project.getAntProjectHelper(), true);
+            FileChooser chooser;
+            if (project.getAntProjectHelper().isSharableProject()) {
+                chooser = new FileChooser(project.getAntProjectHelper(), true);
+            } else {
+                chooser = new FileChooser(FileUtil.toFile(project.getProjectDirectory()), null);
+            }
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
             chooser.setMultiSelectionEnabled( true );
