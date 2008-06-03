@@ -996,6 +996,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                                 if (cls == null) {
                                                     cont = false;
                                                 }
+                                            } else if (cls == null) {
+                                                cls = finder.getExactClassifier(lastNamespace.getQualifiedName() + CsmCompletion.SCOPE + var);
                                             }
                                         }
                                         if (cls != null) {

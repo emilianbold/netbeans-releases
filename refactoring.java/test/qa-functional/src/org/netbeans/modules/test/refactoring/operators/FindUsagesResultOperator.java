@@ -68,10 +68,25 @@ public class FindUsagesResultOperator extends TopComponentOperator{
     private JToggleButton physical;
     private JButton prev;
     private JButton next;
+    private JButton cancel;
+    private JButton doRefactor;
     
     public FindUsagesResultOperator() {
         super(ResourceBundle.getBundle("org.netbeans.modules.refactoring.spi.impl.Bundle").getString("LBL_Usages"));
     }
+    
+    public FindUsagesResultOperator(String windowTitle) {
+        super(windowTitle);
+    }
+    
+    public static FindUsagesResultOperator getFindUsagesResult() {
+        return new FindUsagesResultOperator(ResourceBundle.getBundle("org.netbeans.modules.refactoring.spi.impl.Bundle").getString("LBL_Usages"));
+    }
+    
+    public static FindUsagesResultOperator getPreview() {
+        return new FindUsagesResultOperator(ResourceBundle.getBundle("org.netbeans.modules.refactoring.spi.impl.Bundle").getString("LBL_Refactoring"));
+    }
+    
     
     public int getTabCount() {
         JTabbedPane tabbedPane = getTabbedPane();
