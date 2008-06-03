@@ -932,7 +932,13 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                         if (first) { // try to find variable for the first item
                             if (last && !findType) { // both first and last item
                                 CompletionResolver.Result res = null;
-                                compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
+                                if (isConstructor) {
+                                    compResolver.setResolveTypes(CompletionResolver.RESOLVE_CLASSES |  
+                                                            CompletionResolver.RESOLVE_TEMPLATE_PARAMETERS | 
+                                                            CompletionResolver.RESOLVE_GLOB_NAMESPACES);
+                                } else {
+                                    compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
+                                }
                                 if (compResolver.refresh() && compResolver.resolve(varPos, var, openingSource)) {
                                     res = compResolver.getResult();
                                 }
