@@ -111,12 +111,6 @@ made subject to such option by the copyright holder.
             <formatter type="brief" usefile="false"/>
             <formatter type="xml"/>
         </junit>
-    <junitreport todir="${test.results.dir}">
-      <fileset dir="${test.results.dir}">
-        <include name="TEST-*.xml"/>
-      </fileset>
-    <report format="frames" todir="${test.results.dir}/html"/>
-    </junitreport>
     </target>
     
     <target name="fail-test" unless="test.disable.fails">
