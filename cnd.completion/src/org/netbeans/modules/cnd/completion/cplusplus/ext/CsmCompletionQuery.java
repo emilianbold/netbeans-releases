@@ -74,6 +74,8 @@ import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateParameterResultItem;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 import org.openide.util.NbBundle;
 
@@ -994,6 +996,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                                 if (cls == null) {
                                                     cont = false;
                                                 }
+                                            } else if (cls == null) {
+                                                cls = finder.getExactClassifier(lastNamespace.getQualifiedName() + CsmCompletion.SCOPE + var);
                                             }
                                         }
                                         if (cls != null) {
@@ -1778,6 +1782,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         
         public CsmResultItem.MacroResultItem createFileLocalMacroResultItem(CsmMacro mac);
         public CsmResultItem.MacroResultItem createFileIncludedProjectMacroResultItem(CsmMacro mac);
+
+        public CsmResultItem.TemplateParameterResultItem createTemplateParameterResultItem(CsmTemplateParameter par);
         
         public CsmResultItem.GlobalVariableResultItem createGlobalVariableResultItem(CsmVariable var);
         public CsmResultItem.EnumeratorResultItem createGlobalEnumeratorResultItem(CsmEnumerator enm, int enumtrDisplayOffset, boolean displayFQN);
@@ -1918,6 +1924,10 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         public CsmResultItem.NamespaceAliasResultItem createLibNamespaceAliasResultItem(CsmNamespaceAlias alias, boolean displayFullNamespacePath) {
             return createNamespaceAliasResultItem(alias, displayFullNamespacePath);
         }
+
+        public TemplateParameterResultItem createTemplateParameterResultItem(CsmTemplateParameter par) {
+            return this.createTemplateParameterResultItem(par);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -1991,6 +2001,13 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         CsmResultItem item;
         for (CsmVariable elem : res.getLocalVariables()) {
             item = factory.createLocalVariableResultItem(elem);
+            assert item != null;
+            item.setSubstituteOffset(substituteOffset);
+            out.add(item);
+        }
+
+        for (CsmTemplateParameter elem : res.getTemplateparameters()) {
+            item = factory.createTemplateParameterResultItem(elem);
             assert item != null;
             item.setSubstituteOffset(substituteOffset);
             out.add(item);

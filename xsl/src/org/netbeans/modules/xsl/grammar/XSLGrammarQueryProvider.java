@@ -125,6 +125,8 @@ public class XSLGrammarQueryProvider extends GrammarQueryManager {
     }
     
     public GrammarQuery getGrammar(GrammarEnvironment input) {
+        return null;
+        /*
         try {
             FileObject fo = input.getFileObject();
             if (fo == null) throw new IllegalStateException("GrammarEnvironment has changed between enabled() and getGrammar()!"); // NOI18N     // NOI18N
@@ -134,6 +136,7 @@ public class XSLGrammarQueryProvider extends GrammarQueryManager {
         } catch (DataObjectNotFoundException e) {
             throw new IllegalStateException("Missing DataObject " + e.getFileObject() + "!"); // NOI18N
         }
+        */ 
     }
     
 }

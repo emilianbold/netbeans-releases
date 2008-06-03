@@ -19,7 +19,7 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="namespaceLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="endpointLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -29,17 +29,17 @@
                   <Component id="portNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="trustVersionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="namespaceTextField" linkSize="2" alignment="0" pref="383" max="32767" attributes="1"/>
-                  <Component id="portNameTextField" linkSize="2" alignment="0" pref="383" max="32767" attributes="1"/>
-                  <Component id="serviceNameTextField" linkSize="2" alignment="0" pref="383" max="32767" attributes="1"/>
-                  <Component id="wsdlLocationTextField" linkSize="2" alignment="0" pref="383" max="32767" attributes="1"/>
-                  <Component id="endpointTextField" linkSize="2" alignment="0" pref="383" max="32767" attributes="1"/>
-                  <Component id="metadataField" linkSize="2" alignment="0" min="-2" pref="383" max="-2" attributes="0"/>
-                  <Component id="trustVersionTextField" alignment="0" pref="383" max="32767" attributes="1"/>
+                  <Component id="namespaceTextField" alignment="0" pref="383" max="32767" attributes="2"/>
+                  <Component id="portNameTextField" alignment="0" pref="383" max="32767" attributes="2"/>
+                  <Component id="serviceNameTextField" alignment="0" pref="383" max="32767" attributes="2"/>
+                  <Component id="wsdlLocationTextField" alignment="0" pref="383" max="32767" attributes="2"/>
+                  <Component id="endpointTextField" alignment="0" pref="383" max="32767" attributes="2"/>
+                  <Component id="metadataField" alignment="0" pref="383" max="32767" attributes="2"/>
+                  <Component id="trustVersionCombo" alignment="0" min="-2" pref="63" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -79,7 +79,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="trustVersionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="trustVersionTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="trustVersionCombo" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
@@ -227,16 +227,18 @@
     <Component class="javax.swing.JLabel" name="trustVersionLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="trustVersionTextField"/>
+          <ComponentRef name="default"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/websvc/wsitconf/ui/client/Bundle.properties" key="LBL_STSPanel_PolicyVersion" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="trustVersionTextField">
+    <Component class="javax.swing.JComboBox" name="trustVersionCombo">
       <Properties>
-        <Property name="horizontalAlignment" type="int" value="2"/>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="0"/>
+        </Property>
       </Properties>
     </Component>
   </SubComponents>

@@ -20,66 +20,12 @@
     <folder name="GsfPlugins">
         <folder name="text">
             <folder name="x-php5">
-                <attr name="displayName" stringvalue="PHP"/>
                 <file name="language.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.GsfLanguage"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.PHPLanguage"/>
                 </file>
-                <file name="parser.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Parser"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.parser.GSFPHPParser"/>
-                </file>
-                
-                <file name="completion.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.CodeCmpletionHandler"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.PHPCodeCompletion"/>
-                </file>
-
-                <file name="indexer.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Indexer"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.index.PHPIndexer"/>
-                </file>
-
-                <file name="semantic.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.SemanticAnalyzer"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.parser.SemanticAnalysis"/>
-                </file>
-                
                 <file name="structure.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.StructureScanner"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.parser.PhpStructureScanner"/>
-                </file>
-                
-                <file name="declarationfinder.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.DeclarationFinder"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.nav.DeclarationFinderImpl"/>
-                </file>
-                
-                <file name="occurrences.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.OccurrencesFinder"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.nav.OccurrencesFinderImpl"/>
-                </file>
-                
-                <file name="formatter.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Formatter"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.indent.PHPFormatter"/>
-                </file>
-                
-                <file name="bracket.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.KeystrokeHandler"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.indent.PHPBracketCompleter"/>
-                </file>
-                
-                <file name="renamer.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.InstantRenamer"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.nav.InstantRenamerImpl"/>
-                </file>
-                
-                <file name="hints.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.HintsProvider"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.verification.PHPHintsProvider"/>
-                </file>
-                
+                </file> 
             </folder>
         </folder>
     </folder>

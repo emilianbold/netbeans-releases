@@ -606,7 +606,7 @@ public abstract class StringUtils {
             }
         }
         
-        throw new ParseException(ResourceUtils.getString(
+        throw new ParseException(ResourceUtils.getString(StringUtils.class,
                 StringUtils.ERROR_UNKNOWN_PLATFORM, string));
     }
     
@@ -633,7 +633,7 @@ public abstract class StringUtils {
             }
         }
         
-        throw new ParseException(ResourceUtils.getString(
+        throw new ParseException(ResourceUtils.getString(StringUtils.class,
                 StringUtils.ERROR_CANNOT_PARSE_STATUS, string));
     }
     

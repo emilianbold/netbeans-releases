@@ -40,15 +40,13 @@
 package org.netbeans.modules.extexecution.api.input;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.extexecution.input.FileInputReader;
-import org.netbeans.modules.extexecution.input.StreamInputReader;
+import org.netbeans.modules.extexecution.input.DefaultInputReader;
 import org.openide.util.Parameters;
 
 /**
@@ -61,17 +59,17 @@ public final class InputReaders {
         super();
     }
 
-    public static InputReader forReader(Reader reader, Charset charset) {
-        return forStream(new ReaderAdapter(reader, charset));
+    public static InputReader forReader(Reader reader) {
+        return new DefaultInputReader(reader, true);
     }
 
-    public static InputReader forStream(InputStream stream) {
+    public static InputReader forStream(InputStream stream, Charset charset) {
         Parameters.notNull("stream", stream);
 
-        return new StreamInputReader(stream, true);
+        return forReader(new InputStreamReader(stream, charset));
     }
 
-    public static InputReader forFile(final File file) {
+    public static InputReader forFile(final File file, final Charset charset) {
         Parameters.notNull("file", file);
 
         return forFileGenerator(new Callable<File>() {
@@ -79,82 +77,12 @@ public final class InputReaders {
             public File call() throws Exception {
                 return file;
             }
-        });
+        }, charset);
     }
 
-    public static InputReader forFileGenerator(Callable<File> fileGenerator) {
+    public static InputReader forFileGenerator(Callable<File> fileGenerator, Charset charset) {
         Parameters.notNull("fileGenerator", fileGenerator);
 
-        return new FileInputReader(fileGenerator);
-    }
-
-    private static class ReaderAdapter extends InputStream {
-
-        private static final int BUFFER_SIZE = 1024;
-
-        private final Reader reader;
-
-        private final Charset charset;
-
-        private final CharBuffer charBuffer = CharBuffer.allocate(BUFFER_SIZE);
-
-        private ByteBuffer byteBuffer;
-
-        public ReaderAdapter(Reader reader, Charset charset) {
-            this.reader = reader;
-            this.charset = charset;
-        }
-
-        @Override
-        public int read(byte[] b, int off, int len) throws IOException {
-            int read = loadBuffer();
-            if (read < 0) {
-                return read;
-            }
-            int ret = Math.min(len, byteBuffer.remaining());
-            byteBuffer.get(b, off, ret);
-            return ret;
-        }
-
-        @Override
-        public int read() throws IOException {
-            int read = loadBuffer();
-            if (read < 0) {
-                return read;
-            }
-            return byteBuffer.get();
-        }
-
-        @Override
-        public int available() throws IOException {
-            if (byteBuffer == null || !byteBuffer.hasRemaining()) {
-                return reader.ready() ? 1 : 0;
-            }
-            return byteBuffer.remaining();
-        }
-
-        @Override
-        public void close() throws IOException {
-            reader.close();
-        }
-
-        private int loadBuffer() throws IOException {
-            int count = 0;
-            if (byteBuffer == null || !byteBuffer.hasRemaining()) {
-                charBuffer.clear();
-                do {
-                     int read = reader.read();
-                     if (read < 0) {
-                         return read;
-                     }
-                     charBuffer.put((char) read);
-                     count++;
-                } while (reader.ready() && count < charBuffer.capacity());
-
-                charBuffer.position(0).limit(count);
-                byteBuffer = charset.encode(charBuffer);
-            }
-            return count;
-        }
+        return new FileInputReader(fileGenerator, charset);
     }
 }

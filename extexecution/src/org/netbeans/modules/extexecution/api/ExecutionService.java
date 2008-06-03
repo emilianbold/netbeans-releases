@@ -42,6 +42,8 @@ package org.netbeans.modules.extexecution.api;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.nio.charset.Charset;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -58,6 +60,7 @@ import javax.swing.Action;
 
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.extexecution.api.print.LineConvertors;
 import org.netbeans.modules.extexecution.api.input.InputProcessor;
 import org.netbeans.modules.extexecution.api.input.InputProcessors;
 import org.netbeans.modules.extexecution.api.input.InputReaderTask;
@@ -73,6 +76,7 @@ import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
 
 /**
  * <p>An ExecutionService takes an {@link ExecutionDescriptor} and executes it.
@@ -324,65 +328,33 @@ public class ExecutionService {
     private static void runIO(final StopAction sa, Process process, InputOutput io,
         InputProcessor snooper, FileObject toRefresh) {
 
-//        Thread inputThread = null;
-//        Thread errorThread = null;
         final ExecutorService executor = Executors.newFixedThreadPool(3);
+        OutputWriter out = io.getOut();
+        OutputWriter err = io.getErr();
+        Reader in = io.getIn();
+        
         try {
 
             // FIXME will be repaced with output API
             executor.submit(InputReaderTask.newTask(
-                    InputReaders.forStream(process.getInputStream()),
+                    InputReaders.forStream(process.getInputStream(), Charset.defaultCharset()),
                     InputProcessors.proxy(
-                        InputProcessors.printing(io.getOut(), Charset.defaultCharset(), true),
+                        InputProcessors.ansiStripping(InputProcessors.printing(out,
+                            LineConvertors.httpUrl(null), true)),
                         snooper)));
-//                    InputProcessors.proxy(
-//                        InputProcessors.bridge(LineProcessors.printing(io.getOut(), true), Charset.defaultCharset()),
-//                        snooper)));
             executor.submit(InputReaderTask.newTask(
-                    InputReaders.forStream(process.getErrorStream()),
-                    InputProcessors.printing(io.getErr(), Charset.defaultCharset(), false)));
-                    //InputProcessors.bridge(LineProcessors.printing(io.getErr(), false), Charset.defaultCharset())));
+                    InputReaders.forStream(process.getErrorStream(), Charset.defaultCharset()),
+                    InputProcessors.ansiStripping(InputProcessors.printing(err,
+                        LineConvertors.httpUrl(null), false))));
             executor.submit(InputReaderTask.newTask(
-                    InputReaders.forReader(io.getIn(), Charset.defaultCharset()),
-                    InputProcessors.copying(process.getOutputStream())));
-//            inputThread = new StreamInputThread(process.getOutputStream(), io.getIn());
-//            errorThread = new StreamRedirectThread(process.getErrorStream(), io.getErr());
-//            inputThread.start();
-//            errorThread.start();
-//
-//            BufferedReader reader = new BufferedReader(
-//                    new InputStreamReader(process.getInputStream()));
-//            try {
-//                String lineString;
-//                // FIXME use the output API
-//                while ((lineString = reader.readLine()) != null) {
-//                    if (snooper != null) {
-//                        snooper.lineFilter(lineString);
-//                    }
-//                    io.getOut().println(lineString);
-//                }
-//            } catch (IOException ex) {
-//                LOGGER.log(Level.INFO, null, ex);
-//            } finally {
-//                try {
-//                    reader.close();
-//                } catch (IOException ex) {
-//                    LOGGER.log(Level.FINE, null, ex);
-//                }
-//                io.getOut().close();
-//            }
+                    InputReaders.forReader(in),
+                    InputProcessors.copying(new OutputStreamWriter(process.getOutputStream()))));
 
             process.waitFor();
         } catch (InterruptedException ex) {
             LOGGER.log(Level.FINE, "Exiting thread", ex);
             process.destroy();
         } finally {
-//            if (inputThread != null) {
-//                inputThread.interrupt();
-//            }
-//            if (errorThread != null) {
-//                errorThread.interrupt();
-//            }
             AccessController.doPrivileged(new PrivilegedAction<Void>() {
 
                 public Void run() {
@@ -391,6 +363,15 @@ public class ExecutionService {
                 }
 
             });
+            
+            out.close();
+            err.close();
+            try {
+                in.close();
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+            
             if (toRefresh != null) {
                 FileUtil.refreshFor(FileUtil.toFile(toRefresh));
             }

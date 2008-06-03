@@ -92,36 +92,6 @@ public class LineParsingHelperTest extends NbTestCase {
         }
     }
 
-    public void testParsingByteArray() {
-        for (String separator : TEST_SEPARATORS) {
-            StringBuffer testInput = new StringBuffer();
-            for (String line : TEST_LINES) {
-                testInput.append(line).append(separator);
-            }
-
-            LineParsingHelper helper = new LineParsingHelper();
-            Charset charset = Charset.forName("UTF-8"); // NOI18N
-
-            String[] lines = helper.parse(charset.encode(testInput.toString()), charset);
-            checkParsingResults(lines, helper);
-
-            ByteBuffer buffer = charset.encode(testInput.toString());
-            int length = buffer.limit();
-
-            byte[] byteTestInput = new byte[length];
-            buffer.position(0);
-            buffer.get(byteTestInput);
-            lines = helper.parse(byteTestInput, charset);
-            checkParsingResults(lines, helper);
-
-            byteTestInput = new byte[length + EXTENDED_LENGTH];
-            buffer.position(0);
-            buffer.get(byteTestInput, 0, length);
-            lines = helper.parse(byteTestInput, 0, length, charset);
-            checkParsingResults(lines, helper);
-        }
-    }
-
     public void testTrailingLine() {
         String testLine = "line1\nline2\nline3"; // NOI18N
         LineParsingHelper helper = new LineParsingHelper();

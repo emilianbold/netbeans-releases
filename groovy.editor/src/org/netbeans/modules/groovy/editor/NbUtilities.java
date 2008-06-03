@@ -55,6 +55,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.editor.BaseDocument;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -296,4 +298,36 @@ public class NbUtilities {
         
         return doc.getProperty(EDITING_TEMPLATE_DOC_PROPERTY) == Boolean.TRUE;
     }
+    /**
+     * Return substring after last dot.
+     * @param fqn fully qualified type name
+     * @return singe typename without package, or method without type
+     */
+    public static String stripPackage(String fqn) {
+
+        if (fqn.contains(".")) {
+            int idx = fqn.lastIndexOf(".");
+            fqn = fqn.substring(idx + 1);
+        }
+
+        // every now and than groovy comes with tailing
+        // semicolons. We got to get rid of them.
+
+        fqn.replace(";", "");
+        return fqn;
+    }
+    
+    public static ClasspathInfo getClasspathInfoForFileObject ( FileObject fo) {
+        
+        ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
+        ClassPath compilePath = ClassPath.getClassPath(fo, ClassPath.COMPILE);
+        ClassPath srcPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+
+        if (bootPath == null || compilePath == null || srcPath == null) {
+            return null;
+        }
+        
+        return ClasspathInfo.create(bootPath, compilePath, srcPath);
+    }
+    
 }
