@@ -90,5 +90,5 @@ public class PropertiesCommand extends OneArgumentCommand {
     public static final String PROPERTIES_ARG = 
             "--properties";// NOI18N
     private static final String WARNING_BAD_PROPERTIES_ARG_KEY =
-            "I.warning.bad.properties.arg"; // NOI18N
+            "C.warning.bad.properties.arg"; // NOI18N
 }

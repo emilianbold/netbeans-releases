@@ -115,7 +115,7 @@ public class LocaleCommand extends OneArgumentCommand {
     public static final String LOCALE_ARG =
             "--locale";// NOI18N
     private static final String WARNING_BAD_LOCALE_ARG_PARAM_KEY =
-            "I.warning.bad.locale.arg.param"; // NOI18N
+            "C.warning.bad.locale.arg.param"; // NOI18N
     private static final String WARNING_BAD_LOCALE_ARG_KEY =
-            "I.warning.bad.locale.arg"; // NOI18N
+            "C.warning.bad.locale.arg"; // NOI18N
 }

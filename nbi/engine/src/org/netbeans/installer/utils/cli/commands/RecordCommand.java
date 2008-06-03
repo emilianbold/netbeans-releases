@@ -80,7 +80,7 @@ public class RecordCommand extends OneArgumentCommand {
     public static final String RECORD_ARG =
             "--record";// NOI18N
     private static final String WARNING_TARGET_STATE_FILE_EXISTS_KEY =
-            "I.warning.target.state.file.exists"; // NOI18N
+            "C.warning.target.state.file.exists"; // NOI18N
     private static final String WARNING_BAD_TARGET_STATE_FILE_ARG_KEY =
-            "I.warning.bad.target.state.file.arg"; // NOI18N
+            "C.warning.bad.target.state.file.arg"; // NOI18N
 }

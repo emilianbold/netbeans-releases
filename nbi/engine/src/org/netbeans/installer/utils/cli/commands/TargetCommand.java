@@ -76,5 +76,5 @@ public class TargetCommand extends TwoArgumentsCommand {
     public static final String TARGET_ARG =
             "--target";// NOI18N
     private static final String WARNING_BAD_TARGET_ARG_KEY =
-            "I.warning.bad.target.arg"; // NOI18N
+            "C.warning.bad.target.arg"; // NOI18N
 }

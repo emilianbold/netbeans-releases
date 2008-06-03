@@ -69,5 +69,5 @@ public class UserdirCommand extends OneArgumentCommand {
     public static final String USERDIR_ARG = 
             "--userdir";// NOI18N
     private static final String WARNING_BAD_USERDIR_ARG_KEY =
-            "I.warning.bad.userdir.arg"; // NOI18N
+            "C.warning.bad.userdir.arg"; // NOI18N
 }

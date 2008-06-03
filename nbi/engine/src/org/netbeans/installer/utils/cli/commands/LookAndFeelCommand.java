@@ -70,7 +70,7 @@ public class LookAndFeelCommand extends OneArgumentCommand {
         return LOOK_AND_FEEL_ARG;
     }
     private static final String WARNING_BAD_LOOK_AND_FEEL_ARG_KEY =
-            "I.warning.bad.look.and.feel.arg"; // NOI18N
+            "C.warning.bad.look.and.feel.arg"; // NOI18N
     public static final String LOOK_AND_FEEL_ARG =
             "--look-and-feel";// NOI18N
 }

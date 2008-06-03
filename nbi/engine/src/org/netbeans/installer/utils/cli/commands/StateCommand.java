@@ -78,9 +78,9 @@ public class StateCommand extends OneArgumentCommand {
         return STATE_ARG;
     }
     private static final String WARNING_MISSING_STATE_FILE_KEY =
-            "I.warning.missing.state.file"; // NOI18N
+            "C.warning.missing.state.file"; // NOI18N
     private static final String WARNING_BAD_STATE_FILE_ARG_KEY =
-            "I.warning.bag.state.file.arg"; // NOI18N
+            "C.warning.bag.state.file.arg"; // NOI18N
     public static final String STATE_ARG = 
             "--state";// NOI18N
 }
