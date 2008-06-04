@@ -37,12 +37,27 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.history;
+package org.netbeans.modules.db.sql.editor.ui.actions;
+
+import org.netbeans.modules.db.api.sql.execute.SQLExecution;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author John Baker
+ * @author test
  */
-public interface SQLHistoryFilterObserver {
-    void setFilter();
+public class SQLHistoryAction extends SQLExecutionBaseAction {
+
+    protected String getDisplayName(SQLExecution sqlExecution) { 
+        return NbBundle.getMessage(SQLHistoryAction.class, "LBL_SQLHistoryAction");
+    }
+
+    @Override
+    protected boolean enable(SQLExecution sqlExecution) {
+        return true;
+    }
+
+    protected void actionPerformed(SQLExecution sqlExecution) {
+        sqlExecution.showHistory();
+    }
 }

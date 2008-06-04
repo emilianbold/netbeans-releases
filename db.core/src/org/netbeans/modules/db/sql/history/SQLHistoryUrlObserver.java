@@ -37,13 +37,12 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.history;
+package org.netbeans.modules.db.sql.history;
 
 /**
  *
  * @author John Baker
  */
-public interface SQLHistoryController {
-    void filter();
-    void changeUrl();
+public interface SQLHistoryUrlObserver {
+    void updateUrl();
 }
