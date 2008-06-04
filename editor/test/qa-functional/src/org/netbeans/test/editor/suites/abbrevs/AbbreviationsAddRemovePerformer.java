@@ -44,7 +44,7 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import javax.swing.ListModel;
 import javax.swing.table.TableModel;
-import junit.framework.TestSuite;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.EditorOperator;
@@ -55,12 +55,9 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JComponentOperator;
 import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.lib.editor.codetemplates.SurroundWithFix;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.test.editor.LineDiff;
 
@@ -299,4 +296,9 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
     public static void main(String[] args) throws Exception {
         TestRunner.run( new AbbreviationsAddRemovePerformer("testChangeExpansionKey"));
     }
+    
+    public static Test suite() {
+      return NbModuleSuite.create(
+              NbModuleSuite.createConfiguration(AbbreviationsAddRemovePerformer.class).enableModules(".*").clusters(".*"));
+   }
 }

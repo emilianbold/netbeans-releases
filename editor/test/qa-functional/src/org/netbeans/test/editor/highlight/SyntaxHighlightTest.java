@@ -54,14 +54,16 @@ import java.util.Iterator;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
+import junit.framework.Test;
 import junit.textui.TestRunner;
-import lib.EditorTestCase;
+import org.netbeans.test.editor.lib.EditorTestCase;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.editor.lib2.highlighting.SyntaxHighlighting;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
@@ -92,13 +94,7 @@ public class SyntaxHighlightTest extends EditorTestCase{
     private String testClass;
     
     protected EditorOperator oper;
-    
-    
-    public static NbTestSuite suite() {
-	NbTestSuite suite = new NbTestSuite(SyntaxHighlightTest.class);
-	return suite;
-    }
-    
+                
     public File getGoldenFile() {
 	String fileName = "goldenfiles/"+curPackage.replace('.', '/')+ "/" + testClass + ".pass";
 	File f = new java.io.File(getDataDir(),fileName);
@@ -223,4 +219,9 @@ public class SyntaxHighlightTest extends EditorTestCase{
 	TestRunner.run(new NbTestSuite(SyntaxHighlightTest.class));
     }
     
+   public static Test suite() {
+      return NbModuleSuite.create(
+              NbModuleSuite.createConfiguration(SyntaxHighlightTest.class).enableModules(".*").clusters(".*"));
+   }
+
 }

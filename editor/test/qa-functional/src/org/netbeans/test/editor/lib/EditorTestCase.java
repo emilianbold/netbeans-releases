@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -45,8 +45,11 @@
  * Created on 24. srpen 2004, 12:32
  */
 
-package bookmarks;
+package org.netbeans.test.editor.lib;
 
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
 import java.io.IOException;
 import java.util.StringTokenizer;
@@ -56,6 +59,7 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.JemmyException;
@@ -63,7 +67,10 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JEditorPaneOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+
 
 /**
  *
@@ -77,7 +84,7 @@ public class EditorTestCase extends JellyTestCase {
     private String defaultProjectName = "editor_test";
     private String defaultSamplePackage = "dummy";
     private String defaultSampleName = "sample1";
-
+    
     private static final char treeSeparator = '|';
     private final String defaultPackageNameTreePath = "Source packages"+treeSeparator+"dummy";
     private final String defaultFileName = "sample1";
@@ -107,42 +114,58 @@ public class EditorTestCase extends JellyTestCase {
         defaultSamplePackage = getClass().getName();
         defaultSampleName = getName();
     }
-        
+    
+    /**
+     * Split class full name into package name and class name.
+     *
+     * @param full name of the class
+     * @return array containing package name and the class name.
+     */
+/*    public static String[] splitClassName(String classFullName) {
+        int lastDotIndex = classFullName.lastIndexOf('.');
+        return new String[] {
+            (lastDotIndex >= 0) ? classFullName.substring(0, lastDotIndex) : "", // pkg name
+            classFullName.substring(lastDotIndex + 1) // class name
+        };
+    }
+ */
+    
     /** Open project. Before opening the project is checked opened projects.
      * @param projectName is name of the project stored in .../editor/test/qa-functional/data/ directory.
      */
-    public void openProject(String projectName) {        
+    public void openProject(String projectName) {
         this.projectName = projectName;
         File projectPath = new File(this.getDataDir() + "/projects", projectName);
-        log("data dir = "+this.getDataDir().toString());        
+        log("data dir = "+this.getDataDir().toString());
         
         /* 1. check if project is open  */
         ProjectsTabOperator pto = new ProjectsTabOperator();
         pto.invoke();
         boolean isOpen = true;
         try {
-            JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", OPENED_PROJECT_ACCESS_TIMEOUT); 
-            ProjectRootNode prn = pto.getProjectRootNode(projectName);            
+            JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", OPENED_PROJECT_ACCESS_TIMEOUT);
+            ProjectRootNode prn = pto.getProjectRootNode(projectName);
         } catch (TimeoutExpiredException ex) {
             // This excpeiton is ok, project is not open;
-            //ex.printStackTrace();            
+            //ex.printStackTrace();
             isOpen = false;
         }
         
         if ( isOpen ) {
-            log("Project is open!");            
+            log("Project is open!");
             return;
         }
-                
-        /* 2. open project */        
-        try {
-         openDataProjects(new String[] {"projects/"+projectName});
-        } catch(IOException ioe) {
-           fail("cannot opne project");
-        }
-        //Object prj= ProjectSupport.openProject(projectPath);        
+      try {
+         /* 2. open project */
+         //retouche:
+         //Object prj= ProjectSupport.openProject(projectPath);
+         this.openDataProjects("projects/" + projectName);
+      } catch (IOException ex) {
+         fail("Project cannot be opened");
+      }
+        
     }
-   
+    
     /**
      * Get the default project name to be used
      * in {@link openDefaultProject()}.
@@ -154,7 +177,21 @@ public class EditorTestCase extends JellyTestCase {
     protected String getDefaultProjectName() {
         return defaultProjectName;
     }
-            
+    
+    
+    
+    /**
+     * Set the default project name to be used
+     * in {@link openDefaultProject()}.
+     *
+     * @param defaultProjectName new default project name.
+     */
+    /*
+    protected void setDefaultProjectName(String defaultProjectName) {
+        this.defaultProjectName = defaultProjectName;
+    }
+     */
+    
     /**
      * Open default project determined
      * by {@link #getDefaultProjectName()}.
@@ -171,13 +208,14 @@ public class EditorTestCase extends JellyTestCase {
     }
     
     protected void closeProject(String projectName) {
-       // ProjectSupport.closeProject(projectName);
+        //retouche:
+        //        ProjectSupport.closeProject(projectName);
     }
     
     
     /** Open file in open project
      *  @param treeSubPath e.g. "Source Packages|test","sample1" */
-    public void openFile(String treeSubPackagePathToFile, String fileName) {        
+    public void openFile(String treeSubPackagePathToFile, String fileName) {
         // debug info, to be removed
         this.treeSubPackagePathToFile = treeSubPackagePathToFile;
         ProjectsTabOperator pto = new ProjectsTabOperator();
@@ -186,49 +224,51 @@ public class EditorTestCase extends JellyTestCase {
         prn.select();
         
         // fix of issue #51191
-        // each of nodes is checked by calling method waitForChildNode 
-        // before they are actually opened              
-        StringTokenizer st = new StringTokenizer(treeSubPackagePathToFile, 
+        // each of nodes is checked by calling method waitForChildNode
+        // before they are actually opened
+        StringTokenizer st = new StringTokenizer(treeSubPackagePathToFile,
                 treeSeparator+"");
         String token = "";
         String oldtoken = "";
-        // if there are more then one tokens process each of them        
+        // if there are more then one tokens process each of them
         if (st.countTokens()>1) {
             token = st.nextToken();
             String fullpath = token;
-            while (st.hasMoreTokens()) {            
-                token = st.nextToken();                        
+            while (st.hasMoreTokens()) {
+                token = st.nextToken();
                 waitForChildNode(fullpath, token);
                 fullpath += treeSeparator+token;
             }
-        } 
-        // last node        
+        }
+        // last node
         waitForChildNode(treeSubPackagePathToFile, fileName);
         // end of fix of issue #51191
         
         Node node = new Node(prn,treeSubPackagePathToFile+treeSeparator+fileName);
-        node.performPopupAction("Open");
+        //node.performPopupAction("Open");
+        new OpenAction().performAPI(node);  //should be more stable then performing open action from popup
+
     }
     
     /**
-     * Waits for a child node to be shown in the IDE. Needed for test 
-     * stabilization on slow machines. 
+     * Waits for a child node to be shown in the IDE. Needed for test
+     * stabilization on slow machines.
      * @param parentPath full path for parent, | used as a delimiter
      * @param childName name of the child node
      */
-    public void waitForChildNode(String parentPath, String childName) {        
-        ProjectsTabOperator pto = new ProjectsTabOperator();        
+    public void waitForChildNode(String parentPath, String childName) {
+        ProjectsTabOperator pto = new ProjectsTabOperator();
         ProjectRootNode prn = pto.getProjectRootNode(projectName);
         prn.select();
-        Node parent = new Node(prn, parentPath);        
+        Node parent = new Node(prn, parentPath);
         final String finalFileName = childName;
         try {
             // wait for max. 30 seconds for the file node to appear
             JemmyProperties.setCurrentTimeout("Waiter.WaitingTime", 30000);
             new Waiter(new Waitable() {
                 public Object actionProduced(Object parent) {
-                    return ((Node)parent).isChildPresent(finalFileName) ? 
-                            Boolean.TRUE: null;
+                    return ((Node)parent).isChildPresent(finalFileName) ?
+                        Boolean.TRUE: null;
                 }
                 public String getDescription() {
                     return("Waiting for the tree to load.");
@@ -236,7 +276,7 @@ public class EditorTestCase extends JellyTestCase {
             }).waitAction(parent);
         } catch (InterruptedException e) {
             throw new JemmyException("Interrupted.", e);
-        }                
+        }
     }
     
     /** Open the default file in open project */
@@ -259,7 +299,7 @@ public class EditorTestCase extends JellyTestCase {
      */
     public void closeFileWithSave() {
         try {
-           new EditorOperator(fileName).close(true);
+            new EditorOperator(fileName).close(true);
         } catch ( TimeoutExpiredException ex) {
             log(ex.getMessage());
             log("Can't close the file");
@@ -271,7 +311,7 @@ public class EditorTestCase extends JellyTestCase {
      */
     public void closeFileWithDiscard() {
         try {
-           new EditorOperator(fileName).closeDiscard();
+            new EditorOperator(fileName).closeDiscard();
         } catch ( TimeoutExpiredException ex) {
             log(ex.getMessage());
             log("Can't close the file");
@@ -302,7 +342,7 @@ public class EditorTestCase extends JellyTestCase {
             fail();
         }
     }
-
+    
     /**
      * Open a source file located in the "Source packages" in the editor.
      *
@@ -320,15 +360,15 @@ public class EditorTestCase extends JellyTestCase {
     protected final String getDefaultSampleName() {
         return defaultSampleName;
     }
-
-    protected void openDefaultSampleFile() {    
+    
+    protected void openDefaultSampleFile() {
         openSourceFile(defaultSamplePackage, defaultSampleName);
     }
-
+    
     protected EditorOperator getDefaultSampleEditorOperator() {
         return new EditorOperator(defaultSampleName);
     }
-
+    
     /** Method will wait max. <code> maxMiliSeconds </code> miliseconds for the <code> requiredValue </code>
      *  gathered by <code> resolver </code>.
      *
@@ -358,12 +398,101 @@ public class EditorTestCase extends JellyTestCase {
         return false;
     }
     
-    /** Interface for value resolver needed for i.e. waitMaxMilisForValue method.  
+    /** Interface for value resolver needed for i.e. waitMaxMilisForValue method.
      *  For more details, please look at {@link #waitMaxMilisForValue()}.
      */
     public static interface ValueResolver{
         /** Returns checked value */
         Object getValue();
+    }
+    
+    protected ValueResolver getClipboardResolver(final JEditorPaneOperator txtOper, final int key, final int mod, final String oldVal){
+        
+        ValueResolver clipboardValueResolver = new ValueResolver(){
+            public Object getValue(){
+                txtOper.pushKey(key, mod);
+                Transferable newClipValue = txtOper.getToolkit().getSystemClipboard().getContents(txtOper);
+                String newVal = getClipBoardContent(newClipValue);
+                log("newClipValue:"+newVal);
+                return (newVal.equals(oldVal)) ? Boolean.TRUE : Boolean.FALSE;
+            }
+        };
+        
+        return clipboardValueResolver;
+    }
+    
+    protected ValueResolver getTextFieldResolver(final JTextFieldOperator oper,final String newValue) {
+        ValueResolver textFieldResolver = new ValueResolver(){
+            public Object getValue(){
+                String actVal = oper.getText();
+                log("actual value:"+actVal);
+                return (newValue.equals(actVal)) ? Boolean.TRUE : Boolean.FALSE;
+            }
+        };
+        
+        return textFieldResolver;
+    }
+    
+    private String getClipBoardContent(Transferable clip) {
+        DataFlavor[] df = clip.getTransferDataFlavors();
+        for (int i = 0; i < df.length; i++) {
+            DataFlavor dataFlavor = df[i];
+            log("Mime: "+dataFlavor.getMimeType());
+            log("Class: "+dataFlavor.getRepresentationClass().getName());
+            log("Class2: "+dataFlavor.getDefaultRepresentationClass().getName());
+            try {
+                log(clip.getTransferData(dataFlavor).getClass().getName());
+            } catch(IOException ioe) {
+                
+            } catch (UnsupportedFlavorException ufe) {
+                
+            }
+        }
+        if(df.length==0) return "n/a";
+        String val = null;
+        try {
+            val = (String) clip.getTransferData(new DataFlavor("text/plain; class=java.lang.String"));            
+        } catch (UnsupportedFlavorException ex) {            
+            fail(ex);
+        } catch (IOException ex) {            
+            fail(ex);
+        } catch (ClassNotFoundException ex) {            
+            fail(ex);
+        }
+        return val;
+    }
+    
+    protected void cutCopyViaStrokes(JEditorPaneOperator txtOper, int key, int mod){
+        Transferable oldClipValue = txtOper.getToolkit().getSystemClipboard().getContents(txtOper);
+        String oldVal = getClipBoardContent(oldClipValue);
+        log("");
+        log("oldClipValue:"+oldVal);
+        txtOper.requestFocus();
+        txtOper.pushKey(key, mod);
+        // give max WAIT_MAX_MILIS_FOR_CLIPBOARD milis for clipboard to change
+        boolean success = waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_CLIPBOARD, getClipboardResolver(txtOper, key, mod, oldVal), Boolean.FALSE);
+        if (success == false){
+            // give it one more chance. maybe selection was not ready at the time of
+            // copying
+            log("!!!! ONCE AGAIN");
+            txtOper.pushKey(key, mod);
+            // give max WAIT_MAX_MILIS_FOR_CLIPBOARD milis for clipboard to change
+            waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_CLIPBOARD, getClipboardResolver(txtOper, key, mod, oldVal), Boolean.FALSE);
+        }
+    }
+    
+    protected void pasteViaStrokes(ComponentOperator compOper, int key, int mod, ValueResolver resolver){
+        compOper.pushKey(key, mod);
+        // give max WAIT_MAX_MILIS_FOR_CLIPBOARD milis for clipboard to change
+        if (resolver !=null){
+            boolean success = waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_CLIPBOARD, resolver, Boolean.TRUE);
+            if (success == false){
+                // give it one more chance.
+                compOper.pushKey(key, mod);
+                // give max WAIT_MAX_MILIS_FOR_CLIPBOARD milis for clipboard to change
+                waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_CLIPBOARD, resolver, Boolean.TRUE);
+            }
+        }
     }
     
 }
