@@ -362,12 +362,16 @@ made subject to such option by the copyright holder.
     <folder name="Editors"> 
         <folder name="AnnotationTypes">
             <folder name="BreakpointActions">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle"/>
                 <file name="org-netbeans-modules-debugger-ui-actions-BreakpointEnableAction.instance">
                     <attr name="position" intvalue="100"/>
                 </file>
                 <file name="org-netbeans-modules-debugger-ui-actions-BreakpointCustomizeAction.instance">
                     <attr name="position" intvalue="200"/>
                 </file>
+            </folder>
+            <folder name="OtherThreadActions">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle"/>
             </folder>
             <file name="Breakpoint.xml" url="Breakpoint.xml"/>
             <file name="Breakpoint_broken.xml" url="Breakpoint_broken.xml"/>
@@ -383,6 +387,18 @@ made subject to such option by the copyright holder.
             <file name="CurrentExpressionLine_DBP.xml" url="CurrentExpressionLine_DBP.xml"/>
             <file name="CurrentExpressionLine_DCBP.xml" url="CurrentExpressionLine_DCBP.xml"/>
             <file name="CurrentExpression.xml" url="CurrentExpression.xml"/>
+            <file name="OtherThread.xml" url="OtherThread.xml"/>
+            <file name="OtherThread_BP.xml" url="OtherThread_BP.xml"/>
+            <file name="OtherThread_BP_broken.xml" url="OtherThread_BP_broken.xml"/>
+            <file name="OtherThread_CBP.xml" url="OtherThread_CBP.xml"/>
+            <file name="OtherThread_CBP_broken.xml" url="OtherThread_CBP_broken.xml"/>
+            <file name="OtherThread_DBP.xml" url="OtherThread_DBP.xml"/>
+            <file name="OtherThread_DCBP.xml" url="OtherThread_DCBP.xml"/>
+            <file name="OtherThread_PC.xml" url="OtherThread_PC.xml"/>
+            <file name="OtherThread_PC_BP.xml" url="OtherThread_PC_BP.xml"/>
+            <file name="OtherThread_PC_CBP.xml" url="OtherThread_PC_CBP.xml"/>
+            <file name="OtherThread_PC_DBP.xml" url="OtherThread_PC_DBP.xml"/>
+            <file name="OtherThread_PC_DCBP.xml" url="OtherThread_PC_DCBP.xml"/>
             <file name="BreakpointableLine.xml" url="BreakpointableLine.xml"/>
             <file name="PC_BP.xml" url="PC_BP.xml"/>
             <file name="PC_BP_broken.xml" url="PC_BP_broken.xml"/>

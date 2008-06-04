@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.editor.highlights.spi.Highlight;
 import org.netbeans.modules.editor.highlights.spi.Highlighter;
 import org.netbeans.spi.debugger.jpda.EditorContext;
@@ -54,7 +55,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.text.Annotatable;
 import org.openide.text.Annotation;
 import org.openide.text.Line;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 
 /**
@@ -62,15 +65,17 @@ import org.openide.util.NbBundle;
  *
  * @author   Jan Jancura
  */
-public class DebuggerAnnotation extends Annotation {
+public class DebuggerAnnotation extends Annotation implements Lookup.Provider {
 
     private Line        line;
     private String      type;
+    private JPDAThread  thread;
 
 
-    DebuggerAnnotation (String type, Line line) {
+    DebuggerAnnotation (String type, Line line, JPDAThread thread) {
         this.type = type;
         this.line = line;
+        this.thread = thread;
         attach (line);
     }
     
@@ -94,26 +99,6 @@ public class DebuggerAnnotation extends Annotation {
     }
     
     public String getShortDescription () {
-        if (type.endsWith("_broken")) {
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_BREAKPOINT_BROKEN"); // NOI18N
-        }
-        if (type == EditorContext.BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_BREAKPOINT"); // NOI18N
-        else 
-        if (type == EditorContext.DISABLED_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_DISABLED_BREAKPOINT"); // NOI18N
-        else 
-        if (type == EditorContext.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_CONDITIONAL_BREAKPOINT"); // NOI18N
-        else
-        if (type == EditorContext.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_DISABLED_CONDITIONAL_BREAKPOINT"); // NOI18N
-        else
         if (type == EditorContext.CURRENT_LINE_ANNOTATION_TYPE)
             return NbBundle.getMessage 
                 (DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC"); // NOI18N
@@ -124,19 +109,10 @@ public class DebuggerAnnotation extends Annotation {
         if (type == EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE)
             return NbBundle.getBundle (DebuggerAnnotation.class).getString 
                 ("TOOLTIP_CALLSITE"); // NOI18N
-        if (type == EditorContext.FIELD_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_FIELD_BREAKPOINT"); // NOI18N
-        if (type == EditorContext.DISABLED_FIELD_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_DISABLED_FIELD_BREAKPOINT"); // NOI18N
-        if (type == EditorContext.METHOD_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_METHOD_BREAKPOINT"); // NOI18N
-        if (type == EditorContext.DISABLED_METHOD_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_DISABLED_METHOD_BREAKPOINT"); // NOI18N
-        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("Unknown breakpoint type '"+type+"'."));
+        if (type == EditorContext.OTHER_THREAD_ANNOTATION_TYPE) {
+            return NbBundle.getMessage(DebuggerAnnotation.class, "TOOLTIP_OTHER_THREAD", thread.getName());
+        }
+        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("Unknown annotation type '"+type+"'."));
         return null;
     }
     
@@ -186,6 +162,14 @@ public class DebuggerAnnotation extends Annotation {
         }
         
 
+    }
+
+    public Lookup getLookup() {
+        if (thread == null) {
+            return Lookup.EMPTY;
+        } else {
+            return Lookups.singleton(thread);
+        }
     }
     
 }
