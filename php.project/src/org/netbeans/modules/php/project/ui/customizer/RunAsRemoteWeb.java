@@ -59,9 +59,11 @@ import org.netbeans.modules.php.project.connections.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
+import org.netbeans.modules.php.project.ui.customizer.RunAsValidator.InvalidUrlException;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,14 +81,16 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private final JTextField[] textFields;
     private final String[] propertyNames;
     private final String displayName;
+    final Category category;
 
     public RunAsRemoteWeb(ConfigManager manager, Category category) {
         this(manager, category, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_ConfigRemoteWeb"));
     }
 
     public RunAsRemoteWeb(ConfigManager manager, Category category, String displayName) {
-        super(manager, category);
+        super(manager);
         this.displayName = displayName;
+        this.category = category;
 
         initComponents();
 
@@ -191,8 +195,9 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     protected void validateFields() {
         String url = urlTextField.getText();
         String indexFile = indexFileTextField.getText();
+        String args = argsTextField.getText();
 
-        String err = validateWebFields(url, indexFile);
+        String err = RunAsValidator.validateWebFields(url, indexFile, args);
         if (err != null) {
             validateCategory(err);
             return;
@@ -211,8 +216,8 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     }
 
     private void validateCategory(String error) {
-        getCategory().setErrorMessage(error);
-        getCategory().setValid(error == null);
+        category.setErrorMessage(error);
+        category.setValid(error == null);
     }
 
     private void populateRemoteConnectionComboBox() {
@@ -436,7 +441,13 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         @Override
         protected void processUpdate() {
             super.processUpdate();
-            urlHintLabel.setText(composeUrlHint(urlTextField.getText(), indexFileTextField.getText(), argsTextField.getText()));
+            String hint = ""; // NOI18N
+            try {
+                hint = RunAsValidator.composeUrlHint(urlTextField.getText(), indexFileTextField.getText(), argsTextField.getText());
+            } catch (InvalidUrlException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            urlHintLabel.setText(hint);
         }
     }
 

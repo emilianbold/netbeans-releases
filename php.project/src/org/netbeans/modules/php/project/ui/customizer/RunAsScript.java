@@ -50,14 +50,15 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.NbBundle;
 
 /**
- * @author  Radek Matous
+ * @author  Radek Matous, Tomas Mysik
  */
 public class RunAsScript extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = -5593489817914071L;
     private final JLabel[] labels;
     private final JTextField[] textFields;
     private final String[] propertyNames;
-    private String displayName;
+    private final String displayName;
+    final Category category;
 
     public RunAsScript(ConfigManager manager, Category category) {
         this(manager, category, NbBundle.getMessage(RunAsScript.class, "LBL_ConfigScript"));
@@ -65,9 +66,11 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
 
     /** Creates new form LocalWebPanel */
     private RunAsScript(ConfigManager manager, Category category, String displayName) {
-        super(manager, category);
-        initComponents();
+        super(manager);
+        this.category = category;
         this.displayName = displayName;
+
+        initComponents();
         this.labels = new JLabel[] {
             indexFileLabel,
             argsLabel
@@ -79,9 +82,6 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         this.propertyNames = new String[] {
             PhpProjectProperties.INDEX_FILE,
             PhpProjectProperties.ARGS
-
-
-
         };
         assert labels.length == textFields.length && labels.length == propertyNames.length;
         for (int i = 0; i < textFields.length; i++) {
@@ -123,8 +123,8 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         if (!Utils.isValidFileName(indexFile)) {
             err = NbBundle.getMessage(RunAsScript.class, "MSG_IllegalIndexName");
         }
-        getCategory().setErrorMessage(err);
-        getCategory().setValid(err == null);
+        category.setErrorMessage(err);
+        category.setValid(err == null);
     }
 
     String composeHint() {
