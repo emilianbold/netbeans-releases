@@ -887,6 +887,7 @@ public abstract class UMLNodeWidget extends Widget
     }
    /**
      * update nodes after changes in node according to global resizing options
+    *  body is executed after scene validation
      */
     public void updateSizeWithOptions()
     {
@@ -896,8 +897,11 @@ public abstract class UMLNodeWidget extends Widget
                 String resOption=NbPreferences.forModule(DummyCorePreference.class).get("UML_Automatically_Size_Elements", PSK_RESIZE_ASNEEDED);
                 if(PSK_RESIZE_NEVER.equals(resOption) || (PSK_RESIZE_UNLESSMANUAL.equals(resOption) && isManuallyResized()))
                 {
-                    //do nothing
                     //or may be can set pref bounds to current
+                    setPreferredSize(null);
+                    setMinimumSize(null);
+                    setPreferredBounds(getBounds());
+                    setResizeMode(RESIZEMODE.PREFERREDBOUNDS);
                 }
                 else if(PSK_RESIZE_EXPANDONLY.equals(resOption))
                 {
@@ -917,11 +921,6 @@ public abstract class UMLNodeWidget extends Widget
 //                            setPreferredSize(getBounds().getSize());
 //                            break;
                     }
-                    new AfterValidationExecutor(new ActionProvider() {
-                        public void perfomeAction() {
-                        }
-                    }, getScene());
-                    getScene().validate();
                 }
                 else if(PSK_RESIZE_ASNEEDED.equals(resOption))
                 {
@@ -941,11 +940,6 @@ public abstract class UMLNodeWidget extends Widget
 //                            setPreferredSize(getPreferredSize());
 //                            break;
                     }
-                    new AfterValidationExecutor(new ActionProvider() {
-                        public void perfomeAction() {
-                        }
-                    }, getScene());
-                    getScene().validate();
                 }
                          }
                     }, getScene());
