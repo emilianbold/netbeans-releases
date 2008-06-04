@@ -72,7 +72,7 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
 
         initComponents();
         localServerComponent = LocalServerController.create(localServerComboBox, localServerButton,
-                NbBundle.getMessage(LocationPanelVisual.class, "LBL_SelectSourceFolderTitle"));
+                NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_SelectSourceFolderTitle"));
         init();
     }
 
@@ -241,7 +241,7 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         String newLocation = Utils.browseLocationAction(this, getProjectFolder(),
-                NbBundle.getMessage(LocationPanelVisual.class, "LBL_SelectProjectFolder"));
+                NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_SelectProjectFolder"));
         if (newLocation != null) {
             setProjectFolder(newLocation);
         }
