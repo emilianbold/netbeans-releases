@@ -98,4 +98,6 @@ public abstract class SourceAccessor {
      * with a parser.
      */
     public abstract void setParser (Source source, Parser parser) throws IllegalStateException;
+    
+    public abstract void assignListeners(Source source);
 }

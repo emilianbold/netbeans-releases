@@ -42,6 +42,7 @@ package org.netbeans.modules.parsing.api;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.netbeans.modules.parsing.impl.UserTaskImpl;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -111,6 +112,10 @@ public final class ParserManager {
         final MultiLanguageUserTask 
                             userTask
     ) throws ParseException {
+        //tzezula: ugly, Hanzy isn't here a nicer solution to distinguish single source from multi source?
+        if (sources.size() == 1) {
+            SourceAccessor.getINSTANCE().assignListeners(sources.iterator().next());
+        }
         TaskProcessor.runUserTask (new GenericUserTask () {
             public void run () throws Exception {
                 for (Source source : sources) {

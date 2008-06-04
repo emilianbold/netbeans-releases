@@ -269,6 +269,12 @@ public final class Source {
                 source.cachedParser = parser;
             }
         }
+        
+        @Override
+        public void assignListeners (final Source source) {
+            assert source != null;
+            source.assignListeners();
+        }
 
         @Override
         public void setEvent (Source source, SchedulerEvent event) {
@@ -298,6 +304,10 @@ public final class Source {
     });
         
     private volatile boolean k24;
+    
+    private void assignListeners () {
+        
+    }
     
     private void resetState (final boolean invalidate) {
         synchronized (this) {

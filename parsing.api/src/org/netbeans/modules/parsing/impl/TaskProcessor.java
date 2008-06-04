@@ -419,6 +419,10 @@ public class TaskProcessor {
     //Private methods
     private static void handleAddRequest (final Request nr) {
         assert nr != null;
+        final Source src = nr.source;
+        if (src != null) {
+            SourceAccessor.getINSTANCE().assignListeners(src);
+        }
         //Issue #102073 - removed running task which is readded is not performed
         synchronized (INTERNAL_LOCK) {            
             toRemove.remove(nr.task);
