@@ -167,7 +167,7 @@ public final class RefreshDependencyVersions extends Task {
                 throw new BuildException("Can't parse " + projectFile, ioe, getLocation());
             }
 
-            // check that nbprj is not the codenameBase module or one of the injects
+            // check that nbprj is not the source module or one of the injects
             Node cnb = findChild(findChild(findChild(nbprj.getDocumentElement(), "configuration"), "data"), "code-name-base");
             if (cnb.getTextContent().equals(codenameBase)) {
                 log("Won't touch dependencies of the source module (" + codenameBase + ")", Project.MSG_VERBOSE);
@@ -253,10 +253,10 @@ public final class RefreshDependencyVersions extends Task {
         return null;
     }
 
-    private static boolean updateVersions(Node dep, Dep sourceDep, boolean force, StringBuilder log) {
+    private static boolean updateVersions(Node dep, Dep sourceDep, boolean injecting, StringBuilder log) {
         StringBuilder s = new StringBuilder();
         Node runDep = findChild(dep, "run-dependency");
-        if (force) {
+        if (injecting) {
             if (runDep == null) {
                 runDep = dep.getOwnerDocument().createElement("run-dependency");
                 dep.appendChild(runDep);
@@ -291,8 +291,18 @@ public final class RefreshDependencyVersions extends Task {
 
             // update the specification version
             Node specVersion = findChild(runDep, "specification-version");
-            if (!force) {
-                if (specVersion != null && sourceDep.getSpecification() != null) {
+            if (!injecting) {
+                assert sourceDep.getSpecification() != null : "Need specification version when refreshing dependencies"; //NOI18N
+                if (specVersion == null) {
+                    Node implVersion = findChild(runDep, "implementation-version");
+                    if (implVersion == null) {
+                        // umm, no spec version and not an impl. dependency
+                        specVersion = dep.getOwnerDocument().createElement("specification-version");
+                        specVersion.setTextContent("");
+                        runDep.appendChild(specVersion);
+                    }
+                }                
+                if (specVersion != null) {
                     String nue = checkSpecificationVersion(sourceDep.getSpecification());
                     if (!specVersion.getTextContent().equals(nue)) {
                         specVersion.setTextContent(nue);
@@ -314,11 +324,14 @@ public final class RefreshDependencyVersions extends Task {
                 } else {
                     if (sourceDep.getSpecification() != null) {
                         String nue = checkSpecificationVersion(sourceDep.getSpecification());
-                        if (specVersion == null || !specVersion.getTextContent().equals(nue)) {
+                        if (specVersion == null) {
                             specVersion = dep.getOwnerDocument().createElement("specification-version");
                             specVersion.setTextContent(nue);
                             runDep.appendChild(specVersion);
                             s.append(" adding spec = ").append(nue);
+                        } else if (!specVersion.getTextContent().equals(nue)) {
+                            specVersion.setTextContent(nue);
+                            s.append(" updating spec = ").append(nue);
                         }
                     }
                     if (implVersion != null) {
