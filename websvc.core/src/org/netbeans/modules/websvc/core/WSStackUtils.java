@@ -47,8 +47,9 @@
  * and open the template in the editor.
  */
 
-package org.netbeans.modules.websvc.core.dev.wizard;
+package org.netbeans.modules.websvc.core;
 
+import java.util.Collection;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -57,20 +58,25 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.websvc.serverapi.api.WSStack;
+import org.netbeans.modules.websvc.serverapi.api.WSStackFeature;
 import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author rico
+ * @author mkuchtiak
  */
-public class PlatformUtil {
+public class WSStackUtils {
+    Project project;
+    J2eePlatform j2eePlatform;
     
-    /** Creates a new instance of PlatformUtil */
-    public PlatformUtil() {
+    /** Creates a new instance of WSStackUtils */
+    public WSStackUtils(Project project) {
+        this.project = project;
+        this.j2eePlatform = getJ2eePlatform(project);
     }
-    
-    //Factor these methods out and put in a common Util class
-    public static J2eePlatform getJ2eePlatform(Project project){
+
+    private J2eePlatform getJ2eePlatform(Project project){
         J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
         if(provider != null){
             String serverInstanceID = provider.getServerInstanceID();
@@ -81,51 +87,66 @@ public class PlatformUtil {
         return null;
     }
     
-     public static boolean isJWSDPSupported(Project project){
-        J2eePlatform j2eePlatform = getJ2eePlatform(project);
-        if(j2eePlatform != null){
-            return j2eePlatform.isToolSupported(J2eePlatform.TOOL_JWSDP);
-        }
-        return false;
-    }
-    
-     public static boolean isWsitSupported(Project project){
-        J2eePlatform j2eePlatform = getJ2eePlatform(project);
-        if(j2eePlatform != null){
-            return j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIT);
+     public boolean isWsitSupported() {
+        if (j2eePlatform != null) {
+            WSStack wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
+            return wsStack != null && wsStack.getServiceFeatures().contains(WSStackFeature.WSIT);
         }
         return false;
      }
 
-     public static boolean isJsr109Supported(Project project){
-        J2eePlatform j2eePlatform = getJ2eePlatform(project);
+     public boolean isJsr109Supported() {
         if(j2eePlatform != null){
-            return j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
+            WSStack wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
+            return wsStack != null && wsStack.getServiceFeatures().contains(WSStackFeature.JSR_109);
         }
         return false;
     }
     
-    public static boolean isJsr109OldSupported(Project project){
-        J2eePlatform j2eePlatform = getJ2eePlatform(project);
-        if(j2eePlatform != null){
-            return j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE);
+    public boolean isJsr109OldSupported() {
+        if(j2eePlatform != null) {
+            WSStack wsStack = getWsStack(WSStack.STACK_JAX_RPC);
+            return wsStack != null && wsStack.getSupportedTools().contains(WSStack.TOOL_WSCOMPILE);
         }
         return false;
     }
     
-    public static boolean isJaxWsInJ2ee14Supported(Project project) {
-        J2eePlatform j2eePlatform = getJ2eePlatform(project);
-        if(j2eePlatform != null){
-            return j2eePlatform.isToolSupported("JaxWs-in-j2ee14-supported");
-        }
-        return false;
-    }
-    
-    public static boolean hasJAXWSLibrary(Project project){
+    public boolean hasJAXWSLibrary() {
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
         FileObject wsimportFO = classPath.findResource("com/sun/tools/ws/ant/WsImport.class"); // NOI18N
         return wsimportFO != null;
+    }
+    
+    public static ServerType getServerType(Project project) {
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider.getServerInstanceID() == null) {
+            return ServerType.NOT_SPECIFIED;
+        }
+        String serverId = j2eeModuleProvider.getServerID();
+        if (serverId.startsWith("Tomcat")) return ServerType.TOMCAT; //NOI18N
+        else if (serverId.equals("J2EE")) return ServerType.GLASSFISH; //NOI18N
+        else if (serverId.equals("GlassFish")) return ServerType.GLASSFISH; //NOI18N
+        else if (serverId.equals("APPSERVER")) return ServerType.GLASSFISH; //NOI18N
+        else if (serverId.equals("JavaEE")) return ServerType.GLASSFISH; //NOI18N
+        else if (serverId.startsWith("JBoss")) return ServerType.JBOSS; //NOI18N
+        else if (serverId.startsWith("WebLogic")) return ServerType.WEBLOGIC; //NOI18N
+        else if (serverId.startsWith("WebSphere")) return ServerType.WEBSPHERE; //NOI18N
+        else return ServerType.UNKNOWN;
+    }
+    
+    public ServerType getServerType() {
+        return getServerType(project);
+    }
+    
+    public WSStack getWsStack(String wsStackName) {
+        Collection<? extends WSStack> wsStacks = j2eePlatform.getLookup().lookupAll(WSStack.class);
+        for (WSStack wsStack:wsStacks) {
+            if (wsStackName.equals(wsStack.getName())) {
+                return wsStack;
+            }
+        }
+        return null;
     }
 }
 
