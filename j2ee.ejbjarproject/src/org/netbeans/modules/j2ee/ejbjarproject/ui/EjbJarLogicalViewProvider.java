@@ -46,10 +46,12 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JSeparator;
@@ -77,6 +79,7 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
@@ -92,6 +95,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.openide.filesystems.FileUtil;
@@ -440,6 +444,13 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
                         EjbJarProjectProperties.J2EE_PLATFORM,
                         helper,
                         AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                if (j2eeSpec == null) {
+                    j2eeSpec = ProjectProperties.JAVA_EE_5; // NOI18N
+                    Logger.getLogger(EjbJarLogicalViewProvider.class.getName()).warning(
+                            "project ["+project.getProjectDirectory()+"] is missing "+EjbJarProjectProperties.J2EE_PLATFORM+". " + // NOI18N
+                            "default value will be used instead: "+j2eeSpec); // NOI18N
+                    updateJ2EESpec(project, project.getAntProjectHelper(), j2eeSpec);
+                }
                 String instance = BrokenServerSupport.selectServer(j2eeSpec, J2eeModule.EJB);
                 if (instance != null) {
                     EjbJarProjectProperties.setServerInstance(
@@ -448,6 +459,21 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
                 checkMissingServer();
             }
 
+            private void updateJ2EESpec(final Project project, final AntProjectHelper helper, final String j2eeSpec) {
+                ProjectManager.mutex().postWriteRequest(new Runnable() {
+                    public void run() {
+                        try {
+                            EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            projectProps.put(EjbJarProjectProperties.J2EE_PLATFORM, j2eeSpec);
+                            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
+                            ProjectManager.getDefault().saveProject(project);
+                        } catch (IOException e) {
+                            Exceptions.printStackTrace(e);
+                        }
+                    }
+                });
+            }
+            
             public void propertyChange(PropertyChangeEvent evt) {
                 if (EjbJarProjectProperties.J2EE_SERVER_INSTANCE.equals(evt.getPropertyName())) {
                     checkMissingServer();
