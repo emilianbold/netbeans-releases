@@ -120,7 +120,7 @@ public class GoToTypeWorker implements Runnable {
             // Multiple providers: merge results
             items = new ArrayList<TypeDescriptor>(128);
             String[] message = new String[1];
-            TypeProvider.Context context = TypeProviderAccessor.DEFAULT.createContext(null, text, SearchType.PREFIX);
+            TypeProvider.Context context = TypeProviderAccessor.DEFAULT.createContext(null, text, SearchType.CASE_INSENSITIVE_PREFIX);
             TypeProvider.Result result = TypeProviderAccessor.DEFAULT.createResult(items, message);
             for (TypeProvider provider : Lookup.getDefault().lookupAll(TypeProvider.class).toArray(new TypeProvider[0])) {
                 if (isCanceled) {
