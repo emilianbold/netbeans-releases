@@ -223,8 +223,8 @@ public class J2eePlatformUiSupport {
             List<J2eePlatformComboBoxItem> orderedListItems = new ArrayList<J2eePlatformComboBoxItem>();
             orderedListItems.add(new J2eePlatformComboBoxItem(ProjectProperties.JAVA_EE_5));
             orderedListItems.add(new J2eePlatformComboBoxItem(ProjectProperties.J2EE_1_4));
-            if (!initialJ2eeSpecVersion.getCode().equals(ProjectProperties.JAVA_EE_5) &&
-                    !initialJ2eeSpecVersion.getCode().equals(ProjectProperties.J2EE_1_4)) {
+            if (!ProjectProperties.JAVA_EE_5.equals(initialJ2eeSpecVersion.getCode()) &&
+                    !ProjectProperties.J2EE_1_4.equals(initialJ2eeSpecVersion.getCode())) {
                 orderedListItems.add(0, new J2eePlatformComboBoxItem(ProjectProperties.J2EE_1_3));
             }
             
@@ -263,6 +263,9 @@ public class J2eePlatformUiSupport {
         }
 
         private static String findDisplayName(String code){
+            if (code == null) {
+                return "";
+            }
             if(code.equals(ProjectProperties.JAVA_EE_5)) {
                 return JAVA_EE_5_DISPLAY_NAME;
             }
