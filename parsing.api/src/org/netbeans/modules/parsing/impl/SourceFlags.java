@@ -54,6 +54,11 @@ public enum SourceFlags {
     /**
      * The {@link Source} expects change(s)
      */
-    CHANGE_EXPECTED
+    CHANGE_EXPECTED,
+    
+    /**
+     * The {@link ParserResultTask}s on this source should be rescheduled
+     */
+    RESCHEDULE_FINISHED_TASKS
     
 }

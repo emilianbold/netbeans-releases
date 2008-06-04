@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.parsing.impl;
 
+import com.sun.tools.javac.code.Flags;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -92,6 +93,12 @@ public class TaskProcessor {
     
     /**Limit for task to be marked as a slow one, in ms*/
     private static final int SLOW_CANCEL_LIMIT = 50;
+    
+    /** Default reparse delay*/
+    private static final int DEFAULT_REPARSE_DELAY = 500;
+    
+    /**May be changed by unit test*/
+    public static int reparseDelay = DEFAULT_REPARSE_DELAY;
     
     //Scheduled requests waiting for execution
     private final static PriorityBlockingQueue<Request> requests = new PriorityBlockingQueue<Request> (10, new RequestPriorityComparator());
@@ -340,6 +347,51 @@ public class TaskProcessor {
             }
             else {
                 currentRequest.cancelCompleted(request);
+            }
+        }
+    }
+    
+    //Changes handling
+    
+    private final static Map<Source,Request> rst = new HashMap<Source, Request>();
+    
+    public static void resetState (final Source source, final boolean invalidate) {
+        assert source != null;
+        TaskProcessor.Request r = currentRequest.getTaskToCancel (invalidate);
+        if (r != null) {
+            r.task.cancel();
+            Request oldR;
+            synchronized (rst) {                
+                oldR = rst.get(source);
+                rst.put(source,r);
+            }
+            assert oldR == null;
+        }
+    }
+    
+    public static void resetStateImpl (final Source source) {
+        assert source != null;
+        Request r;
+        synchronized (rst) {
+            r = rst.remove(source);
+        }
+        currentRequest.cancelCompleted(r);
+        synchronized (INTERNAL_LOCK) {
+            boolean reschedule;
+            synchronized (source) {
+                Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(source);
+                reschedule = flags.contains(SourceFlags.RESCHEDULE_FINISHED_TASKS);
+                flags.remove(SourceFlags.RESCHEDULE_FINISHED_TASKS);
+                flags.remove(SourceFlags.CHANGE_EXPECTED);
+            }            
+            Collection<Request> cr;            
+            if (reschedule) {                
+                if ((cr=finishedRequests.remove(source)) != null && cr.size()>0)  {
+                    requests.addAll(cr);
+                }
+            }
+            if ((cr=waitingRequests.remove(source)) != null && cr.size()>0)  {
+                requests.addAll(cr);
             }
         }
     }
@@ -779,6 +831,30 @@ public class TaskProcessor {
                         this.canceledReference = request;
                         this.reference = null;
                         this.canceled.set(true);
+                        this.cancelTime = System.currentTimeMillis();
+                    }
+                }
+            }
+            return request;
+        }
+        
+        Request getTaskToCancel (final boolean mayCancelParser) {
+            Request request = null;
+            if (!factory.isDispatchThread(Thread.currentThread())) {
+                synchronized (INTERNAL_LOCK) {
+                    if (this.reference != null) {
+                        assert this.canceledReference == null;
+                        request = this.reference;
+                        this.canceledReference = request;
+                        this.reference = null;
+                        this.canceled.set(true);
+                        //todo: Cancel parser
+                        this.cancelTime = System.currentTimeMillis();
+                    }
+                    else if (canceledReference == null)  {
+                        request = Request.DUMMY;
+                        this.canceledReference = request;
+                        //todo: Cancel parser
                         this.cancelTime = System.currentTimeMillis();
                     }
                 }
