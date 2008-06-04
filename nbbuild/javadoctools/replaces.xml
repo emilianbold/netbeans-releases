@@ -164,3 +164,4 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-modules-java-api-common@" value="${javadoc.docs.org-netbeans-modules-java-api-common}"/>
 <replacefilter token="@org-netbeans-modules-java-sourceui@" value="${javadoc.docs.org-netbeans-modules-java-sourceui}"/>
 <replacefilter token="@org-netbeans-api-java-classpath@" value="${javadoc.docs.org-netbeans-api-java-classpath}"/>
+<replacefilter token="@org-netbeans-modules-websvc-serverapi@" value="${javadoc.docs.org-netbeans-modules-websvc-serverapi}"/>
