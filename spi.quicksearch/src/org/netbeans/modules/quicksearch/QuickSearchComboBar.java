@@ -143,7 +143,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         jScrollPane1.setBorder(null);
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-        jScrollPane1.setViewportBorder(null);
+        jScrollPane1.setMinimumSize(new java.awt.Dimension(2, 18));
         jScrollPane1.setName("jScrollPane1"); // NOI18N
 
         command.setColumns(15);

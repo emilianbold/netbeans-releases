@@ -119,17 +119,30 @@ public class GoToTypeWorker implements Runnable {
             List<TypeDescriptor> items;
             // Multiple providers: merge results
             items = new ArrayList<TypeDescriptor>(128);
+            List<TypeDescriptor> ccItems = new ArrayList<TypeDescriptor>(128);
             String[] message = new String[1];
+            
             TypeProvider.Context context = TypeProviderAccessor.DEFAULT.createContext(null, text, SearchType.CASE_INSENSITIVE_PREFIX);
             TypeProvider.Result result = TypeProviderAccessor.DEFAULT.createResult(items, message);
+            
+            TypeProvider.Context ccContext = TypeProviderAccessor.DEFAULT.createContext(null, text, SearchType.CAMEL_CASE);
+            TypeProvider.Result ccResult = TypeProviderAccessor.DEFAULT.createResult(ccItems, message);
+            
             for (TypeProvider provider : Lookup.getDefault().lookupAll(TypeProvider.class).toArray(new TypeProvider[0])) {
                 if (isCanceled) {
                     return null;
                 }
                 provider.computeTypeNames(context, result);
             }
+            for (TypeProvider provider : Lookup.getDefault().lookupAll(TypeProvider.class).toArray(new TypeProvider[0])) {
+                if (isCanceled) {
+                    return null;
+                }
+                provider.computeTypeNames(ccContext, ccResult);
+            }
             if ( !isCanceled ) {   
                 //time = System.currentTimeMillis();
+                items.addAll(ccItems);
                 Collections.sort(items, new TypeComparator());
                 //panel.setWarning(message[0]);
                 //sort += System.currentTimeMillis() - time;

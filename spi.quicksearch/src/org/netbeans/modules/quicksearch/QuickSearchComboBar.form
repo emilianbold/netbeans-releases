@@ -80,8 +80,8 @@
             </Property>
             <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
             <Property name="verticalScrollBarPolicy" type="int" value="21"/>
-            <Property name="viewportBorder" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-              <Border info="null"/>
+            <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[2, 18]"/>
             </Property>
             <Property name="name" type="java.lang.String" value="jScrollPane1" noResource="true"/>
           </Properties>
