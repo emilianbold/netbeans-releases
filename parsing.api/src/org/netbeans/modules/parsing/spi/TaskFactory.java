@@ -46,8 +46,8 @@ import org.netbeans.modules.parsing.api.Source;
 /**
  * Creates a list of tasks ({@link EmbeddingProvider}, 
  * {@link ParserBasedEmbeddingProvider} or {@link ParserResultTask}) for given source. 
- * TaskFactory must be registerred in your manifest.xml file for 
- * some specific mime type, or for all types. So it can be registerred 
+ * TaskFactory must be registered in your manifest.xml file for 
+ * some specific mime type, or for all types. So it can be registered 
  * in manifest.xml in <code>"Editors/" + mimeType</code> folder, or directly in
  * <code>"Editors"</code>.
  * 
