@@ -97,9 +97,7 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
-                <package>org.netbeans.modules.editor.plain</package>
-            </public-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>
