@@ -69,7 +69,7 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
             categoryLabel.setOpaque(true);
             rendererComponent.add(categoryLabel, BorderLayout.WEST);
             categoryLabel.setPreferredSize(new JLabel("XXXXXXXXXXXXX").getPreferredSize());
-            categoryLabel.setForeground(QuickSearchComboBar.getShadowColor());
+            categoryLabel.setForeground(QuickSearchComboBar.getCategoryTextColor());
             JLabel itemLabel = new JLabel(((SearchResult) value).getDisplayName());
             itemLabel.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 2));
             ListModel model = list.getModel();

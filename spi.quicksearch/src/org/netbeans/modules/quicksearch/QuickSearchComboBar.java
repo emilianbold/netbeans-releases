@@ -87,8 +87,8 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
             Point where = new Point(0, jPanel1.getSize().height - 1);
             Window parent = SwingUtilities.windowForComponent(this);
             SwingUtilities.convertPointToScreen(where, jPanel1);
-            //popup = PopupFactory.getSharedInstance().getPopup(command, displayer, where.x, where.y);
             popup = new JWindow(parent);
+            popup.setFocusableWindowState(false);
             popup.getContentPane().add(displayer);
             popup.setLocation(where);
             popup.setVisible(true);
@@ -113,7 +113,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         command = new javax.swing.JTextArea();
         jSeparator1 = new javax.swing.JSeparator();
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(6, 1, 6, 1));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 4, 1, 1));
         setMaximumSize(new java.awt.Dimension(200, 2147483647));
         setName("Form"); // NOI18N
         setOpaque(false);
@@ -122,7 +122,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
                 formFocusLost(evt);
             }
         });
-        setLayout(new java.awt.BorderLayout(10, 10));
+        setLayout(new java.awt.GridBagLayout());
 
         jPanel1.setBackground(getTextBackground());
         jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(getShadowColor()));
@@ -136,7 +136,8 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 1, 0, 0);
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(3, 1, 3, 0);
         jPanel1.add(jLabel2, gridBagConstraints);
 
         jScrollPane1.setBorder(null);
@@ -164,7 +165,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
@@ -180,7 +181,11 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 3);
         jPanel1.add(jSeparator1, gridBagConstraints);
 
-        add(jPanel1, java.awt.BorderLayout.CENTER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(jPanel1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 private void formFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusLost
@@ -266,6 +271,12 @@ private void commandFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_
     
     static Color getResultBackground () {
         return getTextBackground();
+    }
+    
+    static Color getCategoryTextColor () {
+        Color shadow = UIManager.getColor("textInactiveText");
+        System.out.println("Inactive text color: " + shadow);        
+        return shadow != null ? shadow : Color.DARK_GRAY;
     }
     
 }
