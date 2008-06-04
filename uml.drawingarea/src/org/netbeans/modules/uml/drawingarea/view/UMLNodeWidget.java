@@ -410,7 +410,7 @@ public abstract class UMLNodeWidget extends Widget
         
         List<Widget> widList = widget.getChildren();
         for (Widget child : widList) {
-            if (child instanceof DiagramNodeWriter) {
+            if ((child instanceof DiagramNodeWriter) && !(child instanceof Widget.Dependency)) { // we write dependencies in another section
                 ((DiagramNodeWriter) child).save(nodeWriter);
             } else {
                 saveChildren(child, nodeWriter);
