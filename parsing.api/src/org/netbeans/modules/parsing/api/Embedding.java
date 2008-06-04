@@ -45,7 +45,7 @@ import java.util.List;
 
 /**
  * Represents one block of code embedded in some other source. Performance 
- * is the only purpose of this class. You can obtain some basic inforation 
+ * is the only purpose of this class. You can obtain some basic information 
  * about embedded block of code before it is really created.
  *
  * Following example shows how to create compound Embedding from some snapshot:
