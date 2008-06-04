@@ -109,6 +109,6 @@ public class RubyGemsDialog extends org.netbeans.modules.performance.utilities.P
         
     }    
     public static void main(String[] args) {
-        junit.textui.TestRunner.run(new RubyGemsDialog("doMeasurement"));        
+        junit.textui.TestRunner.run(new RubyGemsDialog("testRubyGemsDialog"));        
     }
 }

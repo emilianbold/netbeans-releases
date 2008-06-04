@@ -85,6 +85,12 @@ public class SaveModifiedScriptingFiles extends org.netbeans.modules.performance
         docName = "ruby20kb.rb";
         doMeasurement();
     }
+    public void test_SavePHP_File() {
+        testProject = Projects.PHP_PROJECT;
+        pathName = "Source Files"+"|";
+        docName = "php20kb.php";
+        doMeasurement();        
+    }
     public void test_SaveRHTML_File() {
         testProject = Projects.RAILS_PROJECT;
         pathName = "Views"+"|";

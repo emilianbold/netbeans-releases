@@ -131,6 +131,13 @@ public class ScriptingNodePopup extends PerformanceTestCase {
         docName = "ruby20kb.rb";
         testNode(new Node(getProjectNode(testProject),"Source Files"+"|"+docName));
     }
+    public void test_PHP_NodePopup() {
+        testProject = Projects.PHP_PROJECT;
+        pathName = "";
+        docName = "php20kb.rb";
+        testNode(new Node(getProjectNode(testProject),"Source Files"+"|"+docName));        
+    }
+    
     public void test_RHTML_NodePopup() {
         testProject = Projects.RAILS_PROJECT;
         pathName = "";

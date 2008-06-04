@@ -39,15 +39,46 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.languages;
+
+package org.netbeans.performance.visualweb;
+
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.performance.visualweb.dialogs.PropertyBindingDialog;
+import org.netbeans.performance.visualweb.dialogs.ManageComponentLibrariesDialog;
+import org.netbeans.performance.visualweb.dialogs.DataBindingDialog;
+import org.netbeans.performance.visualweb.dialogs.ConfigureDefaultOptionsDialog;
+import org.netbeans.performance.visualweb.dialogs.AddComponentLibraryDialog;
+import org.netbeans.performance.visualweb.dialogs.ComponentStyleDialog;
+import org.netbeans.performance.visualweb.dialogs.TableLayoutOptionsDialog;
+import org.netbeans.performance.visualweb.dialogs.PageStyleSheetDialog;
+import org.netbeans.performance.visualweb.dialogs.PageFragmentBoxDialog;
+import org.netbeans.performance.visualweb.dialogs.VirtualFormsDialog;
+import org.netbeans.junit.NbTestSuite;
+
 
 /**
+ * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
- * @author mkhramov@netbeans.org
+ * @author  mkhramov@netbeans.org
  */
-public class Projects {
-    public static final String RUBY_PROJECT = "RubyPerfTest";
-    public static final String RAILS_PROJECT = "RailsPerfTest";
-    public static final String SCRIPTING_PROJECT = "ScriptingPerfTest";
-    public static final String PHP_PROJECT = "PhpPerfTest";
+
+public class VWPMeasureDialogsTest {
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness VisualWeb Dialogs suite");
+        
+        suite.addTest(NbModuleSuite.create(AddComponentLibraryDialog.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(PageStyleSheetDialog.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(PageFragmentBoxDialog.class, ".*", ".*"));
+        
+        suite.addTest(NbModuleSuite.create(VirtualFormsDialog.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(TableLayoutOptionsDialog.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(DataBindingDialog.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(ConfigureDefaultOptionsDialog.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(PropertyBindingDialog.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(ComponentStyleDialog.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(ManageComponentLibrariesDialog.class, ".*", ".*"));
+        
+        return suite;
+    }
+    
 }

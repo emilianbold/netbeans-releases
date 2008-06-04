@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,41 +39,61 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.visualweb;
+package org.netbeans.performance.languages.windows;
 
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.performance.visualweb.setup.WebSetupTest;
-
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
 
 /**
- * Test suite that actually does not perform any test but sets up user directory
- * for UI responsiveness tests and installs Application server instance
  *
- * @author  rkubacki@netbeans.org, mmirilovic@netbeans.org, mkhramov@netbeans.org
+ * @author mkhramov@netbeans.org
  */
-public class VWPMeasuringSetup extends NbTestSuite {
-
-    public VWPMeasuringSetup (java.lang.String testName) {
+public class AddJavaScriptLibraryDialog  extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
+    
+    public static final String suiteName="Scripting UI Responsiveness Actions suite";
+    protected String MENU, TITLE;
+    
+    public AddJavaScriptLibraryDialog(String testName) {
         super(testName);
-    }
-
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness Setup suite for Visual Web Pack");
-
-        suite.addTest(NbModuleSuite.create(WebSetupTest.class, ".*", ".*"));
-
-/*
-        suite.addTest(new WebSetupTest("closeMemoryToolbar"));        
-        suite.addTest(new WebSetupTest("closeWelcome"));
-        
-        // server is registered from command line
-        //suite.addTest(new WebSetupTest("setupAppServer"));
-        
-        suite.addTest(new WebSetupTest("openWebPackProject"));        
-        suite.addTest(new WebSetupTest("closeAllDocuments"));
-*/        
-        return suite;
+        expectedTime = 18000;
+        WAIT_AFTER_OPEN=20000;         
     }
     
+    public AddJavaScriptLibraryDialog(String testName, String performanceDataName) {
+        super(testName, performanceDataName);        
+        expectedTime = 18000;
+        WAIT_AFTER_OPEN=20000;         
+    }
+    
+    public void testAddJavaScriptLibraryDialog() {
+        doMeasurement();
+    }
+    
+    @Override
+    public void initialize() {
+        MENU = "Tools"+"|"+ Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.javascript.libraries.actions.Bundle", "CTL_TestAction");
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.javascript.libraries.ui.Bundle", "SELECT_LIBRARY_DIALOG_TITLE");
+    }
+    
+    @Override
+    public void prepare() {
+        log("prepare");
+    }
+
+    @Override
+    public ComponentOperator open() {
+        log("::open");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU);
+        return new WizardOperator(TITLE);
+    }
+    @Override
+    public void close() {
+        super.close();                
+    }    
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(new AddJavaScriptLibraryDialog("testAddJavaScriptLibraryDialog"));        
+    }
 }

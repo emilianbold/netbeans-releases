@@ -39,38 +39,70 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.languages;
+package org.netbeans.performance.languages.windows;
 
-import org.netbeans.junit.NbModuleSuite;
+
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.PropertiesAction;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.performance.languages.actions.CreateRubyProject;
-import org.netbeans.performance.languages.actions.EditorMenuPopup;
-import org.netbeans.performance.languages.actions.OpenRubyProject;
-import org.netbeans.performance.languages.actions.PageUpPageDownScriptingEditor;
-import org.netbeans.performance.languages.actions.SaveModifiedScriptingFiles;
-import org.netbeans.performance.languages.actions.ScriptingExpandFolder;
-import org.netbeans.performance.languages.actions.TypingInScriptingEditor;
+import org.netbeans.performance.languages.Projects;
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class ScriptingMeasureActions {
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Actions suite");
-
-        suite.addTest(NbModuleSuite.create(CreateRubyProject.class, ".*", ".*"));                
-        suite.addTest(NbModuleSuite.create(ScriptingExpandFolder.class, ".*", ".*"));           
-        suite.addTest(NbModuleSuite.create(EditorMenuPopup.class, ".*", ".*"));      
-        suite.addTest(NbModuleSuite.create(TypingInScriptingEditor.class, ".*", ".*"));       
-        suite.addTest(NbModuleSuite.create(OpenRubyProject.class, ".*", ".*"));
-  
-        // Saving modified document
-        suite.addTest(NbModuleSuite.create(SaveModifiedScriptingFiles.class, ".*", ".*"));
-       
-        // Page Up and Down in scripting editor
-        suite.addTest(NbModuleSuite.create(PageUpPageDownScriptingEditor.class, ".*", ".*"));
-     
-        return suite;        
+public class PhpPropertiesDialog  extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
+    public static final String suiteName="Scripting UI Responsiveness Dialogs suite";
+    private Node testNode;
+    private String TITLE, projectName;
+    
+    public PhpPropertiesDialog(String testName) {
+        super(testName);
+        expectedTime = WINDOW_OPEN;          
     }
+    
+    public PhpPropertiesDialog(String testName, String performanceDataName) {
+        super(testName,performanceDataName);
+        expectedTime = WINDOW_OPEN;      
+    }
+    
+    @Override
+    public void initialize() {
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.php.project.ui.customizer.Bundle", "LBL_Customizer_Title", new String[]{projectName});       
+        testNode = (Node) new ProjectsTabOperator().getProjectRootNode(projectName);        
+    }
+    
+    @Override
+    public void prepare() {
+        log("::prepare");
+    }
+
+    @Override
+    public ComponentOperator open() {
+        // invoke Window / Properties from the main menu
+        new PropertiesAction().performPopup(testNode);
+        return new NbDialogOperator(TITLE);
+    }
+    
+    public void testPhpProjectProperties() {
+        projectName = Projects.PHP_PROJECT;
+        doMeasurement();
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new PhpPropertiesDialog("testPhpProjectProperties","PHP Project Properties dialog open time"));        
+        return suite;
+    }
+
+    /** Test could be executed internaly in IDE without XTest
+     * @param args arguments from command line
+     */
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(suite());
+    }    
+
 }

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,13 +41,41 @@
 
 package org.netbeans.performance.languages;
 
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.performance.languages.actions.CreatePHPProject;
+import org.netbeans.performance.languages.actions.CreateRubyProject;
+import org.netbeans.performance.languages.actions.CreateScriptingPackFiles;
+import org.netbeans.performance.languages.actions.EditorMenuPopup;
+import org.netbeans.performance.languages.actions.OpenRubyProject;
+import org.netbeans.performance.languages.actions.PageUpPageDownScriptingEditor;
+import org.netbeans.performance.languages.actions.SaveModifiedScriptingFiles;
+import org.netbeans.performance.languages.actions.ScriptingExpandFolder;
+import org.netbeans.performance.languages.actions.TypingInScriptingEditor;
+
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class Projects {
-    public static final String RUBY_PROJECT = "RubyPerfTest";
-    public static final String RAILS_PROJECT = "RailsPerfTest";
-    public static final String SCRIPTING_PROJECT = "ScriptingPerfTest";
-    public static final String PHP_PROJECT = "PhpPerfTest";
+public class ScriptingMeasureActionsTest {
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Actions suite");
+
+        suite.addTest(NbModuleSuite.create(CreateRubyProject.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(CreatePHPProject.class,".*",".*"));
+        suite.addTest(NbModuleSuite.create(CreateScriptingPackFiles.class,".*",".*"));
+        
+        suite.addTest(NbModuleSuite.create(ScriptingExpandFolder.class, ".*", ".*"));           
+        suite.addTest(NbModuleSuite.create(EditorMenuPopup.class, ".*", ".*"));      
+        suite.addTest(NbModuleSuite.create(TypingInScriptingEditor.class, ".*", ".*"));       
+        suite.addTest(NbModuleSuite.create(OpenRubyProject.class, ".*", ".*"));
+  
+        // Saving modified document
+        suite.addTest(NbModuleSuite.create(SaveModifiedScriptingFiles.class, ".*", ".*"));
+       
+        // Page Up and Down in scripting editor
+        suite.addTest(NbModuleSuite.create(PageUpPageDownScriptingEditor.class, ".*", ".*"));
+     
+        return suite;        
+    }
 }

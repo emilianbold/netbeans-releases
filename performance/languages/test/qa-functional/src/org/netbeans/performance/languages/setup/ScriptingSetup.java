@@ -89,6 +89,9 @@ public class ScriptingSetup extends JellyTestCase {
         ScriptingUtilities.verifyAndResolveMissingWebServer(Projects.SCRIPTING_PROJECT, "GlassFish V2");
         ScriptingUtilities.waitForPendingBackgroundTasks();        
     }
+    public void testOpenPHPProject() {
+        openProject(Projects.PHP_PROJECT);
+    }
     
     private void openProject(String projectName) {
         String projectsDir = workdir + File.separator+projectName;

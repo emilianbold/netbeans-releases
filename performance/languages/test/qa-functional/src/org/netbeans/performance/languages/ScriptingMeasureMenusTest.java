@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,46 +39,27 @@
  * made subject to such option by the copyright holder.
  */
 
+package org.netbeans.performance.languages;
 
-package org.netbeans.performance.visualweb;
+
 
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.performance.visualweb.dialogs.PropertyBindingDialog;
-import org.netbeans.performance.visualweb.dialogs.ManageComponentLibrariesDialog;
-import org.netbeans.performance.visualweb.dialogs.DataBindingDialog;
-import org.netbeans.performance.visualweb.dialogs.ConfigureDefaultOptionsDialog;
-import org.netbeans.performance.visualweb.dialogs.AddComponentLibraryDialog;
-import org.netbeans.performance.visualweb.dialogs.ComponentStyleDialog;
-import org.netbeans.performance.visualweb.dialogs.TableLayoutOptionsDialog;
-import org.netbeans.performance.visualweb.dialogs.PageStyleSheetDialog;
-import org.netbeans.performance.visualweb.dialogs.PageFragmentBoxDialog;
-import org.netbeans.performance.visualweb.dialogs.VirtualFormsDialog;
 import org.netbeans.junit.NbTestSuite;
-
+import org.netbeans.performance.languages.menus.ScriptingNodePopup;
+import org.netbeans.performance.languages.menus.ScriptingProjectNodePopup;
 
 /**
- * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
- * @author  mkhramov@netbeans.org
+ * @author mkhramov@netbeans.org
  */
-
-public class VWPMeasureDialogs {
+public class ScriptingMeasureMenusTest {
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness VisualWeb Dialogs suite");
+        NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Menus suite");
         
-        suite.addTest(NbModuleSuite.create(AddComponentLibraryDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(PageStyleSheetDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(PageFragmentBoxDialog.class, ".*", ".*"));
-        
-        suite.addTest(NbModuleSuite.create(VirtualFormsDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(TableLayoutOptionsDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(DataBindingDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(ConfigureDefaultOptionsDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(PropertyBindingDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(ComponentStyleDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(ManageComponentLibrariesDialog.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(ScriptingProjectNodePopup.class, ".*", ".*"));       
+        suite.addTest(NbModuleSuite.create(ScriptingNodePopup.class, ".*", ".*"));
         
         return suite;
     }
-    
+
 }

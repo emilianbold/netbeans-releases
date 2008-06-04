@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,26 +39,41 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.languages;
-
+package org.netbeans.performance.visualweb;
 
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.performance.visualweb.setup.WebSetupTest;
+
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.performance.languages.windows.RailsGeneratorDialog;
-import org.netbeans.performance.languages.windows.RubyGemsDialog;
-import org.netbeans.performance.languages.windows.RubyPropertiesDialog;
 
 /**
+ * Test suite that actually does not perform any test but sets up user directory
+ * for UI responsiveness tests and installs Application server instance
  *
- * @author mkhramov@netbeans.org
+ * @author  rkubacki@netbeans.org, mmirilovic@netbeans.org, mkhramov@netbeans.org
  */
-public class ScriptingMeasureDialogs {
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Dialogs suite");
-        suite.addTest(NbModuleSuite.create(RubyPropertiesDialog.class, ".*", ".*"));       
-        suite.addTest(NbModuleSuite.create(RailsGeneratorDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(RubyGemsDialog.class, ".*", ".*"));
-        return suite;
+public class VWPMeasuringSetupTest extends NbTestSuite {
+
+    public VWPMeasuringSetupTest (java.lang.String testName) {
+        super(testName);
     }
 
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness Setup suite for Visual Web Pack");
+
+        suite.addTest(NbModuleSuite.create(WebSetupTest.class, ".*", ".*"));
+
+/*
+        suite.addTest(new WebSetupTest("closeMemoryToolbar"));        
+        suite.addTest(new WebSetupTest("closeWelcome"));
+        
+        // server is registered from command line
+        //suite.addTest(new WebSetupTest("setupAppServer"));
+        
+        suite.addTest(new WebSetupTest("openWebPackProject"));        
+        suite.addTest(new WebSetupTest("closeAllDocuments"));
+*/        
+        return suite;
+    }
+    
 }

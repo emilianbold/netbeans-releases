@@ -62,7 +62,7 @@ import org.netbeans.performance.visualweb.windows.DatabaseTableDrop;
  *
  * @author  mkhramov@netbeans.org
  */
-public class VWPMeasureActions  {
+public class VWPMeasureActionsTest  {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness VisualWeb Actions suite");
 	

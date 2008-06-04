@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,24 +39,34 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.visualweb;
+package org.netbeans.performance.languages;
 
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.performance.visualweb.menus.VWProjectsViewPopupMenu;
-
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.performance.languages.setup.ScriptingSetup;
 
 /**
- * Measure POPUP MENU_OPENING.
  *
- * @author  mmirilovic@netbeans.org
+ * @author mkhramov@netbeans.org
  */
-public class VWPMeasureMenus  {
-
+public class ScriptingMeasuringSetupTest extends NbTestSuite {
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness VisualWeb Menus suite");
-        suite.addTest(NbModuleSuite.create(VWProjectsViewPopupMenu.class, ".*", ".*"));        
+        NbTestSuite suite = new NbTestSuite("Scripting pack UI Responsiveness Setup suite");
+        suite.addTest(NbModuleSuite.create(ScriptingSetup.class, ".*", ".*"));
+/*        
+        suite.addTest(new ScriptingSetup("closeMemoryToolbar"));
+        
+        suite.addTest(new ScriptingSetup("closeWelcome"));
+        
+        // server is registered from command line
+        //suite.addTest(new WebSetupTest("setupAppServer"));
+        
+        suite.addTest(new ScriptingSetup("OpenRubyProject"));
+        suite.addTest(new ScriptingSetup("OpenRailsProject"));
+        suite.addTest(new ScriptingSetup("OpenScriptingProject"));
+        
+        suite.addTest(new ScriptingSetup("closeAllDocuments"));        
+*/ 
         return suite;
     }
-    
 }
