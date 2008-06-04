@@ -393,11 +393,26 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
                 OperandsMoveProvider provider = new OperandsMoveProvider();
                 WidgetAction operandMoveAction = ActionFactory.createMoveAction(provider, provider);
                 selectTool.addAction(operandMoveAction);
-                Dimension minS=getMinimumSize();
-                if(minS!=null)
+                switch(getResizeMode())
                 {
-                    minS.height+=100;
-                    setMinimumSize(minS);
+                    case MINIMUMSIZE:
+                    Dimension minS=getMinimumSize();
+                    if(minS!=null)
+                    {
+                        minS.height+=100;
+                        setMinimumSize(minS);
+                    }
+                    break;
+                    case PREFERREDBOUNDS:
+                        Rectangle prefBnd=null;
+                        if(isPreferredBoundsSet())prefBnd=getPreferredBounds();
+                        if(prefBnd!=null)
+                        {
+                            prefBnd.height+=100;
+                            setPreferredBounds(prefBnd);
+                        }
+                        break;
+                        //other unsupported
                 }
             }
         }
