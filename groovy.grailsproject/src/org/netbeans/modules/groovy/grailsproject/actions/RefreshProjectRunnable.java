@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,95 +31,30 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.extexecution.api;
+package org.netbeans.modules.groovy.grailsproject.actions;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.extexecution.api.input.InputProcessor;
-import org.openide.filesystems.FileObject;
-import org.openide.windows.InputOutput;
 
 /**
  *
  * @author Petr Hejl
  */
-public final class DefaultDescriptor implements Descriptor {
+public class RefreshProjectRunnable implements Runnable {
 
     private final Project project;
 
-    private final InputProcessor snooper;
-
-    private final Runnable post;
-
-    private final boolean suspend;
-
-    private final boolean progress;
-
-    private final boolean front;
-
-    private final boolean input;
-
-    private final boolean controlable;
-
-    public DefaultDescriptor(Project project, boolean suspend) {
-        this(project, null, null, suspend, true, true, true, true);
-    }
-
-    public DefaultDescriptor(Project project, InputProcessor snooper, Runnable post, boolean suspend) {
-        this(project, snooper, post, suspend, true, true, true, true);
-    }
-
-    public DefaultDescriptor(Project project, InputProcessor snooper, Runnable post,
-            boolean suspend, boolean progress, boolean front, boolean input, boolean controlable) {
+    public RefreshProjectRunnable(Project project) {
         this.project = project;
-        this.snooper = snooper;
-        this.post = post;
-        this.suspend = suspend;
-        this.progress = progress;
-        this.front = front;
-        this.input = input;
-        this.controlable = controlable;
     }
-
-    public InputOutput getInputOutput() {
-        return null;
-    }
-
-    public FileObject getFileObject() {
-        return project.getProjectDirectory();
-    }
-
-    public InputProcessor getOutputSnooper() {
-        return snooper;
-    }
-
-    public Runnable getPostExecution() {
-        return post;
-    }
-
-    public boolean isFrontWindow() {
-        return front;
-    }
-
-    public boolean isInputVisible() {
-        return input;
-    }
-
-    public boolean showProgress() {
-        return progress;
-    }
-
-    public boolean showSuspended() {
-        return suspend;
-    }
-
-    public boolean isControlable() {
-        return controlable;
+    
+    public void run() {
+        project.getProjectDirectory().refresh();
     }
 
 }
