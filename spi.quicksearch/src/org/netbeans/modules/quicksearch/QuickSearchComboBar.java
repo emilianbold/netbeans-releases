@@ -142,6 +142,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         jScrollPane1.setBorder(null);
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        jScrollPane1.setViewportBorder(null);
         jScrollPane1.setName("jScrollPane1"); // NOI18N
 
         command.setColumns(15);
@@ -184,7 +185,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
 
 private void formFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusLost
     if (popup!=null)
-        popup.hide();
+        popup.setVisible(false);
     popup = null;
 }//GEN-LAST:event_formFocusLost
 
@@ -199,13 +200,13 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
         displayer.invoke();
         evt.consume();
         if (popup != null) {
-            popup.hide();
+            popup.setVisible(false);
             popup=null;
         }
         command.setText("");
     } else if ((evt.getKeyCode()) == KeyEvent.VK_ESCAPE) {
         if (popup != null) {
-            popup.hide();
+            popup.setVisible(false);
         }
         if (caller != null) {
             TopComponent tc = caller.get();
