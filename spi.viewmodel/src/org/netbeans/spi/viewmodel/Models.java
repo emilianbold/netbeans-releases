@@ -2790,7 +2790,7 @@ public final class Models {
      * Tree expansion control.
      * @since 1.15
      */
-    public static interface TreeFeatures {
+    public static abstract class TreeFeatures {
         
         /**
          * Returns <code>true</code> if given node is expanded.
@@ -2798,28 +2798,28 @@ public final class Models {
          * @param node a node to be checked
          * @return <code>true</code> if given node is expanded
          */
-        public boolean isExpanded (Object node);
+        public abstract boolean isExpanded (Object node);
         
         /**
          * Expands given list of nodes.
          *
          * @param node a list of nodes to be expanded
          */
-        public void expandNode (Object node);
+        public abstract void expandNode (Object node);
         
         /**
          * Collapses given node.
          *
          * @param node a node to be expanded
          */
-        public void collapseNode (Object node);
+        public abstract void collapseNode (Object node);
         
     }
     
     /**
      * Implements set of tree view features.
      */
-    private static final class DefaultTreeFeatures implements TreeFeatures {
+    private static final class DefaultTreeFeatures extends TreeFeatures {
         
         private JComponent view;
         
