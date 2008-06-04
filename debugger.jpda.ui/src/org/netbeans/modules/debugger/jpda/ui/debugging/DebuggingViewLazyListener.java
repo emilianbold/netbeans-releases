@@ -73,9 +73,6 @@ public class DebuggingViewLazyListener extends LazyActionsManagerListener {
         if (action == ActionsManager.ACTION_START) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    
-                    System.out.println("DEBUGGER: " + debugger);
-                    
                     DebuggingView debuggingView = DebuggingView.getInstance();
                     debuggingView.open();
                     debuggingView.requestActive();

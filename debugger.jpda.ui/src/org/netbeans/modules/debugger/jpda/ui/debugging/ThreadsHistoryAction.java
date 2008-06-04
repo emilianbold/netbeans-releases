@@ -66,7 +66,12 @@ public final class ThreadsHistoryAction extends AbstractAction {
     
     public void actionPerformed(ActionEvent evt) {
         List<JPDAThread> threads = getThreads();
-        if (threads.size() < 2) {
+        int threadsCount = threads.size();
+        if (threadsCount < 1) {
+            return;
+        }
+        if (threadsCount == 1) {
+            threads.get(0).makeCurrent();
             return;
         }
         
@@ -98,8 +103,8 @@ public final class ThreadsHistoryAction extends AbstractAction {
                 }
             }
         }
-        
-        int index = (evt.getModifiers() & KeyEvent.SHIFT_MASK) == 0 ? 1 : threads.size() - 1;
+
+        int index = (evt.getModifiers() & KeyEvent.SHIFT_MASK) == 0 ? 1 : threadsCount - 1;
         threads.get(index).makeCurrent();
     }
     
