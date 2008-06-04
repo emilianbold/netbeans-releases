@@ -196,7 +196,7 @@ public class TreeModelRoot implements ModelListener {
     /**
      * Implements set of tree view features.
      */
-    private final class DefaultTreeFeatures implements TreeFeatures, TreeExpansionListener {
+    private final class DefaultTreeFeatures extends TreeFeatures implements TreeExpansionListener {
         
         private TreeView view;
         
