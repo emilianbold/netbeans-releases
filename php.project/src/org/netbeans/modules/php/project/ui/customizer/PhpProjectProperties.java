@@ -75,7 +75,6 @@ import org.openide.util.Utilities;
 public class PhpProjectProperties implements ConfigManager.ConfigProvider {
 
     public static final String SRC_DIR = "src.dir"; // NOI18N
-    public static final String COMMAND_PATH = "command.path"; // NOI18N
     public static final String SOURCE_ENCODING = "source.encoding"; // NOI18N
     public static final String COPY_SRC_FILES = "copy.src.files"; // NOI18N
     public static final String COPY_SRC_TARGET = "copy.src.target"; // NOI18N
