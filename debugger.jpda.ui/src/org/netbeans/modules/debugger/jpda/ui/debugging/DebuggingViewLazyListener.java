@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.debugger.jpda.ui.debugging;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 
@@ -48,6 +50,9 @@ import org.netbeans.api.debugger.ActionsManagerListener;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.openide.windows.Mode;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 
 /**
@@ -56,12 +61,23 @@ import org.netbeans.spi.debugger.ContextProvider;
 public class DebuggingViewLazyListener extends LazyActionsManagerListener {
 
     JPDADebugger debugger;
+    private Reference<TopComponent> lastSelectedTCRef = new WeakReference<TopComponent>(null);
     
     public DebuggingViewLazyListener (ContextProvider contextProvider) {
         this.debugger = contextProvider.lookupFirst(null, JPDADebugger.class);
     }
 
     protected void destroy () {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                DebuggingView debuggingView = DebuggingView.getInstance();
+                debuggingView.close();
+                TopComponent lastSelectedTC = lastSelectedTCRef.get();
+                if (lastSelectedTC != null) {
+                    lastSelectedTC.requestActive();
+                }
+            }
+        });
     }
 
     public String[] getProperties () {
@@ -75,6 +91,8 @@ public class DebuggingViewLazyListener extends LazyActionsManagerListener {
                 public void run() {
                     DebuggingView debuggingView = DebuggingView.getInstance();
                     debuggingView.open();
+                    Mode debuggingMode = WindowManager.getDefault().findMode(debuggingView);
+                    lastSelectedTCRef = new WeakReference(debuggingMode.getSelectedTopComponent());
                     debuggingView.requestActive();
                     ThreadsListener threadsListener = ThreadsListener.getDefault();
                     threadsListener.setDebuggingView(debuggingView);

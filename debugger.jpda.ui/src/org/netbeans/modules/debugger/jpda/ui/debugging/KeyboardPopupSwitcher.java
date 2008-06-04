@@ -273,7 +273,7 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
         assert cols > 0 : "There aren't any columns in the KeyboardPopupSwitcher's table"; // NOI18N
         assert rows > 0 : "There aren't any rows in the KeyboardPopupSwitcher's table"; // NOI18N
         changeTableSelection((rows > initialSelection && initialSelection >= 0) ? initialSelection :
-            initialSelection, 0);
+            rows - 1, 0);
     }
     
     private void showPopup() {

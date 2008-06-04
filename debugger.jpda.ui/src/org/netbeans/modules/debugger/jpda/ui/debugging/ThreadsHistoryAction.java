@@ -70,10 +70,6 @@ public final class ThreadsHistoryAction extends AbstractAction {
         if (threadsCount < 1) {
             return;
         }
-        if (threadsCount == 1) {
-            threads.get(0).makeCurrent();
-            return;
-        }
         
         if(!"immediately".equals(evt.getActionCommand()) && // NOI18N
                 !(evt.getSource() instanceof javax.swing.JMenuItem)) {
@@ -103,9 +99,13 @@ public final class ThreadsHistoryAction extends AbstractAction {
                 }
             }
         }
-
-        int index = (evt.getModifiers() & KeyEvent.SHIFT_MASK) == 0 ? 1 : threadsCount - 1;
-        threads.get(index).makeCurrent();
+        
+        if (threadsCount == 1) {
+            threads.get(0).makeCurrent();
+        } else {
+            int index = (evt.getModifiers() & KeyEvent.SHIFT_MASK) == 0 ? 1 : threadsCount - 1;
+            threads.get(index).makeCurrent();
+        }
     }
     
     private SwitcherTableItem[] createSwitcherItems(List<JPDAThread> threads) {
