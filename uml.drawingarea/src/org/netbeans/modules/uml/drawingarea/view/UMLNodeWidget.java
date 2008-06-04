@@ -895,13 +895,9 @@ public abstract class UMLNodeWidget extends Widget
             if(isInitialized())new AfterValidationExecutor(new ActionProvider() {
                 public void perfomeAction() {
                 String resOption=NbPreferences.forModule(DummyCorePreference.class).get("UML_Automatically_Size_Elements", PSK_RESIZE_ASNEEDED);
-                if(PSK_RESIZE_NEVER.equals(resOption) || (PSK_RESIZE_UNLESSMANUAL.equals(resOption) && isManuallyResized()))
+                if(handeNeverCases())
                 {
-                    //or may be can set pref bounds to current
-                    setPreferredSize(null);
-                    setMinimumSize(null);
-                    setPreferredBounds(getBounds());
-                    setResizeMode(RESIZEMODE.PREFERREDBOUNDS);
+                    //handled
                 }
                 else if(PSK_RESIZE_EXPANDONLY.equals(resOption))
                 {
@@ -946,4 +942,30 @@ public abstract class UMLNodeWidget extends Widget
             revalidate();
             getScene().validate();
    }
+    
+    protected void handleNeverAfterValidation()
+    {
+            if(isInitialized())new AfterValidationExecutor(new ActionProvider() {
+                public void perfomeAction() {
+                    handeNeverCases();
+                }
+            },
+            getScene());
+            getScene().validate();
+    }
+    
+    protected boolean handeNeverCases()
+    {
+       String resOption=NbPreferences.forModule(DummyCorePreference.class).get("UML_Automatically_Size_Elements", PSK_RESIZE_ASNEEDED);
+       if(PSK_RESIZE_NEVER.equals(resOption) || (PSK_RESIZE_UNLESSMANUAL.equals(resOption) && isManuallyResized()))
+        {
+            //or may be can set pref bounds to current
+            setPreferredSize(null);
+            setMinimumSize(null);
+            setPreferredBounds(getBounds());
+            setResizeMode(RESIZEMODE.PREFERREDBOUNDS);
+            return true;
+        }
+        return false;
+    }
 }
