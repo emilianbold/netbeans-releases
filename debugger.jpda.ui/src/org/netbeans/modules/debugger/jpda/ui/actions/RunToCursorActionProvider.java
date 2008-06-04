@@ -55,6 +55,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
@@ -140,10 +141,18 @@ public class RunToCursorActionProvider extends ActionsProviderSupport
             EditorContextBridge.getContext().getCurrentLineNumber ()
         );
         breakpoint.setHidden (true);
+        JPDAThread currentThread = debugger.getCurrentThread();
+        if (currentThread != null) {
+            breakpoint.setThreadFilters(debugger, new JPDAThread[] { currentThread });
+        }
         DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);
-        session.getEngineForLanguage ("Java").getActionsManager ().doAction (
-            ActionsManager.ACTION_CONTINUE
-        );
+        if (currentThread != null) {
+            currentThread.resume();
+        } else {
+            session.getEngineForLanguage ("Java").getActionsManager ().doAction (
+                ActionsManager.ACTION_CONTINUE
+            );
+        }
     }
 
     public void actionPerformed(Object action) {

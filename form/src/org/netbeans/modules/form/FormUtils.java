@@ -855,7 +855,7 @@ public class FormUtils
     {
         while (props.hasNext()) {
             RADProperty prop = props.next();
-            if (!prop.isChanged() || !prop.canWriteToTarget()) {
+            if (!prop.isChanged() || (!prop.canWriteToTarget() && !(prop instanceof RADComponent.ButtonGroupProperty))) {
                 continue;
             }
 

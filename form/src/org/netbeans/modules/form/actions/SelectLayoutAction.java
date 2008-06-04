@@ -60,6 +60,8 @@ import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.layoutdesign.LayoutModel;
 import org.netbeans.modules.form.palette.PaletteUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 /**
  * Action for setting layout on selected container(s). Presented only in
@@ -251,11 +253,17 @@ public class SelectLayoutAction extends CallableSystemAction {
 
     private static void convertToNewLayout(RADVisualContainer metacont) {
         FormModel formModel = metacont.getFormModel();
+        FormDesigner formDesigner = FormEditor.getFormDesigner(formModel);
+        if (!formDesigner.isInDesigner(metacont)) {
+            String message = NbBundle.getMessage(SelectLayoutAction.class, "MSG_CannotSwitchToFreeDesign"); // NOI18N
+            NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.WARNING_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+            return;
+        }
         LayoutModel layoutModel = formModel.getLayoutModel();
 
         formModel.setNaturalContainerLayout(metacont);
 
-        FormDesigner formDesigner = FormEditor.getFormDesigner(formModel);
         Container cont = metacont.getContainerDelegate(formDesigner.getComponent(metacont));
         Insets insets = new Insets(0, 0, 0, 0);
         if (cont instanceof JComponent) {

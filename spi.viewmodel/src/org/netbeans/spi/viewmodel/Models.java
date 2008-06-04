@@ -65,6 +65,7 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.viewmodel.DefaultTreeExpansionManager;
+import org.netbeans.modules.viewmodel.TreeModelRoot;
 import org.netbeans.modules.viewmodel.TreeTable;
 
 import org.netbeans.spi.viewmodel.ColumnModel;
@@ -82,6 +83,7 @@ import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.ErrorManager;
 
+import org.openide.explorer.view.TreeView;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakSet;
@@ -127,6 +129,23 @@ public final class Models {
         TreeTable tt = new TreeTable ();
         tt.setModel (compoundModel);
         return tt;
+    }
+    
+    /**
+     * Creates a root node of the nodes tree structure
+     * for given {@link org.netbeans.spi.viewmodel.Models.CompoundModel}.
+     *
+     * @param compoundModel a compound model instance
+     * @param treeView The tree view component where nodes are going to be displayed.
+     *
+     * @return new instance root node
+     * @since 1.15
+     */
+    public static Node createNodes (
+        CompoundModel compoundModel,
+        TreeView treeView
+    ) {
+        return new TreeModelRoot (compoundModel, treeView).getRootNode();
     }
     
     /**
@@ -184,6 +203,7 @@ public final class Models {
         List<TreeModel>                 treeModels;
         List<TreeModelFilter>           treeModelFilters;
         List<TreeExpansionModel>        treeExpansionModels;
+        List<TreeExpansionModelFilter>  treeExpansionModelFilters;
         List<NodeModel>                 nodeModels;
         List<NodeModelFilter>           nodeModelFilters;
         List<TableModel>                tableModels;
@@ -195,7 +215,7 @@ public final class Models {
         
         // Either the list contains 10 lists of individual models + one list of mixed models; or the models directly
         boolean hasLists = false;
-        if (models.size() == 11) {
+        if (models.size() == 11 || models.size() == 12) {
             Iterator it = models.iterator ();
             while (it.hasNext ()) {
                 if (!(it.next() instanceof List)) break;
@@ -204,7 +224,7 @@ public final class Models {
                 hasLists = true;
             }
         }
-        if (hasLists) { // We have 11 lists of individual models
+        if (hasLists) { // We have 11 or 12 lists of individual models
             treeModels =            (List<TreeModel>)       models.get(0);
             treeModelFilters =      (List<TreeModelFilter>) models.get(1);
             revertOrder(treeModelFilters);
@@ -220,10 +240,12 @@ public final class Models {
             revertOrder(nodeActionsProviderFilters);
             columnModels =          (List<ColumnModel>) models.get(9);
             otherModels =           (List<? extends Model>) models.get(10);
+            treeExpansionModelFilters = (models.size() > 11) ? (List<TreeExpansionModelFilter>) models.get(11) : (List<TreeExpansionModelFilter>) Collections.EMPTY_LIST;
         } else { // We have the models, need to find out what they implement
             treeModels =           new LinkedList<TreeModel> ();
             treeModelFilters =     new LinkedList<TreeModelFilter> ();
             treeExpansionModels =  new LinkedList<TreeExpansionModel> ();
+            treeExpansionModelFilters = new LinkedList<TreeExpansionModelFilter> ();
             nodeModels =           new LinkedList<NodeModel> ();
             nodeModelFilters =     new LinkedList<NodeModelFilter> ();
             tableModels =          new LinkedList<TableModel> ();
@@ -247,6 +269,11 @@ public final class Models {
                     treeModelFilters.add(0, (TreeModelFilter) model);
             if (model instanceof TreeExpansionModel)
                 treeExpansionModels.add((TreeExpansionModel) model);
+            if (model instanceof TreeExpansionModelFilter)
+                if (first)
+                    treeExpansionModelFilters.add((TreeExpansionModelFilter) model);
+                else
+                    treeExpansionModelFilters.add(0, (TreeExpansionModelFilter) model);
             if (model instanceof NodeModel)
                 nodeModels.add((NodeModel) model);
             if (model instanceof NodeModelFilter)
@@ -304,7 +331,10 @@ public final class Models {
                 new DelegatingTreeModel (treeModels),
                 treeModelFilters
             ),
-            new DelegatingTreeExpansionModel (treeExpansionModels),
+            createCompoundTreeExpansionModel(
+                new DelegatingTreeExpansionModel (treeExpansionModels),
+                treeExpansionModelFilters
+            ),
             createCompoundNodeModel (
                 new DelegatingNodeModel (nodeModels),
                 nodeModelFilters
@@ -374,7 +404,7 @@ public final class Models {
      */
     public static TreeFeatures treeFeatures (JComponent view) 
     throws UnsupportedOperationException {
-        return new TreeFeatures (view);
+        return new DefaultTreeFeatures (view);
     }
     
     
@@ -470,6 +500,16 @@ public final class Models {
                 (NodeActionsProviderFilter) nodeActionsProviderFilters.get (i)
             );
         return nap;
+    }
+    
+    private static TreeExpansionModel createCompoundTreeExpansionModel (
+            TreeExpansionModel expansionModel,
+            List<TreeExpansionModelFilter> filters
+    ) {
+        for (TreeExpansionModelFilter filter : filters) {
+            expansionModel = new CompoundTreeExpansionModel (expansionModel, filter);
+        }
+        return expansionModel;
     }
     
     
@@ -584,7 +624,7 @@ public final class Models {
      * 
      * @author   Jan Jancura
      */
-    final static class CompoundTreeModel implements TreeModel, ModelListener {
+    private final static class CompoundTreeModel implements TreeModel, ModelListener {
 
 
         private TreeModel model;
@@ -733,7 +773,7 @@ public final class Models {
      * 
      * @author   Jan Jancura
      */
-    final static class CompoundNodeModel implements ExtendedNodeModel, ModelListener {
+    private final static class CompoundNodeModel implements ExtendedNodeModel, ModelListener {
 
 
         private ExtendedNodeModel model;
@@ -951,7 +991,7 @@ public final class Models {
      * 
      * @author   Jan Jancura
      */
-    final static class CompoundTableModel implements TableModel, ModelListener {
+    private final static class CompoundTableModel implements TableModel, ModelListener {
 
 
         private TableModel model;
@@ -1086,7 +1126,7 @@ public final class Models {
      *
      * @author   Jan Jancura
      */
-    final static class DelegatingTreeModel implements TreeModel {
+    private final static class DelegatingTreeModel implements TreeModel {
 
         private TreeModel[] models;
         private HashMap<String, TreeModel> classNameToModel = new HashMap<String, TreeModel>();
@@ -1268,7 +1308,7 @@ public final class Models {
      * 
      * @author   Jan Jancura
      */
-    final static class CompoundNodeActionsProvider 
+    private final static class CompoundNodeActionsProvider 
     implements NodeActionsProvider {
 
 
@@ -1329,6 +1369,75 @@ public final class Models {
                    n + "  " + model;
         }
     }
+    
+    private final static class CompoundTreeExpansionModel implements TreeExpansionModel, ModelListener {
+        
+        private TreeExpansionModel expansionModel;
+        private TreeExpansionModelFilter expansionFilter;
+        
+        private Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
+        
+        CompoundTreeExpansionModel(TreeExpansionModel expansionModel, TreeExpansionModelFilter expansionFilter) {
+            this.expansionModel = expansionModel;
+            this.expansionFilter = expansionFilter;
+        }
+
+        public boolean isExpanded(Object node) throws UnknownTypeException {
+            return expansionFilter.isExpanded(expansionModel, node);
+        }
+
+        public void nodeExpanded(Object node) {
+            expansionModel.nodeExpanded(node);
+            expansionFilter.nodeExpanded(node);
+        }
+
+        public void nodeCollapsed(Object node) {
+            expansionModel.nodeCollapsed(node);
+            expansionFilter.nodeCollapsed(node);
+        }
+        
+        /** 
+         * Registers given listener.
+         * 
+         * @param l the listener to add
+         */
+        public void addModelListener (ModelListener l) {
+            synchronized (modelListeners) {
+                if (modelListeners.size() == 0) {
+                    expansionFilter.addModelListener (this);
+                    //model.addModelListener (this);
+                }
+                modelListeners.add(l);
+            }
+        }
+
+        /** 
+         * Unregisters given listener.
+         *
+         * @param l the listener to remove
+         */
+        public void removeModelListener (ModelListener l) {
+            synchronized (modelListeners) {
+                modelListeners.remove(l);
+                if (modelListeners.size() == 0) {
+                    expansionFilter.removeModelListener (this);
+                    //model.removeModelListener (this);
+                }
+            }
+        }
+
+        public void modelChanged(ModelEvent event) {
+            ModelEvent newEvent = translateEvent(event, this);
+            Collection<ModelListener> listeners;
+            synchronized (modelListeners) {
+                listeners = new ArrayList<ModelListener>(modelListeners);
+            }
+            for (Iterator<ModelListener> it = listeners.iterator(); it.hasNext(); ) {
+                it.next().modelChanged(newEvent);
+            }
+        }
+        
+    }
 
     /**
      * Creates one {@link org.netbeans.spi.viewmodel.TableModel}
@@ -1337,7 +1446,7 @@ public final class Models {
      *
      * @author   Jan Jancura
      */
-    final static class DelegatingTableModel implements TableModel {
+    private final static class DelegatingTableModel implements TableModel {
 
         private TableModel[] models;
         private HashMap<String, TableModel> classNameToModel = new HashMap<String, TableModel>();
@@ -1521,8 +1630,7 @@ public final class Models {
      *
      * @author   Jan Jancura
      */
-    final static class DelegatingTreeExpansionModel 
-    implements TreeExpansionModel {
+    private final static class DelegatingTreeExpansionModel implements TreeExpansionModel {
 
         private TreeExpansionModel[] models;
         private HashMap<String, TreeExpansionModel> classNameToModel = new HashMap<String, TreeExpansionModel>();
@@ -1694,7 +1802,7 @@ public final class Models {
      *
      * @author   Jan Jancura
      */
-    static final class DelegatingNodeModel implements ExtendedNodeModel {
+    private static final class DelegatingNodeModel implements ExtendedNodeModel {
 
         private NodeModel[] models;
         private HashMap<String, NodeModel> classNameToModel = new HashMap<String, NodeModel>();
@@ -2679,13 +2787,43 @@ public final class Models {
     }
     
     /**
+     * Tree expansion control.
+     * @since 1.15
+     */
+    public static abstract class TreeFeatures {
+        
+        /**
+         * Returns <code>true</code> if given node is expanded.
+         *
+         * @param node a node to be checked
+         * @return <code>true</code> if given node is expanded
+         */
+        public abstract boolean isExpanded (Object node);
+        
+        /**
+         * Expands given list of nodes.
+         *
+         * @param node a list of nodes to be expanded
+         */
+        public abstract void expandNode (Object node);
+        
+        /**
+         * Collapses given node.
+         *
+         * @param node a node to be expanded
+         */
+        public abstract void collapseNode (Object node);
+        
+    }
+    
+    /**
      * Implements set of tree view features.
      */
-    public static final class TreeFeatures {
+    private static final class DefaultTreeFeatures extends TreeFeatures {
         
         private JComponent view;
         
-        private TreeFeatures (JComponent view) {
+        private DefaultTreeFeatures (JComponent view) {
             this.view = view;
         }
         
@@ -3020,6 +3158,9 @@ public final class Models {
             if (tableModel != treeModel && tableModel != nodeModel) {
                 tableModel.addModelListener (l);
             }
+            if (treeExpansionModel instanceof CompoundTreeExpansionModel) {
+                ((CompoundTreeExpansionModel) treeExpansionModel).addModelListener(l);
+            }
         }
 
         /** 
@@ -3034,6 +3175,9 @@ public final class Models {
             }
             if (tableModel != treeModel && tableModel != nodeModel) {
                 tableModel.removeModelListener (l);
+            }
+            if (treeExpansionModel instanceof CompoundTreeExpansionModel) {
+                ((CompoundTreeExpansionModel) treeExpansionModel).removeModelListener(l);
             }
         }
 

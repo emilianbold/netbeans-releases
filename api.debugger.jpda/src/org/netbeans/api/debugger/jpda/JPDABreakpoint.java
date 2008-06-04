@@ -80,7 +80,7 @@ public class JPDABreakpoint extends Breakpoint {
     /** Set of actions. */
     private boolean                     enabled = true;
     private boolean                     hidden = false;
-    private int                         suspend = SUSPEND_ALL;
+    private int                         suspend = SUSPEND_EVENT_THREAD;
     private String                      printText;
     private Collection<JPDABreakpointListener>  breakpointListeners = new HashSet<JPDABreakpointListener>();
     
