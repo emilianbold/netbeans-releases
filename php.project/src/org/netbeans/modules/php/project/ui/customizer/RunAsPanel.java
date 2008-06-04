@@ -70,6 +70,7 @@ public final class RunAsPanel extends JPanel {
     private final ComboModel comboBoxModel = new ComboModel();
 
     public RunAsPanel(InsidePanel[] cards) {
+        assert cards != null;
         allInsidePanels = new LinkedHashMap<String, InsidePanel>();
         for (InsidePanel basicCard : cards) {
             this.allInsidePanels.put(basicCard.getDisplayName(), basicCard);
@@ -214,7 +215,7 @@ public final class RunAsPanel extends JPanel {
                 this.field = field;
             }
 
-            abstract String getDefaultValue();
+            protected abstract String getDefaultValue();
 
             public final void insertUpdate(DocumentEvent e) {
                 processUpdate();
@@ -228,7 +229,7 @@ public final class RunAsPanel extends JPanel {
                 processUpdate();
             }
 
-            final String getPropName() {
+            protected final String getPropName() {
                 return propName;
             }
 

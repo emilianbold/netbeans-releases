@@ -137,7 +137,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
             super(propName, label, field);
         }
 
-        final String getDefaultValue() {
+        protected final String getDefaultValue() {
             return RunAsLocalWeb.this.getDefaultValue(getPropName());
         }
 

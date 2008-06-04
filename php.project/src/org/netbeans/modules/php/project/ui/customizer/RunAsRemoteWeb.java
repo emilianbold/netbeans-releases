@@ -434,7 +434,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             super(propName, label, field);
         }
 
-        final String getDefaultValue() {
+        protected final String getDefaultValue() {
             return RunAsRemoteWeb.this.getDefaultValue(getPropName());
         }
 

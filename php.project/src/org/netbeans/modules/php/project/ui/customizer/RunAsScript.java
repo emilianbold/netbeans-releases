@@ -64,7 +64,6 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         this(manager, category, NbBundle.getMessage(RunAsScript.class, "LBL_ConfigScript"));
     }
 
-    /** Creates new form LocalWebPanel */
     private RunAsScript(ConfigManager manager, Category category, String displayName) {
         super(manager);
         this.category = category;
@@ -140,7 +139,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
             super(propName, label, field);
         }
 
-        final String getDefaultValue() {
+        protected final String getDefaultValue() {
             return RunAsScript.this.getDefaultValue(getPropName());
         }
 
