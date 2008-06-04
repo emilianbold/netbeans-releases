@@ -119,6 +119,7 @@ made subject to such option by the copyright holder.
     <!-- Whitelist check -->    
     <testbag testattribs="whitelist" executor="ide" name="Whitelist generation" timeout="900000">
         <testproperty name="xtest.ide.whitelist" value="whitelist.txt"/>
+        <testproperty name="xtest.ide.whitelist.use.storage" value="true"/>
         <testproperty name="xtest.ide.generate.whitelist" value="false"/>
         <testset dir="qa-functional/src">
             <patternset>
