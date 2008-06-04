@@ -347,7 +347,7 @@ Added Methods
 -------------
 
 org.netbeans.editor.BaseCaret:          method public final void org.netbeans.editor.BaseCaret.refresh()
-org.netbeans.editor.BaseKit:            method public java.util.List org.netbeans.editor.BaseKit.translateActionNameList(java.util.List)
+org.netbeans.editor.BaseKit:            method public java.util.List&lt;javax.swing.Action&gt; org.netbeans.editor.BaseKit.translateActionNameList(java.util.List&lt;java.lang.String&gt;)
 org.netbeans.editor.EditorUI:           method public javax.swing.JPopupMenu org.netbeans.editor.EditorUI.getPopupMenu()
 org.netbeans.editor.EditorUI:           method public org.netbeans.editor.PopupManager org.netbeans.editor.EditorUI.getPopupManager()
 org.netbeans.editor.EditorUI:           method public org.netbeans.editor.ext.ToolTipSupport org.netbeans.editor.EditorUI.getToolTipSupport()

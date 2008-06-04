@@ -121,7 +121,7 @@ is the proper place.
 <pre>
 SignatureTest report
 Base version: 1.39.0
-Tested version: 1.40.0
+Tested version: 1.41.0
 Check mode: src [throws normalized]
 Constant checking: on
 
@@ -221,7 +221,7 @@ Added Methods
 -------------
 
 org.netbeans.modules.editor.IndentEngineFormatter:          method public static org.netbeans.editor.Formatter org.netbeans.editor.Formatter.getFormatter(java.lang.String)
-org.netbeans.modules.editor.NbEditorKit:method public java.util.List org.netbeans.editor.BaseKit.translateActionNameList(java.util.List)
+org.netbeans.modules.editor.NbEditorKit:method public java.util.List&lt;javax.swing.Action&gt; org.netbeans.editor.BaseKit.translateActionNameList(java.util.List&lt;java.lang.String&gt;)
 </pre>
             </description>
             <issue number="90403"/>
