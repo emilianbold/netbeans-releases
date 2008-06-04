@@ -267,6 +267,38 @@ made subject to such option by the copyright holder.
         <class package="org.netbeans.spi.viewmodel" name="Models" />
         <issue number="104281"/>
     </change>
+    <change>
+        <api name="ViewModelAPI"/>
+        <summary>Extension to NodeModel.</summary>
+        <version major="1" minor="15"/>
+        <date day="2" month="6" year="2008"/>
+        <author login="mentlicher"/>
+        <compatibility binary="incompatible" source="compatible" deletion="no" addition="yes" modification="no"/>
+        <description>
+            This API change is necessary for the redesign of the debugger UI and
+            to be able to better control node expansions.
+            <p>
+                Added classes:<br/>
+                <code>org.netbeans.spi.viewmodel.TreeExpansionModelFilter</code>
+            </p>
+            <p>
+                Changed classes:<br/>
+                <code>Models.TreeFeatures</code> - final class with a private
+                constructor changed to an interface.
+            </p>
+            <p>
+                Added methods:<br/>
+                <code>Models.createNodes()</code>,
+            </p>
+            <p>
+                Added fields:<br/>
+                <code>ModelEvent.EXPANSION_MASK</code>
+            </p>
+        </description>
+        <class package="org.netbeans.spi.viewmodel" name="TreeExpansionModelFilter" />
+        <class package="org.netbeans.spi.viewmodel" name="Models" />
+        <issue number="136099"/>
+    </change>
     
 
 </changes>

@@ -63,6 +63,7 @@ import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.support.SourceGroups;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
+import org.netbeans.modules.websvc.core.WSStackUtils;
 import org.openide.filesystems.FileObject;
 
 public class MessageHandlerWizard implements WizardDescriptor.InstantiatingIterator {
@@ -185,17 +186,15 @@ public class MessageHandlerWizard implements WizardDescriptor.InstantiatingItera
                 wiz.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(MessageHandlerWizard.class, "ERR_NoJaxrpcPluginFoundHandler")); // NOI18N
                 return false;
             }
-
-
-
             //if platform is Tomcat, source level must be jdk 1.5 and jaxws library must be in classpath
-            if (!Util.isJavaEE5orHigher(project) && projectType == ProjectInfo.WEB_PROJECT_TYPE && !PlatformUtil.isJsr109Supported(project) && !PlatformUtil.isJsr109OldSupported(project)) {
+            WSStackUtils wsStackUtils = new WSStackUtils(project);
+            if (!Util.isJavaEE5orHigher(project) && projectType == ProjectInfo.WEB_PROJECT_TYPE && !wsStackUtils.isJsr109Supported() && !wsStackUtils.isJsr109OldSupported()) {
                 //has to be at least jdk 1.5
                 if (Util.isSourceLevel14orLower(project)) {
                     wiz.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(MessageHandlerWizard.class, "ERR_HandlerNeedProperSourceLevel")); // NOI18N
                     return false;
                 }
-                if (!PlatformUtil.hasJAXWSLibrary(project)) {
+                if (!wsStackUtils.hasJAXWSLibrary()) {
                     //must have jaxws library
                     wiz.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(BottomPanel.class, "LBL_LogicalHandlerWarning")); // NOI18N
                     return false;
