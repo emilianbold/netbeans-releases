@@ -60,8 +60,13 @@ public abstract class FlyOffsetGapList<E> extends GapList<E> {
     private int offsetGapLength = Integer.MAX_VALUE / 2; // 32 bytes
 
     public FlyOffsetGapList() {
+        this(10);
     }
-    
+
+    public FlyOffsetGapList(int initialCapacity) {
+        super(initialCapacity);
+    }
+
     /**
      * Get the raw offset of the given element currently stored in the list.
      *

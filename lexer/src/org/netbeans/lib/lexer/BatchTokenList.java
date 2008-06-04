@@ -39,34 +39,27 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.lib.lexer.batch;
+package org.netbeans.lib.lexer;
 
 import java.util.ArrayList;
 import java.util.Set;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.lib.lexer.EmbeddingContainer;
-import org.netbeans.lib.lexer.LAState;
-import org.netbeans.lib.lexer.TokenList;
-import org.netbeans.lib.lexer.LexerInputOperation;
-import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.token.AbstractToken;
 import org.netbeans.lib.lexer.token.TextToken;
 
 
 /**
- * Token list used for root list for immutable inputs.
+ * Token list used for immutable inputs.
  *
  * @author Miloslav Metelka
  * @version 1.00
  */
 
-public abstract class BatchTokenList<T extends TokenId>
-extends ArrayList<Object> implements TokenList<T> {
+public final class BatchTokenList<T extends TokenId>
+extends ArrayList<TokenOrEmbedding<T>> implements TokenList<T> {
     
     /** Flag for additional correctness checks (may degrade performance). */
     private static final boolean testing = Boolean.getBoolean("netbeans.debug.lexer.test");
@@ -86,6 +79,8 @@ extends ArrayList<Object> implements TokenList<T> {
     
     private final TokenHierarchyOperation<?,T> tokenHierarchyOperation;
     
+    private final CharSequence inputSourceText;
+
     private final LanguagePath languagePath;
     
     private final Set<T> skipTokenIds;
@@ -99,32 +94,32 @@ extends ArrayList<Object> implements TokenList<T> {
 
     private LAState laState;
     
-    private boolean inited;
     
-    
-    public BatchTokenList(TokenHierarchyOperation<?,T> tokenHierarchyOperation,
+    public BatchTokenList(TokenHierarchyOperation<?,T> tokenHierarchyOperation, CharSequence inputText,
     Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
         this.tokenHierarchyOperation = tokenHierarchyOperation;
+        this.inputSourceText = inputText;
         this.languagePath = LanguagePath.get(language);
         this.skipTokenIds = skipTokenIds;
         this.inputAttributes = inputAttributes;
         if (testing) { // Maintain lookaheads and states when in test environment
             laState = LAState.empty();
         }
+        this.lexerInputOperation = createLexerInputOperation();
     }
 
-    public abstract char childTokenCharAt(int rawOffset, int index);
-
-    protected abstract LexerInputOperation<T> createLexerInputOperation();
-
-    protected void init() {
-        lexerInputOperation = createLexerInputOperation();
+    protected LexerInputOperation<T> createLexerInputOperation() {
+        return new TextLexerInputOperation<T>(this);
     }
-    
-    public TokenList<?> root() {
+
+    public TokenList<?> rootTokenList() {
         return this; // this list should always be the root list of the token hierarchy
     }
     
+    public CharSequence inputSourceText() {
+        return inputSourceText;
+    }
+
     public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
         return tokenHierarchyOperation;
     }
@@ -134,12 +129,8 @@ extends ArrayList<Object> implements TokenList<T> {
     }
     
     public synchronized int tokenCount() {
-        if (!inited) {
-            init();
-            inited = true;
-        }
         if (lexerInputOperation != null) { // still lexing
-            tokenOrEmbeddingContainerImpl(Integer.MAX_VALUE);
+            tokenOrEmbeddingImpl(Integer.MAX_VALUE);
         }
         return size();
     }
@@ -148,13 +139,14 @@ extends ArrayList<Object> implements TokenList<T> {
         return size();
     }
 
-    public int childTokenOffset(int rawOffset) {
+    public int tokenOffset(AbstractToken<T> token) {
+        int rawOffset = token.rawOffset();
         // Children offsets should be absolute
         return rawOffset;
     }
 
-    public int tokenOffset(int index) {
-        Token<T> token = existingToken(index);
+    public int tokenOffsetByIndex(int index) {
+        AbstractToken<T> token = existingToken(index);
         int offset;
         if (token.isFlyweight()) {
             offset = 0;
@@ -172,17 +164,17 @@ extends ArrayList<Object> implements TokenList<T> {
         return offset;
     }
 
-    public synchronized Object tokenOrEmbeddingContainer(int index) {
-        return tokenOrEmbeddingContainerImpl(index);
+    public int[] tokenIndex(int offset) {
+        return LexerUtilsConstants.tokenIndexLazyTokenCreation(this, offset);
+    }
+
+    public synchronized TokenOrEmbedding<T> tokenOrEmbedding(int index) {
+        return tokenOrEmbeddingImpl(index);
     }
     
-    private Object tokenOrEmbeddingContainerImpl(int index) {
-        if (!inited) {
-            init();
-            inited = true;
-        }
+    private TokenOrEmbedding<T> tokenOrEmbeddingImpl(int index) {
         while (lexerInputOperation != null && index >= size()) {
-            Token<T> token = lexerInputOperation.nextToken();
+            AbstractToken<T> token = lexerInputOperation.nextToken();
             if (token != null) { // lexer returned valid token
                 add(token);
                 if (laState != null) { // maintaining lookaheads and states
@@ -198,8 +190,8 @@ extends ArrayList<Object> implements TokenList<T> {
         return (index < size()) ? get(index) : null;
     }
     
-    private Token<T> existingToken(int index) {
-        return LexerUtilsConstants.token(get(index));
+    private AbstractToken<T> existingToken(int index) {
+        return get(index).token();
     }
 
     public int lookahead(int index) {
@@ -217,7 +209,7 @@ extends ArrayList<Object> implements TokenList<T> {
     public int endOffset() {
         int cntM1 = tokenCount() - 1;
         if (cntM1 >= 0)
-            return tokenOffset(cntM1) + LexerUtilsConstants.token(this, cntM1).length();
+            return tokenOffsetByIndex(cntM1) + tokenOrEmbeddingImpl(cntM1).token().length();
         return 0;
     }
 
@@ -226,7 +218,7 @@ extends ArrayList<Object> implements TokenList<T> {
     }
 
     public int modCount() {
-        return -1; // immutable input
+        return LexerUtilsConstants.MOD_COUNT_IMMUTABLE_INPUT; // immutable input
     }
     
     public synchronized AbstractToken<T> replaceFlyToken(
@@ -236,7 +228,7 @@ extends ArrayList<Object> implements TokenList<T> {
         return nonFlyToken;
     }
 
-    public void wrapToken(int index, EmbeddingContainer embeddingContainer) {
+    public void wrapToken(int index, EmbeddingContainer<T> embeddingContainer) {
         set(index, embeddingContainer);
     }
 

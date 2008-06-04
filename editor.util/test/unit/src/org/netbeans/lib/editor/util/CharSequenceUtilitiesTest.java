@@ -138,6 +138,15 @@ public class CharSequenceUtilitiesTest extends TestCase {
         
         // endsWith
         assertTrue(CharSequenceUtilities.endsWith(string, string.substring(CHARS_LENGTH - SUBSTR_LENGTH)));
+        
+        CharSequenceUtilities.checkIndexesValid(0, 3, 3); // start,end,length
+        CharSequenceUtilities.checkIndexesValid(1, 3, 3);
+        try {
+            CharSequenceUtilities.checkIndexesValid(1, 4, 3);
+            TestCase.fail("IndexOutOfBoundsException was expected.");
+        } catch (IndexOutOfBoundsException e) {
+            // Expected
+        }
     }
     
     public void generateChars(char[] chars) {

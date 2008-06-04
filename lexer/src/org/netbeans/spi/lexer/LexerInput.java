@@ -42,7 +42,7 @@
 package org.netbeans.spi.lexer;
 
 import org.netbeans.lib.editor.util.AbstractCharSequence;
-import org.netbeans.lib.lexer.CharProvider;
+import org.netbeans.lib.lexer.LexerInputOperation;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
 
 /**
@@ -81,10 +81,9 @@ public final class LexerInput {
     public static final int EOF = -1;
     
     /**
-     * Character provider to which this lexer input delegates
-     * its operation.
+     * LexerInputOperation on which this lexer input delegates.
      */
-    private CharProvider charProvider;
+    private LexerInputOperation<?> operation;
     
     /**
      * Character sequence that corresponds
@@ -101,10 +100,10 @@ public final class LexerInput {
     /**
      * Construct instance of the lexer input.
      *
-     * @param charProvider non-null character provider for this lexer input.
+     * @param operation non-null character provider for this lexer input.
      */
-    LexerInput(CharProvider charProvider) {
-        this.charProvider = charProvider;
+    LexerInput(LexerInputOperation operation) {
+        this.operation = operation;
     }
     
     /**
@@ -116,7 +115,7 @@ public final class LexerInput {
      *   - all of them will return EOF.
      */
     public int read() {
-        int c = charProvider.read();
+        int c = operation.read();
         if (c == EOF) {
             eof = 1;
         }
@@ -158,7 +157,7 @@ public final class LexerInput {
             eof = 0; // backup EOF
             count--;
         }
-        charProvider.backup(count);
+        operation.backup(count);
     }
     
     /**
@@ -178,7 +177,7 @@ public final class LexerInput {
      *   If {@link LexerInput#EOF} was read then it is not counted into read length.
      */
     public int readLength() {
-        return charProvider.readIndex();
+        return operation.readLength();
     }
     
     /**
@@ -332,7 +331,7 @@ public final class LexerInput {
             if (index < 0 || index >= length) {
                 throw new IndexOutOfBoundsException("index=" + index + ", length=" + length); // NOI18N
             }
-            return charProvider.readExisting(index);
+            return operation.readExistingAtIndex(index);
         }
         
     }

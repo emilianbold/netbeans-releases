@@ -58,7 +58,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
-import org.netbeans.lib.lexer.batch.BatchTokenList;
+import org.netbeans.lib.lexer.BatchTokenList;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 
 /**

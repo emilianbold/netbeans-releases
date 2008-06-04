@@ -47,11 +47,11 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.lib.editor.util.FlyOffsetGapList;
 import org.netbeans.lib.lexer.inc.MutableTokenList;
 import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.inc.TokenListChange;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.lib.lexer.token.AbstractToken;
+import org.netbeans.lib.lexer.token.JoinToken;
 import org.netbeans.lib.lexer.token.TextToken;
 
 
@@ -73,7 +73,7 @@ import org.netbeans.lib.lexer.token.TextToken;
  */
 
 public final class EmbeddedTokenList<T extends TokenId>
-extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
+extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
     
     /** Flag for additional correctness checks (may degrade performance). */
     private static final boolean testing = Boolean.getBoolean("netbeans.debug.lexer.test");
@@ -83,7 +83,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
      * made but was unsuccessful.
      */
     public static final EmbeddedTokenList<TokenId> NO_DEFAULT_EMBEDDING
-            = new EmbeddedTokenList<TokenId>(null, null, null, null);
+            = new EmbeddedTokenList<TokenId>(null, null, null);
     
     /**
      * Embedding container carries info about the token into which this
@@ -114,65 +114,103 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
      */
     private EmbeddedTokenList<?> nextEmbeddedTokenList; // 52 bytes
     
+    /**
+     * Additional information in case this ETL is contained in a JoinTokenList.
+     * <br/>
+     * Through this info a reference to the JoinTokenList is held. There is no other
+     * indexed structure so the EmbeddedTokenList members of TokenListList
+     * must be binary-searched.
+     */
+    public EmbeddedJoinInfo joinInfo; // 56 bytes
+
     
     public EmbeddedTokenList(EmbeddingContainer<?> embeddingContainer,
-    LanguagePath languagePath, LanguageEmbedding<T> embedding,
-    EmbeddedTokenList<?> nextEmbedding) {
+            LanguagePath languagePath, LanguageEmbedding<T> embedding
+    ) {
+        super(1); // Suitable for adding join-token parts
         this.embeddingContainer = embeddingContainer;
         this.languagePath = languagePath;
         this.embedding = embedding;
-        this.nextEmbeddedTokenList = nextEmbedding;
 
         if (embeddingContainer != null) { // ec may be null for NO_DEFAULT_EMBEDDING only
-            laState = LAState.initState();
-            embeddingContainer.updateStatusImpl(); // Ensure startOffset() is up-to-date
+            initLAState();
         }
     }
 
-    private void init() {
-        if (embedding.joinSections()) {
-            // Find the token list list - it should also init this token list
-            root().tokenHierarchyOperation().tokenListList(languagePath);
-        } else { // not joining => can lex individually
-            init(null);
-        }
-    }
-    
-    public void init(Object relexState) {
-        laState = (modCount() != -1 || testing) ? LAState.empty() : null;
-
+    public void initAllTokens() {
+        assert (!embedding.joinSections()); // Joined token creation must be used instead
+//        initLAState();
         // Lex the whole input represented by token at once
         LexerInputOperation<T> lexerInputOperation = createLexerInputOperation(
-                0, startOffset(), relexState);
+                0, startOffset(), null);
         AbstractToken<T> token = lexerInputOperation.nextToken();
         while (token != null) {
-            updateElementOffsetAdd(token); // must subtract startOffset()
-            add(token);
-            if (laState != null) {
-                laState = laState.add(lexerInputOperation.lookahead(),
-                        lexerInputOperation.lexerState());
-            }
+            addToken(token, lexerInputOperation);
             token = lexerInputOperation.nextToken();
         }
         lexerInputOperation.release();
         lexerInputOperation = null;
+        trimStorageToSize();
+    }
+    
+    private void initLAState() {
+        this.laState = (modCount() != LexerUtilsConstants.MOD_COUNT_IMMUTABLE_INPUT || testing)
+                ? LAState.empty() // Will collect LAState
+                : null;
+    }
 
+    /**
+     * Return join token list with active token list positioned to this ETL
+     * or return null if this.joinInfo == null.
+     */
+    public JoinTokenList<T> joinTokenList() {
+        if (joinInfo != null) {
+            TokenListList<T> tokenListList = rootTokenList().tokenHierarchyOperation().existingTokenListList(languagePath);
+            int etlIndex = tokenListList.findIndex(startOffset());
+            int tokenListStartIndex = etlIndex - joinInfo.tokenListIndex();
+            JoinTokenList<T> jtl = new JoinTokenList<T>(tokenListList, joinInfo.base, tokenListStartIndex);
+            // Position to this etl's join index
+            jtl.setActiveTokenListIndex(etlIndex - tokenListStartIndex);
+            return jtl;
+        }
+        return null;
+    }
+
+    /**
+     * Add token without touching laState - suitable for JoinToken's handling.
+     *
+     * @param token non-null token
+     */
+    public void addToken(AbstractToken<T> token) {
+        updateElementOffsetAdd(token); // must subtract startOffset()
+        add(token);
+    }
+
+    public void addToken(AbstractToken<T> token, LexerInputOperation<T> lexerInputOperation) {
+        addToken(token);
+        if (laState != null) { // maintaining lookaheads and states
+            // Only get LA and state when necessary (especially lexerState() may be costly)
+            laState = laState.add(lexerInputOperation.lookahead(), lexerInputOperation.lexerState());
+        }
+    }
+
+    /**
+     * Used when dealing with PartToken instances.
+     */
+    public void addToken(AbstractToken<T> token, int lookahead, Object state) {
+        addToken(token);
+        if (laState != null) { // maintaining lookaheads and states
+            laState = laState.add(lookahead, state);
+        }
+    }
+
+    public void trimStorageToSize() {
         trimToSize(); // Compact storage
         if (laState != null)
             laState.trimToSize();
     }
     
-    /**
-     * Check whether this embedded token list is initialized.
-     * <br/>
-     * If not then the updating process should not touch it unless
-     * the token list list exists for this particular language path.
-     */
-    public boolean isInited() {
-        return (laState != LAState.initState());
-    }
-    
-    EmbeddedTokenList<?> nextEmbeddedTokenList() {
+    public EmbeddedTokenList<?> nextEmbeddedTokenList() {
         return nextEmbeddedTokenList;
     }
     
@@ -189,23 +227,24 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     }
 
     public int tokenCount() {
-        synchronized (root()) {
-            if (laState == LAState.initState())
-                init();
-            return size();
-        }
+        return tokenCountCurrent();
     }
     
-    public Object tokenOrEmbeddingContainer(int index) {
-        synchronized (root()) {
-            if (laState == LAState.initState())
-                init();
+    public int tokenCountCurrent() {
+        return size();
+    }
+
+    public int joinTokenCount() {
+        int tokenCount = tokenCountCurrent();
+        if (tokenCount > 0 && joinInfo.joinTokenLastPartShift() > 0)
+            tokenCount--;
+        return tokenCount;
+    }
+
+    public TokenOrEmbedding<T> tokenOrEmbedding(int index) {
+        synchronized (rootTokenList()) {
             return (index < size()) ? get(index) : null;
         }
-    }
-    
-    private Token existingToken(int index) {
-        return LexerUtilsConstants.token(tokenOrEmbeddingContainer(index));
     }
     
     public int lookahead(int index) {
@@ -223,219 +262,183 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
      * For token hierarchy snapshots the returned value is corrected
      * in the TokenSequence explicitly by adding TokenSequence.tokenOffsetDiff.
      */
-    public int tokenOffset(int index) {
+    public int tokenOffsetByIndex(int index) {
 //        embeddingContainer().checkStatusUpdated();
         return elementOffset(index);
     }
 
-    public int childTokenOffset(int rawOffset) {
-        // Need to make sure that the startOffset is up-to-date
-        embeddingContainer.updateStatus();
-        return childTokenOffsetNoUpdate(rawOffset);
-    }
-    
-    public int childTokenOffsetNoUpdate(int rawOffset) {
+    public int tokenOffset(AbstractToken<T> token) {
+        if (token.getClass() == JoinToken.class) {
+            return token.offset(null);
+        }
+        int rawOffset = token.rawOffset();
 //        embeddingContainer().checkStatusUpdated();
-        return embeddingContainer.tokenStartOffset() + embedding.startSkipLength()
-            + childTokenRelOffset(rawOffset);
-    }
-
-    /**
-     * Get difference between start offset of the particular child token
-     * against start offset of the root token.
-     */
-    public int childTokenOffsetShift(int rawOffset) {
-        // Need to make sure that the startOffsetShift is up-to-date
-        embeddingContainer.updateStatus();
-        return embeddingContainer.rootTokenOffsetShift() + childTokenRelOffset(rawOffset);
-    }
-
-    /**
-     * Get child token's real offset which is always a relative value
-     * to startOffset value.
-     */
-    private int childTokenRelOffset(int rawOffset) {
-        return (rawOffset < offsetGapStart())
+        int relOffset = (rawOffset < offsetGapStart())
                 ? rawOffset
                 : rawOffset - offsetGapLength();
+        return startOffset() + relOffset;
     }
 
-    public char childTokenCharAt(int rawOffset, int index) {
-//        embeddingContainer().checkStatusUpdated();
-        // Do not update the start offset shift - the token.text()
-        // did it before returning its result and its contract
-        // specifies that.
-        // Return chars by delegating to rootToken
-        return embeddingContainer.charAt(
-                embedding.startSkipLength() + childTokenRelOffset(rawOffset) + index);
+    public int[] tokenIndex(int offset) {
+        return LexerUtilsConstants.tokenIndexBinSearch(this, offset, tokenCountCurrent());
     }
 
     public int modCount() {
-        // Delegate to root to have the most up-to-date value for token sequence's check.
-        // Extra synchronization should not be necessary since the TokenSequence.embedded()
-        // calls EmbeddingContainer.embeddedTokenList()
-        // which calls which contains the synchronization and calls updateStatusImpl().
+        // Mod count of EC must be returned to allow custom removed embeddings to work
+        //  - they set LexerUtilsConstants.MOD_COUNT_REMOVED as cachedModCount.
         return embeddingContainer.cachedModCount();
     }
     
     @Override
     public int startOffset() { // used by FlyOffsetGapList
 //        embeddingContainer.checkStatusUpdated();
-        return embeddingContainer.tokenStartOffset() + embedding.startSkipLength();
+        return embeddingContainer.branchTokenStartOffset() + embedding.startSkipLength();
     }
     
     public int endOffset() {
 //        embeddingContainer.checkStatusUpdated();
-        return embeddingContainer.tokenStartOffset() + embeddingContainer.token().length()
+        return embeddingContainer.branchTokenStartOffset() + embeddingContainer.token().length()
                 - embedding.endSkipLength();
     }
     
+    public int textLength() {
+        return embeddingContainer.token().length() - embedding.startSkipLength() - embedding.endSkipLength();
+    }
+    
     public boolean isRemoved() {
-        embeddingContainer.updateStatusImpl();
         return embeddingContainer.isRemoved();
     }
 
-    public TokenList<?> root() {
+    public TokenList<?> rootTokenList() {
         return embeddingContainer.rootTokenList();
     }
-    
+
+    public CharSequence inputSourceText() {
+        return rootTokenList().inputSourceText();
+    }
+
     public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
-        return root().tokenHierarchyOperation();
+        return rootTokenList().tokenHierarchyOperation();
     }
     
-    public AbstractToken<?> rootToken() {
-        return embeddingContainer.rootToken();
+    protected int elementRawOffset(TokenOrEmbedding<T> elem) {
+        return elem.token().rawOffset();
     }
 
-    protected int elementRawOffset(Object elem) {
-        return (elem.getClass() == EmbeddingContainer.class)
-            ? ((EmbeddingContainer)elem).token().rawOffset()
-            : ((AbstractToken<?>)elem).rawOffset();
-    }
-
-    protected void setElementRawOffset(Object elem, int rawOffset) {
-        if (elem.getClass() == EmbeddingContainer.class)
-            ((EmbeddingContainer)elem).token().setRawOffset(rawOffset);
-        else
-            ((AbstractToken<?>)elem).setRawOffset(rawOffset);
+    protected void setElementRawOffset(TokenOrEmbedding<T> elem, int rawOffset) {
+        elem.token().setRawOffset(rawOffset);
     }
     
-    protected boolean isElementFlyweight(Object elem) {
-        // token wrapper always contains non-flyweight token
-        return (elem.getClass() != EmbeddingContainer.class)
-            && ((AbstractToken<?>)elem).isFlyweight();
+    protected boolean isElementFlyweight(TokenOrEmbedding<T> elem) {
+        return elem.token().isFlyweight();
     }
     
-    protected int elementLength(Object elem) {
-        return LexerUtilsConstants.token(elem).length();
+    protected int elementLength(TokenOrEmbedding<T> elem) {
+        return elem.token().length();
     }
     
     public AbstractToken<T> replaceFlyToken(
     int index, AbstractToken<T> flyToken, int offset) {
-        synchronized (root()) {
+        synchronized (rootTokenList()) {
             TextToken<T> nonFlyToken = ((TextToken<T>)flyToken).createCopy(this, offset2Raw(offset));
             set(index, nonFlyToken);
             return nonFlyToken;
         }
     }
 
-    public void wrapToken(int index, EmbeddingContainer embeddingContainer) {
-        synchronized (root()) {
+    public void wrapToken(int index, EmbeddingContainer<T> embeddingContainer) {
+        synchronized (rootTokenList()) {
             set(index, embeddingContainer);
         }
     }
 
     public InputAttributes inputAttributes() {
-        return root().inputAttributes();
+        return rootTokenList().inputAttributes();
     }
 
     // MutableTokenList extra methods
-    public Object tokenOrEmbeddingContainerUnsync(int index) {
+    public TokenOrEmbedding<T> tokenOrEmbeddingUnsync(int index) {
         return get(index);
-    }
-
-    public int tokenCountCurrent() {
-        return size();
     }
 
     public LexerInputOperation<T> createLexerInputOperation(
     int tokenIndex, int relexOffset, Object relexState) {
 //        embeddingContainer.checkStatusUpdated();
-        CharSequence tokenText = embeddingContainer.token().text();
-        int tokenStartOffset = embeddingContainer.tokenStartOffset();
-        if (tokenText == null) { // Should not normally happen - debug the state
-            throw new IllegalStateException("Text of parent token is null. tokenStartOffset=" + tokenStartOffset +
-                    ", tokenIndex=" + tokenIndex + ", relexOffset=" + relexOffset + ", relexState=" + relexState +
-                    ", languagePath=" + languagePath() + ", inited=" + isInited()
-            );
-        }
-        int endOffset = tokenStartOffset + tokenText.length()
-            - embedding.endSkipLength();
-        return new TextLexerInputOperation<T>(this, tokenIndex, relexState, tokenText,
-                tokenStartOffset, relexOffset, endOffset);
+//        AbstractToken<?> branchToken = embeddingContainer.token();
+        int endOffset = endOffset();
+//        assert (!branchToken.isRemoved()) : "No lexing when token is removed";
+//        assert (relexOffset >= startOffset()) : "Invalid relexOffset=" + relexOffset + " < startOffset()=" + startOffset();
+        assert (relexOffset <= endOffset) : "Invalid relexOffset=" + relexOffset + " > endOffset()=" + endOffset;
+        return new TextLexerInputOperation<T>(this, tokenIndex, relexState, relexOffset, endOffset);
     }
 
     public boolean isFullyLexed() {
         return true;
     }
 
-    public void replaceTokens(TokenListChange<T> change, int removeTokenCount, int diffLength) {
+    public void replaceTokens(TokenListChange<T> change, int diffLength) {
         int index = change.index();
         // Remove obsolete tokens (original offsets are retained)
-        Object[] removedTokensOrEmbeddingContainers = new Object[removeTokenCount];
-        copyElements(index, index + removeTokenCount, removedTokensOrEmbeddingContainers, 0);
-        int offset = change.offset();
-        for (int i = 0; i < removeTokenCount; i++) {
-            Object tokenOrEmbeddingContainer = removedTokensOrEmbeddingContainers[i];
-            AbstractToken<?> token;
-            // It's necessary to update-status of all removed tokens' contained embeddings
-            // since otherwise (if they would not be up-to-date) they could not be updated later
-            // as they lose their parent token list which the update-status relies on.
-            if (tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) {
-                EmbeddingContainer<?> ec = (EmbeddingContainer<?>)tokenOrEmbeddingContainer;
-                ec.updateStatusAndInvalidate();
-                token = ec.token();
-            } else { // Regular token
-                token = (AbstractToken<?>)tokenOrEmbeddingContainer;
+        int removedTokenCount = change.removedTokenCount();
+        int rootModCount = rootTokenList().modCount();
+        AbstractToken<T> firstRemovedToken = null;
+        if (removedTokenCount > 0) {
+            @SuppressWarnings("unchecked")
+            TokenOrEmbedding<T>[] removedTokensOrEmbeddings = new TokenOrEmbedding[removedTokenCount];
+            copyElements(index, index + removedTokenCount, removedTokensOrEmbeddings, 0);
+            firstRemovedToken = removedTokensOrEmbeddings[0].token();
+            for (int i = 0; i < removedTokenCount; i++) {
+                TokenOrEmbedding<T> tokenOrEmbedding = removedTokensOrEmbeddings[i];
+                // It's necessary to update-status of all removed tokens' contained embeddings
+                // since otherwise (if they would not be up-to-date) they could not be updated later
+                // as they lose their parent token list which the update-status relies on.
+                EmbeddingContainer<T> ec = tokenOrEmbedding.embedding();
+                if (ec != null) {
+                    ec.updateStatusUnsyncAndMarkRemoved();
+                    assert (ec.cachedModCount() != rootModCount) : "ModCount already updated"; // NOI18N
+                }
+                AbstractToken<T> token = tokenOrEmbedding.token();
+                if (!token.isFlyweight()) {
+                    updateElementOffsetRemove(token);
+                    token.setTokenList(null);
+                }
             }
-            if (!token.isFlyweight()) {
-                updateElementOffsetRemove(token);
-                token.setTokenList(null);
-            }
-            offset += token.length();
+            remove(index, removedTokenCount); // Retain original offsets
+            laState.remove(index, removedTokenCount); // Remove lookaheads and states
+            change.setRemovedTokens(removedTokensOrEmbeddings);
+        } else {
+            change.setRemovedTokensEmpty();
         }
-        remove(index, removeTokenCount); // Retain original offsets
-        laState.remove(index, removeTokenCount); // Remove lookaheads and states
-        change.setRemovedTokens(removedTokensOrEmbeddingContainers);
-        change.setRemovedEndOffset(offset);
 
-        // Move and fix the gap according to the performed modification.
-        int startOffset = startOffset(); // updateStatus() should already be called
-        if (offsetGapStart() != change.offset() - startOffset) {
-            // Minimum of the index of the first removed index and original computed index
-            moveOffsetGap(change.offset() - startOffset, Math.min(index, change.offsetGapIndex()));
+        if (diffLength != 0) { // JoinTokenList may pass 0 to not do any offset updates
+            // Move and fix the gap according to the performed modification.
+            // Instead of modOffset the gap is located at first relexed token's start
+            // because then the already precomputed index corresponding to the given offset
+            // can be reused. Otherwise there would have to be another binary search for index.
+            int startOffset = startOffset(); // updateStatus() should already be called
+            if (offsetGapStart() != change.offset() - startOffset) {
+                // Minimum of the index of the first removed index and original computed index
+                moveOffsetGap(change.offset() - startOffset, change.index());
+            }
+            updateOffsetGapLength(-diffLength);
         }
-        updateOffsetGapLength(-diffLength);
 
         // Add created tokens.
         // This should be called early when all the members are true tokens
-        List<Object> addedTokensOrBranches = change.addedTokensOrBranches();
-        if (addedTokensOrBranches != null) {
-            for (Object tokenOrBranch : addedTokensOrBranches) {
-                @SuppressWarnings("unchecked")
-                AbstractToken<T> token = (AbstractToken<T>)tokenOrBranch;
-                updateElementOffsetAdd(token);
+        List<TokenOrEmbedding<T>> addedTokenOrEmbeddings = change.addedTokenOrEmbeddings();
+        if (addedTokenOrEmbeddings != null) {
+            for (TokenOrEmbedding<T> tokenOrEmbedding : addedTokenOrEmbeddings) {
+                updateElementOffsetAdd(tokenOrEmbedding.token());
             }
-            addAll(index, addedTokensOrBranches);
+            addAll(index, addedTokenOrEmbeddings);
             laState = laState.addAll(index, change.laState());
             change.syncAddedTokenCount();
             // Check for bounds change only
-            if (removeTokenCount == 1 && addedTokensOrBranches.size() == 1) {
+            if (removedTokenCount == 1 && addedTokenOrEmbeddings.size() == 1) {
                 // Compare removed and added token ids and part types
-                AbstractToken<T> removedToken = LexerUtilsConstants.token(removedTokensOrEmbeddingContainers[0]);
-                AbstractToken<T> addedToken = change.addedToken(0);
-                if (removedToken.id() == addedToken.id()
-                    && removedToken.partType() == addedToken.partType()
+                AbstractToken<T> addedToken = change.addedTokenOrEmbeddings().get(0).token();
+                if (firstRemovedToken.id() == addedToken.id()
+                    && firstRemovedToken.partType() == addedToken.partType()
                 ) {
                     change.markBoundsChange();
                 }
@@ -459,20 +462,26 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         this.embeddingContainer = embeddingContainer;
     }
     
-    public String toStringHeader() {
-        StringBuilder sb = new StringBuilder(50);
-        sb.append("ETL: <").append(startOffset());
+    public StringBuilder dumpInfo(StringBuilder sb) {
+        if (sb == null) {
+            sb = new StringBuilder(50);
+        }
+        sb.append("ETL<").append(startOffset());
         sb.append(",").append(endOffset());
-        sb.append(">");
-        sb.append(" IHC=").append(System.identityHashCode(this));
-        sb.append('\n');
-        return sb.toString();
+        sb.append("> TC=").append(tokenCountCurrent());
+        sb.append("(").append(joinTokenCount()).append(')');
+        if (joinInfo != null) {
+            sb.append(" JI:");
+            joinInfo.dumpInfo(sb);
+        }
+        sb.append(", IHC=").append(System.identityHashCode(this));
+        return sb;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(256);
-        sb.append(toStringHeader());
+        dumpInfo(sb);
         LexerUtilsConstants.appendTokenList(sb, this);
         return sb.toString();
     }

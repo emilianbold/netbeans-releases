@@ -41,6 +41,7 @@
 
 package org.netbeans.lib.lexer;
 
+import org.netbeans.lib.lexer.inc.TokenHierarchyUpdate;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchyEventType;
@@ -49,6 +50,7 @@ import org.netbeans.lib.lexer.inc.TokenChangeInfo;
 import org.netbeans.lib.lexer.inc.TokenHierarchyEventInfo;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.lib.lexer.token.AbstractToken;
+import org.netbeans.lib.lexer.token.JoinToken;
 import org.netbeans.spi.lexer.EmbeddingPresence;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 
@@ -68,8 +70,8 @@ import org.netbeans.spi.lexer.LanguageHierarchy;
  * @version 1.00
  */
 
-public final class EmbeddingContainer<T extends TokenId> {
-    
+public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbedding<T> {
+
     /**
      * Get embedded token list.
      *
@@ -79,28 +81,24 @@ public final class EmbeddingContainer<T extends TokenId> {
      *  should be obtained.
      * @param language whether only language embeddding of the particular language
      *  was requested. It may be null if any embedding should be returned.
+     * @param initTokensInNew true if tokens should be created when a new ETL gets created.
+     *  False in case this is called from TokenListList to grab ETLs for sections joining.
      */
     public static <T extends TokenId, ET extends TokenId> EmbeddedTokenList<ET> embeddedTokenList(
-    TokenList<T> tokenList, int index, Language<ET> embeddedLanguage) {
-        EmbeddingContainer<T> ec;
-        AbstractToken<T> token;
-        EmbeddingPresence ep;
-        TokenList<?> rootTokenList = tokenList.root();
+    TokenList<T> tokenList, int index, Language<ET> embeddedLanguage, boolean initTokensInNew) {
+        TokenList<?> rootTokenList = tokenList.rootTokenList();
         synchronized (rootTokenList) {
-            Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(index);
-            if (tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) {
-                // Embedding container exists
-                @SuppressWarnings("unchecked")
-                EmbeddingContainer<T> ecUC = (EmbeddingContainer<T>)tokenOrEmbeddingContainer;
-                ec = ecUC;
-                token = ec.token();
+            TokenOrEmbedding<T> tokenOrEmbedding = tokenList.tokenOrEmbedding(index);
+            EmbeddingContainer<T> ec = tokenOrEmbedding.embedding();
+            AbstractToken<T> token = tokenOrEmbedding.token();
+            if (token.getClass() == JoinToken.class) {
+                // Currently do not allow to create embedding over token that is physically joined
+                return null;
+            }
+            EmbeddingPresence ep;
+            if (ec != null) {
                 ep = null;
-
             } else { // No embedding was created yet
-                ec = null;
-                @SuppressWarnings("unchecked")
-                AbstractToken<T> t = (AbstractToken<T>)tokenOrEmbeddingContainer;
-                token = t;
                 // Check embedding presence
                 ep = LexerUtilsConstants.innerLanguageOperation(tokenList.languagePath()).embeddingPresence(token.id());
                 if (ep == EmbeddingPresence.NONE) {
@@ -112,7 +110,7 @@ public final class EmbeddingContainer<T extends TokenId> {
             // need to be processed to find the embedded token list for requested language.
             EmbeddedTokenList<?> prevEtl;
             if (ec != null) {
-                ec.updateStatusImpl();
+                ec.updateStatusUnsync();
                 EmbeddedTokenList<?> etl = ec.firstEmbeddedTokenList();
                 prevEtl = null;
                 while (etl != null) {
@@ -154,8 +152,7 @@ public final class EmbeddingContainer<T extends TokenId> {
                             setEmbeddingPresence(token.id(), EmbeddingPresence.ALWAYS_QUERY);
                 }
                 // Check whether the token contains enough text to satisfy embedding's start and end skip lengths
-                CharSequence text = token.text(); // Should not be null here but rather check
-                if (text == null || embedding.startSkipLength() + embedding.endSkipLength() > text.length()) {
+                if (token.isRemoved() || embedding.startSkipLength() + embedding.endSkipLength() > token.length()) {
                     return null;
                 }
                 if (ec == null) {
@@ -165,10 +162,19 @@ public final class EmbeddingContainer<T extends TokenId> {
                 LanguagePath embeddedLanguagePath = LanguagePath.get(languagePath,
                         embedding.language());
                 EmbeddedTokenList<ET> etl = new EmbeddedTokenList<ET>(ec,
-                        embeddedLanguagePath, embedding, null);
+                        embeddedLanguagePath, embedding);
                 // Preceding code should ensure that (prevEtl.nextEmbeddedTokenList == null)
                 // so no need to call etl.setNextEmbeddedTokenList(prevEtl.nextEmbeddedTokenList())
                 ec.addEmbeddedTokenList(prevEtl, etl, true);
+
+                if (initTokensInNew) {
+                    if (embedding.joinSections()) {
+                        // Init corresponding TokenListList
+                        rootTokenList.tokenHierarchyOperation().tokenListList(embeddedLanguagePath);
+                    } else { // sections not joined
+                        etl.initAllTokens();
+                    }
+                }
                 return (embeddedLanguage == null || embeddedLanguage == embedding.language()) ? etl : null;
             }
             // Update embedding presence to NONE
@@ -200,7 +206,7 @@ public final class EmbeddingContainer<T extends TokenId> {
     public static <T extends TokenId, ET extends TokenId> boolean createEmbedding(
     TokenList<T> tokenList, int index, Language<ET> embeddedLanguage,
     int startSkipLength, int endSkipLength, boolean joinSections) {
-        TokenList<?> rootTokenList = tokenList.root();
+        TokenList<?> rootTokenList = tokenList.rootTokenList();
         // Only create embedddings for valid operations so not e.g. for removed token list
         AbstractToken<T> token;
         EmbeddingContainer<T> ec;
@@ -217,12 +223,10 @@ public final class EmbeddingContainer<T extends TokenId> {
             tokenHierarchyOperation = tokenList.tokenHierarchyOperation();
             tokenHierarchyOperation.ensureWriteLocked();
 
-            Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(index);
-            if (tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) {
-                // Embedding container exists
-                @SuppressWarnings("unchecked")
-                EmbeddingContainer<T> ecUC = (EmbeddingContainer<T>)tokenOrEmbeddingContainer;
-                ec = ecUC;
+            TokenOrEmbedding<T> tokenOrEmbedding = tokenList.tokenOrEmbedding(index);
+            ec = tokenOrEmbedding.embedding();
+            token = tokenOrEmbedding.token();
+            if (ec != null) {
                 EmbeddedTokenList etl2 = ec.firstEmbeddedTokenList();
                 while (etl2 != null) {
                     if (embeddedLanguage == etl2.languagePath().innerLanguage()) {
@@ -230,11 +234,7 @@ public final class EmbeddingContainer<T extends TokenId> {
                     }
                     etl2 = etl2.nextEmbeddedTokenList();
                 }
-                token = ec.token();
             } else {
-                @SuppressWarnings("unchecked")
-                AbstractToken<T> t = (AbstractToken<T>)tokenOrEmbeddingContainer;
-                token = t;
                 if (token.isFlyweight()) { // embedding cannot exist for this flyweight token
                     return false;
                 }
@@ -253,12 +253,12 @@ public final class EmbeddingContainer<T extends TokenId> {
             tokenHierarchyOperation.addLanguagePath(embeddedLanguagePath);
             // Make the embedded token list to be the first in the list
             etl = new EmbeddedTokenList<ET>(
-                    ec, embeddedLanguagePath, embedding, ec.firstEmbeddedTokenList());
+                    ec, embeddedLanguagePath, embedding);
             ec.addEmbeddedTokenList(null, etl, false);
             
             // Fire the embedding creation to the clients
             // Threading model may need to be changed if necessary
-            tokenStartOffset = ec.tokenStartOffset();
+            tokenStartOffset = ec.branchTokenStartOffset();
             eventInfo = new TokenHierarchyEventInfo(
                     tokenHierarchyOperation,
                     TokenHierarchyEventType.EMBEDDING_CREATED,
@@ -269,17 +269,19 @@ public final class EmbeddingContainer<T extends TokenId> {
             // When joining sections ensure that the token list list gets created
             // and the embedded tokens get created because they must exist
             // before possible next updating of the token list.
-            TokenListList tll = tokenHierarchyOperation.existingTokenListList(etl.languagePath());
+            TokenListList<ET> tll = tokenHierarchyOperation.existingTokenListList(etl.languagePath());
+            if (!embedding.joinSections()) {
+                etl.initAllTokens();
+            }
             if (tll != null) {
                 // Update tll by embedding creation
-                new TokenHierarchyUpdate(eventInfo).updateCreateEmbedding(etl);
+                new TokenHierarchyUpdate(eventInfo).updateCreateOrRemoveEmbedding(etl, true);
             } else { // tll == null
                 if (embedding.joinSections()) {
                     // Force token list list creation only when joining sections
                     tll = tokenHierarchyOperation.tokenListList(etl.languagePath());
                 }
             }
-
         }
 
         // Construct outer token change info
@@ -304,24 +306,21 @@ public final class EmbeddingContainer<T extends TokenId> {
     
     public static <T extends TokenId, ET extends TokenId> boolean removeEmbedding(
     TokenList<T> tokenList, int index, Language<ET> embeddedLanguage) {
-        TokenList<?> rootTokenList = tokenList.root();
+        TokenList<?> rootTokenList = tokenList.rootTokenList();
         // Only create embedddings for valid operations so not e.g. for removed token list
         EmbeddingContainer<T> ec;
         synchronized (rootTokenList) {
             // Check TL.isRemoved() under syncing of rootTokenList
-            if (tokenList.isRemoved()) // Do not create embedding for removed TLs
+            if (tokenList.isRemoved()) // Do not remove embedding for removed TLs
                 return false;
             // If TL is not removed then THO should be non-null
             TokenHierarchyOperation<?,?> tokenHierarchyOperation = tokenList.tokenHierarchyOperation();
             tokenHierarchyOperation.ensureWriteLocked();
 
-            Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(index);
-            if (tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) {
-                // Embedding container exists
-                @SuppressWarnings("unchecked")
-                EmbeddingContainer<T> ecUC = (EmbeddingContainer<T>)tokenOrEmbeddingContainer;
-                ec = ecUC;
-                ec.updateStatusImpl();
+            TokenOrEmbedding<T> tokenOrEmbedding = tokenList.tokenOrEmbedding(index);
+            ec = tokenOrEmbedding.embedding();
+            if (ec != null) {
+                ec.updateStatusUnsync();
                 EmbeddedTokenList<?> etl = ec.firstEmbeddedTokenList();
                 EmbeddedTokenList<?> prevEtl = null;
                 while (etl != null) {
@@ -337,10 +336,10 @@ public final class EmbeddingContainer<T extends TokenId> {
                         // State that the removed embedding was not default - should not matter anyway
                         ec.addEmbeddedTokenList(null, etl, false);
                         etl.setEmbeddingContainer(ec);
-                        ec.invalidateChildren();
+                        ec.markChildrenRemovedDeep();
 
                         // Fire the embedding creation to the clients
-                        int startOffset = ec.tokenStartOffset();
+                        int startOffset = ec.branchTokenStartOffset();
                         TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
                                 tokenHierarchyOperation,
                                 TokenHierarchyEventType.EMBEDDING_REMOVED,
@@ -369,7 +368,7 @@ public final class EmbeddingContainer<T extends TokenId> {
                         TokenListList tll = tokenHierarchyOperation.existingTokenListList(etl.languagePath());
                         if (tll != null) {
                             // update-status already called
-                            new TokenHierarchyUpdate(eventInfo).updateRemoveEmbedding(etl);
+                            new TokenHierarchyUpdate(eventInfo).updateCreateOrRemoveEmbedding(etl, false);
                         }
 
                         // Fire the change
@@ -383,64 +382,56 @@ public final class EmbeddingContainer<T extends TokenId> {
         return false;
     }
 
-    private AbstractToken<T> token; // 12 bytes (8-super + 4)
+    /**
+     * Token wrapped by this EC.
+     */
+    private AbstractToken<T> branchToken; // 12 bytes (8-super + 4)
+    
+    /**
+     * Root token list of the hierarchy should never be null and is final.
+     * 
+     */
+    private final TokenList<?> rootTokenList; // 16 bytes
     
     /**
      * Cached modification count allows to determine whether the start offset
      * needs to be recomputed.
      */
-    private int cachedModCount; // 16 bytes
+    private int cachedModCount; // 20 bytes
 
-    /**
-     * Root token list of the hierarchy.
-     * 
-     */
-    private final TokenList<?> rootTokenList; // 20 bytes
-    
-    /**
-     * The root embedding container to which this embedding container relates.
-     * <br/>
-     * It's used for getting of the start offset of the contained tokens
-     * and for getting of their text.
-     */
-    private AbstractToken<?> rootToken; // 24 bytes
-    
     /**
      * Cached start offset of the token for which this embedding container
      * was created.
+     * <br/>
+     * Its value may be shared by multiple embedded token lists.
      */
-    private int tokenStartOffset; // 28 bytes
+    private int branchTokenStartOffset; // 24 bytes
 
     /**
      * First embedded token list in the single-linked list.
      */
-    private EmbeddedTokenList<?> firstEmbeddedTokenList; // 32 bytes
+    private EmbeddedTokenList<?> firstEmbeddedTokenList; // 28 bytes
 
-    /**
-     * Difference between start offset of the first token in this token list
-     * against the start offset of the root token.
-     * <br>
-     * The offset gets refreshed upon <code>updateStartOffset()</code>.
-     */
-    private int offsetShiftFromRootToken; // 36 bytes
-    
     /**
      * Embedded token list that represents the default embedding.
      * It may be <code>EmbeddedTokenList.NO_DEFAULT_EMBEDDING</code>
      * for failed attempt to create a default embedding.
      */
-    private EmbeddedTokenList<?> defaultEmbeddedTokenList; // 40 bytes
+    private EmbeddedTokenList<?> defaultEmbeddedTokenList; // 32 bytes
     
-    EmbeddingContainer(AbstractToken<T> token, TokenList<?> rootTokenList) {
-        this.token = token;
+    EmbeddingContainer(AbstractToken<T> branchToken, TokenList<?> rootTokenList) {
+        if (branchToken == null)
+            throw new IllegalArgumentException("branchToken cannot be null");
+        if (rootTokenList == null)
+            throw new IllegalArgumentException("rootTokenList cannot be null");
+        this.branchToken = branchToken;
         this.rootTokenList = rootTokenList;
-        this.rootToken = token; // Has to be non-null since updateStatusImpl() would not update null rootToken
         // cachedModCount must differ from root's one to sync offsets
         // Root mod count can be >= 0 or -1 for non-incremental token lists
-        this.cachedModCount = -2;
+        this.cachedModCount = LexerUtilsConstants.MOD_COUNT_EMBEDDED_INITIAL;
         // Update the tokenStartOffset etc. - this assumes that the token
         // is already parented till the root token list.
-        updateStatusImpl();
+        updateStatusUnsync();
     }
     
     /**
@@ -456,24 +447,25 @@ public final class EmbeddingContainer<T extends TokenId> {
      * @param ec non-null existing embedding container.
      */
     EmbeddingContainer(EmbeddingContainer<T> ec) {
-        this(ec.token(), ec.rootTokenList()); // Force init of tokenStartOffset and rootTokenOffsetShift
-        invalidate();
+        this(ec.token(), ec.rootTokenList()); // Force init of tokenStartOffset
+        markRemoved();
     }
     
-    private void invalidate() {
-        this.rootToken = null;
-        // Set cachedModCount to -2 which should not occur for regular cases
-        // which should force existing token sequences to be invalidated.
-        this.cachedModCount = -2;
+    private void markRemoved() {
+        // Set cachedModCount to LexerUtilsConstants.MOD_COUNT_REMOVED which should not occur
+        // for regular cases which should force existing token sequences to be invalidated.
+        this.cachedModCount = LexerUtilsConstants.MOD_COUNT_REMOVED;
     }
     
-    void invalidateChildren() {
+    void markChildrenRemovedDeep() { // Used by custom embedding removal
         EmbeddedTokenList etl = firstEmbeddedTokenList;
         while (etl != null && etl != EmbeddedTokenList.NO_DEFAULT_EMBEDDING) {
             for (int i = etl.tokenCountCurrent() - 1; i >= 0; i--) {
-                Object tokenOrEC = etl.tokenOrEmbeddingContainerUnsync(i);
-                if (tokenOrEC.getClass() == EmbeddingContainer.class) {
-                    ((EmbeddingContainer)tokenOrEC).invalidateChildren();
+                EmbeddingContainer ec = etl.tokenOrEmbeddingUnsync(i).embedding();
+                if (ec != null) {
+                    ec.updateStatusUnsync(); // First update the status
+                    ec.markChildrenRemovedDeep();
+                    ec.markRemoved(); // Mark removed with the correctly updated offsets
                 }
             }
             etl = etl.nextEmbeddedTokenList();
@@ -484,26 +476,12 @@ public final class EmbeddingContainer<T extends TokenId> {
         return cachedModCount;
     }
     
-    /**
-     * Check if this embedding container is up-to-date (updateStatusImpl() was called on it)
-     * which is useful for missing-update-status checks.
-     */
-    public void checkStatusUpdated() {
-        if (cachedModCount != -2 && cachedModCount != rootTokenList.modCount()
-                && !checkStatusUpdatedThrowingException
-        ) {
-            // Prevent OOME because of nested throwing of exc
-            checkStatusUpdatedThrowingException = true;
-            String excMsg = "!!!INTERNAL ERROR!!! Status not updated on " +
-                    this + "\nin token hierarchy\n" + rootTokenList.tokenHierarchyOperation();
-            checkStatusUpdatedThrowingException = false;
-            throw new IllegalStateException(excMsg);
-        }
+    public final AbstractToken<T> token() {
+        return branchToken;
     }
-    private static boolean checkStatusUpdatedThrowingException;
-
-    public AbstractToken<T> token() {
-        return token;
+    
+    public final EmbeddingContainer<T> embedding() {
+        return this;
     }
     
     /**
@@ -511,38 +489,18 @@ public final class EmbeddingContainer<T extends TokenId> {
      * The updateStatusImpl() should be called afterwards to update tokenStartOffset etc.
      */
     public void reinit(AbstractToken<T> token) {
-        this.token = token;
-        TokenList<?> parentTokenList = token.tokenList();
-        assert (parentTokenList != null);
-        if (parentTokenList.getClass() == EmbeddedTokenList.class) {
-            rootToken = ((EmbeddedTokenList<?>)parentTokenList).rootToken();
-        } else { // parent is a root token list: rootToken == token
-            rootToken = token;
-        }
-        updateStatusImpl();
+        this.branchToken = token;
+        cachedModCount = LexerUtilsConstants.MOD_COUNT_EMBEDDED_INITIAL;
+        updateStatusUnsync();
     }
     
     public TokenList<?> rootTokenList() {
         return rootTokenList;
     }
     
-    public AbstractToken<?> rootToken() {
-        return rootToken;
-    }
-
-    public int tokenStartOffset() {
+    public int branchTokenStartOffset() {
 //        checkStatusUpdated();
-        return tokenStartOffset;
-    }
-    
-    public int rootTokenOffsetShift() {
-//        checkStatusUpdated();
-        return offsetShiftFromRootToken;
-    }
-    
-    public char charAt(int tokenRelOffset) {
-//        checkStatusUpdated();
-        return rootToken.charAt(offsetShiftFromRootToken + tokenRelOffset);
+        return branchTokenStartOffset;
     }
     
     public EmbeddedTokenList<?> firstEmbeddedTokenList() {
@@ -606,46 +564,92 @@ public final class EmbeddingContainer<T extends TokenId> {
      */
     public boolean isRemoved() {
 //        checkStatusUpdated();
-        return (rootToken == null);
+        return (cachedModCount == LexerUtilsConstants.MOD_COUNT_REMOVED);
     }
     
-    public void updateStatusAndInvalidate() {
-        updateStatusImpl();
-        invalidate();
-    }
-    
-    public boolean updateStatus() {
-        synchronized (rootTokenList) {
-            return (updateStatusImpl() != null);
-        }
+    public void updateStatusUnsyncAndMarkRemoved() {
+        updateStatusUnsync();
+        markRemoved();
     }
     
     /**
-     * Update and return root token corresponding to this embedding container.
+     * Update status of this container in a synchronized way
+     * ensuring that no other thread will interfere - this is suitable
+     * for cases when there may be multiple concurrent readers
+     * using a token hierarchy and calling Token.offset() for example.
+     * <br/>
+     * Status updating fixes value of cached start offset of wrapped branch token
+     * (calling branch token(s) on upper level(s) for multiple embeddings' nesting).
+     * 
+     * @return true if token is still part of token hierarchy or false
+     *  if it was removed.
      */
-    public AbstractToken<?> updateStatusImpl() {
-        if (rootToken == null)
-            return null; // Removed from hierarchy
-        int rootModCount;
-        if (cachedModCount != (rootModCount = rootTokenList.modCount())) {
-            cachedModCount = rootModCount;
-            TokenList<?> parentTokenList = token.tokenList();
-            if (parentTokenList == null) {
-                rootToken = null;
-            } else if (parentTokenList.getClass() == EmbeddedTokenList.class) {
-                EmbeddedTokenList<?> parentEtl = (EmbeddedTokenList<?>)parentTokenList;
-                rootToken = parentEtl.embeddingContainer().updateStatusImpl();
-                tokenStartOffset = parentEtl.childTokenOffsetNoUpdate(token.rawOffset());
-                EmbeddingContainer parentEC = parentEtl.embeddingContainer();
-                offsetShiftFromRootToken = tokenStartOffset - parentEC.tokenStartOffset()
-                        + parentEC.rootTokenOffsetShift();
-            } else { // parent is a root token list: rootToken == token
-                rootToken = token;
-                tokenStartOffset = token.offset(null);
-                offsetShiftFromRootToken = 0;
+    public void updateStatus() {
+        synchronized (rootTokenList) {
+            updateStatusUnsync();
+        }
+    }
+
+    /**
+     * Unsynced synchronization of container - this method should only be used
+     * when there may be only a single thread accessing token hierarchy i.e. during
+     * token hierarchy modifications upon mutable input source modifications.
+     * 
+     * @return true if token is still part of token hierarchy or false
+     *  if it was removed.
+     * @see #updateStatus()
+     */
+    public void updateStatusUnsync() {
+        updateStatusImpl(rootTokenList.modCount());
+    }
+
+    /**
+     * Update the status of this embedding container when current mod count
+     * of a root token list is given.
+     *
+     * @param rootModCount modCount of a root token list. The token list either
+     *  updates to it or to LexerUtilsConstants.MOD_COUNT_REMOVED if it's removed
+     *  from a token hierarchy. If called by nested embeddings they should finally
+     *  update to the same value.
+     * @return current modCount of this container.
+     */
+    protected int updateStatusImpl(int rootModCount) {
+        if (cachedModCount != LexerUtilsConstants.MOD_COUNT_REMOVED &&
+            cachedModCount != rootModCount
+        ) {
+            TokenList<T> parentTokenList = branchToken.tokenList();
+            if (parentTokenList == null) { // branch token removed from its parent token list
+                cachedModCount = LexerUtilsConstants.MOD_COUNT_REMOVED;
+            } else if (parentTokenList.getClass() == EmbeddedTokenList.class) { // deeper level embedding
+                EmbeddedTokenList<T> parentEtl = (EmbeddedTokenList<T>)parentTokenList;
+                cachedModCount = parentEtl.embeddingContainer().updateStatusImpl(rootModCount);
+                // After status of parent(s) was updated get the current branch token's offset
+                branchTokenStartOffset = parentEtl.tokenOffset(branchToken);
+            } else { // parent of branch token is a non-null root token list.
+                cachedModCount = rootModCount;
+                branchTokenStartOffset = parentTokenList.tokenOffset(branchToken);
             }
         }
-        return rootToken;
+        return cachedModCount;
     }
+
+    /**
+     * Check if this embedding container is up-to-date (updateStatusImpl() was called on it)
+     * which is useful for missing-update-status checks.
+     */
+    public void checkStatusUpdated() {
+        if (cachedModCount != LexerUtilsConstants.MOD_COUNT_REMOVED
+                && cachedModCount != rootTokenList.modCount()
+                && !checkStatusUpdatedThrowingException
+        ) {
+            // Prevent OOME because of nested throwing of exc
+            checkStatusUpdatedThrowingException = true;
+            String excMsg = "!!!INTERNAL ERROR!!! Status not updated on " +
+                    this + "\nin token hierarchy\n" + rootTokenList.tokenHierarchyOperation();
+            checkStatusUpdatedThrowingException = false;
+            throw new IllegalStateException(excMsg);
+        }
+    }
+    private static boolean checkStatusUpdatedThrowingException;
 
 }

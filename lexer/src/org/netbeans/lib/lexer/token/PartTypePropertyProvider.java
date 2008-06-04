@@ -39,48 +39,74 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.lib.lexer.inc;
+package org.netbeans.lib.lexer.token;
 
+import java.util.EnumSet;
+import org.netbeans.api.lexer.PartType;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.LexerInputOperation;
-import org.netbeans.lib.lexer.TokenList;
-import org.netbeans.lib.lexer.TokenOrEmbedding;
+import org.netbeans.spi.lexer.TokenPropertyProvider;
 
 /**
- * Token list that allows mutating by token list mutator.
+ * Property provider that stores {@link org.netbeans.api.lexer.PartType} information.
  *
  * @author Miloslav Metelka
  * @version 1.00
  */
 
-public interface MutableTokenList<T extends TokenId> extends TokenList<T> {
-
-    /**
-     * Return token or branch token list at the requested index
-     * but do not synchronize the access - there should only be one thread
-     * accessing the token list at this time.
-     * Also do not perform any checks regarding index validity
-     * - only items below {@link #tokenCountCurrent()} will be requested.
-     */
-    TokenOrEmbedding<T> tokenOrEmbeddingUnsync(int index);
-
-    /**
-     * Create lexer input operation used for relexing of the input.
-     */
-    LexerInputOperation<T> createLexerInputOperation(
-    int tokenIndex, int relexOffset, Object relexState);
+public final class PartTypePropertyProvider implements TokenPropertyProvider<TokenId> {
     
-    /**
-     * Check whether the whole input was tokenized or not.
-     * <br/>
-     * Incremental algorithm uses this information to determine
-     * whether it should relex the input till the end or not.
-     */
-    boolean isFullyLexed();
-    
-    /**
-     * Update the token list by replacing tokens according to the given change.
-     */
-    void replaceTokens(TokenListChange<T> change, int diffLength);
+    private static final PartTypePropertyProvider[] partTypeOrdinal2Provider
+            = new PartTypePropertyProvider[PartType.class.getEnumConstants().length];
 
+    static {
+        for (PartType partType : EnumSet.allOf(PartType.class)) {
+            partTypeOrdinal2Provider[partType.ordinal()] = new PartTypePropertyProvider(partType);
+        }
+    }
+    
+    public static <T extends TokenId> TokenPropertyProvider<T> get(PartType partType) {
+        return (TokenPropertyProvider<T>)partTypeOrdinal2Provider[partType.ordinal()];
+    }
+    
+    public static <T extends TokenId> TokenPropertyProvider<T> createDelegating(
+            PartType partType, TokenPropertyProvider<T> delegate
+    ) {
+        return new Delegating<T>(partType, delegate);
+    }
+    
+    private PartType partType;
+
+    public PartTypePropertyProvider(PartType partType) {
+        this.partType = partType;
+    }
+
+    public Object getValue(Token<TokenId> token, Object key) {
+        if (key == PartType.class) {
+            return partType;
+        }
+        return null;
+    }
+    
+    private static final class Delegating<T extends TokenId> implements TokenPropertyProvider<T> {
+        
+        private final PartType partType;
+        
+        private final TokenPropertyProvider<T> delegate;
+        
+        Delegating(PartType partType, TokenPropertyProvider<T> delegate) {
+            assert (delegate != null) : "delegate expected to be non-null. Use PartTypePropertyProvider.get() instead."; // NOTICES
+            this.partType = partType;
+            this.delegate = delegate;
+        }
+
+        public Object getValue(Token<T> token, Object key) {
+            if (key == PartType.class) {
+                return partType;
+            }
+            return delegate.getValue(token, key);
+        }
+
+    }
+    
 }

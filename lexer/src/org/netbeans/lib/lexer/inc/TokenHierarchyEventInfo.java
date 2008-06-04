@@ -43,12 +43,9 @@ package org.netbeans.lib.lexer.inc;
 
 import org.netbeans.api.lexer.TokenChange;
 import org.netbeans.api.lexer.TokenHierarchyEventType;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.lexer.LexerApiPackageAccessor;
-import org.netbeans.lib.lexer.LexerSpiPackageAccessor;
 import org.netbeans.lib.lexer.TokenHierarchyOperation;
-import org.netbeans.spi.lexer.MutableTextInput;
 
 /**
  * Shared information for all the token list changes
@@ -66,7 +63,7 @@ public final class TokenHierarchyEventInfo {
     
     private TokenChange<?> tokenChange;
 
-    private final int modificationOffset;
+    private final int modOffset;
 
     private final int removedLength;
 
@@ -97,7 +94,7 @@ public final class TokenHierarchyEventInfo {
 
         this.tokenHierarchyOperation = tokenHierarchyOperation;
         this.type = type;
-        this.modificationOffset = modificationOffset;
+        this.modOffset = modificationOffset;
         this.removedLength = removedLength;
         this.removedText = removedText;
         this.insertedLength = insertedLength;
@@ -142,8 +139,8 @@ public final class TokenHierarchyEventInfo {
         }
     }
 
-    public int modificationOffset() {
-        return modificationOffset;
+    public int modOffset() {
+        return modOffset;
     }
 
     public int removedLength() {
@@ -159,7 +156,11 @@ public final class TokenHierarchyEventInfo {
     }
     
     public CharSequence insertedText() {
-        return currentText().subSequence(modificationOffset(), modificationOffset() + insertedLength());
+        return currentText().subSequence(modOffset(), modOffset() + insertedLength());
+    }
+    
+    public int diffLength() {
+        return insertedLength - removedLength;
     }
     
     /**
@@ -181,7 +182,7 @@ public final class TokenHierarchyEventInfo {
                         );
             }
             originalText = new OriginalText(currentText(),
-                    modificationOffset, removedText, insertedLength);
+                    modOffset, removedText, insertedLength);
         }
         return originalText;
     }
@@ -193,8 +194,8 @@ public final class TokenHierarchyEventInfo {
     public String modificationDescription(boolean detail) {
         StringBuilder sb = new StringBuilder(originalText().length() + 300);
         if (removedLength() > 0) {
-            sb.append("TEXT REMOVED <").append(modificationOffset()).append(","). // NOI18N
-                    append(modificationOffset() + removedLength()).append('>');
+            sb.append("TEXT REMOVED <").append(modOffset()).append(","). // NOI18N
+                    append(modOffset() + removedLength()).append('>');
             sb.append(':').append(removedLength());
             if (removedText() != null) {
                 sb.append(" \"");
@@ -204,8 +205,8 @@ public final class TokenHierarchyEventInfo {
             sb.append('\n');
         }
         if (insertedLength() > 0) {
-            sb.append("TEXT INSERTED <").append(modificationOffset()).append(","). // NOI18N
-                    append(modificationOffset() + insertedLength()).append(">:"). // NOI18N
+            sb.append("TEXT INSERTED <").append(modOffset()).append(","). // NOI18N
+                    append(modOffset() + insertedLength()).append(">:"). // NOI18N
                     append(insertedLength()).append(" \""); // NOI18N
             CharSequenceUtilities.debugText(sb, insertedText());
             sb.append("\"\n");
@@ -214,7 +215,7 @@ public final class TokenHierarchyEventInfo {
             sb.append("\n\n----------------- ORIGINAL TEXT -----------------\n" + // NOI18N
                 originalText() +
                 "\n----------------- BEFORE-CARET TEXT -----------------\n" + // NOI18N
-                originalText().subSequence(0, modificationOffset()) +
+                originalText().subSequence(0, modOffset()) +
                 "|<--CARET\n" // NOI18N
             );
         }
@@ -234,7 +235,7 @@ public final class TokenHierarchyEventInfo {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("modOffset="); // NOI18N
-        sb.append(modificationOffset());
+        sb.append(modOffset());
         if (removedLength() > 0) {
             sb.append(", removedLength=");
             sb.append(removedLength());

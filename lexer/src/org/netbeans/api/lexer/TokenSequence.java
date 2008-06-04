@@ -42,12 +42,14 @@
 package org.netbeans.api.lexer;
 
 import java.util.ConcurrentModificationException;
+import org.netbeans.lib.lexer.EmbeddedTokenList;
 import org.netbeans.lib.lexer.EmbeddingContainer;
-import org.netbeans.lib.lexer.LexerUtilsConstants;
+import org.netbeans.lib.lexer.JoinTokenList;
 import org.netbeans.lib.lexer.SubSequenceTokenList;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.lib.lexer.TokenList;
 import org.netbeans.lib.lexer.token.AbstractToken;
+import org.netbeans.lib.lexer.TokenOrEmbedding;
 
 /**
  * Token sequence allows to iterate between tokens
@@ -246,7 +248,7 @@ public final class TokenSequence<T extends TokenId> {
     public int offset() {
         checkTokenNotNull();
         if (tokenOffset == -1) {
-            tokenOffset = tokenList.tokenOffset(tokenIndex);
+            tokenOffset = tokenList.tokenOffsetByIndex(tokenIndex);
         }
         return tokenOffset;
     }
@@ -296,17 +298,7 @@ public final class TokenSequence<T extends TokenId> {
      */
     public TokenSequence<?> embedded() {
         checkTokenNotNull();
-        return embeddedImpl(null);
-    }
-    
-    private <ET extends TokenId> TokenSequence<ET> embeddedImpl(Language<ET> embeddedLanguage) {
-        if (token.isFlyweight())
-            return null;
-        TokenList<ET> embeddedTokenList = LexerUtilsConstants.embeddedTokenList(
-                tokenList, tokenIndex, embeddedLanguage);
-        return (embeddedTokenList != null)
-                ? new TokenSequence<ET>(embeddedTokenList)
-                : null;
+        return embeddedImpl(null, false);
     }
 
     /**
@@ -318,7 +310,62 @@ public final class TokenSequence<T extends TokenId> {
      */
     public <ET extends TokenId> TokenSequence<ET> embedded(Language<ET> embeddedLanguage) {
         checkTokenNotNull();
-        return embeddedImpl(embeddedLanguage);
+        return embeddedImpl(embeddedLanguage, false);
+    }
+
+    /**
+     * Get embedded token sequence that possibly joins multiple embeddings
+     * with the same language paths (if the embeddings allow it - see
+     * {@link LanguageEmbedding#joinSections()}) into a single input text
+     * which is then lexed as a single continuous text.
+     * <br/>
+     * If any of the resulting tokens crosses embedding's boundaries then the token
+     * is split into multiple part tokens.
+     * <br/>
+     * If the embedding does not join sections then this method behaves
+     * like {@link #embedded()}.
+     * 
+     * @return embedded sequence or null if no embedding exists for this token.
+     *  The token sequence will be positioned before first token of this embedding
+     *  or to a join token in case the first token of this embedding is part of the join token.
+     */
+    public TokenSequence<?> embeddedJoined() {
+        checkTokenNotNull();
+        return embeddedImpl(null, true);
+    }
+
+    /**
+     * Get embedded token sequence if the token
+     * to which this token sequence is currently positioned
+     * has a language embedding.
+     * 
+     * @throws IllegalStateException if {@link #token()} returns null.
+     */
+    public <ET extends TokenId> TokenSequence<ET> embeddedJoined(Language<ET> embeddedLanguage) {
+        checkTokenNotNull();
+        return embeddedImpl(embeddedLanguage, true);
+    }
+
+    private <ET extends TokenId> TokenSequence<ET> embeddedImpl(Language<ET> embeddedLanguage, boolean joined) {
+        if (token.isFlyweight())
+            return null;
+
+        EmbeddedTokenList<ET> embeddedTokenList
+                = EmbeddingContainer.embeddedTokenList(tokenList, tokenIndex, embeddedLanguage, true);
+        if (embeddedTokenList != null) {
+            embeddedTokenList.embeddingContainer().updateStatus();
+            TokenSequence<ET> tse;
+            JoinTokenList<ET> joinTokenList;
+            if (joined && (joinTokenList = embeddedTokenList.joinTokenList()) != null) {
+                tse = new TokenSequence<ET>(joinTokenList);
+                // Position to this etl's index
+                tse.moveIndex(joinTokenList.activeStartJoinIndex());
+            } else { // Request regular TS or no joining available
+                tse = new TokenSequence<ET>(embeddedTokenList);
+            }
+            return tse;
+        }
+        return null;
     }
 
     /**
@@ -402,10 +449,10 @@ public final class TokenSequence<T extends TokenId> {
         checkModCount();
         if (token != null) // Token already fetched
             tokenIndex++;
-        Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(tokenIndex);
-        if (tokenOrEmbeddingContainer != null) {
-            AbstractToken origToken = token;
-            token = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
+        TokenOrEmbedding<T> tokenOrEmbedding = tokenList.tokenOrEmbedding(tokenIndex);
+        if (tokenOrEmbedding != null) { // Might be null if no more tokens available
+            AbstractToken<T> origToken = token;
+            token = tokenOrEmbedding.token();
             // If origToken == null then the right offset might already be pre-computed from move()
             if (tokenOffset != -1) {
                 if (origToken != null) {
@@ -446,9 +493,9 @@ public final class TokenSequence<T extends TokenId> {
     public boolean movePrevious() {
         checkModCount();
         if (tokenIndex > 0) {
-            AbstractToken origToken = token;
+            AbstractToken<T> origToken = token;
             tokenIndex--;
-            token = LexerUtilsConstants.token(tokenList.tokenOrEmbeddingContainer(tokenIndex));
+            token = tokenList.tokenOrEmbedding(tokenIndex).token();
             if (tokenOffset != -1) {
                 // If the token list is continuous or the original token
                 // is flyweight (there cannot be a gap before flyweight token)
@@ -501,13 +548,15 @@ public final class TokenSequence<T extends TokenId> {
     public int moveIndex(int index) {
         checkModCount();
         if (index >= 0) {
-            Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(index);
-            if (tokenOrEmbeddingContainer != null) { // enough tokens
-                resetTokenIndex(index);
-            } else // Token at the requested index does not exist - leave orig. index
-                resetTokenIndex(tokenCount());
-        } else // index < 0
-            resetTokenIndex(0);
+            TokenOrEmbedding<T> tokenOrEmbedding = tokenList.tokenOrEmbedding(index);
+            if (tokenOrEmbedding != null) { // enough tokens
+                resetTokenIndex(index, -1);
+            } else {// Token at the requested index does not exist - leave orig. index
+                resetTokenIndex(tokenCount(), -1);
+            }
+        } else {// index < 0
+            resetTokenIndex(0, -1);
+        }
         return index - tokenIndex;
     }
     
@@ -555,7 +604,7 @@ public final class TokenSequence<T extends TokenId> {
      * <p>
      * If token filtering is used there may be gaps that are not covered
      * by any tokens and if the offset is contained in such gap then
-     * the token sequence will be positioned before the token that follows the gap.
+     * the token sequence will be positioned before the token that precedes the gap.
      * </p>
      *
      *
@@ -563,96 +612,22 @@ public final class TokenSequence<T extends TokenId> {
      * @return difference between the reqeuested offset
      *  and the start offset of the token
      *  before which the the token sequence gets positioned.
+     *  <br/>
+     *  If positioned right after the last token then (offset - last-token-end-offset)
+     *  is returned.
      * 
      * @throws ConcurrentModificationException if this token sequence
      *  is no longer valid because of an underlying mutable input source modification.
      */
     public int move(int offset) {
         checkModCount();
-        // Token count in the list may change as possibly other threads
-        // keep asking for tokens. Root token list impls create tokens lazily
-        // when asked by clients.
-        int tokenCount = tokenList.tokenCountCurrent(); // presently created token count
-        if (tokenCount == 0) { // no tokens yet -> attempt to create at least one
-            if (tokenList.tokenOrEmbeddingContainer(0) == null) { // really no tokens at all
-                // In this case the token sequence could not be positioned yet
-                // so no need to reset "index" or other vars
-                resetTokenIndex(0);
-                return offset;
-            }
-            // Re-get the present token count (could be created a chunk of tokens at once)
-            tokenCount = tokenList.tokenCountCurrent();
+        int[] indexAndTokenOffset = tokenList.tokenIndex(offset);
+        if (indexAndTokenOffset[0] != -1) { // Valid index and token-offset
+            resetTokenIndex(indexAndTokenOffset[0], indexAndTokenOffset[1]);
+        } else { // No tokens in token list (indexAndOffset[1] == 0)
+            resetTokenIndex(0, -1); // Set Index to zero and offset to invalid
         }
-
-        // tokenCount surely >0
-        int prevTokenOffset = tokenList.tokenOffset(tokenCount - 1);
-        if (offset > prevTokenOffset) { // may need to create further tokens if they do not exist
-            // Force token list to create subsequent tokens
-            // Cannot subtract offset by each token's length because
-            // there may be gaps between tokens due to token id filter use.
-            int tokenLength = LexerUtilsConstants.token(tokenList, tokenCount - 1).length();
-            while (offset >= prevTokenOffset + tokenLength) { // above present token
-                Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(tokenCount);
-                if (tokenOrEmbeddingContainer != null) {
-                    AbstractToken t = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
-                    if (t.isFlyweight()) { // need to use previous tokenLength
-                        prevTokenOffset += tokenLength;
-                    } else { // non-flyweight token - retrieve offset
-                        prevTokenOffset = tokenList.tokenOffset(tokenCount);
-                    }
-                    tokenLength = t.length();
-                    tokenCount++;
-
-                } else { // no more tokens => position behind last token
-                    resetTokenIndex(tokenCount);
-                    tokenOffset = prevTokenOffset + tokenLength; // May assign the token's offset in advance
-                    return offset - tokenOffset;
-                }
-            }
-            resetTokenIndex(tokenCount - 1);
-            tokenOffset = prevTokenOffset; // May assign the token's offset in advance
-            return offset - prevTokenOffset;
-        }
-        
-        // The offset is within the currently recognized tokens
-        // Use binary search
-        int low = 0;
-        int high = tokenCount - 1;
-        
-        while (low <= high) {
-            int mid = (low + high) / 2;
-            int midStartOffset = tokenList.tokenOffset(mid);
-            
-            if (midStartOffset < offset) {
-                low = mid + 1;
-            } else if (midStartOffset > offset) {
-                high = mid - 1;
-            } else {
-                // Token starting exactly at offset found
-                resetTokenIndex(mid);
-                tokenOffset = midStartOffset;
-                return 0; // right at the token begining
-            }
-        }
-        
-        // Not found exactly and high + 1 == low => high < low
-        // BTW there may be gaps between tokens; if offset is in gap then position to higher token
-        if (high >= 0) { // could be -1
-            AbstractToken t = LexerUtilsConstants.token(tokenList, high);
-            prevTokenOffset = tokenList.tokenOffset(high);
-            // If gaps allowed check whether the token at "high" contains the offset
-            if (!tokenList.isContinuous() && offset > prevTokenOffset + t.length()) {
-                // Offset in the gap above the "high" token
-                high++;
-                prevTokenOffset += t.length();
-            }
-        } else { // at least one token exists => use token at index 0
-            high = 0;
-            prevTokenOffset = tokenList.tokenOffset(0); // result may differ from 0
-        }
-        resetTokenIndex(high);
-        tokenOffset = prevTokenOffset;
-        return offset - prevTokenOffset;
+        return offset - indexAndTokenOffset[1];
     }
     
     /**
@@ -663,7 +638,7 @@ public final class TokenSequence<T extends TokenId> {
      * @see #tokenCount()
      */
     public boolean isEmpty() {
-        return (tokenIndex == 0 && tokenList.tokenOrEmbeddingContainer(0) == null);
+        return (tokenIndex == 0 && tokenList.tokenOrEmbedding(0) == null);
     }
 
     /**
@@ -713,8 +688,9 @@ public final class TokenSequence<T extends TokenId> {
             tl = stl.delegate();
             startOffset = Math.max(startOffset, stl.limitStartOffset());
             endOffset = Math.min(endOffset, stl.limitEndOffset());
-        } else // Regular token list
+        } else {// Regular token list
             tl = tokenList;
+        }
         return new TokenSequence<T>(new SubSequenceTokenList<T>(tl, startOffset, endOffset));
     }
     
@@ -733,14 +709,14 @@ public final class TokenSequence<T extends TokenId> {
     @Override
     public String toString() {
         return LexerUtilsConstants.appendTokenList(null, tokenList,
-                tokenIndex, 0, Integer.MAX_VALUE, true, 0).toString();
+                tokenIndex, 0, Integer.MAX_VALUE, true, 0, true).toString();
     }
     
-    private void resetTokenIndex(int index) {
+    private void resetTokenIndex(int index, int offset) {
         // Position to the given index e.g. by move() and moveIndex()
         tokenIndex = index;
         token = null;
-        tokenOffset = -1;
+        tokenOffset = offset;
     }
 
     private void checkTokenNotNull() {

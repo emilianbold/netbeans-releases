@@ -516,21 +516,34 @@ public final class CharSequenceUtilities {
     /**
      * Ensure that the given start and end parameters are valid indices
      * of the given text.
-     * @throws IndexOutOfBoundsException if the start or end are not within bounds
-     *  of the given text.
+     * @param start must be &gt;=0 and &lt;=end.
+     * @param end must be &gt;=start and &lt;=textLength.
+     * @param length total length of a charsequence.
+     * @throws IndexOutOfBoundsException if the start or end are not within bounds.
      */
-    public static void checkIndexesValid(CharSequence text, int start, int end) {
+    public static void checkIndexesValid(int start, int end, int length) {
         if (start < 0) {
             throw new IndexOutOfBoundsException("start=" + start + " < 0"); // NOI18N
         }
         if (end < start) {
             throw new IndexOutOfBoundsException("end=" + end + " < start=" + start); // NOI18N
         }
-        if (end > text.length()) {
-            throw new IndexOutOfBoundsException("end=" + end // NOI18N
-            + " > text.length()=" + text.length()); // NOI18N
+        if (end > length) {
+            throw new IndexOutOfBoundsException("end=" + end + " > length()=" + length); // NOI18N
         }
     }
-    
+
+    /**
+     * Ensure that the given start and end parameters are valid indices
+     * of the given text.
+     * @param text non-null char sequence.
+     * @param start must be &gt;=0 and &lt;=end.
+     * @param end must be &gt;=start and &lt;=<code>text.length()</code>.
+     * @throws IndexOutOfBoundsException if the start or end are not within bounds
+     *  of the given text.
+     */
+    public static void checkIndexesValid(CharSequence text, int start, int end) {
+        checkIndexesValid(start, end, text.length());
+    }
 
 }

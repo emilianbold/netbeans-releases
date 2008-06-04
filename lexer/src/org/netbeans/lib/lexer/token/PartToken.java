@@ -39,40 +39,69 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.lib.lexer.batch;
+package org.netbeans.lib.lexer.token;
 
-import java.util.Set;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.lib.lexer.LexerInputOperation;
-import org.netbeans.lib.lexer.TextLexerInputOperation;
-import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.TokenHierarchyOperation;
-
+import org.netbeans.lib.lexer.TokenOrEmbedding;
+import org.netbeans.spi.lexer.TokenPropertyProvider;
 
 /**
- * Batch token list over text expressed as character sequence.
+ * Part of a {@link JoinToken}.
  *
  * @author Miloslav Metelka
  * @version 1.00
  */
 
-public final class TextTokenList<T extends TokenId> extends BatchTokenList<T> {
+public final class PartToken<T extends TokenId> extends PropertyToken<T> {
 
-    private CharSequence inputText;
+    private TokenOrEmbedding<T> joinTokenOrEmbedding; // 32 bytes (28-super + 4)
+    
+    private int partTokenIndex; // Index of this part inside 
+    
+    private int partTextOffset; // Offset of this part's text among all parts that comprise the complete token
 
-    public TextTokenList(TokenHierarchyOperation<?,T> tokenHierarchyOperation, CharSequence inputText,
-    Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
-        super(tokenHierarchyOperation, language, skipTokenIds, inputAttributes);
-        this.inputText = inputText;
+    public PartToken(T id, int length, TokenPropertyProvider<T> propertyProvider, PartType partType,
+            TokenOrEmbedding<T> joinToken, int partTokenIndex, int partTextOffset
+    ) {
+        super(id, length, propertyProvider, partType);
+        setJoinTokenOrEmbedding(joinToken);
+        this.partTokenIndex = partTokenIndex;
+        this.partTextOffset = partTextOffset;
+    }
+
+    @Override
+    public JoinToken<T> joinToken() {
+        return (JoinToken<T>)joinTokenOrEmbedding.token();
     }
     
-    public char childTokenCharAt(int rawOffset, int index) {
-        return inputText.charAt(rawOffset + index); // rawOffset is absolute
+    public boolean isLastPart() {
+        return (joinToken().lastPart() == this);
     }
     
-    protected LexerInputOperation<T> createLexerInputOperation() {
-        return new TextLexerInputOperation<T>(this, inputText);
+    public TokenOrEmbedding<T> joinTokenOrEmbedding() {
+        return joinTokenOrEmbedding;
+    }
+    
+    public void setJoinTokenOrEmbedding(TokenOrEmbedding<T> joinTokenOrEmbedding) {
+        this.joinTokenOrEmbedding = joinTokenOrEmbedding;
+    }
+
+    public int partTokenIndex() {
+        return partTokenIndex;
+    }
+
+    public int partTextOffset() {
+        return partTextOffset;
+    }
+
+    public int partTextEndOffset() {
+        return partTextOffset + length();
+    }
+
+    @Override
+    protected String dumpInfoTokenType() {
+        return "ParT[" + partTokenIndex + "]"; // NOI18N
     }
 
 }

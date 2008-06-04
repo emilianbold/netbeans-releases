@@ -41,14 +41,16 @@
 
 package org.netbeans.lib.lexer.test.simple;
 
+import java.io.PrintStream;
+import java.util.logging.Level;
 import org.netbeans.lib.lexer.lang.TestTokenId;
 import java.util.ConcurrentModificationException;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
-import junit.framework.TestCase;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
 
@@ -57,16 +59,30 @@ import org.netbeans.lib.lexer.test.ModificationTextDocument;
  *
  * @author mmetelka
  */
-public class SimpleLexerIncTest extends TestCase {
+public class SimpleLexerIncTest extends NbTestCase {
     
     public SimpleLexerIncTest(String testName) {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws java.lang.Exception {
     }
 
+    @Override
     protected void tearDown() throws java.lang.Exception {
+    }
+
+    @Override
+    public PrintStream getLog() {
+        return System.out;
+//        return super.getLog();
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.INFO;
+//        return super.logLevel();;
     }
 
     public void test() throws Exception {
@@ -75,11 +91,19 @@ public class SimpleLexerIncTest extends TestCase {
         doc.putProperty(Language.class,TestTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         assertNotNull("Null token hierarchy for document", hi);
+
+        // Check insertion of text that produces token with LA=0
+        doc.insertString(0, "+", null);
+        LexerTestUtilities.incCheck(doc, false);
+        doc.remove(0, doc.getLength());
+        LexerTestUtilities.incCheck(doc, false);
+        
         TokenSequence<?> ts = hi.tokenSequence();
         assertFalse(ts.moveNext());
         
         // Insert text into document
         String commentText = "/* test comment  */";
+        //             0123456789
         String text = "abc+uv-xy +-+" + commentText + "def";
         int commentTextStartOffset = 13;
         doc.insertString(0, text, null);
@@ -114,7 +138,6 @@ public class SimpleLexerIncTest extends TestCase {
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "def", offset);
         assertFalse(ts.moveNext());
-
         LexerTestUtilities.incCheck(doc, false);
         
         // Check TokenSequence.move()
@@ -133,7 +156,7 @@ public class SimpleLexerIncTest extends TestCase {
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
 
-        relOffset = ts.move(5); // to first token "abc"
+        relOffset = ts.move(5); // to "uv"
         assertEquals(relOffset, 1);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "uv", 4);
@@ -148,6 +171,8 @@ public class SimpleLexerIncTest extends TestCase {
         } catch (ConcurrentModificationException e) {
             // Expected exception
         }
+        LexerTestUtilities.incCheck(doc, false);
+        
         
         ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
@@ -156,6 +181,8 @@ public class SimpleLexerIncTest extends TestCase {
         
         // Remove added 'd' to become "abc" again
         doc.remove(2, 1); // should be "abc" again
+        LexerTestUtilities.incCheck(doc, false);
+        
 
         ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
@@ -165,22 +192,23 @@ public class SimpleLexerIncTest extends TestCase {
         
         // Now insert right at the end of first token - identifier with lookahead 1
         doc.insertString(3, "x", null); // should become "abcx"
+        LexerTestUtilities.incCheck(doc, false);
         
         ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abcx", 0);
-        LexerTestUtilities.incCheck(doc, false);
 
         doc.remove(3, 1); // return back to "abc"
+        LexerTestUtilities.incCheck(doc, false);
 
         ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
-        LexerTestUtilities.incCheck(doc, false);
 
         
         // Now insert right at the end of "+" token - operator with lookahead 1 (because of "+-+" operator)
         doc.insertString(4, "z", null); // should become "abc" "+" "zuv"
+        LexerTestUtilities.incCheck(doc, false);
         
         ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
@@ -191,14 +219,13 @@ public class SimpleLexerIncTest extends TestCase {
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "zuv", 4);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.MINUS, "-", 7);
-        LexerTestUtilities.incCheck(doc, false);
-
+        
         doc.remove(4, 1); // return back to "abc" "+" "uv"
-
         LexerTestUtilities.incCheck(doc, false);
 
         // Now insert right after "-" - operator with lookahead 0
         doc.insertString(7, "z", null);
+        LexerTestUtilities.incCheck(doc, false);
         
         ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
@@ -211,10 +238,8 @@ public class SimpleLexerIncTest extends TestCase {
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.MINUS, "-", 6);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "zxy", 7);
-        LexerTestUtilities.incCheck(doc, false);
 
         doc.remove(7, 1); // return back to "abc" "+" "uv"
-
         LexerTestUtilities.incCheck(doc, false);
 
         // Now insert between "+-" and "+" in "+-+" - operator with lookahead 0
@@ -227,7 +252,9 @@ public class SimpleLexerIncTest extends TestCase {
         doc.insertString(doc.getLength(), "-", null);
         LexerTestUtilities.incCheck(doc, false);
         // Insert again "-" at the end of the document (now lookahead of preceding is zero)
+//        Logger.getLogger(org.netbeans.lib.lexer.inc.TokenListUpdater.class.getName()).setLevel(Level.FINE); // Extra logging
         doc.insertString(doc.getLength(), "-", null);
+//        Logger.getLogger(org.netbeans.lib.lexer.inc.TokenListUpdater.class.getName()).setLevel(Level.WARNING); // End of extra logging
         LexerTestUtilities.incCheck(doc, false);
         // Insert again "+-+" at the end of the document (now lookahead of preceding is zero)
         doc.insertString(doc.getLength(), "+-+", null);

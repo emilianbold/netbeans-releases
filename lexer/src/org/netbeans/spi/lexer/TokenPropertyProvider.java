@@ -83,7 +83,7 @@ import org.netbeans.api.lexer.TokenId;
  *         this.value = value;
  *     }
  *
- *     public Object getValue(Token token, Object key) {
+ *     public Object getValue(Token&lt;T&gt; token, Object key) {
  *         if ("key".equals(key)) {
  *             return value;
  *         }
@@ -109,6 +109,6 @@ public interface TokenPropertyProvider<T extends TokenId> {
      * @param key non-null key for which the value should be retrieved.
      * @return value of the property or null if there is no value for the given key.
      */
-    Object getValue(Token token, Object key);
+    Object getValue(Token<T> token, Object key);
 
 }

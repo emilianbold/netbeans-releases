@@ -39,63 +39,55 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.lib.lexer.batch;
+package org.netbeans.lib.lexer.inc;
 
-import java.io.Reader;
-import java.util.Set;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.lib.lexer.LexerInputOperation;
-import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.TokenHierarchyOperation;
-
+import org.netbeans.lib.lexer.EmbeddedTokenList;
+import org.netbeans.lib.lexer.JoinLexerInputOperation;
+import org.netbeans.lib.lexer.JoinTokenList;
 
 /**
- * Token list for situation when the input text must be copied.
- * It works together with SkimTokenList instances that act
- * as a filter over this token list.
+ * Lexer input operation over multiple joined sections (embedded token lists).
+ * <br/>
+ * It produces regular tokens (to be added directly into ETL represented by
+ * {@link #activeTokenList()} and also special {@link #JoinToken} instances
+ * in case a token spans boundaries of multiple ETLs.
+ * <br/>
+ * It can either work over JoinTokenList directly or, during a modification,
+ * it simulates that certain token lists are already removed/added to underlying token list.
+ * <br/>
+ * 
+ * {@link #recognizedTokenLastInTokenList()} gives information whether the lastly
+ * produced token ends right at boundary of the activeTokenList.
  *
  * @author Miloslav Metelka
  * @version 1.00
  */
 
-public final class CopyTextTokenList<T extends TokenId> extends BatchTokenList<T> {
+class MutableJoinLexerInputOperation<T extends TokenId> extends JoinLexerInputOperation<T> {
     
-    /** Either reader or char sequence */
-    private final Object input;
-    
-    public CopyTextTokenList(TokenHierarchyOperation<?,T> tokenHierarchyOperation, Reader inputReader,
-    Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
-        super(tokenHierarchyOperation, language, skipTokenIds, inputAttributes);
-        this.input = inputReader;
-    }
-    
-    public CopyTextTokenList(TokenHierarchyOperation<?,T> tokenHierarchyOperation, CharSequence inputText,
-    Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
-        super(tokenHierarchyOperation, language, skipTokenIds, inputAttributes);
-        this.input = inputText;
-    }
-    
-    public int childTokenOffset(int rawOffset) {
-        // Cluster should be used so this method should never be called
-        throwShouldNeverBeCalled();
-        return 0; // never reached
+    private TokenListListUpdate<T> tokenListListUpdate;
+
+    MutableJoinLexerInputOperation(JoinTokenList<T> joinTokenList, int relexJoinIndex, Object lexerRestartState,
+            int activeTokenListIndex, int relexOffset, TokenListListUpdate<T> tokenListListUpdate
+    ) {
+        super(joinTokenList, relexJoinIndex, lexerRestartState, activeTokenListIndex, relexOffset);
+        this.tokenListListUpdate = tokenListListUpdate;
     }
 
-    public char childTokenCharAt(int rawOffset, int index) {
-        // Cluster should be used so this method should never be called
-        throwShouldNeverBeCalled();
-        return ' '; // never reached
-    }
-    
-    private void throwShouldNeverBeCalled() {
-        throw new IllegalStateException("Should never be called"); // NOI18N
+    @Override
+    public EmbeddedTokenList<T> tokenList(int tokenListIndex) {
+        return tokenListListUpdate.afterUpdateTokenList((JoinTokenList<T>) tokenList, tokenListIndex);
     }
 
-    protected LexerInputOperation<T> createLexerInputOperation() {
-        return (input instanceof Reader)
-            ? new SkimLexerInputOperation<T>(this, (Reader)input)
-            : new SkimLexerInputOperation<T>(this, (CharSequence)input);
+    @Override
+    protected int tokenListCount() {
+        return tokenListListUpdate.afterUpdateTokenListCount((JoinTokenList<T>) tokenList);
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + ", tokenListListUpdate: " + tokenListListUpdate; // NOI18N
     }
 
 }

@@ -41,21 +41,24 @@
 
 package org.netbeans.lib.lexer;
 
-import java.util.List;
 import java.util.Set;
-import org.netbeans.api.lexer.InputAttributes;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.editor.util.GapList;
-import org.netbeans.lib.lexer.token.ComplexToken;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.lib.lexer.token.AbstractToken;
-import org.netbeans.lib.lexer.token.ComplexToken;
+import org.netbeans.lib.lexer.token.CustomTextToken;
+import org.netbeans.lib.lexer.token.DefaultToken;
+import org.netbeans.lib.lexer.token.PropertyToken;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
+import org.netbeans.spi.lexer.TokenPropertyProvider;
 
 /**
  * Implementation of the functionality related to lexer input.
@@ -64,17 +67,25 @@ import org.netbeans.spi.lexer.TokenFactory;
  * @version 1.00
  */
 
-public abstract class LexerInputOperation<T extends TokenId> implements CharProvider {
+public abstract class LexerInputOperation<T extends TokenId> {
+
+    // -J-Dorg.netbeans.lib.lexer.LexerInputOperation.level=FINE
+    static final Logger LOG = Logger.getLogger(LexerInputOperation.class.getName());
     
-    /** Flag for additional correctness checks (may degrade performance). */
-    private static final boolean testing = Boolean.getBoolean("netbeans.debug.lexer.test");
+    protected final TokenList<T> tokenList;
     
     /**
-     * Current reading index in the operation.
-     * At all times it must be &gt;=0.
+     * Current reading index which usually corresponds to real offset.
+     * <br/>
+     * It should be set to its initial value in the constructor by descendants.
      */
-    private int readIndex;
+    protected int readOffset;
     
+    /**
+     * A value that designates a start of a token being currently recognized.
+     */
+    protected int tokenStartOffset;
+
     /**
      * Maximum index from which the char was fetched for current
      * (or previous) tokens recognition.
@@ -82,330 +93,300 @@ public abstract class LexerInputOperation<T extends TokenId> implements CharProv
      * The index is updated lazily - only when EOF is reached
      * and when backup() is called.
      */
-    private int lookaheadIndex;
+    private int lookaheadOffset;
     
     /**
-     * Active preprocessor or null if there is no preprocessor.
+     * Token length computed by assignTokenLength().
      */
-    private CharPreprocessorOperation preprocessorOperation;
+    protected int tokenLength;
     
-    /**
-     * Computed and cached token length.
-     */
-    private int tokenLength;
+    protected Lexer<T> lexer;
     
-    private final TokenList<T> tokenList;
-    
-    private final boolean mutableInput;
-    
-    private final Lexer<T> lexer;
-    
-    /**
-     * Start of the token being currently recognized.
-     */
-    private int tokenStartIndex;
+    protected final LanguageOperation<T> innerLanguageOperation;
 
-    private boolean lexerFinished;
     
     /**
      * How many flyweight tokens were created in a row.
      */
-    private int flySequenceLength;
+    private int flyTokenSequenceLength;
     
-    private List<CharPreprocessorError> preprocessErrorList;
-    
-    /**
-     * Total count of preprocessors used during lexing.
-     * It's used to determine whether extra preprocessed chars need to be used.
-     */
-    protected int preprocessingLevelCount;
-
-    private CharProvider.ExtraPreprocessedChars extraPreprocessedChars;
-    
-    private Language<T> language;
-
     public LexerInputOperation(TokenList<T> tokenList, int tokenIndex, Object lexerRestartState) {
         this.tokenList = tokenList;
-        this.mutableInput = (tokenList.modCount() != -1);
-        // Determine flySequenceLength setting
-        while (--tokenIndex >= 0 && LexerUtilsConstants.token(
-                tokenList, tokenIndex).isFlyweight()
-        ) {
-            flySequenceLength++;
-        }
-        
         LanguagePath languagePath = tokenList.languagePath();
-        language = LexerUtilsConstants.innerLanguage(languagePath);
-        LanguageHierarchy<T> languageHierarchy = LexerApiPackageAccessor.get().languageHierarchy(language);
+        this.innerLanguageOperation = LexerUtilsConstants.innerLanguageOperation(languagePath);
+        
+        // Determine flyTokenSequenceLength setting
+        while (--tokenIndex >= 0 && tokenList.tokenOrEmbedding(tokenIndex).token().isFlyweight()) {
+            flyTokenSequenceLength++;
+        }
+
+        LanguageHierarchy<T> languageHierarchy = LexerApiPackageAccessor.get().languageHierarchy(
+                LexerUtilsConstants.<T>innerLanguage(languagePath));
         TokenFactory<T> tokenFactory = LexerSpiPackageAccessor.get().createTokenFactory(this);
-        
-        // Check whether character preprocessing is necessary
-//        CharPreprocessor p = LexerSpiPackageAccessor.get().createCharPreprocessor(languageHierarchy);
-//        if (p != null) {
-//            preprocessingLevelCount++;
-//            preprocessorOperation = new CharPreprocessorOperation(
-//                    ((preprocessorOperation != null)
-//                        ? (CharProvider)preprocessorOperation
-//                        : this),
-//                    p,
-//                    this
-//            );
-//        }
-        
-        LexerInput lexerInput = LexerSpiPackageAccessor.get().createLexerInput(
-                (preprocessorOperation != null) ? preprocessorOperation : this);
+        LexerInput lexerInput = LexerSpiPackageAccessor.get().createLexerInput(this);
 
         LexerRestartInfo<T> info = LexerSpiPackageAccessor.get().createLexerRestartInfo(
                 lexerInput, tokenFactory, lexerRestartState,
-                tokenList.languagePath(), inputAttributes());
+                languagePath, tokenList.inputAttributes());
         lexer = LexerSpiPackageAccessor.get().createLexer(languageHierarchy, info);
     }
 
-    public abstract int read(int index);
-    
-    public abstract char readExisting(int index);
-    
-    public abstract void approveToken(AbstractToken<T> token);
-    
-    public Set<T> skipTokenIds() {
-        return tokenList.skipTokenIds();
-    }
+    public abstract int read(int offset);
+
+    public abstract char readExisting(int offset);
+
+    /**
+     * Fill appropriate data like token list and offset into a non-flyweight token.
+     * <br/>
+     * This method should also move over the token's characters by increasing
+     * starting offset of the token and possibly other related variables.
+     * 
+     * @param token non-null non-flyweight token.
+     */
+    protected abstract void fillTokenData(AbstractToken<T> token);
     
     public final int read() {
-        int c = read(readIndex++);
+        int c = read(readOffset++);
         if (c == LexerInput.EOF) {
-            lookaheadIndex = readIndex; // count EOF char into lookahead
-            readIndex--; // readIndex must not include EOF
+            lookaheadOffset = readOffset; // count EOF char into lookahead
+            readOffset--; // readIndex must not include EOF
         }
         return c;
     }
     
-    public int deepRawLength(int length) {
-        // No preprocessing by default
-        return length;
+    public final int readLength() {
+        return readOffset - tokenStartOffset;
     }
     
-    public int deepRawLengthShift(int index) {
-        // No preprocessing by default
-        return index;
-    }
-    
-    public final int readIndex() {
-        return readIndex;
+    public final char readExistingAtIndex(int index) {
+        return readExisting(tokenStartOffset + index);
     }
     
     public final void backup(int count) {
-        if (lookaheadIndex < readIndex) {
-            lookaheadIndex = readIndex;
+        if (lookaheadOffset < readOffset) {
+            lookaheadOffset = readOffset;
         }
-        readIndex -= count;
+        readOffset -= count;
     }
     
-    /**
-     * Get a distance between the index of the rightmost character already returned
-     * by previous {@link #read()} operations and the present read index.
-     * <br/>
-     * If there were no {@link #backup(int)} operation performed
-     * the lookahead will be zero except the case when EOF was already returned.
-     *
-     * @return &gt;=0 number of characters between the rightmost reading index reached
-     *   and the present read position.
-     *   <br/>
-     *   The EOF (when reached by reading) is treated as a single character
-     *   in lookahead.
-     *   <br/>
-     *   If there is an active character preprocessor the returned value
-     *   is a raw length of the lookahead.
-     */
     public final int lookahead() {
-        return (lookaheadIndex > readIndex)
-                ? ((preprocessorOperation != null)
-                        ? preprocessorOperation.deepRawLength(lookaheadIndex - readIndex)
-                        : (lookaheadIndex - readIndex))
-                : 0;
+        return (lookaheadOffset > readOffset) ? (lookaheadOffset - readOffset) : 0;
+    }
+
+    public AbstractToken<T> nextToken() {
+        while (true) {
+            AbstractToken<T> token = (AbstractToken<T>)lexer.nextToken();
+            if (token == null) {
+                checkLexerInputFinished();
+                return null;
+            }
+            // Check if token id of the new token belongs to the language
+            Language<T> language = innerLanguageOperation.language();
+            // Check that the id belongs to the language
+            if (!isSkipToken(token) && !language.tokenIds().contains(token.id())) {
+                String msgPrefix = "Invalid TokenId=" + token.id()
+                        + " returned from lexer="
+                        + lexer + " for language=" + language + ":\n";
+                if (token.id().ordinal() > language.maxOrdinal()) {
+                    throw new IllegalStateException(msgPrefix +
+                            "Language.maxOrdinal()=" + language.maxOrdinal() + " < " + token.id().ordinal());
+                } else { // Ordinal ok but different id with that ordinal contained in language
+                    throw new IllegalStateException(msgPrefix +
+                            "Language contains no or different tokenId with ordinal="
+                            + token.id().ordinal() + ": " + language.tokenId(token.id().ordinal()));
+                }
+            }
+            // Skip token's chars
+            tokenStartOffset += tokenLength;
+            if (!isSkipToken(token))
+                return token;
+        } // Continue to fetch non-skip token
+    }
+
+    /**
+     * Used by token list updater after nextToken() to determine start offset of a token 
+     * to be recognized next. Overriden for join token lists since join tokens
+     * may span multiple ETLs.
+     * 
+     * @return start offset of a next token that would be recognized.
+     */
+    public int lastTokenEndOffset() {
+        return tokenStartOffset;
+    }
+
+    public AbstractToken<T> getFlyweightToken(T id, String text) {
+        assert (text.length() <= readLength());
+        // Compare each recognized char with the corresponding char in text
+        if (LOG.isLoggable(Level.FINE)) {
+            for (int i = 0; i < text.length(); i++) {
+                if (text.charAt(i) != readExisting(i)) {
+                    throw new IllegalArgumentException("Flyweight text in " + // NOI18N
+                            "TokenFactory.getFlyweightToken(" + id + ", \"" + // NOI18N
+                            CharSequenceUtilities.debugText(text) + "\") " + // NOI18N
+                            "differs from recognized text: '" + // NOI18N
+                            CharSequenceUtilities.debugChar(readExisting(i)) +
+                            "' != '" + CharSequenceUtilities.debugChar(text.charAt(i)) + // NOI18N
+                            "' at index=" + i // NOI18N
+                    );
+                }
+            }
+        }
+
+        assignTokenLength(text.length());
+        AbstractToken<T> token;
+        if ((token = checkSkipToken(id)) == null) {
+            if (isFlyTokenAllowed()) {
+                token = innerLanguageOperation.getFlyweightToken(id, text);
+                flyTokenSequenceLength++;
+            } else { // Create regular token
+                token = createDefaultTokenInstance(id);
+                fillTokenData(token);
+                flyTokenSequenceLength = 0;
+            }
+        }
+        return token;
     }
     
-    public final int tokenLength() {
+    private AbstractToken<T> checkSkipToken(T id) {
+        if (isSkipTokenId(id)) {
+            // Prevent fly token occurrence after skip token to have a valid offset
+            flyTokenSequenceLength = LexerUtilsConstants.MAX_FLY_SEQUENCE_LENGTH;
+            return skipToken();
+        }
+        return null;
+    }
+    
+    public AbstractToken<T> createToken(T id, int length) {
+        assignTokenLength(length);
+        AbstractToken<T> token;
+        if ((token = checkSkipToken(id)) == null) {
+            token = createDefaultTokenInstance(id);
+            fillTokenData(token);
+            flyTokenSequenceLength = 0;
+        }
+        return token;
+    }
+
+    protected AbstractToken<T> createDefaultTokenInstance(T id) {
+        return new DefaultToken<T>(id, tokenLength);
+    }
+
+    public AbstractToken<T> createToken(T id, int length, PartType partType) {
+        if (partType == null)
+            throw new IllegalArgumentException("partType must be non-null");
+        if (partType == PartType.COMPLETE)
+            return createToken(id, length);
+
+        return createPropertyToken(id, length, null, partType);
+    }
+
+    public AbstractToken<T> createPropertyToken(T id, int length,
+    TokenPropertyProvider<T> propertyProvider, PartType partType) {
+        if (partType == null)
+            partType = PartType.COMPLETE;
+        
+        assignTokenLength(length);
+        AbstractToken<T> token;
+        if ((token = checkSkipToken(id)) == null) {
+            token = createPropertyTokenInstance(id, propertyProvider, partType);
+            fillTokenData(token);
+            flyTokenSequenceLength = 0;
+        }
+        return token;
+    }
+
+    protected AbstractToken<T> createPropertyTokenInstance(T id,
+    TokenPropertyProvider<T> propertyProvider, PartType partType) {
+        return new PropertyToken<T>(id, tokenLength, propertyProvider, partType);
+    }
+
+    public AbstractToken<T> createCustomTextToken(T id, int length, CharSequence customText) {
+        assignTokenLength(length);
+        AbstractToken<T> token;
+        if ((token = checkSkipToken(id)) == null) {
+            token = createCustomTextTokenInstance(id, customText);
+            fillTokenData(token);
+            flyTokenSequenceLength = 0;
+        }
+        return token;
+    }
+    
+    protected AbstractToken<T> createCustomTextTokenInstance(T id, CharSequence customText) {
+        return new CustomTextToken<T>(id, customText, tokenLength);
+    }
+
+    public boolean isSkipTokenId(T id) {
+        Set<T> skipTokenIds = tokenList.skipTokenIds();
+        return (skipTokenIds != null && skipTokenIds.contains(id));
+    }
+
+    protected final int tokenLength() {
         return tokenLength;
     }
-    
-    public void tokenRecognized(int tokenLength) {
-        if (tokenLength > readIndex()) {
+
+    public void assignTokenLength(int tokenLength) {
+        if (tokenLength > readLength()) {
             throw new IndexOutOfBoundsException("tokenLength=" + tokenLength // NOI18N
-                    + " >" + readIndex());
+                    + " >" + readLength());
         }
         this.tokenLength = tokenLength;
-    }
-    
-    public void tokenApproved() {
-        tokenStartIndex += tokenLength;
-        readIndex -= tokenLength;
-        lookaheadIndex -= tokenLength;
-    }
-    
-    protected final TokenList<T> tokenList() {
-        return tokenList;
-    }
-    
-    protected final int tokenStartIndex() {
-        return tokenStartIndex;
-    }
-
-    public final void setTokenStartIndex(int tokenStartIndex) {
-        this.tokenStartIndex = tokenStartIndex;
-    }
-
-    protected final CharPreprocessorOperation preprocessor() {
-        return preprocessorOperation;
-    }
-    
-    public final boolean isMutableInput() {
-        return mutableInput;
-    }
-    
-    public final boolean isStoreLookaheadAndState() {
-        return isMutableInput() || testing;
-    }
-    
-    public AbstractToken<T> nextToken() {
-        assert (!lexerFinished);
-        while (true) {
-            @SuppressWarnings("unchecked")
-            AbstractToken<T> token = (AbstractToken<T>)lexer().nextToken();
-            if (token == null) {
-                LexerUtilsConstants.checkLexerInputFinished(
-                        (preprocessorOperation != null) ? (CharProvider)preprocessorOperation : this, this);
-                lexerFinished = true;
-                return null;
-            } else {
-                // Check that the id belongs to the language
-                if (token != TokenFactory.SKIP_TOKEN && !language.tokenIds().contains(token.id())) {
-                    String msgPrefix = "Invalid TokenId=" + token.id()
-                            + " returned from lexer="
-                            + lexer() + " for language=" + language + ":\n";
-                    if (token.id().ordinal() > language.maxOrdinal()) {
-                        throw new IllegalStateException(msgPrefix +
-                                "Language.maxOrdinal()=" + language.maxOrdinal() + " < " + token.id().ordinal());
-                    } else { // Ordinal ok but different id with that ordinal contained in language
-                        throw new IllegalStateException(msgPrefix +
-                                "Language contains no or different tokenId with ordinal="
-                                + token.id().ordinal() + ": " + language.tokenId(token.id().ordinal()));
-                    }
-                }
-                approveToken(token);
-            }
-            if (token == TokenFactory.SKIP_TOKEN)
-                continue; // Fetch next token
-            return token;
-        }
-    }
-    
-    /**
-     * Notification that the token was recognized.
-     * @param tokenLength length of the recognized token.
-     * @param skip whether the token should be skipped
-     * @return true if the token holding preprocessed text should be created.
-     *  If skip is true then false is returned.
-     */
-    public final boolean tokenRecognized(int tokenLength, boolean skip) {
-        if (preprocessorOperation != null) {
-            preprocessorOperation.tokenRecognized(tokenLength);
-        } else { // no preprocessor
-            tokenRecognized(tokenLength);
-        }
-
-        // If the token is not skipped check whether preprocessed token
-        // should be created instead of the regular token.
-        if (!skip && tokenLength != this.tokenLength
-                || (preprocessErrorList != null 
-                    && preprocessErrorList.get(0).index() < this.tokenLength)
-        ) {
-            if (extraPreprocessedChars == null && preprocessingLevelCount > 1) {
-                // For more than one preprocessing level need to handle
-                // extra preprocessed chars before and after the main ones
-                // on the parent levels.
-                extraPreprocessedChars = new CharProvider.ExtraPreprocessedChars();
-            }
-            return true;
-        }
-        return false;
-    }
-    
-    public void notifyPreprocessorError(CharPreprocessorError error) {
-        if (preprocessErrorList == null) {
-            preprocessErrorList = new GapList<CharPreprocessorError>();
-        }
-        preprocessErrorList.add(error);
-    }
-
-//    public final void initPreprocessedToken(AbstractToken<T> token) {
-//        CharPreprocessorError error = null;
-//        if (preprocessErrorList != null && preprocessErrorList.size() > 0) {
-//            for (int i = preprocessErrorList.size() - 1; i >= 0; i--) {
-//                error = preprocessErrorList.get(i);
-//                if (error.index() < tokenLength) {
-//                    preprocessErrorList.remove(i);
-//                } else {// Above errors for this token
-//                    // Relocate - subtract token length
-//                    error.updateIndex(-tokenLength);
-//                    error = null;
-//                }
-//            }
-//        }
-//        
-//        PreprocessedTextStorage storage = preprocessorOperation.createPreprocessedTextStorage(
-//                token.text(), extraPreprocessedChars);
-//        
-//        if (token.getClass() == ComplexToken.class) {
-//            ((ComplexToken)token).initPrep(storage, error);
-//        } else {
-//            ((PreprocessedTextToken)token).initPrep(storage, error);
-//        }
-//    }
-    
-    public void collectExtraPreprocessedChars(CharProvider.ExtraPreprocessedChars epc,
-    int prepStartIndex, int prepEndIndex, int topPrepEndIndex) {
-        // No extra preprocessed characters
-    }
-    
-    public final LanguageOperation<T> languageOperation() {
-        return LexerUtilsConstants.innerLanguageOperation(tokenList.languagePath());
     }
     
     public final Object lexerState() {
         return lexer.state();
     }
 
-    public final boolean isFlyTokenAllowed() {
-        return (flySequenceLength < LexerUtilsConstants.MAX_FLY_SEQUENCE_LENGTH);
+    protected boolean isFlyTokenAllowed() {
+        return (flyTokenSequenceLength < LexerUtilsConstants.MAX_FLY_SEQUENCE_LENGTH);
     }
     
-    protected final void flyTokenAdded() {
-        flySequenceLength++;
+    public final boolean isSkipToken(AbstractToken<T> token) {
+        return (token == LexerUtilsConstants.SKIP_TOKEN);
     }
     
-    protected final void preventFlyToken() {
-        flySequenceLength = LexerUtilsConstants.MAX_FLY_SEQUENCE_LENGTH;
+    @SuppressWarnings("unchecked")
+    public final AbstractToken<T> skipToken() {
+        return (AbstractToken<T>)LexerUtilsConstants.SKIP_TOKEN;
     }
-    
-    protected final void clearFlySequence() {
-        flySequenceLength = 0;
-    }
-    
-    protected final boolean isSkipToken(AbstractToken<T> token) {
-        return (token == TokenFactory.SKIP_TOKEN);
-    }
-    
-    public final Lexer lexer() {
-        return lexer;
-    }
-    
-    public final InputAttributes inputAttributes() {
-        return tokenList.inputAttributes();
-    }
-    
+
+    /**
+     * Release the underlying lexer. This method can be called multiple times.
+     */
     public final void release() {
-        lexer.release();
+        if (lexer != null) {
+            lexer.release();
+            lexer = null;
+        }
     }
     
+    /**
+     * Check that there are no more characters to be read from the given
+     * lexer input operation.
+     */
+    private void checkLexerInputFinished() {
+        if (read() != LexerInput.EOF) {
+            throw new IllegalStateException(
+                "Lexer " + lexer + // NOI18N
+                " returned null token" + // NOI18N
+                " but EOF was not read from lexer input yet." + // NOI18N
+                " Fix the lexer."// NOI18N
+            );
+        }
+        if (readLength() > 0) {
+            throw new IllegalStateException(
+                "Lexer " + lexer + // NOI18N
+                " returned null token but lexerInput.readLength()=" + // NOI18N
+                readLength() +
+                " - these characters need to be tokenized." + // NOI18N
+                " Fix the lexer." // NOI18N
+            );
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "tokenStartOffset=" + tokenStartOffset + ", readOffset=" + readOffset + // NOI18N
+                ", lookaheadOffset=" + lookaheadOffset;
+    }
+
 }

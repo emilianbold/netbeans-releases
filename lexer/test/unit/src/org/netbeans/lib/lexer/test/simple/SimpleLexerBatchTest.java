@@ -174,7 +174,7 @@ public class SimpleLexerBatchTest extends TestCase {
         }
         tm = System.currentTimeMillis() - tm;
         assertTrue("Timeout tm = " + tm + "msec", tm < 1000); // Should be fast
-        System.out.println("Lexed input " + text.length()
+        System.out.println("SimpleLexerBatchTest.testPerf(): Lexed input " + text.length()
                 + " chars long and created " + cntr + " tokens in " + tm + " ms.");
     }
     

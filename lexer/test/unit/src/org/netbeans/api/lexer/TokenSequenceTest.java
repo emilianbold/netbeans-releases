@@ -53,9 +53,9 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.TokenList;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
-import org.netbeans.lib.lexer.test.simple.*;
 import org.netbeans.lib.lexer.token.DefaultToken;
 import org.netbeans.lib.lexer.token.TextToken;
+import org.netbeans.lib.lexer.token.TokenLength;
 
 /**
  * Test methods of token sequence.
@@ -403,7 +403,7 @@ public class TokenSequenceTest extends NbTestCase {
     }
     
     public void testTokenSize() {
-        String text = "abc+";
+        String text = "abc+def";
         TokenHierarchy<?> hi = TokenHierarchy.create(text,TestTokenId.language());
         TokenSequence<?> ts = hi.tokenSequence();
         
@@ -411,18 +411,39 @@ public class TokenSequenceTest extends NbTestCase {
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 3);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "def", 4);
         assertFalse(ts.moveNext());
         
         TokenList tokenList = LexerTestUtilities.tokenList(ts);
         ts.moveIndex(0); // move before "abc"
         assertTrue(ts.moveNext());
         // Test DefaultToken size
-        assertSame(DefaultToken.class, ts.token().getClass());
-        assertSize("Token instance too big", Collections.singletonList(ts.token()), 24,new Object[] {  tokenList,TestTokenId.IDENTIFIER});
+        Token<?> token = ts.token();
+        // Exclude TokenLength since it should be cached - verify later
+        TokenLength cachedTokenLength = TokenLength.get(token.length());
+        assertSame(DefaultToken.class, token.getClass());
+        assertSize("Token instance too big", Collections.singletonList(token), 24,
+                new Object[] { tokenList, TestTokenId.IDENTIFIER, cachedTokenLength });
+
+        // Check that TokenLength is cached for small tokens
+        assertSame("TokenLength instances not cached for small tokens",
+                cachedTokenLength, TokenLength.get(token.length()));
+        
         // Test TextToken size
         assertTrue(ts.moveNext());
-        assertSame(TextToken.class, ts.token().getClass());
-        assertSize("Token instance too big", Collections.singletonList(ts.token()), 24,new Object[] {  tokenList,TestTokenId.PLUS, "+"});
+        token = ts.token();
+        assertSame(TextToken.class, token.getClass());
+        assertSize("Token instance too big", Collections.singletonList(token), 24,
+                new Object[] { tokenList, TestTokenId.PLUS, "+" });
+
+        // Test DefaultToken size
+        assertTrue(ts.moveNext());
+        token = ts.token();
+        assertSame(DefaultToken.class, token.getClass());
+        // Verify that the TokenLength is cached for small tokens - use tokenLength3 directly
+        assertSize("Token instance too big", Collections.singletonList(token), 24,
+                new Object[] { tokenList, TestTokenId.IDENTIFIER, cachedTokenLength });
     }
 
     public void testSubSequenceInUnfinishedTH() throws Exception {

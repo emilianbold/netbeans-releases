@@ -113,6 +113,25 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="Joined-sections-Lexing">
+      <api name="api"/>
+      <summary>Joined Sections Lexing</summary>
+      <version major="1" minor="28"/>
+      <date day="28" month="5" year="2008"/>
+      <author login="mmetelka"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+        <p>
+            Embeddings that request input sections to be joined before lexing
+            are now lexed as a single section.
+            <br/>
+            <code>Token.isRemoved()</code> was added to check whether a particular token
+            is still present in token hierarchy or whether it was removed as part of a modification.
+        </p>
+      </description>
+      <issue number="117450"/>
+  </change>
+
   <change id="Lexer-API-Cleanup">
       <api name="api"/>
       <summary>Lexer API Cleanup</summary>

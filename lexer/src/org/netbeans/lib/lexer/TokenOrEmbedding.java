@@ -39,48 +39,32 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.lib.lexer.inc;
+package org.netbeans.lib.lexer;
 
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.LexerInputOperation;
-import org.netbeans.lib.lexer.TokenList;
-import org.netbeans.lib.lexer.TokenOrEmbedding;
+import org.netbeans.lib.lexer.token.AbstractToken;
 
 /**
- * Token list that allows mutating by token list mutator.
+ * Type for having either token or embedding.
  *
  * @author Miloslav Metelka
- * @version 1.00
  */
 
-public interface MutableTokenList<T extends TokenId> extends TokenList<T> {
+public interface TokenOrEmbedding<T extends TokenId> {
 
     /**
-     * Return token or branch token list at the requested index
-     * but do not synchronize the access - there should only be one thread
-     * accessing the token list at this time.
-     * Also do not perform any checks regarding index validity
-     * - only items below {@link #tokenCountCurrent()} will be requested.
+     * Get token reference 
+     * 
+     * @return <code>this</code> if this is a token instance or
+     *  a wrapped token if this is an embedding container.
      */
-    TokenOrEmbedding<T> tokenOrEmbeddingUnsync(int index);
-
-    /**
-     * Create lexer input operation used for relexing of the input.
-     */
-    LexerInputOperation<T> createLexerInputOperation(
-    int tokenIndex, int relexOffset, Object relexState);
+    AbstractToken<T> token();
     
     /**
-     * Check whether the whole input was tokenized or not.
-     * <br/>
-     * Incremental algorithm uses this information to determine
-     * whether it should relex the input till the end or not.
+     * Get non-null embedding container if this is embedding.
+     * 
+     * @return non-null embedding or null if this is token.
      */
-    boolean isFullyLexed();
-    
-    /**
-     * Update the token list by replacing tokens according to the given change.
-     */
-    void replaceTokens(TokenListChange<T> change, int diffLength);
+    EmbeddingContainer<T> embedding();
 
 }

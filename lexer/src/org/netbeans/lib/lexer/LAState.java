@@ -52,19 +52,10 @@ public abstract class LAState {
 
     private static final LAState EMPTY = new NoState(0);
     
-    private static final LAState INIT_STATE = new NoState(0);
-
     public static LAState empty() {
         return EMPTY;
     }
     
-    /**
-     * Special state for marking that an embedded token list was not inited yet.
-     */
-    public static LAState initState() {
-        return INIT_STATE;
-    }
-
     static int withExtraCapacity(int capacity) {
         return capacity * 3 / 2 + 4;
     }
@@ -105,6 +96,13 @@ public abstract class LAState {
         return capacity() - gapLength;
     }
 
+    /**
+     * Add a particular lookahead and state.
+     *
+     * @param lookahead
+     * @param state
+     * @return either same or a new LAState containing the given lookahead and state.
+     */
     public final LAState add(int lookahead, Object state) {
         LAState ret;
         if (gapLength > 0) { // enough space
@@ -154,6 +152,12 @@ public abstract class LAState {
 
     protected abstract LAState upgrade(int capacity, Class laStateClass);
 
+    /**
+     * Whether an upgrade is necessary when the given laStateClass needs to be used.
+     *
+     * @param laStateClass non-null requested laStateClass
+     * @return true if upgrade is necessary.
+     */
     protected abstract boolean isUpgrade(Class laStateClass);
 
     protected abstract Class addToGapStart(int lookahead, Object state);

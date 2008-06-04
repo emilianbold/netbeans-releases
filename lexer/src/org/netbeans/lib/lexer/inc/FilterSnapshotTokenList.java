@@ -46,8 +46,10 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.EmbeddingContainer;
+import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.TokenList;
+import org.netbeans.lib.lexer.TokenOrEmbedding;
 import org.netbeans.lib.lexer.token.AbstractToken;
 
 /**
@@ -99,20 +101,20 @@ public final class FilterSnapshotTokenList<T extends TokenId> implements TokenLi
         return tokenOffsetDiff;
     }
     
-    public Object tokenOrEmbeddingContainer(int index) {
-        return tokenList.tokenOrEmbeddingContainer(index);
+    public TokenOrEmbedding<T> tokenOrEmbedding(int index) {
+        return tokenList.tokenOrEmbedding(index);
     }
 
     public AbstractToken<T> replaceFlyToken(int index, AbstractToken<T> flyToken, int offset) {
         return tokenList.replaceFlyToken(index, flyToken, offset);
     }
 
-    public int tokenOffset(int index) {
-        return tokenOffsetDiff + tokenList.tokenOffset(index);
+    public int tokenOffsetByIndex(int index) {
+        return tokenOffsetDiff + tokenList.tokenOffsetByIndex(index);
     }
 
     public int modCount() {
-        return -1;
+        return LexerUtilsConstants.MOD_COUNT_IMMUTABLE_INPUT;
     }
 
     public int tokenCount() {
@@ -127,11 +129,15 @@ public final class FilterSnapshotTokenList<T extends TokenId> implements TokenLi
         return tokenList.languagePath();
     }
 
-    public int childTokenOffset(int rawOffset) {
-        throw new IllegalStateException("Unexpected call.");
+    public int tokenOffset(AbstractToken<T> token) {
+        return tokenList.tokenOffset(token);
     }
 
-    public char childTokenCharAt(int rawOffset, int index) {
+    public int[] tokenIndex(int offset) {
+        return LexerUtilsConstants.tokenIndexBinSearch(this, offset, tokenCount());
+    }
+
+    public char charAt(int offset) {
         throw new IllegalStateException("Unexpected call.");
     }
 
@@ -139,10 +145,14 @@ public final class FilterSnapshotTokenList<T extends TokenId> implements TokenLi
         tokenList.wrapToken(index, embeddingContainer);
     }
 
-    public TokenList<?> root() {
-        return tokenList.root();
+    public TokenList<?> rootTokenList() {
+        return tokenList.rootTokenList();
     }
-    
+
+    public CharSequence inputSourceText() {
+        return rootTokenList().inputSourceText();
+    }
+
     public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
         return tokenList.tokenHierarchyOperation();
     }

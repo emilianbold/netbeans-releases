@@ -39,42 +39,84 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.lib.lexer.token;
-
-import org.netbeans.api.lexer.PartType;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.spi.lexer.TokenPropertyProvider;
+package org.netbeans.lib.lexer;
 
 /**
- * Token that may hold custom text and also additional properties.
- *
+ * Class that wraps a each embedded token list contained in join token list.
+ * 
  * @author Miloslav Metelka
- * @version 1.00
  */
 
-public final class ComplexToken<T extends TokenId> extends CustomTextToken<T> {
-
-    private final TokenPropertyProvider propertyProvider; // 36 bytes
+public final class EmbeddedJoinInfo {
     
-    public ComplexToken(T id, int length, CharSequence customText, PartType partType,
-    TokenPropertyProvider propertyProvider) {
-        super(id, length, customText, partType);
-        this.propertyProvider = propertyProvider;
+    public EmbeddedJoinInfo(JoinTokenListBase base, int rawJoinTokenIndex, int rawTokenListIndex) {
+        assert (base != null);
+        this.base = base;
+        this.rawJoinTokenIndex = rawJoinTokenIndex;
+        this.rawTokenListIndex = rawTokenListIndex;
+    }
+    
+    /**
+     * Reference to join token list base as a join-related extension
+     * of this ETL.
+     * In fact this is the only field through which the join token list base instance
+     * is referenced.
+     */
+    public final JoinTokenListBase base; // 12 bytes (8-super + 4)
+
+    /**
+     * Index in terms of join token list
+     * that corresponds to first token of wrapped ETL.
+     * <br/>
+     * The index must be gap-preprocessed.
+     */
+    int rawJoinTokenIndex; // 16 bytes
+
+    /**
+     * Index of related ETL in a join token list (base).
+     * <br/>
+     * The index must be gap-preprocessed.
+     */
+    int rawTokenListIndex; // 20 bytes
+
+    /**
+     * Number of items to go forward to reach last part of a join token.
+     * Zero otherwise.
+     */
+    private int joinTokenLastPartShift; // 24 bytes
+
+    public int joinTokenIndex() {
+        return base.joinTokenIndex(rawJoinTokenIndex);
+    }
+
+    public void setRawJoinTokenIndex(int rawJoinTokenIndex) {
+        this.rawJoinTokenIndex = rawJoinTokenIndex;
+    }
+
+    public int tokenListIndex() {
+        return base.tokenListIndex(rawTokenListIndex);
+    }
+
+    public int joinTokenLastPartShift() {
+        return joinTokenLastPartShift;
+    }
+    
+    public void setJoinTokenLastPartShift(int joinTokenLastPartShift) {
+        this.joinTokenLastPartShift = joinTokenLastPartShift;
+    }
+
+    public StringBuilder dumpInfo(StringBuilder sb) {
+        if (sb == null)
+            sb = new StringBuilder(70);
+        sb.append("jti=").append(joinTokenIndex());
+        sb.append(", tli=").append(tokenListIndex());
+        sb.append(", lps=").append(joinTokenLastPartShift());
+        return sb;
     }
 
     @Override
-    public boolean hasProperties() {
-        return (propertyProvider != null);
+    public String toString() {
+        return dumpInfo(null).toString();
     }
 
-    @Override
-    public Object getProperty(Object key) {
-        return (propertyProvider != null) ? propertyProvider.getValue(this, key) : null;
-    }
-    
-    @Override
-    protected String dumpInfoTokenType() {
-        return "ComT"; // NOI18N "ComplexToken"
-    }
-    
 }

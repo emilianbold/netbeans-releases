@@ -41,7 +41,6 @@
 
 package org.netbeans.lib.lexer.lang;
 
-import org.netbeans.lib.lexer.lang.TestJavadocTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
