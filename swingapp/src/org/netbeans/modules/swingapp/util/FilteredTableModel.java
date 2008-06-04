@@ -42,6 +42,7 @@
 package org.netbeans.modules.swingapp.util;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -57,6 +58,7 @@ public class FilteredTableModel extends AbstractTableModel {
     private TableModel model;
     private String filterString;
     List<List<Object>> rows;
+    private Integer[] modelIndex;
     
     public FilteredTableModel(TableModel model) {
         this.rows = new ArrayList<List<Object>>();
@@ -113,6 +115,7 @@ public class FilteredTableModel extends AbstractTableModel {
     
     private void rebuildRows() {
         rows = new ArrayList<List<Object>>();
+        List<Integer> modelIndexes = new LinkedList<Integer>();
         for(int r=0; r<model.getRowCount(); r++) {
             List<Object> row = new ArrayList<Object>();
             boolean passesFilter = false;
@@ -127,10 +130,16 @@ public class FilteredTableModel extends AbstractTableModel {
             }
             if(passesFilter) {
                 rows.add(row);
+                modelIndexes.add(r);
             }
         }
+        modelIndex = modelIndexes.toArray(new Integer[modelIndexes.size()]);
         TableModelEvent evt = new TableModelEvent(this);
         fireTableChanged(evt);
+    }
+
+    public int modelIndex(int viewIndex) {
+        return modelIndex[viewIndex];
     }
     
     private boolean filter(String string) {

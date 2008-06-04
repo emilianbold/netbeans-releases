@@ -240,7 +240,7 @@ public class PropertySheet extends JPanel {
 
     // delayed setting nodes (partly impl issue 27781)
     //package private for unit testing
-    transient WeakReference<Node[]> helperNodes;
+    transient Node[] helperNodes;
     private transient RequestProcessor.Task scheduleTask;
     private transient RequestProcessor.Task initTask;
     SheetPCListener pclistener = new SheetPCListener();
@@ -544,7 +544,7 @@ public class PropertySheet extends JPanel {
         }
 
         RequestProcessor.Task task = getScheduleTask();
-        helperNodes = new WeakReference<Node[]>( nodes );
+        helperNodes = nodes;
 
         //Clear any saved node if setNodes is called while we're offscreen
         storedNode = null;
@@ -582,7 +582,7 @@ public class PropertySheet extends JPanel {
                                 new Runnable() {
                                     public void run() {
                                         final boolean loggable = PropUtils.isLoggable(PropertySheet.class);
-                                        Node[] nodesToSet = (null == helperNodes ? null : helperNodes.get());
+                                        Node[] nodesToSet = helperNodes;
                                         if (loggable) {
                                             PropUtils.log(
                                                 PropertySheet.class,
