@@ -836,7 +836,7 @@ public abstract class UMLNodeWidget extends Widget
      */
     public Dimension getResizingMinimumSize()
     {
-        return new Dimension(1,1);
+        return new Dimension(10,10);
     }
     /**
      * instead of Widget::getMinimumSize this is dinamic value used in resize to content action and most im[portant
