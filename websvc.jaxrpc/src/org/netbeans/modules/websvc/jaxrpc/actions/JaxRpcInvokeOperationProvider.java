@@ -74,7 +74,7 @@ public class JaxRpcInvokeOperationProvider implements InvokeOperationActionProvi
         int projectType = projectInfo.getProjectType();
         if(projectType == ProjectInfo.JSE_PROJECT_TYPE && !isJAXWSProject(project) && !isJAXRPCProject(project)) return true;
         if(projectType == ProjectInfo.JSE_PROJECT_TYPE && isJaxWsLibraryOnClasspath(targetSource) && !isJAXRPCProject(project)) return false;
-        if(projectInfo.isJwsdpSupported())return false;
+//        if(projectInfo.isJwsdpSupported())return false;
         if(Util.isJavaEE5orHigher(project)) return false;
         if (JaxWsUtils.isEjbJavaEE5orHigher(projectInfo)) return false;
         if (projectType == ProjectInfo.WEB_PROJECT_TYPE && !Util.isJavaEE5orHigher(project) && isJaxWsLibraryOnRuntimeClasspath(targetSource))return false;

@@ -221,7 +221,7 @@ public class BalloonManager {
 
     private static class Balloon extends JPanel {
 
-        private static final int Y_OFFSET = 16;
+        private static final int Y_OFFSET = 8;
         private static final int ARC = 15;
         private static final int SHADOW_SIZE = 3;
 
@@ -249,8 +249,8 @@ public class BalloonManager {
                 }
             });
 
-            add( content, new GridBagConstraints(0,0,1,1,1.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.BOTH,new Insets(4,4,4,4),0,0)); 
-            add( btnDismiss, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.NORTHEAST,GridBagConstraints.NONE,new Insets(10,0,4,10),0,0)); 
+            add( content, new GridBagConstraints(0,0,1,1,1.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0)); 
+            add( btnDismiss, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.NORTHEAST,GridBagConstraints.NONE,new Insets(7,0,0,7),0,0)); 
 
             setOpaque( false );
 
@@ -294,6 +294,7 @@ public class BalloonManager {
                 @Override
                 public void mouseEntered(MouseEvent e) {
                     isMouseOverEffect = true;
+                    stopDismissTimer();
                     repaint();
                 }
 
@@ -355,26 +356,26 @@ public class BalloonManager {
             case GridBagConstraints.SOUTHEAST: 
                 area = new Area(new RoundRectangle2D.Float(0, Y_OFFSET, w, h-Y_OFFSET-SHADOW_SIZE, ARC, ARC));
                 path.moveTo(ARC/2, 0);
-                path.lineTo(ARC/2+Y_OFFSET/2, Y_OFFSET);
-                path.lineTo(ARC/2+Y_OFFSET/2+Y_OFFSET, Y_OFFSET);
+                path.lineTo(ARC/2, Y_OFFSET);
+                path.lineTo(ARC/2+Y_OFFSET, Y_OFFSET);
                 break;
             case GridBagConstraints.NORTHEAST: 
                 area = new Area(new RoundRectangle2D.Float(0, SHADOW_SIZE, w, h-Y_OFFSET-SHADOW_SIZE, ARC, ARC));
                 path.moveTo(ARC/2, h-1);
-                path.lineTo(ARC/2+Y_OFFSET/2, h-1-Y_OFFSET);
-                path.lineTo(ARC/2+Y_OFFSET/2+Y_OFFSET, h-1-Y_OFFSET);
+                path.lineTo(ARC/2, h-1-Y_OFFSET);
+                path.lineTo(ARC/2+Y_OFFSET, h-1-Y_OFFSET);
                 break;
             case GridBagConstraints.SOUTHWEST: 
                 area = new Area(new RoundRectangle2D.Float(0, Y_OFFSET, w, h-Y_OFFSET-SHADOW_SIZE, ARC, ARC));
                 path.moveTo(w-ARC/2, 0);
-                path.lineTo(w-ARC/2-Y_OFFSET/2, Y_OFFSET);
-                path.lineTo(w-ARC/2-Y_OFFSET/2-Y_OFFSET, Y_OFFSET);
+                path.lineTo(w-ARC/2, Y_OFFSET);
+                path.lineTo(w-ARC/2-Y_OFFSET, Y_OFFSET);
                 break;
             case GridBagConstraints.NORTHWEST: 
                 area = new Area(new RoundRectangle2D.Float(0, SHADOW_SIZE, w, h-Y_OFFSET-SHADOW_SIZE, ARC, ARC));
                 path.moveTo(w-ARC/2, h-1);
-                path.lineTo(w-ARC/2-Y_OFFSET/2, h-1-Y_OFFSET);
-                path.lineTo(w-ARC/2-Y_OFFSET/2-Y_OFFSET, h-1-Y_OFFSET);
+                path.lineTo(w-ARC/2-Y_OFFSET, h-1-Y_OFFSET);
+                path.lineTo(w-ARC/2, h-1-Y_OFFSET);
                 break;
             }
                 

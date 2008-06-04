@@ -62,7 +62,8 @@ class Commandline {
     private BufferedReader    ctOutput;
     private BufferedReader    ctError;
 
-    private String executable; 
+    private String executable;
+    private boolean canceled = false;
     
     /**
      * Creates a new cleartool shell process.
@@ -89,20 +90,18 @@ class Commandline {
     }
    
     private void destroy() throws IOException {
+        canceled = true;
         if(cli != null) {
             try { cli.getErrorStream().close(); } catch (IOException iOException) { }
             try { cli.getInputStream().close(); } catch (IOException iOException) { }
             try { cli.getOutputStream().close(); } catch (IOException iOException) { }            
             cli.destroy();             
-        }
-        ctOutput = null;
-        ctError = null;
-        cli = null;
+        }        
         Subversion.LOG.fine("cli: Process destroyed");
     }
     
     void exec(SvnCommand command) throws IOException {        
-
+        canceled = false;
         command.prepareCommand();        
         
         String cmd = executable + " " + command.getStringCommand();
@@ -112,7 +111,7 @@ class Commandline {
         command.commandStarted();
         try {        
             cli = Runtime.getRuntime().exec(command.getCliArguments(executable), getEnvVar());
-          
+            if(canceled) return;
             ctError = new BufferedReader(new InputStreamReader(cli.getErrorStream()));
 
             Subversion.LOG.fine("cli: process created");
@@ -121,28 +120,39 @@ class Commandline {
             if(command.hasBinaryOutput()) {
                 ByteArrayOutputStream b = new ByteArrayOutputStream();
                 int i = -1;
-                while((i = cli.getInputStream().read()) != -1) {
+                if(canceled) return;
+                Subversion.LOG.fine("cli: ready for binary OUTPUT \"");                
+                while(!canceled && (i = cli.getInputStream().read()) != -1) {
                     b.write(i);
                 }
-                if(Subversion.LOG.isLoggable(Level.FINER)) Subversion.LOG.finer("cli: OUTPUT \"" + (new String(b.toByteArray())) + "\"");
+                if(Subversion.LOG.isLoggable(Level.FINER)) Subversion.LOG.finer("cli: BIN OUTPUT \"" + (new String(b.toByteArray())) + "\"");
                 command.output(b.toByteArray());
-            } else {                    
+            } else {             
+                if(canceled) return;
+                Subversion.LOG.fine("cli: ready for OUTPUT \"");                     
                 ctOutput = new BufferedReader(new InputStreamReader(cli.getInputStream()));
-                while ((line = ctOutput.readLine()) != null) {                                        
+                while (!canceled && (line = ctOutput.readLine()) != null) {                                        
                     Subversion.LOG.fine("cli: OUTPUT \"" + line + "\"");
                     command.outputText(line);
                 }    
             }
             
-            while ((line = ctError.readLine()) != null) {                                    
+            while (!canceled && (line = ctError.readLine()) != null) {                                    
                 Subversion.LOG.info("cli: ERROR \"" + line + "\"");
                 command.errorText(line);
-            }                                     
+            }     
+            if(canceled) return;
             cli.waitFor();
-        } catch (InterruptedException ex) {
-            // ignore         
-        } catch (InterruptedIOException ex) {
-            // ignore         
+        } catch (Throwable t) {
+            if(canceled) {
+                Subversion.LOG.fine(t.getMessage());
+            } else {
+                if(t instanceof IOException) {
+                    throw (IOException) t;
+                } else {
+                    throw new IOException(t.getMessage());
+                }
+            }
         } finally {
             if(cli != null) {
                 try { cli.getErrorStream().close(); } catch (IOException iOException) { }

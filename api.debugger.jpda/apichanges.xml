@@ -641,6 +641,54 @@ These are mainly class and thread filters and hit counts.
         <issue number="103936"/>
     </change>
 
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>Enhance JPDA API with better thread control.</summary>
+        <version major="2" minor="16"/>
+        <date day="2" month="6" year="2008"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            This API change is necessary for the redesign of the debugger UI and
+            it's behavior with respect to threads.
+            <p>
+                Added classes:<br/>
+                <code>org.netbeans.api.debugger.jpda.DeadlockDetector</code>,
+                <code>org.netbeans.api.debugger.jpda.MonitorInfo</code>,
+                <code>org.netbeans.api.debugger.jpda.ThreadsCollector</code>
+            </p>
+            <p>
+                Added methods:<br/>
+                <code>CallStackFrame.getFrameDepth()</code>,
+                <code>CallStackFrame.getOwnedMonitors()</code>,
+                <code>JPDADebugger.getThreadsCollector()</code>,
+                <code>JPDADebugger.getDeadlockDetector()</code>,
+                <code>JPDAThread.getCurrentBreakpoint()</code>,
+                <code>JPDAThread.getContendedMonitorAndOwner()</code>,
+                <code>JPDAThread.getOwnedMonitorsAndFrames()</code>,
+                <code>EditorContext.annotate()</code> with thread argument,
+                <code>AttachingDICookie.getProcessID()</code>
+            </p>
+            <p>
+                Added fields:<br/>
+                <code>JPDADebugger.PROP_THREAD_STARTED</code>,
+                <code>JPDADebugger.PROP_THREAD_DIED</code>,
+                <code>JPDADebugger.PROP_THREAD_GROUP_ADDED</code>,
+                <code>JPDAThread.PROP_SUSPENDED</code>,
+                <code>JPDAThread.PROP_BREAKPOINT</code>,
+                <code>EditorContext.OTHER_THREAD_ANNOTATION_TYPE</code>
+            </p>
+        </description>
+        <class package="org.netbeans.api.debugger.jpda" name="CallStackFrame" />
+        <class package="org.netbeans.api.debugger.jpda" name="DeadlockDetector" />
+        <class package="org.netbeans.api.debugger.jpda" name="JPDADebugger" />
+        <class package="org.netbeans.api.debugger.jpda" name="JPDAThread" />
+        <class package="org.netbeans.api.debugger.jpda" name="MonitorInfo" />
+        <class package="org.netbeans.api.debugger.jpda" name="ThreadsCollector" />
+        <class package="org.netbeans.spi.debugger.jpda" name="EditorContext" />
+        <issue number="136099"/>
+    </change>
+
 
 </changes>
 

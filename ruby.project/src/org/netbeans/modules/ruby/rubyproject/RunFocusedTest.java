@@ -44,6 +44,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
@@ -61,10 +62,12 @@ import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 
 /**
  * Run the current focused test or spec (test under caret)
@@ -118,8 +121,13 @@ public class RunFocusedTest extends BaseAction {
                             LifecycleManager.getDefault().saveAll();
 
                             // Line+1: spec seems to be 1-based rather than 0-based (first line is 1)
-                            rspec.runRSpec(null, file, line+1, file.getName(), locator, true, debug);
-                                return;
+                            TestRunner runner = getTestRunner(TestRunner.TestType.RSPEC);
+                            if (!debug && runner != null) {
+                                runner.runSingleTest(file, String.valueOf(line + 1));
+                            } else {
+                                rspec.runRSpec(null, file, line + 1, file.getName(), locator, true, debug);
+                            }
+                            return;
                         }
                     } else {
                         // Regular Test::Unit? Find the test surrounding the caret.
@@ -134,9 +142,13 @@ public class RunFocusedTest extends BaseAction {
                             
                             // Save all files first - this spec file could be accessing other files being tested
                             LifecycleManager.getDefault().saveAll();
-
-                            runTest(project, null, file, testName, file.getName(), locator, true, debug);
-                                return;
+                            TestRunner runner = getTestRunner(TestRunner.TestType.TEST_UNIT);
+                            if (!debug && runner != null) {
+                                runner.runSingleTest(file, testName);
+                            } else {
+                                runTest(project, null, file, testName, file.getName(), locator, true, debug);
+                            }
+                            return;
                         } else {
                             Toolkit.getDefaultToolkit().beep();
                         }
@@ -216,4 +228,15 @@ public class RunFocusedTest extends BaseAction {
         }
         new RubyExecution(desc, charsetName).run();
     }
+    
+    private static TestRunner getTestRunner(TestRunner.TestType testType) {
+        Collection<? extends TestRunner> testRunners = Lookup.getDefault().lookupAll(TestRunner.class);
+        for (TestRunner each : testRunners) {
+            if (each.supports(testType)) {
+                return each;
+            }
+        }
+        return null;
+    }
+
 }
