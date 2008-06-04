@@ -124,32 +124,31 @@ public abstract class SwitchableWidget extends UMLNodeWidget
     {
         if(viewName.equals(view) == false)
         {
-            Widget curView = getCurrentView();
-            if (curView instanceof ContextViewWidget)
-            {
-                ContextViewWidget contextView = (ContextViewWidget) curView;
-                contextView.removingView();
-            }
-            else if(DEFAULT.equals(viewName) == true)
-            {
-                removingView();
-            }
-
-            
-            viewName = view;
-
             Widget newView = null;
-            if(DEFAULT.equals(viewName) == true)
+            if(DEFAULT.equals(view) == true)
             {
                 newView = createDefaultWidget(element);
             }
             else
             {
-                newView = getView(viewName);
+                newView = getView(view);
             }
 
             if(newView != null)
             {
+                Widget curView = getCurrentView();
+                if (curView instanceof ContextViewWidget)
+                {
+                    ContextViewWidget contextView = (ContextViewWidget) curView;
+                    contextView.removingView();
+                }
+                else if(DEFAULT.equals(viewName) == true)
+                {
+                    removingView();
+                }
+
+                viewName = view;
+
                 setCurrentView(newView);
                 
                 if(newView instanceof ContextViewWidget)

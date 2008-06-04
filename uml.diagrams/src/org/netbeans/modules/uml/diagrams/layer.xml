@@ -708,8 +708,14 @@ made subject to such option by the copyright holder.
                     <file name="Datatype.modeling_palette_item" url="resources/palette/Datatype.modeling_palette_item">
                         <attr name="position" intvalue="150"/>
                     </file>
-                    <file name="Comment.modeling_palette_item" url="resources/palette/Comment.modeling_palette_item">
+                    <file name="Actor.modeling_palette_item" url="resources/palette/Actor.modeling_palette_item">
                         <attr name="position" intvalue="160"/>
+                    </file>
+                    <file name="UtilityClass.modeling_palette_item" url="resources/palette/UtilityClass.modeling_palette_item">
+                        <attr name="position" intvalue="170"/>
+                    </file>
+                    <file name="Comment.modeling_palette_item" url="resources/palette/Comment.modeling_palette_item">
+                        <attr name="position" intvalue="180"/>
                     </file>
                 </folder>
                 <folder name="Robustness">
@@ -1747,7 +1753,7 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="Nodes">
             <folder name="Class">
-                <file name="org-netbeans-modules-uml-diagrams-nodes-UMLClassWidget.instance"/>
+                <file name="org-netbeans-modules-uml-diagrams-nodes-factories-ClassNodeFactory.instance"/>
                 <folder name="Views">
                     <file name="org-netbeans-modules-uml-diagrams-nodes-BoundaryView.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.diagrams.nodes.Bundle"/>
@@ -1767,42 +1773,42 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
             <folder name="Interface">
-                <file name="org-netbeans-modules-uml-diagrams-nodes-InterfaceWidget.instance"/>
+                <file name="org-netbeans-modules-uml-diagrams-nodes-factories-InterfaceNodeFactory.instance"/>
             </folder>
             <folder name="Enumeration">
-                <file name="org-netbeans-modules-uml-diagrams-nodes-EnumerationWidget.instance"/>
+                <file name="org-netbeans-modules-uml-diagrams-nodes-factories-EnumerationNodeFactory.instance"/>
             </folder>
             <folder name="Package">
-                <file name="org-netbeans-modules-uml-diagrams-nodes-PackageWidget.instance"/>
+                <file name="org-netbeans-modules-uml-diagrams-nodes-factories-PackageNodeFactory.instance"/>
             </folder>
             <folder name="DataType">
-                <file name="org-netbeans-modules-uml-diagrams-nodes-DataTypeWidget.instance"/>
+                <file name="org-netbeans-modules-uml-diagrams-nodes-factories-DatatypeNodeFactory.instance"/>
             </folder>
             <folder name="DerivationClassifier">
-                <file name="org-netbeans-modules-uml-diagrams-nodes-DerivationClassifierWidget.instance"/>
+                <file name="org-netbeans-modules-uml-diagrams-nodes-factories-DerivationClassifierNodeFactory.instance"/>
             </folder>
             <folder name="Collaboration">
-                <file name="org-netbeans-modules-uml-diagrams-nodes-DesignPatternWidget.instance"/>
+                <file name="org-netbeans-modules-uml-diagrams-nodes-factories-CollaborationNodeFactory.instance"/>
             </folder>     
             <folder name="PartFacade">
                 <folder name="Interface">
-                    <file name="org-netbeans-modules-uml-diagrams-nodes-InterfaceRoleWidget.instance"/>
+                    <file name="org-netbeans-modules-uml-diagrams-nodes-factories-InterfaceRoleNodeFactory.instance"/>
                 </folder>     
                 <folder name="Class">
-                    <file name="org-netbeans-modules-uml-diagrams-nodes-ClassRoleWidget.instance"/>
+                    <file name="org-netbeans-modules-uml-diagrams-nodes-factories-ClassRoleNodeFactory.instance"/>
                 </folder>     
                 <folder name="Actor">
-                    <file name="org-netbeans-modules-uml-diagrams-nodes-ActorRoleWidget.instance"/>
+                    <file name="org-netbeans-modules-uml-diagrams-nodes-factories-ActorRoleNodeFactory.instance"/>
                 </folder>     
                 <folder name="UseCase">
-                    <file name="org-netbeans-modules-uml-diagrams-nodes-UseCaseRoleWidget.instance"/>
+                    <file name="org-netbeans-modules-uml-diagrams-nodes-factories-UsecaseRoleNodeFactory.instance"/>
                 </folder>     
             </folder>     
             <folder name="Comment">
-                <file name="org-netbeans-modules-uml-diagrams-nodes-CommentWidget.instance"/>
+                <file name="org-netbeans-modules-uml-diagrams-nodes-factories-CommentNodeFactory.instance"/>
             </folder>
             <folder name="AssociationClass">
-                <file name="org-netbeans-modules-uml-diagrams-nodes-UMLClassWidget.instance"/>
+                <file name="org-netbeans-modules-uml-diagrams-nodes-factories-ClassNodeFactory.instance"/>
                 <folder name="Views">
                     <file name="org-netbeans-modules-uml-diagrams-nodes-BoundaryView.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.diagrams.nodes.Bundle"/>
@@ -1821,6 +1827,13 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
             </folder>
+            <folder name="UseCase">
+                 <file name="org-netbeans-modules-uml-diagrams-nodes-usecase-UsecaseNodeFactory.instance"/>
+             </folder>
+             <folder name="Actor">
+                 <file name="org-netbeans-modules-uml-diagrams-nodes-usecase-ActorNodeFactory.instance"/>
+             </folder>
+
         </folder>
         <folder name="Connectors">
             <folder name="Generalization">
@@ -1890,37 +1903,37 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="Nodes">
                 <folder name="InvocationNode">
-                    <file name="org-netbeans-modules-uml-diagrams-nodes-activity-InvocationWidget.instance"/>
+                    <file name="org-netbeans-modules-uml-diagrams-nodes-activity-factories-InvocationNodeFactory.instance"/>
                 </folder>
                 <folder name="ComplexActivityGroup">
-                    <file name="org-netbeans-modules-uml-diagrams-nodes-activity-ActivityGroupWidget.instance"/>
+                    <file name="org-netbeans-modules-uml-diagrams-nodes-activity-factories-ActivityGroupNodeFactory.instance"/>
                 </folder>
                 <folder name="InitialNode">
-                    <file name="org-netbeans-modules-uml-diagrams-nodes-activity-InitialNodeWidget.instance"/>
+                    <file name="org-netbeans-modules-uml-diagrams-nodes-activity-factories-InitialNodeFactory.instance"/>
                 </folder>
                 <folder name="ActivityFinalNode">
-                    <file name="org-netbeans-modules-uml-diagrams-nodes-activity-FinalNodeWidget.instance"/>
+                    <file name="org-netbeans-modules-uml-diagrams-nodes-activity-factories-FinalNodeFactory.instance"/>
                 </folder>
                 <folder name="FlowFinalNode">
-                    <file name="org-netbeans-modules-uml-diagrams-nodes-activity-FlowFinalNodeWidget.instance"/>
+                    <file name="org-netbeans-modules-uml-diagrams-nodes-activity-factories-FlowFinalNodeFactory.instance"/>
                 </folder>
                 <folder name="DecisionMergeNode">
-                    <file name="org-netbeans-modules-uml-diagrams-nodes-activity-DecisionNodeWidget.instance"/>
+                    <file name="org-netbeans-modules-uml-diagrams-nodes-activity-factories-DecisionNodeFactory.instance"/>
                 </folder>
                 <folder name="JoinForkNode">
-                    <file name="org-netbeans-modules-uml-diagrams-nodes-activity-ActivityJoinForkWidget.instance"/>
+                    <file name="org-netbeans-modules-uml-diagrams-nodes-activity-factories-ActivityJoinForkNodeFactory.instance"/>
                 </folder>
                 <folder name="ParameterUsageNode">
-                    <file name="org-netbeans-modules-uml-diagrams-nodes-activity-ParameterUsageWidget.instance"/>
+                    <file name="org-netbeans-modules-uml-diagrams-nodes-activity-factories-ParameterUsageNodeFactory.instance"/>
                 </folder>
                 <folder name="SignalNode">
-                    <file name="org-netbeans-modules-uml-diagrams-nodes-activity-SignalNodeWidget.instance"/>
+                    <file name="org-netbeans-modules-uml-diagrams-nodes-activity-factories-SignalNodeFactory.instance"/>
                 </folder>
                 <folder name="ActivityPartition">
-                    <file name="org-netbeans-modules-uml-diagrams-nodes-activity-ActivityPartitionWidget.instance"/>
+                    <file name="org-netbeans-modules-uml-diagrams-nodes-activity-factories-ActivityPartitionNodeFactory.instance"/>
                 </folder>
                 <folder name="DataStoreNode">
-                    <file name="org-netbeans-modules-uml-diagrams-nodes-activity-DataStoreWidget.instance"/>
+                    <file name="org-netbeans-modules-uml-diagrams-nodes-activity-factories-DataStoreNodeFactory.instance"/>
                 </folder>
             </folder>
             <folder name="Connectors">
@@ -1936,13 +1949,13 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="Nodes">
                 <folder name="Lifeline">
-                    <file name="org-netbeans-modules-uml-diagrams-nodes-sqd-LifelineWidget.instance"/>
+                    <file name="org-netbeans-modules-uml-diagrams-nodes-sqd-factories-LifelineNodeFactory.instance"/>
                 </folder>
                 <folder name="CombinedFragment">
-                    <file name="org-netbeans-modules-uml-diagrams-nodes-sqd-CombinedFragmentWidget.instance"/>
+                    <file name="org-netbeans-modules-uml-diagrams-nodes-sqd-factories-CombinedFragmentNodeFactory.instance"/>
                 </folder>
                 <folder name="Interaction">
-                    <file name="org-netbeans-modules-uml-diagrams-nodes-sqd-InteractionBoundaryWidget.instance"/>
+                    <file name="org-netbeans-modules-uml-diagrams-nodes-sqd-factories-InteractionBoundaryNodeFactory.instance"/>
                 </folder>
             </folder>
             <folder name="Connectors">
@@ -1969,54 +1982,54 @@ made subject to such option by the copyright holder.
             <folder name="Nodes">
                 <folder name="State">
                     <folder name="State">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-StateWidget.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-StateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.SimpleStateInitializer"/>
                     </folder>                    
                     <folder name="SubmachineState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-StateWidget.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-StateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.SubMachineStateInitializer"/>
                     </folder>
                     <folder name="CompositeState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-StateWidget.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-StateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.CompositeStateInitializer"/>
                     </folder>                       
                 </folder>
                 <folder name="FinalState">
                     <folder name="AbortedFinalState">                       
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-FinalStateWidget.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-FinalStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.AbortedFinalStateInitializer"/>
                     </folder>
                     <folder name="FinalState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-FinalStateWidget.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-FinalStateNodeFactory.instance"/>
                     </folder>
                 </folder>
                 <folder name="PseudoState">              
                     <folder name="InitialState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-PseudoStateWidget.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-PseudoStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.InitialStateInitializer"/>
                     </folder>
                     <folder name="ForkState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-PseudoStateWidget.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-PseudoStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.ForkStateInitializer"/>
                     </folder>
                     <folder name="ChoicePseudoState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-PseudoStateWidget.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-PseudoStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.ChoicePseudoStateInitializer"/>
                     </folder>
                     <folder name="ShallowHistoryState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-PseudoStateWidget.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-PseudoStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.ShallowHistoryStateInitializer"/>
                     </folder>
                     <folder name="DeepHistoryState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-PseudoStateWidget.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-PseudoStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.DeepHistoryStateInitializer"/>
                     </folder>
                     <folder name="EntryPointState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-PseudoStateWidget.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-PseudoStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.EntryPointStateInitializer"/>
                     </folder>
                     <folder name="JunctionState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-PseudoStateWidget.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-PseudoStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.JunctionStateInitializer"/>
                     </folder>
                 </folder>
@@ -2034,14 +2047,8 @@ made subject to such option by the copyright holder.
                  <folder name="Default"/>
              </folder>
              <folder name="Nodes">
-                 <folder name="UseCase">
-                     <file name="org-netbeans-modules-uml-diagrams-nodes-usecase-UseCaseWidget.instance"/>
-                 </folder>
-                 <folder name="Actor">
-                     <file name="org-netbeans-modules-uml-diagrams-nodes-usecase-ActorWidget.instance"/>
-                 </folder>
                  <folder name="Package">
-                     <file name="org-netbeans-modules-uml-diagrams-nodes-PackageWidget.instance"/>
+                     <file name="org-netbeans-modules-uml-diagrams-nodes-factories-PackageNodeFactory.instance"/>
                  </folder>
              </folder>
          </folder>
