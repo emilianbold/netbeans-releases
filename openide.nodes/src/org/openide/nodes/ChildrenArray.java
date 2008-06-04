@@ -56,7 +56,7 @@ import org.openide.nodes.EntrySupport.Default.Info;
 */
 final class ChildrenArray extends NodeAdapter {
     /** children's EntrySupport */
-    public  EntrySupport entrySupport;
+    public  EntrySupport.Default entrySupport;
 
     /** nodes associated */
     private Node[] nodes;

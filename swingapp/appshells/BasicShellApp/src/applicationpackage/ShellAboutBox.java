@@ -15,7 +15,7 @@ public class ShellAboutBox extends javax.swing.JDialog {
     }
 
     @Action public void closeAboutBox() {
-        setVisible(false);
+        dispose();
     }
 
     /** This method is called from within the constructor to

@@ -79,7 +79,7 @@ public class CacheEngineAction extends WizardAction {
             final Progress progress = new Progress();
             
             getWizardUi().setProgress(progress);
-            Installer.cacheInstallerEngine(progress);            
+            Installer.getInstance().cacheInstallerEngine(progress);            
         } catch (IOException e) {
             ErrorManager.notifyCritical(ResourceUtils.getString(
                     CacheEngineAction.class,

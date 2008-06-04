@@ -43,13 +43,6 @@
                         </folder>
                     </folder>
                 </folder>
-
-                <folder name="Popup">
-                    <file name="org-netbeans-modules-javascript-editing-RunScriptAction.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.RunScriptAction"/>
-                        <attr name="position" intvalue="801"/>
-                    </file>
-                </folder>
             </folder>
         </folder>
     </folder>

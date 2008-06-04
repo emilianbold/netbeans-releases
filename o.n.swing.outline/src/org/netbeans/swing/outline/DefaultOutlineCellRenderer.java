@@ -206,9 +206,9 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
             if (icon == null) {
                 if (!leaf) {
                     if (expanded) {
-                        setIcon (getDefaultClosedIcon());
-                    } else { // ! expanded
                         setIcon (getDefaultOpenIcon());
+                    } else { // ! expanded
+                        setIcon (getDefaultClosedIcon());
                     }
                 } else { // leaf
                     setIcon (getDefaultLeafIcon());

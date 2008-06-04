@@ -281,6 +281,7 @@
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.languages.ejs</friend>
                 <package>org.netbeans.modules.javascript.editing</package>
+                <package>org.netbeans.modules.javascript.editing.embedding</package>
                 <package>org.netbeans.modules.javascript.editing.lexer</package>
             </friend-packages>
         </data>

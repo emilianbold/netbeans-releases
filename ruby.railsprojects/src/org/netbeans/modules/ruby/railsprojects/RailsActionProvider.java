@@ -73,6 +73,7 @@ import org.netbeans.modules.ruby.rubyproject.ScriptDescProvider;
 import org.netbeans.modules.ruby.rubyproject.TestNotifier;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.rubyproject.RubyFileLocator;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
@@ -113,6 +114,12 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
      * Standard command for running the Rails console for a project
      */
     public static final String COMMAND_RAILS_CONSOLE = "rails-console"; // NOI18N
+
+    /**
+     * Command for running RSpec tests on this project (if installed)
+     */
+    public static final String COMMAND_RSPEC = "rspec"; //NOI18N
+
     
     // Commands available from Ruby project
     private static final String[] supportedActions = {
@@ -127,6 +134,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         COMMAND_DEBUG, 
         COMMAND_DEBUG_SINGLE,
         COMMAND_TEST, 
+        COMMAND_RSPEC,
         COMMAND_TEST_SINGLE, 
         COMMAND_DEBUG_TEST_SINGLE, 
         COMMAND_DELETE,
@@ -518,6 +526,23 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
                     run();
             
             return;
+        }
+
+        if (COMMAND_RSPEC.equals(command)) {
+            TestRunner testRunner = getTestRunner(TestRunner.TestType.RSPEC);
+            if (testRunner != null) {
+                testRunner.getInstance().runAllTests(project);
+            } else {
+                File pwd = FileUtil.toFile(project.getProjectDirectory());
+                RakeRunner runner = new RakeRunner(project);
+                runner.setPWD(pwd);
+                runner.setFileLocator(new RubyFileLocator(context, project));
+                runner.showWarnings(true);
+                runner.run("spec"); // NOI18N
+
+            }
+            return;
+
         }
 
         if (COMMAND_AUTOTEST.equals(command)) {

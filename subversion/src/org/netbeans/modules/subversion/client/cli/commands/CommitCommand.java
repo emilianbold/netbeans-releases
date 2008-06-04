@@ -92,11 +92,12 @@ public class CommitCommand extends SvnCommand {
     @Override
     protected void notify(Line line) {
         if(line.getRevision() != -1) {
-            if(revision != -1) {
-                Subversion.LOG.warning(
-                        "Revision notified more times : " + revision + ", " + 
-                        line.getRevision() + " for command " + getStringCommand());                
-            }
+//          XXX can't rely on this - see also update cmd                        
+//            if(revision != -1) {
+//                Subversion.LOG.warning(
+//                        "Revision notified more times : " + revision + ", " + 
+//                        line.getRevision() + " for command " + getStringCommand());                
+//            }
             revision = line.getRevision();            
         }
     }            

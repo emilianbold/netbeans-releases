@@ -42,7 +42,6 @@ package org.netbeans.modules.gsf;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JMenu;
@@ -57,7 +56,6 @@ import javax.swing.text.TextAction;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.modules.gsf.api.KeystrokeHandler;
-import org.netbeans.modules.gsf.api.EditorAction;
 import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseAction;
@@ -77,7 +75,6 @@ import org.netbeans.modules.gsfret.editor.hyperlink.GoToSupport;
 import org.netbeans.modules.gsfret.editor.semantic.GoToMarkOccurrencesAction;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 
@@ -217,13 +214,6 @@ public class GsfEditorKitFactory {
                 actions.add(new ToggleCommentAction(lineCommentPrefix));
             }
 
-            Collection<? extends EditorAction> extraActions = Lookup.getDefault().lookupAll(EditorAction.class);
-            for (EditorAction action : extraActions) {
-                if (action.appliesTo(mimeType)) {
-                    actions.add(new EditorActionWrapper(action));
-                }
-            }
-            
             actions.add(new InstantRenameAction());
             actions.add(new GenericGoToDeclarationAction());
             actions.add(new GenericGenerateGoToPopupAction());
@@ -522,27 +512,6 @@ public class GsfEditorKitFactory {
                 //addAction(target, jm, ExtKit.gotoAction);
                 return jm;
             }
-        }
-    }
-
-    /** Wrap a Swing Action implementing the EditorAction interface into a proper BaseAction action */
-    private class EditorActionWrapper extends BaseAction {
-        EditorAction gotoAction;
-        
-        public EditorActionWrapper(EditorAction gotoAction) {
-            super(gotoAction.getActionName(),
-                  // Not sure about these flags?
-                  ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET | SAVE_POSITION);
-            this.gotoAction = gotoAction;
-        }
-
-        public void actionPerformed(ActionEvent evt, final JTextComponent target) {
-            gotoAction.actionPerformed(evt, target);
-        }
-
-        @Override
-        protected Class getShortDescriptionBundleClass() {
-            return gotoAction.getShortDescriptionBundleClass();
         }
     }
 

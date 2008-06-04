@@ -49,6 +49,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,7 +69,7 @@ abstract class EntrySupport {
     Reference<ChildrenArray> array = new WeakReference<ChildrenArray>(null);
     
     /** collection of all entries */
-    protected Collection<? extends Entry> entries = Collections.emptyList();
+    protected List<? extends Entry> entries = Collections.emptyList();
 
     /** Creates a new instance of EntrySupport */
     protected EntrySupport(Children children) {
@@ -81,6 +83,8 @@ abstract class EntrySupport {
 
     public abstract Node[] getNodes(boolean optimalResult);
 
+    /** Getter for a node at given position. If node with such index
+     * does not exists it should return null.*/
     public abstract Node getNodeAt(int index);
 
     public abstract Node[] testNodes();
@@ -89,21 +93,16 @@ abstract class EntrySupport {
     
     abstract void setEntries(Collection<? extends Entry> entries);
     
-    abstract List<Entry>  getEntries();
+    /** Access to copy of current entries.
+     * @return copy of entries in the objects
+     */
+    protected final List<Entry> getEntries() {
+        return new ArrayList<Entry>(this.entries);
+    }
     
     /** Refreshes content of one entry. Updates the state of children appropriately. */
     abstract void refreshEntry(Entry entry);
 
-    /** Registration of ChildrenArray.
-     * @param chArr the associated ChildrenArray
-     * @param weak use weak or hard reference
-     */
-    abstract void registerChildrenArray(final ChildrenArray chArr, boolean weak);
-
-    /** Computes the nodes now. */
-    abstract Node[] justComputeNodes();
-        
-    abstract void finalizedChildrenArray(Reference caller);
         
     /** Default support that just fires changes directly to children and is suitable
      * for simple mappings.
@@ -111,7 +110,7 @@ abstract class EntrySupport {
     static final class Default extends EntrySupport {
 
         /** mapping from entries to info about them */
-        private java.util.Map<Entry, Info> map;
+        private Map<Entry, Info> map;
         private static final Object LOCK = new Object();
         private static final Logger LOG_GET_ARRAY = Logger.getLogger("org.openide.nodes.Children.getArray"); // NOI18N        
         private Thread initThread;
@@ -200,7 +199,8 @@ abstract class EntrySupport {
 
         @Override
         public Node getNodeAt(int index) {
-            return getNodes()[index];
+            Node[] nodes = getNodes();
+            return index < nodes.length ? nodes[index] : null;
         }
         
 
@@ -259,12 +259,6 @@ abstract class EntrySupport {
         //
         // Entries
         //
-        /** Access to copy of current entries.
-         * @return copy of entries in the objects
-         */
-        protected final List<Entry> getEntries() {
-            return new ArrayList<Entry>(this.entries);
-        }
 
         protected void setEntries(Collection<? extends Entry> entries) {
             final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(Level.FINE);
@@ -282,7 +276,7 @@ abstract class EntrySupport {
             if (holder == null) {
                 //      debug.append ("Set1: " + entries); // NOI18N
                 //      printStackTrace();
-                this.entries = entries;
+                this.entries = new ArrayList<Entry>(entries);
 
                 if (map != null) {
                     map.keySet().retainAll(new HashSet<Entry>(entries));
@@ -297,7 +291,7 @@ abstract class EntrySupport {
                 // the initialization is not finished yet =>
                 //      debug.append ("Set2: " + entries); // NOI18N
                 //      printStackTrace();
-                this.entries = entries;
+                this.entries = new ArrayList<Entry>(entries);
 
                 if (map != null) {
                     map.keySet().retainAll(new HashSet<Entry>(entries));
@@ -329,7 +323,7 @@ abstract class EntrySupport {
             if (!toAdd.isEmpty()) {
                 // toAdd contains Info objects that should
                 // be added
-                updateAdd(toAdd, entries);
+                updateAdd(toAdd, new ArrayList<Entry>(entries));
             }
         }
 
@@ -494,7 +488,7 @@ abstract class EntrySupport {
          * @param infos list of Info objects to add
          * @param entries the final state of entries that should occur
          */
-        private void updateAdd(Collection<Info> infos, Collection<? extends Entry> entries) {
+        private void updateAdd(Collection<Info> infos, List<? extends Entry> entries) {
             List<Node> nodes = new LinkedList<Node>();
             for (Info info : infos) {
                 nodes.addAll(info.nodes());
@@ -919,5 +913,372 @@ abstract class EntrySupport {
                 return "Children.Info[" + entry + ",length=" + length + "]"; // NOI18N
             }
         }
+    }
+    
+    static final class Lazy extends EntrySupport {
+        private Map<Entry, EntryInfo> entryToInfo = new HashMap<Entry, EntryInfo>();
+        private List<WeakReference<Node>> childrenNodes = new ArrayList<WeakReference<Node>>();
+        /** Computed size of nodes in this support or -1 if the size
+         * needs to be recomputed once again. Clear to -1 if you do some
+         * changes in nodes count.
+         */
+        private int nodesCount = -1;
+
+        public Lazy(Children ch) {
+            super(ch);
+        }
+
+        @Override
+        public Node getNodeAt(int index) {
+            try {
+                Children.PR.enterReadAccess();
+                if (childrenNodes != null) {
+                    if (index >= childrenNodes.size()) {
+                        return null;
+                    }
+                    Node node = childrenNodes.get(index).get();
+                    if (node != null) {
+                        return node;
+                    }
+                }
+            } finally {
+                Children.PR.exitReadAccess();
+            }
+            return computeAt(index);
+        }
+        
+        final Node computeAt(final int index) {
+            int low = 0;
+            int high = entries.size() - 1;
+            while (low <= high) {
+                int mid = (low + high) / 2;
+                Entry e = entries.get(mid);
+                EntryInfo info = entryToInfo.get(e);
+                if (info.getIndex() > index) {
+                    high = mid - 1;
+                    continue;
+                }
+                int above = info.getIndex() + info.size();
+                if (above > index) {
+                    List<Node> list = info.getNodes();
+                    int size = info.getIndex();
+
+                    /*if (list.size() <= index - size) {
+                        return NO_NODE;
+                    }*/
+                    Node n = (Node) list.get(index - size);
+                    n.assignTo(children, index);
+                    return n;
+                }
+                low = mid + 1;
+            }
+            return null;
+        }
+
+        @Override
+        public Node[] getNodes(boolean optimalResult) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public int getNodesCount() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public boolean isInitialized() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        void refreshEntry(Entry entry) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+        /** Gets info for given entry, or create one if not registered yet. */
+        private EntryInfo getInfo(Entry entry) {
+            synchronized (entryToInfo) {
+                EntryInfo info = entryToInfo.get(entry);
+                if (info == null) {
+                    info = new EntryInfo(entry);
+                    entryToInfo.put(entry, info);
+                }
+                return info;
+            }
+        }        
+
+        @Override
+        void setEntries(Collection<? extends Entry> entries) {
+            entries = new ArrayList(entries);
+            nodesCount = -1;
+
+            assert this.entries.size() == entryToInfo.size();
+
+            HashSet<Entry> retain = new HashSet<Entry>(entries);
+            Iterator<? extends Entry> it = this.entries.iterator();
+            int index = 0;
+            ArrayList<Integer> removedIdxs = new ArrayList<Integer>();
+            ArrayList<Node> removedNodes = new ArrayList<Node>();
+            while (it.hasNext()) {
+                EntryInfo info = entryToInfo.get(it.next());
+                int size = info.size();
+                if (!retain.contains(info.entry)) {
+                    for (int i = 0; i < size; i++) {
+                        removedIdxs.add(new Integer(index + i));
+                    }
+                    // unassign from parent
+                    Collection<Node> nodes = info.currentNodes(null);
+                    if (nodes != null) {
+                        removedNodes = new ArrayList<Node>(nodes.size());
+                        Iterator nodeIt = nodes.iterator();
+                        while (nodeIt.hasNext()) {
+                            Node n = (Node) nodeIt.next();
+                            if (n != null) {
+                                n.deassignFrom(children);
+                                removedNodes.add(n);
+                            }
+                        }
+                    }
+                    // remove the entry from collection
+                    it.remove();
+                    entryToInfo.remove(info.entry);
+                }
+                info.setIndex(index);
+                index += size;
+            }
+
+            if (!removedIdxs.isEmpty()) {
+                int[] idxs = new int[removedIdxs.size()];
+                for (int i = 0; i < idxs.length; i++) {
+                    idxs[i] = ((Integer) removedIdxs.get(i)).intValue();
+                }
+                childrenNodes.clear();
+                //fireIndexesAddedOrRemoved(false, idxs);
+                children.destroyNodes(removedNodes.toArray(new Node[removedNodes.size()]));
+            }
+
+            // change the order of entries, notifies
+            // it and again brings children to up-to-date state, recomputes indexes
+            Collection<EntryInfo> toAdd = updateOrder(entries);
+
+            if (!toAdd.isEmpty()) {
+                // now we know that this.entries are subset of entries and
+                // are also properly sorted. So we can just iterate over 
+                // entries and whenever there is a different, just add once
+                ArrayList addedIndixes = new ArrayList(toAdd.size());
+                for (EntryInfo info : toAdd) {
+                    final int size = info.size();
+                    final int idx = info.getIndex();
+                    Collection<Node> nodes = info.currentNodes(null);
+                    Iterator nodeIt = nodes == null ? null : nodes.iterator();
+                    for (int i = 0; i < size; i++) {
+                        addedIndixes.add(new Integer(idx + i));
+                        if (nodeIt != null) {
+                            // assign to new parent
+                            Node n = (Node) nodeIt.next();
+                            if (n != null) {
+                                n.assignTo(children, i);
+                            }
+                        }                     
+                    }
+                }
+                if (!addedIndixes.isEmpty()) {
+                    int[] idxs = new int[addedIndixes.size()];
+                    for (int i = 0; i < idxs.length; i++) {
+                        idxs[i] = ((Integer) addedIndixes.get(i)).intValue();
+                    }
+                    childrenNodes.clear();
+                    //fireIndexesAddedOrRemoved(true, idxs);
+                }
+            }
+        }
+
+        /** Updates the order of entries.
+         * @param current current state of nodes
+         * @param entries new set of entries
+         * @return list of infos that should be added
+         */
+        private List<EntryInfo> updateOrder(Collection<? extends Entry> newEntries) {
+            List<EntryInfo> toAdd = new LinkedList<EntryInfo>();
+
+            // that assignes entries their begining position in the array of nodes
+            Map<EntryInfo, Integer> offsets = new HashMap<EntryInfo, Integer>();
+            int previousPos = 0;
+            for (Entry entry : entries) {
+                EntryInfo info = entryToInfo.get(entry);
+                offsets.put(info, previousPos);
+                previousPos += info.size();
+            }
+
+            // because map can contain some additional items,
+            // that has not been garbage collected yet,
+            // retain only those that are in current list of
+            // entries
+            entryToInfo.keySet().retainAll(new HashSet<Entry>(entries));
+
+            int[] perm = new int[previousPos];
+            int currentPos = 0;
+            int permSize = 0;
+            List<Entry> reorderedEntries = null;
+
+            for (Entry entry : newEntries) {
+                EntryInfo info = entryToInfo.get(entry);
+
+                if (info == null) {
+                    // this info has to be added
+                    info = new EntryInfo(entry);
+                    info.setIndex(currentPos);
+                    entryToInfo.put(entry, info);
+                    toAdd.add(info);
+                } else {
+                    int len = info.size();
+
+                    if (reorderedEntries == null) {
+                        reorderedEntries = new LinkedList<Entry>();
+                    }
+
+                    reorderedEntries.add(entry);
+                    info.setIndex(currentPos);
+
+                    // already there => test if it should not be reordered
+                    Integer previousInt = offsets.get(info);
+                    previousPos = previousInt;
+
+                    if (currentPos != previousPos) {
+                        for (int i = 0; i < len; i++) {
+                            perm[previousPos + i] = 1 + currentPos + i;
+                        }
+                        permSize += len;
+                    }
+                }
+                currentPos += info.size();
+            }
+
+            if (permSize > 0) {
+                // now the perm array contains numbers 1 to ... and
+                // 0 one places where no permutation occures =>
+                // decrease numbers, replace zeros
+                for (int i = 0; i < perm.length; i++) {
+                    if (perm[i] == 0) {
+                        // fixed point
+                        perm[i] = i;
+                    } else {
+                        // decrease
+                        perm[i]--;
+                    }
+                }
+
+                // reorderedEntries are not null
+                this.entries = reorderedEntries;
+                childrenNodes.clear();
+
+                //System.err.println("Paremutaiton! " + getNode ());
+                Node p = children.parent;
+
+                if (p != null) {
+                    p.fireReorderChange(perm);
+                }
+            }
+            return toAdd;
+        }
+
+        @Override
+        public Node[] testNodes() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+      
+        final class EntryInfo {
+            
+            /** corresponding entry */
+            final Entry entry;
+
+            /** my length, -1 means uninitialized */
+            private int length = -1;
+
+            /** cached nodes for this entry */
+            private List<WeakReference<Node>> nodesCache;
+
+            /** my index (including sizes) in list of entries */
+            private int index = -1;
+            
+            public EntryInfo(Entry entry) {
+                this.entry = entry;
+            }
+
+            /** Returns size of this entry */
+            public final int size() {
+                if (length < 0) {
+                    length = getNodes().size();
+                }
+                return length;
+            }
+
+            /** Gets or computes the nodes. It holds them using weak reference
+             * so they can get garbage collected.
+             */
+            public final synchronized List<Node> getNodes() {
+                boolean[] containsNulls = new boolean[1];
+                List<Node> curNodes = currentNodes(containsNulls);
+                if (curNodes != null && containsNulls[0] == false) {
+                    return curNodes;
+                }
+                Collection<Node> nodes = entry.nodes();
+                useNodes(nodes);
+                return new ArrayList<Node>(nodes);
+            }
+
+            /** extract current nodes */
+            synchronized List<Node> currentNodes(boolean[] containsNulls) {
+                if (nodesCache == null) {
+                    return null;
+                }
+                ArrayList<Node> arr = new ArrayList<Node>(nodesCache.size());
+                for (int i = 0; i < nodesCache.size(); i++) {
+                    Node n = nodesCache.get(i).get();
+                    if (n == null && containsNulls != null) {
+                        containsNulls[0] = true;
+                    }
+                    arr.add(n);
+                }
+                return arr;
+            }
+
+            /** Assignes new set of nodes to this entry. */
+            public final synchronized void useNodes(Collection<Node> nodes) {
+                nodesCache = new ArrayList<WeakReference<Node>>(nodes.size());
+                for (Node n : nodes) {
+                    nodesCache.add(new WeakReference<Node>(n));
+                }
+                length = nodes.size();
+                /*
+                // assign all there nodes the new children
+                for (Node n : list) {
+                n.assignTo(Children.this, -1);
+                n.fireParentNodeChange(null, parent);
+                }*/
+            }
+
+            /** Sets the index of the entry. */
+            final void setIndex(int i) {
+                this.index = i;
+            }
+
+            /** Get index. */
+            final int getIndex() {
+                assert index >= 0 : "When first asked for it has to be set: " + index; // NOI18N
+                return index;
+            }
+
+            @Override
+            public String toString() {
+                String clazz = super.toString();
+                int in = clazz.lastIndexOf('$');
+                if (in >= 0) {
+                    clazz = clazz.substring(in + 1);
+                }
+                return clazz + "[index: " + index + ",length:" + length + "]"; // NOI18N
+            }
+        }        
     }
 }

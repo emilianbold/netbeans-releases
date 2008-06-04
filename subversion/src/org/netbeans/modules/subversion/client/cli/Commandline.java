@@ -90,14 +90,14 @@ class Commandline {
    
     private void destroy() throws IOException {
         if(cli != null) {
-            cli.destroy();
+            try { cli.getErrorStream().close(); } catch (IOException iOException) { }
+            try { cli.getInputStream().close(); } catch (IOException iOException) { }
+            try { cli.getOutputStream().close(); } catch (IOException iOException) { }            
+            cli.destroy();             
         }
-        if (ctOutput != null) {
-            ctOutput.close();
-        }
-        if (ctError != null) {
-            ctError.close();
-        }                
+        ctOutput = null;
+        ctError = null;
+        cli = null;
         Subversion.LOG.fine("cli: Process destroyed");
     }
     
@@ -110,41 +110,47 @@ class Commandline {
         
         Subversion.LOG.fine("cli: Creating process...");        
         command.commandStarted();
-        
-        cli = Runtime.getRuntime().exec(command.getCliArguments(executable), getEnvVar());
+        try {        
+            cli = Runtime.getRuntime().exec(command.getCliArguments(executable), getEnvVar());
+          
+            ctError = new BufferedReader(new InputStreamReader(cli.getErrorStream()));
 
-        ctOutput = new BufferedReader(new InputStreamReader(cli.getInputStream()));
-        ctError = new BufferedReader(new InputStreamReader(cli.getErrorStream()));
+            Subversion.LOG.fine("cli: process created");
 
-        Subversion.LOG.fine("cli: process created");
-
-        try {
             String line = null;                
             if(command.hasBinaryOutput()) {
                 ByteArrayOutputStream b = new ByteArrayOutputStream();
                 int i = -1;
-                while((i = ctOutput.read()) != -1) {
+                while((i = cli.getInputStream().read()) != -1) {
                     b.write(i);
                 }
+                if(Subversion.LOG.isLoggable(Level.FINER)) Subversion.LOG.finer("cli: OUTPUT \"" + (new String(b.toByteArray())) + "\"");
                 command.output(b.toByteArray());
             } else {                    
+                ctOutput = new BufferedReader(new InputStreamReader(cli.getInputStream()));
                 while ((line = ctOutput.readLine()) != null) {                                        
                     Subversion.LOG.fine("cli: OUTPUT \"" + line + "\"");
                     command.outputText(line);
                 }    
             }
+            
             while ((line = ctError.readLine()) != null) {                                    
                 Subversion.LOG.info("cli: ERROR \"" + line + "\"");
                 command.errorText(line);
-            }                            
-
-            try {
-                cli.waitFor();
-            } catch (InterruptedException ex) {
-                // ignore
-            }
-            
+            }                                     
+            cli.waitFor();
+        } catch (InterruptedException ex) {
+            // ignore         
+        } catch (InterruptedIOException ex) {
+            // ignore         
         } finally {
+            if(cli != null) {
+                try { cli.getErrorStream().close(); } catch (IOException iOException) { }
+                try { cli.getInputStream().close(); } catch (IOException iOException) { }
+                try { cli.getOutputStream().close(); } catch (IOException iOException) { }
+            }            
+            ctError = null;
+            ctOutput = null;
             Subversion.LOG.fine("cli: process finnished");            
             command.commandFinished();
         }        

@@ -41,12 +41,10 @@ package org.netbeans.modules.xslt.core.text.completion;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
-import org.openide.util.Exceptions;
 
 /**
  * @author Alex Petrov (30.04.2008)
@@ -70,6 +68,8 @@ public class XSLTCompletionUtil {
     
     public static String extractAttributeName(Document document, int caretOffset, 
         DocumentComponent docComponent) {
+        if ((document == null) || (docComponent == null) || (caretOffset < 0)) return null;
+        
         int docComponentPos = docComponent.findPosition(),
             startPos = caretOffset - PATTERN_ATTRIB_VALUE_PREFIX.length();
         try {
