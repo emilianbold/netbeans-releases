@@ -40,13 +40,10 @@ package org.netbeans.modules.hibernate.wizards;
 
 import java.awt.Component;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -68,8 +65,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
 import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
-import org.dom4j.io.SAXReader;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.JDBCMetaDataConfiguration;
@@ -317,15 +312,9 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
             try {
 
                 cfg = new JDBCMetaDataConfiguration();
-                OverrideRepository or = new OverrideRepository();
-                InputStream xmlInputStream = new FileInputStream(FileUtil.toFile(revengFile));
-                xmlHelper = new XMLHelper();
-                entityResolver = XMLHelper.DEFAULT_DTD_RESOLVER;
-                List errors = new ArrayList();
-
-                SAXReader saxReader = xmlHelper.createSAXReader("XML InputStream", errors, entityResolver);
-                org.dom4j.Document doc = saxReader.read(new InputSource(xmlInputStream));
+                OverrideRepository or = new OverrideRepository();             
                 Configuration c = cfg.configure(confFile);
+                or.addFile(FileUtil.toFile(revengFile));
                 DefaultReverseEngineeringStrategy strategy = new DefaultReverseEngineeringStrategy();
                 settings = new ReverseEngineeringSettings(strategy);
                 settings.setDefaultPackageName(helper.getPackageName());
