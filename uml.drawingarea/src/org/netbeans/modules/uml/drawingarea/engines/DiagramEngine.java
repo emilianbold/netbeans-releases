@@ -70,6 +70,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
+import org.netbeans.modules.uml.drawingarea.NodeWidgetFactory;
 import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.ZoomManager;
@@ -477,6 +478,21 @@ abstract public class DiagramEngine {
                     InstanceCookie ic = engineObjects[i].getCookie(org.openide.cookies.InstanceCookie.class);
                     if(ic != null)
                     {
+                        try
+                        {
+                            Object obj = ic.instanceCreate();
+                            if (obj instanceof NodeWidgetFactory)
+                            {
+                                NodeWidgetFactory factory = (NodeWidgetFactory) obj;
+                                retVal = factory.createNode(scene);
+                                break;
+                            }
+                        }
+                        catch(Exception ex)
+                        {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        
                         try
                         {
                             Class cl = ic.instanceClass();
