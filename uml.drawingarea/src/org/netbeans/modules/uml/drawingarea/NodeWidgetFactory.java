@@ -42,7 +42,16 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 
 /**
- *
+ * The node widget factory is used to create a node widget that is 
+ * need to be added to a scene.  
+ * 
+ * A node widget is declared via the layer file system.  The node
+ * widget declaration must be in the folder <i>UML/[Diagram Type]/Nodes/[Node Type]</i>
+ * if the connection can only be used for a specific diagram type.  If the node
+ * can be used in multiple diagram types the folder <i>UML/Nodes/[Node Type]</i> 
+ * can be used instead.  The file inside of the folder should be an instance
+ * that declares the NodeWidgetFactory that is used to create a node widget.
+ * 
  * @author treyspiva
  */
 public interface NodeWidgetFactory
