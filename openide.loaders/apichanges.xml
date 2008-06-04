@@ -106,6 +106,24 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+     <change id="factory">
+        <api name="loaders"/>
+        <summary>DataObjects without DataLoaders</summary>
+        <version major="7" minor="1"/>
+        <date day="11" month="6" year="2008"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" />
+        <description>
+        <p>
+            There is new method to register new DataObject types without
+            the need to write own DataLoader. Use
+            <a href="@TOP@/org/openide/loaders/DataLoaderPool.html#factory(java.lang.Class,%20java.lang.String,%20java.awt.Image)">
+                DataLoaderPool.factory</a> method.
+        </p>
+        </description>
+        <class package="org.openide.loaders" name="DataLoaderPool" />
+        <issue number="91665"/>
+    </change>
      <change id="layer.registration">
         <api name="loaders"/>
         <summary>Loaders are registered in layer files</summary>

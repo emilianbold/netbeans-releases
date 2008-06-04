@@ -162,6 +162,26 @@ implements ChangeListener {
         
         return ret;
     }
+    
+    /** Calls into one loader. Setups security condition to allow DataObject ocnstructor
+     * to succeed.
+     */
+    public static DataObject handleFindDataObject (DataObject.Factory factory, FileObject fo, Set<? super FileObject> rec) 
+    throws java.io.IOException {
+        DataObject ret;
+        
+        Collection<Item> prev = enterAllowContructor();
+        try {
+            // make sure this thread is allowed to recognize
+            getPOOL ().enterRecognition(fo);
+            
+            ret = factory.findDataObject (fo, rec);
+        } finally {
+            exitAllowConstructor (prev);
+        }
+        
+        return ret;
+    }
 
     /** Creates and finishes registration of MultiDataObject.
      */

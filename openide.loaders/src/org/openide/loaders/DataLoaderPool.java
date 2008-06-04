@@ -41,7 +41,10 @@
 
 package org.openide.loaders;
 
+import java.awt.Image;
 import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -476,7 +479,12 @@ implements java.io.Serializable {
         Enumeration<? extends DataObject.Factory> en = allLoaders (fo);
         while (en.hasMoreElements ()) {
             DataObject.Factory l = en.nextElement ();
-            DataObject obj = l.findDataObject (fo, recognized);
+            DataObject obj;
+            if (l instanceof DataLoader) {
+                obj = l.findDataObject (fo, recognized);
+            } else {
+                obj = DataObjectPool.handleFindDataObject(l, fo, recognized);
+            }
             if (!recognized.isEmpty()) {
                 for (FileObject f : recognized) {
                     r.markRecognized(f);
@@ -575,7 +583,42 @@ implements java.io.Serializable {
         }
         return null;
     }
-    
+
+    /** Factory method to create default implementation of a factory for
+     * data objects. It takes the class of the <code>DataObject</code> and
+     * is ready to call its constructor. The constructor needs to take two
+     * arguments: FileObject and MultiDataLoader. It can throw IOException as
+     * is usual among DataObject constructors.
+     * <p>
+     * You can also invoke this method from a layer by following definition:
+     * <pre>
+     * &lt;file name="nameofyourfile.instance"&gt;
+     *   &lt;attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/&gt;
+     *   &lt;attr name="dataObjectClass" stringvalue="org.your.pkg.YourDataObject"/&gt;
+     *   &lt;attr name="mimeType" stringvalue="yourmime/type"/&gt;
+     *   &lt;attr name="SystemFileSystem.localizingIcon" stringvalue="org/your/pkg/YourDataObject.png"/&gt;
+     * &lt;/file&gt;
+     * </pre>
+     * @param clazz the class of the data object to create. Must have appropriate
+     *    constructor.
+     * @param mimeType the mime type associated with the object, used for 
+     *    example to create the right actions for the object's node
+     * @param image icon to use by default for nodes representing data objects
+     *    created with this factory
+     * @return factory to be registered in <code>Loaders/mime/type/Factories</code>
+     *    in some module layer file
+     * @since 7.1
+     */
+    public static <T extends DataObject> DataObject.Factory factory(
+        Class<T> dataObjectClass, String mimeType, Image image
+    ) {
+        return new MimeFactory<T>(dataObjectClass, mimeType, image, null);
+    }
+    static <T extends DataObject> DataObject.Factory factory(
+        FileObject fo
+    ) throws ClassNotFoundException {
+        return MimeFactory.layer(fo);
+    }
     
     /** Lazy getter for system loaders.
      */
@@ -801,11 +844,7 @@ private static class InstanceLoader extends UniFileLoader {
         };
     }
 } // end of InstanceLoader
-
-
-
     
-
 /** Loader for file objects not recognized by any other loader */
 private static final class DefaultLoader extends MultiFileLoader {
     static final long serialVersionUID =-6761887227412396555L;
