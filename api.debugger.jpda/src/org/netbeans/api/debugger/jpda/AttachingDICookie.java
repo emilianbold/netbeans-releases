@@ -199,6 +199,18 @@ public final class AttachingDICookie extends AbstractDICookie {
     }
 
     /**
+     * Returns process ID.
+     *
+     * @return the process ID
+     * @since 2.16
+     */
+    public String getProcessID () {
+        Argument a = args.get ("pid");
+        if (a == null) return null;
+        return a.value ();
+    }
+
+    /**
      * Creates a new instance of VirtualMachine for this DebuggerInfo Cookie.
      *
      * @return a new instance of VirtualMachine for this DebuggerInfo Cookie
