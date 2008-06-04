@@ -237,7 +237,16 @@ public class TaskProcessor {
         }        
     }
         
-    public static void runUserTask (GenericUserTask runnable) throws ParseException {
+    public static void runUserTask (final GenericUserTask task) throws ParseException {
+        Parameters.notNull("task", task);
+        boolean a = false;
+        assert a = true;
+        if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
+            StackTraceElement stackTraceElement = findCaller(Thread.currentThread().getStackTrace());
+            if (stackTraceElement != null && warnedAboutRunInEQ.add(stackTraceElement)) {
+                LOGGER.warning("Source.runUserTask called in AWT event thread by: " + stackTraceElement); // NOI18N
+            }
+        }
         final Request request = currentRequest.getTaskToCancel();
         try {
             if (request != null) {
@@ -245,7 +254,7 @@ public class TaskProcessor {
             }            
             parserLock.lock();
             try {
-                runnable.run ();
+                task.run ();
             } catch (final Exception e) {
                 final ParseException ioe = new ParseException ();
                 ioe.initCause(e);
@@ -335,6 +344,7 @@ public class TaskProcessor {
         }
     }
     
+    //Package private methods needed by the Utilities accessor    
     static void acquireParserLock () {
         parserLock.lock();
     }
