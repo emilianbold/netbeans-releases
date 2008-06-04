@@ -114,7 +114,7 @@ public final class Snapshot {
         String              mimeType
     ) {
         return new Embedding (
-            new Snapshot (charSequence, source, mimeType, new int[][] {new int[] {}}),
+            new Snapshot (charSequence, source, mimeType, new int[][] {}),
             mimeType
         
         );
@@ -209,9 +209,9 @@ public final class Snapshot {
     }
     
     /**
-     * Returns source this shapshot has originally been created from.
+     * Returns source this snapshot has originally been created from.
      * 
-     * @return              a source this shapshot has originally been created from.
+     * @return              a source this snapshot has originally been created from.
      */
     public Source getSource () {
         return source;
