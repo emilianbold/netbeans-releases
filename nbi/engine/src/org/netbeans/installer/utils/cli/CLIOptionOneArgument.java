@@ -34,26 +34,16 @@
  * copyright holder.
  */
 
-package org.netbeans.installer.utils.cli.commands;
-
-import org.netbeans.installer.utils.cli.*;
-import org.netbeans.installer.utils.SystemUtils;
-import org.netbeans.installer.utils.exceptions.CLIArgumentException;
+package org.netbeans.installer.utils.cli;
 
 /**
  *
  * @author Dmitry Lipin
  */
-public class NoSpaceCheckCommand extends NoArgumentsCommand {
+public abstract class CLIOptionOneArgument extends CLIOption{
 
     @Override
-    public void runCommand(CLIArgumentsList arguments) throws CLIArgumentException {
-        System.setProperty(SystemUtils.NO_SPACE_CHECK_PROPERTY, UNARY_ARG_VALUE);
+    protected int getNumberOfArguments() {
+        return 1;
     }
-
-    public String getName() {
-        return NO_SPACE_CHECK_ARG;
-    }
-    public static final String NO_SPACE_CHECK_ARG =
-            "--nospacecheck"; // NOI18N
 }

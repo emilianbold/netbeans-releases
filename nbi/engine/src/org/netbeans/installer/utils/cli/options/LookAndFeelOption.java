@@ -33,41 +33,44 @@
  * the option applies only if the new code is made subject to such option by the
  * copyright holder.
  */
-package org.netbeans.installer.utils.cli.commands;
 
-import org.netbeans.installer.utils.cli.OneArgumentCommand;
-import java.io.File;
-import org.netbeans.installer.Installer;
+package org.netbeans.installer.utils.cli.options;
+
+import org.netbeans.installer.utils.cli.*;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.cli.CLIArgumentsList;
+import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.exceptions.CLIArgumentException;
 
 /**
  *
  * @author Dmitry Lipin
  */
-public class UserdirCommand extends OneArgumentCommand {
+public class LookAndFeelOption extends CLIOptionOneArgument {
 
-    @Override
-    public void runCommand(CLIArgumentsList arguments) throws CLIArgumentException {
-        System.setProperty(Installer.LOCAL_DIRECTORY_PATH_PROPERTY,
-                new File(arguments.next()).getAbsolutePath());
+    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+        final String value = arguments.next();
+        System.setProperty(
+                UiUtils.LAF_CLASS_NAME_PROPERTY,
+                value);
+
+        LogManager.log(
+                "... class name: " + value); // NOI18N
     }
-
-    public String getName() {
-        return USERDIR_ARG;
-    }
-
-    
+ 
     @Override
     protected String getLackOfArgumentsMessage() {
         return ResourceUtils.getString(
-                UserdirCommand.class,
-                WARNING_BAD_USERDIR_ARG_KEY,
-                USERDIR_ARG);
+                LookAndFeelOption.class,
+                WARNING_BAD_LOOK_AND_FEEL_ARG_KEY,
+                LOOK_AND_FEEL_ARG);
     }
-    public static final String USERDIR_ARG = 
-            "--userdir";// NOI18N
-    private static final String WARNING_BAD_USERDIR_ARG_KEY =
-            "C.warning.bad.userdir.arg"; // NOI18N
+
+    public String getName() {
+        return LOOK_AND_FEEL_ARG;
+    }
+    private static final String WARNING_BAD_LOOK_AND_FEEL_ARG_KEY =
+            "O.warning.bad.look.and.feel.arg"; // NOI18N
+    public static final String LOOK_AND_FEEL_ARG =
+            "--look-and-feel";// NOI18N
 }

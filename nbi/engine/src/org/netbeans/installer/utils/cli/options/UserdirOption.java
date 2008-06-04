@@ -33,38 +33,41 @@
  * the option applies only if the new code is made subject to such option by the
  * copyright holder.
  */
+package org.netbeans.installer.utils.cli.options;
 
-package org.netbeans.installer.utils.cli.commands;
-
+import org.netbeans.installer.utils.cli.CLIOptionOneArgument;
+import java.io.File;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.exceptions.CLIArgumentException;
 import org.netbeans.installer.utils.cli.CLIArgumentsList;
-import org.netbeans.installer.utils.cli.OneArgumentCommand;
+import org.netbeans.installer.utils.exceptions.CLIArgumentException;
 
 /**
  *
  * @author Dmitry Lipin
  */
-public class BundlePropertiesCommand extends OneArgumentCommand {
+public class UserdirOption extends CLIOptionOneArgument {
 
     @Override
-    public void runCommand(CLIArgumentsList arguments) throws CLIArgumentException {        
-        System.setProperty(Installer.BUNDLE_PROPERTIES_FILE_PROPERTY,
-                arguments.next());
-    }
-
-    @Override
-    protected String getLackOfArgumentsMessage() {
-        return ResourceUtils.getString(BundlePropertiesCommand.class,
-                WARNING_BAD_BUNDLE_PROPERTIES_ARG_KEY, BUNDLE_PROPERTIES_ARG);
+    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+        System.setProperty(Installer.LOCAL_DIRECTORY_PATH_PROPERTY,
+                new File(arguments.next()).getAbsolutePath());
     }
 
     public String getName() {
-        return BUNDLE_PROPERTIES_ARG;
+        return USERDIR_ARG;
     }
-    public static final String BUNDLE_PROPERTIES_ARG = 
-            "--bundle-properties"; // NOI18N
-    private static final String WARNING_BAD_BUNDLE_PROPERTIES_ARG_KEY =
-            "C.warning.bad.bundle.properties.arg"; // NOI18N
+
+    
+    @Override
+    protected String getLackOfArgumentsMessage() {
+        return ResourceUtils.getString(
+                UserdirOption.class,
+                WARNING_BAD_USERDIR_ARG_KEY,
+                USERDIR_ARG);
+    }
+    public static final String USERDIR_ARG = 
+            "--userdir";// NOI18N
+    private static final String WARNING_BAD_USERDIR_ARG_KEY =
+            "O.warning.bad.userdir.arg"; // NOI18N
 }

@@ -33,26 +33,53 @@
  * the option applies only if the new code is made subject to such option by the
  * copyright holder.
  */
-package org.netbeans.installer.utils.cli.commands;
 
-import org.netbeans.installer.utils.cli.*;
-import org.netbeans.installer.product.Registry;
+package org.netbeans.installer.utils.cli;
+
+import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.exceptions.CLIArgumentException;
 
 /**
  *
  * @author Dmitry Lipin
  */
-public class SuggestUninstallCommand extends NoArgumentsCommand {
+public abstract class CLIOption {
 
-    @Override
-    public void runCommand(CLIArgumentsList arguments) throws CLIArgumentException {
-        System.setProperty(Registry.SUGGEST_UNINSTALL_PROPERTY, UNARY_ARG_VALUE);
+    protected static final String PARSING_ARGUMENT_STRING =
+            "parsing command line parameter \"{0}\"";//NOI18N
+    protected static final String UNARY_ARG_VALUE =
+            Boolean.toString(true); // NOI18N
+
+    public void init() {
+        LogManager.logIndent(StringUtils.format(
+                PARSING_ARGUMENT_STRING, getName())); // NOI18N
+    }
+    public boolean canExecute(String arg) {
+        return getName().equalsIgnoreCase(arg);
+    }
+    public void finish() {
+        LogManager.unindent(); // NOI18N
     }
 
-    public String getName() {
-        return SUGGEST_UNINSTALL_ARG;
+    public void validateOptions(CLIArgumentsList arguments) throws CLIArgumentException {
+        validateArgumentsNumber(arguments);
     }
-    public static final String SUGGEST_UNINSTALL_ARG =
-            "--suggest-uninstall";// NOI18N
+
+    private void validateArgumentsNumber(CLIArgumentsList arguments) throws CLIArgumentException {
+        final int number = getNumberOfArguments();
+        if (number != 0 && (number + arguments.getIndex()) >= arguments.length()) {
+            throw new CLIArgumentException(getLackOfArgumentsMessage());
+        }
+    }
+
+    protected String getLackOfArgumentsMessage() {
+        return null;
+    }
+
+    protected abstract int getNumberOfArguments();
+
+    public abstract String getName();
+
+    public abstract void execute(CLIArgumentsList arguments) throws CLIArgumentException;
 }

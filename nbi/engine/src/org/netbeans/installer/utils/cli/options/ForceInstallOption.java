@@ -33,27 +33,28 @@
  * the option applies only if the new code is made subject to such option by the
  * copyright holder.
  */
-package org.netbeans.installer.utils.cli.commands;
 
-import org.netbeans.installer.utils.cli.*;
+package org.netbeans.installer.utils.cli.options;
+
+import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.exceptions.CLIArgumentException;
-import org.netbeans.installer.utils.helper.UiMode;
-
+import org.netbeans.installer.utils.cli.CLIArgumentsList;
+import org.netbeans.installer.utils.cli.CLIOptionZeroArguments;
 
 /**
  *
  * @author Dmitry Lipin
  */
-public class SilentCommand extends NoArgumentsCommand {
+public class ForceInstallOption extends CLIOptionZeroArguments {
 
     @Override
-    public void runCommand(CLIArgumentsList arguments) throws CLIArgumentException {
-         UiMode.setCurrentUiMode(UiMode.SILENT);
+    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+        System.setProperty(Registry.FORCE_INSTALL_PROPERTY, UNARY_ARG_VALUE);
     }
 
     public String getName() {
-        return SILENT_ARG;
+        return FORCE_INSTALL_ARG;
     }
-    public static final String SILENT_ARG = 
-            "--silent";// NOI18N
+    public static final String FORCE_INSTALL_ARG = 
+            "--force-install";// NOI18N
 }

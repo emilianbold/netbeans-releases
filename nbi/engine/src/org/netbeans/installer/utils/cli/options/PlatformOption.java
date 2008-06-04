@@ -34,54 +34,37 @@
  * copyright holder.
  */
 
-package org.netbeans.installer.utils.cli.commands;
+package org.netbeans.installer.utils.cli.options;
 
 import org.netbeans.installer.utils.cli.*;
-import java.io.File;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.exceptions.CLIArgumentException;
-import org.netbeans.installer.utils.cli.CLIArgumentsList;
-import org.netbeans.installer.utils.helper.ExecutionMode;
 
 /**
  *
  * @author Dmitry Lipin
  */
-public class CreateBundleCommand extends OneArgumentCommand {
+public class PlatformOption extends CLIOptionOneArgument {
 
-    public void runCommand(CLIArgumentsList arguments) throws CLIArgumentException {
-        File targetFile = new File(arguments.next()).getAbsoluteFile();
-        if (targetFile.exists()) {
-            throw new CLIArgumentException(ResourceUtils.getString(
-                    CreateBundleCommand.class,
-                    WARNING_BUNDLE_FILE_EXISTS_KEY,
-                    CREATE_BUNDLE_ARG,
-                    targetFile));
-        } else {
-            ExecutionMode.setCurrentExecutionMode(
-                    ExecutionMode.CREATE_BUNDLE);
-            System.setProperty(
-                    Registry.CREATE_BUNDLE_PATH_PROPERTY,
-                    targetFile.getAbsolutePath());
-        }
+    @Override
+    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+        System.setProperty(Registry.TARGET_PLATFORM_PROPERTY, arguments.next());
+    }
+
+    @Override
+    protected String getLackOfArgumentsMessage() {
+        return ResourceUtils.getString(
+                PlatformOption.class,
+                WARNING_BAD_PLATFORM_ARG_KEY,
+                PLATFORM_ARG);
     }
 
     public String getName() {
-        return CREATE_BUNDLE_ARG;
+        return PLATFORM_ARG;
     }
-
-      @Override
-    protected String getLackOfArgumentsMessage() {
-        return ResourceUtils.getString(
-                CreateBundleCommand.class,
-                WARNING_BAD_CREATE_BUNDLE_ARG_KEY,
-                CREATE_BUNDLE_ARG);
-    }
-    public static final String CREATE_BUNDLE_ARG =
-            "--create-bundle";// NOI18N
-    private static final String WARNING_BUNDLE_FILE_EXISTS_KEY =
-            "C.warning.bundle.file.exists"; // NOI18N
-    private static final String WARNING_BAD_CREATE_BUNDLE_ARG_KEY =
-            "C.warning.bad.create.bundle.arg"; // NOI18N
+    public static final String PLATFORM_ARG =
+            "--platform";// NOI18N
+    private static final String WARNING_BAD_PLATFORM_ARG_KEY =
+            "O.warning.bad.platform.arg"; // NOI18N
 }

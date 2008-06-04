@@ -64,7 +64,7 @@ import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.XMLUtils;
-import org.netbeans.installer.utils.cli.commands.*;
+import org.netbeans.installer.utils.cli.options.*;
 import org.netbeans.installer.utils.cli.CLIHandler;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.EngineResources;
@@ -344,8 +344,8 @@ public class Installer implements FinishHandler {
                 ErrorManager.notifyWarning(ResourceUtils.getString(
                         Installer.class,
                         WARNING_SILENT_WITHOUT_STATE_KEY,
-                         SilentCommand.SILENT_ARG,
-                         StateCommand.STATE_ARG));
+                         SilentOption.SILENT_ARG,
+                         StateOption.STATE_ARG));
             }
         }
         */
@@ -441,7 +441,7 @@ public class Installer implements FinishHandler {
             lock.deleteOnExit();
         } else {
             LogManager.log("... running with " + // NOI18N
-                    IgnoreLockCommand.IGNORE_LOCK_ARG + ", skipping this step"); // NOI18N
+                    IgnoreLockOption.IGNORE_LOCK_ARG + ", skipping this step"); // NOI18N
         }
         
         LogManager.logUnindent("finished creating lock file"); // NOI18N
@@ -520,7 +520,7 @@ public class Installer implements FinishHandler {
                     if(!name.startsWith(dataDir) || // all except "data/""
                             name.equals(dataDir) || // "data/"
                             name.matches(EngineResources.ENGINE_PROPERTIES_PATTERN) || // engine properties
-                            name.equals(CLIHandler.COMMANDS_LIST)) { // additional CLI commands list
+                            name.equals(CLIHandler.OPTIONS_LIST)) { // additional CLI commands list
                         jos.putNextEntry(new JarEntry(name));
                         if(!name.endsWith(StringUtils.FORWARD_SLASH)) {
                             StreamUtils.transferData(ResourceUtils.getResource(name), jos);

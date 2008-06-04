@@ -34,16 +34,26 @@
  * copyright holder.
  */
 
-package org.netbeans.installer.utils.cli;
+package org.netbeans.installer.utils.cli.options;
+
+import org.netbeans.installer.utils.cli.*;
+import org.netbeans.installer.Installer;
+import org.netbeans.installer.utils.exceptions.CLIArgumentException;
 
 /**
  *
  * @author Dmitry Lipin
  */
-public abstract class NoArgumentsCommand extends CLICommand {
+public class IgnoreLockOption extends CLIOptionZeroArguments {
 
     @Override
-    protected int getNumberOfArguments() {
-        return 0;
+    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+        System.setProperty(Installer.IGNORE_LOCK_FILE_PROPERTY, UNARY_ARG_VALUE);
     }
+
+    public String getName() {
+        return IGNORE_LOCK_ARG;
+    }
+    public static final String IGNORE_LOCK_ARG = 
+            "--ignore-lock";// NOI18N
 }

@@ -34,16 +34,57 @@
  * copyright holder.
  */
 
-package org.netbeans.installer.utils.cli;
+package org.netbeans.installer.utils.cli.options;
+
+import org.netbeans.installer.utils.cli.*;
+import java.util.Arrays;
+import org.netbeans.installer.product.Registry;
+import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.exceptions.CLIArgumentException;
 
 /**
  *
  * @author Dmitry Lipin
  */
-public abstract class OneArgumentCommand extends CLICommand{
+public class RegistryOption extends CLIOptionOneArgument {
 
     @Override
-    protected int getNumberOfArguments() {
-        return 1;
+    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+
+        final String value = arguments.next();
+
+        final String existing = System.getProperty(
+                Registry.REMOTE_PRODUCT_REGISTRIES_PROPERTY);
+
+        if (existing == null) {
+            System.setProperty(
+                    Registry.REMOTE_PRODUCT_REGISTRIES_PROPERTY,
+                    value);
+        } else {
+            if (!Arrays.asList(
+                    existing.split(StringUtils.LF)).contains(value)) {
+                System.setProperty(
+                        Registry.REMOTE_PRODUCT_REGISTRIES_PROPERTY,
+                        existing + StringUtils.LF + value);
+            }
+        }
+
     }
+
+    @Override
+    protected String getLackOfArgumentsMessage() {
+        return ResourceUtils.getString(
+                RecordOption.class,
+                WARNING_BAD_REGISTRY_ARG_KEY,
+                REGISTRY_ARG);
+    }
+
+    public String getName() {
+        return REGISTRY_ARG;
+    }
+    public static final String REGISTRY_ARG = 
+            "--registry";// NOI18N
+    private static final String WARNING_BAD_REGISTRY_ARG_KEY =
+            "O.warning.bad.registry.arg"; // NOI18N
 }

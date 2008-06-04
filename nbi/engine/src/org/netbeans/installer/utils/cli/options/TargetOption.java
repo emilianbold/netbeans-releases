@@ -33,28 +33,48 @@
  * the option applies only if the new code is made subject to such option by the
  * copyright holder.
  */
-
-package org.netbeans.installer.utils.cli.commands;
+package org.netbeans.installer.utils.cli.options;
 
 import org.netbeans.installer.product.Registry;
+import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.exceptions.CLIArgumentException;
 import org.netbeans.installer.utils.cli.CLIArgumentsList;
-import org.netbeans.installer.utils.cli.NoArgumentsCommand;
+import org.netbeans.installer.utils.cli.CLIOptionTwoArguments;
 
 /**
  *
  * @author Dmitry Lipin
  */
-public class ForceInstallCommand extends NoArgumentsCommand {
+public class TargetOption extends CLIOptionTwoArguments {
 
+    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+        final String uid = arguments.next();
+        final String version = arguments.next();
+
+        System.setProperty(Registry.TARGET_COMPONENT_UID_PROPERTY, uid);
+        System.setProperty(Registry.TARGET_COMPONENT_VERSION_PROPERTY, version);
+
+        LogManager.log(
+                "target component:"); // NOI18N
+        LogManager.log(
+                "... uid:     " + uid); // NOI18N
+        LogManager.log(
+                "... version: " + version); // NOI18N
+    }
+    
     @Override
-    public void runCommand(CLIArgumentsList arguments) throws CLIArgumentException {
-        System.setProperty(Registry.FORCE_INSTALL_PROPERTY, UNARY_ARG_VALUE);
+    protected String getLackOfArgumentsMessage() {
+        return ResourceUtils.getString(
+                TargetOption.class, WARNING_BAD_TARGET_ARG_KEY,
+                TARGET_ARG);
     }
 
     public String getName() {
-        return FORCE_INSTALL_ARG;
+        return TARGET_ARG;
     }
-    public static final String FORCE_INSTALL_ARG = 
-            "--force-install";// NOI18N
+    public static final String TARGET_ARG =
+            "--target";// NOI18N
+    private static final String WARNING_BAD_TARGET_ARG_KEY =
+            "O.warning.bad.target.arg"; // NOI18N
 }

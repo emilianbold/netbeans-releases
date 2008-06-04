@@ -33,48 +33,18 @@
  * the option applies only if the new code is made subject to such option by the
  * copyright holder.
  */
-package org.netbeans.installer.utils.cli.commands;
 
-import org.netbeans.installer.product.Registry;
-import org.netbeans.installer.utils.LogManager;
-import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.exceptions.CLIArgumentException;
-import org.netbeans.installer.utils.cli.CLIArgumentsList;
-import org.netbeans.installer.utils.cli.TwoArgumentsCommand;
+package org.netbeans.installer.utils.cli;
 
 /**
  *
  * @author Dmitry Lipin
  */
-public class TargetCommand extends TwoArgumentsCommand {
+public abstract class CLIOptionTwoArguments extends CLIOption {
 
-    public void runCommand(CLIArgumentsList arguments) throws CLIArgumentException {
-        final String uid = arguments.next();
-        final String version = arguments.next();
-
-        System.setProperty(Registry.TARGET_COMPONENT_UID_PROPERTY, uid);
-        System.setProperty(Registry.TARGET_COMPONENT_VERSION_PROPERTY, version);
-
-        LogManager.log(
-                "target component:"); // NOI18N
-        LogManager.log(
-                "... uid:     " + uid); // NOI18N
-        LogManager.log(
-                "... version: " + version); // NOI18N
+    @Override
+    protected int getNumberOfArguments() {
+        return 2;
     }
     
-    @Override
-    protected String getLackOfArgumentsMessage() {
-        return ResourceUtils.getString(
-                TargetCommand.class, WARNING_BAD_TARGET_ARG_KEY,
-                TARGET_ARG);
-    }
-
-    public String getName() {
-        return TARGET_ARG;
-    }
-    public static final String TARGET_ARG =
-            "--target";// NOI18N
-    private static final String WARNING_BAD_TARGET_ARG_KEY =
-            "C.warning.bad.target.arg"; // NOI18N
 }

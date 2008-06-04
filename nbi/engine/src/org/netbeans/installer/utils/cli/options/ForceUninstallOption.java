@@ -34,7 +34,7 @@
  * copyright holder.
  */
 
-package org.netbeans.installer.utils.cli.commands;
+package org.netbeans.installer.utils.cli.options;
 
 import org.netbeans.installer.utils.cli.*;
 import org.netbeans.installer.product.Registry;
@@ -44,10 +44,10 @@ import org.netbeans.installer.utils.exceptions.CLIArgumentException;
  *
  * @author Dmitry Lipin
  */
-public class ForceUninstallCommand extends NoArgumentsCommand {
+public class ForceUninstallOption extends CLIOptionZeroArguments {
 
     @Override
-    public void runCommand(CLIArgumentsList arguments) throws CLIArgumentException {
+    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
         System.setProperty(Registry.FORCE_UNINSTALL_PROPERTY, UNARY_ARG_VALUE);
     }
 

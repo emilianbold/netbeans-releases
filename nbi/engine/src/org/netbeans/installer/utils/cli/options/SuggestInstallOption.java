@@ -33,27 +33,26 @@
  * the option applies only if the new code is made subject to such option by the
  * copyright holder.
  */
-
-package org.netbeans.installer.utils.cli.commands;
+package org.netbeans.installer.utils.cli.options;
 
 import org.netbeans.installer.utils.cli.*;
-import org.netbeans.installer.Installer;
+import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.exceptions.CLIArgumentException;
 
 /**
  *
  * @author Dmitry Lipin
  */
-public class IgnoreLockCommand extends NoArgumentsCommand {
+public class SuggestInstallOption extends CLIOptionZeroArguments {
 
     @Override
-    public void runCommand(CLIArgumentsList arguments) throws CLIArgumentException {
-        System.setProperty(Installer.IGNORE_LOCK_FILE_PROPERTY, UNARY_ARG_VALUE);
+    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+        System.setProperty(Registry.SUGGEST_INSTALL_PROPERTY, UNARY_ARG_VALUE);
     }
 
     public String getName() {
-        return IGNORE_LOCK_ARG;
+        return SUGGEST_INSTALL_ARG;
     }
-    public static final String IGNORE_LOCK_ARG = 
-            "--ignore-lock";// NOI18N
+    public static final String SUGGEST_INSTALL_ARG =
+            "--suggest-install";// NOI18N
 }

@@ -33,54 +33,89 @@
  * the option applies only if the new code is made subject to such option by the
  * copyright holder.
  */
-
-package org.netbeans.installer.utils.cli.commands;
+package org.netbeans.installer.utils.cli.options;
 
 import org.netbeans.installer.utils.cli.*;
-import java.io.File;
-import org.netbeans.installer.product.Registry;
+import java.util.Locale;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.exceptions.CLIArgumentException;
 
 /**
  *
  * @author Dmitry Lipin
  */
-public class RecordCommand extends OneArgumentCommand {
+public class LocaleOption extends CLIOptionOneArgument {
+
+    private Locale targetLocale;
+
+    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+        Locale.setDefault(targetLocale);
+        LogManager.log(
+                "... locale set to: " + targetLocale); // NOI18N
+
+    }
+
+    private void initializeLocale(String value) {
+        final String[] valueParts = value.split(StringUtils.UNDERSCORE);
+        switch (valueParts.length) {
+            case 1:
+                targetLocale = new Locale(
+                        valueParts[0]);
+                break;
+            case 2:
+                targetLocale = new Locale(
+                        valueParts[0],
+                        valueParts[1]);
+                break;
+            case 3:
+                targetLocale = new Locale(
+                        valueParts[0],
+                        valueParts[1],
+                        valueParts[2]);
+                break;
+            default:
+                targetLocale = null;
+                break;
+        }        
+    }
 
     @Override
-    public void runCommand(CLIArgumentsList arguments) throws CLIArgumentException {
-        File stateFile = new File(arguments.next()).getAbsoluteFile();
-        if (stateFile.exists()) {
-            throw new CLIArgumentException(ResourceUtils.getString(
-                    RecordCommand.class,
-                    WARNING_TARGET_STATE_FILE_EXISTS_KEY,
-                    RECORD_ARG,
-                    stateFile));
-        } else {
-            System.setProperty(
-                    Registry.TARGET_STATE_FILE_PATH_PROPERTY,
-                    stateFile.getAbsolutePath());
-        }
+    public void validateOptions(CLIArgumentsList arguments) throws CLIArgumentException {
+        super.validateOptions(arguments);
+        final String value = arguments.next();
 
+        initializeLocale(value);
+
+        if (targetLocale == null) {
+            LogManager.log(
+                    "... locale is not set properly, using " + // NOI18N
+                    "system default: " + Locale.getDefault()); // NOI18N
+            throw new CLIArgumentException(ResourceUtils.getString(
+                    LocaleOption.class,
+                    WARNING_BAD_LOCALE_ARG_PARAM_KEY,
+                    LOCALE_ARG,
+                    value));
+        }
 
     }
 
     @Override
     protected String getLackOfArgumentsMessage() {
         return ResourceUtils.getString(
-                RecordCommand.class,
-                WARNING_BAD_TARGET_STATE_FILE_ARG_KEY,
-                RECORD_ARG);
+                LocaleOption.class,
+                WARNING_BAD_LOCALE_ARG_KEY,
+                LOCALE_ARG);
     }
 
     public String getName() {
-        return RECORD_ARG;
+        return LOCALE_ARG;
     }
-    public static final String RECORD_ARG =
-            "--record";// NOI18N
-    private static final String WARNING_TARGET_STATE_FILE_EXISTS_KEY =
-            "C.warning.target.state.file.exists"; // NOI18N
-    private static final String WARNING_BAD_TARGET_STATE_FILE_ARG_KEY =
-            "C.warning.bad.target.state.file.arg"; // NOI18N
+    public static final String LOCALE_ARG =
+            "--locale";// NOI18N
+    private static final String WARNING_BAD_LOCALE_ARG_PARAM_KEY =
+            "O.warning.bad.locale.arg.param"; // NOI18N
+    private static final String WARNING_BAD_LOCALE_ARG_KEY =
+            "O.warning.bad.locale.arg"; // NOI18N
 }

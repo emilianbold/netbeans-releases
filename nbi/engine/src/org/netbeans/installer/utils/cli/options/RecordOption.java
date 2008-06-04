@@ -34,57 +34,53 @@
  * copyright holder.
  */
 
-package org.netbeans.installer.utils.cli.commands;
+package org.netbeans.installer.utils.cli.options;
 
 import org.netbeans.installer.utils.cli.*;
-import java.util.Arrays;
+import java.io.File;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.exceptions.CLIArgumentException;
 
 /**
  *
  * @author Dmitry Lipin
  */
-public class RegistryCommand extends OneArgumentCommand {
+public class RecordOption extends CLIOptionOneArgument {
 
     @Override
-    public void runCommand(CLIArgumentsList arguments) throws CLIArgumentException {
-
-        final String value = arguments.next();
-
-        final String existing = System.getProperty(
-                Registry.REMOTE_PRODUCT_REGISTRIES_PROPERTY);
-
-        if (existing == null) {
-            System.setProperty(
-                    Registry.REMOTE_PRODUCT_REGISTRIES_PROPERTY,
-                    value);
+    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+        File stateFile = new File(arguments.next()).getAbsoluteFile();
+        if (stateFile.exists()) {
+            throw new CLIArgumentException(ResourceUtils.getString(
+                    RecordOption.class,
+                    WARNING_TARGET_STATE_FILE_EXISTS_KEY,
+                    RECORD_ARG,
+                    stateFile));
         } else {
-            if (!Arrays.asList(
-                    existing.split(StringUtils.LF)).contains(value)) {
-                System.setProperty(
-                        Registry.REMOTE_PRODUCT_REGISTRIES_PROPERTY,
-                        existing + StringUtils.LF + value);
-            }
+            System.setProperty(
+                    Registry.TARGET_STATE_FILE_PATH_PROPERTY,
+                    stateFile.getAbsolutePath());
         }
+
 
     }
 
     @Override
     protected String getLackOfArgumentsMessage() {
         return ResourceUtils.getString(
-                RecordCommand.class,
-                WARNING_BAD_REGISTRY_ARG_KEY,
-                REGISTRY_ARG);
+                RecordOption.class,
+                WARNING_BAD_TARGET_STATE_FILE_ARG_KEY,
+                RECORD_ARG);
     }
 
     public String getName() {
-        return REGISTRY_ARG;
+        return RECORD_ARG;
     }
-    public static final String REGISTRY_ARG = 
-            "--registry";// NOI18N
-    private static final String WARNING_BAD_REGISTRY_ARG_KEY =
-            "C.warning.bad.registry.arg"; // NOI18N
+    public static final String RECORD_ARG =
+            "--record";// NOI18N
+    private static final String WARNING_TARGET_STATE_FILE_EXISTS_KEY =
+            "O.warning.target.state.file.exists"; // NOI18N
+    private static final String WARNING_BAD_TARGET_STATE_FILE_ARG_KEY =
+            "O.warning.bad.target.state.file.arg"; // NOI18N
 }

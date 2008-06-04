@@ -33,26 +33,53 @@
  * the option applies only if the new code is made subject to such option by the
  * copyright holder.
  */
-package org.netbeans.installer.utils.cli.commands;
+package org.netbeans.installer.utils.cli.options;
 
 import org.netbeans.installer.utils.cli.*;
+import java.io.File;
 import org.netbeans.installer.product.Registry;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.exceptions.CLIArgumentException;
 
 /**
  *
  * @author Dmitry Lipin
  */
-public class SuggestInstallCommand extends NoArgumentsCommand {
+public class StateOption extends CLIOptionOneArgument {
 
     @Override
-    public void runCommand(CLIArgumentsList arguments) throws CLIArgumentException {
-        System.setProperty(Registry.SUGGEST_INSTALL_PROPERTY, UNARY_ARG_VALUE);
+    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+        File stateFile = new File(arguments.next()).getAbsoluteFile();
+        if (!stateFile.exists()) {
+            throw new CLIArgumentException(ResourceUtils.getString(
+                    StateOption.class,
+                    WARNING_MISSING_STATE_FILE_KEY,
+                    STATE_ARG,
+                    stateFile));
+        } else {
+            System.setProperty(
+                    Registry.SOURCE_STATE_FILE_PATH_PROPERTY,
+                    stateFile.getAbsolutePath());
+        }
+
+    }
+
+    @Override
+    protected String getLackOfArgumentsMessage() {
+        return ResourceUtils.getString(
+                StateOption.class,
+                WARNING_BAD_STATE_FILE_ARG_KEY,
+                STATE_ARG);
     }
 
     public String getName() {
-        return SUGGEST_INSTALL_ARG;
+        return STATE_ARG;
     }
-    public static final String SUGGEST_INSTALL_ARG =
-            "--suggest-install";// NOI18N
+    private static final String WARNING_MISSING_STATE_FILE_KEY =
+            "O.warning.missing.state.file"; // NOI18N
+    private static final String WARNING_BAD_STATE_FILE_ARG_KEY =
+            "O.warning.bag.state.file.arg"; // NOI18N
+    public static final String STATE_ARG = 
+            "--state";// NOI18N
 }
+

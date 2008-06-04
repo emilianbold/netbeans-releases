@@ -33,44 +33,27 @@
  * the option applies only if the new code is made subject to such option by the
  * copyright holder.
  */
-
-package org.netbeans.installer.utils.cli.commands;
+package org.netbeans.installer.utils.cli.options;
 
 import org.netbeans.installer.utils.cli.*;
-import org.netbeans.installer.utils.LogManager;
-import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.exceptions.CLIArgumentException;
+import org.netbeans.installer.utils.helper.UiMode;
+
 
 /**
  *
  * @author Dmitry Lipin
  */
-public class LookAndFeelCommand extends OneArgumentCommand {
+public class SilentOption extends CLIOptionZeroArguments {
 
-    public void runCommand(CLIArgumentsList arguments) throws CLIArgumentException {
-        final String value = arguments.next();
-        System.setProperty(
-                UiUtils.LAF_CLASS_NAME_PROPERTY,
-                value);
-
-        LogManager.log(
-                "... class name: " + value); // NOI18N
-    }
- 
     @Override
-    protected String getLackOfArgumentsMessage() {
-        return ResourceUtils.getString(
-                LookAndFeelCommand.class,
-                WARNING_BAD_LOOK_AND_FEEL_ARG_KEY,
-                LOOK_AND_FEEL_ARG);
+    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+         UiMode.setCurrentUiMode(UiMode.SILENT);
     }
 
     public String getName() {
-        return LOOK_AND_FEEL_ARG;
+        return SILENT_ARG;
     }
-    private static final String WARNING_BAD_LOOK_AND_FEEL_ARG_KEY =
-            "C.warning.bad.look.and.feel.arg"; // NOI18N
-    public static final String LOOK_AND_FEEL_ARG =
-            "--look-and-feel";// NOI18N
+    public static final String SILENT_ARG = 
+            "--silent";// NOI18N
 }

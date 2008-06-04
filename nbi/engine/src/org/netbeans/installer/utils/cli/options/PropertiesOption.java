@@ -34,7 +34,7 @@
  * copyright holder.
  */
 
-package org.netbeans.installer.utils.cli.commands;
+package org.netbeans.installer.utils.cli.options;
 
 import org.netbeans.installer.utils.cli.*;
 import java.io.File;
@@ -50,12 +50,11 @@ import org.netbeans.installer.utils.exceptions.CLIArgumentException;
  *
  * @author Dmitry Lipin
  */
-public class PropertiesCommand extends OneArgumentCommand {
+public class PropertiesOption extends CLIOptionOneArgument {
 
     @Override
-    public void runCommand(CLIArgumentsList arguments) throws CLIArgumentException {
-        final String value = arguments.next();
-        final File propertiesFile = new File(value);
+    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+        final File propertiesFile = new File(arguments.next());
         InputStream is = null;
         try {
             is = new FileInputStream(propertiesFile);
@@ -79,7 +78,7 @@ public class PropertiesCommand extends OneArgumentCommand {
     @Override
     protected String getLackOfArgumentsMessage() {
         return ResourceUtils.getString(
-                PropertiesCommand.class,
+                PropertiesOption.class,
                 WARNING_BAD_PROPERTIES_ARG_KEY,
                 PROPERTIES_ARG);
     }
@@ -90,5 +89,5 @@ public class PropertiesCommand extends OneArgumentCommand {
     public static final String PROPERTIES_ARG = 
             "--properties";// NOI18N
     private static final String WARNING_BAD_PROPERTIES_ARG_KEY =
-            "C.warning.bad.properties.arg"; // NOI18N
+            "O.warning.bad.properties.arg"; // NOI18N
 }

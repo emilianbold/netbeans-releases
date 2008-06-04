@@ -33,89 +33,55 @@
  * the option applies only if the new code is made subject to such option by the
  * copyright holder.
  */
-package org.netbeans.installer.utils.cli.commands;
+
+package org.netbeans.installer.utils.cli.options;
 
 import org.netbeans.installer.utils.cli.*;
-import java.util.Locale;
-import org.netbeans.installer.utils.LogManager;
+import java.io.File;
+import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.exceptions.CLIArgumentException;
+import org.netbeans.installer.utils.cli.CLIArgumentsList;
+import org.netbeans.installer.utils.helper.ExecutionMode;
 
 /**
  *
  * @author Dmitry Lipin
  */
-public class LocaleCommand extends OneArgumentCommand {
+public class CreateBundleOption extends CLIOptionOneArgument {
 
-    private Locale targetLocale;
-
-    public void runCommand(CLIArgumentsList arguments) throws CLIArgumentException {
-        Locale.setDefault(targetLocale);
-        LogManager.log(
-                "... locale set to: " + targetLocale); // NOI18N
-
-    }
-
-    private void initializeLocale(String value) {
-        final String[] valueParts = value.split(StringUtils.UNDERSCORE);
-        switch (valueParts.length) {
-            case 1:
-                targetLocale = new Locale(
-                        valueParts[0]);
-                break;
-            case 2:
-                targetLocale = new Locale(
-                        valueParts[0],
-                        valueParts[1]);
-                break;
-            case 3:
-                targetLocale = new Locale(
-                        valueParts[0],
-                        valueParts[1],
-                        valueParts[2]);
-                break;
-            default:
-                targetLocale = null;
-                break;
-        }        
-    }
-
-    @Override
-    public void validateOptions(CLIArgumentsList arguments) throws CLIArgumentException {
-        super.validateOptions(arguments);
-        final String value = arguments.next();
-
-        initializeLocale(value);
-
-        if (targetLocale == null) {
-            LogManager.log(
-                    "... locale is not set properly, using " + // NOI18N
-                    "system default: " + Locale.getDefault()); // NOI18N
+    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+        File targetFile = new File(arguments.next()).getAbsoluteFile();
+        if (targetFile.exists()) {
             throw new CLIArgumentException(ResourceUtils.getString(
-                    LocaleCommand.class,
-                    WARNING_BAD_LOCALE_ARG_PARAM_KEY,
-                    LOCALE_ARG,
-                    value));
+                    CreateBundleOption.class,
+                    WARNING_BUNDLE_FILE_EXISTS_KEY,
+                    CREATE_BUNDLE_ARG,
+                    targetFile));
+        } else {
+            ExecutionMode.setCurrentExecutionMode(
+                    ExecutionMode.CREATE_BUNDLE);
+            System.setProperty(
+                    Registry.CREATE_BUNDLE_PATH_PROPERTY,
+                    targetFile.getAbsolutePath());
         }
-
-    }
-
-    @Override
-    protected String getLackOfArgumentsMessage() {
-        return ResourceUtils.getString(
-                LocaleCommand.class,
-                WARNING_BAD_LOCALE_ARG_KEY,
-                LOCALE_ARG);
     }
 
     public String getName() {
-        return LOCALE_ARG;
+        return CREATE_BUNDLE_ARG;
     }
-    public static final String LOCALE_ARG =
-            "--locale";// NOI18N
-    private static final String WARNING_BAD_LOCALE_ARG_PARAM_KEY =
-            "C.warning.bad.locale.arg.param"; // NOI18N
-    private static final String WARNING_BAD_LOCALE_ARG_KEY =
-            "C.warning.bad.locale.arg"; // NOI18N
+
+      @Override
+    protected String getLackOfArgumentsMessage() {
+        return ResourceUtils.getString(
+                CreateBundleOption.class,
+                WARNING_BAD_CREATE_BUNDLE_ARG_KEY,
+                CREATE_BUNDLE_ARG);
+    }
+    public static final String CREATE_BUNDLE_ARG =
+            "--create-bundle";// NOI18N
+    private static final String WARNING_BUNDLE_FILE_EXISTS_KEY =
+            "O.warning.bundle.file.exists"; // NOI18N
+    private static final String WARNING_BAD_CREATE_BUNDLE_ARG_KEY =
+            "O.warning.bad.create.bundle.arg"; // NOI18N
 }

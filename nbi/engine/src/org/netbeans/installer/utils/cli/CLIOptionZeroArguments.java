@@ -34,37 +34,16 @@
  * copyright holder.
  */
 
-package org.netbeans.installer.utils.cli.commands;
-
-import org.netbeans.installer.utils.cli.*;
-import org.netbeans.installer.product.Registry;
-import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.exceptions.CLIArgumentException;
+package org.netbeans.installer.utils.cli;
 
 /**
  *
  * @author Dmitry Lipin
  */
-public class PlatformCommand extends OneArgumentCommand {
+public abstract class CLIOptionZeroArguments extends CLIOption {
 
     @Override
-    public void runCommand(CLIArgumentsList arguments) throws CLIArgumentException {
-        System.setProperty(Registry.TARGET_PLATFORM_PROPERTY, arguments.next());
+    protected int getNumberOfArguments() {
+        return 0;
     }
-
-    @Override
-    protected String getLackOfArgumentsMessage() {
-        return ResourceUtils.getString(
-                PlatformCommand.class,
-                WARNING_BAD_PLATFORM_ARG_KEY,
-                PLATFORM_ARG);
-    }
-
-    public String getName() {
-        return PLATFORM_ARG;
-    }
-    public static final String PLATFORM_ARG =
-            "--platform";// NOI18N
-    private static final String WARNING_BAD_PLATFORM_ARG_KEY =
-            "C.warning.bad.platform.arg"; // NOI18N
 }

@@ -33,55 +33,38 @@
  * the option applies only if the new code is made subject to such option by the
  * copyright holder.
  */
-package org.netbeans.installer.utils.cli.commands;
 
-import org.netbeans.installer.utils.cli.*;
-import java.io.File;
-import org.netbeans.installer.product.Registry;
+package org.netbeans.installer.utils.cli.options;
+
+import org.netbeans.installer.Installer;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.exceptions.CLIArgumentException;
+import org.netbeans.installer.utils.cli.CLIArgumentsList;
+import org.netbeans.installer.utils.cli.CLIOptionOneArgument;
 
 /**
  *
  * @author Dmitry Lipin
  */
-public class StateCommand extends OneArgumentCommand {
+public class BundlePropertiesOption extends CLIOptionOneArgument {
 
     @Override
-    public void runCommand(CLIArgumentsList arguments) throws CLIArgumentException {
-        String value = arguments.next();
-
-        File stateFile = new File(value).getAbsoluteFile();
-        if (!stateFile.exists()) {
-            throw new CLIArgumentException(ResourceUtils.getString(
-                    StateCommand.class,
-                    WARNING_MISSING_STATE_FILE_KEY,
-                    STATE_ARG,
-                    stateFile));
-        } else {
-            System.setProperty(
-                    Registry.SOURCE_STATE_FILE_PATH_PROPERTY,
-                    stateFile.getAbsolutePath());
-        }
-
+    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {        
+        System.setProperty(Installer.BUNDLE_PROPERTIES_FILE_PROPERTY,
+                arguments.next());
     }
 
     @Override
     protected String getLackOfArgumentsMessage() {
-        return ResourceUtils.getString(
-                StateCommand.class,
-                WARNING_BAD_STATE_FILE_ARG_KEY,
-                STATE_ARG);
+        return ResourceUtils.getString(BundlePropertiesOption.class,
+                WARNING_BAD_BUNDLE_PROPERTIES_ARG_KEY, BUNDLE_PROPERTIES_ARG);
     }
 
     public String getName() {
-        return STATE_ARG;
+        return BUNDLE_PROPERTIES_ARG;
     }
-    private static final String WARNING_MISSING_STATE_FILE_KEY =
-            "C.warning.missing.state.file"; // NOI18N
-    private static final String WARNING_BAD_STATE_FILE_ARG_KEY =
-            "C.warning.bag.state.file.arg"; // NOI18N
-    public static final String STATE_ARG = 
-            "--state";// NOI18N
+    public static final String BUNDLE_PROPERTIES_ARG = 
+            "--bundle-properties"; // NOI18N
+    private static final String WARNING_BAD_BUNDLE_PROPERTIES_ARG_KEY =
+            "O.warning.bad.bundle.properties.arg"; // NOI18N
 }
-
