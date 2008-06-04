@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,20 +31,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.grailsproject.execution;
+package org.netbeans.modules.extexecution.api;
 
-import java.io.IOException;
+import java.io.Writer;
+import org.netbeans.modules.extexecution.api.input.InputProcessor;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
 
 /**
  *
- * @author schmidtm
+ * @author Petr Hejl
  */
-public interface LineSnooper {
-    void lineFilter (String line) throws IOException;
+public interface ExecutionDescriptor {
+
+    InputOutput getInputOutput();
+
+    boolean isControlable();
+
+    /* Select the tab on run */
+    boolean isFrontWindow();
+
+    /* Allows user input */
+    boolean isInputVisible();
+
+    /* Suspend the progress bar on run */
+    boolean showSuspended();
+
+    /* Show progress bar */
+    boolean showProgress();
+
+    InputProcessor getOutProcessor(OutputWriter writer);
+
+    InputProcessor getErrProcessor(OutputWriter writer);
+
+    InputProcessor getInProcessor(Writer writer);
+
+    Runnable getPreExecution();
+
+    Runnable getPostExecution();
+
 }
