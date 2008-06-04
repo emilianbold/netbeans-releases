@@ -42,6 +42,7 @@
 package org.netbeans.modules.uml.diagrams.actions.sqd;
 
 import java.awt.Point;
+import java.util.ArrayList;
 import org.netbeans.api.visual.action.MoveProvider;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
@@ -49,6 +50,7 @@ import org.netbeans.modules.uml.diagrams.edges.sqd.MessageWidget;
 import org.netbeans.modules.uml.diagrams.engines.SequenceDiagramEngine;
 import org.netbeans.modules.uml.diagrams.nodes.sqd.MessagePinWidget;
 import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
+import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.openide.windows.TopComponent;
 
@@ -99,6 +101,8 @@ public class MessageMoveProvider implements MoveProvider {
                 ((UMLDiagramTopComponent) topComp).setDiagramDirty(true);
             }
         }
+        new AfterValidationExecutor(new UpdateMessagesInModel(moveHelper.getAllMovedMessages()),widget.getScene());
+        moveHelper=null;
     }
 
     public Point getOriginalLocation(Widget widget) {

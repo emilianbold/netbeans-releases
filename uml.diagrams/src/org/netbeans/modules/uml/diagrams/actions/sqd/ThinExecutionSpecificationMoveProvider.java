@@ -49,6 +49,7 @@ import org.netbeans.modules.uml.diagrams.engines.SequenceDiagramEngine;
 import org.netbeans.modules.uml.diagrams.nodes.sqd.ExecutionSpecificationThinWidget;
 import org.netbeans.modules.uml.diagrams.nodes.sqd.MessagePinWidget;
 import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
+import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.openide.windows.TopComponent;
 
@@ -79,9 +80,9 @@ public class ThinExecutionSpecificationMoveProvider implements MoveProvider {
     }
 
     public void movementFinished(Widget widget) {
+        widget.getScene().revalidate();
         original=null;
         message=null;
-        moveHelper=null;
         DesignerScene scene=(DesignerScene) widget.getScene();
         SequenceDiagramEngine engine=(SequenceDiagramEngine) scene.getEngine();
         engine.normalizeLifelines(true, false, null);//move messages are always considered down, to avoid collaps of manually expanded lifelines
@@ -93,6 +94,8 @@ public class ThinExecutionSpecificationMoveProvider implements MoveProvider {
                 ((UMLDiagramTopComponent) topComp).setDiagramDirty(true);
             }
         }
+        new AfterValidationExecutor(new UpdateMessagesInModel(moveHelper.getAllMovedMessages()),widget.getScene());
+        moveHelper=null;
     }
 
     public Point getOriginalLocation(Widget widget) {
