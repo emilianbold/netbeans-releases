@@ -51,7 +51,7 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.modules.test.refactoring.operators.FindUsagesAction;
+import org.netbeans.modules.test.refactoring.actions.FindUsagesAction;
 import org.netbeans.modules.test.refactoring.operators.FindUsagesClassOperator;
 import org.netbeans.modules.test.refactoring.operators.FindUsagesResultOperator;
 
@@ -90,7 +90,7 @@ public class FindUsagesMethodTest extends FindUsagesTestCase {
         openSourceFile("fumethod", fileName);
         EditorOperator editor = new EditorOperator(fileName);
         editor.setCaretPosition(6, 19);
-        new FindUsagesAction().performPopup(editor);
+        new FindUsagesAction().perform(editor);
         new EventTool().waitNoEvent(1000);
         FindUsagesClassOperator findUsagesClassOperator = null;
         try {
@@ -111,7 +111,7 @@ public class FindUsagesMethodTest extends FindUsagesTestCase {
         openSourceFile("fumethod", fileName);
         EditorOperator editor = new EditorOperator(fileName);
         editor.setCaretPosition(10, 22);
-        new FindUsagesAction().performPopup(editor);
+        new FindUsagesAction().perform(editor);
         new EventTool().waitNoEvent(1000);
         FindUsagesClassOperator findUsagesClassOperator = null;
         Timeouts timeouts = JemmyProperties.getCurrentTimeouts();
@@ -140,7 +140,7 @@ public class FindUsagesMethodTest extends FindUsagesTestCase {
         openSourceFile("fumethod", fileName);
         EditorOperator editor = new EditorOperator(fileName);
         editor.setCaretPosition(14, 28);
-        new FindUsagesAction().performPopup(editor);
+        new FindUsagesAction().perform(editor);
         new EventTool().waitNoEvent(1000);
         FindUsagesClassOperator findUsagesClassOperator = null;
         Timeouts timeouts = JemmyProperties.getCurrentTimeouts();

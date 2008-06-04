@@ -122,7 +122,7 @@ public abstract class RefactoringTestCase extends NbTestCase {
         // debug info, to be removed
         //this.treeSubPackagePathToFile = treeSubPackagePathToFile;
         ProjectsTabOperator pto = new ProjectsTabOperator();
-        pto.invoke();        
+        pto.invoke();
         ProjectRootNode prn = pto.getProjectRootNode(getProjectName());
         prn.select();        
         StringTokenizer st = new StringTokenizer(treeSubPackagePathToFile, treeSeparator + "");
@@ -154,7 +154,7 @@ public abstract class RefactoringTestCase extends NbTestCase {
         return (String) getPreviewItemLabel(pathComponent);
     }
 
-    private Object getPreviewItemLabel(Object parent)  {
+    protected Object getPreviewItemLabel(Object parent)  {
         try {
             Method method = parent.getClass().getDeclaredMethod("getLabel", null);
             method.setAccessible(true);
@@ -221,7 +221,8 @@ public abstract class RefactoringTestCase extends NbTestCase {
     protected void setUp() throws Exception {        
         jemmyOutput = new PrintStream(new File(getWorkDir(), getName() + ".jemmy"));
         jemmyError = new PrintStream(new File(getWorkDir(), getName() + ".error"));        
-        JemmyProperties.setCurrentOutput(new TestOut(System.in, jemmyOutput , jemmyError));
+        //JemmyProperties.setCurrentOutput(new TestOut(System.in, jemmyOutput , jemmyError));
+        JemmyProperties.setCurrentOutput(new TestOut(System.in, jemmyOutput , System.out));
         System.out.println("Test "+getName()+" started");        
     }
 

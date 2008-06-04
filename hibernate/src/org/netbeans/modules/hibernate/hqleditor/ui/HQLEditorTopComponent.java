@@ -71,6 +71,10 @@ public final class HQLEditorTopComponent extends TopComponent {
     private static String getNextWindowTitle() {
         return NbBundle.getMessage(HQLEditorTopComponent.class, "CTL_HQLEditorTopComponent") + (++count);
     }
+    
+    public static HQLEditorTopComponent getInstance() {
+        return new HQLEditorTopComponent();
+    }
 
     public HQLEditorTopComponent() {
         initComponents();
