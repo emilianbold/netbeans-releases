@@ -79,6 +79,9 @@ import java_cup.runtime.*;
 %state ST_HEREDOC
 %state ST_START_HEREDOC
 %state ST_END_HEREDOC
+%state ST_NOWDOC
+%state ST_START_NOWDOC
+%state ST_END_NOWDOC
 %state ST_LOOKING_FOR_PROPERTY
 %state ST_LOOKING_FOR_VARNAME
 %state ST_VAR_OFFSET
@@ -88,6 +91,8 @@ import java_cup.runtime.*;
 %{
     private final List commentList = new LinkedList();
     private String heredoc = null;
+    private String nowdoc = null;
+    private int nowdoc_len  = 0;
     private String comment = null;
     private boolean asp_tags = false;
     private boolean short_tags_allowed = true;
@@ -274,6 +279,7 @@ HEREDOC_LABEL_NO_NEWLINE=({LABEL}([^a-zA-Z0-9_\x7f-\xff;$\n\r\\{]|(";"[^$\n\r\\{
 DOUBLE_QUOTES_CHARS=("{"*([^$\"\\{]|("\\"{ANY_CHAR}))|{DOUBLE_QUOTES_LITERAL_DOLLAR})
 BACKQUOTE_CHARS=("{"*([^$`\\{]|("\\"{ANY_CHAR}))|{BACKQUOTE_LITERAL_DOLLAR})
 HEREDOC_CHARS=("{"*([^$\n\r\\{]|("\\"[^\n\r]))|{HEREDOC_LITERAL_DOLLAR}|({HEREDOC_NEWLINE}+({HEREDOC_NON_LABEL}|{HEREDOC_LABEL_NO_NEWLINE})))
+NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\x7f-\xff;\n\r][^\n\r]*)|({LABEL}[;][^\n\r]+)))
 
 %%
 
@@ -994,6 +1000,68 @@ yybegin(ST_DOCBLOCK);
     return createSymbol(ASTPHP5Symbols.T_QUATE);
 }
 
+<ST_IN_SCRIPTING>b?"<<<"{TABS_AND_SPACES}[']{LABEL}[']{NEWLINE} {
+	int bprefix = (yytext().charAt(0) != '<') ? 1 : 0;
+        int startString=3+1+bprefix;
+        nowdoc_len = yylength()-bprefix-3-2-1-(yytext().charAt(yylength()-2)=='\r'?1:0);
+        while ((yytext().charAt(startString) == ' ') || (yytext().charAt(startString) == '\t')) {
+            startString++;
+            nowdoc_len--;
+        }
+        nowdoc = yytext().substring(startString,nowdoc_len+startString);
+        yybegin(ST_START_NOWDOC);
+        return createSymbol(ASTPHP5Symbols.T_START_NOWDOC);
+}
+
+<ST_START_NOWDOC>{ANY_CHAR} {
+	yypushback(1);
+	yybegin(ST_NOWDOC);
+}
+
+<ST_START_NOWDOC>{LABEL}";"?[\r\n] {
+    int label_len = yylength() - 1;
+
+    if (yytext().charAt(label_len-1)==';') {
+        label_len--;
+    }
+
+    if (label_len==nowdoc_len && yytext().substring(0,label_len).equals(nowdoc)) {
+        nowdoc=null;
+        nowdoc_len=0;
+        yybegin(ST_IN_SCRIPTING);
+        return createSymbol(ASTPHP5Symbols.T_END_NOWDOC);
+    } else {
+        yybegin(ST_NOWDOC);
+    }
+}
+
+               
+<ST_NOWDOC>{NOWDOC_CHARS}*{NEWLINE}+{LABEL}";"?[\n\r] {
+    int label_len = yylength() - 1;
+
+    if (yytext().charAt(label_len-1)==';') {
+	   label_len--;
+    }
+    if (label_len > nowdoc_len && yytext().substring(label_len - nowdoc_len,label_len).equals(nowdoc)) {
+        // we need to parse at least last character of the nowdoc label
+        yypushback(3);
+        yybegin(ST_END_NOWDOC);
+        // we need to remove the closing label from the symbol value.
+        Symbol sym = createFullSymbol(ASTPHP5Symbols.T_ENCAPSED_AND_WHITESPACE);
+        String value = (String)sym.value;
+        sym.value = value.substring(0, label_len - nowdoc_len);
+        return sym;
+    }
+    yypushback(1);
+}
+
+<ST_END_NOWDOC>{ANY_CHAR} {
+    nowdoc=null;
+    nowdoc_len=0;
+    yybegin(ST_IN_SCRIPTING);
+    return createSymbol(ASTPHP5Symbols.T_END_NOWDOC);
+}
+
 <ST_IN_SCRIPTING>b?"<<<"{TABS_AND_SPACES}{LABEL}{NEWLINE} {
     int removeChars = (yytext().charAt(0) == 'b')?4:3;
     heredoc = yytext().substring(removeChars).trim();    // for 'b<<<' or '<<<'
@@ -1117,6 +1185,6 @@ but jflex doesn't support a{n,} so we changed a{2,} to aa+
     return createSymbol(ASTPHP5Symbols.T_BACKQUATE);
 }
 
-<ST_IN_SCRIPTING,YYINITIAL,ST_DOUBLE_QUOTES,ST_BACKQUOTE,ST_HEREDOC,ST_START_HEREDOC,ST_END_HEREDOC,ST_VAR_OFFSET>{ANY_CHAR} {
+<ST_IN_SCRIPTING,YYINITIAL,ST_DOUBLE_QUOTES,ST_BACKQUOTE,ST_HEREDOC,ST_START_HEREDOC,ST_END_HEREDOC, ST_NOWDOC,ST_START_NOWDOC,ST_END_NOWDOC,ST_VAR_OFFSET>{ANY_CHAR} {
 	// do nothing
 }

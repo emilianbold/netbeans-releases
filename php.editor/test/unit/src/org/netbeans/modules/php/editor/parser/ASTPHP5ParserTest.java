@@ -42,16 +42,20 @@ package org.netbeans.modules.php.editor.parser;
 import java.io.File;
 import java.io.FileReader;
 import java.io.StringReader;
+import java.net.URL;
 import java_cup.runtime.Symbol;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.php.editor.lexer.PHPLexerUtils;
 import org.netbeans.modules.php.editor.parser.ASTPHP5Symbols;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Petr Pisl
  */
-public class ASTPHP5ParserTest extends NbTestCase {
+public class ASTPHP5ParserTest extends ParserTestBase {
     
     public ASTPHP5ParserTest(String testName) {
         super(testName);
@@ -92,20 +96,39 @@ public class ASTPHP5ParserTest extends NbTestCase {
         System.out.println("-----------------end: ------------------\n\n\n");
     }
     
-    public void testParser01 () throws Exception {
-        File testFile = new File(getDataDir(), "testfiles/TextSearchQuery.php");
-        assertTrue(testFile.exists());
-        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new FileReader(testFile));
-        ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
-        Symbol root = parser.parse();
-    }
+//    public void testParser01 () throws Exception {
+//        File testFile = new File(getDataDir(), "testfiles/TextSearchQuery.php");
+//        assertTrue(testFile.exists());
+//        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new FileReader(testFile));
+//        ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
+//        Symbol root = parser.parse();
+//    }
+//    
+//    public void testParserUnfinishedPHPDoc () throws Exception {
+//        File testFile = new File(getDataDir(), "testfiles/test01.php");
+//        assertTrue(testFile.exists());
+//        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new FileReader(testFile));
+//        ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
+//        Symbol root = parser.parse();
+//    }
     
-    public void testParserUnfinishedPHPDoc () throws Exception {
-        File testFile = new File(getDataDir(), "testfiles/test01.php");
-        assertTrue(testFile.exists());
-        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new FileReader(testFile));
-        ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
-        Symbol root = parser.parse();
+    public void testNowdoc () throws Exception {
+        performFileParserTest("nowdoc_000");
+        performFileParserTest("nowdoc_001");
+        performFileParserTest("nowdoc_002");
+        performFileParserTest("nowdoc_003");
+        performFileParserTest("nowdoc_004");
+        performFileParserTest("nowdoc_005");
+        performFileParserTest("nowdoc_006");
+        performFileParserTest("nowdoc_007");
+        performFileParserTest("nowdoc_008");
+        performFileParserTest("nowdoc_009");
+        performFileParserTest("nowdoc_010");
+        performFileParserTest("nowdoc_011");
+        performFileParserTest("nowdoc_012");
+        performFileParserTest("nowdoc_013");
+        performFileParserTest("nowdoc_014");
+        performFileParserTest("nowdoc_015");
     }
     
 }
