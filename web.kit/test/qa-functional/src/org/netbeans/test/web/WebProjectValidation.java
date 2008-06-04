@@ -50,6 +50,7 @@ import java.net.URLConnection;
 import javax.swing.JComboBox;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
@@ -83,7 +84,6 @@ import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.modules.web.NavigatorOperator;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jemmy.QueueTool;
-import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -93,8 +93,7 @@ import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
-import org.netbeans.jemmy.util.PNGEncoder;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
@@ -128,39 +127,22 @@ public class WebProjectValidation extends JellyTestCase {
         super(name);
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new WebProjectValidation("testPreconditions"));
-        suite.addTest(new WebProjectValidation("testNewWebProject"));
-        suite.addTest(new WebProjectValidation("testRegisterTomcat"));
-        suite.addTest(new WebProjectValidation("testNewJSP"));
-        suite.addTest(new WebProjectValidation("testNewJSP2"));
-//        suite.addTest(new WebProjectValidation("testJSPNavigator"));
-        suite.addTest(new WebProjectValidation("testNewServlet"));
-        suite.addTest(new WebProjectValidation("testNewServlet2"));
-        suite.addTest(new WebProjectValidation("testBuildProject"));
-        suite.addTest(new WebProjectValidation("testCompileAllJSP"));
-        suite.addTest(new WebProjectValidation("testCompileJSP"));
-        suite.addTest(new WebProjectValidation("testCleanProject"));
-        suite.addTest(new WebProjectValidation("testRunProject"));
-        suite.addTest(new WebProjectValidation("testRunJSP"));
-        suite.addTest(new WebProjectValidation("testViewServlet"));
-        suite.addTest(new WebProjectValidation("testRunServlet"));
-        suite.addTest(new WebProjectValidation("testCreateTLD"));
-        suite.addTest(new WebProjectValidation("testCreateTagHandler"));
-        suite.addTest(new WebProjectValidation("testRunTag"));
-        suite.addTest(new WebProjectValidation("testNewHTML"));
-//        suite.addTest(new WebProjectValidation("testHTMLNavigator"));
-        suite.addTest(new WebProjectValidation("testRunHTML"));
-        suite.addTest(new WebProjectValidation("testNewSegment"));
-        suite.addTest(new WebProjectValidation("testNewDocument"));
-        suite.addTest(new WebProjectValidation("testStopServer"));
-        suite.addTest(new WebProjectValidation("testStartServer"));
-        suite.addTest(new WebProjectValidation("testBrowserSettings"));
-        suite.addTest(new WebProjectValidation("testFinish"));
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(WebProjectValidation.class).addTest(
+              "testPreconditions", "testNewWebProject", "testRegisterTomcat",
+              "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
+              "testBuildProject", "testCompileAllJSP", "testCompileJSP",
+              "testCleanProject", "testRunProject", "testRunJSP", "testViewServlet",
+              "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
+              "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
+              "testStopServer", "testStartServer", "testBrowserSettings", "testFinish"
+               /*"testJSPNavigator", "testHTMLNavigator" */)
+            .enableModules(".*")
+            .clusters(".*")
+        );
     }
-    
+
     /** Use for execution inside IDE */
     public static void main(java.lang.String[] args) {
         // run whole suite
