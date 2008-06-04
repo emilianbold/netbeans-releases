@@ -47,6 +47,7 @@ import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
+import java.util.List;
 import java.util.ResourceBundle;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ResizeControlPointResolver;
@@ -67,6 +68,9 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.diagrams.nodes.EditableCompartmentWidget;
 import org.netbeans.modules.uml.diagrams.nodes.state.CompartmentSeparatorWidget;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
+import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
+import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
+import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
@@ -77,7 +81,7 @@ import org.openide.util.NbBundle;
  *
  * @author Thuy
  */
-public class SubPartitionWidget extends Widget implements PropertyChangeListener
+public class SubPartitionWidget extends Widget implements PropertyChangeListener, DiagramNodeWriter
 {
     private Scene scene;
     private IActivityPartition subPartition;
@@ -401,4 +405,34 @@ public class SubPartitionWidget extends Widget implements PropertyChangeListener
             }
         }
     };
+
+    public void save(NodeWriter nodeWriter) {
+        setNodeWriterValues(nodeWriter, this);
+        nodeWriter.beginGraphNodeWithModelBridge();
+        nodeWriter.beginContained();
+        //write contained
+        saveChildren(this, nodeWriter);
+        nodeWriter.endContained();     
+        nodeWriter.endGraphNode();
+    }
+
+    public void saveChildren(Widget widget, NodeWriter nodeWriter) {
+        if (widget == null || nodeWriter == null)
+            return;
+        
+        List<Widget> widList = widget.getChildren();
+        for (Widget child : widList) {
+            if ((child instanceof DiagramNodeWriter) && !(child instanceof Widget.Dependency)) { // we write dependencies in another section
+                ((DiagramNodeWriter) child).save(nodeWriter);
+            } else {
+                saveChildren(child, nodeWriter);
+            }
+        }
+    }
+    
+    protected void setNodeWriterValues(NodeWriter nodeWriter, Widget widget) {
+        nodeWriter = PersistenceUtil.populateNodeWriter(nodeWriter, widget);
+        nodeWriter.setHasPositionSize(true);
+        PersistenceUtil.populateProperties(nodeWriter, widget);
+    }
 }
