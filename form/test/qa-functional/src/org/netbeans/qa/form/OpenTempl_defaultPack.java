@@ -42,12 +42,12 @@ package org.netbeans.qa.form;
 
 import java.io.File;
 import java.io.IOException;
+import junit.framework.Test;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -55,8 +55,10 @@ import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
+//import org.netbeans.jemmy.Test;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  * A Test based on JellyTestCase. JellyTestCase redirects Jemmy output
@@ -96,25 +98,11 @@ public class OpenTempl_defaultPack extends JellyTestCase {
     }
 
     /** Creates suite from particular test cases. You can define order of testcases here. */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new OpenTempl_defaultPack("testApplet"));
-        suite.addTest(new OpenTempl_defaultPack("testDialog"));
-        suite.addTest(new OpenTempl_defaultPack("testFrame"));
-        suite.addTest(new OpenTempl_defaultPack("testInter"));
-        suite.addTest(new OpenTempl_defaultPack("testPanel"));
-        suite.addTest(new OpenTempl_defaultPack("testAppl"));
-        suite.addTest(new OpenTempl_defaultPack("testMidi"));
-        suite.addTest(new OpenTempl_defaultPack("testBean"));
-        return suite;
-    }
-
-    /* Method allowing test execution directly from the IDE. */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
-    // run only selected test case
-    //junit.textui.TestRunner.run(new DesktopAppTest("test1"));
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(OpenTempl_defaultPack.class).addTest(
+                "testApplet", "testDialog", "testFrame", "testInter", "testAppl", "testMidi",
+                "testPanel", "testBean").gui(true).clusters(".*"));
     }
 
     /** Called before every test case. */
@@ -329,7 +317,7 @@ public class OpenTempl_defaultPack extends JellyTestCase {
             log("Java reference file was created");
 
         } catch (Exception e) {
-            fail("Fail during create reffile: " + e.getMessage());  
+            fail("Fail during create reffile: " + e.getMessage());
         }
         if (jdkVersion == "jdk15") {
             assertFile(new File(getWorkDir() + File.separator + this.getName() + ".ref"), getGoldenFile(javafile + "JavaFile15.pass"), new File(getWorkDir(), javafile + ".diff"));
