@@ -119,16 +119,19 @@ public class CSSCompletion implements CodeCompletionHandler {
 //        System.out.println("kind: " + kind.name());
 //        System.out.println("query type: " + queryType.name());
 
-        if (prefix == null) {
-            return CodeCompletionResult.NONE;
-        }
-
         Document document = info.getDocument();
         if (document == null) {
             return CodeCompletionResult.NONE;
         }
 
         TokenSequence ts = LexerUtils.getCssTokenSequence(document, caretOffset);
+        if (ts == null || prefix == null) {
+            // No CSS tokens here: perhaps we're doing code completion in an
+            // empty CSS context like an empty HTML style attribute; in that case,
+            // just offer the CSS properties.
+            return wrapProperties(PROPERTIES.properties(), CompletionItemKind.PROPERTY, caretOffset, formatter);
+        }
+
         ts.move(caretOffset - prefix.length());
         boolean hasNext = ts.moveNext();
 

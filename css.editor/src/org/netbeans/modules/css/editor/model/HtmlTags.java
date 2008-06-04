@@ -44,7 +44,7 @@
  * Created on February 3, 2005, 9:16 AM
  */
 
-package org.netbeans.modules.css.visual.model;
+package org.netbeans.modules.css.editor.model;
 
 
 /**
