@@ -77,6 +77,7 @@ import org.netbeans.modules.parsing.api.GenericUserTask;
 import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -415,8 +416,8 @@ public final class JavaSource {
                     final MultiLanguageUserTask _task = new ClasspathInfoTask (this.classpathInfo) {
                         @Override
                         public void run(ResultIterator resultIterator) throws Exception {
-                            final Source source = resultIterator.getSnapshot();
-                            if (JavacParser.MIME_TYPE.equals(source.getMimeType())) {
+                            final Snapshot snapshot = resultIterator.getSnapshot();
+                            if (JavacParser.MIME_TYPE.equals(snapshot.getMimeType())) {
                                 Parser.Result result = resultIterator.getParserResult();
                                 final CompilationController cc = CompilationController.get(result);
                                 assert cc != null;
@@ -534,8 +535,8 @@ public final class JavaSource {
                 final MultiLanguageUserTask _task = new ClasspathInfoTask(this.classpathInfo) {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
-                        final Source source = resultIterator.getSnapshot();
-                        if (JavacParser.MIME_TYPE.equals(source.getMimeType())) {
+                        final Snapshot snapshot = resultIterator.getSnapshot();
+                        if (JavacParser.MIME_TYPE.equals(snapshot.getMimeType())) {
                             Parser.Result parserResult = resultIterator.getParserResult();
                             final CompilationController cc = CompilationController.get(parserResult);
                             assert cc != null;
