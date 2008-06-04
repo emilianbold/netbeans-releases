@@ -273,7 +273,7 @@ made subject to such option by the copyright holder.
         <version major="1" minor="15"/>
         <date day="2" month="6" year="2008"/>
         <author login="mentlicher"/>
-        <compatibility binary="incompatible" source="compatible" deletion="no" addition="yes" modification="no"/>
+        <compatibility binary="compatible" source="compatible" deletion="no" addition="yes" modification="no"/>
         <description>
             This API change is necessary for the redesign of the debugger UI and
             to be able to better control node expansions.
@@ -284,7 +284,7 @@ made subject to such option by the copyright holder.
             <p>
                 Changed classes:<br/>
                 <code>Models.TreeFeatures</code> - final class with a private
-                constructor changed to an interface.
+                constructor changed to an abstract class.
             </p>
             <p>
                 Added methods:<br/>
