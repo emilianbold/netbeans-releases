@@ -76,6 +76,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.netbeans.modules.websvc.core.ClientCreator;
+import org.netbeans.modules.websvc.core.WSStackUtils;
 
 /**
  *
@@ -101,8 +102,10 @@ public class JaxWsClientCreator implements ClientCreator {
         
     public void createClient() throws IOException {
         
-        final boolean isJsr109Supported = isJsr109Supported();
-        final boolean isJWSDPSupported = isJWSDPSupported();
+        
+        WSStackUtils stackUtils = new WSStackUtils(project);
+        final boolean isJsr109Supported = stackUtils.isJsr109Supported();
+        //final boolean isJWSDPSupported = isJWSDPSupported();
         
         // Use Progress API to display generator messages.
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(JaxWsClientCreator.class, "MSG_WizCreateClient")); //NOI18N
@@ -111,7 +114,7 @@ public class JaxWsClientCreator implements ClientCreator {
             public void run() {
                 try {
                     handle.start();
-                    generate15Client((isJsr109Supported || isJWSDPSupported), handle);
+                    generate15Client((isJsr109Supported /*|| isJWSDPSupported*/), handle);
                 } catch (IOException exc) {
                     //finish progress bar
                     handle.finish();
@@ -279,30 +282,6 @@ public class JaxWsClientCreator implements ClientCreator {
             }
         }
         return null;
-    }
-    
-    private boolean isJWSDPSupported(){
-        J2eePlatform j2eePlatform = getJ2eePlatform();
-        if(j2eePlatform != null){
-            return j2eePlatform.isToolSupported(J2eePlatform.TOOL_JWSDP);
-        }
-        return false;
-    }
-    
-    private boolean isJsr109Supported(){
-        J2eePlatform j2eePlatform = getJ2eePlatform();
-        if(j2eePlatform != null){
-            return j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
-        }
-        return false;
-    }
-    
-    private boolean isJsr109OldSupported(){
-        J2eePlatform j2eePlatform = getJ2eePlatform();
-        if(j2eePlatform != null){
-            return j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE);
-        }
-        return false;
     }
 
     /**

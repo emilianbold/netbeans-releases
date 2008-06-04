@@ -100,7 +100,7 @@ import org.openide.windows.TopComponent;
  * @author   Jan Jancura
  */
 public class TreeTable extends JPanel implements 
-ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
+ExplorerManager.Provider, PropertyChangeListener {
     
     private ExplorerManager     explorerManager;
     private MyTreeTable         treeTable;
@@ -121,7 +121,6 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
             treeTable.setHorizontalScrollBarPolicy 
                 (JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         add (treeTable, "Center");  //NOI18N
-        treeTable.getTree ().addTreeExpansionListener (this);
         ActionMap map = getActionMap();
         ExplorerManager manager = getExplorerManager();
         map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
@@ -151,7 +150,7 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
         
         // 4) set columns for given model
         columns = createColumns (model);
-        currentTreeModelRoot = new TreeModelRoot (model, this);
+        currentTreeModelRoot = new TreeModelRoot (model, treeTable);
         TreeModelNode rootNode = currentTreeModelRoot.getRootNode ();
         getExplorerManager ().setRootContext (rootNode);
         // The root node must be ready when setting the columns
@@ -209,39 +208,6 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
         if (propertyName.equals (ExplorerManager.PROP_SELECTED_NODES)) {
             tc.setActivatedNodes ((Node[]) evt.getNewValue ());
         }
-    }
-    
-    /**
-      * Called whenever an item in the tree has been expanded.
-      */
-    public void treeExpanded (TreeExpansionEvent event) {
-        model.nodeExpanded (initExpandCollapseNotify(event));
-    }
-
-    /**
-      * Called whenever an item in the tree has been collapsed.
-      */
-    public void treeCollapsed (TreeExpansionEvent event) {
-        model.nodeCollapsed (initExpandCollapseNotify(event));
-    }
-    
-    private Object initExpandCollapseNotify(TreeExpansionEvent event) {
-        Node node = Visualizer.findNode(event.getPath ().getLastPathComponent());
-        Object obj = node.getLookup().lookup(Object.class);
-        Object actOn;
-        node = node.getParentNode();
-        if (node == null) {
-            actOn = new Integer(0);
-        } else {
-            Children ch = node.getChildren();
-            if (ch instanceof TreeModelNode.TreeModelChildren) {
-                actOn = ((TreeModelNode.TreeModelChildren) ch).getTreeDepth();
-            } else {
-                actOn = ch;
-            }
-        }
-        DefaultTreeExpansionManager.get(model).setChildrenToActOn(actOn);
-        return obj;
     }
     
     private boolean equalNodes () {

@@ -101,12 +101,13 @@ public class UpdateCommand extends SvnCommand {
             // Fetching external item into '/foo/beer'
             // External at revision 3120.
             // At revision 24051.            
-            
-            if(revision != -1) {
-                Subversion.LOG.warning(
-                        "Revision notified more times : " + revision + ", " + 
-                        line.getRevision() + " for command " + getStringCommand());
-            }
+
+//          XXX can't rely on this - see also update cmd            
+//            if(revision != -1) {
+//                Subversion.LOG.warning(
+//                        "Revision notified more times : " + revision + ", " + 
+//                        line.getRevision() + " for command " + getStringCommand());
+//            }
             revision = line.getRevision();            
         }
     }        

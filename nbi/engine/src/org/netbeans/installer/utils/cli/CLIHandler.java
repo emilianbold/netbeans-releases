@@ -43,7 +43,7 @@ import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
-import org.netbeans.installer.utils.cli.commands.*;
+import org.netbeans.installer.utils.cli.options.*;
 import org.netbeans.installer.utils.exceptions.CLIArgumentException;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 
@@ -52,8 +52,8 @@ import org.netbeans.installer.utils.helper.ErrorLevel;
  * @author Dmitry Lipin
  */
 public class CLIHandler {
-    public static final String COMMANDS_LIST =
-            "data/commands.list";//NOI18N
+    public static final String OPTIONS_LIST =
+            "data/clioptions.list";//NOI18N
     private CLIArgumentsList args;
 
     public CLIHandler(String[] arguments) {
@@ -63,20 +63,20 @@ public class CLIHandler {
     public void proceed() {
         if (args.hasNext()) {
             LogManager.log("... parsing arguments : " + args.toString()); // NOI18N            
-            List<CLICommand> list = getCommands();
+            List<CLIOption> list = getOptions();
 
             while (args.hasNext()) {
                 final String currentArg = args.next();
-                for (CLICommand command : list) {
-                    if (command.canExecute(currentArg)) {
+                for (CLIOption option : list) {
+                    if (option.canExecute(currentArg)) {
                         try {
-                            command.init();
-                            command.validateOptions(args);
-                            command.runCommand(args);
+                            option.init();
+                            option.validateOptions(args);
+                            option.execute(args);
                         } catch (CLIArgumentException e) {
                             ErrorManager.notifyWarning(e.getMessage());
                         } finally {
-                            command.finish();
+                            option.finish();
                             break;
                         }
                     }
@@ -87,38 +87,38 @@ public class CLIHandler {
         }
     }
 
-    private List<CLICommand> getCommands() {
-        List<CLICommand> list = new ArrayList<CLICommand>();
-        loadDefaultCommands(list);
-        loadAdditionalCommands(list);
+    private List<CLIOption> getOptions() {
+        List<CLIOption> list = new ArrayList<CLIOption>();
+        loadDefaultOptions(list);
+        loadAdditionalOptions(list);
         return list;
     }
 
-    private void loadDefaultCommands(List<CLICommand> list) {
-        list.add(new BundlePropertiesCommand());
-        list.add(new CreateBundleCommand());
-        list.add(new ForceInstallCommand());
-        list.add(new ForceUninstallCommand());
-        list.add(new IgnoreLockCommand());
-        list.add(new LocaleCommand());
-        list.add(new LookAndFeelCommand());
-        list.add(new NoSpaceCheckCommand());
-        list.add(new PlatformCommand());
-        list.add(new PropertiesCommand());
-        list.add(new RecordCommand());
-        list.add(new RegistryCommand());
-        list.add(new SilentCommand());
-        list.add(new StateCommand());
-        list.add(new SuggestInstallCommand());
-        list.add(new SuggestUninstallCommand());
-        list.add(new TargetCommand());
-        list.add(new UserdirCommand());
+    private void loadDefaultOptions(List<CLIOption> list) {
+        list.add(new BundlePropertiesOption());
+        list.add(new CreateBundleOption());
+        list.add(new ForceInstallOption());
+        list.add(new ForceUninstallOption());
+        list.add(new IgnoreLockOption());
+        list.add(new LocaleOption());
+        list.add(new LookAndFeelOption());
+        list.add(new NoSpaceCheckOption());
+        list.add(new PlatformOption());
+        list.add(new PropertiesOption());
+        list.add(new RecordOption());
+        list.add(new RegistryOption());
+        list.add(new SilentOption());
+        list.add(new StateOption());
+        list.add(new SuggestInstallOption());
+        list.add(new SuggestUninstallOption());
+        list.add(new TargetOption());
+        list.add(new UserdirOption());
     }
 
-    private void loadAdditionalCommands(List<CLICommand> list) {
-        InputStream is = ResourceUtils.getResource(COMMANDS_LIST);
+    private void loadAdditionalOptions(List<CLIOption> list) {
+        InputStream is = ResourceUtils.getResource(OPTIONS_LIST);
         if (is != null) {
-            LogManager.log(ErrorLevel.MESSAGE, "... loading additional CLI command classes, if necessary");
+            LogManager.log(ErrorLevel.MESSAGE, "... loading additional CLI option classes, if necessary");
             try {
                 final String str = StringUtils.readStream(is);
                 final String[] lines = StringUtils.splitByLines(str);
@@ -131,13 +131,13 @@ public class CLIHandler {
                         try {
                             Class cl = Class.forName(classname);
                             Object obj = cl.newInstance();
-                            if (obj instanceof CLICommand) {
+                            if (obj instanceof CLIOption) {
                                 LogManager.log(ErrorLevel.MESSAGE, "... adding CLI class : " + obj.getClass().getName());
-                                list.add((CLICommand) obj);
+                                list.add((CLIOption) obj);
                             } else {
-                                LogManager.log(ErrorLevel.WARNING, "... the requested class is not instance of CLICommand:");
+                                LogManager.log(ErrorLevel.WARNING, "... the requested class is not instance of CLIOption:");
                                 LogManager.log(ErrorLevel.WARNING, "...... classname  : " + classname);
-                                LogManager.log(ErrorLevel.WARNING, "...... CLICommand : " + CLICommand.class.getName());
+                                LogManager.log(ErrorLevel.WARNING, "...... CLIOption : " + CLIOption.class.getName());
                             }
                         } catch (ClassNotFoundException e) {
                             LogManager.log(ErrorLevel.WARNING, e);

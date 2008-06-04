@@ -66,6 +66,13 @@ public interface CallStackFrame {
      * @return line number associated with this this stack frame
      */
     public abstract int getLineNumber (String struts);
+    
+    /**
+     * Get the depth of this stack frame.
+     * @return The depth
+     * @since 2.16
+     */
+    public abstract int getFrameDepth();
 
     /**
      * Returns the current operation (if any) at the location of this call stack frame.
@@ -183,5 +190,13 @@ public interface CallStackFrame {
      * @return thread
      */
     public abstract JPDAThread getThread ();
+    
+    /**
+     * Get the list of monitors aquired in this frame
+     * 
+     * @return the list of monitors aquired in this frame
+     * @since 2.16
+     */
+    List<MonitorInfo> getOwnedMonitors();
 }
  
