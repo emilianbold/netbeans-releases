@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.php.project.ui.wizards;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -52,7 +54,7 @@ import org.openide.util.NbBundle;
 /**
  * @author  Radek Matous, Tomas Mysik
  */
-public class RunAsScript extends RunAsPanel.InsidePanel implements RunConfigurationPanelVisual.Changeable {
+public class RunAsScript extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = -5593489817914071L;
     private final String displayName;
     final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -67,6 +69,11 @@ public class RunAsScript extends RunAsPanel.InsidePanel implements RunConfigurat
 
         initComponents();
         interpreterTextField.setText(PhpOptions.getInstance().getPhpInterpreter());
+        runAsCombo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                changeSupport.fireChange();
+            }
+        });
     }
 
     @Override
@@ -93,17 +100,17 @@ public class RunAsScript extends RunAsPanel.InsidePanel implements RunConfigurat
     }
 
     protected void validateFields() {
-        // validation is done in RunConfigurationPanel
-        changeSupport.fireChange();
+        // nothing needed in this panel
     }
 
-    public void addChangeListener(ChangeListener listener) {
+    public void addRunAsScriptListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
 
-    public void removeChangeListener(ChangeListener listener) {
+    public void removeRunAsScriptListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
     }
+
 
     /** This method is called from within the constructor to
      * initialize the form.

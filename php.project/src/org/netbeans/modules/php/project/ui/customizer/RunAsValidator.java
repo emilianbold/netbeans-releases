@@ -58,8 +58,8 @@ public final class RunAsValidator {
     /**
      * Validate given parameters and return an error message or <code>null</code> if everything is OK.
      * @param url URL to validate, must end with "/" (slash).
-     * @param indexFile file name to validate.
-     * @param arguments arguments to validate.
+     * @param indexFile file name to validate, can be <code>null</code>.
+     * @param arguments arguments to validate, can be <code>null</code>.
      * @return an error message or <code>null</code> if everything is OK.
      */
     public static String validateWebFields(String url, String indexFile, String arguments) {
@@ -68,7 +68,7 @@ public final class RunAsValidator {
             err = NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUrl");
         } else if (!url.endsWith("/")) { // NOI18N
             err = NbBundle.getMessage(RunAsValidator.class, "MSG_UrlNotTrailingSlash");
-        } else if (!Utils.isValidFileName(indexFile)) {
+        } else if (indexFile != null && !Utils.isValidFileName(indexFile)) {
             err = NbBundle.getMessage(RunAsValidator.class, "MSG_IllegalIndexName");
         }
         //XXX validation for arguments?

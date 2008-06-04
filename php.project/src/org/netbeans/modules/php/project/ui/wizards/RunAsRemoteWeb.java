@@ -58,7 +58,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
 import org.netbeans.modules.php.project.connections.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
@@ -70,13 +69,13 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-public class RunAsRemoteWeb extends RunAsPanel.InsidePanel implements RunConfigurationPanelVisual.Changeable {
+public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = -559266988746891271L;
-    final ChangeSupport changeSupport = new ChangeSupport(this);
-    private static final RemoteConfiguration NO_REMOTE_CONFIGURATION = new RemoteConfiguration(
+    static final RemoteConfiguration NO_REMOTE_CONFIGURATION = new RemoteConfiguration(
             NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration"), "", null, null, 0, null, false, null, 0); // NOI18N
     private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.ON_RUN;
 
+    final ChangeSupport changeSupport = new ChangeSupport(this);
     private final JLabel[] labels;
     private final JTextField[] textFields;
     private final String[] propertyNames;
@@ -101,8 +100,8 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel implements RunConfigu
             uploadDirectoryTextField,
         };
         propertyNames = new String[] {
-            PhpProjectProperties.URL,
-            PhpProjectProperties.REMOTE_DIRECTORY,
+            RunConfigurationPanel.URL,
+            RunConfigurationPanel.REMOTE_DIRECTORY,
         };
         assert labels.length == textFields.length && labels.length == propertyNames.length;
 
@@ -126,7 +125,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel implements RunConfigu
                 return remoteConfiguration.getName();
             }
         };
-        remoteConnectionComboBox.addActionListener(new ComboBoxUpdater(PhpProjectProperties.REMOTE_CONNECTION, remoteConnectionLabel,
+        remoteConnectionComboBox.addActionListener(new ComboBoxUpdater(RunConfigurationPanel.REMOTE_CONNECTION, remoteConnectionLabel,
                 remoteConnectionComboBox, remoteConfigurationConvertor));
         // remote upload
         ComboBoxSelectedItemConvertor remoteUploadConvertor = new ComboBoxSelectedItemConvertor() {
@@ -137,8 +136,13 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel implements RunConfigu
                 return uploadFiles.name();
             }
         };
-        uploadFilesComboBox.addActionListener(new ComboBoxUpdater(PhpProjectProperties.REMOTE_UPLOAD, uploadFilesLabel, uploadFilesComboBox,
+        uploadFilesComboBox.addActionListener(new ComboBoxUpdater(RunConfigurationPanel.REMOTE_UPLOAD, uploadFilesLabel, uploadFilesComboBox,
                 remoteUploadConvertor));
+        runAsComboBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                changeSupport.fireChange();
+            }
+        });
     }
 
     @Override
@@ -170,7 +174,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel implements RunConfigu
         selectRemoteConnection();
         // remote upload
         UploadFiles uploadFiles = null;
-        String remoteUpload = getValue(PhpProjectProperties.REMOTE_UPLOAD);
+        String remoteUpload = getValue(RunConfigurationPanel.REMOTE_UPLOAD);
         if (remoteUpload == null) {
             uploadFiles = DEFAULT_UPLOAD_FILES;
         } else {
@@ -188,11 +192,11 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel implements RunConfigu
         changeSupport.fireChange();
     }
 
-    public void addChangeListener(ChangeListener listener) {
+    public void addRunAsRemoteWebListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
 
-    public void removeChangeListener(ChangeListener listener) {
+    public void removeRunAsRemoteWebListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
     }
 
@@ -211,7 +215,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel implements RunConfigu
     }
 
     private void selectRemoteConnection() {
-        String remoteConnection = getValue(PhpProjectProperties.REMOTE_CONNECTION);
+        String remoteConnection = getValue(RunConfigurationPanel.REMOTE_CONNECTION);
         if (remoteConnection == null) {
             remoteConnectionComboBox.setSelectedItem(NO_REMOTE_CONFIGURATION);
             return;
@@ -228,6 +232,38 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel implements RunConfigu
             }
         }
         assert false : "Should not get here";
+    }
+
+    public String getUrl() {
+        return urlTextField.getText().trim();
+    }
+
+    public void setUrl(String url) {
+        urlTextField.setText(url);
+    }
+
+    public RemoteConfiguration getRemoteConfiguration() {
+        return (RemoteConfiguration) remoteConnectionComboBox.getSelectedItem();
+    }
+
+    public void setRemoteConfiguration(RemoteConfiguration remoteConfiguration) {
+        remoteConnectionComboBox.setSelectedItem(remoteConfiguration);
+    }
+
+    public String getUploadDirectory() {
+        return uploadDirectoryTextField.getText().trim();
+    }
+
+    public void setUploadDirectory(String uploadDirectory) {
+        uploadDirectoryTextField.setText(uploadDirectory);
+    }
+
+    public UploadFiles getUploadFiles() {
+        return (UploadFiles) uploadFilesComboBox.getSelectedItem();
+    }
+
+    public void setUploadFiles(UploadFiles uploadFiles) {
+        uploadFilesComboBox.setSelectedItem(uploadFiles);
     }
 
     /** This method is called from within the constructor to

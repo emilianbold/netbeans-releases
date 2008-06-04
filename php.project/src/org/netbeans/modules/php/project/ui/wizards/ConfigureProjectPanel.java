@@ -62,8 +62,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescriptor>,
-        WizardDescriptor.FinishablePanel<WizardDescriptor>, SourcesFolderNameProvider, ChangeListener {
+public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescriptor>, SourcesFolderNameProvider, ChangeListener {
 
     static final LocalServer DEFAULT_LOCAL_SERVER;
 
@@ -208,12 +207,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
     public void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
-    }
-
-    public boolean isFinishPanel() {
-        // XXX
-        Boolean isServerValid = (Boolean) descriptor.getProperty(ConfigureServerPanel.SERVER_IS_VALID);
-        return isServerValid == null || isServerValid;
     }
 
     static boolean isProjectFolder(LocalServer localServer) {
@@ -380,12 +373,12 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
     // #131023
     private String validateSourcesAndCopyTarget() {
-        Boolean isValid = (Boolean) descriptor.getProperty(ConfigureServerPanel.SERVER_IS_VALID);
+        Boolean isValid = (Boolean) descriptor.getProperty(RunConfigurationPanel.VALID);
         if (isValid != null && !isValid) {
             // some error there, need to be fixed, so do not compare
             return null;
         }
-        Boolean copyFiles = (Boolean) descriptor.getProperty(ConfigureServerPanel.COPY_FILES);
+        Boolean copyFiles = (Boolean) descriptor.getProperty(RunConfigurationPanel.COPY_SRC_FILES);
         if (copyFiles == null || !copyFiles) {
             return null;
         }
@@ -397,7 +390,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             File src = new File(project, DEFAULT_SOURCES_FOLDER);
             sourcesSrcRoot = src.getAbsolutePath();
         }
-        LocalServer copyTarget = (LocalServer) descriptor.getProperty(ConfigureServerPanel.COPY_TARGET);
+        LocalServer copyTarget = (LocalServer) descriptor.getProperty(RunConfigurationPanel.COPY_SRC_TARGET);
         File normalized = FileUtil.normalizeFile(new File(copyTarget.getSrcRoot()));
         String cpTarget = normalized.getAbsolutePath();
         return Utils.validateSourcesAndCopyTarget(sourcesSrcRoot, cpTarget);

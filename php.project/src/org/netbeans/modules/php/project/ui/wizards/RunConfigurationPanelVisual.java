@@ -40,7 +40,6 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import javax.swing.JPanel;
-import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.ui.SourcesFolderNameProvider;
 import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
@@ -53,38 +52,18 @@ public class RunConfigurationPanelVisual extends JPanel {
     private static final long serialVersionUID = -2998474632476302L;
     private final RunAsPanel.InsidePanel[] insidePanels;
 
-    public RunConfigurationPanelVisual(RunConfigurationPanel wizardPanel, ConfigManager configManager,
-            SourcesFolderNameProvider sourcesFolderNameProvider) {
+    public RunConfigurationPanelVisual(RunConfigurationPanel wizardPanel, SourcesFolderNameProvider sourcesFolderNameProvider,
+            ConfigManager configManager, RunAsPanel.InsidePanel[] insidePanels) {
         // Provide a name in the title bar.
         setName(NbBundle.getMessage(RunConfigurationPanelVisual.class, "LBL_RunConfiguration"));
         putClientProperty("WizardPanel_contentSelectedIndex", 1); // NOI18N
         // Step name (actually the whole list for reference).
         putClientProperty("WizardPanel_contentData", wizardPanel.getSteps()); // NOI18N
 
-        insidePanels = new RunAsPanel.InsidePanel[] {
-            new RunAsLocalWeb(configManager, sourcesFolderNameProvider),
-            new RunAsRemoteWeb(configManager),
-            new RunAsScript(configManager),
-        };
-
+        this.insidePanels = insidePanels;
         initComponents();
         infoLabel.setText(NbBundle.getMessage(RunConfigurationPanelVisual.class, "LBL_RunConfigurationInfo"));
     }
-
-    public void addRunConfigurationListener(ChangeListener listener) {
-        for (RunAsPanel.InsidePanel panel : insidePanels) {
-            assert panel instanceof Changeable : "Inside panel has to implement Changeable interface";
-            ((Changeable) panel).addChangeListener(listener);
-        }
-    }
-
-    public void removeRunConfigurationListener(ChangeListener listener) {
-        for (RunAsPanel.InsidePanel panel : insidePanels) {
-            assert panel instanceof Changeable : "Inside panel has to implement Changeable interface";
-            ((Changeable) panel).removeChangeListener(listener);
-        }
-    }
-
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -122,9 +101,4 @@ public class RunConfigurationPanelVisual extends JPanel {
     private javax.swing.JLabel infoLabel;
     private javax.swing.JPanel runAsPanel;
     // End of variables declaration//GEN-END:variables
-
-    interface Changeable {
-        void addChangeListener(ChangeListener listener);
-        void removeChangeListener(ChangeListener listener);
-    }
 }

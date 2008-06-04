@@ -95,9 +95,15 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         wizard.putProperty(ConfigureProjectPanel.INDEX_FILE, null);
         wizard.putProperty(ConfigureProjectPanel.ENCODING, null);
         wizard.putProperty(ConfigureProjectPanel.ROOTS, null);
-        wizard.putProperty(ConfigureServerPanel.COPY_FILES, null);
-        wizard.putProperty(ConfigureServerPanel.COPY_TARGET, null);
-        wizard.putProperty(ConfigureServerPanel.COPY_TARGETS, null);
+
+        wizard.putProperty(RunConfigurationPanel.RUN_AS, null);
+        wizard.putProperty(RunConfigurationPanel.URL, null);
+        wizard.putProperty(RunConfigurationPanel.COPY_SRC_FILES, null);
+        wizard.putProperty(RunConfigurationPanel.COPY_SRC_TARGET, null);
+        wizard.putProperty(RunConfigurationPanel.COPY_SRC_TARGETS, null);
+        wizard.putProperty(RunConfigurationPanel.REMOTE_CONNECTION, null);
+        wizard.putProperty(RunConfigurationPanel.REMOTE_DIRECTORY, null);
+        wizard.putProperty(RunConfigurationPanel.REMOTE_UPLOAD, null);
 
         panels = null;
         descriptor = null;

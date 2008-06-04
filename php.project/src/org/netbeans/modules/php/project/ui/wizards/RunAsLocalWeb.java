@@ -39,14 +39,18 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.ui.CopyFilesVisual;
+import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.SourcesFolderNameProvider;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
@@ -57,7 +61,7 @@ import org.openide.util.NbBundle;
 /**
  * @author  Radek Matous, Tomas Mysik
  */
-public class RunAsLocalWeb extends RunAsPanel.InsidePanel implements RunConfigurationPanelVisual.Changeable {
+public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = -53487456454387871L;
     final ChangeSupport changeSupport = new ChangeSupport(this);
     private final JLabel[] labels;
@@ -84,7 +88,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel implements RunConfigur
             urlTextField,
         };
         this.propertyNames = new String[] {
-            PhpProjectProperties.URL,
+            RunConfigurationPanel.URL,
         };
         assert labels.length == textFields.length && labels.length == propertyNames.length;
         for (int i = 0; i < textFields.length; i++) {
@@ -93,6 +97,11 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel implements RunConfigur
         }
         copyFilesVisual.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
+                changeSupport.fireChange();
+            }
+        });
+        runAsCombo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
                 changeSupport.fireChange();
             }
         });
@@ -134,11 +143,11 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel implements RunConfigur
         changeSupport.fireChange();
     }
 
-    public void addChangeListener(ChangeListener listener) {
+    public void addRunAsLocalWebListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
 
-    public void removeChangeListener(ChangeListener listener) {
+    public void removeRunAsLocalWebListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
     }
 
@@ -151,6 +160,38 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel implements RunConfigur
         protected final String getDefaultValue() {
             return RunAsLocalWeb.this.getDefaultValue(getPropName());
         }
+    }
+
+    public String getUrl() {
+        return urlTextField.getText().trim();
+    }
+
+    public void setUrl(String url) {
+        urlTextField.setText(url);
+    }
+
+    public boolean isCopyFiles() {
+        return copyFilesVisual.isCopyFiles();
+    }
+
+    public void setCopyFiles(boolean copyFiles) {
+        copyFilesVisual.setCopyFiles(copyFiles);
+    }
+
+    public LocalServer getLocalServer() {
+        return copyFilesVisual.getLocalServer();
+    }
+
+    public MutableComboBoxModel getLocalServerModel() {
+        return copyFilesVisual.getLocalServerModel();
+    }
+
+    public void setLocalServerModel(MutableComboBoxModel localServers) {
+        copyFilesVisual.setLocalServerModel(localServers);
+    }
+
+    public void selectLocalServer(LocalServer localServer) {
+        copyFilesVisual.selectLocalServer(localServer);
     }
 
     /** This method is called from within the constructor to
