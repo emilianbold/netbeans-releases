@@ -105,6 +105,264 @@ is the proper place.
 
     <changes>
 
+        <change id="deprecating-settings-and-completion">
+            <summary>Deprecating old settings and completion API</summary>
+            <version major="1" minor="27"/>
+            <date day="4" month="6" year="2008"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="incompatible" semantic="compatible" addition="yes" deprecation="yes" deletion="yes" modification="yes"/>
+            <description>
+                <p>
+                    The old settings API (<code>org.netbeans.editor.Settings</code> &amp; co.)
+                    has been deprecated and moved to <code>editor.deprecated.pre61settings</code> module.
+                    Also the old completion API (<code>org.netbeans.editor.ext.Completion</code> &amp; co.)
+                    has been deprecated and moved to <code>editor.deprecated.pre61completion</code> module.
+                </p>
+                <p>The exact API changes are listed in the sigtest report below.</p>
+<pre>
+SignatureTest report
+Base version: 1.26.0
+Tested version: 1.27.0
+Check mode: src [throws normalized]
+Constant checking: on
+
+Warning: public class org.netbeans.editor.BaseView can't be extended because contains the following member: method abstract void org.netbeans.editor.BaseView.modelToViewDG(int,org.netbeans.editor.DrawGraphics) throws javax.swing.text.BadLocationException
+
+Missing Classes
+---------------
+
+org.netbeans.editor.BaseSettingsInitializer
+org.netbeans.editor.Settings
+org.netbeans.editor.Settings$AbstractInitializer
+org.netbeans.editor.Settings$Evaluator
+org.netbeans.editor.Settings$Filter
+org.netbeans.editor.Settings$FilterInitializerSorter
+org.netbeans.editor.Settings$Initializer
+org.netbeans.editor.Settings$InitializerSorter
+org.netbeans.editor.Settings$KitAndValue
+org.netbeans.editor.SettingsChangeEvent
+org.netbeans.editor.SettingsChangeListener
+org.netbeans.editor.SettingsDefaults
+org.netbeans.editor.SettingsNames
+org.netbeans.editor.SettingsUtil
+org.netbeans.editor.SettingsUtil$FontStylePrintColoringEvaluator
+org.netbeans.editor.SettingsUtil$ForeColorPrintColoringEvaluator
+org.netbeans.editor.SettingsUtil$PrintColoringEvaluator
+org.netbeans.editor.SettingsUtil$TokenColoringEvaluator
+org.netbeans.editor.SettingsUtil$TokenColoringInitializer
+org.netbeans.editor.ext.Completion
+org.netbeans.editor.ext.CompletionJavaDoc
+org.netbeans.editor.ext.CompletionJavaDoc$JavaDocTagItem
+org.netbeans.editor.ext.CompletionPane
+org.netbeans.editor.ext.CompletionQuery
+org.netbeans.editor.ext.CompletionQuery$AbstractResult
+org.netbeans.editor.ext.CompletionQuery$AbstractResultItem
+org.netbeans.editor.ext.CompletionQuery$DefaultResult
+org.netbeans.editor.ext.CompletionQuery$DefaultResultItem
+org.netbeans.editor.ext.CompletionQuery$Result
+org.netbeans.editor.ext.CompletionQuery$ResultItem
+org.netbeans.editor.ext.CompletionQuery$ResultItemAssociatedObject
+org.netbeans.editor.ext.CompletionQuery$SupportsSpeculativeInvocation
+org.netbeans.editor.ext.CompletionView
+org.netbeans.editor.ext.ExtCompletionPane
+org.netbeans.editor.ext.ExtEditorUI
+org.netbeans.editor.ext.ExtSettingsDefaults
+org.netbeans.editor.ext.ExtSettingsInitializer
+org.netbeans.editor.ext.ExtSettingsNames
+org.netbeans.editor.ext.ExtUtilities
+org.netbeans.editor.ext.HTMLJavaDocView
+org.netbeans.editor.ext.JDCPopupPanel
+org.netbeans.editor.ext.JavaDocPane
+org.netbeans.editor.ext.JavaDocView
+org.netbeans.editor.ext.ListCompletionView
+org.netbeans.editor.ext.ScrollCompletionPane
+org.netbeans.editor.ext.ScrollJavaDocPane
+org.netbeans.editor.ext.ScrollJavaDocPane$BrowserButton
+org.netbeans.editor.ext.ScrollJavaDocPane$HyperlinkAction
+
+Missing Superclasses or Superinterfaces
+---------------------------------------
+
+org.netbeans.editor.Abbrev:             interface @ org.netbeans.editor.SettingsChangeListener
+org.netbeans.editor.BaseCaret:          interface @ org.netbeans.editor.SettingsChangeListener
+org.netbeans.editor.BaseDocument:       interface @ org.netbeans.editor.SettingsChangeListener
+org.netbeans.editor.BaseDocument:       interface java.util.EventListener
+org.netbeans.editor.BaseTextUI:         interface @ org.netbeans.editor.SettingsChangeListener
+org.netbeans.editor.CodeFoldingSideBar: interface @ org.netbeans.editor.SettingsChangeListener
+org.netbeans.editor.CodeFoldingSideBar: interface java.util.EventListener
+org.netbeans.editor.DrawLayerFactory$BlockSearchLayer:      interface @ org.netbeans.editor.SettingsChangeListener
+org.netbeans.editor.DrawLayerFactory$BlockSearchLayer:      interface java.util.EventListener
+org.netbeans.editor.DrawLayerFactory$IncSearchLayer:        interface @ org.netbeans.editor.SettingsChangeListener
+org.netbeans.editor.DrawLayerFactory$IncSearchLayer:        interface java.util.EventListener
+org.netbeans.editor.EditorUI:           interface @ org.netbeans.editor.SettingsChangeListener
+org.netbeans.editor.Formatter:          interface @ org.netbeans.editor.SettingsChangeListener
+org.netbeans.editor.Formatter:          interface java.util.EventListener
+org.netbeans.editor.GlyphGutter:        interface @ org.netbeans.editor.SettingsChangeListener
+org.netbeans.editor.GuardedDocument:    interface java.util.EventListener
+org.netbeans.editor.GuardedDocument:    interface org.netbeans.editor.SettingsChangeListener
+org.netbeans.editor.StatusBar:          interface @ org.netbeans.editor.SettingsChangeListener
+org.netbeans.editor.WordMatch:          interface @ org.netbeans.editor.SettingsChangeListener
+org.netbeans.editor.ext.ExtCaret:       interface org.netbeans.editor.SettingsChangeListener
+org.netbeans.editor.ext.ExtFormatter:   interface java.util.EventListener
+org.netbeans.editor.ext.ExtFormatter:   interface org.netbeans.editor.SettingsChangeListener
+org.netbeans.editor.ext.ToolTipSupport: interface @ org.netbeans.editor.SettingsChangeListener
+
+Missing Constructors
+--------------------
+
+org.netbeans.editor.ext.ToolTipSupport: constructor public org.netbeans.editor.ext.ToolTipSupport.ToolTipSupport(org.netbeans.editor.ext.ExtEditorUI)
+
+Missing Methods
+---------------
+
+org.netbeans.editor.Abbrev:             method public void org.netbeans.editor.Abbrev.settingsChange(org.netbeans.editor.SettingsChangeEvent)
+org.netbeans.editor.ActionFactory$AbbrevExpandAction:       method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$AbbrevResetAction:        method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$AdjustCaretAction:        method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$AdjustWindowAction:       method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$AnnotationsCyclingAction: method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$ChangeCaseAction:         method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$CollapseAllFolds:         method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$CollapseFold:             method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$CutToLineBeginOrEndAction:method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$DumpViewHierarchyAction:  method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$ExpandAllFolds:           method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$ExpandFold:               method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$FindNextAction:           method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$FindPreviousAction:       method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$FindSelectionAction:      method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$FirstNonWhiteAction:      method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$FormatAction:             method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$GenerateGutterPopupAction:method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$InsertDateTimeAction:     method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$JumpListNextAction:       method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$JumpListNextComponentAction:                  method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$JumpListPrevAction:       method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$JumpListPrevComponentAction:                  method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$LastNonWhiteAction:       method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$RedoAction:               method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$ReindentLineAction:       method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$RemoveLineAction:         method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$RemoveLineBeginAction:    method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$RemoveSelectionAction:    method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$RemoveTabAction:          method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$RemoveWordNextAction:     method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$RemoveWordPreviousAction: method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$ScrollDownAction:         method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$ScrollUpAction:           method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$SelectIdentifierAction:   method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$SelectNextParameterAction:method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$ShiftLineAction:          method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$StartMacroRecordingAction:method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$StartNewLine:             method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$StopMacroRecordingAction: method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$ToggleHighlightSearchAction:                  method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$ToggleLineNumbersAction:  method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$ToggleTypingModeAction:   method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$UndoAction:               method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ActionFactory$WordMatchAction:          method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseAction:         method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseCaret:          method public void org.netbeans.editor.BaseCaret.settingsChange(org.netbeans.editor.SettingsChangeEvent)
+org.netbeans.editor.BaseDocument:       method public void org.netbeans.editor.BaseDocument.settingsChange(org.netbeans.editor.SettingsChangeEvent)
+org.netbeans.editor.BaseKit:            method public java.util.List org.netbeans.editor.BaseKit.translateActionNameList(java.util.List)
+org.netbeans.editor.BaseKit$BackwardAction:                 method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$BeepAction: method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$BeginAction:method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$BeginLineAction:                method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$BeginWordAction:                method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$CompoundAction:                 method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$CopyAction: method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$CutAction:  method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$DefaultKeyTypedAction:          method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$DeleteCharAction:               method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$DownAction: method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$EndAction:  method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$EndLineAction:                  method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$EndWordAction:                  method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$ForwardAction:                  method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$InsertBreakAction:              method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$InsertContentAction:            method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$InsertStringAction:             method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$InsertTabAction:                method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$KitCompoundAction:              method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$NextWordAction:                 method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$PageDownAction:                 method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$PageUpAction:                   method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$PasteAction:method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$PreviousWordAction:             method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$ReadOnlyAction:                 method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$RemoveTrailingSpacesAction:     method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$SelectLineAction:               method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$SplitLineAction:                method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$UpAction:   method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseKit$WritableAction:                 method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.BaseTextUI:         method public void org.netbeans.editor.BaseTextUI.settingsChange(org.netbeans.editor.SettingsChangeEvent)
+org.netbeans.editor.CodeFoldingSideBar: method public void org.netbeans.editor.CodeFoldingSideBar.settingsChange(org.netbeans.editor.SettingsChangeEvent)
+org.netbeans.editor.DrawLayerFactory$BlockSearchLayer:      method public void org.netbeans.editor.DrawLayerFactory$BlockSearchLayer.settingsChange(org.netbeans.editor.SettingsChangeEvent)
+org.netbeans.editor.DrawLayerFactory$IncSearchLayer:        method public void org.netbeans.editor.DrawLayerFactory$IncSearchLayer.settingsChange(org.netbeans.editor.SettingsChangeEvent)
+org.netbeans.editor.EditorUI:           method public void org.netbeans.editor.EditorUI.settingsChange(org.netbeans.editor.SettingsChangeEvent)
+org.netbeans.editor.Formatter:          method public void org.netbeans.editor.Formatter.settingsChange(org.netbeans.editor.SettingsChangeEvent)
+org.netbeans.editor.GlyphGutter:        method public void org.netbeans.editor.GlyphGutter.settingsChange(org.netbeans.editor.SettingsChangeEvent)
+org.netbeans.editor.GuardedDocument:    method public void org.netbeans.editor.BaseDocument.settingsChange(org.netbeans.editor.SettingsChangeEvent)
+org.netbeans.editor.StatusBar:          method public void org.netbeans.editor.StatusBar.settingsChange(org.netbeans.editor.SettingsChangeEvent)
+org.netbeans.editor.WordMatch:          method public void org.netbeans.editor.WordMatch.settingsChange(org.netbeans.editor.SettingsChangeEvent)
+org.netbeans.editor.ext.ExtCaret:       method public void org.netbeans.editor.ext.ExtCaret.settingsChange(org.netbeans.editor.SettingsChangeEvent)
+org.netbeans.editor.ext.ExtFormatter:   method public void org.netbeans.editor.ext.ExtFormatter.settingsChange(org.netbeans.editor.SettingsChangeEvent)
+org.netbeans.editor.ext.ExtKit:         method public org.netbeans.editor.ext.Completion org.netbeans.editor.ext.ExtKit.createCompletion(org.netbeans.editor.ext.ExtEditorUI)
+org.netbeans.editor.ext.ExtKit:         method public org.netbeans.editor.ext.CompletionJavaDoc org.netbeans.editor.ext.ExtKit.createCompletionJavaDoc(org.netbeans.editor.ext.ExtEditorUI)
+org.netbeans.editor.ext.ExtKit$AllCompletionShowAction:     method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ext.ExtKit$BuildPopupMenuAction:        method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ext.ExtKit$CodeSelectAction:            method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ext.ExtKit$CommentAction:               method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ext.ExtKit$CompletionShowAction:        method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ext.ExtKit$CompletionTooltipShowAction: method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ext.ExtKit$DocumentationShowAction:     method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ext.ExtKit$EscapeAction:                method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ext.ExtKit$FindAction:                  method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ext.ExtKit$GotoAction:                  method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ext.ExtKit$GotoDeclarationAction:       method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ext.ExtKit$MatchBraceAction:            method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ext.ExtKit$PrefixMakerAction:           method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ext.ExtKit$ReplaceAction:               method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ext.ExtKit$ShowPopupMenuAction:         method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ext.ExtKit$ToggleCaseIdentifierBeginAction:                 method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ext.ExtKit$UncommentAction:             method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.editor.ext.ToolTipSupport: method public void org.netbeans.editor.ext.ToolTipSupport.settingsChange(org.netbeans.editor.SettingsChangeEvent)
+
+Added Fields
+------------
+
+org.netbeans.editor.BaseDocument:       field public final static java.lang.String org.netbeans.editor.BaseDocument.MIME_TYPE_PROP = "mimeType"
+org.netbeans.editor.GuardedDocument:    field public final static java.lang.String org.netbeans.editor.BaseDocument.MIME_TYPE_PROP = "mimeType"
+
+Added Constructors
+------------------
+
+org.netbeans.editor.BaseDocument:       constructor public org.netbeans.editor.BaseDocument.BaseDocument(boolean,java.lang.String)
+org.netbeans.editor.GuardedDocument:    constructor public org.netbeans.editor.GuardedDocument.GuardedDocument(java.lang.String)
+org.netbeans.editor.GuardedDocument:    constructor public org.netbeans.editor.GuardedDocument.GuardedDocument(java.lang.String,boolean,javax.swing.text.StyleContext)
+org.netbeans.editor.ext.ToolTipSupport: constructor public org.netbeans.editor.ext.ToolTipSupport.ToolTipSupport(org.netbeans.editor.EditorUI)
+
+Added Methods
+-------------
+
+org.netbeans.editor.BaseCaret:          method public final void org.netbeans.editor.BaseCaret.refresh()
+org.netbeans.editor.BaseKit:            method public java.util.List org.netbeans.editor.BaseKit.translateActionNameList(java.util.List)
+org.netbeans.editor.EditorUI:           method public javax.swing.JPopupMenu org.netbeans.editor.EditorUI.getPopupMenu()
+org.netbeans.editor.EditorUI:           method public org.netbeans.editor.PopupManager org.netbeans.editor.EditorUI.getPopupManager()
+org.netbeans.editor.EditorUI:           method public org.netbeans.editor.ext.ToolTipSupport org.netbeans.editor.EditorUI.getToolTipSupport()
+org.netbeans.editor.EditorUI:           method public void org.netbeans.editor.EditorUI.hidePopupMenu()
+org.netbeans.editor.EditorUI:           method public void org.netbeans.editor.EditorUI.setPopupMenu(javax.swing.JPopupMenu)
+org.netbeans.editor.EditorUI:           method public void org.netbeans.editor.EditorUI.showPopupMenu(int,int)
+org.netbeans.editor.Formatter:          method public static org.netbeans.editor.Formatter org.netbeans.editor.Formatter.getFormatter(java.lang.String)
+org.netbeans.editor.ext.ExtFormatter:   method public static org.netbeans.editor.Formatter org.netbeans.editor.Formatter.getFormatter(java.lang.String)
+
+duplicate messages suppressed: 14
+</pre>                
+            </description>
+            <issue number="90403"/>
+        </change>
+
         <change id="BaseDocument-kitClass-deprecations">
             <summary>Deprecating kit class related API in BaseDocument</summary>
             <version major="1" minor="26"/>

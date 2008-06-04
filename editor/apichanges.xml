@@ -105,6 +105,128 @@ is the proper place.
 
     <changes>
 
+        <change id="deprecating-settings">
+            <api name="editor"/>
+            <summary>Deprecating old settings API</summary>
+            <version major="1" minor="41"/>
+            <date day="4" month="6" year="2008"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="incompatible" semantic="incompatible" addition="yes" deprecation="yes" modification="yes" deletion="yes"/>
+            <description>
+                <p>
+                    The old settings API (<code>org.netbeans.modules.editor.options.BaseOptions</code> &amp; co.)
+                    has been deprecated and moved to <code>editor.deprecated.pre61settings</code> module.
+                </p>
+                <p>The exact API changes are listed in the sigtest report below.</p>
+<pre>
+SignatureTest report
+Base version: 1.39.0
+Tested version: 1.40.0
+Check mode: src [throws normalized]
+Constant checking: on
+
+
+Missing Classes
+---------------
+
+org.netbeans.modules.editor.NbEditorSettingsInitializer
+org.netbeans.modules.editor.options.AbbrevInputPanel
+org.netbeans.modules.editor.options.AbbrevsEditor
+org.netbeans.modules.editor.options.AbbrevsEditorPanel
+org.netbeans.modules.editor.options.AbbrevsMIMEOptionFile
+org.netbeans.modules.editor.options.AbbrevsMIMEProcessor
+org.netbeans.modules.editor.options.AllOptions
+org.netbeans.modules.editor.options.AllOptionsBeanInfo
+org.netbeans.modules.editor.options.AllOptionsFolder
+org.netbeans.modules.editor.options.AllOptionsFolderBeanInfo
+org.netbeans.modules.editor.options.AllOptionsNode
+org.netbeans.modules.editor.options.BaseOptions
+org.netbeans.modules.editor.options.BaseOptionsBeanInfo
+org.netbeans.modules.editor.options.BaseOptionsBeanInfo$CaretTypeEditor
+org.netbeans.modules.editor.options.BasePrintOptions
+org.netbeans.modules.editor.options.BasePrintOptionsBeanInfo
+org.netbeans.modules.editor.options.ColoringArrayEditor
+org.netbeans.modules.editor.options.ColoringArrayEditorPanel
+org.netbeans.modules.editor.options.ColoringBean
+org.netbeans.modules.editor.options.ColoringBeanBeanInfo
+org.netbeans.modules.editor.options.ColoringEditor
+org.netbeans.modules.editor.options.ColoringEditorPanel
+org.netbeans.modules.editor.options.FontsColorsMIMEOptionFile
+org.netbeans.modules.editor.options.FontsColorsMIMEProcessor
+org.netbeans.modules.editor.options.InstalledOptionsFolder
+org.netbeans.modules.editor.options.KeyBindingsEditor
+org.netbeans.modules.editor.options.KeyBindingsEditorPanel
+org.netbeans.modules.editor.options.KeyBindingsMIMEOptionFile
+org.netbeans.modules.editor.options.KeyBindingsMIMEProcessor
+org.netbeans.modules.editor.options.MIMEOptionFile
+org.netbeans.modules.editor.options.MIMEOptionFolder
+org.netbeans.modules.editor.options.MIMEOptionNode
+org.netbeans.modules.editor.options.MIMEProcessor
+org.netbeans.modules.editor.options.MacroInputPanel
+org.netbeans.modules.editor.options.MacrosEditor
+org.netbeans.modules.editor.options.MacrosEditorPanel
+org.netbeans.modules.editor.options.MacrosMIMEOptionFile
+org.netbeans.modules.editor.options.MacrosMIMEProcessor
+org.netbeans.modules.editor.options.MultiPropertyFolder
+org.netbeans.modules.editor.options.OptionSupport
+org.netbeans.modules.editor.options.OptionUtilities
+org.netbeans.modules.editor.options.PopupMultiPropertyFolder
+org.netbeans.modules.editor.options.PropertiesMIMEOptionFile
+org.netbeans.modules.editor.options.PropertiesMIMEProcessor
+org.netbeans.modules.editor.options.ScrollInsetsCustomEditor
+org.netbeans.modules.editor.options.ScrollInsetsEditor
+
+Missing Superclasses or Superinterfaces
+---------------------------------------
+
+org.netbeans.modules.editor.IndentEngineFormatter:          interface java.util.EventListener
+org.netbeans.modules.editor.IndentEngineFormatter:          interface org.netbeans.editor.SettingsChangeListener
+org.netbeans.modules.editor.NbEditorDocument:               interface java.util.EventListener
+org.netbeans.modules.editor.NbEditorDocument:               interface org.netbeans.editor.SettingsChangeListener
+org.netbeans.modules.editor.NbEditorUI: interface org.netbeans.editor.SettingsChangeListener
+org.netbeans.modules.editor.NbEditorUI: superclass org.netbeans.editor.ext.ExtEditorUI
+
+Missing Methods
+---------------
+
+org.netbeans.modules.editor.IndentEngineFormatter:          method public void org.netbeans.editor.Formatter.settingsChange(org.netbeans.editor.SettingsChangeEvent)
+org.netbeans.modules.editor.NbEditorDocument:               method public void org.netbeans.modules.editor.NbEditorDocument.settingsChange(org.netbeans.editor.SettingsChangeEvent)
+org.netbeans.modules.editor.NbEditorKit:method public java.util.List org.netbeans.editor.BaseKit.translateActionNameList(java.util.List)
+org.netbeans.modules.editor.NbEditorKit:method public org.netbeans.editor.ext.Completion org.netbeans.editor.ext.ExtKit.createCompletion(org.netbeans.editor.ext.ExtEditorUI)
+org.netbeans.modules.editor.NbEditorKit:method public org.netbeans.editor.ext.CompletionJavaDoc org.netbeans.editor.ext.ExtKit.createCompletionJavaDoc(org.netbeans.editor.ext.ExtEditorUI)
+org.netbeans.modules.editor.NbEditorKit$GenerateFoldPopupAction:                method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.modules.editor.NbEditorKit$NbBuildPopupMenuAction:                 method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.modules.editor.NbEditorKit$NbBuildToolTipAction:                   method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.modules.editor.NbEditorKit$NbGenerateGoToPopupAction:              method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.modules.editor.NbEditorKit$NbRedoAction:       method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.modules.editor.NbEditorKit$NbStopMacroRecordingAction:             method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.modules.editor.NbEditorKit$NbToggleLineNumbersAction:              method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.modules.editor.NbEditorKit$NbUndoAction:       method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.modules.editor.NbEditorKit$ToggleToolbarAction:method protected void org.netbeans.editor.BaseAction.settingsChange(org.netbeans.editor.SettingsChangeEvent,java.lang.Class)
+org.netbeans.modules.editor.NbEditorUI: method public org.netbeans.editor.ext.Completion org.netbeans.editor.ext.ExtEditorUI.getCompletion()
+org.netbeans.modules.editor.NbEditorUI: method public org.netbeans.editor.ext.CompletionJavaDoc org.netbeans.editor.ext.ExtEditorUI.getCompletionJavaDoc()
+org.netbeans.modules.editor.NbEditorUI: method public void org.netbeans.editor.EditorUI.settingsChange(org.netbeans.editor.SettingsChangeEvent)
+
+Added Superclasses or Superinterfaces
+-------------------------------------
+
+org.netbeans.modules.editor.NbEditorUI: superclass org.netbeans.editor.EditorUI
+
+Added Constructors
+------------------
+
+org.netbeans.modules.editor.NbEditorDocument:               constructor public org.netbeans.modules.editor.NbEditorDocument.NbEditorDocument(java.lang.String)
+
+Added Methods
+-------------
+
+org.netbeans.modules.editor.IndentEngineFormatter:          method public static org.netbeans.editor.Formatter org.netbeans.editor.Formatter.getFormatter(java.lang.String)
+org.netbeans.modules.editor.NbEditorKit:method public java.util.List org.netbeans.editor.BaseKit.translateActionNameList(java.util.List)
+</pre>
+            </description>
+            <issue number="90403"/>
+        </change>
+        
         <change id="NbBaseDocument-kitClass-deprecations">
             <api name="editor"/>
             <summary>Deprecating kit class related API in NbEditorDocument</summary>
