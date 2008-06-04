@@ -74,6 +74,7 @@ import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -351,7 +352,7 @@ public class CompletionProviderImpl implements CompletionProvider {
             try {
                 ParserManager.parse (source, new UserTask () {
                     @Override
-                    public void run(Parser.Result result, Source source) {
+                    public void run(Parser.Result result, Snapshot snapshot) {
                         if (resultSet.isFinished ()) return;
                         addParserTags ((ParserResult) result, resultSet, language);
                         resultSet.finish ();
