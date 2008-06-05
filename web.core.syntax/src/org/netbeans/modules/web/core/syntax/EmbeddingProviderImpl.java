@@ -37,34 +37,74 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.spi;
+package org.netbeans.modules.web.core.syntax;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
-
+import org.netbeans.modules.parsing.spi.EmbeddingProvider;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.netbeans.modules.parsing.spi.TaskScheduler;
+import org.openide.util.Exceptions;
 
 /**
- * Creates a list of tasks ({@link EmbeddingProvider}, 
- * {@link ParserBasedEmbeddingProvider} or {@link ParserResultTask}) for given source. 
- * TaskFactory must be registered in your manifest.xml file for 
- * some specific mime type, or for all types. So it can be registered 
- * in manifest.xml in <code>"Editors/" + mimeType</code> folder, or directly in
- * <code>"Editors"</code>.
- * 
- * 
- * @author Jan Jancura
+ *
+ * @author Jan Lahoda
  */
-public abstract class TaskFactory {
+public class EmbeddingProviderImpl extends EmbeddingProvider {
+
+    @Override
+    public List<Embedding> getEmbeddings(Snapshot snapshot) {
+        //XXX: should not use the document, I guess:
+        Document doc = snapshot.getSource().getDocument();
+        
+        assert doc != null;
+
+        SimplifiedJSPServlet gen = new SimplifiedJSPServlet(snapshot, doc);
+        
+        try {
+            gen.process();
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        Embedding e = gen.getVirtualClassBody();
+        
+        if (e != null) {
+            return Collections.singletonList(e);
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public int getPriority() {
+        return 100;
+    }
+
+    @Override
+    public Class<? extends TaskScheduler> getSchedulerClass() {
+        return TaskScheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
+    }
+
+    @Override
+    public void cancel() {
+        //well...
+    }
     
-    /**
-     * Returns {@link SchedulerTask}s for given {@link Source}s.
-     * @param source        A {@link Source}.
-     * @return              {@link SchedulerTask}s for given {@link Source}s
-     */
-    public abstract Collection<SchedulerTask> create (Source source);
+    public static final class Factory extends TaskFactory {
+
+        @Override
+        public Collection<SchedulerTask> create(Source source) {
+            return Collections.<SchedulerTask>singletonList(new EmbeddingProviderImpl());
+        }
+        
+    }
 
 }
-
-
-
-

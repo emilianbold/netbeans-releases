@@ -125,7 +125,13 @@ public final class ResultIterator {
                         ) {
                             @Override
                             protected Iterator<SchedulerTask> getIterator (TaskFactory factory) {
-                                return factory.create (snapshot.getSource ()).iterator ();
+                                Collection<SchedulerTask> tasks = factory.create(snapshot.getSource());
+                                
+                                if (tasks != null) {
+                                    return tasks.iterator();
+                                } else {
+                                    return Collections.<SchedulerTask>emptyList().iterator();
+                                }
                             }
                         }                
                 ) {
@@ -174,9 +180,8 @@ public final class ResultIterator {
         }
 
         public B next () {
-            if (iteratorB == null) {
-                if (!iteratorA.hasNext ()) return null;
-                iteratorB = getIterator (iteratorA.next ());
+            if (!hasNext()) {
+                return null; //XXX should throw exception
             }
             return iteratorB.next ();
         }
@@ -185,4 +190,5 @@ public final class ResultIterator {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }
+    
 }

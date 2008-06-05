@@ -37,34 +37,53 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.spi;
+package org.netbeans.modules.web.core.syntax;
 
 import java.util.Collection;
-import org.netbeans.modules.parsing.api.Source;
-
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.ParserFactory;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
 /**
- * Creates a list of tasks ({@link EmbeddingProvider}, 
- * {@link ParserBasedEmbeddingProvider} or {@link ParserResultTask}) for given source. 
- * TaskFactory must be registered in your manifest.xml file for 
- * some specific mime type, or for all types. So it can be registered 
- * in manifest.xml in <code>"Editors/" + mimeType</code> folder, or directly in
- * <code>"Editors"</code>.
- * 
- * 
- * @author Jan Jancura
+ *
+ * @author Jan Lahoda
  */
-public abstract class TaskFactory {
+public class JSPParserFactory extends ParserFactory {
+
+    @Override
+    public Parser createParser(Collection<Snapshot> snapshots) {
+        return new FakeParser();
+    }
     
-    /**
-     * Returns {@link SchedulerTask}s for given {@link Source}s.
-     * @param source        A {@link Source}.
-     * @return              {@link SchedulerTask}s for given {@link Source}s
-     */
-    public abstract Collection<SchedulerTask> create (Source source);
+    private static final class FakeParser extends Parser {
+        @Override
+        public void parse(Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
+        }
+
+        @Override
+        public Result getResult(Task task, SchedulerEvent event) throws ParseException {
+            return new Result() {
+                @Override
+                public void invalidate() {
+                }
+            };
+        }
+
+        @Override
+        public void cancel() {
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener changeListener) {
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener changeListener) {
+        }
+    }
 
 }
-
-
-
-

@@ -45,7 +45,7 @@ import java.util.List;
 
 /**
  * Represents one block of code embedded in some other source. Performance 
- * is the only purpose of this class. You can obtain some basic inforation 
+ * is the only purpose of this class. You can obtain some basic information 
  * about embedded block of code before it is really created.
  *
  * Following example shows how to create compound Embedding from some snapshot:
@@ -93,7 +93,7 @@ public final class Embedding {
             sb.append (snapshot.getText ());
             int[][] p = snapshot.positions;
             for (int i = 0; i < p.length; i++) {
-                positions.add (new int[] {p [i] [0] + offset, p [i] [1]});
+                positions.add (new int[] {p [i] [0] + offset, p [i] [1], p[i][2]});
             }
             offset +=snapshot.getText ().length ();
         }
