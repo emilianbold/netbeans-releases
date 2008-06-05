@@ -137,7 +137,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         );
     
     private static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, STRING,
-        CLASS_MEMBER, STATIC_CLASS_MEMBER, UNKNOWN};
+        CLASS_MEMBER, STATIC_CLASS_MEMBER, NONE};
 
     private final static String[] PHP_KEYWORDS = {"__FILE__", "exception",
         "__LINE__", "array()", "class", "const", "continue", "die()", "echo()", "empty()", "endif",
@@ -160,20 +160,24 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private static CompletionContext findCompletionContext(CompilationInfo info, int caretOffset){
         Document document = info.getDocument();
         if (document == null) {
-            return CompletionContext.UNKNOWN;
+            return CompletionContext.NONE;
         }
         TokenHierarchy th = TokenHierarchy.get(document);
         TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence();
         tokenSequence.move(caretOffset);
         if (!tokenSequence.moveNext()){
-            return CompletionContext.UNKNOWN;
+            return CompletionContext.NONE;
         }
 
         switch (tokenSequence.token().id()){
             case T_INLINE_HTML:
                 return CompletionContext.HTML;
             case PHP_CONSTANT_ENCAPSED_STRING:
-                return CompletionContext.STRING;
+                if (tokenSequence.token().text().charAt(0) == '"') {
+                    return CompletionContext.STRING;
+                } else {
+                    return CompletionContext.NONE;
+                }
             default:
         }
 
@@ -255,6 +259,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
         
         CompletionContext context = findCompletionContext(info, caretOffset);
+        
+        if (context == CompletionContext.NONE){
+            return CodeCompletionResult.NONE;
+        }
         
         PHPCompletionItem.CompletionRequest request = new PHPCompletionItem.CompletionRequest();
         request.anchor = caretOffset - prefix.length();
