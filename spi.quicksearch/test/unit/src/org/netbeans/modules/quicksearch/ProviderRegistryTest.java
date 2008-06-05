@@ -48,6 +48,8 @@ import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 
 /**
@@ -128,12 +130,12 @@ public class ProviderRegistryTest extends NbTestCase {
     /** Test provider without category description */
     public static class Test1Provider implements SearchProvider {
         
-        public CategoryDescription getCategory() {
-            return null;
-        }
-
         public void evaluate(SearchRequest request, SearchResponse response) {
             // no operation
+        }
+
+        public Lookup getLookup() {
+            return null;
         }
         
     }
@@ -145,10 +147,6 @@ public class ProviderRegistryTest extends NbTestCase {
             // no operation
         }
         
-        public CategoryDescription getCategory() {
-            return this;
-        }
-
         public String getDisplayName() {
             return DISPLAY_NAME;
         }
@@ -159,6 +157,10 @@ public class ProviderRegistryTest extends NbTestCase {
 
         public String getHint() {
             return null;
+        }
+
+        public Lookup getLookup() {
+            return Lookups.fixed(this);
         }
 
     }

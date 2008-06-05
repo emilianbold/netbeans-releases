@@ -43,6 +43,7 @@ import java.util.HashSet;
 import java.util.List;
 import org.netbeans.spi.quicksearch.CategoryDescription;
 import org.netbeans.spi.quicksearch.SearchProvider;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -114,7 +115,7 @@ final class ProviderModel {
         
         public String getDisplayName() {
             for (SearchProvider prov : providers) {
-                CategoryDescription desc = prov.getLookup().lookup(CategoryDescription.class);
+                CategoryDescription desc = getCatDesc(prov);
                 if (desc != null) {
                     String displayName = desc.getDisplayName();
                     if (displayName != null) {
@@ -128,7 +129,7 @@ final class ProviderModel {
 
         public String getCommandPrefix() {
             for (SearchProvider prov : providers) {
-                CategoryDescription desc = prov.getLookup().lookup(CategoryDescription.class);
+                CategoryDescription desc = getCatDesc(prov);
                 if (desc != null) {
                     String prefix = desc.getCommandPrefix();
                     if (prefix != null) {
@@ -138,6 +139,14 @@ final class ProviderModel {
             }
             // fallback if no provider specifies display name
             return null;
+        }
+        
+        private static CategoryDescription getCatDesc (SearchProvider provider) {
+            Lookup lkp = provider.getLookup();
+            if (lkp == null) {
+                return null;
+            }
+            return lkp.lookup(CategoryDescription.class);
         }
 
         
