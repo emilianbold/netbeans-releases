@@ -148,7 +148,7 @@ public final class StateTransitionLabelManager extends BasicUMLLabelManager
         {
             return "[ ]";
         }
-        return "[ " + text + " ]";
+        return "[" + text + "]";
     }
     
 

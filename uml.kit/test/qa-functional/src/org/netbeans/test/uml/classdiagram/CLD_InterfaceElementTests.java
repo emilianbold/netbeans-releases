@@ -38,8 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 /*
  * CLD_InterfaceTests.java
  *
@@ -49,8 +47,8 @@
  * the Source Creation and Management node. Right-click the template and choose
  * Open. You can then make changes to the template in the Source Editor.
  */
-
 package org.netbeans.test.uml.classdiagram;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -66,220 +64,249 @@ import org.netbeans.test.umllib.NewDiagramWizardOperator;
 import org.netbeans.test.umllib.exceptions.NotFoundException;
 import org.netbeans.test.umllib.vrf.DiagramElementVerifier;
 
-
 /**
  *
  * @author Administrator
  */
 public class CLD_InterfaceElementTests extends ClassDiagramTestCase {
-    
+
     private static String prName = "UMLProjectForInterface";
     private static String dpdName = "ClassDiagramForInterface";
-    
     private static final String workDir = System.getProperty("xtest.workdir");
     private static String OUT_LOG_FILE = "";
     private static String ERR_LOG_FILE = "";
     private static PrintStream myOut = null;
     private static PrintStream myErr = null;
     private static BufferedReader myIn = null;
-    
+
     /** Need to be defined because of JUnit */
     public CLD_InterfaceElementTests(String name) {
         super(name);
     }
-    
+
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite(org.netbeans.test.uml.classdiagram.CLD_InterfaceElementTests.class);
+        //NbTestSuite suite = new NbTestSuite(org.netbeans.test.uml.classdiagram.CLD_InterfaceElementTests.class);
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new CLD_InterfaceElementTests("testCopyAndPasteByPopup"));
+        suite.addTest(new CLD_InterfaceElementTests("testCopyAndPasteByShortcut"));
+        // 6.5 Cut is not working
+        //suite.addTest(new CLD_InterfaceElementTests("testCutAndPasteByPopup"));
+        //suite.addTest(new CLD_InterfaceElementTests("testCutAndPasteByShortcut"));
+        suite.addTest(new CLD_InterfaceElementTests("testDeleteByPopup"));
+        suite.addTest(new CLD_InterfaceElementTests("testDeleteByShortcut"));
+        // 6.5  Lock edit not yet implemented
+        //suite.addTest(new CLD_InterfaceElementTests("testLockEdit"));
+        suite.addTest(new CLD_InterfaceElementTests("testSelectAllByPopup"));
+        suite.addTest(new CLD_InterfaceElementTests("testSelectAllByShortcut"));
+        suite.addTest(new CLD_InterfaceElementTests("testSelectAllSimilar"));
+        suite.addTest(new CLD_InterfaceElementTests("testInvertSelection"));
+        // 6.5 Hide/Show not yet implemented
+        /**
+        suite.addTest(new CLD_InterfaceElementTests("testHideChildrenOneLevel"));
+        suite.addTest(new CLD_InterfaceElementTests("testHideChildrenAllLevels"));
+        suite.addTest(new CLD_InterfaceElementTests("testHideParentsOneLevel"));
+        suite.addTest(new CLD_InterfaceElementTests("testHideParentsAllLevels"));
+        suite.addTest(new CLD_InterfaceElementTests("testShowChildrenOneLevel"));
+        suite.addTest(new CLD_InterfaceElementTests("testShowChildrenAllLevels"));
+        suite.addTest(new CLD_InterfaceElementTests("testShowParentsOneLevel"));
+        suite.addTest(new CLD_InterfaceElementTests("testShowParentsAllLevels"));
+         **/
+        // 6.5 setColor() not yet working
+        //suite.addTest(new CLD_InterfaceElementTests("testBorderColor"));
+        //suite.addTest(new CLD_InterfaceElementTests("testBackgroundColor"));
+        suite.addTest(new CLD_InterfaceElementTests("testFont"));
+        //suite.addTest(new CLD_InterfaceElementTests("testFontColor"));
         return suite;
     }
+
     /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // junit.textui.TestRunner.run(suite());
-        // run only selected test case
-        junit.textui.TestRunner.run(new org.netbeans.test.uml.classdiagram.CLD_PackageElementTests("testCopyAndPasteClassElement"));
-    }
-    
-    public void testCopyAndPasteByPopup(){
+    //public static void main(java.lang.String[] args) {
+    // junit.textui.TestRunner.run(suite());
+    // run only selected test case
+    // junit.textui.TestRunner.run(new org.netbeans.test.uml.classdiagram.CLD_PackageElementTests("testCopyAndPasteClassElement"));
+    // }
+    public void testCopyAndPasteByPopup() {
         boolean result = verifier.checkCopyPasteByPopup();
-        if (!result){
+        if (!result) {
             fail("Test failed. Details in log file.");
         }
     }
-    
-    public void testCopyAndPasteByShortcut(){
+
+    public void testCopyAndPasteByShortcut() {
         boolean result = verifier.checkCopyPasteByShortcut();
-        if (!result){
+        if (!result) {
             fail("Test failed. Details in log file.");
         }
     }
-    
-    public void testCutAndPasteByPopup(){
+
+    public void testCutAndPasteByPopup() {
         boolean result = verifier.checkCutPasteByPopup();
-        if (!result){
+        if (!result) {
             fail("Test failed. Details in log file.");
         }
     }
-    
-    public void testCutAndPasteByShortcut(){
+
+    public void testCutAndPasteByShortcut() {
         boolean result = verifier.checkCutPasteByShortcut();
-        if (!result){
+        if (!result) {
             fail("Test failed. Details in log file.");
         }
     }
-    
+
     public void testDeleteByPopup() throws NotFoundException {
         boolean result = verifier.checkDeleteByPopup();
-        if (!result){
+        if (!result) {
             fail("Test failed. Details in log file.");
         }
     }
-    
+
     public void testDeleteByShortcut() throws NotFoundException {
         boolean result = verifier.checkDeleteByShortcut();
-        if (!result){
+        if (!result) {
             fail("Test failed. Details in log file.");
         }
     }
-    
+
     public void testLockEdit() throws NotFoundException {
         boolean result = verifier.checkLockEdit();
-        if (!result){
+        if (!result) {
             fail("Test failed. Details in log file.");
         }
     }
-    
+
     public void testSelectAllByPopup() throws NotFoundException {
-        boolean result = verifier.checkSelectAllByPopup(new ElementTypes[]{ElementTypes.INTERFACE, ElementTypes.ARTIFACT});
-        if (!result){
+        // 6.5  Artifact not yet implemented,  replace it with CLASS
+        boolean result = verifier.checkSelectAllByPopup(new ElementTypes[]{ElementTypes.INTERFACE, ElementTypes.CLASS});
+        if (!result) {
             fail("Test failed. Details in log file.");
         }
     }
-    
+
     public void testSelectAllByShortcut() throws NotFoundException {
-        boolean result = verifier.checkSelectAllByShortcut(new ElementTypes[]{ElementTypes.INTERFACE, ElementTypes.ARTIFACT});
-        if (!result){
+        // 6.5  Artifact not yet implemented,  replace it with CLASS
+        boolean result = verifier.checkSelectAllByShortcut(new ElementTypes[]{ElementTypes.INTERFACE, ElementTypes.CLASS});
+        if (!result) {
             fail("Test failed. Details in log file.");
         }
     }
-    
+
     public void testSelectAllSimilar() throws NotFoundException {
         boolean result = verifier.checkSelectAllSimilar(new ElementTypes[]{ElementTypes.INTERFACE, ElementTypes.CLASS});
-        if (!result){
+        if (!result) {
             fail("Test failed. Details in log file.");
         }
     }
-    
+
     public void testInvertSelection() throws NotFoundException {
         boolean result = verifier.checkInvertSelection(new ElementTypes[]{ElementTypes.CLASS}, new ElementTypes[]{ElementTypes.INTERFACE, ElementTypes.PACKAGE});
-        if (!result){
+        if (!result) {
             fail("Test failed. Details in log file.");
         }
     }
-    
+
     public void testHideChildrenOneLevel() throws NotFoundException {
         boolean result = verifier.checkHideChildrenOneLevel(2, 2, LinkTypes.DEPENDENCY, ElementTypes.INTERFACE);
-        if (!result){
+        if (!result) {
             fail("Test failed. Details in log file.");
         }
     }
-    
+
     public void testHideChildrenAllLevels() throws NotFoundException {
         boolean result = verifier.checkHideChildrenAllLevels(2, 2, LinkTypes.DEPENDENCY, ElementTypes.INTERFACE);
-        if (!result){
+        if (!result) {
             fail("Test failed. Details in log file.");
         }
     }
-    
+
     public void testHideParentsOneLevel() throws NotFoundException {
         boolean result = verifier.checkHideParentsOneLevel(2, 2, LinkTypes.DEPENDENCY, ElementTypes.INTERFACE);
-        if (!result){
+        if (!result) {
             fail("Test failed. Details in log file.");
         }
     }
-    
+
     public void testHideParentsAllLevels() throws NotFoundException {
         boolean result = verifier.checkHideParentsAllLevels(2, 2, LinkTypes.DEPENDENCY, ElementTypes.INTERFACE);
-        if (!result){
+        if (!result) {
             fail("Test failed. Details in log file.");
         }
     }
-    
+
     public void testShowChildrenOneLevel() throws NotFoundException {
         boolean result = verifier.checkShowChildrenOneLevel(2, 2, LinkTypes.DEPENDENCY, ElementTypes.INTERFACE);
-        if (!result){
+        if (!result) {
             fail("Test failed. Details in log file.");
         }
     }
-    
+
     public void testShowChildrenAllLevels() throws NotFoundException {
         boolean result = verifier.checkShowChildrenAllLevels(2, 2, LinkTypes.DEPENDENCY, ElementTypes.INTERFACE);
-        if (!result){
+        if (!result) {
             fail(78350, "Test failed. Details in log file.");
         }
     }
-    
+
     public void testShowParentsOneLevel() throws NotFoundException {
         boolean result = verifier.checkShowParentsOneLevel(2, 2, LinkTypes.DEPENDENCY, ElementTypes.INTERFACE);
-        if (!result){
+        if (!result) {
             fail("Test failed. Details in log file.");
         }
     }
-    
+
     public void testShowParentsAllLevels() throws NotFoundException {
         boolean result = verifier.checkShowParentsAllLevels(2, 2, LinkTypes.DEPENDENCY, ElementTypes.INTERFACE);
-        if (!result){
+        if (!result) {
             fail(78350, "Test failed. Details in log file.");
         }
     }
-    
+
     public void testBorderColor() throws NotFoundException {
         boolean result = verifier.checkBorderColor(255, 0, 0);
-        if (!result){
+        if (!result) {
             fail("Test failed. Details in log file.");
         }
     }
-    
+
     public void testBackgroundColor() throws NotFoundException {
         boolean result = verifier.checkBackgroundColor(0, 255, 0);
-        if (!result){
+        if (!result) {
             fail("Test failed. Details in log file.");
         }
     }
-    
+
     public void testFont() throws NotFoundException {
         boolean result = verifier.checkFont();
-        if (!result){
+        if (!result) {
             fail("Test failed. Details in log file.");
         }
     }
-    
+
     public void testFontColor() throws NotFoundException {
-        boolean result = verifier.checkFontColor(100,100,100);
-        if (!result){
+        boolean result = verifier.checkFontColor(100, 100, 100);
+        if (!result) {
             fail("Test failed. Details in log file.");
         }
     }
 //------------------------------------------------------------------------------
-    
-    protected void setUp() throws FileNotFoundException{
-        System.out.println("########  "+getName()+"  #######");
+
+    protected void setUp() throws FileNotFoundException {
+        System.out.println("########  " + getName() + "  #######");
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
         JemmyProperties.setCurrentTimeout("Waiter.WaitingTime", 3000);
         JemmyProperties.setCurrentTimeout("DiagramElementOperator.WaitDiagramElementTime", 5000);
-        
+
         OUT_LOG_FILE = workDir + File.separator + "jout_" + getName() + ".log";
         ERR_LOG_FILE = workDir + File.separator + "jerr_" + getName() + ".log";
-        
+
         myOut = new PrintStream(new FileOutputStream(OUT_LOG_FILE), true);
         myErr = new PrintStream(new FileOutputStream(ERR_LOG_FILE), true);
         JemmyProperties.setCurrentOutput(new TestOut(System.in, myOut, myErr));
-        
+
         diagram = CLDUtils.openDiagram(prName, dpdName, NewDiagramWizardOperator.CLASS_DIAGRAM, workDir);
-        if (diagram == null){
+        if (diagram == null) {
             fail("Can't open diagram '" + dpdName + "', project '" + prName + "'.");
         }
-        verifier =  new DiagramElementVerifier(diagram, ElementTypes.INTERFACE, "CLD_", getLog());
+        verifier = new DiagramElementVerifier(diagram, ElementTypes.INTERFACE, "CLD_", getLog());
     }
-    
     private DiagramElementVerifier verifier = null;
 }
