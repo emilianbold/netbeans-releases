@@ -53,7 +53,7 @@ import javax.swing.table.TableModel;
  *
  * @author  Tim Boudreau
  */
-final public class ProxyTableModel implements TableModel {
+final class ProxyTableModel implements TableModel {
     private List<TableModelListener> listeners = new ArrayList<TableModelListener>();
     private RowModel rowmodel;
     private OutlineModel outlineModel;

@@ -40,13 +40,16 @@
 package org.netbeans.modules.hibernate.util;
 
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
-
 import java.util.Enumeration;
-
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
@@ -203,6 +206,31 @@ public class HibernateUtil {
         }
         return javaSourceGroup;
     }
+    
+    /**
+     * Returns the project classpath including project build paths.
+     * Can be used to set classpath for custom classloader.
+     * 
+     * @param projectFile file in current project.
+     * @return List of java.net.URL objects representing each entry on the classpath.
+     */
+    public static ArrayList<URL> getProjectClassPathEntries(FileObject projectFile) {
+        ArrayList<URL> projectClassPathEntries = new ArrayList<URL>();
+        ClassPath cp = ClassPath.getClassPath(projectFile, ClassPath.EXECUTE);
+
+        StringTokenizer classPathTokens = new StringTokenizer(cp.toString(), ":");
+        while (classPathTokens.hasMoreTokens()) {
+            File f = new File(classPathTokens.nextToken());
+            try {
+                projectClassPathEntries.add(f.toURL());
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        return projectClassPathEntries;
+    }
+    
 
     /**
      * Seaches mapping files under the given project and returns the list of 
@@ -337,8 +365,7 @@ public class HibernateUtil {
             DatabaseConnection[] dbConnections = ConnectionManager.getDefault().getConnections();
             for(DatabaseConnection dbConn : dbConnections) {
                 if(dbConn.getDatabaseURL().equals(driverURL) &&
-                        dbConn.getUser().equals(username) &&
-                        dbConn.getPassword().equals(password)) {
+                        dbConn.getUser().equals(username)) {
                     Logger.getLogger(HibernateUtil.class.getName()).info("Found pre-existing database connection.");
                     return checkAndConnect(dbConn);
                 }

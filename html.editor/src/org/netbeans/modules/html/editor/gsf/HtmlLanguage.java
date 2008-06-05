@@ -42,6 +42,7 @@ package org.netbeans.modules.html.editor.gsf;
 
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.netbeans.modules.gsf.api.StructureScanner;
@@ -93,6 +94,11 @@ public class HtmlLanguage extends DefaultLanguageConfig {
     }
 
     @Override
+    public boolean hasStructureScanner() {
+        return true;
+    }
+
+    @Override
     public StructureScanner getStructureScanner() {
         return new HtmlStructureScanner();
     }
@@ -100,5 +106,10 @@ public class HtmlLanguage extends DefaultLanguageConfig {
     @Override
     public SemanticAnalyzer getSemanticAnalyzer() {
         return new HtmlSemanticAnalyzer();
+    }
+
+    @Override
+    public CodeCompletionHandler getCompletionHandler() {
+        return new HtmlGsfCompletionHandler();
     }
 }

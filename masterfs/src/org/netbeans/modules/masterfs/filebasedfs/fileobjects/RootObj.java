@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
+import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 
 public final class RootObj<T extends FileObject> extends FileObject {
     private T realRoot = null;
@@ -145,11 +146,8 @@ public final class RootObj<T extends FileObject> extends FileObject {
         for (File file : files) {
             FileObjectFactory factory =  roots2Factory.get(file);
             if (factory == null) {
-                File tmp = file;
-                while (tmp.getParentFile() != null) {
-                    tmp = tmp.getParentFile();
-                }
-                factory =  roots2Factory.get(tmp);
+                // UNC - do not use getParentFile to search for root
+                factory =  roots2Factory.get(new FileInfo(file).getRoot().getFile());
             }
             if (factory != null) {
                 List<File> lf = files2Factory.get(factory);

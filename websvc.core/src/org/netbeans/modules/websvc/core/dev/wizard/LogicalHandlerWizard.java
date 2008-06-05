@@ -51,6 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.core.CreatorProvider;
 import org.netbeans.modules.websvc.core.HandlerCreator;
+import org.netbeans.modules.websvc.core.WSStackUtils;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -203,16 +204,17 @@ public class LogicalHandlerWizard implements WizardDescriptor.InstantiatingItera
             }
             
             //if platform is Tomcat, source level must be jdk 1.5 and jaxws library must be in classpath
+            WSStackUtils wsStackUtils = new WSStackUtils(project);
             if(!Util.isJavaEE5orHigher(project) && projectType == ProjectInfo.WEB_PROJECT_TYPE
-                    && !PlatformUtil.isJsr109Supported(project) 
-                    && !PlatformUtil.isJsr109OldSupported(project) ){
+                    && !wsStackUtils.isJsr109Supported() 
+                    && !wsStackUtils.isJsr109OldSupported() ){
                 //has to be at least jdk 1.5
                 if (Util.isSourceLevel14orLower(project)) {
                     wiz.putProperty("WizardPanel_errorMessage",
                             NbBundle.getMessage(LogicalHandlerWizard.class, "ERR_HandlerNeedProperSourceLevel")); // NOI18N
                     return false;
                 }
-                if (!PlatformUtil.hasJAXWSLibrary(project)) { //must have jaxws library
+                if (!wsStackUtils.hasJAXWSLibrary()) { //must have jaxws library
                     wiz.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(BottomPanel.class, "LBL_LogicalHandlerWarning")); // NOI18N
                     return false;
                 } else

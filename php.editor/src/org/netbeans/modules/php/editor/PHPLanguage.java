@@ -120,6 +120,11 @@ public class PHPLanguage extends DefaultLanguageConfig {
     }
 
     @Override
+    public boolean hasStructureScanner() {
+        return true;
+    }
+
+    @Override
     public StructureScanner getStructureScanner() {
         return new PhpStructureScanner();
     }
@@ -130,8 +135,18 @@ public class PHPLanguage extends DefaultLanguageConfig {
     }
 
     @Override
+    public boolean hasOccurrencesFinder() {
+        return true;
+    }
+
+    @Override
     public OccurrencesFinder getOccurrencesFinder() {
         return new OccurrencesFinderImpl();
+    }
+
+    @Override
+    public boolean hasFormatter() {
+        return true;
     }
 
     @Override
@@ -147,6 +162,11 @@ public class PHPLanguage extends DefaultLanguageConfig {
     @Override
     public InstantRenamer getInstantRenamer() {
         return new InstantRenamerImpl();
+    }
+
+    @Override
+    public boolean hasHintsProvider() {
+        return true;
     }
 
     @Override

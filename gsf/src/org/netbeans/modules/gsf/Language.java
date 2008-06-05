@@ -144,13 +144,18 @@ public final class Language {
     }
 
     public boolean useCustomEditorKit() {
-        if (useCustomEditorKit == null) { // Lazy init
-            getGsfLanguage(); // Also initializes languageConfig
-            if (languageConfig != null) {
-                useCustomEditorKit = languageConfig.isUsingCustomEditorKit();
-            } else {
-                useCustomEditorKit = Boolean.FALSE;
-            }
+// This is done during initialization so we don't want to configure all the language configurations
+// at this point and cause a lot of class loading.        
+//        if (useCustomEditorKit == null) { // Lazy init
+//            getGsfLanguage(); // Also initializes languageConfig
+//            if (languageConfig != null) {
+//                useCustomEditorKit = languageConfig.isUsingCustomEditorKit();
+//            } else {
+//                useCustomEditorKit = Boolean.FALSE;
+//            }
+//        }
+        if (useCustomEditorKit == null) {
+            useCustomEditorKit = Boolean.FALSE;
         }
 
         return useCustomEditorKit;
@@ -397,6 +402,10 @@ public final class Language {
                 getGsfLanguage(); // Also initializes languageConfig
                 if (languageConfig != null) {
                     formatter = languageConfig.getFormatter();
+                    if (formatter != null) {
+                        // You MUST return true from this method if you provide a formatter!
+                        assert languageConfig.hasFormatter();
+                    }
                 }
             }
         }
@@ -483,6 +492,11 @@ public final class Language {
                 getGsfLanguage(); // Also initializes languageConfig
                 if (languageConfig != null) {
                     structure = languageConfig.getStructureScanner();
+                    if (structure != null) {
+                        // You MUST return true from this method if you provide a structure
+                        // scanner!
+                        assert languageConfig.hasStructureScanner();
+                    }
                 }
             }
         }
@@ -509,6 +523,11 @@ public final class Language {
                 getGsfLanguage(); // Also initializes languageConfig
                 if (languageConfig != null) {
                     hintsProvider = languageConfig.getHintsProvider();
+                    if (hintsProvider != null) {
+                        // You MUST return true from this method if you provide a hints
+                        // provider
+                        assert languageConfig.hasHintsProvider();
+                    }
                 }
             }
             if (hintsProvider != null) {
@@ -559,8 +578,15 @@ public final class Language {
         if (structureFile != null) {
             return true;
         } else {
-            getStructure(); // Initialize from DefaultLanguageConfig if possible
-            return structure != null;
+            // For performance reasons, we don't want to initialize this yet;
+            // navigators have to be installed early during startup for all languages,
+            // but we don't want to actually create the configuration objects
+            // (which can load a lot of state)
+//            getGsfLanguage();
+//            if (languageConfig != null) {
+//                return languageConfig.hasStructureScanner();
+//            }
+            return false;
         }
     }
     
@@ -568,8 +594,11 @@ public final class Language {
         if (formatterFile != null) {
             return true;
         } else {
-            getFormatter(); // Initialize from DefaultLanguageConfig if possible
-            return formatter != null;
+            getGsfLanguage();
+            if (languageConfig != null) {
+                return languageConfig.hasFormatter();
+            }
+            return false;
         }
     }
 
@@ -577,8 +606,11 @@ public final class Language {
         if (hintsProviderFile != null) {
             return true;
         } else {
-            getHintsProvider(); // Initialize from DefaultLanguageConfig if possible
-            return hintsProviderFile != null;
+            getGsfLanguage();
+            if (languageConfig != null) {
+                return languageConfig.hasHintsProvider();
+            }
+            return false;
         }
     }
     
@@ -598,6 +630,11 @@ public final class Language {
                 getGsfLanguage(); // Also initializes languageConfig
                 if (languageConfig != null) {
                     occurrences = languageConfig.getOccurrencesFinder();
+                    if (occurrences != null) {
+                        // You MUST return true from this method if you provide a structure
+                        // scanner!
+                        assert languageConfig.hasOccurrencesFinder();
+                    }
                 }
             }
         }
@@ -612,8 +649,11 @@ public final class Language {
         if (occurrencesFile != null) {
             return true;
         } else {
-            getOccurrencesFinder(); // Initialize from DefaultLanguageConfig if possible
-            return occurrencesFile != null;
+            getGsfLanguage();
+            if (languageConfig != null) {
+                return languageConfig.hasOccurrencesFinder();
+            }
+            return false;
         }
     }
     

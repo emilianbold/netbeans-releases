@@ -74,7 +74,6 @@ import javax.swing.event.TreeExpansionListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
-import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.swing.etable.ETable;
@@ -82,7 +81,6 @@ import org.netbeans.swing.etable.TableColumnSelector;
 import org.netbeans.swing.outline.DefaultOutlineModel;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.OutlineModel;
-import org.netbeans.swing.outline.ProxyTableModel;
 import org.netbeans.swing.outline.RowModel;
 import org.netbeans.swing.outline.TreePathSupport;
 import org.openide.awt.MouseUtils;
@@ -93,7 +91,12 @@ import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 
 /**
- * Explorer view displaying nodes in a tree table.
+ * <p>Explorer view displaying nodes in a tree table.</p>
+ * 
+ * <p><b>Note:</b> This API is still under development and may change even in
+ * incompatible way during its stabilization phase. The API will be finalized in
+ * NetBeans version 6.5.</p>
+ * 
  * @author David Strupl
  */
 public class OutlineView extends JScrollPane {
@@ -857,10 +860,6 @@ public class OutlineView extends JScrollPane {
                 super(index);
             }
             @Override
-            protected Comparator getRowComparator(int column, boolean ascending) {
-                  return new OutlineRowComparator(column, ascending);
-            }
-            @Override
             public boolean isSortingAllowed() {
                 boolean res = super.isSortingAllowed();
                 TableModel model = getModel();
@@ -931,7 +930,7 @@ public class OutlineView extends JScrollPane {
     private static class NodeOutlineModel extends DefaultOutlineModel {
 
         public NodeOutlineModel(NodeTreeModel treeModel, RowModel rowModel, boolean largeModel, String nodesColumnLabel) {
-            super( treeModel, new ProxyTableModel(rowModel), largeModel, nodesColumnLabel );
+            super( treeModel, rowModel, largeModel, nodesColumnLabel );
         }
 
         @Override

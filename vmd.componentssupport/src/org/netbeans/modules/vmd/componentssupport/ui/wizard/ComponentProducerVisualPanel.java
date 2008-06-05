@@ -45,14 +45,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.vmd.componentssupport.ui.IconUtils;
+import org.netbeans.modules.vmd.componentssupport.ui.helpers.CustomComponentHelper;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -130,6 +129,7 @@ final class ComponentProducerVisualPanel extends JPanel {
     public @Override void addNotify() {
         super.addNotify();
         attachDocumentListeners();
+        checkValidity();
     }
     
     public @Override void removeNotify() {
@@ -188,6 +188,11 @@ final class ComponentProducerVisualPanel extends JPanel {
         checkValidity();
     }
 
+    private CustomComponentHelper getHelper(){
+        return (CustomComponentHelper)mySettings.getProperty( 
+                NewComponentDescriptor.HELPER);
+    }
+    
     private String getPaletteDispName() {
         String value = (String) mySettings.getProperty(
                 NewComponentDescriptor.CP_PALETTE_DISP_NAME);
@@ -263,15 +268,6 @@ final class ComponentProducerVisualPanel extends JPanel {
                 NewComponentDescriptor.CP_VALID_CUSTOM);
     }
     
-    private List<Map<String, Object>> getExistingComponents(){
-        Object value = mySettings.getProperty(
-                NewComponentDescriptor.EXISTING_COMPONENTS);
-        if (value == null || !(value instanceof List)){
-            return null;
-        }
-        return (List<Map<String, Object>>)value;
-    }
-    
     private boolean checkValidity(){
         if (!isCPClassNameValid()){
             return false;
@@ -329,16 +325,13 @@ final class ComponentProducerVisualPanel extends JPanel {
     private boolean isCPClassNameValid(){
         String name = getClassNameValue();
         if (name.length() == 0) {
-            setError(NbBundle.getMessage(ComponentProducerVisualPanel.class, 
-                    MSG_ERR_CLASS_NAME_EMPTY));
+            setError(getMessage(MSG_ERR_CLASS_NAME_EMPTY));
             return false;
         } else if (!Utilities.isJavaIdentifier(name)){
-            setError(NbBundle.getMessage(ComponentProducerVisualPanel.class, 
-                    MSG_ERR_CLASS_NAME_INVALID));
+            setError(getMessage(MSG_ERR_CLASS_NAME_INVALID));
             return false;
-        } else if (isCPClassNameExist(name)){
-            setError(NbBundle.getMessage(ComponentProducerVisualPanel.class, 
-                    MSG_ERR_CLASS_NAME_EXISTS));
+        } else if (getHelper().isProducerClassNameExist(name)){
+            setError(getMessage(MSG_ERR_CLASS_NAME_EXISTS));
             return false;
         }
         return true;
@@ -347,8 +340,7 @@ final class ComponentProducerVisualPanel extends JPanel {
     private boolean isCPPaletteDispNameValid(){
         String name = getPaletteDispNameValue();
         if (name.length() == 0) {
-            setError(NbBundle.getMessage(ComponentProducerVisualPanel.class, 
-                    MSG_ERR_PALETTE_DISP_NAME_EMPTY));
+            setError(getMessage(MSG_ERR_PALETTE_DISP_NAME_EMPTY));
             return false;
         }
         return true;
@@ -360,30 +352,10 @@ final class ComponentProducerVisualPanel extends JPanel {
         }
         String name = getLibraryNameValue();
         if (name.length() == 0) {
-            setError(NbBundle.getMessage(ComponentProducerVisualPanel.class, 
-                    MSG_ERR_LIB_NAME_EMPTY));
+            setError(getMessage(MSG_ERR_LIB_NAME_EMPTY));
             return false;
         }
         return true;
-    }
-
-    private boolean isCPClassNameExist(String name){
-        return checkIfComponentValueExists(
-                NewComponentDescriptor.CP_CLASS_NAME, name);
-    }
-    
-    private boolean checkIfComponentValueExists(String key, Object value){
-        List<Map<String, Object>> list = getExistingComponents();
-        if (list == null){
-            return false;
-        }
-        for (Map<String, Object> comp : list){
-            Object testValue = comp.get(key);
-            if (testValue.equals(value)){
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

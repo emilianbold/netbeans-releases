@@ -23,6 +23,9 @@
                 <file name="language.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.PHPLanguage"/>
                 </file>
+                <file name="structure.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.parser.PhpStructureScanner"/>
+                </file> 
             </folder>
         </folder>
     </folder>
@@ -44,6 +47,19 @@
                             </file>
                         </folder>
                     </folder>
+                </folder>
+                
+                <folder name="CodeGenerators">
+                    <file name="org-netbeans-modules-php-editor-codegen-ConnectionGenerator$Factory.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="org-netbeans-modules-php-editor-codegen-TableGenerator$Factory.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                </folder>
+                
+                <folder name="CodeTemplateProcessorFactories">
+                    <file name="org-netbeans-modules-php-editor-codegen-PHPCodeTemplateProcessor$Factory.instance"/>
                 </folder>
                 
                 <folder name="CodeTemplates">

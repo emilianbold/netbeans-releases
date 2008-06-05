@@ -9,7 +9,6 @@ import java.util.Hashtable;
 import java.util.Enumeration;
 import java.io.IOException;
 
-import antlr.collections.impl.BitSet;
 import antlr.collections.impl.Vector;
 
 /**A Grammar holds a set of rules (which are stored

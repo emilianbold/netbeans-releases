@@ -32,7 +32,7 @@ import java.util.concurrent.Callable;
 import javax.swing.AbstractAction;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.extexecution.api.DefaultDescriptor;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptorBuilder;
 import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
@@ -44,8 +44,8 @@ public class GrailsTargetAction extends AbstractAction {
 
     private final String command;
 
-    public GrailsTargetAction (Project prj, String desc, String command){
-        super (desc);
+    public GrailsTargetAction (Project prj, String desc, String command) {
+        super(desc);
         this.prj = prj;
         this.command = command;
     }
@@ -66,10 +66,13 @@ public class GrailsTargetAction extends AbstractAction {
         String displayName = inf.getDisplayName() + " (" + command + ")"; // NOI18N
 
         Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
-                command, GrailsProjectConfig.forProject(prj)); // NOI18N
-        ExecutionService service = new ExecutionService(callable, displayName,
-                new DefaultDescriptor(prj, false));
+                command, GrailsProjectConfig.forProject(prj));
 
+        ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
+        builder.showProgress(true).frontWindow(true).controllable(true).inputVisible(true);
+        builder.postExecution(new RefreshProjectRunnable(prj));
+
+        ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
         service.run();
     }
 }

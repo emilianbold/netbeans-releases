@@ -40,6 +40,8 @@ package org.netbeans.modules.gsf.api;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 /** 
@@ -65,6 +67,11 @@ public abstract class CodeCompletionResult {
         @Override
         public boolean isTruncated() {
             return false;
+        }
+
+        @Override
+        public Set<String> embeddedTypes() {
+            return Collections.emptySet();
         }
     };
 
@@ -128,4 +135,34 @@ public abstract class CodeCompletionResult {
      * result.
      */
     public abstract boolean isTruncated();
+    
+    /**
+     * <p>Return extra mimetypes that might be embedded here and should be checked
+     * for code completion.  Normally null or an empty set.
+     * </p>
+     * <p>
+     * In embedded files, code completion normally gets invoked on the 
+     * CodeCompletionHandler for the innermost (most specific) mime language at
+     * the caret offset. In some cases this isn't adequate; for example, inside
+     * an empty "onclick" handler in HTML, you expect JavaScript code completion,
+     * but because the attribute is empty, there aren't actually any tokens
+     * for JavaScript there, so no JavaScript embedding - and you end up with
+     * just HTML completion.
+     * </p>
+     * <p>
+     * This method lets an outer language coordinate other languages that should
+     * be included for code completion. For example, in the above example, the
+     * HTML code completion can look at the tokens, and decide that inside
+     * style="" it will include CSS completion, and inside onclick="" it will include
+     * JavaScript completion.
+     * </p>
+     * <p>
+     * <b>Note: It is illegal for these result sets to contain their own mimetypes,
+     * or a set of circular references.</b>
+     * </p>
+     * 
+     * @return A set of other mimetypes to also check at this location, or null.
+     */
+    @CheckForNull
+    public abstract Set<String> embeddedTypes();
 }

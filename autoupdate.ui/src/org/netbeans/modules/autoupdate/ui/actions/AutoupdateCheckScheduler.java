@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.autoupdate.ui.actions;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -54,7 +57,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import org.netbeans.api.autoupdate.InstallSupport;
@@ -442,16 +448,11 @@ public class AutoupdateCheckScheduler {
                 flasher.startFlashing ();
         final Runnable showBalloon = new Runnable() {
             public void run() {
-                JLabel balloon = new JLabel( units.size() == 1 ?
-                            NbBundle.getMessage(AutoupdateCheckScheduler.class,
-                                "AutoupdateCheckScheduler_UpdateFound_ToolTip", units.size()) : // NOI18N
-                            NbBundle.getMessage(AutoupdateCheckScheduler.class,
-                                "AutoupdateCheckScheduler_UpdatesFound_ToolTip", units.size())); // NOI18N
-                BalloonManager.show( flasher, balloon, new AbstractAction() {
+                BalloonManager.show( flasher, createBalloonContent( units.size() ), new AbstractAction() {
                     public void actionPerformed(ActionEvent e) {
                         onMouseClick.run();
                     }
-                }, 30*1000);
+                }, Utilities.getShowingBalloonTimeout ());
             }
         };
         if (! wasFlashing) {
@@ -491,4 +492,21 @@ public class AutoupdateCheckScheduler {
         return wasRealCheckUpdateCenters;
     }
     
+    private static JComponent createBalloonContent( int updateCount ) {
+        JPanel panel = new JPanel( new GridBagLayout() );
+        panel.setOpaque( false );
+        JLabel top = new JLabel( updateCount == 1 ?
+                    NbBundle.getMessage(AutoupdateCheckScheduler.class,
+                        "AutoupdateCheckScheduler_UpdateFound_ToolTip", updateCount) : // NOI18N
+                    NbBundle.getMessage(AutoupdateCheckScheduler.class,
+                        "AutoupdateCheckScheduler_UpdatesFound_ToolTip", updateCount)); // NOI18N
+        top.setIcon( new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/autoupdate/ui/resources/info_icon.png")) ); //NOI18N
+        top.setIconTextGap(10);
+        panel.add( top, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.NORTHWEST,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
+        
+        panel.add( new JLabel(NbBundle.getMessage(AutoupdateCheckScheduler.class,
+                        "AutoupdateCheckScheduler_UpdateFound_Hint") ),  //NOI18N
+                        new GridBagConstraints(0,1,1,1,0.0,0.0,GridBagConstraints.NORTHWEST,GridBagConstraints.NONE,new Insets(2,0,0,0),0,0) );
+        return panel;
+    }
 }

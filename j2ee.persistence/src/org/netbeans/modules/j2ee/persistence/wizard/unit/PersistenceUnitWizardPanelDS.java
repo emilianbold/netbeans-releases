@@ -49,6 +49,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.core.api.support.Strings;
 import org.netbeans.modules.j2ee.persistence.provider.DefaultProvider;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
@@ -57,6 +58,7 @@ import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulator;
 import org.netbeans.modules.j2ee.persistence.util.PersistenceProviderComboboxHelper;
+import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.openide.util.NbBundle;
 
@@ -146,6 +148,10 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
     
     public String getPersistenceUnitName() {
         return unitNameTextField.getText();
+    }
+    
+    public Library getPersistenceLibrary() {
+        return PersistenceLibrarySupport.getLibrary((Provider) providerCombo.getSelectedItem());
     }
     
     public String getDatasource() {

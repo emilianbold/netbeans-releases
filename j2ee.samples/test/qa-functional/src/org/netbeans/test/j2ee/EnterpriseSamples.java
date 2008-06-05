@@ -40,9 +40,15 @@ package org.netbeans.test.j2ee;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.ConnectException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.BuildProjectAction;
+import org.netbeans.jellytools.actions.RedeployProjectAction;
+import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
@@ -52,13 +58,14 @@ import org.netbeans.junit.NbTestSuite;
 
 /**
  *
- * @author dk198696
+ * @author Dan.Kolar@sun.com
  */
 public class EnterpriseSamples extends JellyTestCase {
 
     protected static int logIdx = 0;
     protected static final String PROJECT_LOCATION = System.getProperty("xtest.userdir");
     private static final String BUILD_SUCCESSFUL = "BUILD SUCCESSFUL";
+    private ServerInstance server;
 
     /** Need to be defined because of JUnit */
     public EnterpriseSamples(String name) {
@@ -70,35 +77,36 @@ public class EnterpriseSamples extends JellyTestCase {
         suite.addTest(new EnterpriseSamples("testNewCustomerCMPSample"));
         suite.addTest(new EnterpriseSamples("testBuildCustomerCMPSample"));
         suite.addTest(new EnterpriseSamples("testCleanCustomerCMPSample"));
-//        suite.addTest(new EnterpriseSamples("testRunCustomerCMPSample"));
+        suite.addTest(new EnterpriseSamples("testRedeployCustomerCMPSample"));
         suite.addTest(new EnterpriseSamples("testNewAnnotationOverrideInterceptorSample"));
         suite.addTest(new EnterpriseSamples("testBuildAnnotationOverrideInterceptorSample"));
         suite.addTest(new EnterpriseSamples("testCleanAnnotationOverrideInterceptorSample"));
-//        suite.addTest(new EnterpriseSamples("testRunAnnotationOverrideInterceptorSample"));
+        suite.addTest(new EnterpriseSamples("testRedeployAnnotationOverrideInterceptorSample"));
         suite.addTest(new EnterpriseSamples("testNewInterceptorStatelessSample"));
         suite.addTest(new EnterpriseSamples("testBuildInterceptorStatelessSample"));
         suite.addTest(new EnterpriseSamples("testCleanInterceptorStatelessSample"));
-//        suite.addTest(new EnterpriseSamples("testRunInterceptorStatelessSample"));
+        suite.addTest(new EnterpriseSamples("testRedeployInterceptorStatelessSample"));
         suite.addTest(new EnterpriseSamples("testNewJSFJPASample"));
         suite.addTest(new EnterpriseSamples("testBuildJSFJPASample"));
         suite.addTest(new EnterpriseSamples("testCleanJSFJPASample"));
-//        suite.addTest(new EnterpriseSamples("testRunJSFJPASample"));
+        suite.addTest(new EnterpriseSamples("testRedeployJSFJPASample"));
         suite.addTest(new EnterpriseSamples("testNewJSFJPACrudSample"));
         suite.addTest(new EnterpriseSamples("testBuildJSFJPACrudSample"));
         suite.addTest(new EnterpriseSamples("testCleanJSFJPACrudSample"));
-//        suite.addTest(new EnterpriseSamples("testRunJSFJPACrudSample"));
+        suite.addTest(new EnterpriseSamples("testRedeployJSFJPACrudSample"));
         suite.addTest(new EnterpriseSamples("testNewLotteryAnnotationSample"));
         suite.addTest(new EnterpriseSamples("testBuildLotteryAnnotationSample"));
         suite.addTest(new EnterpriseSamples("testCleanLotteryAnnotationSample"));
-//        suite.addTest(new EnterpriseSamples("testRunLotteryAnnotationSample"));
+        suite.addTest(new EnterpriseSamples("testRedeployLotteryAnnotationSample"));
         suite.addTest(new EnterpriseSamples("testNewServletStatelessSample"));
         suite.addTest(new EnterpriseSamples("testBuildServletStatelessSample"));
         suite.addTest(new EnterpriseSamples("testCleanServletStatelessSample"));
-//        suite.addTest(new EnterpriseSamples("testRunServletStatelessSample"));
+        suite.addTest(new EnterpriseSamples("testRedeployServletStatelessSample"));
         suite.addTest(new EnterpriseSamples("testNewWebJPASample"));
         suite.addTest(new EnterpriseSamples("testBuildWebJPASample"));
         suite.addTest(new EnterpriseSamples("testCleanWebJPASample"));
-//        suite.addTest(new EnterpriseSamples("testRunWebJPASample"));
+        suite.addTest(new EnterpriseSamples("testRedeployWebJPASample"));
+        suite.addTest(new EnterpriseSamples("testStopServer"));
         return suite;
     }
 
@@ -122,12 +130,7 @@ public class EnterpriseSamples extends JellyTestCase {
                 "FrameWaiter.WaitFrameTimeout", 180000);
         JemmyProperties.setCurrentTimeout(
                 "DialogWaiter.WaitDialogTimeout", 180000);
-//        server = ServerInstance.getDefault();
-
-    // extend Tomcat running check timeout
-    //        TomcatManager tomcatManager = getTomcatManager();
-    //        tomcatManager.getInstanceProperties().setProperty(
-    //                TomcatProperties.PROP_RUNNING_CHECK_TIMEOUT, "8000");
+        server = ServerInstance.getDefault();
     }
 
     @Override
@@ -238,8 +241,8 @@ public class EnterpriseSamples extends JellyTestCase {
         testCleanProject("CustomerCMP");
     }
 
-    public void testRunCustomerCMPSample() throws IOException {
-        testRunProject("CustomerCMP");
+    public void testRedeployCustomerCMPSample() throws IOException {
+        testRedeployProject("CustomerCMP");
     }
 
     public void testBuildAnnotationOverrideInterceptorSample() throws IOException {
@@ -250,8 +253,8 @@ public class EnterpriseSamples extends JellyTestCase {
         testCleanProject("AnnotOvdInterceptor");
     }
 
-    public void testRunAnnotationOverrideInterceptorSample() throws IOException {
-        testRunProject("AnnotOvdInterceptor");
+    public void testRedeployAnnotationOverrideInterceptorSample() throws IOException {
+        testRedeployProject("AnnotOvdInterceptor");
     }
 
     public void testBuildInterceptorStatelessSample() throws IOException {
@@ -262,8 +265,8 @@ public class EnterpriseSamples extends JellyTestCase {
         testCleanProject("InterceptorStateless");
     }
 
-    public void testRunInterceptorStatelessSample() throws IOException {
-        testRunProject("InterceptorStateless");
+    public void testRedeployInterceptorStatelessSample() throws IOException {
+        testRedeployProject("InterceptorStateless");
     }
 
     public void testBuildJSFJPASample() throws IOException {
@@ -274,8 +277,8 @@ public class EnterpriseSamples extends JellyTestCase {
         testCleanProject("JsfJpa");
     }
 
-    public void testRunJSFJPASample() throws IOException {
-        testRunProject("JsfJpa");
+    public void testRedeployJSFJPASample() throws IOException {
+        testRedeployProject("JsfJpa");
     }
 
     public void testBuildJSFJPACrudSample() throws IOException {
@@ -286,8 +289,8 @@ public class EnterpriseSamples extends JellyTestCase {
         testCleanProject("JsfJpaCrud");
     }
 
-    public void testRunJSFJPACrudSample() throws IOException {
-        testRunProject("JsfJpaCrud");
+    public void testRedeployJSFJPACrudSample() throws IOException {
+        testRedeployProject("JsfJpaCrud");
     }
 
     public void testBuildLotteryAnnotationSample() throws IOException {
@@ -298,8 +301,8 @@ public class EnterpriseSamples extends JellyTestCase {
         testCleanProject("LotteryAnnotation");
     }
 
-    public void testRunLotteryAnnotationSample() throws IOException {
-        testRunProject("LotteryAnnotation");
+    public void testRedeployLotteryAnnotationSample() throws IOException {
+        testRedeployProject("LotteryAnnotation");
     }
 
     public void testBuildServletStatelessSample() throws IOException {
@@ -310,23 +313,22 @@ public class EnterpriseSamples extends JellyTestCase {
         testCleanProject("ServletStateless");
     }
 
-    public void testRunServletStatelessSample() throws IOException {
-        testRunProject("ServletStateless");
+    public void testRedeployServletStatelessSample() throws IOException {
+        testRedeployProject("ServletStateless");
     }
 
     public void testBuildWebJPASample() throws IOException {
         testBuildProject("WebJpa");
     }
-    
+
     public void testCleanWebJPASample() throws IOException {
         testCleanProject("WebJpa");
     }
 
-    public void testRunWebJPASample() throws IOException {
-        testRunProject("WebJpa");
+    public void testRedeployWebJPASample() throws IOException {
+        testRedeployProject("WebJpa");
     }
-    
-    
+
     protected void sleep(int milis) {
         try {
             Thread.sleep(milis);
@@ -393,6 +395,35 @@ public class EnterpriseSamples extends JellyTestCase {
 //        editor.closeDiscardAll();
     }
 
+    public void testRedeployProject(String PROJECT_NAME) throws IOException {
+        Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
+        Util.cleanStatusBar();
+        new RedeployProjectAction().perform(rootNode);
+        System.out.println("status text:" + MainWindowOperator.getDefault().getStatusText());
+        sleep(5000);
+        System.out.println("status text:" + MainWindowOperator.getDefault().getStatusText());
+        waitBuildSuccessful(PROJECT_NAME);
+        System.out.println("status text:" + MainWindowOperator.getDefault().getStatusText());
+        sleep(5000);
+        System.out.println("status text:" + MainWindowOperator.getDefault().getStatusText());
+        logAndCloseOutputs();
+    //MainWindowOperator.getDefault().waitStatusText("Finished building");
+    }
+
+    public void testStopServer() throws Exception {
+        server.stop();
+        //try { Thread.currentThread().sleep(5000); } catch (InterruptedException e) {}
+        URL url = server.getServerURL();
+        URLConnection connection = url.openConnection();
+        try {
+            connection.connect();
+            fail("Connection to: " + url + " established, but the server" +
+                    " should not be running.");
+        } catch (ConnectException e) {
+            System.out.println("Exception in testStopServer occured!");
+        }
+    }
+
     public String getProjectFolder(String PROJECT_NAME) {
         return PROJECT_LOCATION + File.separator + PROJECT_NAME;
     }
@@ -426,5 +457,54 @@ public class EnterpriseSamples extends JellyTestCase {
 //    }
     private void assertContains(String text, String value) {
         assertTrue("Assertation failed, cannot find:\n" + value + "\nin the following text:\n" + text, text.contains(value));
+    }
+
+    private static class ServerInstance {
+
+        private String host;
+        private int serverPort;
+        private String nodeName;
+        private String userName;
+        private String password;
+        private URL serverURL;
+        private static ServerInstance instance;
+
+        private ServerInstance() {
+        }
+
+        public static ServerInstance getDefault() {
+            if (instance == null) {
+                instance = new ServerInstance();
+                instance.host = "localhost";
+                instance.serverPort = 8080;
+                instance.nodeName = "GlassFish V2";
+                instance.userName = "admin";
+                instance.password = "adminadmin";
+            }
+            return instance;
+        }
+
+        public URL getServerURL() {
+            if (serverURL == null) {
+                try {
+                    serverURL = new URL("http", host, serverPort, "");
+                } catch (MalformedURLException mue) {
+                    throw new JemmyException("Cannot create server URL.", mue);
+                }
+            }
+            return serverURL;
+        }
+
+        public J2eeServerNode getServerNode() {
+            return J2eeServerNode.invoke(nodeName);
+        }
+
+        public void stop() {
+            getServerNode().stop();
+        }
+
+        public void start() {
+            getServerNode().start();
+        }
     }
 }

@@ -72,7 +72,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 
 public abstract class CsmPaintComponent extends JPanel {
             
-    protected DrawState drawState = new DrawState();
+    DrawState drawState = new DrawState();
     
     protected Font drawFont;
            
@@ -818,7 +818,51 @@ public abstract class CsmPaintComponent extends JPanel {
         }    
     }
     
-    
+    public static class TemplateParameterPaintComponent extends CsmPaintComponent{
+        private Color PARAMETER_NAME_COLOR = Color.BLACK.darker().darker();
+        private List params = null;
+        private String name;
+
+        public TemplateParameterPaintComponent(){
+            super();
+        }
+
+        public String getName(){
+            return name;
+        }
+        
+        public void setName(String name){
+            this.name = name;
+        }
+        
+        public void setParams(List params){
+            this.params = params;
+        }
+        
+        protected List getParamList(){
+            return params;
+        }
+
+        protected void draw(Graphics g){
+            // IMPORTANT:
+            // when updated => have to update toString!
+            boolean strike = false;
+            drawIcon(g, getIcon());
+            drawString(g, getName(), PARAMETER_NAME_COLOR, null, strike);
+        }
+
+        /**
+         * returns string representation of paint item
+         * IMPORTANT: have to be in sync with draw() method
+         */
+        public String toString() {
+            StringBuilder buf = new StringBuilder();
+            //macro name
+            buf.append(getName());
+            return buf.toString();
+        }    
+    }
+            
     public static class ConstructorPaintComponent extends CsmPaintComponent{
         
         private Color CONSTRUCTOR_COLOR = Color.orange.darker().darker();

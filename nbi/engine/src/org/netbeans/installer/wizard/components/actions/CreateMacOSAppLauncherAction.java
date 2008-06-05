@@ -224,4 +224,9 @@ public class CreateMacOSAppLauncherAction extends WizardAction {
         
         LogManager.logExit("finished creating the app launcher");
     }
+
+    @Override
+    public boolean canExecuteForward() {
+        return !Boolean.getBoolean(Registry.CREATE_BUNDLE_SKIP_NATIVE_LAUNCHER_PROPERTY);
+    }    
 }
