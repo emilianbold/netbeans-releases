@@ -1225,7 +1225,7 @@ public class CCSyntax extends Syntax {
 		    return null;
 		switch (buffer[offset++]) {
 		case 's':
-		    if (lang == IS_CPLUSPLUS && len == 5) { // keyword "const" (C++ only)
+		    if (len == 5) {
 			return (buffer[offset++] == 't') ? CCTokenContext.CONST : null;
 		    } else if (lang == IS_CPLUSPLUS && len == 10) { // keyword "const_cast" (C++ only)
 			return (buffer[offset++] == 't'

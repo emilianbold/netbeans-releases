@@ -5,13 +5,7 @@ package antlr;
  * Software rights: http://www.antlr.org/license.html
  */
 
-import java.util.Hashtable;
-import java.util.Enumeration;
 import java.io.IOException;
-
-import antlr.collections.impl.BitSet;
-import antlr.collections.impl.Vector;
-
 
 /** Parser-specific grammar subclass */
 class TreeWalkerGrammar extends Grammar {
@@ -59,6 +53,7 @@ class TreeWalkerGrammar extends Grammar {
     }
 
     /** Set tree parser options */
+    @Override
     public boolean setOption(String key, Token value) {
         if (key.equals("buildAST")) {
             if (value.getText().equals("true")) {

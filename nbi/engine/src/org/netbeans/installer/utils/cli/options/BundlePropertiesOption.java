@@ -38,7 +38,7 @@ package org.netbeans.installer.utils.cli.options;
 
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.exceptions.CLIArgumentException;
+import org.netbeans.installer.utils.exceptions.CLIOptionException;
 import org.netbeans.installer.utils.cli.CLIArgumentsList;
 import org.netbeans.installer.utils.cli.CLIOptionOneArgument;
 
@@ -49,7 +49,7 @@ import org.netbeans.installer.utils.cli.CLIOptionOneArgument;
 public class BundlePropertiesOption extends CLIOptionOneArgument {
 
     @Override
-    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {        
+    public void execute(CLIArgumentsList arguments) throws CLIOptionException {        
         System.setProperty(Installer.BUNDLE_PROPERTIES_FILE_PROPERTY,
                 arguments.next());
     }
