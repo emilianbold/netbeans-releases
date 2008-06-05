@@ -48,12 +48,11 @@
 package org.netbeans.test.java.generating.ConstructorElem;
 
 import org.netbeans.test.java.Common;
-import java.lang.reflect.Modifier;
 import java.util.Collections;
+import junit.framework.Test;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.junit.*;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 
 /** <B>Java Module General API Test: ConstructorElement</B>
  * <BR><BR><I>What it tests:</I><BR>
@@ -93,11 +92,7 @@ public class ConstructorElem extends org.netbeans.test.java.XRunner {
     public ConstructorElem(java.lang.String testName) {
         super(testName);
     }
-    
-    public static NbTest suite() {
-        return new NbTestSuite(ConstructorElem.class);
-    }
-    
+        
     /** "body" of this TestCase
      * @param o SourceElement - target for generating
      * @param log log is used for logging StackTraces
@@ -125,4 +120,8 @@ public class ConstructorElem extends org.netbeans.test.java.XRunner {
         packageName = "org.netbeans.test.java.testsources";
     }
     
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(ConstructorElem.class).enableModules(".*").clusters(".*"));
+    }
 }

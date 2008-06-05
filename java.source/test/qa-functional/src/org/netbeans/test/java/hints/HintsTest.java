@@ -27,13 +27,10 @@
  */
 package org.netbeans.test.java.hints;
 
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.OptionsOperator;
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.JSplitPaneOperator;
-import org.netbeans.jemmy.operators.JTabbedPaneOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -319,6 +316,9 @@ public class HintsTest extends HintsTestCase {
         new TestRunner().run(HintsTest.class);
     }
     
-    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(HintsTest.class).enableModules(".*").clusters(".*"));
+    }
     
 }

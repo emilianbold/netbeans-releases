@@ -27,9 +27,11 @@
  */
 package org.netbeans.test.java.hints;
 
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -95,5 +97,9 @@ public class AddElementHintTest extends HintsTestCase{
         new TestRunner().run(AddElementHintTest.class);
     }
     
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(AddElementHintTest.class).enableModules(".*").clusters(".*"));
+    }
     
 }

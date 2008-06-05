@@ -29,18 +29,17 @@
 package org.netbeans.test.java.navigation;
 
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.jemmy.util.NameComponentChooser;
 
 /** Class implementing all necessary methods for handling "Members" ResizablePopup$2.
  *
  * @author jp159440
  * @version 1.0
  */
-public class Members extends JDialogOperator {
+public class MembersOperator extends JDialogOperator {
 
     /** Creates new Members that can handle it.
      */
-    public Members() {
+    public MembersOperator() {
         super("Members");
     }
 
@@ -522,7 +521,7 @@ public class Members extends JDialogOperator {
     * @param args the command line arguments
     */
     public static void main(String args[]) {
-        new Members().verify();
+        new MembersOperator().verify();
         System.out.println("Members verification finished.");
     }
 }

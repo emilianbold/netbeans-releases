@@ -46,6 +46,10 @@
  */
 
 package org.netbeans.test.java.generating.SourceGenerator;
+
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
+
 /** <B>Java Module General API Test: SourceGenerator</B>
  * <BR><BR><I>What it tests:</I><BR>
  * This test is more complex and checks adding Elements (especially order of adding).
@@ -72,10 +76,6 @@ package org.netbeans.test.java.generating.SourceGenerator;
 
 public class SourceGenerator extends org.netbeans.test.java.XRunner {
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
     public SourceGenerator() {
         super("");
     }
@@ -83,11 +83,7 @@ public class SourceGenerator extends org.netbeans.test.java.XRunner {
     public SourceGenerator(java.lang.String testName) {
         super(testName);
     }
-    
-    public static org.netbeans.junit.NbTest suite() {
-        return new org.netbeans.junit.NbTestSuite(SourceGenerator.class);
-    }
-    
+        
     /** "body" of this TestCase
      * @param o SourceElement - target for generating
      * @param log log is used for logging StackTraces
@@ -107,6 +103,11 @@ public class SourceGenerator extends org.netbeans.test.java.XRunner {
         super.setUp();
         name = "JavaTestSourceSourceGenerator";
         packageName = "org.netbeans.test.java.testsources";
+    }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(SourceGenerator.class).enableModules(".*").clusters(".*"));
     }
     
 }

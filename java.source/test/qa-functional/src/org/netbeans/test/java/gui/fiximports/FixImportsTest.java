@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import javax.swing.ComboBoxModel;
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
@@ -57,7 +58,9 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.test.java.JavaTestCase;
 import org.netbeans.test.java.Utilities;
 
 
@@ -65,7 +68,7 @@ import org.netbeans.test.java.Utilities;
  * Tests Fix Imports.
  * @author Roman Strobl
  */
-public class FixImportsTest extends JellyTestCase {
+public class FixImportsTest extends JavaTestCase {
     
     // name of sample project
     private static final String TEST_PROJECT_NAME = "default";
@@ -95,23 +98,6 @@ public class FixImportsTest extends JellyTestCase {
     
     // actual directory with project
     private static String projectDir;
-    
-    /**
-     * Adds tests into the test suite.
-     * @return suite
-     */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new FixImportsTest("testFixImports"));
-        suite.addTest(new FixImportsTest("testFixImportsComplex"));
-        suite.addTest(new FixImportsTest("testCancel"));
-        suite.addTest(new FixImportsTest("testNothingToFix"));
-        suite.addTest(new FixImportsTest("testRemoveAndAdd"));
-        suite.addTest(new FixImportsTest("testRemoveUnused"));
-        suite.addTest(new FixImportsTest("testStatusBar"));
-        suite.addTest(new FixImportsTest("testCheckboxPersistence"));
-        return suite;
-    }
     
     /**
      * Main method for standalone execution.
@@ -376,6 +362,11 @@ public class FixImportsTest extends JellyTestCase {
         } finally {
             editor.close(false);
         }
+    }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(FixImportsTest.class).enableModules(".*").clusters(".*"));
     }
            
 }
