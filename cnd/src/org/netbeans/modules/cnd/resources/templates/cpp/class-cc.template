@@ -7,17 +7,12 @@
 
 #include %<%QUOTES%>%%<%NAME%>%.%<%DEFAULT_HEADER_EXT%>%%<%QUOTES%>%
 
-/*
- * Constructor
- */
-%<%CLASSNAME%>%::%<%CLASSNAME%>%()
-{
+%<%CLASSNAME%>%::%<%CLASSNAME%>%() {
 }
 
-/*
- * Destructor
- */
-%<%CLASSNAME%>%::~%<%CLASSNAME%>%()
-{
+%<%CLASSNAME%>%::%<%CLASSNAME%>%(const %<%CLASSNAME%>%& orig) {
+}
+
+%<%CLASSNAME%>%::~%<%CLASSNAME%>%() {
 }
 
