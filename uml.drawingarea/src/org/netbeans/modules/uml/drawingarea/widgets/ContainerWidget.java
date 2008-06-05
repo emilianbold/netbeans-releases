@@ -481,9 +481,23 @@ public class ContainerWidget extends Widget
                     }
                 }
                 //some elements(like combined fragment) are not namespace but can contain other element graphically
-                else if(containerElem instanceof ICombinedFragment && element instanceof ILifeline)
+                else if(containerElem instanceof ICombinedFragment)
                 {
-                    ((ICombinedFragment) containerElem).addCoveredLifeline((ILifeline) element);
+                    ICombinedFragment cf=(ICombinedFragment) containerElem;
+                    INamespace cfNs=cf.getNamespace();
+                    if(element instanceof ILifeline)
+                    {
+                        ILifeline ll=(ILifeline) element;
+                        cf.addCoveredLifeline(ll);
+                    }
+                    if(element.getNamespace()!=cfNs)
+                    {
+                        if(element.getNamespace()!=null)
+                        {
+                            element.getNamespace().removeOwnedElement(element);
+                        }
+                        cfNs.addOwnedElement(element);
+                    }
                 }
             }
             
