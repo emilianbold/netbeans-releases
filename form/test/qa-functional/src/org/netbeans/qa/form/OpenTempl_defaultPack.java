@@ -102,7 +102,7 @@ public class OpenTempl_defaultPack extends JellyTestCase {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(OpenTempl_defaultPack.class).addTest(
                 "testApplet", "testDialog", "testFrame", "testInter", "testAppl", "testMidi",
-                "testPanel", "testBean").gui(true).clusters(".*"));
+                "testPanel", "testBean").gui(true).enableModules(".*").clusters(".*"));
     }
 
     /** Called before every test case. */
