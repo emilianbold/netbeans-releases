@@ -60,9 +60,9 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/jta.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/hibernate3.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/hibernate-annotations.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/hibernate/hibernate-commons-annotations.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/hibernate/hibernate-entitymanager.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/hibernate/javassist.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/hibernate-commons-annotations.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/hibernate-entitymanager.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/javassist.jar!/</resource>
     </volume>
     <!-- Have them later
     <volume>
