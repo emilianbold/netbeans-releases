@@ -41,6 +41,7 @@ package org.netbeans.modules.parsing.impl;
 
 import java.util.Set;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.util.Exceptions;
@@ -100,4 +101,7 @@ public abstract class SourceAccessor {
     public abstract void setParser (Source source, Parser parser) throws IllegalStateException;
     
     public abstract void assignListeners(Source source);
+    
+    public abstract EventSupport getEventSupport (Source source);
+    
 }

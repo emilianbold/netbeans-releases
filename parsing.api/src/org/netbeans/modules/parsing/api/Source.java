@@ -57,7 +57,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
-import org.netbeans.modules.parsing.impl.TaskProcessor;
+import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.cookies.EditorCookie;
@@ -66,7 +66,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
-import org.openide.util.RequestProcessor;
 
 
 /**
@@ -275,6 +274,12 @@ public final class Source {
             assert source != null;
             source.assignListeners();
         }
+        
+        @Override
+        public EventSupport getEventSupport (final Source source) {
+            assert source != null;
+            return source.support;
+        }
 
         @Override
         public void setEvent (Source source, SchedulerEvent event) {
@@ -294,47 +299,10 @@ public final class Source {
         }
     }
     
-    //Changes handling
-    private static final RequestProcessor RP = new RequestProcessor ("parsing-event-collector",1);       //NOI18N        
-    
-    private final RequestProcessor.Task resetTask = RP.create(new Runnable() {
-        public void run() {
-            resetStateImpl();
-        }
-    });
-        
-    private volatile boolean k24;
+    //Changes handling                
+    private final EventSupport support = new EventSupport (this);
     
     private void assignListeners () {
-        
-    }
-    
-    private void resetState (final boolean invalidate) {
-        synchronized (this) {
-            final Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(this);
-            flags.add(SourceFlags.CHANGE_EXPECTED);
-            if (invalidate) {
-                flags.add(SourceFlags.INVALID);
-                flags.add(SourceFlags.RESCHEDULE_FINISHED_TASKS);
-            }
-        }
-        TaskProcessor.resetState (this,invalidate);
-        
-        if (!k24) {
-            resetTask.schedule(TaskProcessor.reparseDelay);
-        }
-    }
-    
-    /**
-     * Not synchronized, only sets the atomic state and clears the listeners
-     *
-     */
-    private void resetStateImpl() {
-        if (!k24) {
-            TaskProcessor.resetStateImpl (this);
-        }
-    }
+//        support.init(); commented out until Hanz removed
+    }        
 }
-
-
-
