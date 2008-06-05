@@ -94,7 +94,7 @@ public class ThinExecutionSpecificationMoveProvider implements MoveProvider {
                 ((UMLDiagramTopComponent) topComp).setDiagramDirty(true);
             }
         }
-        new AfterValidationExecutor(new UpdateMessagesInModel(moveHelper.getAllMovedMessages()),widget.getScene());
+        //new AfterValidationExecutor(new UpdateMessagesInModel(moveHelper.getAllMovedMessages()),widget.getScene());
         moveHelper=null;
     }
 
