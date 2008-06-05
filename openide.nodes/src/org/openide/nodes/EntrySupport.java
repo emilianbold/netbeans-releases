@@ -1054,7 +1054,7 @@ abstract class EntrySupport {
                 }
                 childrenNodes.clear();
                 //fireIndexesAddedOrRemoved(false, idxs);
-                children.destroyNodes(removedNodes.toArray(new Node[removedNodes.size()]));
+                //children.destroyNodes(removedNodes.toArray(new Node[removedNodes.size()]));
             }
 
             // change the order of entries, notifies
