@@ -1003,12 +1003,15 @@ yybegin(ST_DOCBLOCK);
 
 <ST_IN_SCRIPTING>b?"<<<"{TABS_AND_SPACES}[']{LABEL}[']{NEWLINE} {
 	int bprefix = (yytext().charAt(0) != '<') ? 1 : 0;
-        int startString=3+1+bprefix;
+        int startString=3+bprefix;
+        /* 3 is <<<, 2 is quotes, 1 is newline */
         nowdoc_len = yylength()-bprefix-3-2-1-(yytext().charAt(yylength()-2)=='\r'?1:0);
         while ((yytext().charAt(startString) == ' ') || (yytext().charAt(startString) == '\t')) {
             startString++;
             nowdoc_len--;
         }
+        // first quate
+        startString++;
         nowdoc = yytext().substring(startString,nowdoc_len+startString);
         yybegin(ST_START_NOWDOC);
         return createSymbol(ASTPHP5Symbols.T_START_NOWDOC);
@@ -1033,6 +1036,7 @@ yybegin(ST_DOCBLOCK);
         return createSymbol(ASTPHP5Symbols.T_END_NOWDOC);
     } else {
         yybegin(ST_NOWDOC);
+        yypushback(label_len);
     }
 }
 

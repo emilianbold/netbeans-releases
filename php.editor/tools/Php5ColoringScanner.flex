@@ -83,8 +83,6 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
     protected String heredoc = null;
     protected int heredoc_len = 0;
-    protected String nowdoc = null;
-    protected int nowdoc_len = 0;
     private boolean asp_tags = false;
     private StateStack stack = new StateStack();
 
@@ -900,13 +898,16 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 
 <ST_PHP_IN_SCRIPTING>b?"<<<"{TABS_AND_SPACES}[']{LABEL}[']{NEWLINE} {
 	int bprefix = (yytext().charAt(0) != '<') ? 1 : 0;
-        int startString=3+1+bprefix;
-        nowdoc_len = yylength()-bprefix-3-2-1-(yytext().charAt(yylength()-2)=='\r'?1:0);
+        int startString=3+bprefix;
+        /* 3 is <<<, 2 is quotes, 1 is newline */
+        heredoc_len = yylength()-bprefix-3-2-1-(yytext().charAt(yylength()-2)=='\r'?1:0);
         while ((yytext().charAt(startString) == ' ') || (yytext().charAt(startString) == '\t')) {
             startString++;
-            nowdoc_len--;
+            heredoc_len--;
         }
-        nowdoc = yytext().substring(startString,nowdoc_len+startString);
+        // first quate
+        startString++;
+        heredoc = yytext().substring(startString, heredoc_len+startString);
         yybegin(ST_PHP_START_NOWDOC);
         return PHPTokenId.PHP_NOWDOC_TAG;
 }
@@ -923,9 +924,9 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
         label_len--;
     }
 
-    if (label_len==nowdoc_len && yytext().substring(0,label_len).equals(nowdoc)) {
-        nowdoc=null;
-        nowdoc_len=0;
+    if (label_len==heredoc_len && yytext().substring(0,label_len).equals(heredoc)) {
+        heredoc=null;
+        heredoc_len=0;
         yybegin(ST_PHP_IN_SCRIPTING);
         return PHPTokenId.PHP_NOWDOC_TAG;
     } else {
@@ -940,7 +941,7 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     if (yytext().charAt(label_len-1)==';') {
 	   label_len--;
     }
-    if (label_len > nowdoc_len && yytext().substring(label_len - nowdoc_len,label_len).equals(nowdoc)) {
+    if (label_len > heredoc_len && yytext().substring(label_len - heredoc_len,label_len).equals(heredoc)) {
         yybegin(ST_PHP_END_NOWDOC);
     }
     yypushback(1);
@@ -948,8 +949,7 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_END_NOWDOC>{ANY_CHAR} {
-    nowdoc=null;
-    nowdoc_len=0;
+    heredoc=null; heredoc_len=0;
     yybegin(ST_PHP_IN_SCRIPTING);
     return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
 }

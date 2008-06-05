@@ -40,6 +40,7 @@ package org.netbeans.modules.php.editor.parser;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.php.editor.lexer.PHPLexerUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 
 /**
@@ -198,23 +199,6 @@ public class PrintASTVisitor implements Visitor {
         if (close) {
             buffer.append(">").append(NEW_LINE);
         }
-    }
-
-    /**
-     * Formats a given string to an XML file
-     * @param input 
-     * @return String the formatted string
-     */
-    public static String getXmlStringValue(String input) {
-        String escapedString = input;
-        escapedString = escapedString.replaceAll("&", "&amp;"); //$NON-NLS-1$ //$NON-NLS-2$
-        escapedString = escapedString.replaceAll(">", "&gt;"); //$NON-NLS-1$ //$NON-NLS-2$
-        escapedString = escapedString.replaceAll("<", "&lt;"); //$NON-NLS-1$ //$NON-NLS-2$
-        escapedString = escapedString.replaceAll("'", "&apos;"); //$NON-NLS-1$ //$NON-NLS-2$
-        escapedString = escapedString.replaceAll("\n","\\\\n");
-        escapedString = escapedString.replaceAll("\r","\\\\r");
-        escapedString = escapedString.replaceAll("\t","\\\\t");
-        return escapedString;
     }
 
     private void closeElement(String name) {
@@ -512,9 +496,11 @@ public class PrintASTVisitor implements Visitor {
         buffer.append("### Not supported yet ListVariable.\n");
     }
 
-    public void visit(MethodDeclaration methodDeclaration) {
-        addIndentation();
-        buffer.append("### Not supported yet MethodDeclaration.\n");
+    public void visit(MethodDeclaration node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "MethodDeclaration",
+                new String[]{"modifiers", node.getModifierString()});
+        printNode.addChild(node.getFunction());
+        printNode.print(this);
     }
 
     public void visit(MethodInvocation methodInvocation) {
@@ -567,7 +553,7 @@ public class PrintASTVisitor implements Visitor {
     public void visit(Scalar scalar) {
         (new XMLPrintNode(scalar, "Scalar", 
                 new String[]{"type", scalar.getScalarType().name(),
-                "value", getXmlStringValue(scalar.getStringValue())})).print(this);
+                "value", PHPLexerUtils.getXmlStringValue(scalar.getStringValue())})).print(this);
     }
 
     public void visit(SingleFieldDeclaration singleFieldDeclaration) {
@@ -605,14 +591,19 @@ public class PrintASTVisitor implements Visitor {
         buffer.append("### Not supported yet StaticStatement.\n");
     }
 
-    public void visit(SwitchCase switchCase) {
-        addIndentation();
-        buffer.append("### Not supported yet SwitchCase.\n");
+    public void visit(SwitchCase node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "SwitchCase", 
+                new String[]{"default", (node.isDefault()?"true":"false")});
+        printNode.addChild(node.getValue());
+        printNode.addChildren(node.getActions());
+        printNode.print(this);
     }
 
-    public void visit(SwitchStatement switchStatement) {
-        addIndentation();
-        buffer.append("### Not supported yet SwitchStatement.\n");
+    public void visit(SwitchStatement node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "SwitchStatement");
+        printNode.addChild(node.getExpression());
+        printNode.addChild(node.getBody());
+        printNode.print(this);
     }
 
     public void visit(ThrowStatement throwStatement) {

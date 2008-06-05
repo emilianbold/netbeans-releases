@@ -38,14 +38,13 @@
  */
 package org.netbeans.modules.php.editor.lexer;
 
-import junit.framework.TestCase;
 import org.netbeans.api.lexer.TokenSequence;
 
 /**
  *
  * @author petr
  */
-public class PHPLexerTest extends PHPLexerTestPerformer {
+public class PHPLexerTest extends PHPLexerTestBase {
 
     public PHPLexerTest(String testName) {
         super(testName);
@@ -290,10 +289,8 @@ public class PHPLexerTest extends PHPLexerTestPerformer {
     }
     
     public void testHeroDoc() throws Exception {
-        clearNewResultFiles();
         performFileLexerTest("heredoc00");
         performFileLexerTest("heredoc01");
-        checkNewResultFiles();
     }
 
        

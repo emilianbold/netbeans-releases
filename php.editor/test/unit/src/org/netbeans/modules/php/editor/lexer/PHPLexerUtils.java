@@ -153,20 +153,26 @@ public class PHPLexerUtils extends TestCase {
         return results;
     }
     
-    public static void createResultFile (File file, TokenSequence<?> ts) throws Exception {
-        FileWriter fileWriter = new FileWriter(file);
-        while (ts.moveNext()) {
-            TokenId tokenId = ts.token().id();
-            CharSequence text = ts.token().text();
-            fileWriter.write("#->[");
-            fileWriter.write("" + ts.index());
-            fileWriter.write("]");
-            fileWriter.write(tokenId.name());
-            fileWriter.write(":");
-            fileWriter.write(text.toString());
-            fileWriter.write("\n");
-        }
-        fileWriter.close();
-        
+    /**
+     * Formats a given string to an XML file
+     * @param input 
+     * @return String the formatted string
+     */
+    public static String getXmlStringValue(String input) {
+        String escapedString = input;
+        escapedString = escapedString.replaceAll("&", "&amp;"); //$NON-NLS-1$ //$NON-NLS-2$
+        escapedString = escapedString.replaceAll(">", "&gt;"); //$NON-NLS-1$ //$NON-NLS-2$
+        escapedString = escapedString.replaceAll("<", "&lt;"); //$NON-NLS-1$ //$NON-NLS-2$
+        escapedString = escapedString.replaceAll("'", "&apos;"); //$NON-NLS-1$ //$NON-NLS-2$
+        escapedString = replaceLinesAndTabs(escapedString);
+        return escapedString;
+    }
+    
+    public static String replaceLinesAndTabs(String input) {
+        String escapedString = input;
+        escapedString = escapedString.replaceAll("\n","\\\\n");
+        escapedString = escapedString.replaceAll("\r","\\\\r");
+        escapedString = escapedString.replaceAll("\t","\\\\t");
+        return escapedString;
     }
 }

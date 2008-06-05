@@ -39,26 +39,27 @@
 
 package org.netbeans.modules.php.editor.lexer;
 
-
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.php.editor.parser.ParserTestBase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Petr Pisl
  */
-public class PHP53FeaturesTest extends PHPLexerTestBase {
-
-    public PHP53FeaturesTest(String testName) {
+public class PHPLexerTestBase extends ParserTestBase {
+    
+    public PHPLexerTestBase(String testName) {
         super(testName);
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        clearWorkDir();
     }
 
     @Override
@@ -66,55 +67,46 @@ public class PHP53FeaturesTest extends PHPLexerTestBase {
         super.tearDown();
     }
     
-    public void testGoto() throws Exception {
-        performFileLexerTest("jump01");
-        performFileLexerTest("jump02");
-        performFileLexerTest("jump03");
-        performFileLexerTest("jump04");
-        performFileLexerTest("jump05");
-        performFileLexerTest("jump06");
-        performFileLexerTest("jump07");
-        performFileLexerTest("jump08");
-        performFileLexerTest("jump09");
-        performFileLexerTest("jump10");
-        performFileLexerTest("jump11");
-        performFileLexerTest("jump12");
-        performFileLexerTest("jump13");
+    void performFileLexerTest (String filename) throws Exception {
+        String content = PHPLexerUtils.getFileContent(new File(getDataDir(), "testfiles/" + filename + ".php"));
+        TokenSequence<?> ts = PHPLexerUtils.seqForText(content, PHPTokenId.language());
+        String result = createResult(ts);
+        
+        String fullClassName = this.getClass().getName();
+        String goldenFileDir = fullClassName.replace('.', '/');
+        
+        
+        // try to find golden file
+        String goldenFolder = getDataSourceDir().getAbsolutePath() + "/goldenfiles/" + goldenFileDir + "/";
+        File goldenFile = new File(goldenFolder + filename + ".pass");
+        if (!goldenFile.exists()) {
+            // if doesn't exist, create it
+            FileObject goldenFO = touch(goldenFolder, filename + ".pass");
+            copyStringToFileObject(goldenFO, result);
+        }
+        else {
+            // if exist, compare it. 
+            goldenFile = getGoldenFile(filename + ".pass");
+            FileObject resultFO = touch(getWorkDir(), filename + ".result");
+            copyStringToFileObject(resultFO, result);
+            assertFile(FileUtil.toFile(resultFO), goldenFile, getWorkDir());
+        }
     }
     
-    public void testNowDoc() throws Exception {
-        performFileLexerTest("nowdoc_000");
-        performFileLexerTest("nowdoc_001");
-        performFileLexerTest("nowdoc_002");
-        performFileLexerTest("nowdoc_003");
-        performFileLexerTest("nowdoc_004");
-        performFileLexerTest("nowdoc_005");
-        performFileLexerTest("nowdoc_006");
-        performFileLexerTest("nowdoc_007");
-        performFileLexerTest("nowdoc_008");
-        performFileLexerTest("nowdoc_009");
-        performFileLexerTest("nowdoc_010");
-        performFileLexerTest("nowdoc_011");
-        performFileLexerTest("nowdoc_012");
-        performFileLexerTest("nowdoc_013");
-        performFileLexerTest("nowdoc_014");
-        performFileLexerTest("nowdoc_015");
-    }
-    
-    public void testHereDoc53() throws Exception {
-        performFileLexerTest("heredoc_001");
-        performFileLexerTest("heredoc_002");
-        performFileLexerTest("heredoc_003");
-        performFileLexerTest("heredoc_004");
-        performFileLexerTest("heredoc_005");
-        performFileLexerTest("heredoc_006");
-        performFileLexerTest("heredoc_007");
-        performFileLexerTest("heredoc_008");
-        performFileLexerTest("heredoc_009");
-        performFileLexerTest("heredoc_010");
-        performFileLexerTest("heredoc_011");
-        performFileLexerTest("heredoc_012");
-        performFileLexerTest("heredoc_013");
-        performFileLexerTest("heredoc_014");
+    private String createResult (TokenSequence<?> ts) throws Exception {
+        StringBuffer result = new StringBuffer ();
+        
+        while (ts.moveNext()) {
+            TokenId tokenId = ts.token().id();
+            CharSequence text = ts.token().text();
+            result.append("token #");
+            result.append(ts.index());
+            result.append(" ");
+            result.append(tokenId.name());
+            result.append(" ");
+            result.append(PHPLexerUtils.replaceLinesAndTabs(text.toString()));
+            result.append("\n");
+        }
+        return result.toString();
     }
 }

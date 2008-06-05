@@ -122,7 +122,7 @@ public class ParserTestBase extends GsfTestBase {
             result.append("        <token id='").append(getASTScannerTokenName(symbol.sym)).append("' start='");
             result.append(symbol.left).append("' end='").append(symbol.right + "'>\n");
             result.append("            <text>");
-            result.append(PrintASTVisitor.getXmlStringValue(content.substring(symbol.left, symbol.right)));
+            result.append(PHPLexerUtils.getXmlStringValue(content.substring(symbol.left, symbol.right)));
             result.append("</text>\n");
             result.append("        </token>\n");
         } while (symbol.sym != ASTPHP5Symbols.EOF);

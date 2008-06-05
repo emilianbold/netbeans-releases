@@ -71,6 +71,8 @@ public class ASTPHP5ParserTest extends ParserTestBase {
     }
 
     public void testNowdoc () throws Exception {
+        performFileParserTest("nowdoc01");
+        performFileParserTest("nowdoc02");
         performFileParserTest("nowdoc_000");
         performFileParserTest("nowdoc_001");
         performFileParserTest("nowdoc_002");
