@@ -52,16 +52,14 @@
             importType="http://www.w3.org/2001/XMLSchema"></import>
     
     <partnerLinks>
-        <partnerLink name="inventorySevicePLink"
-                     partnerLinkType="invs:inventoryRequestingLT"
-                     myRole="inventoryService"/>
+        <partnerLink name="inventorySevicePLink" partnerLinkType="invs:inventoryRequestingLT" myRole="inventoryService"/>
     </partnerLinks>
+    
     <variables>
-        <variable name="purchaseOrder"
-                  messageType="invs:POMessage"></variable>
-        <variable name="inventoryStatus"
-                  messageType="invs:InventoryMessage"></variable>
+        <variable name="purchaseOrder" messageType="invs:POMessage"></variable>
+        <variable name="inventoryStatus" messageType="invs:InventoryMessage"></variable>
     </variables>
+
     <sequence>
         <receive name="inventoryService"
                  partnerLink="inventorySevicePLink"
@@ -70,8 +68,10 @@
                  variable="purchaseOrder"
                  createInstance="yes">
         </receive>
+
         <if name="checkAvailability">
             <condition>starts-with($purchaseOrder.purchaseOrder/po:orderDescription, 'OrderVal')</condition>
+        
             <assign name="Case1">
                 <copy>
                     <from>true()</from>
@@ -81,6 +81,7 @@
                     <from>'available'</from><to>$inventoryStatus.inventoryPart/invsh:inventoryStatusMessage</to>
                 </copy>
             </assign>
+            
             <else>
                 <assign name="Case2">
                     <copy>
@@ -94,6 +95,7 @@
                 </assign>
             </else>
         </if>
+
         <reply name="inventoryService.Reply"
                partnerLink="inventorySevicePLink"
                portType="invs:inventoryPortType"

@@ -83,6 +83,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
+import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
@@ -317,6 +318,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             boolean instanceContext = !staticContext;
             boolean includeInherited = true;
             boolean moreTokens = true;
+            int attrMask = Modifier.PUBLIC;
 
             if (tokenSequence.token().id() == PHPTokenId.WHITESPACE) {
                 moreTokens = tokenSequence.movePrevious();
@@ -334,6 +336,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     typeName = classDecl.getName().getName();
                     staticContext = instanceContext = true;
                     includeInherited = false;
+                    attrMask |= (Modifier.PROTECTED | Modifier.PRIVATE);
                 }
             } else if (varName.equals("parent")) { //NOI18N
                 ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
@@ -342,6 +345,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     if (superIdentifier != null) {
                         typeName = superIdentifier.getName();
                         staticContext = instanceContext = true;
+                        attrMask |= Modifier.PROTECTED;
                     }
                 }
             } else if (varName.equals("$this")) { //NOI18N
@@ -351,6 +355,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     staticContext = false;
                     instanceContext = true;
                     completeDollarPrefix = false;
+                    attrMask |= (Modifier.PROTECTED | Modifier.PRIVATE);
                 }
             } else {
                 if (staticContext) {
@@ -371,8 +376,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
             if (typeName != null){
                 Collection<IndexedFunction> methods = includeInherited ?
-                    request.index.getAllMethods(request.result, typeName, request.prefix, nameKind) :
-                    request.index.getMethods(request.result, typeName, request.prefix, nameKind);
+                    request.index.getAllMethods(request.result, typeName, request.prefix, nameKind, attrMask) :
+                    request.index.getMethods(request.result, typeName, request.prefix, nameKind, attrMask);
 
                 for (IndexedFunction method : methods){
                     if (staticContext && method.isStatic() || instanceContext && !method.isStatic()) {
@@ -381,8 +386,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 }
 
                 Collection<IndexedConstant> properties = includeInherited ?
-                    request.index.getAllProperties(request.result, typeName, request.prefix, nameKind) :
-                    request.index.getProperties(request.result, typeName, request.prefix, nameKind);
+                    request.index.getAllProperties(request.result, typeName, request.prefix, nameKind, attrMask) :
+                    request.index.getProperties(request.result, typeName, request.prefix, nameKind, attrMask);
 
                 for (IndexedConstant prop : properties){
                     if (staticContext && prop.isStatic() || instanceContext && !prop.isStatic()) {

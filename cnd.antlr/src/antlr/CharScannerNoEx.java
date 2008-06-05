@@ -38,10 +38,10 @@ public abstract class CharScannerNoEx extends CharScanner {
         super(sharedState);
     }
     
+    @Override
     public void match(char c) {
         if (LA(1) == c) {
             consume();
-            //matchError = false;
         } else {
             if (inputState.guessing == 0) {
                 matchException = new MismatchedCharException(LA(1), c, false, this);
@@ -50,10 +50,10 @@ public abstract class CharScannerNoEx extends CharScanner {
         }
     }
 
+    @Override
     public void match(BitSet b) {
         if (b.member(LA(1))) {
             consume();
-            //matchError = false;
         } else {
             if (inputState.guessing == 0) {
                 matchException = new MismatchedCharException(LA(1), b, false, this);
@@ -62,6 +62,7 @@ public abstract class CharScannerNoEx extends CharScanner {
         }
     }
 
+    @Override
     public void match(String s) {
         int len = s.length();
         for (int i = 0; i < len; i++) {
@@ -74,13 +75,12 @@ public abstract class CharScannerNoEx extends CharScanner {
             }
             consume();
         }
-        //matchError = false;
     }
 
+    @Override
     public void matchNot(char c) {
         if (LA(1) != c) {
             consume();
-            //matchError = false;
         } else {
             if (inputState.guessing == 0) {
                 matchException = new MismatchedCharException(LA(1), c, true, this);
@@ -89,6 +89,7 @@ public abstract class CharScannerNoEx extends CharScanner {
         }
     }
 
+    @Override
     public void matchRange(char c1, char c2) {
         char LA1 = LA(1);
         if (LA1 < c1 || LA1 > c2) {
@@ -98,10 +99,10 @@ public abstract class CharScannerNoEx extends CharScanner {
             matchError = true;
         } else {
             consume();
-            //matchError = false;
         }
     }
 
+    @Override
     public void setCaseSensitive(boolean t) {
         if (t != true) {
             throw new UnsupportedOperationException("In this version only case sensitive grammars supported");
@@ -109,6 +110,7 @@ public abstract class CharScannerNoEx extends CharScanner {
         super.setCaseSensitive(t);
     }
     
+    @Override
     public void consume() {
         if (inputState.guessing == 0) {
             char c = LA(1);
@@ -122,6 +124,7 @@ public abstract class CharScannerNoEx extends CharScanner {
         inputState.input.consume();
     }
 
+    @Override
     public char LA(int i) {
         return inputState.input.LA(i);
     }

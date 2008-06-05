@@ -130,8 +130,7 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
                 builder.outProcessor(InputProcessors.bridge(new ProgressSnooper(handle, 100, 2)));
                 builder.postExecution(new RefreshProjectRunnable(project));
 
-                ExecutionService service = new ExecutionService(callable, displayName, builder.create());
-
+                ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
                 Task task = service.run();
                 task.waitFinished();
             } finally {

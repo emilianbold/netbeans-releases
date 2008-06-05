@@ -71,6 +71,7 @@ public class SQLHistoryManager  {
     private List<SQLHistory> sqlList = new ArrayList<SQLHistory>();
     
     private SQLHistoryManager() {
+        generateSerializedFilename();
         SQLEditorRegistryListener editorRegistry = new SQLEditorRegistryListener();
         editorRegistry.initialize();
     }
@@ -83,15 +84,15 @@ public class SQLHistoryManager  {
     }
 
     public void saveSQL(SQLHistory sqlStored) {
-        generateSerializedFilename();
         sqlList.add(sqlStored);
-
     }
 
     private void generateSerializedFilename()  {
         FileObject databaseDir = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("Databases");
         try {
-            databaseDir.createData("sql_history.xml"); // NOI18N
+            if (databaseDir.getFileObject("sql_history", "xml") == null) {  // NOI18N
+                databaseDir.createData("sql_history", "xml"); // NOI18N
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

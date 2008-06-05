@@ -42,12 +42,12 @@ package org.netbeans.modules.extexecution.print;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 
 import org.netbeans.modules.extexecution.api.print.LineConvertors.FileLocator;
-import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
@@ -63,13 +63,13 @@ import org.openide.windows.OutputListener;
  * and produces hyperlinks. Actually resolving filenames
  * into real FileObjects is done lazily via user-supplied
  * FileLocators when the links are actually clicked.
- * 
+ *
  * @author Tor Norbye, Petr Hejl
  */
 public class FindFileListener implements OutputListener {
-    
-    public static final Logger LOGGER = Logger.getLogger(FindFileListener.class.getName());
-    
+
+    private static final Logger LOGGER = Logger.getLogger(FindFileListener.class.getName());
+
     private final String file;
     private final int lineno;
     private final FileLocator fileLocator;
@@ -86,7 +86,7 @@ public class FindFileListener implements OutputListener {
     }
 
     public void outputLineSelected(OutputEvent ev) {
-        
+
     }
 
     public void outputLineAction(OutputEvent ev) {
@@ -107,7 +107,7 @@ public class FindFileListener implements OutputListener {
         }
 
         // Perhaps it's an absolute path of some sort... try to resolve those
-        // Absolute path? Happens for stack traces in JRuby libraries and such
+        // Absolute path? Happens for stack traces in libraries and such
         File file  = new File(path);
         if (file.isFile()) {
             return FileUtil.toFileObject(FileUtil.normalizeFile(file));
@@ -172,7 +172,7 @@ public class FindFileListener implements OutputListener {
                 return true;
             }
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            LOGGER.log(Level.INFO, null, e);
         }
 
         return false;

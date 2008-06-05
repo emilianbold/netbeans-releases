@@ -40,7 +40,7 @@ import org.netbeans.installer.utils.cli.*;
 import java.io.File;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.exceptions.CLIArgumentException;
+import org.netbeans.installer.utils.exceptions.CLIOptionException;
 
 /**
  *
@@ -49,10 +49,10 @@ import org.netbeans.installer.utils.exceptions.CLIArgumentException;
 public class RecordOption extends CLIOptionOneArgument {
 
     @Override
-    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+    public void execute(CLIArgumentsList arguments) throws CLIOptionException {
         File stateFile = new File(arguments.next()).getAbsoluteFile();
         if (stateFile.exists()) {
-            throw new CLIArgumentException(ResourceUtils.getString(
+            throw new CLIOptionException(ResourceUtils.getString(
                     RecordOption.class,
                     WARNING_TARGET_STATE_FILE_EXISTS_KEY,
                     RECORD_ARG,
