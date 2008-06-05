@@ -106,12 +106,12 @@ public final class EclipseProject implements Comparable {
     }
     
     /** Sets up a project directory. */
-    private EclipseProject(File projectDir) {
+    /*private*/ EclipseProject(File projectDir) {
         this.projectDir = projectDir;
         this.cpFile = new File(projectDir, CLASSPATH_FILE);
         this.prjFile = new File(projectDir, PROJECT_FILE);
     }
-
+    
     void setNatures(Set<String> natures) {
         this.natures = natures;
     }
@@ -311,6 +311,9 @@ public final class EclipseProject implements Comparable {
      * path to null.
      */
     private void setAbsolutePathForEntry(DotClassPathEntry entry) {
+        if (entry == null) {
+            return;
+        }
         // set abs. path default (null)
         entry.setAbsolutePath(null);
         

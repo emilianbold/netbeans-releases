@@ -37,12 +37,20 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.history;
+package org.netbeans.modules.db.sql.history;
 
 /**
  *
  * @author John Baker
  */
-public interface SQLHistoryUrlObserver {
-    void updateUrl();
+public class SQLHistoryView implements SQLHistoryUrlObserver, SQLHistoryFilterObserver {
+
+    public void updateUrl() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void setFilter() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }

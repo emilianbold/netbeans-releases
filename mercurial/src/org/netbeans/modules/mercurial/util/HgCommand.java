@@ -2643,7 +2643,7 @@ public class HgCommand {
                     } else {
                         Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags(): repository path: {0} status flags: {1} status line {2} filepath == nullfor prev_info ", new Object[]{repository.getAbsolutePath(), statusFlags, statusLine}); // NOI18N
                     }
-                    break;
+                    continue;
                 } else {
                     if (filePath != null) {
                         repositoryFiles.put(new File(filePath.toString()), prev_info);

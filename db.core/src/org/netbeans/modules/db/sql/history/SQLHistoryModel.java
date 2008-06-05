@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,63 +31,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.projectimport.eclipse.core;
-
-import java.util.List;
-import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
+package org.netbeans.modules.db.sql.history;
 
 /**
- * Represents classpath for an Eclipse project (.classpath file content)
  *
- * @author mkrauskopf
+ * @author John Baker
  */
-public final class DotClassPath {
-
-    private DotClassPathEntry output;
+public interface SQLHistoryModel {
+    void initialize();
     
-    private DotClassPathEntry jreContainer;
-    
-    private List<DotClassPathEntry> sourceRoots;
-    private List<DotClassPathEntry> classpath;
-    
-    
-    public DotClassPath(List<DotClassPathEntry> classpath, 
-            List<DotClassPathEntry> sources, 
-            DotClassPathEntry output,
-            DotClassPathEntry jre) {
-        this.sourceRoots = sources;
-        this.classpath = classpath;
-        this.output = output;
-        this.jreContainer = jre;
+    void setFilter(String filter);
         
-    }
+    String getFilter();
     
-    public DotClassPathEntry getOutput() {
-        return output;
-    }
+    void setUrl(String url);
     
-    List<DotClassPathEntry> getClassPathEntries() {
-        return classpath;
-    }
+    String getUrl();
     
-    /**
-     * Just provides more convenient access to source entries.
-     *
-     * @see #getEntries()
-     */
-    List<DotClassPathEntry> getSourceRoots() {
-        return sourceRoots;
-    }
+    void registerObserver(SQLHistoryFilterObserver filterObserver);
     
-    /**
-     * Returns container classpath entry for JRE.
-     *
-     * @see #getEntries()
-     */
-    public DotClassPathEntry getJREContainer() {
-        return jreContainer;
-    }
+    void removeObserver(SQLHistoryFilterObserver filterObserver);
     
+    void registerObserver(SQLHistoryUrlObserver urlObserver);
+    
+    void removeObserver(SQLHistoryUrlObserver urlObserver);
 }

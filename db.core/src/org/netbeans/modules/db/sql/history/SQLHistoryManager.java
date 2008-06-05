@@ -36,12 +36,13 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.sql.execute;
+package org.netbeans.modules.db.sql.history;
 
 
+import java.io.IOException;
+import org.netbeans.modules.db.sql.execute.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -54,6 +55,8 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.db.sql.loader.SQLDataObject;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -68,6 +71,7 @@ public class SQLHistoryManager  {
     private List<SQLHistory> sqlList = new ArrayList<SQLHistory>();
     
     private SQLHistoryManager() {
+        generateSerializedFilename();
         SQLEditorRegistryListener editorRegistry = new SQLEditorRegistryListener();
         editorRegistry.initialize();
     }
@@ -80,70 +84,20 @@ public class SQLHistoryManager  {
     }
 
     public void saveSQL(SQLHistory sqlStored) {
-        new File(System.getProperty("netbeans.user") + File.separator + "config" + File.separator + "Databases" + File.separator); // NO18N
         sqlList.add(sqlStored);
-
     }
 
-    private String generateSerializedFilename() {
-        return System.getProperty("netbeans.user") + File.separator + "config" + File.separator + "Databases" + File.separator + "sql_history.ser"; // NOI18N
+    private void generateSerializedFilename()  {
+        FileObject databaseDir = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("Databases");
+        try {
+            databaseDir.createData("sql_history.xml"); // NOI18N
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     public void save() {
         LOGGER.log(Level.INFO, "SQL Saved (test message)");
-
-        // XXX Need to check if file exists and rewrite if it does
-//        if (sqlList != null) {
-//            ObjectOutputStream os = null;
-//            try {
-//                os = new ObjectOutputStream(new FileOutputStream(generateSerializedFilename()));
-//                os.writeObject(sqlList);
-//            } catch (IOException ex) {
-//                Exceptions.printStackTrace(ex);
-//            } finally {
-//                try {
-//                    if (os != null) {
-//                        os.close();
-//                    }
-//                } catch (IOException ex) {
-//                    Exceptions.printStackTrace(ex);
-//                }
-//            }
-//        }
-    }
-
-    private List<SQLHistory> deserialize() {
-        // Deserializing saved SQL will occur when opening the SQL History dialog
-        
-//        List<SQLHistory> history = new ArrayList<SQLHistory>();
-//        FileInputStream fileIn = null;
-//        try {
-//            fileIn = new FileInputStream(new File(generateSerFilename()));
-//        } catch (IOException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
-//
-//        ObjectInputStream is = null;
-//        try {
-//            is = new ObjectInputStream(fileIn);
-//            history = (List<SQLHistory>)is.readObject();
-//        } catch (IOException ex) {
-//            Exceptions.printStackTrace(ex);
-//        } catch (ClassNotFoundException ex) {
-//            Exceptions.printStackTrace(ex);
-//        } finally {
-//            try {
-//                if (is != null) {
-//                    is.close();
-//                }
-//            } catch (IOException ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-//        }
-//
-//        return history;
-        // XXX temporary, for testing functionality
-        return new ArrayList<SQLHistory>();
 
     }
 
@@ -152,7 +106,7 @@ public class SQLHistoryManager  {
     }
     
     public List<SQLHistory> retrieve() {
-        return deserialize();
+        return new ArrayList<SQLHistory>();
         
     }
 
