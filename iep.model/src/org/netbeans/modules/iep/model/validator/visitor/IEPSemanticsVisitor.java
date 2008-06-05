@@ -100,10 +100,8 @@ public class IEPSemanticsVisitor implements IEPVisitor {
     }
 
     public void visitImport(Import imp) {
-        
     }
 
-    
     public void visitDocumentation(Documentation doc) {
     }
 
@@ -154,24 +152,21 @@ public class IEPSemanticsVisitor implements IEPVisitor {
     public void visitPlanComponent(PlanComponent component) {
         //validate package name not matching directory structure
         String packageName = component.getPackageName();
-        if(packageName == null) {
-            String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.packageName_should_be_specified");
+        if (packageName == null) {
+            packageName = "";
+        }
+        IEPModel model = component.getModel();
+
+        DataObject iepFile = model.getModelSource().getLookup().lookup(DataObject.class);
+        String expectedPackageName = ModelHelper.getPackageName(iepFile);
+        if (!expectedPackageName.equals(packageName)) {
+            String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.expected_packageName_does_not_match_specified_package_name", new Object[]{expectedPackageName, packageName});
             ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
             mResultItems.add(item);
-        } else {
-            IEPModel model = component.getModel();
-            
-            DataObject iepFile = model.getModelSource().getLookup().lookup(DataObject.class);
-            String expectedPackageName = ModelHelper.getPackageName(iepFile);
-            if(!expectedPackageName.equals(packageName)) {
-                String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.expected_packageName_does_not_match_specified_package_name", new Object[] {expectedPackageName, packageName});
-                ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
-                mResultItems.add(item);
-            }
         }
-        
-        
-        
+
+
+
         OperatorComponentContainer opContainer = component.getOperatorComponentContainer();
         if (opContainer == null) {
             String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.atleast_one_operator_required");
@@ -189,14 +184,13 @@ public class IEPSemanticsVisitor implements IEPVisitor {
         }
 
 
-        IEPModel model = component.getModel();
-
         //inputs
-        List<InputOperatorComponent> inputs = model.getInputList();
-        
+        boolean wsOnly = false;
+        List<InputOperatorComponent> inputs = model.getInputList(wsOnly);
+
         if (inputs.size() == 0) {
             List<TableInputOperatorComponent> tableInputs = model.getPlanComponent().getOperatorComponentContainer().getTableInputOperatorComponent();
-            if(tableInputs.size() == 0) {
+            if (tableInputs.size() == 0) {
                 String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.atleast_one_input_required");
                 ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
                 mResultItems.add(item);
@@ -206,17 +200,17 @@ public class IEPSemanticsVisitor implements IEPVisitor {
 
         //outputs
         //check for atleast one output if there are no InvokeStream operators.
-        
+
         List<InvokeStreamOperatorComponent> invokeOps = Collections.EMPTY_LIST;
-        if(opContainer != null) {
+        if (opContainer != null) {
             invokeOps = opContainer.getInvokeStreamOperatorComponent();
         }
-        
-        
-        List<OutputOperatorComponent> outputs = model.getOutputList();
+
+
+        List<OutputOperatorComponent> outputs = model.getOutputList(wsOnly);
         if (outputs.size() == 0) {
             //if there is no invoke stream then we should have atleat one output
-            if(invokeOps.size() == 0) {
+            if (invokeOps.size() == 0) {
                 String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.atleast_one_output_required");
                 ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
                 mResultItems.add(item);
