@@ -192,8 +192,6 @@ final class JUnitOutputReader {
      * Are we reading standard output or standard error output?
      * This variable is used only when reading output from the test cases
      * (when {@link #outputBuffer} is non-<code>null</code>).
-     * If <code>true</code>, standard output is being read,
-     * if <code>false</code>, standard error output is being read.
      */
     private boolean readingSuiteOutputSummary;
     /** */
