@@ -666,6 +666,7 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         TableSorter sorter = (TableSorter) actionTable.getModel();
         row = sorter.modelIndex(row);
         FilteredTableModel filter = (FilteredTableModel) sorter.getTableModel();
+        row = filter.modelIndex(row);
         ActionTableModel model = (ActionTableModel) filter.getTableModel();
         ProxyAction act = model.getAction(row);
         return act;

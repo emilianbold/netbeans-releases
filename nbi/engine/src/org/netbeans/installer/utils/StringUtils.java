@@ -256,13 +256,19 @@ public abstract class StringUtils {
     }
     public static String readStream(
             final InputStream stream) throws IOException {
+        return readStream(stream, null);
+    }
+    public static String readStream(
+            final InputStream stream, String charset) throws IOException {
         StringBuilder builder = new StringBuilder();
         
         byte[] buffer = new byte[1024];
         while (stream.available() > 0) {
             int read = stream.read(buffer);
             
-            String readString = new String(buffer, 0, read);
+            String readString =  (charset==null) ? 
+                new String(buffer, 0, read) : 
+                new String(buffer, 0, read, charset);
             String[] strings = splitByLines(readString);
             for(int i=0;i<strings.length;i++) {
                 builder.append(strings[i]);
