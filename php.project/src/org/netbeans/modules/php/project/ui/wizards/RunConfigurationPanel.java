@@ -311,10 +311,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         }
         if (url != null && !defaultLocalUrl.equals(url)) {
             defaultLocalUrl = url;
-            // first remove and re-add listeners to avoid getting event change
-            removeListeners();
             runAsLocalWeb.setUrl(url);
-            addListeners();
         }
     }
 
@@ -336,8 +333,8 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     public void stateChanged(ChangeEvent e) {
-        adjustUrl();
         fireChangeEvent();
+        adjustUrl();
     }
 
     final void fireChangeEvent() {

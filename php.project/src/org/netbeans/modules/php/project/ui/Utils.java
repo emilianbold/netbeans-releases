@@ -47,7 +47,6 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.IllegalCharsetNameException;
 import java.util.AbstractList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -124,7 +123,6 @@ public final class Utils {
         LocalServer localServer = new LocalServer(newLocation, projectLocation);
         localServerComboBoxModel.addElement(localServer);
         localServerComboBox.setSelectedItem(localServer);
-        sortComboBoxModel(localServerComboBoxModel);
     }
 
     public static void locateLocalServerAction() {
@@ -150,43 +148,6 @@ public final class Utils {
                 return comboBox.getItemCount();
             }
         };
-    }
-
-    /**
-     * Sort {@link MutableComboBoxModel} according to the natural ordering of its items
-     * and preserves selected item if any.
-     * @param comboBoxModel {@link MutableComboBoxModel} to sort.
-     */
-    public static void sortComboBoxModel(MutableComboBoxModel comboBoxModel) {
-        int size = comboBoxModel.getSize();
-        if (size < 2) {
-            return;
-        }
-        Object selected = comboBoxModel.getSelectedItem();
-        Object[] items = removeComboBoxItems(comboBoxModel);
-        Arrays.sort(items);
-        putComboBoxItems(comboBoxModel, items);
-        if (selected != null) {
-            comboBoxModel.setSelectedItem(selected);
-        }
-    }
-
-    public static Object[] removeComboBoxItems(MutableComboBoxModel comboBoxModel) {
-        int size = comboBoxModel.getSize();
-        Object[] items = new Object[size];
-        for (int i = size - 1; i >= 0; i--) {
-            items[i] = comboBoxModel.getElementAt(i);
-            comboBoxModel.removeElementAt(i);
-        }
-        assert comboBoxModel.getSize() == 0;
-        return items;
-    }
-
-    public static void putComboBoxItems(MutableComboBoxModel comboBoxModel, Object[] items) {
-        int size = items.length;
-        for (int i = 0; i < size; i++) {
-            comboBoxModel.addElement(items[i]);
-        }
     }
 
     public static File getCanonicalFile(File file) {

@@ -41,11 +41,15 @@ package org.netbeans.modules.php.project.ui;
 
 import java.awt.Component;
 import java.awt.event.ActionListener;
-import javax.swing.DefaultComboBoxModel;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.AbstractListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
+import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -290,17 +294,105 @@ public class LocalServer implements Comparable<LocalServer> {
         }
     }
 
-    // XXX extends AbstractListModel implements MutableComboBoxModel, Serializable and use ArrayList
-    public static class ComboBoxModel extends DefaultComboBoxModel {
-        private static final long serialVersionUID = 193082264935872743L;
+    public static class ComboBoxModel extends AbstractListModel implements MutableComboBoxModel {
+        private static final long serialVersionUID = 194511142310432557L;
+
+        private final List<LocalServer> data;
+        private LocalServer selected = null;
 
         public ComboBoxModel(LocalServer... defaultLocalServers) {
             if (defaultLocalServers == null || defaultLocalServers.length == 0) {
                 // prevent NPE
-                defaultLocalServers = new LocalServer[] {new LocalServer("")}; // NOI18N
+                defaultLocalServers = new LocalServer[] {new LocalServer("", "")}; // NOI18N
             }
+            data = new ArrayList<LocalServer>(2 * defaultLocalServers.length);
             for (LocalServer localServer : defaultLocalServers) {
-                addElement(localServer);
+                data.add(localServer);
+            }
+            selected = data.get(0);
+        }
+
+        public int getSize() {
+            return data.size();
+        }
+
+        public LocalServer getElementAt(int index) {
+            return data.get(index);
+        }
+
+        public void addElement(Object object) {
+            assert object instanceof LocalServer;
+            LocalServer localServer = (LocalServer) object;
+            if (!data.add(localServer)) {
+                return;
+            }
+            Collections.sort(data);
+            int idx = indexOf(localServer);
+            fireIntervalAdded(this, idx, idx);
+        }
+
+        public void insertElementAt(Object object, int index) {
+            assert object instanceof LocalServer;
+            LocalServer localServer = (LocalServer) object;
+            data.add(index, localServer);
+            fireIntervalAdded(this, index, index);
+        }
+
+        public int indexOf(LocalServer configuration) {
+            return data.indexOf(configuration);
+        }
+
+        public void removeElement(Object object) {
+            assert object instanceof LocalServer;
+            LocalServer localServer = (LocalServer) object;
+            int idx = indexOf(localServer);
+            if (idx == -1) {
+                return;
+            }
+            boolean result = data.remove(localServer);
+            assert result;
+            fireIntervalRemoved(this, idx, idx);
+        }
+
+        public void removeElementAt(int index) {
+            if (getElementAt(index) == selected) {
+                if (index == 0) {
+                    setSelectedItem(getSize() == 1 ? null : getElementAt(index + 1));
+                } else {
+                    setSelectedItem(getElementAt(index - 1));
+                }
+            }
+            data.remove(index);
+            fireIntervalRemoved(this, index, index);
+        }
+
+        public void setSelectedItem(Object object) {
+            if ((selected != null && !selected.equals(object))
+                    || selected == null && object != null) {
+                assert object instanceof LocalServer;
+                selected = (LocalServer) object;
+                fireContentsChanged(this, -1, -1);
+            }
+        }
+
+        public Object getSelectedItem() {
+            return selected;
+        }
+
+        public List<LocalServer> getElements() {
+            return Collections.unmodifiableList(data);
+        }
+
+        public void setElements(List<LocalServer> localServers) {
+            int size = data.size();
+            data.clear();
+            if (size > 0) {
+                fireIntervalRemoved(this, 0, size - 1);
+            }
+            if (localServers.size() > 0) {
+                data.addAll(localServers);
+                Collections.sort(data);
+                fireIntervalAdded(this, 0, data.size() - 1);
             }
         }
     }

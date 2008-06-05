@@ -47,6 +47,7 @@ import java.awt.Component;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
+import javax.swing.ComboBoxModel;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
