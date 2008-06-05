@@ -143,6 +143,10 @@ public class SceneConnectProvider implements ExConnectProvider
             
             if(retVal == ConnectorState.ACCEPT)
             {
+                // self link
+                if (sourceWidget == targetWidget)
+                    return ConnectorState.ACCEPT;
+                
                 if(isSourceParent(sourceWidget, targetWidget) == true)
                 {
                     retVal = ConnectorState.REJECT;
