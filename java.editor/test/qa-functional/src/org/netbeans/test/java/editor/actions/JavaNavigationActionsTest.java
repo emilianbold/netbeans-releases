@@ -39,13 +39,14 @@
  * made subject to such option by the copyright holder.
  */
 
-package java_editor_actions;
+package org.netbeans.test.java.editor.actions;
 
 import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
-import editor_actions.EditorActionsTest;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Basic Navigation Actions Test class.
@@ -84,7 +85,7 @@ import editor_actions.EditorActionsTest;
  * 
  * @author Martin Roskanin
  */
-  public class JavaNavigationActionsTest extends JavaEditorActionsTest {
+  public class JavaNavigationActionsTest extends JavaEditorActionsTestCase {
 
     private JEditorPaneOperator txtOper;
     private EditorOperator editor;
@@ -254,6 +255,11 @@ import editor_actions.EditorActionsTest;
         }
             
     }
+    
+      public static Test suite() {
+          return NbModuleSuite.create(
+                  NbModuleSuite.createConfiguration(JavaNavigationActionsTest.class).enableModules(".*").clusters(".*"));
+      }
     
     
 }

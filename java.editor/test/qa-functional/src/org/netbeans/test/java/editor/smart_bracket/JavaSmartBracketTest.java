@@ -39,45 +39,58 @@
  * made subject to such option by the copyright holder.
  */
 
-package java_smart_enter;
-/*
- * Main.java
- *
- * Created on 23. srpen 2004, 17:25
- */
+package org.netbeans.test.java.editor.smart_bracket;
 
 import java.awt.event.KeyEvent;
-import javax.swing.text.Document;
-import org.netbeans.jellytools.Bundle;
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
-import lib.JavaEditorTestCase;
+import org.netbeans.test.java.editor.lib.JavaEditorTestCase;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
-
+import org.netbeans.junit.NbModuleSuite;
 
 /**
+ * Test behavior of smart brackets feature.
  *
- * @author  Petr Felenda
+ * @author Miloslav Metelka
  */
-public class SmartEnterTest extends JavaEditorTestCase {
+public class JavaSmartBracketTest extends JavaEditorTestCase {
 
-    private final int keyCode = KeyEvent.VK_ENTER;
-
-    /** Creates a new instance of Main */
-    public SmartEnterTest(String testMethodName) {
+    public JavaSmartBracketTest(String testMethodName) {
         super(testMethodName);
     }
     
-
-    public void testSmartEnter(){
+    public void testJavaSmartBracketAfterLBrace(){
         openDefaultProject();
         openDefaultSampleFile();
         try {
-            
+        
             EditorOperator editor = getDefaultSampleEditorOperator();
-            
+
             // 1. move to adequate place 
-            editor.setCaretPosition(5, 28);
+            editor.setCaretPosition(6, 20);
+
+            // 2. hit Enter 
+            JEditorPaneOperator txtOper = editor.txtEditorPane();
+            txtOper.pushKey(KeyEvent.VK_ENTER);
+
+            // Compare document content to golden file
+            compareReferenceFiles(txtOper.getDocument());
+
+        } finally {
+            closeFileWithDiscard();
+        }
+    }
+
+    /** Testing problem of issue #68992 */
+    public void testJavaSmartBracketAfterLBraceAndSpace(){
+        openDefaultProject();
+        openDefaultSampleFile();
+        try {
+        
+            EditorOperator editor = getDefaultSampleEditorOperator();
+
+            // 1. move to adequate place 
+            editor.setCaretPosition(6, 22);
 
             // 2. hit Enter 
             JEditorPaneOperator txtOper = editor.txtEditorPane();
@@ -91,4 +104,30 @@ public class SmartEnterTest extends JavaEditorTestCase {
         }
     }
     
+    public void testJavaSmartBracketAfterLBraceAndComment(){
+        openDefaultProject();
+        openDefaultSampleFile();
+        try {
+            EditorOperator editor = getDefaultSampleEditorOperator();
+
+            // 1. move to adequate place
+            editor.setCaretPosition(6, 36);
+
+            // 2. hit Enter
+            JEditorPaneOperator txtOper = editor.txtEditorPane();
+            txtOper.pushKey(KeyEvent.VK_ENTER);
+
+            // Compare document content to golden file
+            compareReferenceFiles(txtOper.getDocument());
+
+        } finally {
+            closeFileWithDiscard();
+        }
+    }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(JavaSmartBracketTest.class).enableModules(".*").clusters(".*"));
+    }
+
 }

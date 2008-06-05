@@ -4,20 +4,20 @@
  * Created on 24 January 2005, 16:49
  */
 
-package java_editor_actions;
+package org.netbeans.test.java.editor.actions;
 
-import editor_actions.EditorActionsTest;
-import lib.JavaEditorTestCase;
+import org.netbeans.test.java.editor.actions.EditorActionsTestCase;
+import org.netbeans.test.java.editor.lib.JavaEditorTestCase;
 
 
 /**
  *
  * @author mato
  */
-public class JavaEditorActionsTest extends EditorActionsTest{
+public class JavaEditorActionsTestCase extends EditorActionsTestCase{
     
     /** Creates a new instance of JavaCodeFoldingTest */
-    public JavaEditorActionsTest(String testMethodName) {
+    public JavaEditorActionsTestCase(String testMethodName) {
         super(testMethodName);
     }
     

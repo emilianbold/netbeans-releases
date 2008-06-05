@@ -44,10 +44,12 @@ package org.netbeans.test.java.editor.completiongui;
 
 import java.awt.event.KeyEvent;
 import java.util.regex.Pattern;
+import junit.framework.Test;
 import junit.textui.TestRunner;
-import lib.EditorTestCase;
+import org.netbeans.test.java.editor.lib.EditorTestCase;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -224,8 +226,13 @@ public class GuiTest extends EditorTestCase {
     }
     
     public static void main(String[] args) {
-        new TestRunner().run(GuiTest.class);
+        TestRunner.run(GuiTest.class);
         
+    }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(GuiTest.class).enableModules(".*").clusters(".*"));
     }
     
 }

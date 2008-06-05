@@ -39,16 +39,14 @@
  * made subject to such option by the copyright holder.
  */
 
-package code_folding;
+package org.netbeans.test.java.editor.folding;
 
 import java.awt.event.KeyEvent;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
-import lib.EditorTestCase;
+import org.netbeans.test.java.editor.lib.EditorTestCase;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
@@ -62,12 +60,12 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
  *
  * @author Martin Roskanin
  */
-  public class CodeFoldingTest extends EditorTestCase {
+  public class CodeFoldingTestCase extends EditorTestCase {
       
     private final int COLLAPSE_EXPAND_DELAY = 200;  
       
     /** Creates a new instance of Main */
-    public CodeFoldingTest(String testMethodName) {
+    public CodeFoldingTestCase(String testMethodName) {
         super(testMethodName);
     }
 

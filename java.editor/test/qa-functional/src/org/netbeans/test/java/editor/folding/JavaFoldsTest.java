@@ -39,27 +39,20 @@
  * made subject to such option by the copyright holder.
  */
 
-package java_code_folding;
+package org.netbeans.test.java.editor.folding;
 
-import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Hashtable;
-import javax.swing.text.AbstractDocument;
 import javax.swing.text.JTextComponent;
-import org.netbeans.jellytools.Bundle;
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
-import lib.EditorTestCase;
-import code_folding.CodeFoldingTest;
 import junit.textui.TestRunner;
-import org.netbeans.api.editor.fold.Fold;
-import org.netbeans.api.editor.fold.FoldHierarchy;
-import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Test behavior of java code folds.
@@ -71,7 +64,7 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
  * Note: static imports block are not a subject of testing yet [PENDING]
  * @author Martin Roskanin
  */
-  public class JavaFoldsTest extends JavaCodeFoldingTest {
+  public class JavaFoldsTest extends JavaCodeFoldingTestCase {
 
     // private PrintStream wrapper for System.out
     PrintStream systemOutPSWrapper = new PrintStream(System.out);
@@ -483,6 +476,11 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
     
       public static void main(String[] args) {
           TestRunner.run(JavaFoldsTest.class);
+      }
+      
+      public static Test suite() {
+          return NbModuleSuite.create(
+                  NbModuleSuite.createConfiguration(JavaFoldsTest.class).enableModules(".*").clusters(".*"));
       }
 
     

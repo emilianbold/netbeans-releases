@@ -39,26 +39,24 @@
  * made subject to such option by the copyright holder.
  */
 
-package java_smart_enter;
 
-import junit.framework.TestResult;
-import org.netbeans.junit.NbTestSuite;
+package org.netbeans.test.java.editor.lib;
+
+import org.netbeans.test.java.editor.lib.EditorTestCase;
 
 /**
- * Test of smart enter feature
  *
- * @author  Petr Felenda
+ * @author  mroskanin
  */
-public class SmartEnterTestSuite extends NbTestSuite {
+public class JavaEditorTestCase extends EditorTestCase {
 
-    public SmartEnterTestSuite() {
-        super("Smart Enter");
+    public static final String PROJECT_NAME = "java_editor_test"; //NOI18N;
 
-        addTestSuite(SmartEnterTest.class);
+    public JavaEditorTestCase(String testMethodName) {
+        super(testMethodName);
     }
 
-    public static NbTestSuite suite() {
-        return new SmartEnterTestSuite();
+    protected String getDefaultProjectName() {
+        return PROJECT_NAME;
     }
-
 }

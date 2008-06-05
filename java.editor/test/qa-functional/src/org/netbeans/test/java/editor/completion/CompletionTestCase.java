@@ -49,24 +49,19 @@ import java.util.List;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
-import lib.EditorTestCase;
-import lib.EditorTestCase.ValueResolver;
+import org.netbeans.test.java.editor.lib.EditorTestCase;
+import org.netbeans.test.java.editor.lib.EditorTestCase.ValueResolver;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.openide.filesystems.FileObject;
 import org.netbeans.editor.*;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.modules.editor.completion.CompletionImpl;
 import org.netbeans.modules.editor.completion.CompletionResultSetImpl;
-import org.netbeans.modules.editor.java.JavaCompletionItem;
 import org.netbeans.modules.editor.java.JavaCompletionProvider;
-import org.netbeans.modules.editor.java.LazyTypeCompletionItem;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionTask;
-import org.netbeans.spi.editor.completion.LazyCompletionItem;
-import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileUtil;
@@ -122,13 +117,15 @@ import org.openide.util.Lookup;
  * @author  Jan Lahoda
  * @version 1.0
  */
-public class CompletionTest extends java.lang.Object {
+public class CompletionTestCase extends java.lang.Object {
     
     private static final long OPENING_TIMEOUT = 60 * 1000;
     private static final long SLEEP_TIME = 1000;
+    private CompletionTestPerformer testCase;
     
     /** Creates new CompletionTest */
-    public CompletionTest() {
+    public CompletionTestCase(CompletionTestPerformer testCase) {
+        this.testCase = testCase;
     }
     
     private class ResultReadyResolver implements ValueResolver {
@@ -306,13 +303,13 @@ public class CompletionTest extends java.lang.Object {
     
     private FileObject getTestFile(File dataDir, String projectName, String testFile, PrintWriter log) throws IOException, InterruptedException {
         File projectFile = new File(dataDir, projectName);
-        FileObject project = FileUtil.toFileObject(projectFile);
-        Object prj= ProjectSupport.openProject(projectFile);
-        
-        if (prj == null)
-            throw new IllegalStateException("Given directory \"" + project + "\" does not contain a project.");
-        
-        log.println("Project found: " + prj);
+        FileObject project = FileUtil.toFileObject(projectFile);                
+        testCase.openDataProjects(projectName);
+//        Object prj= ProjectSupport.openProject(projectFile);        
+//        if (prj == null)
+//            throw new IllegalStateException("Given directory \"" + project + "\" does not contain a project.");
+//        
+//        log.println("Project found: " + prj);
         
         FileObject test = project.getFileObject("src/" + testFile);
         

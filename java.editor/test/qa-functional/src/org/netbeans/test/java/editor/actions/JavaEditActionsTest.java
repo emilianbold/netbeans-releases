@@ -39,24 +39,14 @@
  * made subject to such option by the copyright holder.
  */
 
-package java_editor_actions;
+package org.netbeans.test.java.editor.actions;
 
-import java.awt.datatransfer.Transferable;
 import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.util.Hashtable;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
-import editor_actions.EditorActionsTest;
 import junit.textui.TestRunner;
-import org.netbeans.jemmy.EventTool;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Basic Edit Actions Test class.
@@ -68,7 +58,7 @@ import org.netbeans.jemmy.EventTool;
  *
  * @author Martin Roskanin, Jiri Prox
  */
-public class JavaEditActionsTest extends JavaEditorActionsTest {
+public class JavaEditActionsTest extends JavaEditorActionsTestCase {
 
     /** Creates a new instance of Main */
     public JavaEditActionsTest(String testMethodName) {
@@ -620,4 +610,9 @@ public class JavaEditActionsTest extends JavaEditorActionsTest {
     public static void main(String[] args) {
         TestRunner.run(JavaEditActionsTest.class);
     }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(JavaEditActionsTest.class).enableModules(".*").clusters(".*"));
+     }
 }
