@@ -44,13 +44,14 @@ import java.util.List;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.categories.DatabindingCategoryCD;
-import org.netbeans.modules.vmd.midp.codegen.DataSetBodyCodeGenerator;
+import org.netbeans.modules.vmd.midp.codegen.MIDPDataSetBodyCodePresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.InspectorPositionControllerSupport;
@@ -97,7 +98,7 @@ public class DataSetCD extends ComponentDescriptor {
                 // code
                 MidpCodePresenterSupport.createAddImportPresenter("org.netbeans.microedition.databinding.DataBindingException", //NOI18N
                                                                   "org.netbeans.microedition.databinding.DataBinder"), //NOI18N
-                new DataSetBodyCodeGenerator("/org/netbeans/modules/vmd/midp/code/dataset_java.code"), //NOI18N
+                MIDPDataSetBodyCodePresenter.create("/org/netbeans/modules/vmd/midp/codegen/dataset_java.code"), //NOI18N
                 //inspector
                 new InspectorFolderComponentPresenter(true),
                 InspectorPositionPresenter.create(InspectorPositionControllerSupport.createHierarchical(DatabindingCategoryCD.TYPEID)));   

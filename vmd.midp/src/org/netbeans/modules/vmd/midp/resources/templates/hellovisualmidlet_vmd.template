@@ -55,6 +55,7 @@
                 </Component>
             </Component>
             <Component componentID="13" typeID="C#ResourcesCategory"/>
+            <Component componentID="21" typeID="C#DatabindingCategory"/>
         </Component>
     </Document>
     <FlowScene version="1">

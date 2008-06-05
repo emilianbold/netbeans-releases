@@ -58,14 +58,16 @@ import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
 
-import org.netbeans.modules.vmd.midp.codegen.CodeClassInitHeaderFooterPresenter;
-import org.netbeans.modules.vmd.midp.codegen.DataBinderRegisterCodeGenerator;
-import org.netbeans.modules.vmd.midp.codegen.DataSetBodyCodeGenerator;
+import java.util.Map;
+import org.netbeans.modules.vmd.midp.codegen.MIDPDataBinderBindCodePresenter;
+import org.netbeans.modules.vmd.midp.codegen.MIDPDataBinderRegisterCodePresenter;
+import org.netbeans.modules.vmd.midp.codegen.MIDPDatabindingCodeSupport;
+import org.netbeans.modules.vmd.midp.codegen.MidpCodeGenerator;
+import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
 import org.netbeans.modules.vmd.midp.components.DataSetCD;
-import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 
 /**
  *
@@ -87,13 +89,16 @@ public class TextFieldCD extends ComponentDescriptor {
     public static final int VALUE_NON_PREDICTIVE = 0x80000;
     public static final int VALUE_INITIAL_CAPS_WORD = 0x100000;
     public static final int VALUE_INITIAL_CAPS_SENTENCE = 0x200000;
+    
     public static final String PROP_TEXT = "text"; // NOI18N
     public static final String PROP_MAX_SIZE = "maxSize"; // NOI18N
     public static final String PROP_CONSTRAINTS = "constraints"; // NOI18N
     public static final String PROP_INITIAL_INPUT_MODE = "initialInputMode"; // NOI18N
     //Databinding
     public static final String PROP_DATASET_TEXT = "dataSetText"; //NOI18N
-    public static final String PROP_DATASET_LABEL = "dataSetLabale"; //NOI18N
+    
+    public static final String PROP_DATASET_TEXT_EXPRESSION = "dataSetTextExpression"; //NOI18N
+    
 
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(ItemCD.TYPEID, TYPEID, true, true);
@@ -115,8 +120,9 @@ public class TextFieldCD extends ComponentDescriptor {
                 new PropertyDescriptor(PROP_MAX_SIZE, MidpTypes.TYPEID_INT, PropertyValue.createNull(), false, true, MidpVersionable.MIDP),
                 new PropertyDescriptor(PROP_CONSTRAINTS, MidpTypes.TYPEID_INT, PropertyValue.createNull(), false, true, MidpVersionable.MIDP),
                 new PropertyDescriptor(PROP_INITIAL_INPUT_MODE, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
-                new PropertyDescriptor(PROP_DATASET_LABEL, DataSetCD.TYPEID, PropertyValue.createNull(), true, false, MidpVersionable.MIDP_2),
-                new PropertyDescriptor(PROP_DATASET_TEXT, DataSetCD.TYPEID, PropertyValue.createNull(), true, false, MidpVersionable.MIDP_2));
+                new PropertyDescriptor(PROP_DATASET_TEXT, DataSetCD.TYPEID, PropertyValue.createNull(), true, false, MidpVersionable.MIDP_2),
+                new PropertyDescriptor(PROP_DATASET_TEXT_EXPRESSION, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, false, MidpVersionable.MIDP_2)
+        );
     }
 
     @Override
@@ -126,11 +132,11 @@ public class TextFieldCD extends ComponentDescriptor {
     }
 
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
-        return new DefaultPropertiesPresenter().addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES).addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Maximum_Size"), // NOI18N
-                PropertyEditorNumber.createPositiveIntegerInstance(false, NbBundle.getMessage(TextFieldCD.class, "LBL_TextField_Maximum_Size")), PROP_MAX_SIZE) // NOI18N
+        return new DefaultPropertiesPresenter()
+                .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES).addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Maximum_Size"), // NOI18N
+                    PropertyEditorNumber.createPositiveIntegerInstance(false, NbBundle.getMessage(TextFieldCD.class, "LBL_TextField_Maximum_Size")), PROP_MAX_SIZE) // NOI18N
                 .addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Text"), // NOI18N
-                PropertyEditorString.createInstance(PropertyEditorString.DEPENDENCE_TEXT_FIELD,
-                NbBundle.getMessage(TextFieldCD.class, "LBL_TextField_Text")), PROP_TEXT) // NOI18N
+                    PropertyEditorString.createInstanceWithDatabinding(PropertyEditorString.DEPENDENCE_TEXT_FIELD, NbBundle.getMessage(TextFieldCD.class, "LBL_TextField_Text"), PROP_DATASET_TEXT, PROP_DATASET_TEXT_EXPRESSION), PROP_TEXT) // NOI18N
                 .addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Initial_Input_Mode"), PropertyEditorInputMode.createInstance(), PROP_INITIAL_INPUT_MODE) // NOI18N
                 .addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Input_Constraints"), PropertyEditorConstraints.createInstance(), PROP_CONSTRAINTS); // NOI18N
     }
@@ -147,8 +153,11 @@ public class TextFieldCD extends ComponentDescriptor {
                 // properties
                 createPropertiesPresenter(),
                 // code
+                createDependenciesImportPresenter(),
                 createSetterPresenter(),
-                new DataBinderRegisterCodeGenerator(PROP_DATASET_TEXT, PROP_DATASET_LABEL),
+                MIDPDataBinderRegisterCodePresenter.create(PROP_DATASET_TEXT),
+                MIDPDataBinderBindCodePresenter.create(PROP_DATASET_TEXT, PROP_DATASET_TEXT_EXPRESSION, MIDPDatabindingCodeSupport.ProviderType.TextField, MIDPDatabindingCodeSupport.FeatureType.TextField_FeatureText),
+                
                 // screen
                 new TextFieldDisplayPresenter());
     }
@@ -212,5 +221,12 @@ public class TextFieldCD extends ComponentDescriptor {
             }
             super.generateParameterCode(component, section, index);
         }
+    }
+    
+    private Presenter createDependenciesImportPresenter() {
+        Map<String, String> dependencies = new HashMap<String, String>();
+        dependencies.put("org.netbeans.microedition.databinding.lcdui.TextFieldBindingProvider", PROP_DATASET_TEXT); //NOI18N
+        MidpCodePresenterSupport.createAddImportPresenter(dependencies);
+        return null;
     }
 }
