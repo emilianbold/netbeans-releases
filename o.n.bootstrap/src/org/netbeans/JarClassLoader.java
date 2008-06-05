@@ -755,7 +755,7 @@ public class JarClassLoader extends ProxyClassLoader {
 
         @Override
         public JarFile getJarFile() throws IOException {
-            return new JarFile(src.jar.getName()); // #134424
+            return new JarFile(src.file); // #134424
         }
     }
 }
