@@ -148,6 +148,11 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
             entities.add(new Entity(se, cb));
             if (SemanticEntitiesProvider.MACROS.equals(se.getName())) {
                 cbMacros = cb;
+                cbMacros.addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        updateValidation();
+                    }
+                });
             }
         }
 
