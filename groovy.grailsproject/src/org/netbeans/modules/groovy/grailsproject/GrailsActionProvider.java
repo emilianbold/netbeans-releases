@@ -154,7 +154,7 @@ public class GrailsActionProvider implements ActionProvider {
         builder.outProcessor(InputProcessors.bridge(new ServerURLProcessor(project)));
         builder.postExecution(runnable);
 
-        ExecutionService service = new ExecutionService(callable, displayName, builder.create());
+        ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
         service.run();
     }
 
@@ -168,7 +168,7 @@ public class GrailsActionProvider implements ActionProvider {
         builder.controllable(true).frontWindow(true).inputVisible(true).showProgress(true).showSuspend(true);
         builder.postExecution(new RefreshProjectRunnable(project));
 
-        ExecutionService service = new ExecutionService(callable, displayName, builder.create());
+        ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
         service.run();
     }
 
@@ -183,7 +183,7 @@ public class GrailsActionProvider implements ActionProvider {
         builder.controllable(true).frontWindow(true).inputVisible(true).showProgress(true);
         builder.postExecution(new RefreshProjectRunnable(project));
 
-        ExecutionService service = new ExecutionService(callable, displayName, builder.create());
+        ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
         service.run();
     }
 
