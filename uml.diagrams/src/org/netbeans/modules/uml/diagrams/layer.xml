@@ -1837,52 +1837,52 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="Connectors">
             <folder name="Generalization">
-                <file name="org-netbeans-modules.uml-diagrams-edges-GeneralizationConnector.instance"/>
+                <file name="org-netbeans-modules.uml-diagrams-edges-factories-GeneralizationConnectionFactory.instance"/>
             </folder>
             <folder name="Implementation">
-                <file name="org-netbeans-modules.uml-diagrams-edges-ImplementationConnector.instance"/>
+                <file name="org-netbeans-modules.uml-diagrams-edges-factories-ImplementationConnectionFactory.instance"/>
             </folder>
             <folder name="Association">
-                <file name="org-netbeans-modules.uml-diagrams-edges-AssociationConnector.instance"/>
+                <file name="org-netbeans-modules.uml-diagrams-edges-factories-AssociationConnectionFactory.instance"/>
             </folder>
             <folder name="Aggregation">
-                <file name="org-netbeans-modules.uml-diagrams-edges-AssociationConnector.instance"/>
+                <file name="org-netbeans-modules.uml-diagrams-edges-factories-AssociationConnectionFactory.instance"/>
             </folder>
             <folder name="Derivation">
-                <file name="org-netbeans-modules.uml-diagrams-edges-DerivationConnector.instance"/>
+                <file name="org-netbeans-modules.uml-diagrams-edges-factories-DerivationConnectionFactory.instance"/>
             </folder>
             <folder name="Comment">
-                <file name="org-netbeans-modules.uml-diagrams-edges-CommentLinkConnector.instance"/>
+                <file name="org-netbeans-modules.uml-diagrams-edges-factories-CommentLinkConnectionFactory.instance"/>
             </folder>
             <folder name="Dependency">
-                <file name="org-netbeans-modules.uml-diagrams-edges-DependencyConnector.instance"/>
+                <file name="org-netbeans-modules.uml-diagrams-edges-factories-DependencyConnectionFactory.instance"/>
             </folder>
             <folder name="Realization">
-                <file name="org-netbeans-modules.uml-diagrams-edges-RealizationConnector.instance"/>
+                <file name="org-netbeans-modules.uml-diagrams-edges-factories-RealizationConnectionFactory.instance"/>
             </folder>
             <folder name="Usage">
-                <file name="org-netbeans-modules.uml-diagrams-edges-UsageConnector.instance"/>
+                <file name="org-netbeans-modules.uml-diagrams-edges-factories-UsageConnectionFactory.instance"/>
             </folder>
             <folder name="Permission">
-                <file name="org-netbeans-modules.uml-diagrams-edges-PermissionConnector.instance"/>
+                <file name="org-netbeans-modules.uml-diagrams-edges-factories-PermissionConnectionFactory.instance"/>
             </folder>
             <folder name="Abstraction">
-                <file name="org-netbeans-modules.uml-diagrams-edges-AbstractionConnector.instance"/>
+                <file name="org-netbeans-modules.uml-diagrams-edges-factories-AbstractionConnectionFactory.instance"/>
             </folder>
             <folder name="NestedLink">
-                <file name="org-netbeans-modules.uml-diagrams-edges-NestedLinkConnector.instance"/>
+                <file name="org-netbeans-modules.uml-diagrams-edges-factories-NestedLinkConnectionFactory.instance"/>
             </folder>
             <folder name="AssociationClass">
-                <file name="org-netbeans-modules.uml-diagrams-edges-AssociationClassConnector.instance"/>
+                <file name="org-netbeans-modules.uml-diagrams-edges-factories-AssociationClassConnector.instance"/>
             </folder>
             <folder name="PartFacadeEdge">
-                <file name="org-netbeans-modules.uml-diagrams-edges-PartFacadeEdgeConnector.instance"/>
+                <file name="org-netbeans-modules.uml-diagrams-edges-factories-PartFacadeConnectionFactory.instance"/>
             </folder>
             <folder name="Include">
-                <file name="org-netbeans-modules.uml-diagrams-edges-IncludeConnector.instance"/>
+                <file name="org-netbeans-modules.uml-diagrams-edges-factories-IncludeConnectionFactory.instance"/>
             </folder>
             <folder name="Extend">
-                <file name="org-netbeans-modules.uml-diagrams-edges-ExtendConnector.instance"/>
+                <file name="org-netbeans-modules.uml-diagrams-edges-factories-ExtendConnector.instance"/>
             </folder>
         </folder>
         <folder name="ClassDiagram">
@@ -1938,7 +1938,7 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="Connectors">
                 <folder name="MultiFlow">
-                    <file name="org-netbeans-modules.uml-diagrams-edges-ActivityEdgeConnector.instance"/>
+                    <file name="org-netbeans-modules.uml-diagrams-edges-factories-ActivityEdgeConnectionFactory.instance"/>
                 </folder>
             </folder>
         </folder>
@@ -1961,16 +1961,16 @@ made subject to such option by the copyright holder.
             <folder name="Connectors">
                 <folder name="Message">
                     <folder name="Asynchronous">
-                        <file name="org-netbeans-modules-uml-diagrams-edges-sqd-AsynchronousMessageConnectionWidget.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-edges-sqd-AsynchronousMessageConnectionFactory.instance"/>
                     </folder>
                     <folder name="Synchronous">
-                        <file name="org-netbeans-modules-uml-diagrams-edges-sqd-SynchronousMessageConnectionWidget.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-edges-sqd-SynchronousMessageConnectionFactory.instance"/>
                     </folder>
                     <folder name="Result">
-                        <file name="org-netbeans-modules-uml-diagrams-edges-sqd-ResultMessageConnectionWidget.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-edges-sqd-ResultMessageConnectionFactory.instance"/>
                     </folder>
                     <folder name="Create">
-                        <file name="org-netbeans-modules-uml-diagrams-edges-sqd-CreateMessageConnectionWidget.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-edges-sqd-CreateMessageConnectionFactory.instance"/>
                     </folder>
                 </folder>
             </folder>
@@ -2036,7 +2036,7 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="Connectors">
                 <folder name="Transition">
-                    <file name="org-netbeans-modules.uml-diagrams-edges-StateTransitionWidget.instance"/>
+                    <file name="org-netbeans-modules.uml-diagrams-edges-factories-StateTransitionConnectionFactory.instance"/>
                 </folder>
             </folder>
         </folder>

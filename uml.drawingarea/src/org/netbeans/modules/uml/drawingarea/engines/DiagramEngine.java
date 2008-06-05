@@ -70,6 +70,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
+import org.netbeans.modules.uml.drawingarea.ConnectionWidgetFactory;
 import org.netbeans.modules.uml.drawingarea.NodeWidgetFactory;
 import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
@@ -487,29 +488,35 @@ abstract public class DiagramEngine {
                                 retVal = factory.createNode(scene);
                                 break;
                             }
+                            else if (obj instanceof ConnectionWidgetFactory)
+                            {
+                                ConnectionWidgetFactory factory = (ConnectionWidgetFactory) obj;
+                                retVal = factory.createConnection(scene);
+                                break;
+                            }
                         }
                         catch(Exception ex)
                         {
                             Exceptions.printStackTrace(ex);
                         }
                         
-                        try
-                        {
-                            Class cl = ic.instanceClass();
-                            if(cl != null)
-                            {
-                                Constructor constructor = cl.getConstructor(Scene.class);
-                                if(constructor != null)
-                                {
-                                    retVal = constructor.newInstance(scene);
-                                }
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            Exceptions.printStackTrace(e);
-                            continue;
-                        }
+//                        try
+//                        {
+//                            Class cl = ic.instanceClass();
+//                            if(cl != null)
+//                            {
+//                                Constructor constructor = cl.getConstructor(Scene.class);
+//                                if(constructor != null)
+//                                {
+//                                    retVal = constructor.newInstance(scene);
+//                                }
+//                            }
+//                        }
+//                        catch (Exception e)
+//                        {
+//                            Exceptions.printStackTrace(e);
+//                            continue;
+//                        }
                     }
                     else
                     {
