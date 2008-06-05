@@ -37,20 +37,50 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.history;
+package org.netbeans.modules.db.sql.history;
+
+import javax.sound.midi.MetaEventListener;
+import javax.sound.midi.MetaMessage;
 
 /**
  *
  * @author John Baker
  */
-public class SQLHistoryControllerImpl implements SQLHistoryController {
+public class SQLHistoryModelImpl implements SQLHistoryModel {
 
-    public void filter() {
+    public void initialize() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void changeUrl() {
+    public void setFilter(String filter) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    public String getFilter() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void setUrl(String url) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public String getUrl() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void registerObserver(SQLHistoryFilterObserver filterObserver) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void removeObserver(SQLHistoryFilterObserver filterObserver) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void registerObserver(SQLHistoryUrlObserver urlObserver) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void removeObserver(SQLHistoryUrlObserver urlObserver) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

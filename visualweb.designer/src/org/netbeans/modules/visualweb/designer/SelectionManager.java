@@ -2324,7 +2324,7 @@ public class SelectionManager {
      * If one is already primary, it is kept as the primary.
      */
     public void pickPrimary() {
-        if (primary == null) {
+        if (primary == null && !selectedComponents.isEmpty()) {
 //            Iterator it = selected.iterator();
 //            FormObject fob = (FormObject)it.next();
 //            primary = fob.component;

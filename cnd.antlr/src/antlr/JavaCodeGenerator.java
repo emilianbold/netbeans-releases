@@ -281,7 +281,7 @@ public class JavaCodeGenerator extends CodeGenerator {
         boolean ok = grammar.theLLkAnalyzer.deterministic(blk);
 
         JavaBlockFinishingInfo howToFinish = genCommonBlock(blk, true, context);
-        String noExcVialble = getThrowNoViableStr(context);
+        String noExcVialble = getThrowNoViableStr(context, blk);
         genBlockFinish(howToFinish, noExcVialble, blk.getLine());
 
         println("}", NO_MAPPING);
@@ -669,7 +669,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 	        JavaBlockFinishingInfo howToFinish = genCommonBlock(blk, false, context);
 	        genBlockFinish(
 	            howToFinish,
-	            "if ( " + cnt + ">=1 ) { break " + label + "; } else {" + getThrowNoViableStr(context) + "}",
+	            "if ( " + cnt + ">=1 ) { break " + label + "; } else {" + getThrowNoViableStr(context, blk) + "}",
 	            blk.getLine()
 	        );
 	
@@ -1602,14 +1602,16 @@ public class JavaCodeGenerator extends CodeGenerator {
 		try {
 			defaultLine = NO_MAPPING;
 	        // initialization data
-	        println(
-	            "private static final long[] mk" + getBitsetName(id) + "() {"
-	        );
 	        int n = p.lengthInLongWords();
 	        if ( n<BITSET_OPTIMIZE_INIT_THRESHOLD ) {
-	            println("\tlong[] data = { " + p.toStringOfWords() + "};");
+                    println("public static final BitSet " + getBitsetName(id) + " = new BitSet(" +
+                        p.toStringOfWords() + ");");
 	        }
 	        else {
+                    // initialization data
+                    println(
+                        "private static final long[] mk" + getBitsetName(id) + "() {"
+                    );
 	            // will init manually, allocate space then set values
 	            println("\tlong[] data = new long["+n+"];");
 	            long[] elems = p.toPackedArray();
@@ -1638,16 +1640,16 @@ public class JavaCodeGenerator extends CodeGenerator {
 	                    i = j;
 	                }
 	            }
-	        }
 	
-	        println("\treturn data;");
-	        println("}");
-	        // BitSet object
-	        println(
-	            "public static final BitSet " + getBitsetName(id) + " = new BitSet(" +
-	            "mk" + getBitsetName(id) + "()" +
-	            ");"
-	        );
+                    println("\treturn data;");
+                    println("}");
+                    // BitSet object
+                    println(
+                        "public static final BitSet " + getBitsetName(id) + " = new BitSet(" +
+                        "mk" + getBitsetName(id) + "()" +
+                        ");"
+                    );
+                }
 	    } finally {
 			defaultLine = oldDefaultLine;
 		}
@@ -2685,7 +2687,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 	            }
 	        }
 	        else {
-	            errFinish += "else {" + getThrowNoViableStr(context) + "}";
+	            errFinish += "else {" + getThrowNoViableStr(context, nextTokenBlk) + "}";
 	        }
 	        genBlockFinish(howToFinish, errFinish, nextTokenBlk.getLine());
 	
@@ -3080,7 +3082,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 	
 	            JavaBlockFinishingInfo howToFinish = genCommonBlock(rblk, false, context);
                     
-                    String noExcVialble = getThrowNoViableStr(context);
+                    String noExcVialble = getThrowNoViableStr(context, rblk);
 	            genBlockFinish(howToFinish, noExcVialble, rblk.getLine());
 	        }
 	
@@ -4217,18 +4219,22 @@ public class JavaCodeGenerator extends CodeGenerator {
         return actionStr;
     }
     
-    protected String getThrowNoViableStr(Context context) {
+    protected String getThrowNoViableStr(Context context, AlternativeBlock blk) {
         if (MatchExceptionState.throwRecExceptions) {
             return throwNoViable;
         } else {
             String result;
             result = "matchError=true;";
             if (!Tool.cloneGuessing || (context.guessing == Context.NO_GUESSING)) {
-            //remove throw word
                 if (!Tool.cloneGuessing) {
                     result += "if (inputState.guessing == 0) ";
                 }
-                result += "matchException=" + throwNoViable.substring(6);
+                if (grammar instanceof ParserGrammar && Tool.extendedErrors) {
+                    result += "matchException= new NoViableAltException(LT(1), getFilename(), " + getBitsetName(markBitsetForGen(analyzer.look(1, blk).fset)) + ", tokenNames);";
+                } else {
+                    //remove throw word
+                    result += "matchException=" + throwNoViable.substring(6);
+                }
             }
             result += getCheckString(context);
             return result;
