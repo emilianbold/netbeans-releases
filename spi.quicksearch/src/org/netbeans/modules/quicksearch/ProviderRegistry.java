@@ -40,10 +40,13 @@
 package org.netbeans.modules.quicksearch;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.lookup.Lookups;
 
@@ -83,13 +86,14 @@ final class ProviderRegistry {
     private void loadProviders (ProviderModel model) {
         FileObject[] categoryFOs = Repository.getDefault().getDefaultFileSystem().
                 findResource(SEARCH_PROVIDERS_FOLDER).getChildren();
-
-        List<ProviderModel.Category> categories = new ArrayList<ProviderModel.Category>(categoryFOs.length);
         
-        for (int i = 0; i < categoryFOs.length; i++) {
-            FileObject curFO = categoryFOs[i];
-            
-            FileObject[] children = curFO.getChildren();
+        // respect ordering defined in layers
+        List<FileObject> sortedCats = FileUtil.getOrder(Arrays.asList(categoryFOs), false);
+
+        List<ProviderModel.Category> categories = new ArrayList<ProviderModel.Category>(sortedCats.size());
+        
+        for (FileObject curFO : sortedCats) {
+            System.out.println("category is " + curFO);            
             
             Collection<? extends SearchProvider> catProviders = 
                     Lookups.forPath(curFO.getPath()).lookupAll(SearchProvider.class);
