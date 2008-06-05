@@ -52,7 +52,7 @@ public class InspectorAction extends Action {
 
     // Window|GUI Editor|Inspector
     private static final String inspectorMenu =
-        Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window")+
+        Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window")+
         "|" +
         Bundle.getStringTrimmed("org.netbeans.modules.form.resources.Bundle", 
                                 "Menu/Window/Form")+

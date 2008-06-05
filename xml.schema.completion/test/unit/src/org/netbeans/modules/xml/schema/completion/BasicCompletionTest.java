@@ -77,6 +77,7 @@ public class BasicCompletionTest extends AbstractTestCase {
         suite.addTest(new BasicCompletionTest("testEndtagCompletion1"));
         suite.addTest(new BasicCompletionTest("testEndtagCompletion2"));
         suite.addTest(new BasicCompletionTest("testEndtagCompletion3"));
+        suite.addTest(new BasicCompletionTest("testCompletionWithAmpersand"));        
         suite.addTest(new BasicCompletionTest("testSchemaFromRuntimeCatalog"));
         //suite.addTest(new BasicCompletionTest("testCompletionUsingSchemaFromCatalog"));
         suite.addTest(new BasicCompletionTest("testWildcard1"));
@@ -211,6 +212,17 @@ public class BasicCompletionTest extends AbstractTestCase {
         setupCompletion("resources/PO7.xml", null);
         List<CompletionResultItem> items = query(261);
         String[] expectedResult = {};
+        assertResult(items, expectedResult);
+    }
+    
+    /**
+     * Tests completion with ampersand.
+     * See http://www.netbeans.org/issues/show_bug.cgi?id=135379.
+     */
+    public void testCompletionWithAmpersand() throws Exception {
+        setupCompletion("resources/PO8.xml", null);
+        List<CompletionResultItem> items = query(260);
+        String[] expectedResult = {"po:name","po:street","po:city","po:state","po:zip"};
         assertResult(items, expectedResult);
     }
     

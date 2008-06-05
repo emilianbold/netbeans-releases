@@ -1790,6 +1790,8 @@ public class DefineCorrelationWizard implements WizardProperties {
             public boolean canEditInplace(VertexItem vItem) {
                 return true;
             }
+
+            public void delete(TreePath currentTreePath, GraphSubset graphGroup) {}
         }
     }
     //========================================================================//

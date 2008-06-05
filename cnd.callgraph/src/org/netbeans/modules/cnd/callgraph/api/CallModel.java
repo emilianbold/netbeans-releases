@@ -61,8 +61,8 @@ public interface CallModel {
     List<Call> getCallees(Function definition);
 
     Function getRoot();
+
+    void setRoot(Function newRoot);
     
     String getName();
-    
-    void refresh();
 }

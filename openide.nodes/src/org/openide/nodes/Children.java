@@ -261,7 +261,7 @@ public abstract class Children extends Object {
      * Create a <code>Children</code> object using the passed <code>ChildFactory</code>
      * object.  The <code>ChildFactory</code> will be asked to create a list
      * of model objects that are the children;  then for each object in the list,
-     * {@link ChildFactory#createNodesFor} will be called to instantiate
+     * {@link ChildFactory#createNodesForKey} will be called to instantiate
      * one or more <code>Node</code>s for that object.
      * @param factory a factory which will provide child objects
      * @param asynchronous If true, the factory will always be called to

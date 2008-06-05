@@ -201,17 +201,20 @@ public class MethodDeclaration
                             {
                                 case IREParameter.PDK_IN:
                                     createInputPin(argumentNode, curPar, 
-                                           arguments.get(arg++).getParamOne());
+                                           arguments.get(arg).getParamOne(),arguments.get(arg).getParamTwo());
+                                    arg++;
                                     break;
                                 case IREParameter.PDK_INOUT:
                                     createInputPin(argumentNode, curPar, 
-                                        arguments.get(arg).getParamOne());
+                                        arguments.get(arg).getParamOne(),arguments.get(arg).getParamTwo());
                                     createOutputPin(argumentNode, curPar, 
-                                        arguments.get(arg++).getParamOne());
+                                        arguments.get(arg).getParamOne(),arguments.get(arg).getParamTwo());
+                                    arg++;
                                     break;
                                 case IREParameter.PDK_OUT:
                                     createOutputPin(argumentNode, curPar, 
-                                        arguments.get(arg++).getParamOne());
+                                        arguments.get(arg).getParamOne(),arguments.get(arg).getParamTwo());
+                                    arg++;
                                     break;
                                 case IREParameter.PDK_RESULT:
                                     createResultOutputPin(parentNode, curPar);
@@ -260,10 +263,11 @@ public class MethodDeclaration
      * @param pParent [in] The owner of the input pin data.
      * @param pParam [in] The parameter.
      * @param ref [in] The instance information.
+     * @param value parameter value
      * @param manip [out] The XMLManip used to manipulate the XML.
      */
     protected void createInputPin(Node parent, IREParameter par, 
-                                  InstanceInformation ref)
+                                  InstanceInformation ref,String value)
     {
         if (parent == null || ref == null) return ;
         
@@ -283,6 +287,10 @@ public class MethodDeclaration
                                             ref.getInstanceTypeName());
                 XMLManip.setAttributeValue(inputPin, "kind", "Type");
             }
+            if(value!=null)
+            {
+                XMLManip.setAttributeValue(inputPin, "argumentValue", value);
+            }
         }
     }
     
@@ -292,10 +300,10 @@ public class MethodDeclaration
      * @param pParent [in] The owner of the input pin data.
      * @param pParam [in] The parameter.
      * @param ref [in] The instance information.
-     * @param manip [out] The XMLManip used to manipulate the XML.
+     * @param value argument value
      */
     protected void createOutputPin(Node parent, IREParameter par, 
-                                   InstanceInformation ref)
+                                   InstanceInformation ref,String value)
     {
         if (parent == null || par == null) return ;
         
@@ -320,6 +328,10 @@ public class MethodDeclaration
                                                 instanceName);
                     XMLManip.setAttributeValue(outputPin, "kind", "CallResult");
                 }
+                if(value!=null)
+                {
+                    XMLManip.setAttributeValue(outputPin, "argumentValue", value);
+                }
             }
             else
             {    
@@ -342,7 +354,7 @@ public class MethodDeclaration
         
         Node node = createNode(parent, "UML:PrimitiveAction.result");
         if (node != null)
-            createOutputPin(node, par, null);
+            createOutputPin(node, par, null,null);
     }
     
     /**

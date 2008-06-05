@@ -45,13 +45,15 @@ import java.util.logging.Level;
 import org.netbeans.api.progress.ProgressHandle;
 import java.util.concurrent.Callable;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptorBuilder;
+import org.netbeans.modules.extexecution.api.ExecutionService;
+import org.netbeans.modules.extexecution.api.input.InputProcessors;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
-import org.netbeans.modules.groovy.grailsproject.execution.DefaultDescriptor;
-import org.netbeans.modules.groovy.grailsproject.execution.ExecutionService;
+import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
 import org.openide.util.Task;
 
 
@@ -122,8 +124,13 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
 
                 Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
                         serverCommand, GrailsProjectConfig.forProject(project), pls.getDomainClassName());
-                ExecutionService service = new ExecutionService(callable, displayName,
-                        new DefaultDescriptor(project, new ProgressSnooper(handle, 100, 2) , null, false, false, true, true, false));
+
+                ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
+                builder.frontWindow(true).inputVisible(true);
+                builder.outProcessor(InputProcessors.bridge(new ProgressSnooper(handle, 100, 2)));
+                builder.postExecution(new RefreshProjectRunnable(project));
+
+                ExecutionService service = new ExecutionService(callable, displayName, builder.create());
 
                 Task task = service.run();
                 task.waitFinished();

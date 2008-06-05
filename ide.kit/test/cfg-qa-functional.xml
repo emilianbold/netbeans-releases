@@ -46,8 +46,8 @@ made subject to such option by the copyright holder.
     <!-- Validation suite for whole IDE before commit-->
     <testbag testattribs="commit or stable" executor="ide" name="IDE commit validation" timeout="900000">
         <testproperty name="xtest.ide.blacklist" value="blacklist.txt"/>
-<!--        <testproperty name="xtest.ide.whitelist" value="whitelist.txt"/>
-        <testproperty name="xtest.ide.generate.whitelist" value="false"/>-->
+        <testproperty name="xtest.ide.whitelist" value="whitelist.txt"/>
+        <testproperty name="xtest.ide.generate.whitelist" value="true"/>
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/test/ide/IDECommitValidation.class"/>
@@ -116,11 +116,11 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
 
-    <!-- Whitelist generation routine -->    
-    <testbag testattribs="generate-whitelist" executor="ide" name="Whitelist generation" timeout="900000">
-        <testproperty name="xtest.ide.blacklist" value="blacklist.txt"/>
+    <!-- Whitelist check -->    
+    <testbag testattribs="whitelist" executor="ide" name="Whitelist generation" timeout="900000">
         <testproperty name="xtest.ide.whitelist" value="whitelist.txt"/>
-        <testproperty name="xtest.ide.generate.whitelist" value="true"/>
+        <testproperty name="xtest.ide.whitelist.use.storage" value="true"/>
+        <testproperty name="xtest.ide.generate.whitelist" value="false"/>
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/test/ide/IDECommitValidation.class/testBlacklistedClassesHandler"/>

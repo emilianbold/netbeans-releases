@@ -38,14 +38,15 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.masterfs.filebasedfs.utils;
 
-import junit.framework.*;
 import java.io.File;
+import java.util.NoSuchElementException;
+import java.util.Scanner;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
-import org.openide.filesystems.FileObject;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -57,16 +58,37 @@ public class FileInfoTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
     }
 
+    @Override
     protected void tearDown() throws Exception {
     }
 
     public static Test suite() {
         TestSuite suite = new TestSuite(FileInfoTest.class);
-        
         return suite;
+    }
+
+    /** Test getRoot() method. */
+    public void testGetRoot() {
+        if(!Utilities.isWindows()) {
+            return;
+        }
+        String[][] files = {
+            // filename, expected root
+            {"\\\\computerName\\sharedFolder\\a\\b\\c\\d.txt", "\\\\computerName\\sharedFolder"},
+            {"\\\\computerName\\sharedFolder", "\\\\computerName\\sharedFolder"},
+            {"\\\\computerName", "\\\\"},
+            {"\\\\", "\\\\"},
+            {"D:\\a\\b\\c\\a.txt", "D:\\"},
+            {"D:\\a.txt", "D:\\"},
+            {"D:\\", "D:\\"}
+        };
+        for (int i = 0; i < files.length; i++) {
+            assertEquals("Wrong root for file "+files[i][0]+".", files[i][1], new FileInfo(new File(files[i][0])).getRoot().toString());
+        }
     }
 
     public void testComposeName() {
@@ -75,11 +97,10 @@ public class FileInfoTest extends NbTestCase {
         testComposeNameImpl("a.");
     }
 
-
     private void testComposeNameImpl(final String fullName) {
         String ext = FileInfo.getExt(fullName);
         String name = FileInfo.getName(fullName);
-        
-        assertEquals(fullName,FileInfo.composeName(name, ext));
+
+        assertEquals(fullName, FileInfo.composeName(name, ext));
     }
 }

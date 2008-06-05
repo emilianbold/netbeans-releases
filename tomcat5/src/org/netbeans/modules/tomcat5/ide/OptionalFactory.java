@@ -43,6 +43,7 @@ package org.netbeans.modules.tomcat5.ide;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.AntDeploymentProvider;
@@ -51,6 +52,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.tomcat5.AntDeploymentProviderImpl;
+import org.netbeans.modules.tomcat5.TomcatInstanceDescriptor;
 import org.netbeans.modules.tomcat5.TomcatJDBCDriverDeployer;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
@@ -116,4 +118,10 @@ public class OptionalFactory extends OptionalDeploymentManagerFactory {
     public JDBCDriverDeployer getJDBCDriverDeployer(DeploymentManager dm) {
         return new TomcatJDBCDriverDeployer((TomcatManager) dm);
     }
+
+    @Override
+    public ServerInstanceDescriptor getServerInstanceDescriptor(DeploymentManager dm) {
+        return new TomcatInstanceDescriptor((TomcatManager) dm);
+    }
+    
 }

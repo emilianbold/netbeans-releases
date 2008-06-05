@@ -58,6 +58,10 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.websvc.core.JaxWsStackProvider;
+import org.netbeans.modules.websvc.core.WSStackUtils;
+import org.netbeans.modules.websvc.serverapi.api.WSStack;
+import org.netbeans.modules.websvc.serverapi.api.WSStackProvider;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -143,11 +147,10 @@ public class JaxWsArtifactsClassPathProvider implements ClassPathProvider {
             //=> get required JAX-WS jars form the server
             String serverInstanceID = javaeeModule.getServerInstanceID();
             J2eePlatform javaeeplatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
-            if (javaeeplatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) {
-                cp.addAll(Arrays.asList(javaeeplatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT)));
-}
-            if (javaeeplatform.isToolSupported(J2eePlatform.TOOL_WSGEN)) {
-                cp.addAll(Arrays.asList(javaeeplatform.getToolClasspathEntries(J2eePlatform.TOOL_WSGEN)));
+            WSStack wsStack = JaxWsStackProvider.getJaxWsStackForTool(javaeeplatform, WSStack.TOOL_WSIMPORT);
+            if (wsStack != null && wsStack.getWSStackProvider() == WSStackProvider.SERVER) {
+                cp.addAll(Arrays.asList(wsStack.getToolClassPathEntries(WSStack.TOOL_WSIMPORT)));
+                //cp.addAll(Arrays.asList(wsStack.getToolClassPathEntries(WSStack.TOOL_WSGEN)));
             }
         } else {
             //javase project type

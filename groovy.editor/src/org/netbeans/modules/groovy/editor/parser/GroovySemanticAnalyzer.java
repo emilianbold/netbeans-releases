@@ -43,8 +43,8 @@ package org.netbeans.modules.groovy.editor.parser;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.Map;
-import java.util.logging.Logger;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.editor.BaseDocument;
@@ -65,13 +65,13 @@ import org.openide.util.Exceptions;
 public class GroovySemanticAnalyzer implements SemanticAnalyzer {
 
     private boolean cancelled;
-    private Map<OffsetRange, ColoringAttributes> semanticHighlights;
+    private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
 
     public GroovySemanticAnalyzer() {
         
     }
 
-    public Map<OffsetRange, ColoringAttributes> getHighlights() {
+    public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
         return semanticHighlights;
     }
 
@@ -106,17 +106,19 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
             return;
         }
 
-        Map<OffsetRange, ColoringAttributes> highlights =
-            new HashMap<OffsetRange, ColoringAttributes>(100);
+        Map<OffsetRange, Set<ColoringAttributes>> highlights =
+            new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
 
         AstPath path = new AstPath();
         path.descend(root);
-        try {
-            SemanticAnalysisVisitor visitor = new SemanticAnalysisVisitor((ModuleNode) root, (BaseDocument) info.getDocument());
-            highlights.putAll(visitor.annotate());
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+
+        BaseDocument doc = (BaseDocument) info.getDocument();
+        if (doc == null) {
+            return;
         }
+        SemanticAnalysisVisitor visitor = new SemanticAnalysisVisitor((ModuleNode) root, doc);
+        highlights.putAll(visitor.annotate());
+
         path.ascend();
 
         if (isCancelled()) {
@@ -125,8 +127,8 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
 
         if (highlights.size() > 0) {
             if (parserResult.getTranslatedSource() != null) {
-                Map<OffsetRange, ColoringAttributes> translated = new HashMap<OffsetRange,ColoringAttributes>(2*highlights.size());
-                for (Map.Entry<OffsetRange,ColoringAttributes> entry : highlights.entrySet()) {
+                Map<OffsetRange, Set<ColoringAttributes>> translated = new HashMap<OffsetRange,Set<ColoringAttributes>>(2*highlights.size());
+                for (Map.Entry<OffsetRange,Set<ColoringAttributes>> entry : highlights.entrySet()) {
                     OffsetRange range = LexUtilities.getLexerOffsets(info, entry.getKey());
                     if (range != OffsetRange.NONE) {
                         translated.put(range, entry.getValue());

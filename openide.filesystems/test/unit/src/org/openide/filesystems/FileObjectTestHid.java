@@ -1296,12 +1296,9 @@ public class FileObjectTestHid extends TestBaseHid {
     public void  testGetFolders3() {
         checkSetUp();
         
-        List folders = makeList(root.getFolders(true));
-        Iterator it = folders.iterator();
-        
-        while (it.hasNext()) {
+        for (FileObject fo : makeList(root.getFolders(true))) {
             fsAssert("getData should return FileObjects that return isFolder () == true and isData () == false",
-            ((FileObject)it.next()).isFolder() && !((FileObject)it.next()).isData());
+                     fo.isFolder() && !fo.isData());
         }
     }
     
@@ -1320,12 +1317,9 @@ public class FileObjectTestHid extends TestBaseHid {
     public void  testGetData1() {
         checkSetUp();
         
-        List folders = makeList(root.getData(true));
-        Iterator it = folders.iterator();
-        
-        while (it.hasNext()) {
+        for (FileObject fo : makeList(root.getData(true))) {
             fsAssert("getData should return FileObjects that return isFolder () == false and isData () == true",
-            !((FileObject)it.next()).isFolder() && ((FileObject)it.next()).isData());
+                     !fo.isFolder() && fo.isData());
         }
     }
 
@@ -2610,8 +2604,8 @@ public class FileObjectTestHid extends TestBaseHid {
         fsTestFrameworkErrorAssert  ("Unexpected setUp behaviour: root == null: " + getResourcePrefix(), root != null);
     }
     
-    private List makeList(Enumeration<? extends FileObject> e) {
-        List l = new LinkedList();
+    private List<? extends FileObject> makeList(Enumeration<? extends FileObject> e) {
+        List<FileObject> l = new LinkedList<FileObject>();
         while (e.hasMoreElements()) {
             l.add(e.nextElement());
         }

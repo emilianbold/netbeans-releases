@@ -52,9 +52,9 @@ public final class TestRunnerSettings {
     private static final String RESULTS_SPLITPANE_DIVIDER_VERTICAL = "resultsSplitDividerVertical"; //NOI18N
     private static final String RESULTS_SPLITPANE_DIVIDER_HORIZONTAL = "resultsSplitDividerHorizontal"; //NOI18N
     private static final String RESULTS_SPLITPANE_ORIENTATION = "resultsSplitOrientation"; //NOI18N
-    private static final int DEFAULT_DIVIDER_LOCATION_VERTICAL = 300;
-    private static final int DEFAULT_DIVIDER_LOCATION_HORIZONTAL = 120;
-    private static final int DEFAULT_DIVIDER_ORIENTATION = JSplitPane.VERTICAL_SPLIT;
+    private static final int DEFAULT_DIVIDER_LOCATION_VERTICAL = 120;
+    private static final int DEFAULT_DIVIDER_LOCATION_HORIZONTAL = 300;
+    private static final int DEFAULT_DIVIDER_ORIENTATION = JSplitPane.HORIZONTAL_SPLIT;
 
     private static final TestRunnerSettings INSTANCE = new TestRunnerSettings();
 

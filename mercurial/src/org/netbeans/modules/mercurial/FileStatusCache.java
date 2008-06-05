@@ -525,11 +525,7 @@ public class FileStatusCache {
         assert newFiles.containsKey(dir) == false;
         turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
 
-        if(interestingFiles == null){ 
-            fireFileStatusChanged(file, current, fi);
-        } else if (alwaysFireEvent) {
-            fireFileStatusChanged(file, null, fi);
-        }
+        fireFileStatusChanged(file, current, fi);
         
         return;
     }
@@ -588,7 +584,7 @@ public class FileStatusCache {
                 for (File file : interestingFiles.keySet()) {
                     FileInformation fi = interestingFiles.get(file);
                     Mercurial.LOG.log(Level.FINE, "refreshAll() file: {0} {1} ", new Object[] {file.getAbsolutePath(), fi}); // NOI18N
-                    refreshFileStatus(file, fi, interestingFiles, true);
+                    refreshFileStatus(file, fi, interestingFiles);
                 }
                 if (files != null) {
                     for (File file : files.keySet()) {
@@ -866,6 +862,10 @@ public class FileStatusCache {
         listenerSupport.firePropertyChange(PROP_FILE_STATUS_CHANGED, null, new ChangedEvent(file, oldInfo, newInfo));
     }
     
+    public void notifyFileChanged(File file) {
+        fireFileStatusChanged(file, null, FILE_INFORMATION_UPTODATE);
+    }
+
     public void refreshDirtyFileSystems() {
         Set<FileSystem> filesystems = getFilesystemsToRefresh();
         FileSystem[]  filesystemsToRefresh = new FileSystem[filesystems.size()];

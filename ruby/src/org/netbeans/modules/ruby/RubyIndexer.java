@@ -74,7 +74,7 @@ import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
-import org.netbeans.modules.ruby.StructureAnalyzer.AnalysisResult;
+import org.netbeans.modules.ruby.RubyStructureAnalyzer.AnalysisResult;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.ClassElement;
 import org.netbeans.modules.ruby.elements.IndexedClass;
@@ -812,7 +812,6 @@ public class RubyIndexer implements Indexer {
                             }
 
                             child = (Node)childNodes.get(1);
-                            @SuppressWarnings("unchecked")
                             List<Node> args = child.childNodes();
                             for (Node n : args) {
                                 if (n.nodeId == NodeType.SYMBOLNODE || n.nodeId == NodeType.STRNODE) {
@@ -838,10 +837,12 @@ public class RubyIndexer implements Indexer {
                 }
             }
 
-            @SuppressWarnings("unchecked")
             List<Node> list = node.childNodes();
 
             for (Node child : list) {
+                if (child.isInvisible()) {
+                    continue;
+                }
                 scanMigration(child, items, currentTable);
             }            
         }
@@ -949,10 +950,12 @@ public class RubyIndexer implements Indexer {
                 }
             }
 
-            @SuppressWarnings("unchecked")
             List<Node> list = node.childNodes();
 
             for (Node child : list) {
+                if (child.isInvisible()) {
+                    continue;
+                }
                 if (scan(child, includes, requires)) {
                     found = true;
                 }

@@ -67,7 +67,7 @@ import org.openide.modules.InstalledFileLocator;
 public class RspecRunner implements TestRunner {
 
     private static final TestRunner INSTANCE = new RspecRunner();
-    private static final String RSPEC_MEDIATOR_SCRIPT = "nb_rspec_mediator.rb";
+    public static final String RSPEC_MEDIATOR_SCRIPT = "nb_rspec_mediator.rb"; //NOI18N
 
     public TestRunner getInstance() {
         return INSTANCE;
@@ -86,7 +86,13 @@ public class RspecRunner implements TestRunner {
     }
 
     public void runSingleTest(FileObject testFile, String testMethod) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // the testMethod param here actually presents the line number 
+        // of the rspec specification in the test file. 
+        List<String> additionalArgs = new ArrayList<String>();
+        additionalArgs.add("--line");
+        additionalArgs.add(testMethod);
+        additionalArgs.add(FileUtil.toFile(testFile).getAbsolutePath());
+        run(FileOwnerQuery.getOwner(testFile), additionalArgs, testFile.getName());
     }
 
     public void runAllTests(Project project) {
@@ -98,7 +104,9 @@ public class RspecRunner implements TestRunner {
         List<String> specs = new ArrayList<String>();
         while (children.hasMoreElements()) {
             FileObject each = children.nextElement();
-            if ("rb".equals(each.getExt())) {
+            if (!each.isFolder() 
+                    && "rb".equals(each.getExt()) 
+                    && each.getName().endsWith("spec")) { //NOI18N
                 specs.add(FileUtil.toFile(each).getAbsolutePath());
             }
         }

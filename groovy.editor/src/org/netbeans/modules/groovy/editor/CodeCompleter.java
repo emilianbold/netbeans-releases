@@ -45,14 +45,19 @@ import groovy.lang.MetaClass;
 import groovy.lang.MetaMethod;
 import groovy.util.Node;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.codehaus.groovy.ast.ASTNode;
@@ -71,32 +76,56 @@ import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.modules.groovy.editor.elements.KeywordElement;
 import org.netbeans.modules.groovy.editor.parser.GroovyParser;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
 import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.Variable;
+import org.codehaus.groovy.ast.VariableScope;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.reflection.CachedClass;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.ui.ElementIcons;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.elements.GroovyElement;
+import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
+import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class CodeCompleter implements CodeCompletionHandler {
 
-    private static ImageIcon keywordIcon;
+    private static ImageIcon classIcon;
     private boolean caseSensitive;
     private int anchor;
     private final Logger LOG = Logger.getLogger(CodeCompleter.class.getName());
     private String jdkJavaDocBase = null;
     private String groovyJavaDocBase = null;
+    private String gapiDocBase = null;
 
     public CodeCompleter() {
         // LOG.setLevel(Level.FINEST);
@@ -106,33 +135,39 @@ public class CodeCompleter implements CodeCompletionHandler {
         List<URL> docfolder = platform.getJavadocFolders();
 
         for (URL url : docfolder) {
-            LOG.log(Level.FINEST, "JavaDoc path from PlatformManager: " + url.toString());
+            LOG.log(Level.FINEST, "JDK Doc path: {0}", url.toString()); // NOI18N
             jdkJavaDocBase = url.toString();
         }
 
         GroovySettings groovySettings = new GroovySettings();
+        String docroot = groovySettings.getGroovyDoc() + "/";
 
-        // FIXME: Here we only care for the GDK, but not for the additional
-        // Groovy classes. I have to add those as well.
+        groovyJavaDocBase = directoryNameToUrl(docroot + "groovy-jdk/"); // NOI18N
+        gapiDocBase = directoryNameToUrl(docroot + "gapi/"); // NOI18N
 
-        String gHomeDoc = groovySettings.getGroovyHome() + "/" + "html" + "/" + "groovy-jdk/";
-        File gdoc = new File(gHomeDoc);
+        LOG.log(Level.FINEST, "GDK Doc path: {0}", groovyJavaDocBase);
+        LOG.log(Level.FINEST, "GAPI Doc path: {0}", gapiDocBase);
+    }
 
-        if (gdoc.exists() && gdoc.isDirectory()) {
-
-            String fileURL = "";
-
-            if (Utilities.isWindows()) {
-                gHomeDoc = gHomeDoc.replace("\\", "/");
-                fileURL = "file:/";
-            } else {
-                fileURL = "file://";
-            }
-
-            groovyJavaDocBase = fileURL + gHomeDoc;
-            LOG.log(Level.FINEST, "GDK Doc path: " + groovyJavaDocBase);
+    String directoryNameToUrl(String dirname) {
+        if (dirname == null) {
+            return "";
         }
 
+        File dirFile = new File(dirname);
+
+        if (dirFile != null && dirFile.exists() && dirFile.isDirectory()) {
+            String fileURL = "";
+            if (Utilities.isWindows()) {
+                dirname = dirname.replace("\\", "/");
+                fileURL = "file:/"; // NOI18N
+            } else {
+                fileURL = "file://"; // NOI18N
+            }
+            return fileURL + dirname;
+        } else {
+            return "";
+        }
     }
 
     private void populateProposal(Class clz, Object method, CompletionRequest request, List<CompletionProposal> proposals, boolean isGDK) {
@@ -154,9 +189,19 @@ public class CodeCompleter implements CodeCompletionHandler {
     private void printASTNodeInformation(ASTNode node) {
 
         LOG.log(Level.FINEST, "--------------------------------------------------------");
-        LOG.log(Level.FINEST, "Node.getText()  : " + node.getText());
-        LOG.log(Level.FINEST, "Node.toString() : " + node.toString());
-        LOG.log(Level.FINEST, "Node.getClass() : " + node.getClass());
+
+        if (node == null) {
+            LOG.log(Level.FINEST, "node == null");
+        } else {
+            LOG.log(Level.FINEST, "Node.getText()  : " + node.getText());
+            LOG.log(Level.FINEST, "Node.toString() : " + node.toString());
+            LOG.log(Level.FINEST, "Node.getClass() : " + node.getClass());
+
+            if (node instanceof ModuleNode) {
+                LOG.log(Level.FINEST, "ModuleNode.getClasses() : " + ((ModuleNode) node).getClasses());
+                LOG.log(Level.FINEST, "SourceUnit.getName() : " + ((ModuleNode) node).getContext().getName());
+            }
+        }
     }
 
     private void printMethod(MetaMethod mm) {
@@ -179,6 +224,101 @@ public class CodeCompleter implements CodeCompletionHandler {
             : theString.toLowerCase().startsWith(prefix.toLowerCase());
     }
 
+    /**
+     * Get the closest ASTNode related to this request. This is used to complete
+     * Methods etc later on.
+     * @param request
+     * @return a valid ASTNode or null
+     */
+    ASTNode getClosestNode(CompletionRequest request) {
+
+        AstPath path = getPathFromRequest(request);
+
+        if (path == null) {
+            LOG.log(Level.FINEST, "path == null"); // NOI18N
+            return null;
+        }
+
+        ASTNode closest = null;
+
+        if (request.prefix.equals("")) {
+            closest = path.leaf();
+        } else {
+            closest = path.leafParent();
+        }
+
+        LOG.log(Level.FINEST, "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+        LOG.log(Level.FINEST, "(leaf): ");
+        printASTNodeInformation(closest);
+        LOG.log(Level.FINEST, "(parentLeaf): ");
+        printASTNodeInformation(path.leafParent());
+
+        // we gotta make sure not to catch the parameterts as closest node
+        if (closest instanceof ConstantExpression &&
+            path.leafParent() instanceof MethodNode) {
+            return path.leafParent();
+        }
+
+        return closest;
+    }
+
+       private MethodNode getSurroundingMethodNode (CompletionRequest request) {
+           AstPath path = getPathFromRequest(request);
+
+           if (path == null) {
+               LOG.log(Level.FINEST, "path == null"); // NOI18N
+               return null;
+           }
+           
+           for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
+            ASTNode current = it.next();
+                if(current instanceof MethodNode){
+                    MethodNode mn = (MethodNode)current;
+                    LOG.log(Level.FINEST, "Found Method: {0}", mn.getName()); // NOI18N
+                    return mn;
+                }
+            }
+           
+           return null;
+       }
+    
+    
+    
+    /**
+     * Calculate an AstPath from a given request or null if we can not get a
+     * AST root-node from the request.
+     * 
+     * @param request
+     * @return a freshly created AstPath object for the offset given in the request
+     */
+    private AstPath getPathFromRequest(CompletionRequest request) {
+        // figure out which class we are dealing with:
+        ASTNode root = AstUtilities.getRoot(request.info);
+
+        // in some cases we can not repair the code, therefore root == null
+        // therefore we can not complete. See # 131317
+
+        if (root == null) {
+            LOG.log(Level.FINEST, "root == null"); // NOI18N
+            LOG.log(Level.FINEST, "request.info   = {0}", request.info); // NOI18N
+            LOG.log(Level.FINEST, "request.path   = {0}", request.path); // NOI18N
+            LOG.log(Level.FINEST, "request.prefix = {0}", request.prefix); // NOI18N
+            LOG.log(Level.FINEST, "request.node   = {0}", request.node); // NOI18N
+            
+            return null;
+        }
+
+        return new AstPath(root, request.astOffset, request.doc);
+    }
+
+    /**
+     * Complete Groovy Keywords.
+     * 
+     * @param proposals
+     * @param request
+     * @param isSymbol
+     * @return
+     */
     private boolean completeKeywords(List<CompletionProposal> proposals, CompletionRequest request, boolean isSymbol) {
 
         String prefix = request.prefix;
@@ -200,59 +340,274 @@ public class CodeCompleter implements CodeCompletionHandler {
         return false;
     }
 
-    private boolean completeMethods(List<CompletionProposal> proposals, CompletionRequest request) {
+    private boolean completeFields(List<CompletionProposal> proposals, CompletionRequest request) {
+        LOG.log(Level.FINEST, "-> completeFields"); // NOI18N
 
-        LOG.log(Level.FINEST, "completeMethods(...)");
+        ASTNode closest = getClosestNode(request);
+        ClassNode declClass = getDeclaringClass(closest);
 
-        // figure out which class we are dealing with:
-        ASTNode root = AstUtilities.getRoot(request.info);
-
-        // in some cases we can not repair the code, therefore root == null
-        // therefore we can not complete. See # 131317
-
-        if (root == null) {
-            LOG.log(Level.FINEST, "root == null");
+        if (declClass == null) {
+            LOG.log(Level.FINEST, "No declaring class found, bail out ..."); // NOI18N
             return false;
         }
 
-        AstPath path = new AstPath(root, request.astOffset, request.doc);
-        ASTNode closest;
+        LOG.log(Level.FINEST, "Declaring class is : {0}", declClass); // NOI18N
 
-        if (request.prefix.equals("")) {
-            closest = path.leaf();
-        } else {
-            closest = path.leafParent();
+        List<FieldNode> fields = declClass.getFields();
+
+        for (FieldNode field : fields) {
+            proposals.add(new FieldItem(field.getName(), anchor, request, javax.lang.model.element.ElementKind.FIELD, field.getType()));
         }
 
+        return false;
+    }
 
-        LOG.log(Level.FINEST, "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-        LOG.log(Level.FINEST, "(leaf): ");
-        printASTNodeInformation(closest);
-        LOG.log(Level.FINEST, "(parentLeaf): ");
-        printASTNodeInformation(path.leafParent());
+    private boolean completeLocalVars(List<CompletionProposal> proposals, CompletionRequest request) {
+        LOG.log(Level.FINEST, "-> completeLocalVars"); // NOI18N
 
-        Class clz = null;
+        MethodNode scope = getSurroundingMethodNode(request);
+
+        if(scope == null){
+            LOG.log(Level.FINEST, "scope == null"); // NOI18N
+            return false;
+        }
+
+        List<ASTNode> result = new ArrayList<ASTNode>();
+        getLocalVars(scope, result);
+        
+        if(!result.isEmpty()){
+            for (ASTNode node : result) {
+                LOG.log(Level.FINEST, "Node found: {0}", ((Variable)node).getName()); // NOI18N
+                proposals.add(new LocalVarItem((Variable )node, anchor, request));
+            }
+        }
+        
+        return true;
+    }
+    
+    private void getLocalVars(ASTNode node, List<ASTNode> result) {
+        if (node instanceof Variable) {
+            result.add(node);
+        }
+
+        List<ASTNode> list = AstUtilities.children(node);
+        for (ASTNode child : list) {
+            getLocalVars(child, result);
+        }
+    }
+    
+
+    /**
+     * Complete potential import statements if we're invoced from a suitable
+     * position (outside method or class, right behind an import statement)
+     * 
+     * @param proposals the CompletionPropasal we should populate
+     * @param request wrapper object for this specific request ( position etc.)
+     * @return true if we found something suitable
+     */
+    private boolean completeImports(final List<CompletionProposal> proposals, final CompletionRequest request) {
+
+        LOG.log(Level.FINEST, "-> completeImports"); // NOI18N
+
+        ASTNode closest = getClosestNode(request);
+
+        if (closest != null && closest instanceof ModuleNode) {
+            int position = request.lexOffset;
+
+            try {
+                int rowStart = org.netbeans.editor.Utilities.getRowStart(request.doc, position);
+                int nonWhite = org.netbeans.editor.Utilities.getFirstNonWhiteFwd(request.doc, rowStart);
+
+                Token<? extends GroovyTokenId> importToken = LexUtilities.getToken(request.doc, nonWhite);
+
+                if (importToken != null && importToken.id() == GroovyTokenId.LITERAL_import) {
+                    LOG.log(Level.FINEST, "Right behind an import statement");
+
+                    // fixme: the positioning to nonWhite seems to fail in this example.
+                    TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, nonWhite);
+
+                    ts.move(nonWhite);
+                    ts.moveNext();
+                    ts.moveNext();
+
+                    String pkgPrefix = "";
+
+                    while (ts.isValid() && ts.moveNext() && ts.offset() < position) {
+                        Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+
+                        if (t.id() == GroovyTokenId.DOT || t.id() == GroovyTokenId.IDENTIFIER) {
+                            pkgPrefix = pkgPrefix + t.text().toString();
+                        } else {
+                            break;
+                        }
+                    }
+
+                    LOG.log(Level.FINEST, "Token prefix = >{0}<", pkgPrefix);
+
+                    DataObject dob = NbEditorUtilities.getDataObject(request.doc);
+
+                    if (dob == null) {
+                        LOG.log(Level.FINEST, "Problem getting DataObject");
+                        return false;
+                    }
+
+                    FileObject fo = dob.getPrimaryFile();
+
+                    if (fo == null) {
+                        LOG.log(Level.FINEST, "Problem getting FileObject");
+                        return false;
+                    }
+
+                    ClasspathInfo pathInfo = NbUtilities.getClasspathInfoForFileObject(fo);
+
+                    if (pathInfo == null) {
+                        LOG.log(Level.FINEST, "Problem getting ClasspathInfo");
+                        return false;
+                    }
+
+                    // try to find suitable packages ...
+
+                    Set<String> pkgSet;
+
+                    pkgSet = pathInfo.getClassIndex().getPackageNames(pkgPrefix, true, EnumSet.allOf(ClassIndex.SearchScope.class));
+
+                    for (String singlePackage : pkgSet) {
+                        LOG.log(Level.FINEST, "PKG set item: {0}", singlePackage);
+
+                        singlePackage = singlePackage.substring(pkgPrefix.length());
+
+                        if (singlePackage.length() > 0) {
+                            proposals.add(new PackageItem(singlePackage, anchor, request));
+                        }
+                    }
+
+                    // here we add the types in the package
+
+                    // remove trailing dot
+
+                    if (pkgPrefix.endsWith(".")) {
+                        pkgPrefix = pkgPrefix.substring(0, pkgPrefix.length() - 1);
+                    }
+
+                    LOG.log(Level.FINEST, "Now looking for types ...");
+                    LOG.log(Level.FINEST, "Prefix = >{0}<", pkgPrefix);
+
+                    final String forInnerClass = pkgPrefix;
+
+                    JavaSource javaSource = JavaSource.create(pathInfo);
+
+                    if (javaSource != null) {
+                        LOG.log(Level.FINEST, "JavaSource retrieved!");
+
+                        Task<CompilationController> typeSearcher = new Task<CompilationController>() {
+
+                            public void run(CompilationController info) throws Exception {
+                                Elements elements = info.getElements();
+
+                                if (elements != null) {
+                                    LOG.log(Level.FINEST, "typeSearcher.run(), elements retrieved");
+                                    PackageElement packageElement = elements.getPackageElement(forInnerClass);
+
+                                    if (packageElement != null) {
+                                        List<? extends javax.lang.model.element.Element> typelist = packageElement.getEnclosedElements();
+
+                                        for (Element element : typelist) {
+                                            LOG.log(Level.FINEST, "Found enclosed:  {0}", element);
+                                            String typeName = element.toString().substring(forInnerClass.length() + 1);
+                                            proposals.add(new TypeItem(typeName, anchor, request, element.getKind()));
+                                        }
+                                    }
+                                }
+                            }
+                        };
+
+                        try {
+
+                            javaSource.runUserActionTask(typeSearcher, true);
+                        } catch (IOException ex) {
+                            LOG.log(Level.FINEST, "Problem in runUserActionTask :  {0}", ex.getMessage());
+                            return false;
+                        }
+                    }
+                }
+
+            } catch (BadLocationException ex) {
+                LOG.log(Level.FINEST, "BadLocationException: {0}", ex);
+                return false;
+            }
+        }
+        return false;
+    }
+
+    boolean isPackageAlreadyProposed(Set<String> pkgSet, String prefix) {
+        for (String singlePackage : pkgSet) {
+            if (prefix.startsWith(singlePackage)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private ClassNode getDeclaringClass(ASTNode closest) {
         ClassNode declClass = null;
 
-        if (closest instanceof AnnotatedNode) {
-            declClass = ((AnnotatedNode) closest).getDeclaringClass();
-        } else if (closest instanceof Expression) {
+        if (closest != null && closest instanceof AnnotatedNode) {
+            LOG.log(Level.FINEST, "closest: AnnotatedNode"); // NOI18N
+
+            // if this AnnotetedNode happens to be a ClassNode then 
+            // just cast it. Otherwise try to find declaring class
+
+            if (closest instanceof ClassNode) {
+                declClass = (ClassNode) closest;
+
+            } else {
+                declClass = ((AnnotatedNode) closest).getDeclaringClass();
+            }
+        } else if (closest != null && closest instanceof Expression) {
+            LOG.log(Level.FINEST, "closest: Expression"); // NOI18N
             declClass = ((Expression) closest).getType();
-        } else if (closest instanceof ExpressionStatement) {
+        } else if (closest != null && closest instanceof ExpressionStatement) {
+            LOG.log(Level.FINEST, "closest: ExpressionStatement"); // NOI18N
             Expression expr = ((ExpressionStatement) closest).getExpression();
             if (expr instanceof PropertyExpression) {
                 declClass = ((PropertyExpression) expr).getObjectExpression().getType();
             } else {
-                return false;
+                return null;
             }
         } else {
+            LOG.log(Level.FINEST, "Found nothing to work on"); // NOI18N
+            return null;
+        }
+
+        return declClass;
+    }
+
+    /**
+     * Complete the methods invocable on a class.
+     * @param proposals the CompletionProposal List we populate (return value)
+     * @param request location information used as input
+     * @return true if we found something usable
+     */
+    private boolean completeMethods(List<CompletionProposal> proposals, CompletionRequest request) {
+
+        LOG.log(Level.FINEST, "-> completeMethods"); // NOI18N
+
+        ASTNode closest = getClosestNode(request);
+
+        Class clz = null;
+        ClassNode declClass = getDeclaringClass(closest);
+
+        if (declClass == null) {
+            LOG.log(Level.FINEST, "No declaring class found"); // NOI18N
             return false;
         }
 
-        if (declClass != null) {
+        if (clz == null) {
             try {
                 clz = Class.forName(declClass.getName());
             } catch (Exception e) {
+                LOG.log(Level.FINEST, "Class.forName() failed: {0}", e.getMessage()); // NOI18N
+                return false;
             }
         }
 
@@ -268,7 +623,6 @@ public class CodeCompleter implements CodeCompletionHandler {
                     populateProposal(clz, method, request, proposals, false);
                 }
             }
-
         }
 
         return true;
@@ -285,7 +639,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
 
-        LOG.log(Level.FINEST, "complete(...), prefix: " + prefix);
+        LOG.log(Level.FINEST, "complete(...), prefix: {0}", prefix); // NOI18N
 
 
         // Avoid all those annoying null checks
@@ -297,11 +651,8 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         anchor = lexOffset - prefix.length();
 
-        final Document document;
-        try {
-            document = info.getDocument();
-        } catch (Exception e) {
-            Exceptions.printStackTrace(e);
+        final Document document = info.getDocument();
+        if (document == null) {
             return CodeCompletionResult.NONE;
         }
 
@@ -323,7 +674,6 @@ public class CodeCompleter implements CodeCompletionHandler {
             request.formatter = formatter;
             request.lexOffset = lexOffset;
             request.astOffset = astOffset;
-//            request.index = index;
             request.doc = doc;
             request.info = info;
             request.prefix = prefix;
@@ -341,6 +691,16 @@ public class CodeCompleter implements CodeCompletionHandler {
             // complete methods
             completeMethods(proposals, request);
 
+            // complete imports
+            completeImports(proposals, request);
+
+            // complete fields
+            completeFields(proposals, request);
+            
+            // complete local variables
+            completeLocalVars(proposals, request);
+
+
             return new DefaultCompletionResult(proposals, false);
         } finally {
             doc.readUnlock();
@@ -350,31 +710,63 @@ public class CodeCompleter implements CodeCompletionHandler {
 
     /**
      * create the signature-string of this method usable as a 
-    Javadoc URL suffix (behind the # ) 
-    
-    This was needed since from groovy 1.5.4 to 
-    1.5.5 the MetaMethod.getSignature() changed from
-    human-readable to Class.getName() output.
-    
+     * Javadoc URL suffix (behind the # ) 
+     *    
+     * This was needed, since from groovy 1.5.4 to 
+     * 1.5.5 the MetaMethod.getSignature() changed from
+     * human-readable to Class.getName() output.
+     * 
+     * To make matters worse, we have some subtle 
+     * differences between JDK and GDK MetaMethods
+     * 
+     * method.getSignature for the JDK gives the return-
+     * value right behind the method and encodes like Class.getName():
+     *   
+     * codePointCount(II)I
+     *    
+     * GDK-methods look like this:
+     * java.lang.String center(java.lang.Number, java.lang.String)
+     * 
+     * TODO: if groovy folks ever change this (again), we're falling
+     * flat on our face.
+     * 
      */
-    String getMethodSignature(MetaMethod method, boolean forURL) {
+    String getMethodSignature(MetaMethod method, boolean forURL, boolean isGDK) {
         String methodSignature = method.getSignature();
         methodSignature = methodSignature.trim();
 
-        String parts[] = methodSignature.split("[()]");
+        if (isGDK) {
+            // remove return value
+            int firstSpace = methodSignature.indexOf(" ");
 
-        if (parts.length < 2) {
-            return "";
+            if (firstSpace != -1) {
+                methodSignature = methodSignature.substring(firstSpace + 1);
+            }
+
+            if (forURL) {
+                methodSignature = methodSignature.replaceAll(", ", ",%20");
+            }
+
+            return methodSignature;
+
+        } else {
+            String parts[] = methodSignature.split("[()]");
+
+            if (parts.length < 2) {
+                return "";
+            }
+
+            String paramsBody = decodeTypes(parts[1], forURL);
+
+            return parts[0] + "(" + paramsBody + ")";
         }
-
-        String paramsBody = decodeTypes(parts[1], forURL);
-
-        return parts[0] + "(" + paramsBody + ")";
     }
 
+    /**
+     * This is more a less the reverse function for Class.getName() 
+     */
     String decodeTypes(final String encodedType, boolean forURL) {
 
-        /* This is more a less the reverse function for Class.getName() */
 
         String DELIMITER = ",";
 
@@ -389,7 +781,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         for (int i = 0; i < encodedType.length(); i++) {
             char c = encodedType.charAt(i);
-            
+
             if (c == '[') {
                 nextIsAnArray = true;
                 continue;
@@ -418,11 +810,11 @@ public class CodeCompleter implements CodeCompletionHandler {
                 sb.append(typeName);
                 i = semicolon;
             }
-            
-            if(nextIsAnArray){
+
+            if (nextIsAnArray) {
                 sb.append("[]");
                 nextIsAnArray = false;
-            }  
+            }
 
             if (i < encodedType.length() - 1) {
                 sb.append(DELIMITER);
@@ -436,8 +828,8 @@ public class CodeCompleter implements CodeCompletionHandler {
     public String document(CompilationInfo info, ElementHandle element) {
         LOG.log(Level.FINEST, "document(), ElementHandle : {0}", element);
 
-        String ERROR = "<h2>Not found.</h2>";
-        String doctext = ERROR;
+        String ERROR = "<h2>" + NbBundle.getMessage(CodeCompleter.class, "CodeCompleter_NoJavaDocFound") + "</h2>";
+        String doctext = null;
 
         if (element instanceof AstMethodElement) {
             AstMethodElement ame = (AstMethodElement) element;
@@ -454,56 +846,88 @@ public class CodeCompleter implements CodeCompletionHandler {
             }
 
             MetaMethod mm = ame.getMethod();
-            
+
             // enable this to troubleshoot subtle differences in JDK/GDK signatures
             printMethod(mm);
 
-            // some (artificial) methods are declared on other Classes
-            // we have to figure this out.
+            // figure out who originally defined this method
 
-            Class clz;
+            String className = null;
 
             if (ame.isGDK()) {
-                clz = mm.getDeclaringClass().getCachedClass();
+                className = mm.getDeclaringClass().getCachedClass().getName();
             } else {
-                clz = ame.getClz();
+
+                String declName = null;
+
+                if (mm != null) {
+                    CachedClass cc = mm.getDeclaringClass();
+                    if (cc != null) {
+                        Class clz = cc.getCachedClass();
+                        if (clz != null) {
+                            declName = clz.getName();
+                        }
+                    }
+                }
+
+                if (declName != null) {
+                    className = declName;
+                } else {
+                    className = ame.getClz().getName();
+                }
             }
 
-            // LOG.log(Level.FINEST, "clz = {0}", clz.getName());
-            
             // create path from fq java package name:
             // java.lang.String -> java/lang/String.html
-            String classNamePath = clz.getName().replace(".", "/");
-            classNamePath = classNamePath + ".html";
+            String classNamePath = className.replace(".", "/");
+            classNamePath = classNamePath + ".html"; // NOI18N
+
+            // if the file can be located in the GAPI folder prefer it
+            // over the JDK
+            if (!ame.isGDK()) {
+
+                URL url;
+                File testFile;
+
+                try {
+                    url = new URL(gapiDocBase + classNamePath);
+                    testFile = new File(url.toURI());
+                } catch (MalformedURLException ex) {
+                    LOG.log(Level.FINEST, "MalformedURLException: {0}", ex);
+                    return ERROR;
+                } catch (URISyntaxException uriEx) {
+                    LOG.log(Level.FINEST, "URISyntaxException: {0}", uriEx);
+                    return ERROR;
+                }
+
+                if (testFile != null && testFile.exists()) {
+                    base = gapiDocBase;
+                }
+            }
 
             // create the signature-string of the method
-            String sig = getMethodSignature(ame.getMethod(), true);
-            String printSig = getMethodSignature(ame.getMethod(), false);
+            String sig = getMethodSignature(ame.getMethod(), true, ame.isGDK());
+            String printSig = getMethodSignature(ame.getMethod(), false, ame.isGDK());
 
             String urlName = base + classNamePath + "#" + sig;
 
             try {
-                LOG.log(Level.FINEST, "Trying to load URL = {0}", urlName);
+                LOG.log(Level.FINEST, "Trying to load URL = {0}", urlName); // NOI18N
                 doctext = HTMLJavadocParser.getJavadocText(
                     new URL(urlName),
                     false,
                     ame.isGDK());
             } catch (MalformedURLException ex) {
-                LOG.log(Level.FINEST, "document(), URL trouble: {0}", ex);
+                LOG.log(Level.FINEST, "document(), URL trouble: {0}", ex); // NOI18N
                 return ERROR;
             }
 
-            // If we could not find a suitable JavaDoc for the method
-            // say so. 
-
+            // If we could not find a suitable JavaDoc for the method - say so. 
             if (doctext == null) {
-                doctext = "Sorry, I'm unable to find the documentation.";
+                return ERROR;
             }
 
-            doctext = "<h2>" + clz.getName() + "</h2><BR>" +
-                "<h3>" + printSig + "</h3><BR>" +
-                doctext;
-
+            doctext = "<h3>" + className + "." + printSig + "</h3><BR>" + doctext;
         }
         return doctext;
     }
@@ -517,6 +941,12 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
 
     public QueryType getAutoQuery(JTextComponent component, String typedText) {
+        char c = typedText.charAt(0);
+
+        if (c == '.') {
+            return QueryType.COMPLETION;
+        }
+
         return QueryType.NONE;
     }
 
@@ -576,7 +1006,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         public String getInsertPrefix() {
             if (symbol) {
-                return ":" + getName();
+                return "." + getName();
             } else {
                 return getName();
             }
@@ -587,8 +1017,8 @@ public class CodeCompleter implements CodeCompletionHandler {
         }
 
         public ElementHandle getElement() {
-            LOG.log(Level.FINEST, "getElement() request.info : " + request.info);
-            LOG.log(Level.FINEST, "getElement() element : " + element);
+            LOG.log(Level.FINEST, "getElement() request.info : {0}", request.info);
+            LOG.log(Level.FINEST, "getElement() element : {0}", element);
 
             return null;
         }
@@ -695,7 +1125,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
             if (isGDK) {
                 formatter.appendText(method.getName().toString());
-                
+
                 // construct signature by removing package names.
 
                 String signature = method.getSignature();
@@ -710,12 +1140,12 @@ public class CodeCompleter implements CodeCompletionHandler {
                     if (!simpleSig.equals("")) {
                         simpleSig = simpleSig + ", ";
                     }
-                    simpleSig = simpleSig + stripPackage(param);
+                    simpleSig = simpleSig + NbUtilities.stripPackage(param);
                 }
 
                 formatter.appendText("(" + simpleSig + ")");
             } else {
-                formatter.appendText(getMethodSignature(method, false));
+                formatter.appendText(getMethodSignature(method, false, isGDK));
             }
 
 
@@ -734,7 +1164,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             // no FQN return types but only the classname, please:
 
             String retType = method.getReturnType().toString();
-            retType = stripPackage(retType);
+            retType = NbUtilities.stripPackage(retType);
 
             formatter.appendHtml(retType);
 
@@ -748,30 +1178,16 @@ public class CodeCompleter implements CodeCompletionHandler {
                 return null;
             }
 
-            if (keywordIcon == null) {
-                keywordIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GROOVY_METHOD));
+            if (classIcon == null) {
+                classIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GROOVY_METHOD));
             }
 
-            return keywordIcon;
+            return classIcon;
         }
 
         @Override
         public Set<Modifier> getModifiers() {
             return Collections.emptySet();
-        }
-
-        private String stripPackage(String retType) {
-
-            if (retType.contains(".")) {
-                int idx = retType.lastIndexOf(".");
-                retType = retType.substring(idx + 1);
-            }
-
-            // every now and than groovy comes with tailing
-            // semicolons. We got to get rid of them.
-
-            retType.replace(";", "");
-            return retType;
         }
 
         @Override
@@ -823,11 +1239,11 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         @Override
         public ImageIcon getIcon() {
-            if (keywordIcon == null) {
-                keywordIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GROOVY_KEYWORD));
+            if (classIcon == null) {
+                classIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GROOVY_KEYWORD));
             }
 
-            return keywordIcon;
+            return classIcon;
         }
 
         @Override
@@ -839,6 +1255,189 @@ public class CodeCompleter implements CodeCompletionHandler {
         public ElementHandle getElement() {
             // For completion documentation
             return GroovyParser.createHandle(request.info, new KeywordElement(keyword));
+        }
+    }
+
+    /**
+     * 
+     */
+    private class PackageItem extends GroovyCompletionItem {
+
+        private final String keyword;
+
+        PackageItem(String keyword, int anchorOffset, CompletionRequest request) {
+            super(null, anchorOffset, request);
+            this.keyword = keyword;
+        }
+
+        @Override
+        public String getName() {
+            return keyword;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.PACKAGE;
+        }
+
+        @Override
+        public String getRhsHtml() {
+            return null;
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.PACKAGE, null);
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public ElementHandle getElement() {
+            // For completion documentation
+            return GroovyParser.createHandle(request.info, new KeywordElement(keyword));
+        }
+    }
+
+    /**
+     * 
+     */
+    private class TypeItem extends GroovyCompletionItem {
+
+        private final String name;
+        private final javax.lang.model.element.ElementKind ek;
+
+        TypeItem(String name, int anchorOffset, CompletionRequest request, javax.lang.model.element.ElementKind ek) {
+            super(null, anchorOffset, request);
+            this.name = name;
+            this.ek = ek;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.KEYWORD;
+        }
+
+        @Override
+        public String getRhsHtml() {
+            return null;
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            return (ImageIcon) ElementIcons.getElementIcon(ek, null);
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public ElementHandle getElement() {
+            // For completion documentation
+            return GroovyParser.createHandle(request.info, new KeywordElement(name));
+        }
+    }
+
+    /**
+     * 
+     */
+    private class FieldItem extends GroovyCompletionItem {
+
+        private final String name;
+        private final javax.lang.model.element.ElementKind ek;
+        private final ClassNode type;
+
+        FieldItem(String name, int anchorOffset, CompletionRequest request, javax.lang.model.element.ElementKind ek, ClassNode type) {
+            super(null, anchorOffset, request);
+            this.name = name;
+            this.ek = ek;
+            this.type = type;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.FIELD;
+        }
+
+        @Override
+        public String getRhsHtml() {
+            return type.getNameWithoutPackage();
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            // todo: what happens, if i get a CCE here?
+            return (ImageIcon) ElementIcons.getElementIcon(ek, null);
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public ElementHandle getElement() {
+            // For completion documentation
+            return GroovyParser.createHandle(request.info, new KeywordElement(name));
+        }
+    }
+
+    /**
+     * 
+     */
+    private class LocalVarItem extends GroovyCompletionItem {
+
+        private final Variable var;
+
+        LocalVarItem(Variable var, int anchorOffset, CompletionRequest request) {
+            super(null, anchorOffset, request);
+            this.var = var;
+        }
+
+        @Override
+        public String getName() {
+            return var.getName();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.VARIABLE;
+        }
+
+        @Override
+        public String getRhsHtml() {
+            return var.getType().getNameWithoutPackage();
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            // todo: what happens, if i get a CCE here?
+            return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.LOCAL_VARIABLE, null);
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public ElementHandle getElement() {
+            return null;
         }
     }
 }

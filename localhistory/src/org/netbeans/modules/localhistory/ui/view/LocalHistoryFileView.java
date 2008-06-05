@@ -41,8 +41,10 @@
 package org.netbeans.modules.localhistory.ui.view;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
 import java.awt.GridBagLayout;
-import java.awt.Point;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -50,20 +52,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.JTree;
 import javax.swing.SwingUtilities;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.localhistory.store.LocalHistoryStore;
 import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
+import org.netbeans.swing.outline.RenderDataProvider;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.TreeTableView;
+import org.openide.explorer.view.OutlineView;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.NbBundle;
@@ -295,36 +295,23 @@ public class LocalHistoryFileView implements VersioningListener {
             return manager;
         }
 
-        private class BrowserTreeTableView extends TreeTableView {    
+        private class BrowserTreeTableView extends OutlineView {    
             BrowserTreeTableView() {
                 setupColumns();
 
-                tree.setShowsRootHandles(true);
-                tree.setRootVisible(false);                    
-                setDefaultActionAllowed (false);
+                getOutline().setRootVisible(false);                    
                 setBorder(BorderFactory.createEtchedBorder());
         //        treeView.getAccessibleContext().setAccessibleDescription(browserAcsd);
         //        treeView.getAccessibleContext().setAccessibleName(browserAcsn);           
-                setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);            
+                getOutline().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);            
                 setPopupAllowed(true);    
+                setDragSource(false);
+                setDropTarget(false);
 
-                DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
-                renderer.setLeafIcon(null);
-                tree.setCellRenderer(renderer);
+                getOutline().setRenderDataProvider( new NoLeafIconRenderDataProvider( getOutline().getRenderDataProvider() ) );
             }
 
-            JTree getTree() {            
-                return tree;
-            } 
-
-            JTable getTable() {            
-                return treeTable;
-            } 
-
-            public void startEditingAtPath(TreePath path) {            
-                tree.startEditingAtPath(path);            
-            }         
-
+            @Override
             public void addNotify() {
                 super.addNotify();
                 setDefaultColumnSizes();
@@ -347,16 +334,46 @@ public class LocalHistoryFileView implements VersioningListener {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         int width = getWidth();                    
-                            treeTable.getColumnModel().getColumn(0).setPreferredWidth(width * 35 / 100);
-                            treeTable.getColumnModel().getColumn(1).setPreferredWidth(width * 65 / 100);                        
+                            getOutline().getColumnModel().getColumn(0).setPreferredWidth(width * 35 / 100);
+                            getOutline().getColumnModel().getColumn(1).setPreferredWidth(width * 65 / 100);                        
                     }
                 });
             }            
-        }     
+    
+            private class NoLeafIconRenderDataProvider implements RenderDataProvider {
+                private RenderDataProvider delegate;
+                public NoLeafIconRenderDataProvider( RenderDataProvider delegate ) {
+                    this.delegate = delegate;
+                }
 
-        int rowAtPoint(Point point) {
-            return treeView.getTable().rowAtPoint(point);
-        }  
+                public String getDisplayName(Object o) {
+                    return delegate.getDisplayName(o);
+                }
+
+                public boolean isHtmlDisplayName(Object o) {
+                    return delegate.isHtmlDisplayName(o);
+                }
+
+                public Color getBackground(Object o) {
+                    return delegate.getBackground(o);
+                }
+
+                public Color getForeground(Object o) {
+                    return delegate.getForeground(o);
+                }
+
+                public String getTooltipText(Object o) {
+                    return delegate.getTooltipText(o);
+                }
+
+                public Icon getIcon(Object o) {
+                    if( getOutline().getOutlineModel().isLeaf(o) )
+                        return NO_ICON;
+                    return null;
+                }
+
+            }
+        }     
     }    
     
     private static class ColumnDescriptor<T> extends PropertySupport.ReadOnly<T> {        
@@ -367,4 +384,20 @@ public class LocalHistoryFileView implements VersioningListener {
             return null;
         }
     }      
+    
+    private static final Icon NO_ICON = new NoIcon();
+    private static class NoIcon implements Icon {
+
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            
+        }
+
+        public int getIconWidth() {
+            return 0;
+        }
+
+        public int getIconHeight() {
+            return 0;
+        }
+    }
 }

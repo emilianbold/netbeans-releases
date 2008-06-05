@@ -39,20 +39,21 @@
 
 package org.netbeans.modules.groovy.grailsproject;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptorBuilder;
+import org.netbeans.modules.extexecution.api.ExecutionService;
+import org.netbeans.modules.extexecution.api.input.InputProcessors;
+import org.netbeans.modules.extexecution.api.input.LineProcessor;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.actions.ConfigSupport;
-import org.netbeans.modules.groovy.grailsproject.execution.DefaultDescriptor;
-import org.netbeans.modules.groovy.grailsproject.execution.ExecutionService;
-import org.netbeans.modules.groovy.grailsproject.execution.LineSnooper;
+import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.LifecycleManager;
@@ -148,9 +149,12 @@ public class GrailsActionProvider implements ActionProvider {
             }
         };
 
-        ExecutionService service = new ExecutionService(callable, displayName,
-                new DefaultDescriptor(project, new HttpSnooper(project), runnable, true));
+        ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
+        builder.controllable(true).frontWindow(true).inputVisible(true).showProgress(true).showSuspend(true);
+        builder.outProcessor(InputProcessors.bridge(new ServerURLProcessor(project)));
+        builder.postExecution(runnable);
 
+        ExecutionService service = new ExecutionService(callable, displayName, builder.create());
         service.run();
     }
 
@@ -159,9 +163,12 @@ public class GrailsActionProvider implements ActionProvider {
                 GrailsProjectConfig.forProject(project));
         ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
         String displayName = inf.getDisplayName() + " (shell)"; // NOI18N
-        ExecutionService service = new ExecutionService(callable, displayName,
-                new DefaultDescriptor(project, true));
 
+        ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
+        builder.controllable(true).frontWindow(true).inputVisible(true).showProgress(true).showSuspend(true);
+        builder.postExecution(new RefreshProjectRunnable(project));
+
+        ExecutionService service = new ExecutionService(callable, displayName, builder.create());
         service.run();
     }
 
@@ -171,21 +178,24 @@ public class GrailsActionProvider implements ActionProvider {
 
         Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
                 command, GrailsProjectConfig.forProject(project));
-        ExecutionService service = new ExecutionService(callable, displayName,
-                new DefaultDescriptor(project, false));
 
+        ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
+        builder.controllable(true).frontWindow(true).inputVisible(true).showProgress(true);
+        builder.postExecution(new RefreshProjectRunnable(project));
+
+        ExecutionService service = new ExecutionService(callable, displayName, builder.create());
         service.run();
     }
 
-    private static class HttpSnooper implements LineSnooper {
+    private static class ServerURLProcessor implements LineProcessor {
 
         private final GrailsProject project;
 
-        public HttpSnooper(GrailsProject project) {
+        public ServerURLProcessor(GrailsProject project) {
             this.project = project;
         }
 
-        public void lineFilter(String line) throws IOException {
+        public void processLine(String line) {
             if (line.contains("Browse to http:/")) {
                 String urlString = line.substring(line.indexOf("http://"));
 
@@ -204,6 +214,10 @@ public class GrailsActionProvider implements ActionProvider {
 
                 HtmlBrowser.URLDisplayer.getDefault().showURL(url);
             }
+        }
+
+        public void reset() {
+            // noop
         }
 
     }

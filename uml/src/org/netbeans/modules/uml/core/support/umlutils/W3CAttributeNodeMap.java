@@ -45,7 +45,7 @@
  * This software is open source.
  * See the bottom of this file for the licence.
  *
- * $Id$
+ * $Id: W3CAttributeNodeMap.java,v 1.2.6.1 2007/11/19 19:05:43 sherylsu Exp $
  */
 
 package org.netbeans.modules.uml.core.support.umlutils;
@@ -59,7 +59,7 @@ import org.dom4j.dom.DOMNodeHelper;
   * for the attributes of an element.</p>
   *
   * @author <a href="mailto:james.strachan@metastuff.com">James Strachan</a>
-  * @version $Revision$
+  * @version $Revision: 1.2.6.1 $
   */
 public class W3CAttributeNodeMap implements org.w3c.dom.NamedNodeMap {
 
@@ -173,5 +173,5 @@ public class W3CAttributeNodeMap implements org.w3c.dom.NamedNodeMap {
  *
  * Copyright 2001 (C) MetaStuff, Ltd. All Rights Reserved.
  *
- * $Id$
+ * $Id: W3CAttributeNodeMap.java,v 1.2.6.1 2007/11/19 19:05:43 sherylsu Exp $
  */

@@ -45,6 +45,9 @@ made subject to such option by the copyright holder.
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-sql">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-db-sql-loader-SQLDataLoader.instance"/>
+                </folder>
                 <folder name="Actions">
                   <file name="OpenAction.instance">
                     <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
@@ -113,5 +116,12 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
         </folder>
-    </folder>        
+    </folder>
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="sql-resolver.xml" url="sql-resolver.xml">
+                <attr name="position" intvalue="195"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>

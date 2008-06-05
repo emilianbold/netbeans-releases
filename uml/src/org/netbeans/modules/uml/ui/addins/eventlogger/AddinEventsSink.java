@@ -151,45 +151,46 @@ import org.netbeans.modules.uml.ui.support.contextmenusupport.IProductContextMen
 import org.netbeans.modules.uml.core.scm.ISCMEventsSink;
 import org.netbeans.modules.uml.core.scm.ISCMItemGroup;
 import org.netbeans.modules.uml.core.scm.ISCMOptions;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.INotificationTargets;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IToolTipData;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IChangeNotificationTranslatorSink;
-import org.netbeans.modules.uml.ui.swing.drawingarea.ICompartmentEventsSink;
-import org.netbeans.modules.uml.ui.swing.drawingarea.ICreateNodeContext;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDiagramPerformSyncContext;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDraggingNodeContext;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaAddEdgeEventsSink;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaAddNodeEventsSink;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaContextMenuEventsSink;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaPropertyKind;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaReconnectEdgeEventsSink;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaSelectionEventsSink;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaSynchEventsSink;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IEdgeCreateBendContext;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IEdgeCreateContext;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IEdgeFinishContext;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IEdgeMouseMoveContext;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IPresentationElementPerformSyncContext;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IPresentationElementSyncState;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IReconnectEdgeContext;
+//import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
+//import org.netbeans.modules.uml.ui.support.viewfactorysupport.INotificationTargets;
+//import org.netbeans.modules.uml.ui.support.viewfactorysupport.IToolTipData;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IChangeNotificationTranslatorSink;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.ICompartmentEventsSink;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.ICreateNodeContext;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IDiagramPerformSyncContext;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IDraggingNodeContext;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaAddEdgeEventsSink;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaAddNodeEventsSink;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaContextMenuEventsSink;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaPropertyKind;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaReconnectEdgeEventsSink;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaSelectionEventsSink;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaSynchEventsSink;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IEdgeCreateBendContext;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IEdgeCreateContext;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IEdgeFinishContext;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IEdgeMouseMoveContext;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IPresentationElementPerformSyncContext;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IPresentationElementSyncState;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IReconnectEdgeContext;
 
 /**
  * @author sumitabhk
  *
  */
-public class AddinEventsSink implements IDrawingAreaEventsSink,
-										IDrawingAreaSynchEventsSink,
-										IDrawingAreaContextMenuEventsSink,
-										IDrawingAreaSelectionEventsSink,
-										IDrawingAreaAddNodeEventsSink,
-										IDrawingAreaAddEdgeEventsSink,
-										IDrawingAreaReconnectEdgeEventsSink,
-										ICompartmentEventsSink,
-										IChangeNotificationTranslatorSink,
+public class AddinEventsSink implements 
+//        IDrawingAreaEventsSink,
+//										IDrawingAreaSynchEventsSink,
+//										IDrawingAreaContextMenuEventsSink,
+//										IDrawingAreaSelectionEventsSink,
+//										IDrawingAreaAddNodeEventsSink,
+//										IDrawingAreaAddEdgeEventsSink,
+//										IDrawingAreaReconnectEdgeEventsSink,
+//										ICompartmentEventsSink,
+//										IChangeNotificationTranslatorSink,
 										IProjectTreeEventsSink,
 										IProjectTreeContextMenuEventsSink,
 										IMessengerEventsSink,
@@ -398,18 +399,18 @@ public class AddinEventsSink implements IDrawingAreaEventsSink,
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPreCreated(org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
 	 */
-	public void onDrawingAreaPreCreated(IDrawingAreaControl pDiagramControl, IResultCell cell)
-	{
-		addMessage("OnDrawingAreaPreCreated");
-	}
-
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPostCreated(org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
-	 */
-	public void onDrawingAreaPostCreated(IDrawingAreaControl pDiagramControl, IResultCell cell)
-	{
-		addMessage("OnDrawingAreaPostCreated");
-	}
+//	public void onDrawingAreaPreCreated(IDrawingAreaControl pDiagramControl, IResultCell cell)
+//	{
+//		addMessage("OnDrawingAreaPreCreated");
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPostCreated(org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
+//	 */
+//	public void onDrawingAreaPostCreated(IDrawingAreaControl pDiagramControl, IResultCell cell)
+//	{
+//		addMessage("OnDrawingAreaPostCreated");
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaOpened(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
@@ -458,30 +459,30 @@ public class AddinEventsSink implements IDrawingAreaEventsSink,
 	{
 		switch (nPropertyKindChanged)
 		{
-		case IDrawingAreaPropertyKind.DAPK_NAMESPACE :
-		   addMessage( "OnDrawingAreaPrePropertyChange (DAPK_NAMESPACE)");
-		   break;
-		case IDrawingAreaPropertyKind.DAPK_NAME :
-		   addMessage( "OnDrawingAreaPrePropertyChange (DAPK_NAME)");
-		   break;
-		case IDrawingAreaPropertyKind.DAPK_DOCUMENTATION :
-		   addMessage( "OnDrawingAreaPrePropertyChange (DAPK_DOCUMENTATION)");
-		   break;
-		case IDrawingAreaPropertyKind.DAPK_LAYOUT :
-		   addMessage( "OnDrawingAreaPrePropertyChange (DAPK_LAYOUT)");
-		   break;
-		case IDrawingAreaPropertyKind.DAPK_DIRTYSTATE :
-		   addMessage( "OnDrawingAreaPrePropertyChange (DAPK_DIRTYSTATE)");
-		   break;
-		case IDrawingAreaPropertyKind.DAPK_ZOOM :
-		   addMessage( "OnDrawingAreaPrePropertyChange (DAPK_ZOOM)");
-		   break;
-		case IDrawingAreaPropertyKind.DAPK_READONLY :
-		   addMessage( "OnDrawingAreaPrePropertyChange (DAPK_READONLY)");
-		   break;
-		case IDrawingAreaPropertyKind.DAPK_FRIENDLYNAMESCHANGE :
-		   addMessage( "OnDrawingAreaPrePropertyChange (DAPK_FRIENDLYNAMESCHANGE)");
-		   break;
+//		case IDrawingAreaPropertyKind.DAPK_NAMESPACE :
+//		   addMessage( "OnDrawingAreaPrePropertyChange (DAPK_NAMESPACE)");
+//		   break;
+//		case IDrawingAreaPropertyKind.DAPK_NAME :
+//		   addMessage( "OnDrawingAreaPrePropertyChange (DAPK_NAME)");
+//		   break;
+//		case IDrawingAreaPropertyKind.DAPK_DOCUMENTATION :
+//		   addMessage( "OnDrawingAreaPrePropertyChange (DAPK_DOCUMENTATION)");
+//		   break;
+//		case IDrawingAreaPropertyKind.DAPK_LAYOUT :
+//		   addMessage( "OnDrawingAreaPrePropertyChange (DAPK_LAYOUT)");
+//		   break;
+//		case IDrawingAreaPropertyKind.DAPK_DIRTYSTATE :
+//		   addMessage( "OnDrawingAreaPrePropertyChange (DAPK_DIRTYSTATE)");
+//		   break;
+//		case IDrawingAreaPropertyKind.DAPK_ZOOM :
+//		   addMessage( "OnDrawingAreaPrePropertyChange (DAPK_ZOOM)");
+//		   break;
+//		case IDrawingAreaPropertyKind.DAPK_READONLY :
+//		   addMessage( "OnDrawingAreaPrePropertyChange (DAPK_READONLY)");
+//		   break;
+//		case IDrawingAreaPropertyKind.DAPK_FRIENDLYNAMESCHANGE :
+//		   addMessage( "OnDrawingAreaPrePropertyChange (DAPK_FRIENDLYNAMESCHANGE)");
+//		   break;
 		default :
 		   addMessage( "OnDrawingAreaPrePropertyChange (Unknown)");
 		   break;
@@ -499,10 +500,10 @@ public class AddinEventsSink implements IDrawingAreaEventsSink,
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaTooltipPreDisplay(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement, org.netbeans.modules.uml.ui.support.viewfactorysupport.IToolTipData, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
 	 */
-	public void onDrawingAreaTooltipPreDisplay(IDiagram pParentDiagram, IPresentationElement pPE, IToolTipData pTooltip, IResultCell cell)
-	{
-		addMessage( "OnDrawingAreaTooltipPreDisplay");
-	}
+//	public void onDrawingAreaTooltipPreDisplay(IDiagram pParentDiagram, IPresentationElement pPE, IToolTipData pTooltip, IResultCell cell)
+//	{
+//		addMessage( "OnDrawingAreaTooltipPreDisplay");
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaActivated(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
@@ -519,25 +520,25 @@ public class AddinEventsSink implements IDrawingAreaEventsSink,
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPreDrop(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
 	 */
-	public void onDrawingAreaPreDrop(IDiagram pParentDiagram, IDrawingAreaDropContext pContext, IResultCell cell)
-	{
-		IPresentationElement pPE = null;
-		String msg = "OnDrawingAreaPreDrop";
-		if (pContext != null)
-		{
-			pPE = pContext.getPEDroppedOn();
-			msg += pPE.toString();
-		}
-		addMessage(msg);
-	}
+//	public void onDrawingAreaPreDrop(IDiagram pParentDiagram, IDrawingAreaDropContext pContext, IResultCell cell)
+//	{
+//		IPresentationElement pPE = null;
+//		String msg = "OnDrawingAreaPreDrop";
+//		if (pContext != null)
+//		{
+//			pPE = pContext.getPEDroppedOn();
+//			msg += pPE.toString();
+//		}
+//		addMessage(msg);
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPostDrop(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
 	 */
-	public void onDrawingAreaPostDrop(IDiagram pParentDiagram, IDrawingAreaDropContext pContext, IResultCell cell)
-	{
-		addMessage("onDrawingAreaPostDrop"); 
-	}
+//	public void onDrawingAreaPostDrop(IDiagram pParentDiagram, IDrawingAreaDropContext pContext, IResultCell cell)
+//	{
+//		addMessage("onDrawingAreaPostDrop"); 
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink#onDrawingAreaPreFileRemoved(java.lang.String, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
@@ -558,56 +559,56 @@ public class AddinEventsSink implements IDrawingAreaEventsSink,
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaSynchEventsSink#onDrawingAreaPreRetrieveElementSynchState(org.netbeans.modules.uml.ui.swing.drawingarea.IPresentationElementSyncState, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
 	 */
-	public void onDrawingAreaPreRetrieveElementSynchState(IPresentationElementSyncState pPresentationElementSyncState, IResultCell cell)
-	{
-		addMessage("onDrawingAreaPreRetrieveElementSynchState");
-		
-	}
-
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaSynchEventsSink#onDrawingAreaPostRetrieveElementSynchState(org.netbeans.modules.uml.ui.swing.drawingarea.IPresentationElementSyncState, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
-	 */
-	public void onDrawingAreaPostRetrieveElementSynchState(IPresentationElementSyncState pPresentationElementSyncState, IResultCell cell)
-	{
-		addMessage("onDrawingAreaPostRetrieveElementSynchState");
-		
-	}
+//	public void onDrawingAreaPreRetrieveElementSynchState(IPresentationElementSyncState pPresentationElementSyncState, IResultCell cell)
+//	{
+//		addMessage("onDrawingAreaPreRetrieveElementSynchState");
+//		
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaSynchEventsSink#onDrawingAreaPostRetrieveElementSynchState(org.netbeans.modules.uml.ui.swing.drawingarea.IPresentationElementSyncState, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
+//	 */
+//	public void onDrawingAreaPostRetrieveElementSynchState(IPresentationElementSyncState pPresentationElementSyncState, IResultCell cell)
+//	{
+//		addMessage("onDrawingAreaPostRetrieveElementSynchState");
+//		
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaSynchEventsSink#onDrawingAreaPrePresentationElementPerformSync(org.netbeans.modules.uml.ui.swing.drawingarea.IPresentationElementPerformSyncContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
 	 */
-	public void onDrawingAreaPrePresentationElementPerformSync(IPresentationElementPerformSyncContext pPresentationElementSyncContext, IResultCell cell)
-	{
-		addMessage("onDrawingAreaPrePresentationElementPerformSync");
-		
-	}
-
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaSynchEventsSink#onDrawingAreaPostPresentationElementPerformSync(org.netbeans.modules.uml.ui.swing.drawingarea.IPresentationElementPerformSyncContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
-	 */
-	public void onDrawingAreaPostPresentationElementPerformSync(IPresentationElementPerformSyncContext pPresentationElementSyncContext, IResultCell cell)
-	{
-		addMessage("onDrawingAreaPostPresentationElementPerformSync");
-		
-	}
+//	public void onDrawingAreaPrePresentationElementPerformSync(IPresentationElementPerformSyncContext pPresentationElementSyncContext, IResultCell cell)
+//	{
+//		addMessage("onDrawingAreaPrePresentationElementPerformSync");
+//		
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaSynchEventsSink#onDrawingAreaPostPresentationElementPerformSync(org.netbeans.modules.uml.ui.swing.drawingarea.IPresentationElementPerformSyncContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
+//	 */
+//	public void onDrawingAreaPostPresentationElementPerformSync(IPresentationElementPerformSyncContext pPresentationElementSyncContext, IResultCell cell)
+//	{
+//		addMessage("onDrawingAreaPostPresentationElementPerformSync");
+//		
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaSynchEventsSink#onDrawingAreaPreDiagramPerformSync(org.netbeans.modules.uml.ui.swing.drawingarea.IDiagramPerformSyncContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
 	 */
-	public void onDrawingAreaPreDiagramPerformSync(IDiagramPerformSyncContext pDiagramSyncContext, IResultCell cell)
-	{
-		addMessage("onDrawingAreaPreDiagramPerformSync");
-		
-	}
+//	public void onDrawingAreaPreDiagramPerformSync(IDiagramPerformSyncContext pDiagramSyncContext, IResultCell cell)
+//	{
+//		addMessage("onDrawingAreaPreDiagramPerformSync");
+//		
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaSynchEventsSink#onDrawingAreaPostDiagramPerformSync(org.netbeans.modules.uml.ui.swing.drawingarea.IDiagramPerformSyncContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
 	 */
-	public void onDrawingAreaPostDiagramPerformSync(IDiagramPerformSyncContext pDiagramSyncContext, IResultCell cell)
-	{
-		addMessage("onDrawingAreaPostDiagramPerformSync");
-		
-	}
+//	public void onDrawingAreaPostDiagramPerformSync(IDiagramPerformSyncContext pDiagramSyncContext, IResultCell cell)
+//	{
+//		addMessage("onDrawingAreaPostDiagramPerformSync");
+//		
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaContextMenuEventsSink#onDrawingAreaContextMenuPrepare(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.support.contextmenusupport.IProductContextMenu, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
@@ -648,38 +649,38 @@ public class AddinEventsSink implements IDrawingAreaEventsSink,
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaSelectionEventsSink#onSelect(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram)
 	 */
-	public void onSelect(IDiagram pParentDiagram, ETList<IPresentationElement> selectedItems, ICompartment pCompartment, IResultCell cell )
-	{
-		int numSel = 0;
-		if (selectedItems != null)
-		{
-			numSel = selectedItems.size();
-		}
-		String message = "OnSelect numSelected = " + numSel;
-		if (numSel == 1)
-		{
-			IPresentationElement pElem = selectedItems.get(0);
-			if (pElem != null)
-			{
-				IElement ele = pElem.getFirstSubject();
-				if (ele != null)
-				{
-					String metaType = ele.getElementType();
-					String xmiid = ele.getXMIID();
-					if (metaType != null && xmiid != null)
-					{
-						message += "(" + metaType + "," + xmiid + ")";
-					}
-				
-					if (pCompartment != null)
-					{
-						message += " Compartment = " + pCompartment.toString();
-					}
-				}
-			}
-		}
-		addMessage(message);
-	}
+//	public void onSelect(IDiagram pParentDiagram, ETList<IPresentationElement> selectedItems, ICompartment pCompartment, IResultCell cell )
+//	{
+//		int numSel = 0;
+//		if (selectedItems != null)
+//		{
+//			numSel = selectedItems.size();
+//		}
+//		String message = "OnSelect numSelected = " + numSel;
+//		if (numSel == 1)
+//		{
+//			IPresentationElement pElem = selectedItems.get(0);
+//			if (pElem != null)
+//			{
+//				IElement ele = pElem.getFirstSubject();
+//				if (ele != null)
+//				{
+//					String metaType = ele.getElementType();
+//					String xmiid = ele.getXMIID();
+//					if (metaType != null && xmiid != null)
+//					{
+//						message += "(" + metaType + "," + xmiid + ")";
+//					}
+//				
+//					if (pCompartment != null)
+//					{
+//						message += " Compartment = " + pCompartment.toString();
+//					}
+//				}
+//			}
+//		}
+//		addMessage(message);
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaSelectionEventsSink#onUnselect(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement[], org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
@@ -712,98 +713,98 @@ public class AddinEventsSink implements IDrawingAreaEventsSink,
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaAddNodeEventsSink#onDrawingAreaCreateNode(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.ICreateNodeContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
 	 */
-	public void onDrawingAreaCreateNode(IDiagram pParentDiagram, ICreateNodeContext pContext, IResultCell cell)
-	{
-		addMessage("onDrawingAreaCreateNode");
-	}
-
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaAddNodeEventsSink#onDrawingAreaDraggingNode(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IDraggingNodeContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
-	 */
-	public void onDrawingAreaDraggingNode(IDiagram pParentDiagram, IDraggingNodeContext pContext, IResultCell cell)
-	{
-		addMessage("onDrawingAreaDraggingNode");
-	}
-
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaAddEdgeEventsSink#onDrawingAreaStartingEdge(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IEdgeCreateContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
-	 */
-	public void onDrawingAreaStartingEdge(IDiagram pParentDiagram, IEdgeCreateContext pContext, IResultCell cell)
-	{
-		addMessage("onDrawingAreaStartingEdge");
-	}
+//	public void onDrawingAreaCreateNode(IDiagram pParentDiagram, ICreateNodeContext pContext, IResultCell cell)
+//	{
+//		addMessage("onDrawingAreaCreateNode");
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaAddNodeEventsSink#onDrawingAreaDraggingNode(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IDraggingNodeContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
+//	 */
+//	public void onDrawingAreaDraggingNode(IDiagram pParentDiagram, IDraggingNodeContext pContext, IResultCell cell)
+//	{
+//		addMessage("onDrawingAreaDraggingNode");
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaAddEdgeEventsSink#onDrawingAreaStartingEdge(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IEdgeCreateContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
+//	 */
+//	public void onDrawingAreaStartingEdge(IDiagram pParentDiagram, IEdgeCreateContext pContext, IResultCell cell)
+//	{
+//		addMessage("onDrawingAreaStartingEdge");
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaAddEdgeEventsSink#onDrawingAreaEdgeShouldCreateBend(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IEdgeCreateBendContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
 	 */
-	public void onDrawingAreaEdgeShouldCreateBend(IDiagram pParentDiagram, IEdgeCreateBendContext pContext, IResultCell cell)
-	{
-		addMessage("onDrawingAreaEdgeShouldCreateBend");
-	}
-
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaAddEdgeEventsSink#onDrawingAreaEdgeMouseMove(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IEdgeMouseMoveContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
-	 */
-	public void onDrawingAreaEdgeMouseMove(IDiagram pParentDiagram, IEdgeMouseMoveContext pContext, IResultCell cell)
-	{
-		addMessage("onDrawingAreaEdgeMouseMove");
-	}
-
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaAddEdgeEventsSink#onDrawingAreaFinishEdge(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IEdgeFinishContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
-	 */
-	public void onDrawingAreaFinishEdge(IDiagram pParentDiagram, IEdgeFinishContext pContext, IResultCell cell)
-	{
-		addMessage("onDrawingAreaFinishEdge");
-	}
-
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaReconnectEdgeEventsSink#onDrawingAreaReconnectEdgeStart(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IReconnectEdgeContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
-	 */
-	public void onDrawingAreaReconnectEdgeStart(IDiagram pParentDiagram, IReconnectEdgeContext pContext, IResultCell cell)
-	{
-		addMessage("onDrawingAreaReconnectEdgeStart");
-	}
-
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaReconnectEdgeEventsSink#onDrawingAreaReconnectEdgeMouseMove(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IReconnectEdgeContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
-	 */
-	public void onDrawingAreaReconnectEdgeMouseMove(IDiagram pParentDiagram, IReconnectEdgeContext pContext, IResultCell cell)
-	{
-		addMessage("onDrawingAreaReconnectEdgeMouseMove");
-	}
-
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaReconnectEdgeEventsSink#onDrawingAreaReconnectEdgeFinish(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IReconnectEdgeContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
-	 */
-	public void onDrawingAreaReconnectEdgeFinish(IDiagram pParentDiagram, IReconnectEdgeContext pContext, IResultCell cell)
-	{
-		addMessage("onDrawingAreaReconnectEdgeFinish");
-	}
-
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.ICompartmentEventsSink#onCompartmentSelected(org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment, boolean, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
-	 */
-	public void onCompartmentSelected(ICompartment pCompartment, boolean bSelected, IResultCell cell)
-	{
-		addMessage("onCompartmentSelected");
-	}
-
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.ICompartmentEventsSink#onCompartmentCollapsed(org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment, boolean, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
-	 */
-	public void onCompartmentCollapsed(ICompartment pCompartment, boolean bCollapsed, IResultCell cell)
-	{
-		addMessage("onCompartmentCollapsed");
-	}
-
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IChangeNotificationTranslatorSink#onGetNotificationTargets(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.support.viewfactorysupport.INotificationTargets, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
-	 */
-	public void onGetNotificationTargets(IDiagram pDiagram, INotificationTargets pTargets, IResultCell cell)
-	{
-		addMessage("onGetNotificationTargets");
-	}
+//	public void onDrawingAreaEdgeShouldCreateBend(IDiagram pParentDiagram, IEdgeCreateBendContext pContext, IResultCell cell)
+//	{
+//		addMessage("onDrawingAreaEdgeShouldCreateBend");
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaAddEdgeEventsSink#onDrawingAreaEdgeMouseMove(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IEdgeMouseMoveContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
+//	 */
+//	public void onDrawingAreaEdgeMouseMove(IDiagram pParentDiagram, IEdgeMouseMoveContext pContext, IResultCell cell)
+//	{
+//		addMessage("onDrawingAreaEdgeMouseMove");
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaAddEdgeEventsSink#onDrawingAreaFinishEdge(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IEdgeFinishContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
+//	 */
+//	public void onDrawingAreaFinishEdge(IDiagram pParentDiagram, IEdgeFinishContext pContext, IResultCell cell)
+//	{
+//		addMessage("onDrawingAreaFinishEdge");
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaReconnectEdgeEventsSink#onDrawingAreaReconnectEdgeStart(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IReconnectEdgeContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
+//	 */
+//	public void onDrawingAreaReconnectEdgeStart(IDiagram pParentDiagram, IReconnectEdgeContext pContext, IResultCell cell)
+//	{
+//		addMessage("onDrawingAreaReconnectEdgeStart");
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaReconnectEdgeEventsSink#onDrawingAreaReconnectEdgeMouseMove(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IReconnectEdgeContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
+//	 */
+//	public void onDrawingAreaReconnectEdgeMouseMove(IDiagram pParentDiagram, IReconnectEdgeContext pContext, IResultCell cell)
+//	{
+//		addMessage("onDrawingAreaReconnectEdgeMouseMove");
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaReconnectEdgeEventsSink#onDrawingAreaReconnectEdgeFinish(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.swing.drawingarea.IReconnectEdgeContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
+//	 */
+//	public void onDrawingAreaReconnectEdgeFinish(IDiagram pParentDiagram, IReconnectEdgeContext pContext, IResultCell cell)
+//	{
+//		addMessage("onDrawingAreaReconnectEdgeFinish");
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.ICompartmentEventsSink#onCompartmentSelected(org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment, boolean, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
+//	 */
+//	public void onCompartmentSelected(ICompartment pCompartment, boolean bSelected, IResultCell cell)
+//	{
+//		addMessage("onCompartmentSelected");
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.ICompartmentEventsSink#onCompartmentCollapsed(org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment, boolean, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
+//	 */
+//	public void onCompartmentCollapsed(ICompartment pCompartment, boolean bCollapsed, IResultCell cell)
+//	{
+//		addMessage("onCompartmentCollapsed");
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see org.netbeans.modules.uml.ui.swing.drawingarea.IChangeNotificationTranslatorSink#onGetNotificationTargets(org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram, org.netbeans.modules.uml.ui.support.viewfactorysupport.INotificationTargets, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
+//	 */
+//	public void onGetNotificationTargets(IDiagram pDiagram, INotificationTargets pTargets, IResultCell cell)
+//	{
+//		addMessage("onGetNotificationTargets");
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeEventsSink#onItemExpanding(org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl, org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeExpandingContext, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)

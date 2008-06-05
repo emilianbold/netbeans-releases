@@ -45,6 +45,7 @@ com.sun.jna.Native
 com.sun.jna.Native$1
 com.sun.jna.Native$DeleteNativeLibrary
 com.sun.jna.NativeLibrary
+com.sun.jna.NativeLibrary$2
 com.sun.jna.NativeLong
 com.sun.jna.NativeMapped
 com.sun.jna.NativeMappedConverter
@@ -485,6 +486,7 @@ java.security.Permissions
 java.security.PrivilegedActionException
 java.security.PrivilegedExceptionAction
 java.security.ProtectionDomain
+java.sql.Connection
 java.sql.DatabaseMetaData
 java.sql.Driver
 java.sql.SQLException
@@ -739,6 +741,7 @@ javax.swing.plaf.TextUI
 javax.swing.plaf.ToolBarUI
 javax.swing.plaf.UIResource
 javax.swing.plaf.basic.BasicCheckBoxMenuItemUI
+javax.swing.plaf.basic.BasicEditorPaneUI
 javax.swing.plaf.basic.BasicListUI
 javax.swing.plaf.basic.BasicMenuItemUI
 javax.swing.plaf.basic.BasicMenuUI
@@ -748,6 +751,7 @@ javax.swing.plaf.basic.BasicPopupMenuUI
 javax.swing.plaf.basic.BasicRadioButtonMenuItemUI
 javax.swing.plaf.basic.BasicScrollPaneUI
 javax.swing.plaf.basic.BasicTextUI
+javax.swing.plaf.basic.BasicToolBarSeparatorUI
 javax.swing.plaf.basic.BasicViewportUI
 javax.swing.plaf.metal.MetalBorders$ToolBarBorder
 javax.swing.plaf.metal.MetalButtonUI
@@ -1109,6 +1113,7 @@ org.netbeans.core.ModuleActions
 org.netbeans.core.NbAuthenticator
 org.netbeans.core.NbClipboard
 org.netbeans.core.NbErrorManager
+org.netbeans.core.NbErrorManager$Exc
 org.netbeans.core.NbKeymap
 org.netbeans.core.NbKeymap$1
 org.netbeans.core.NbKeymap$KeymapAction
@@ -1279,6 +1284,8 @@ org.netbeans.core.startup.TopLogging$NbFormatter
 org.netbeans.core.startup.TopLogging$NonClose
 org.netbeans.core.startup.TopThreadGroup
 org.netbeans.core.startup.layers.ArchiveURLMapper
+org.netbeans.core.startup.layers.ArchiveURLMapper$JFSReference
+org.netbeans.core.startup.layers.ArchiveURLMapper$JFSReference$1
 org.netbeans.core.startup.layers.BinaryCacheManager
 org.netbeans.core.startup.layers.BinaryCacheManager$BinaryWriter
 org.netbeans.core.startup.layers.BinaryFS
@@ -2208,6 +2215,7 @@ org.netbeans.lib.ddl.DatabaseProductNotFoundException
 org.netbeans.lib.ddl.DatabaseSpecification
 org.netbeans.lib.ddl.DatabaseSpecificationFactory
 org.netbeans.lib.ddl.DriverSpecificationFactory
+org.netbeans.lib.ddl.impl.DriverSpecification
 org.netbeans.lib.ddl.impl.SpecificationFactory
 org.netbeans.lib.ddl.impl.SpecificationParser
 org.netbeans.lib.ddl.util.PListReader
@@ -2342,6 +2350,7 @@ org.netbeans.lib.lexer.token.PropertyToken
 org.netbeans.lib.lexer.token.TextToken
 org.netbeans.lib.profiler.Bundle
 org.netbeans.lib.profiler.Bundle_en
+org.netbeans.lib.profiler.Bundle_en_US
 org.netbeans.lib.profiler.Bundle_es
 org.netbeans.lib.profiler.Bundle_es_ES
 org.netbeans.lib.profiler.Bundle_ru
@@ -2425,6 +2434,7 @@ org.netbeans.lib.profiler.ui.monitor.ThreadsXYChartModel
 org.netbeans.lib.profiler.ui.monitor.VMTelemetryXYChartModel
 org.netbeans.lib.profiler.utils.Bundle
 org.netbeans.lib.profiler.utils.Bundle_en
+org.netbeans.lib.profiler.utils.Bundle_en_US
 org.netbeans.lib.profiler.utils.Bundle_es
 org.netbeans.lib.profiler.utils.Bundle_es_ES
 org.netbeans.lib.profiler.utils.Bundle_ru
@@ -2574,6 +2584,7 @@ org.netbeans.modules.bpel.nodes.actions.ShowBpelMapperAction
 org.netbeans.modules.bpel.nodes.refactoring.FindUsagesActionImplementationProvider
 org.netbeans.modules.bpel.palette.SoaPaletteMenu
 org.netbeans.modules.bpel.project.BpelproProjectType
+org.netbeans.modules.bpel.validation.action.FixImportAction
 org.netbeans.modules.cnd.CndModule
 org.netbeans.modules.cnd.api.model.CsmClassifier
 org.netbeans.modules.cnd.api.model.CsmDeclaration
@@ -2603,6 +2614,8 @@ org.netbeans.modules.cnd.api.model.xref.CsmReference
 org.netbeans.modules.cnd.apt.debug.APTTraceFlags
 org.netbeans.modules.cnd.apt.debug.DebugUtils
 org.netbeans.modules.cnd.apt.support.APTFileBuffer
+org.netbeans.modules.cnd.callgraph.impl.CallGraphAction
+org.netbeans.modules.cnd.callgraph.impl.CallGraphTopComponent
 org.netbeans.modules.cnd.classview.ClassViewTopComponent
 org.netbeans.modules.cnd.classview.actions.SelectInClassesAction
 org.netbeans.modules.cnd.classview.actions.ShowHideClassViewAction
@@ -2712,6 +2725,7 @@ org.netbeans.modules.cnd.modelimpl.platform.CppUpToDateStatusTaskFactory
 org.netbeans.modules.cnd.modelimpl.platform.ModelSupport
 org.netbeans.modules.cnd.modelimpl.platform.ModelSupport$1
 org.netbeans.modules.cnd.modelimpl.platform.ModelSupport$1$1
+org.netbeans.modules.cnd.modelimpl.platform.ModelSupport$2
 org.netbeans.modules.cnd.modelimpl.platform.ModelSupport$ModifiedObjectsChangeListener
 org.netbeans.modules.cnd.modelimpl.util.WeakList
 org.netbeans.modules.cnd.modelutil.CsmUtilities
@@ -2729,6 +2743,7 @@ org.netbeans.modules.cnd.refactoring.ui.RefactoringActionsProvider$NodeToElement
 org.netbeans.modules.cnd.refactoring.ui.RefactoringActionsProvider$TextComponentTask
 org.netbeans.modules.cnd.repository.spi.Persistent
 org.netbeans.modules.cnd.repository.support.SelfPersistent
+org.netbeans.modules.cnd.utils.CndUtils
 org.netbeans.modules.compapp.casaeditor.CasaDataLoader
 org.netbeans.modules.compapp.casaeditor.CasaDataObject
 org.netbeans.modules.compapp.projects.base.IcanproConstants
@@ -2751,6 +2766,7 @@ org.netbeans.modules.db.explorer.DatabaseConnectionConvertor
 org.netbeans.modules.db.explorer.DatabaseConnectionConvertor$AtomicWriter
 org.netbeans.modules.db.explorer.DatabaseConnectionConvertor$Handler
 org.netbeans.modules.db.explorer.DatabaseConnectionConvertor$PCL
+org.netbeans.modules.db.explorer.DatabaseDriver
 org.netbeans.modules.db.explorer.DatabaseOption
 org.netbeans.modules.db.explorer.DatabaseOptionBeanInfo
 org.netbeans.modules.db.explorer.DatabasePropertySupport
@@ -3050,6 +3066,7 @@ org.netbeans.modules.editor.impl.ActionsList$Pair
 org.netbeans.modules.editor.impl.CustomizableSideBar
 org.netbeans.modules.editor.impl.CustomizableSideBar$MyLookupListener
 org.netbeans.modules.editor.impl.CustomizableSideBar$SideBarPosition
+org.netbeans.modules.editor.impl.EditorActionsProvider
 org.netbeans.modules.editor.impl.GlyphGutterActionsProvider
 org.netbeans.modules.editor.impl.KitsTrackerImpl
 org.netbeans.modules.editor.impl.KitsTrackerImpl$1
@@ -3616,6 +3633,7 @@ org.netbeans.modules.java.source.usages.ClassIndexImpl
 org.netbeans.modules.java.source.usages.ClassIndexManager
 org.netbeans.modules.java.source.usages.ClassIndexManager$ExceptionAction
 org.netbeans.modules.java.source.usages.ClassPathRootsListener$ClassPathRootsChangedListener
+org.netbeans.modules.java.source.usages.Pair
 org.netbeans.modules.java.source.usages.RepositoryUpdater
 org.netbeans.modules.java.source.usages.RepositoryUpdater$5
 org.netbeans.modules.java.source.usages.RepositoryUpdater$6
@@ -3659,6 +3677,9 @@ org.netbeans.modules.javahelp.JavaHelp
 org.netbeans.modules.javahelp.JavaHelp$ProgressDialog
 org.netbeans.modules.javahelp.NbDocsStreamHandler
 org.netbeans.modules.javahelp.NbDocsStreamHandler$Factory
+org.netbeans.modules.javascript.libraries.actions.AddJavaScriptLibraryToProjectAction
+org.netbeans.modules.javascript.libraries.provider.JavaScriptLibraryTypeProvider
+org.netbeans.modules.javascript.libraries.provider.JavaScriptLibraryTypeProvider$2
 org.netbeans.modules.javawebstart.JnlpDataLoader
 org.netbeans.modules.javawebstart.JnlpDataObject
 org.netbeans.modules.jumpto.file.FileSearchAction
@@ -3779,6 +3800,7 @@ org.netbeans.modules.mercurial.HgException
 org.netbeans.modules.mercurial.HgModuleConfig
 org.netbeans.modules.mercurial.HgProgressSupport
 org.netbeans.modules.mercurial.Mercurial
+org.netbeans.modules.mercurial.Mercurial$1
 org.netbeans.modules.mercurial.MercurialAnnotator
 org.netbeans.modules.mercurial.MercurialAnnotator$ScanTask
 org.netbeans.modules.mercurial.MercurialInterceptor
@@ -4215,6 +4237,7 @@ org.netbeans.modules.registration.RegisterAction$1
 org.netbeans.modules.ruby.RubyMimeResolver
 org.netbeans.modules.ruby.api.project.rake.RakeArtifact
 org.netbeans.modules.ruby.debugger.EditorUtil
+org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint
 org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointActionProvider
 org.netbeans.modules.ruby.modules.project.rake.FileChangeSupportListener
 org.netbeans.modules.ruby.modules.project.rake.RakeBasedProjectFactorySingleton
@@ -4237,6 +4260,7 @@ org.netbeans.modules.ruby.spi.project.support.rake.RakeBasedProjectType
 org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper
 org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper$1
 org.netbeans.modules.ruby.spi.project.support.rake.SimpleRakeArtifact
+org.netbeans.modules.ruby.testrunner.ui.ResultWindowOpenAction
 org.netbeans.modules.search.AbstractSearchScope
 org.netbeans.modules.search.FindActionManager
 org.netbeans.modules.search.FindInFilesAction
@@ -4309,7 +4333,9 @@ org.netbeans.modules.subversion.client.SvnClientFactory
 org.netbeans.modules.subversion.client.SvnClientFactory$1
 org.netbeans.modules.subversion.client.SvnClientFactory$2
 org.netbeans.modules.subversion.client.SvnClientFactory$ClientAdapterFactory
+org.netbeans.modules.subversion.client.SvnClientInvocationHandler
 org.netbeans.modules.subversion.client.SvnClientRefreshHandler
+org.netbeans.modules.subversion.client.SvnCmdLineClientInvocationHandler
 org.netbeans.modules.subversion.client.SvnProgressSupport
 org.netbeans.modules.subversion.config.SvnConfigFiles
 org.netbeans.modules.subversion.config.SvnConfigFiles$ConfigIniFilePatcher
@@ -4326,6 +4352,8 @@ org.netbeans.modules.subversion.ui.blame.LinesReader
 org.netbeans.modules.subversion.ui.status.OpenVersioningAction
 org.netbeans.modules.subversion.ui.status.ShowAllChangesAction
 org.netbeans.modules.subversion.util.FileUtils
+org.netbeans.modules.subversion.util.SvnUtils
+org.netbeans.modules.subversion.util.SvnUtils$1
 org.netbeans.modules.swingapp.ActionRescanJavaSourceTaskFactoryImpl
 org.netbeans.modules.swingapp.actions.ShowGlobalActionTableAction
 org.netbeans.modules.tasklist.ui.TaskListAction
@@ -4499,6 +4527,7 @@ org.netbeans.modules.uml.ui.products.ad.diagramlisteners.IDiagramBackupCleaner
 org.netbeans.modules.uml.ui.products.ad.projecttreedefaultengine.ADProjectTreeEngine
 org.netbeans.modules.uml.ui.products.ad.projecttreedefaultengine.Bundle
 org.netbeans.modules.uml.ui.products.ad.projecttreedefaultengine.Bundle_en
+org.netbeans.modules.uml.ui.products.ad.projecttreedefaultengine.Bundle_en_US
 org.netbeans.modules.uml.ui.products.ad.projecttreedefaultengine.Bundle_es
 org.netbeans.modules.uml.ui.products.ad.projecttreedefaultengine.Bundle_es_ES
 org.netbeans.modules.uml.ui.products.ad.projecttreedefaultengine.Bundle_ru
@@ -4639,6 +4668,7 @@ org.netbeans.modules.visualweb.dataconnectivity.customizers.SqlCommandCustomizer
 org.netbeans.modules.visualweb.dataconnectivity.customizers.SqlCommandCustomizer$OpenProjectsListener
 org.netbeans.modules.visualweb.dataconnectivity.naming.Bundle
 org.netbeans.modules.visualweb.dataconnectivity.naming.Bundle_en
+org.netbeans.modules.visualweb.dataconnectivity.naming.Bundle_en_US
 org.netbeans.modules.visualweb.dataconnectivity.naming.Bundle_es
 org.netbeans.modules.visualweb.dataconnectivity.naming.Bundle_es_ES
 org.netbeans.modules.visualweb.dataconnectivity.naming.Bundle_ru
@@ -4708,6 +4738,7 @@ org.netbeans.modules.visualweb.propertyeditors.binding.data.BindValueToDataProvi
 org.netbeans.modules.visualweb.propertyeditors.binding.data.BindValueToObjectPanel
 org.netbeans.modules.visualweb.propertyeditors.binding.data.Bundle
 org.netbeans.modules.visualweb.propertyeditors.binding.data.Bundle_en
+org.netbeans.modules.visualweb.propertyeditors.binding.data.Bundle_en_US
 org.netbeans.modules.visualweb.propertyeditors.binding.data.Bundle_es
 org.netbeans.modules.visualweb.propertyeditors.binding.data.Bundle_es_ES
 org.netbeans.modules.visualweb.propertyeditors.binding.data.Bundle_ru
@@ -4731,6 +4762,12 @@ org.netbeans.modules.vmd.midp.java.MidpValidatorWarmUp
 org.netbeans.modules.vmd.midp.palette.MidpPaletteManagerAction
 org.netbeans.modules.vmd.palette.PaletteItemDataLoader
 org.netbeans.modules.vmd.palette.PaletteItemDataObject
+org.netbeans.modules.web.client.javascript.debugger.actions.NbJSDebugURLAction
+org.netbeans.modules.web.client.javascript.debugger.filesystem.URLFileObject
+org.netbeans.modules.web.client.javascript.debugger.filesystem.URLFileObjectFactory
+org.netbeans.modules.web.client.javascript.debugger.filesystem.URLFileObjectMapper
+org.netbeans.modules.web.client.javascript.debugger.ui.NbJSEditorUtil
+org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints.NbJSBreakpointActionProvider
 org.netbeans.modules.web.core.EditQueryStringAction
 org.netbeans.modules.web.core.JspEditorWarmUpTask
 org.netbeans.modules.web.core.QueryStringCookie
@@ -5093,6 +5130,7 @@ org.netbeans.spi.sendopts.Option
 org.netbeans.spi.sendopts.Option$1
 org.netbeans.spi.sendopts.OptionProcessor
 org.netbeans.spi.settings.Saver
+org.netbeans.spi.viewmodel.Models$ActionPerformer
 org.netbeans.swing.dirchooser.DelegatingChooserUI
 org.netbeans.swing.dirchooser.Module
 org.netbeans.swing.dirchooser.Module$1
@@ -5526,6 +5564,10 @@ org.openide.filesystems.FileUtil$3
 org.openide.filesystems.FileUtil$NonCanonicalizingFile
 org.openide.filesystems.FileUtil$NonCanonicalizingFileSystemView
 org.openide.filesystems.JarFileSystem
+org.openide.filesystems.JarFileSystem$1
+org.openide.filesystems.JarFileSystem$2
+org.openide.filesystems.JarFileSystem$Impl
+org.openide.filesystems.JarFileSystem$Ref
 org.openide.filesystems.ListenerList
 org.openide.filesystems.LocalFileSystem
 org.openide.filesystems.LocalFileSystem$1
@@ -5585,9 +5627,11 @@ org.openide.loaders.DataFolder$ListPCL
 org.openide.loaders.DataFolder$Paste
 org.openide.loaders.DataFolder$SortMode
 org.openide.loaders.DataLoader
+org.openide.loaders.DataLoader$1Rec
 org.openide.loaders.DataLoader$RecognizedFiles
 org.openide.loaders.DataLoaderPool
 org.openide.loaders.DataLoaderPool$1
+org.openide.loaders.DataLoaderPool$1MimeEnum
 org.openide.loaders.DataLoaderPool$DefaultLoader
 org.openide.loaders.DataLoaderPool$DefaultPool
 org.openide.loaders.DataLoaderPool$FolderLoader
@@ -5609,6 +5653,7 @@ org.openide.loaders.DataObject
 org.openide.loaders.DataObject$1
 org.openide.loaders.DataObject$1WrapRun
 org.openide.loaders.DataObject$Container
+org.openide.loaders.DataObject$Factory
 org.openide.loaders.DataObject$ModifiedRegistry
 org.openide.loaders.DataObject$Registry
 org.openide.loaders.DataObjectAccessorImpl
@@ -5913,6 +5958,7 @@ org.openide.xml.XMLUtil
 org.openidex.search.SearchHistory
 org.openidex.search.SearchInfo
 org.rubyforge.debugcommons.RubyDebuggerException
+org.rubyforge.debugcommons.model.IRubyBreakpoint
 org.tigris.subversion.svnclientadapter.AbstractClientAdapter
 org.tigris.subversion.svnclientadapter.ISVNAnnotations
 org.tigris.subversion.svnclientadapter.ISVNClientAdapter
@@ -5973,6 +6019,7 @@ org.xml.sax.helpers.DefaultHandler
 org.xml.sax.helpers.XMLReaderAdapter
 org/netbeans/swing/tabcontrol/plaf/Bundle
 org/netbeans/swing/tabcontrol/plaf/Bundle_en
+org/netbeans/swing/tabcontrol/plaf/Bundle_en_US
 org/netbeans/swing/tabcontrol/plaf/Bundle_es
 org/netbeans/swing/tabcontrol/plaf/Bundle_es_ES
 org/netbeans/swing/tabcontrol/plaf/Bundle_ru

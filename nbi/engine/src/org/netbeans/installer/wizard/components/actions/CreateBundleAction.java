@@ -65,6 +65,7 @@ import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.XMLUtils;
+import org.netbeans.installer.utils.cli.CLIHandler;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.EngineResources;
 import org.netbeans.installer.utils.helper.ExtendedUri;
@@ -173,7 +174,7 @@ public class CreateBundleAction extends WizardAction {
             progress.setDetail(StringUtils.format(
                     getProperty(PROGRESS_ADD_ENGINE_DETAIL_PROPERTY)));
             
-            engine = new JarFile(Installer.cacheInstallerEngine(new Progress()));
+            engine = new JarFile(Installer.getInstance().cacheInstallerEngine(new Progress()));
             output = new JarOutputStream(new FileOutputStream(targetFile));
             
             // transfer the engine, skipping existing bundled components
@@ -213,6 +214,12 @@ public class CreateBundleAction extends WizardAction {
             StreamUtils.transferData(
                     ResourceUtils.getResource(EngineResources.ENGINE_CONTENTS_LIST),
                     output);
+            InputStream optionsListStream = ResourceUtils.getResource(CLIHandler.OPTIONS_LIST);
+            if (optionsListStream != null) {
+                //transfer engine command-line options list
+                output.putNextEntry(new JarEntry(CLIHandler.OPTIONS_LIST));
+                StreamUtils.transferData(optionsListStream, output);
+            }
             
             // load default engine properties and set all components to be installed by default
             String [] contents = StringUtils.splitByLines(

@@ -102,8 +102,8 @@ public class ImportDiffAction extends ContextAction {
 
         }
         fileChooser.setDialogType(JFileChooser.SAVE_DIALOG);
-        fileChooser.setApproveButtonMnemonic(NbBundle.getMessage(ImportDiffAction.class, "OK_Button").charAt(0));                      // NO I18N
-        fileChooser.setApproveButtonText(NbBundle.getMessage(ImportDiffAction.class, "OK_Button"));                                        // NO I18N
+        fileChooser.setApproveButtonMnemonic(NbBundle.getMessage(ImportDiffAction.class, "Import").charAt(0));                      // NO I18N
+        fileChooser.setApproveButtonText(NbBundle.getMessage(ImportDiffAction.class, "Import"));                                        // NO I18N
         fileChooser.setCurrentDirectory(new File(HgModuleConfig.getDefault().getImportFolder()));
 
         DialogDescriptor dd = new DialogDescriptor(fileChooser, NbBundle.getMessage(ImportDiffAction.class, "Browse_title"));              // NO I18N

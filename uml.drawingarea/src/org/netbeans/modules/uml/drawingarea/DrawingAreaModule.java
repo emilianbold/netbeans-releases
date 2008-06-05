@@ -67,7 +67,8 @@ public class DrawingAreaModule extends ModuleInstall
    {
    }
  
-   public void restored()
+    @Override
+public void restored()
    {
       IADProduct product = getProduct();
       //System.out.println("The projecdt = " + product);
@@ -97,6 +98,10 @@ public class DrawingAreaModule extends ModuleInstall
                break;
             }
          }
+      }
+      else
+      {
+          retVal = (IADProduct) productManager.getCoreProduct();
       }
       
       return retVal;

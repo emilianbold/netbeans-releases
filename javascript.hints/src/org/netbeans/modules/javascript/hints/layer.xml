@@ -42,20 +42,22 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <filesystem>
-    <folder name="org-netbeans-modules-javascript-hints">
-        <folder name="rules">
-            <folder name="errors">
-                <file name="org-netbeans-modules-javascript-hints-AccidentalAssignment.instance"/>
-            </folder>
-            <folder name="hints">
-                <folder name="general">
-                    <attr name="position" intvalue="100"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript.hints.Bundle"/>
-                    <file name="org-netbeans-modules-javascript-hints-UnicodeConvert.instance"/>
-                    <file name="org-netbeans-modules-javascript-hints-UnsupportedCalls.instance"/>
-                    <file name="org-netbeans-modules-javascript-hints-WrongJsDoc.instance"/>
+    <folder name="gsf-hints">
+        <folder name="text">
+            <folder name="javascript">
+                <folder name="errors">
+                    <file name="org-netbeans-modules-javascript-hints-AccidentalAssignment.instance"/>
+                </folder>
+                <folder name="hints">
+                    <folder name="general">
+                        <attr name="position" intvalue="100"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript.hints.Bundle"/>
+                        <file name="org-netbeans-modules-javascript-hints-UnicodeConvert.instance"/>
+                        <file name="org-netbeans-modules-javascript-hints-UnsupportedCalls.instance"/>
+                        <file name="org-netbeans-modules-javascript-hints-WrongJsDoc.instance"/>
+                    </folder>    
                 </folder>    
-            </folder>    
+            </folder>
         </folder>
     </folder>
     
@@ -66,7 +68,7 @@ made subject to such option by the copyright holder.
 
         
     <!-- **Infrastructure, nothing hint-specific, below this point** -->
-    
+    <!--
     <folder name="org.netbeans.modules.javascript.editing">
         <folder name="options">
             <file name="Hints.instance">
@@ -75,12 +77,12 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
+    -->
     
     <folder name="GsfPlugins">
         <folder name="text">
             <folder name="javascript">
                 <file name="hints.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.HintsProvider"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.hints.infrastructure.JsHintsProvider"/>
                 </file>
             </folder>

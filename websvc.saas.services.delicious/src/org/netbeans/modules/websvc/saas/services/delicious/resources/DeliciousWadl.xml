@@ -15,7 +15,7 @@ Open issues:
 	     xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
              xmlns:del="urn:delicious:deliciousresponse"
 	     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
-                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
+                    https://wadl.dev.java.net/wadl20061109.xsd"
 	     xmlns="http://research.sun.com/wadl/2006/10">
     <grammars>
         <include href="DeliciousResponse.xsd"/>

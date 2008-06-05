@@ -8,7 +8,7 @@ header:RCS file: /cvs/j2ee/clientproject/src/org/netbeans/modules/j2ee/clientpro
 
 header:retrieving revision 1.10
 
-header:diff -w -u -r1.10 AppClientProjectGenerator.java
+diff:diff -w -u -r1.10 AppClientProjectGenerator.java
 
 header:--- j2ee/clientproject/src/org/netbeans/modules/j2ee/clientproject/api/AppClientProjectGenerator.java	30 May 2007 08:30:28 -0000	1.10
 
@@ -40,7 +40,7 @@ header:RCS file: /cvs/j2ee/ejbjarproject/src/org/netbeans/modules/j2ee/ejbjarpro
 
 header:retrieving revision 1.10
 
-header:diff -w -u -r1.10 EjbJarProjectGenerator.java
+diff:diff -w -u -r1.10 EjbJarProjectGenerator.java
 
 header:--- j2ee/ejbjarproject/src/org/netbeans/modules/j2ee/ejbjarproject/api/EjbJarProjectGenerator.java	31 May 2007 12:48:26 -0000	1.10
 
@@ -72,7 +72,7 @@ header:RCS file: /cvs/j2eeserver/src/org/netbeans/modules/j2ee/deployment/config
 
 header:retrieving revision 1.50
 
-header:diff -w -u -r1.50 ConfigSupportImpl.java
+diff:diff -w -u -r1.50 ConfigSupportImpl.java
 
 header:--- j2eeserver/src/org/netbeans/modules/j2ee/deployment/config/ConfigSupportImpl.java	15 Apr 2007 15:58:30 -0000	1.50
 
@@ -104,7 +104,7 @@ header:RCS file: /cvs/j2eeserver/src/org/netbeans/modules/j2ee/deployment/impl/B
 
 header:retrieving revision 1.37
 
-header:diff -w -u -r1.37 Bundle.properties
+diff:diff -w -u -r1.37 Bundle.properties
 
 header:--- j2eeserver/src/org/netbeans/modules/j2ee/deployment/impl/Bundle.properties	18 Apr 2007 11:27:20 -0000	1.37
 
@@ -134,7 +134,7 @@ header:RCS file: /cvs/j2eeserver/src/org/netbeans/modules/j2ee/deployment/impl/I
 
 header:retrieving revision 1.19
 
-header:diff -w -u -r1.19 InitialServerFileDistributor.java
+diff:diff -w -u -r1.19 InitialServerFileDistributor.java
 
 header:--- j2eeserver/src/org/netbeans/modules/j2ee/deployment/impl/InitialServerFileDistributor.java	29 Mar 2007 23:04:55 -0000	1.19
 

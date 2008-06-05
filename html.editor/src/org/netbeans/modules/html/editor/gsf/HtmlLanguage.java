@@ -42,6 +42,10 @@ package org.netbeans.modules.html.editor.gsf;
 
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 
 public class HtmlLanguage extends DefaultLanguageConfig {
@@ -75,5 +79,37 @@ public class HtmlLanguage extends DefaultLanguageConfig {
     @Override
     public String getPreferredExtension() {
         return "html"; // NOI18N
+    }
+
+    // Service registrations
+    
+    @Override
+    public boolean isUsingCustomEditorKit() {
+        return true;
+    }
+
+    @Override
+    public Parser getParser() {
+        return new HtmlGSFParser();
+    }
+
+    @Override
+    public boolean hasStructureScanner() {
+        return true;
+    }
+
+    @Override
+    public StructureScanner getStructureScanner() {
+        return new HtmlStructureScanner();
+    }
+
+    @Override
+    public SemanticAnalyzer getSemanticAnalyzer() {
+        return new HtmlSemanticAnalyzer();
+    }
+
+    @Override
+    public CodeCompletionHandler getCompletionHandler() {
+        return new HtmlGsfCompletionHandler();
     }
 }
