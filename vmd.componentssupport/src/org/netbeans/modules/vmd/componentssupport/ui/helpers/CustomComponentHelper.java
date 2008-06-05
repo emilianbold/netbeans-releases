@@ -61,12 +61,12 @@ import org.netbeans.modules.vmd.componentssupport.ui.wizard.CustomComponentWizar
 import org.netbeans.modules.vmd.componentssupport.ui.wizard.NewComponentDescriptor;
 import org.netbeans.modules.vmd.componentssupport.ui.wizard.PaletteCategory;
 import org.netbeans.modules.vmd.componentssupport.ui.wizard.Version;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -282,11 +282,11 @@ public abstract class CustomComponentHelper extends BaseHelper {
 
         private static final String INSTANCE_NAME_EXTENSION  
                                                         = ".instance";          //NOI18N
-        //// tags identifiers (e.g. attribute values )
+        //// layer tags identifiers (e.g. attribute values )
         private static final String LAYER_TAG_VMD_MIDP  = "vmd-midp";           //NOI18N
         private static final String LAYER_TAG_COMPONENTS = "components";        //NOI18N
         private static final String LAYER_TAG_PRODUCERS = "producers";          //NOI18N
-        //// xpaths to tags
+        //// xpaths to layer tags
         private static final String LAYER_XPATH_VMD_MIDP 
                         = "./folder[@name=\"" + LAYER_TAG_VMD_MIDP + "\"]";     //NOI18N
         private static final String LAYER_XPATH_COMPONENTS 
@@ -298,6 +298,16 @@ public abstract class CustomComponentHelper extends BaseHelper {
         private static final String VALIDITY_TOKEN_VALUE_PLATFORM = "platform";//NOI18N
         private static final String VALIDITY_TOKEN_VALUE_CUSTOM = "custom";//NOI18N
         
+        private static final String VMD_MIDP_NAME = "org.netbeans.modules.vmd.midp";//NOI18N
+        private static final String VMD_MIDP_VERSION = "1.1";//NOI18N
+        private static final String VMD_MODEL_NAME = "org.netbeans.modules.vmd.model";//NOI18N
+        private static final String VMD_MODEL_VERSION = "1.1";//NOI18N
+        private static final String VMD_PROPERTIES_NAME = "org.netbeans.modules.vmd.properties";//NOI18N
+        private static final String VMD_PROPERTIES_VERSION = "1.1";//NOI18N
+        private static final String OPENIDE_UTIL_NAME = "org.openide.util";//NOI18N
+        private static final String OPENIDE_UTIL_VERSION = "7.12";//NOI18N
+        
+                
         /**
          * Constructor to be used in main wizard 
          * (CustomComponentWizardIterator.instantiate() method)
@@ -369,10 +379,11 @@ public abstract class CustomComponentHelper extends BaseHelper {
             
             result.addAll( configureIcons() );
             
-            //configureLibraries();
+            configureDependencies();
             
             return result;
         }
+        
         
         @Override
         public String getCDPath() {
@@ -637,6 +648,8 @@ public abstract class CustomComponentHelper extends BaseHelper {
             
             try {
                 Document doc = LayerXmlHelper.parseXmlDocument(layerXmlFO);
+                assert doc != null;
+                
                 Element docRoot = doc.getDocumentElement();
 
                 XPath xpath = XPathFactory.newInstance().newXPath();
@@ -658,7 +671,7 @@ public abstract class CustomComponentHelper extends BaseHelper {
                 LayerXmlHelper.saveXmlDocument(doc, layerXmlFO);
                 
             } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
+                ErrorManager.getDefault().notify(ex);
             }
             
             return Collections.EMPTY_SET;
@@ -755,6 +768,36 @@ public abstract class CustomComponentHelper extends BaseHelper {
                 return null;
             }
             return path;
+        }
+
+
+
+    private void configureDependencies(){
+            try {
+
+                FileObject prjDir = getProject().getProjectDirectory();
+                FileObject projectXmlFO = FileUtil.createData(prjDir, AntProjectHelper.PROJECT_XML_PATH);
+
+                Document doc = LayerXmlHelper.parseXmlDocument(projectXmlFO);
+
+                XPath xpath = XPathFactory.newInstance().newXPath();
+
+                Node confData = ProjectXmlHelper.getPrimaryConfigurationData(xpath, doc.getDocumentElement());
+
+                Node modDeps = ProjectXmlHelper.goToModuleDependencies(doc, xpath, confData);
+
+                ProjectXmlHelper.testAndAddDependency(doc, xpath, modDeps, VMD_MIDP_NAME, VMD_MIDP_VERSION);
+                ProjectXmlHelper.testAndAddDependency(doc, xpath, modDeps, VMD_MODEL_NAME, VMD_MODEL_VERSION);
+                ProjectXmlHelper.testAndAddDependency(doc, xpath, modDeps, VMD_PROPERTIES_NAME, VMD_PROPERTIES_VERSION);
+                ProjectXmlHelper.testAndAddDependency(doc, xpath, modDeps, OPENIDE_UTIL_NAME, OPENIDE_UTIL_VERSION);
+
+
+                ProjectXmlHelper.saveXmlDocument(doc, projectXmlFO);
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            } catch (XPathExpressionException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
         }
 
         private Object getProperty(String name){

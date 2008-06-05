@@ -39,28 +39,17 @@
 
 package org.netbeans.modules.vmd.componentssupport.ui.helpers;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  *
  * @author avk
  */
-public class LayerXmlHelper extends BaseHelper{
+public class LayerXmlHelper extends XmlHelper{
 
     // browsing layer.xml dom tree
     //// names
@@ -72,32 +61,6 @@ public class LayerXmlHelper extends BaseHelper{
     //// xpaths to tags
     private static final String LAYER_XPATH_FILESYSTEM 
                                                     = "/"+LAYER_FILESYSTEM;     //NOI18N
-
-    protected static Document parseXmlDocument(FileObject xmlFO) 
-            throws SAXException, IOException, FileNotFoundException 
-    {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        InputStream in = xmlFO.getInputStream();
-        try {
-            FileUtil.copy(in, baos);
-        } finally {
-            in.close();
-        }
-        return XMLUtil.parse(new InputSource(
-                new ByteArrayInputStream(baos.toByteArray())), 
-                false, false, null, null);
-    }
-
-    protected static void saveXmlDocument(Document doc, FileObject xmlFO) 
-            throws IOException 
-    {
-        OutputStream out = xmlFO.getOutputStream();
-        try {
-            XMLUtil.write(doc, out, UTF_8);
-        } finally {
-            out.close();
-        }
-    }
 
     protected static Node goToFilesystemNode(Document doc, XPath xpath, Node parent)
             throws XPathExpressionException 
