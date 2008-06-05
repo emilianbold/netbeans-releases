@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.iep.editor.wizard.database;
 
-import org.netbeans.module.iep.editor.xsd.nodes.SelectableTreeNode;
+import org.netbeans.modules.iep.editor.xsd.nodes.SelectableTreeNode;
 
 /**
  *

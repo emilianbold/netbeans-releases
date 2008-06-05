@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.module.iep.editor.xsd.nodes;
+package org.netbeans.modules.iep.editor.xsd.nodes;
 
 import java.util.ArrayList;
 import java.util.Collection;

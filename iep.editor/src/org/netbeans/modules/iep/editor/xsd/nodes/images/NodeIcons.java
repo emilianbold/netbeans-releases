@@ -7,7 +7,7 @@
  * and open the template in the editor.
  */
 
-package org.netbeans.module.iep.editor.xsd.nodes.images;
+package org.netbeans.modules.iep.editor.xsd.nodes.images;
 
 import java.awt.Image;
 import java.util.concurrent.atomic.AtomicReference;
@@ -28,7 +28,7 @@ public enum NodeIcons {
     ELEMENT_REPEATING;
     
     private static final String IMAGE_FOLDER_NAME = 
-            "org/netbeans/module/iep/editor/xsd/nodes/images/"; // NOI18N
+            "org/netbeans/modules/iep/editor/xsd/nodes/images/"; // NOI18N
 
     public static final Icon UNKNOWN_IMAGE = new ImageIcon("UNKNOWN_IMAGE");
     

@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.module.iep.editor.xsd;
+package org.netbeans.modules.iep.editor.xsd;
 
 import java.awt.Dimension;
 import java.awt.FlowLayout;

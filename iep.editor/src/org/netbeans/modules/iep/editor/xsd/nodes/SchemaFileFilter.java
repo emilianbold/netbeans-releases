@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.module.iep.editor.xsd.nodes;
+package org.netbeans.modules.iep.editor.xsd.nodes;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -46,9 +46,25 @@ import java.io.FileFilter;
  *
  * @author radval
  */
-public class DirFileFilter implements FileFilter {
-
+public  class SchemaFileFilter implements FileFilter {
+    
+    public static final String SCHEMA_FILE_EXTENSION = "xsd";
+    
     public boolean accept(File pathname) {
-        return pathname.isDirectory();
+        boolean result = false;
+        String fileName = pathname.getName();
+        String fileExtension = null;
+        int dotIndex = fileName.lastIndexOf('.');
+        if(dotIndex != -1) {
+            fileExtension = fileName.substring(dotIndex +1);
+        }
+
+        if(fileExtension != null 
+                && (fileExtension.equalsIgnoreCase(SCHEMA_FILE_EXTENSION))) {
+            result = true;
+        }
+
+        return result;
     }
 }
+    
