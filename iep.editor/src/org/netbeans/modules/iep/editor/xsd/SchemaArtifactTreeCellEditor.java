@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.netbeans.module.iep.editor.xsd;
+package org.netbeans.modules.iep.editor.xsd;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -21,7 +21,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
-import org.netbeans.module.iep.editor.xsd.nodes.SelectableTreeNode;
+import org.netbeans.modules.iep.editor.xsd.nodes.SelectableTreeNode;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIType;
 

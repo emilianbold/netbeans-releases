@@ -1,4 +1,4 @@
-package org.netbeans.module.iep.editor.xsd;
+package org.netbeans.modules.iep.editor.xsd;
 
 import javax.swing.Icon;
 

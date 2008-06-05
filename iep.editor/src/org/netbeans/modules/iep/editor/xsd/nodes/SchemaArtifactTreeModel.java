@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.netbeans.module.iep.editor.xsd.nodes;
+package org.netbeans.modules.iep.editor.xsd.nodes;
 
 import java.util.ArrayList;
 import java.util.Iterator;

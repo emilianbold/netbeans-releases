@@ -37,33 +37,18 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.module.iep.editor.xsd.nodes;
+package org.netbeans.modules.iep.editor.xsd.nodes;
 
-import org.netbeans.module.iep.editor.xsd.nodes.images.NodeIcons;
-import org.netbeans.modules.xml.axi.Attribute;
+import java.io.File;
+import java.io.FileFilter;
 
 /**
  *
  * @author radval
  */
-public class SchemaAttributeNode extends AbstractSchemaArtifactNode implements SelectableTreeNode {
+public class DirFileFilter implements FileFilter {
 
-    private boolean mSelected;
-    
-    public SchemaAttributeNode(Attribute attr) {
-        super(attr);
-        
-        
-        this.mIcon = NodeIcons.ATTRIBUTE.getIcon();
-        this.setAllowsChildren(false);
+    public boolean accept(File pathname) {
+        return pathname.isDirectory();
     }
-    
-    public boolean isSelected() {
-        return mSelected;
-    }
-
-    public void setSelected(boolean selected) {
-        this.mSelected = selected;
-    }
-
 }

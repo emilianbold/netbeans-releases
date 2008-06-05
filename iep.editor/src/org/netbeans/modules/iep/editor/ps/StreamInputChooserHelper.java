@@ -33,7 +33,7 @@ import javax.xml.XMLConstants;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.module.iep.editor.xsd.nodes.FileNode;
+import org.netbeans.modules.iep.editor.xsd.nodes.FileNode;
 import org.netbeans.modules.iep.editor.wizard.ChooserHelper;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.IEPModelFactory;

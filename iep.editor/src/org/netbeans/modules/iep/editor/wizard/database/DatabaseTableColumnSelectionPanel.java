@@ -16,8 +16,8 @@ import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeCellRenderer;
 
 import javax.swing.tree.TreePath;
-import org.netbeans.module.iep.editor.xsd.SchemaArtifactTreeCellEditor;
-import org.netbeans.module.iep.editor.xsd.SchemaArtifactTreeCellRenderer;
+import org.netbeans.modules.iep.editor.xsd.SchemaArtifactTreeCellEditor;
+import org.netbeans.modules.iep.editor.xsd.SchemaArtifactTreeCellRenderer;
 
 /**
  *

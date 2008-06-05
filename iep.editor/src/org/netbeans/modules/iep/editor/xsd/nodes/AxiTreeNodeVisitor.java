@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.module.iep.editor.xsd.nodes;
+package org.netbeans.modules.iep.editor.xsd.nodes;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -79,12 +79,12 @@ public class AxiTreeNodeVisitor extends DeepAXITreeVisitor {
         this.mFileNode = fileNode;
         this.mTree = tree;
         mElementFolderNode = new FolderNode("Elements");
-        mElementFolderNode.setBadge("org/netbeans/module/iep/editor/xsd/nodes/images/element_badge.png");
+        mElementFolderNode.setBadge("org/netbeans/modules/iep/editor/xsd/nodes/images/element_badge.png");
         this.mFileNode.add(mElementFolderNode);
         mCurrentStack.push(mElementFolderNode);
         
         mComplexTypesFolderNode = new FolderNode("Complex Types");
-        mComplexTypesFolderNode.setBadge("org/netbeans/module/iep/editor/xsd/nodes/images/complexType_badge.png");
+        mComplexTypesFolderNode.setBadge("org/netbeans/modules/iep/editor/xsd/nodes/images/complexType_badge.png");
         this.mFileNode.add(mComplexTypesFolderNode);
         
         this.mExistingArtificatNames = existingArtificatNames;
