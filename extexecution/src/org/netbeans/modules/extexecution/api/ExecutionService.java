@@ -58,15 +58,11 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.management.Descriptor;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.extexecution.api.print.LineConvertors;
-import org.netbeans.modules.extexecution.api.input.InputProcessor;
-import org.netbeans.modules.extexecution.api.input.InputProcessors;
 import org.netbeans.modules.extexecution.api.input.InputReaderTask;
 import org.netbeans.modules.extexecution.api.input.InputReaders;
 import org.openide.ErrorManager;
@@ -96,7 +92,9 @@ import org.openide.windows.OutputWriter;
  *
  * @author Tor Norbye, Petr Hejl
  */
-public class ExecutionService {
+public final class ExecutionService {
+
+    private static final Logger LOGGER = Logger.getLogger(ExecutionService.class.getName());
 
     static {
         RerunAction.Accessor.DEFAULT = new RerunAction.Accessor() {
@@ -109,14 +107,14 @@ public class ExecutionService {
         };
     }
 
-    public static final Logger LOGGER = Logger.getLogger(ExecutionService.class.getName());
-
     static {
         Thread t = new Thread() {
 
             @Override
             public void run() {
-                ExecutionService.killAll();
+                for (ExecutionService service : RUNNING_PROCESSES) {
+                    service.kill();
+                }
             }
         };
 
@@ -142,10 +140,14 @@ public class ExecutionService {
 
     private boolean rerun;
 
-    public ExecutionService(Callable<Process> processCreator, String displayName, ExecutionDescriptor descriptor) {
+    private ExecutionService(Callable<Process> processCreator, String displayName, ExecutionDescriptor descriptor) {
         this.processCreator = processCreator;
         this.originalDisplayName = displayName;
         this.descriptor = descriptor;
+    }
+
+    public static ExecutionService newInstance(Callable<Process> processCreator, ExecutionDescriptor descriptor, String displayName) {
+        return new ExecutionService(processCreator, displayName, descriptor);
     }
 
     public void kill() {
@@ -163,13 +165,7 @@ public class ExecutionService {
         }
     }
 
-    public static void killAll() {
-        for (ExecutionService service : RUNNING_PROCESSES) {
-            service.kill();
-        }
-    }
-
-    Task rerun() {
+    private Task rerun() {
         try {
             io.getOut().reset();
         } catch (IOException ex) {
@@ -222,7 +218,7 @@ public class ExecutionService {
                     stopAction = new StopAction();
                     //rerunAction = new RerunAction(this, descriptor.getFileObject());
                     rerunAction = new RerunAction(this, null);
-                    
+
                     io = IOProvider.getDefault().getIO(displayName, new Action[]{rerunAction, stopAction});
                 } else {
                     io = IOProvider.getDefault().getIO(displayName, true);
@@ -369,7 +365,7 @@ public class ExecutionService {
 //            executor.submit(InputReaderTask.newTask(
 //                    InputReaders.forReader(in),
 //                    InputProcessors.copying(new OutputStreamWriter(process.getOutputStream()))));
-            
+
             executor.submit(InputReaderTask.newTask(
                     InputReaders.forStream(process.getInputStream(), Charset.defaultCharset()),
                     descriptor.getOutProcessor(io.getOut())));
@@ -379,7 +375,7 @@ public class ExecutionService {
             executor.submit(InputReaderTask.newTask(
                     InputReaders.forReader(in),
                     descriptor.getInProcessor(new OutputStreamWriter(process.getOutputStream()))));
-            
+
             process.waitFor();
         } catch (InterruptedException ex) {
             LOGGER.log(Level.FINE, "Exiting thread", ex);
