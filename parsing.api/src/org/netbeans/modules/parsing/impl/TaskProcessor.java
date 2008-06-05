@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.parsing.impl;
 
-import com.sun.tools.javac.code.Flags;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Collection;
