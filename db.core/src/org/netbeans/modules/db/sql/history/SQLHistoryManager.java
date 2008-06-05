@@ -90,7 +90,9 @@ public class SQLHistoryManager  {
     private void generateSerializedFilename()  {
         FileObject databaseDir = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("Databases");
         try {
-            databaseDir.createData("sql_history.xml"); // NOI18N
+            if (databaseDir.getFileObject("sql_history", "xml") == null) {  // NOI18N
+                databaseDir.createData("sql_history", "xml"); // NOI18N
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
