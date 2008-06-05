@@ -41,6 +41,7 @@ package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.Component;
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -119,8 +120,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         if (runConfigurationPanelVisual == null) {
             configProvider = new WizardConfigProvider();
             configManager = new ConfigManager(configProvider);
-            // create exactly one configuration
-            configManager.createNew(WizardConfigProvider.CONFIG_NAME, WizardConfigProvider.CONFIG_NAME);
 
             runAsLocalWeb = new RunAsLocalWeb(configManager, sourcesFolderNameProvider);
             runAsRemoteWeb = new RunAsRemoteWeb(configManager);
@@ -438,12 +437,12 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private class WizardConfigProvider implements ConfigManager.ConfigProvider {
-        static final String CONFIG_NAME = "wizard"; // NOI18N
-
         final Map<String, Map<String, String>> configs;
 
         public WizardConfigProvider() {
             configs = ConfigManager.createEmptyConfigs();
+            // we will be using the default configuration (=> no bold labels)
+            configs.put(null, new HashMap<String, String>());
         }
 
         public String[] getConfigProperties() {
@@ -455,7 +454,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         }
 
         public String getActiveConfig() {
-            return CONFIG_NAME;
+            return null;
         }
 
         public void setActiveConfig(String configName) {
