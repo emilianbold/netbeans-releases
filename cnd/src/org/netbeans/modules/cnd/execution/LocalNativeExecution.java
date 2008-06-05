@@ -50,7 +50,6 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.ResourceBundle;
-import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -62,27 +61,22 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.cnd.api.execution.NativeExecution;
 
 /**
  *  A support class for helping execution of an executable, a makefile, or a script.
  */
-public class NativeExecution extends ExecutionSupport {
+public class LocalNativeExecution extends NativeExecution {
     /** Script file that merges stdout and stderr on Unix */
     private static File stdOutErrFile = null;
     private static boolean hasWarned = false;
     
     private File runDirFile;
-    private static ResourceBundle bundle = NbBundle.getBundle(NativeExecution.class);
+    private static ResourceBundle bundle = NbBundle.getBundle(LocalNativeExecution.class);
     private OutputReaderThread outputReaderThread = null; // Thread for running process
     private InputReaderThread inputReaderThread = null; // Thread for running process
     private Process executionProcess = null;
     private PrintWriter out;
-    private Reader tmp_in;
-    
-    /** Constructor */
-    public NativeExecution() {
-        super(null);
-    }
     
     /**
      * Execute an executable, a makefile, or a script

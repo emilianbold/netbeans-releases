@@ -49,7 +49,6 @@ import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
-import org.netbeans.modules.cnd.execution.NativeExecution;
 import org.netbeans.modules.cnd.execution.OutputWindowWriter;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
@@ -187,7 +186,7 @@ public class NativeExecutor implements Runnable {
         
         try {
             // Execute the selected command
-            nativeExecution = new NativeExecution();
+            nativeExecution = NativeExecution.getDefault().getNativeExecution();
             rc = nativeExecution.executeCommand(
                     runDirFile,
                     executable,
