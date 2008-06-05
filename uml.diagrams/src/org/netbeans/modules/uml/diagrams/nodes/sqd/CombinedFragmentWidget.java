@@ -89,6 +89,8 @@ import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.widgets.CombinedFragment;
 import org.netbeans.modules.uml.drawingarea.widgets.ContainerWidget;
 import org.netbeans.modules.uml.drawingarea.LabelManager;
+import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
+import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 
 /**
  *
@@ -812,6 +814,16 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
             labelWidget.removeFromParent();
             int index = getParentWidget().getChildren().indexOf(this);
             getParentWidget().addChild(index + 1, labelWidget);
+            new AfterValidationExecutor(new ActionProvider() {
+                public void perfomeAction() {
+                    for(InteractionOperandWidget ioW:operands.values())
+                    {
+                        ioW.revalidate();
+                    }
+                    getScene().validate();
+                }
+            }, getScene());
+            getScene().validate();
         }
     }
     
