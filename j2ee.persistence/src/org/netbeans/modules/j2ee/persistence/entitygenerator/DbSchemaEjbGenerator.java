@@ -420,7 +420,8 @@ public class DbSchemaEjbGenerator {
                 roleACmr,
                 !oneToOne,
                 false,
-                false);
+                false,
+                isNullable(key));
         roleAHelper.addRole(roleA);
         
         EntityRelation relation = new EntityRelation(roleA, roleB);
