@@ -195,7 +195,7 @@ final class JUnitOutputReader {
      * If <code>true</code>, standard output is being read,
      * if <code>false</code>, standard error output is being read.
      */
-    private boolean readingOutputReport;
+    private boolean readingSuiteOutputSummary;
     /** */
     private boolean lastHeaderBrief;
     /** */
@@ -338,12 +338,12 @@ final class JUnitOutputReader {
             }
             return;
         }//</editor-fold>
-        //<editor-fold defaultstate="collapsed" desc="if (readingOutputReport) ...">
-        if (readingOutputReport) {
+        //<editor-fold defaultstate="collapsed" desc="if (readingSuiteOutputSummary) ...">
+        if (readingSuiteOutputSummary) {
             if (msg.startsWith(OUTPUT_DELIMITER_PREFIX)) {
                 Matcher matcher = regexp.getOutputDelimPattern().matcher(msg);
                 if (matcher.matches() && (matcher.group(1) == null)) {
-                    readingOutputReport = false;
+                    readingSuiteOutputSummary = false;
                 }
             }
             return;
@@ -401,7 +401,7 @@ final class JUnitOutputReader {
             if (report == null) {
                 return;
             }
-            readingOutputReport = true;
+            readingSuiteOutputSummary = true;
         }//</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="XML_DECL_PREFIX">
         else if (expectXmlReport && msg.startsWith(XML_DECL_PREFIX)) {
@@ -1066,7 +1066,7 @@ final class JUnitOutputReader {
         }
         
         xmlOutputBuffer = null;
-        readingOutputReport = false;
+        readingSuiteOutputSummary = false;
         testcase = null;
         trouble = null;
         troubleParser = null;
