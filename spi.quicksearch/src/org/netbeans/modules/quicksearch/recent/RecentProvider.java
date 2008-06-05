@@ -45,6 +45,8 @@ import org.netbeans.spi.quicksearch.CategoryDescription;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
     
 /**
@@ -61,9 +63,9 @@ public class RecentProvider implements SearchProvider, CategoryDescription {
             }
         }
     }
-
-    public CategoryDescription getCategory() {
-        return this;
+    
+    public Lookup getLookup() {
+        return Lookups.fixed(this);
     }
 
     public String getDisplayName() {
@@ -77,5 +79,6 @@ public class RecentProvider implements SearchProvider, CategoryDescription {
     public String getHint() {
         return null;
     }
+
 
 }

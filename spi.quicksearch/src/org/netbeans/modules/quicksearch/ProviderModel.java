@@ -114,7 +114,7 @@ final class ProviderModel {
         
         public String getDisplayName() {
             for (SearchProvider prov : providers) {
-                CategoryDescription desc = prov.getCategory();
+                CategoryDescription desc = prov.getLookup().lookup(CategoryDescription.class);
                 if (desc != null) {
                     String displayName = desc.getDisplayName();
                     if (displayName != null) {
@@ -128,7 +128,7 @@ final class ProviderModel {
 
         public String getCommandPrefix() {
             for (SearchProvider prov : providers) {
-                CategoryDescription desc = prov.getCategory();
+                CategoryDescription desc = prov.getLookup().lookup(CategoryDescription.class);
                 if (desc != null) {
                     String prefix = desc.getCommandPrefix();
                     if (prefix != null) {

@@ -45,6 +45,8 @@ import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.netbeans.spi.quicksearch.CategoryDescription;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -75,8 +77,8 @@ public class JavaTypeSearchProvider implements SearchProvider, CategoryDescripti
         }
     }
 
-    public CategoryDescription getCategory() {
-        return this;
+    public Lookup getLookup() {
+        return Lookups.fixed(this);
     }
 
     public String getDisplayName() {

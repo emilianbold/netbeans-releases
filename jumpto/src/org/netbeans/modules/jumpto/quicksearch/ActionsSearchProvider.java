@@ -53,6 +53,7 @@ import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * SearchProvider for all actions. 
@@ -112,10 +113,10 @@ public class ActionsSearchProvider implements SearchProvider, CategoryDescriptio
         }
     }
 
-    public CategoryDescription getCategory() {
-        return this;
+    public Lookup getLookup() {
+        return Lookups.fixed(this);
     }
-
+    
     public String getDisplayName() {
         return "Actions";
     }

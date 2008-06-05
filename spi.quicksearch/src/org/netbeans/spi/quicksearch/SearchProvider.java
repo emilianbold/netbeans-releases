@@ -40,11 +40,13 @@
 
 package org.netbeans.spi.quicksearch;
 
+import org.openide.util.Lookup;
+
 /**
  * Search Provider, implement to provide new group of results for quick search.
  * 
- * Implementations of SearchProvider must be registered through xml layer in
- * following way:
+ * In order to plug into quick search UI, implementations of SearchProvider
+ * must be registered through xml layer in following way:
  * 
  * <pre>
  *  <folder name="QuickSearch">
@@ -86,14 +88,29 @@ public interface SearchProvider {
      */
     public void evaluate (SearchRequest request, SearchResponse response);
     
-    
     /**
-     * Description of visual category in which results will be displayed.
+     * Returns lookup content of this provider.
      * 
-     * Category ID and its position is defined in 
+     * Implementors should return Lookup instance that contains instances of:
      * 
-     * @return
+     * <ul>
+     * <li><b>CategoryDescription:</b> Description of visual category of 
+     * quick search results. While category ID and its position is defined in xml layer
+     * registration, CategoryDescription serves for UI of result category.
+     * If several providers share one category, then only one provider needs to
+     * specify CategoryDescription. Note however that if your provider shares
+     * category with provider from different module and you won't provide
+     * CategoryDescription, you must have dependency on module which actually defines
+     * CategoryDescription.
+     * </li>
+     * 
+     * </ul>
+     * 
+     * 
+     * @return Lookup that quick search infrastructure lookups for instances of
+     * classes/interfaces mentioned above and uses found capabilities for its UI
+     * and other functionality. May return null under special circumstances (see above).
      */
-    public CategoryDescription getCategory ();
+    public Lookup getLookup ();
     
 }
