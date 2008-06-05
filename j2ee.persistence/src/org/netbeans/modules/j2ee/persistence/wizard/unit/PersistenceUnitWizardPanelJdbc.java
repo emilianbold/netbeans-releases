@@ -51,12 +51,10 @@ import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.core.api.support.Strings;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.util.PersistenceProviderComboboxHelper;
-import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.openide.util.NbBundle;
 
@@ -127,10 +125,6 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
     
     public String getPersistenceUnitName() {
         return unitNameTextField.getText();
-    }
-    
-    public Library getPersistenceLibrary() {
-        return PersistenceLibrarySupport.getLibrary((Provider) libraryCombo.getSelectedItem());
     }
     
     public Provider getSelectedProvider(){
