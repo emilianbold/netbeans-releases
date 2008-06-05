@@ -186,7 +186,7 @@ final class JUnitOutputReader {
     private String suiteName;
     
     /** */
-    private StringBuffer xmlOutputBuffer;
+    private StringBuilder xmlOutputBuffer;
     
     /**
      * Are we reading standard output or standard error output?
@@ -407,7 +407,7 @@ final class JUnitOutputReader {
             if (matcher.matches()) {
                 suiteStarted(null);
                 
-                xmlOutputBuffer = new StringBuffer(4096);
+                xmlOutputBuffer = new StringBuilder(4096);
                 xmlOutputBuffer.append(msg);
             }
         }//</editor-fold>
