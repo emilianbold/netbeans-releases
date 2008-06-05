@@ -83,17 +83,14 @@ public class TestProjectReferencesAction extends NodeAction {
     }
 
     public static Action getSmartCompletionAnalyzerAction() {
-        System.err.println("called getSmartCompletionAnalyzerAction()");
         return SharedClassObject.findObject(SmartCompletionAnalyzerAction.class, true);
     }
     
     public static Action getDirectUsageReferencesAction() {
-        System.err.println("called getDirectUsageReferencesAction()");
         return SharedClassObject.findObject(DirectUsageAction.class, true);
     }
     
     public static Action getAllReferencesAction() {
-        System.err.println("called getAllReferencesAction()");
         return SharedClassObject.findObject(AllUsagesAction.class, true);
     }
     

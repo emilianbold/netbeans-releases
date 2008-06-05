@@ -156,6 +156,9 @@ public final class Validator extends BpelValidator {
     if (entity instanceof Invoke) {
       checkInfoVariableDeclaration(((Invoke) entity).getOutputVariable(), infos, false);
     }
+    if (entity instanceof OnEvent) {
+      checkInfoVariable(((OnEvent) entity).getVariableName(), infos, false);
+    }
     if (entity instanceof Catch) {
       checkInfoVariable(((Catch) entity).getFaultVariable(), infos, false);
     }

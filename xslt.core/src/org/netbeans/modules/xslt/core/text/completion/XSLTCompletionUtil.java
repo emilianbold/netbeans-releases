@@ -41,10 +41,18 @@ package org.netbeans.modules.xslt.core.text.completion;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
+import org.netbeans.modules.xslt.core.XSLTDataEditorSupport;
+import org.netbeans.modules.xslt.model.XslModel;
+import org.netbeans.modules.xslt.model.spi.XslModelFactory;
+import org.openide.util.lookup.Lookups;
+import org.openide.windows.TopComponent;
 
 /**
  * @author Alex Petrov (30.04.2008)
@@ -126,5 +134,28 @@ public class XSLTCompletionUtil {
             return dataWithNamespace.substring(index + 1);
         }
         return dataWithNamespace;
+    }
+    
+    public static XSLTDataEditorSupport getXsltDataEditorSupport() {
+        try {
+            TopComponent topComponent = TopComponent.getRegistry().getActivated();
+            XSLTDataEditorSupport editorSupport = topComponent.getLookup().lookup(
+                XSLTDataEditorSupport.class);
+            return editorSupport;
+        } catch(Exception e) {
+            Logger logger = Logger.getLogger(XSLTCompletionUtil.class.getName());
+            logger.log(Level.INFO, null, e);
+            return null;
+        }
+    }
+    
+    public static XslModel getXslModel(Document doc) {
+        if (doc == null) return null;
+        if (getXsltDataEditorSupport() == null) return null;
+        
+        ModelSource modelSource = new ModelSource(Lookups.singleton(doc), false);
+        XslModelFactory xslModelFactory = XslModelFactory.XslModelFactoryAccess.getFactory();
+        XslModel xslModel = xslModelFactory.getModel(modelSource);
+        return xslModel;
     }
 }

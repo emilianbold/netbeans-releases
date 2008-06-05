@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -45,6 +45,26 @@ made subject to such option by the copyright holder.
     <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="files-init" depends="projectized-common.files-init">
+
+        <!--
+        Declare that you want to release the binary patch of Ant 1.7.0,
+        which allows for execution of a single JUnit test method
+        or execution of test methods that failed during the previous run.
+        The patch contains classes from package
+        org.apache.tools.ant.taskdefs.optional.junit,
+        of which some are modified and one is added.
+        See also http://www.netbeans.org/issues/show_bug.cgi?id=72080.
+        The source code patch is placed in the .jar archive, in the root
+        directory.
+
+        For explanation of how a property can cause that a file is copied
+        for explanation of the meaning of key and value of the property,
+        see target "release" in "projectized.xml" and class
+        org.netbeans.nbbuild.extlibs.ReleaseFilesCopy in "nbbuild".
+        -->
+        <property name="release.external/Ant-1.7.0-binary-patch-72080.jar"
+                  value="ant/patches/Ant-1.7.0-binary-patch-72080.jar"/>
+
         <property name="extra.arch.files.dir" value="arch"/>
         <patternset id="extra.arch.files" includes="JUnitPlugin.png"/>
     </target>

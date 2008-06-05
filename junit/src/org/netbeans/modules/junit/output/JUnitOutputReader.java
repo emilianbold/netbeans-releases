@@ -186,16 +186,14 @@ final class JUnitOutputReader {
     private String suiteName;
     
     /** */
-    private StringBuffer xmlOutputBuffer;
+    private StringBuilder xmlOutputBuffer;
     
     /**
      * Are we reading standard output or standard error output?
      * This variable is used only when reading output from the test cases
      * (when {@link #outputBuffer} is non-<code>null</code>).
-     * If <code>true</code>, standard output is being read,
-     * if <code>false</code>, standard error output is being read.
      */
-    private boolean readingOutputReport;
+    private boolean readingSuiteOutputSummary;
     /** */
     private boolean lastHeaderBrief;
     /** */
@@ -338,12 +336,12 @@ final class JUnitOutputReader {
             }
             return;
         }//</editor-fold>
-        //<editor-fold defaultstate="collapsed" desc="if (readingOutputReport) ...">
-        if (readingOutputReport) {
+        //<editor-fold defaultstate="collapsed" desc="if (readingSuiteOutputSummary) ...">
+        if (readingSuiteOutputSummary) {
             if (msg.startsWith(OUTPUT_DELIMITER_PREFIX)) {
                 Matcher matcher = regexp.getOutputDelimPattern().matcher(msg);
                 if (matcher.matches() && (matcher.group(1) == null)) {
-                    readingOutputReport = false;
+                    readingSuiteOutputSummary = false;
                 }
             }
             return;
@@ -401,7 +399,7 @@ final class JUnitOutputReader {
             if (report == null) {
                 return;
             }
-            readingOutputReport = true;
+            readingSuiteOutputSummary = true;
         }//</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="XML_DECL_PREFIX">
         else if (expectXmlReport && msg.startsWith(XML_DECL_PREFIX)) {
@@ -409,7 +407,7 @@ final class JUnitOutputReader {
             if (matcher.matches()) {
                 suiteStarted(null);
                 
-                xmlOutputBuffer = new StringBuffer(4096);
+                xmlOutputBuffer = new StringBuilder(4096);
                 xmlOutputBuffer.append(msg);
             }
         }//</editor-fold>
@@ -1066,7 +1064,7 @@ final class JUnitOutputReader {
         }
         
         xmlOutputBuffer = null;
-        readingOutputReport = false;
+        readingSuiteOutputSummary = false;
         testcase = null;
         trouble = null;
         troubleParser = null;
