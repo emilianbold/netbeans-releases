@@ -88,6 +88,10 @@ public class RelatedCMPHelper {
     
     private PersistenceUnit persistenceUnit;
     
+    // Global mapping options added in NB 6.5
+    private boolean fullyQualifiedTableNames = false; 
+    //TODO: More to come
+    
     public RelatedCMPHelper(Project project, FileObject configFilesFolder, PersistenceGenerator persistenceGen) {
         this.project = project;
         this.configFilesFolder = configFilesFolder;
@@ -236,7 +240,15 @@ public class RelatedCMPHelper {
     public void setGenerateFinderMethods(boolean generateFinderMethods) {
         this.generateFinderMethods = generateFinderMethods;
     }
-    
+
+    public boolean isFullyQualifiedTableNames() {
+        return fullyQualifiedTableNames;
+    }
+
+    public void setFullyQualifiedTableNames(boolean fullyQualifiedNames) {
+        this.fullyQualifiedTableNames = fullyQualifiedNames;
+    }
+
     /**
      * Public because used in J2EE functional tests.
      */
@@ -244,11 +256,12 @@ public class RelatedCMPHelper {
         TableSource.put(project, tableSource);
         
         GenerateTablesImpl genTables = new GenerateTablesImpl();
+        genTables.setFullyQualifiedTableNames(isFullyQualifiedTableNames());
         FileObject rootFolder = getLocation().getRootFolder();
-        String packageName = getPackageName();
+        String pkgName = getPackageName();
 
         for (Table table : selectedTables.getTables()) {
-            genTables.addTable(table.getName(), rootFolder, packageName, selectedTables.getClassName(table));
+            genTables.addTable(table.getSchema(), table.getCatalog(), table.getName(), rootFolder, pkgName, selectedTables.getClassName(table));
         }
 
         // add the (possibly related) disabled tables, so that the relationships are created correctly
@@ -259,7 +272,7 @@ public class RelatedCMPHelper {
                 String fqClassName = exDisReason.getFQClassName();
                 SourceGroup sourceGroup = Util.getClassSourceGroup(getProject(), fqClassName); // NOI18N
                 if (sourceGroup != null) {
-                    genTables.addTable(table.getName(), sourceGroup.getRootFolder(), 
+                    genTables.addTable(table.getSchema(), table.getCatalog(), table.getName(), sourceGroup.getRootFolder(), 
                             JavaIdentifiers.getPackageName(fqClassName), JavaIdentifiers.unqualify(fqClassName));
                 }
             }
@@ -277,8 +290,11 @@ public class RelatedCMPHelper {
     }
     
     private static final class GenerateTablesImpl implements GeneratedTables {
-
+        
+        private boolean fullyQualifiedTableNames; // not for per table
         private final Set<String> tableNames = new HashSet<String>();
+        private final Map<String, String> schemas = new HashMap<String, String>();
+        private final Map<String, String> catalogs = new HashMap<String, String>();
         private final Map<String, FileObject> rootFolders = new HashMap<String, FileObject>();
         private final Map<String, String> packageNames = new HashMap<String, String>();
         private final Map<String, String> classNames = new HashMap<String, String>();
@@ -287,11 +303,29 @@ public class RelatedCMPHelper {
             return Collections.unmodifiableSet(tableNames);
         }
         
-        private void addTable(String tableName, FileObject rootFolder, String packageName, String className) {
+        private void addTable(String schemaName, String catalogName, String tableName, FileObject rootFolder, String packageName, String className) {
             tableNames.add(tableName);
+            schemas.put(tableName, schemaName);
+            catalogs.put(tableName, catalogName);
             rootFolders.put(tableName, rootFolder);
             packageNames.put(tableName, packageName);
             classNames.put(tableName, className);
+        }
+        
+        public void setFullyQualifiedTableNames(boolean fullyQualifiedNames) {
+            this.fullyQualifiedTableNames = fullyQualifiedNames;
+        }
+        
+        public boolean isFullyQualifiedTableNames() {
+            return this.fullyQualifiedTableNames;
+        }
+        
+        public String getSchema(String tableName) {
+            return schemas.get(tableName);
+        }
+        
+        public String getCatalog(String tableName) {
+            return catalogs.get(tableName);
         }
 
         public FileObject getRootFolder(String tableName) {

@@ -52,7 +52,9 @@ import org.openide.filesystems.FileObject;
  * @author Chris Webster, Martin Adamek, Andrei Badea
  */
 public class EntityClass {
-    
+    private final boolean fullyQualifiedTblNames;
+    private final String schemaName;
+    private final String catalogName;
     private final String tableName;
     private final FileObject rootFolder;
     private final String className;
@@ -66,7 +68,10 @@ public class EntityClass {
     
     private boolean forTable = true;  // false means forView
     
-    public EntityClass(String tableName, FileObject rootFolder, String packageName, String className) {
+    public EntityClass(boolean fullyQualifiedTblNames, String schemaName, String catalogName, String tableName, FileObject rootFolder, String packageName, String className) {
+        this.fullyQualifiedTblNames = fullyQualifiedTblNames;
+        this.schemaName = schemaName;
+        this.catalogName = catalogName;
         this.tableName = tableName;
         this.rootFolder = rootFolder;
         this.packageName = packageName;
@@ -83,6 +88,10 @@ public class EntityClass {
     
     public void setIsForTable( boolean forTable) {
         this.forTable = forTable;
+    }
+    
+    public boolean isFullyQualifiedTblNames() {
+        return this.fullyQualifiedTblNames;
     }
     
     public void addRole(RelationshipRole role) {
@@ -119,6 +128,14 @@ public class EntityClass {
     
     public String getPackage() {
         return packageName;
+    }
+    
+    public String getCatalogName() {
+        return catalogName;
+    }
+    
+    public String getSchemaName() {
+        return schemaName;
     }
     
     public String getTableName() {

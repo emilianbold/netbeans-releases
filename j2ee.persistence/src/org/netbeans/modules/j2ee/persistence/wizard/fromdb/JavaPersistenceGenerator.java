@@ -719,8 +719,20 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     newClassTree = genUtils.addImplementsClause(newClassTree, "java.io.Serializable"); // NOI18N
                 }
                 newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Entity")); // NOI18N
-                ExpressionTree tableNameArgument = genUtils.createAnnotationArgument("name", dbMappings.getTableName()); // NOI18N
-                newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Table", Collections.singletonList(tableNameArgument)));
+                //ExpressionTree tableNameArgument = genUtils.createAnnotationArgument("name", dbMappings.getTableName()); // NOI18N
+                List<ExpressionTree> tableAnnArgs = new ArrayList<ExpressionTree>();
+                tableAnnArgs.add(genUtils.createAnnotationArgument("name", dbMappings.getTableName())); // NOI18N
+                if(entityClass.isFullyQualifiedTblNames()) {
+                    String schemaName = entityClass.getSchemaName();
+                    String catalogName = entityClass.getCatalogName();
+                    if(schemaName != null ) {
+                        tableAnnArgs.add(genUtils.createAnnotationArgument("schema", schemaName)); // NI18N
+                    }
+                    if(catalogName != null) {
+                        tableAnnArgs.add(genUtils.createAnnotationArgument("catalog", catalogName)); // NI18N
+                    }
+                }
+                newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Table", tableAnnArgs));
 
                 if (needsPKClass) {
                     String pkFieldName = createFieldName(pkClassName);

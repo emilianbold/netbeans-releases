@@ -144,13 +144,17 @@ public class DbSchemaEjbGenerator {
         return (EntityClass)beans.get(tableName);
     }
     
-    private EntityClass addBean(String tableName) {
+    private EntityClass addBean(String schemaName, String catalogName, String tableName) {
         EntityClass bean = getBean(tableName);
         if (bean != null) {
             return bean;
         }
         
-        bean = new EntityClass(tableName,
+        bean = new EntityClass(
+                genTables.isFullyQualifiedTableNames(),
+                schemaName, 
+                catalogName, 
+                tableName,
                 genTables.getRootFolder(tableName),
                 genTables.getPackageName(tableName),
                 genTables.getClassName(tableName));
@@ -167,7 +171,9 @@ public class DbSchemaEjbGenerator {
             if (isJoinTable(tableElement)) {
                 joinTables.add(tableElement);
             } else {
-                addBean(tableName);
+                String schemaName = genTables.getSchema(tableName);
+                String catalogName = genTables.getCatalog(tableName);
+                addBean(schemaName, catalogName, tableName);
             }
         }
         for (TableElement joinTable : joinTables) {
