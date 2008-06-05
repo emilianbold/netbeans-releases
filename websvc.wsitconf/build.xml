@@ -43,8 +43,14 @@ made subject to such option by the copyright holder.
 <project basedir="." default="netbeans" name="websvc.wsitconf">
     <import file="../nbbuild/templates/projectized.xml"/>
     
-    <target name="replacefiles">
-        <copy file="nbproject/project61.xml" tofile="nbproject/project.xml" />
+    <target name="build61modules">
+        <get src="http://deadlock.netbeans.org/hudson/job/javadoc-nbms/lastSuccessfulBuild/artifact/nbbuild/nbms/enterprise5/org-netbeans-modules-websvc-wsitconf.nbm"/>
+        <get src="http://deadlock.netbeans.org/hudson/job/javadoc-nbms/lastSuccessfulBuild/artifact/nbbuild/nbms/enterprise5/org-netbeans-modules-websvc-wsitmodelext.nbm"/>
+
+        <mkdir dir="nbm"/>
+        
+        <unzip src="org-netbeans-modules-websvc-wsitconf.nbm" dest="nbm"/>
+                
     </target>
     
 </project>
