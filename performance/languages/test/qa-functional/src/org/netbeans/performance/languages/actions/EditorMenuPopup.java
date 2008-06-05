@@ -142,6 +142,12 @@ public class EditorMenuPopup extends org.netbeans.modules.performance.utilities.
         docName = "rhtml20kb.rhtml"; 
         doMeasurement();        
     }
+    public void test_PHP_EditorPopup() {
+        testProject = Projects.PHP_PROJECT;
+        pathName = "Source Files"+"|";
+        docName = "php20kb.php"; 
+        doMeasurement();         
+    }
     public void test_JS_EditorPopup() {
         testProject = Projects.SCRIPTING_PROJECT;
         pathName = "Web Pages"+"|";
