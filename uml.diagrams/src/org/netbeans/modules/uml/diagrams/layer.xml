@@ -630,7 +630,7 @@ made subject to such option by the copyright holder.
                 <attr name="factory" newvalue="org.netbeans.modules.uml.diagrams.edges.factories.NavigableCompositionFactory"/>
             </file>
             <file name="ClassAssociation.context_palette_item" url="resources/context/ClassAssociation.context_palette_item">
-                <attr name="model" newvalue="org.netbeans.modules.uml.diagrams.edges.AssociationClassPaletteModel"/>
+                <attr name="factory" newvalue="org.netbeans.modules.uml.diagrams.edges.factories.AssociationClassFactory"/>
             </file>
             <file name="LinkComment.context_palette_item" url="resources/context/LinkComment.context_palette_item">
                 <attr name="model" newvalue="org.netbeans.modules.uml.diagrams.edges.CommentLinkPaletteModel"/>
@@ -1870,10 +1870,10 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules.uml-diagrams-edges-factories-AbstractionConnectionFactory.instance"/>
             </folder>
             <folder name="NestedLink">
-                <file name="org-netbeans-modules.uml-diagrams-edges-factories-NestedLinkConnectionFactory.instance"/>
+                <file name="org-netbeans-modules.uml-diagrams-edges-factories-NestedLinkConnectionFactory.instAssance"/>
             </folder>
             <folder name="AssociationClass">
-                <file name="org-netbeans-modules.uml-diagrams-edges-factories-AssociationClassConnector.instance"/>
+                <file name="org-netbeans-modules.uml-diagrams-edges-factories-AssociationClassConnectionFactory.instance"/>
             </folder>
             <folder name="PartFacadeEdge">
                 <file name="org-netbeans-modules.uml-diagrams-edges-factories-PartFacadeConnectionFactory.instance"/>
