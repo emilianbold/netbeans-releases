@@ -8,7 +8,7 @@ HEREDOC;
 $name="Honza";
 
 $x = <<<ENDOFHEREDOC
-This is another nowdoc test.
+This is another heredoc test.
 With another line in it.
 ENDOFHEREDOC;
 

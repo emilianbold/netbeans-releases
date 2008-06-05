@@ -1061,8 +1061,8 @@ yybegin(ST_DOCBLOCK);
     yybegin(ST_IN_SCRIPTING);
     return createSymbol(ASTPHP5Symbols.T_END_NOWDOC);
 }
-
-<ST_IN_SCRIPTING>b?"<<<"{TABS_AND_SPACES}{LABEL}{NEWLINE} {
+                 
+<ST_IN_SCRIPTING>b?"<<<"{TABS_AND_SPACES}({LABEL}|"\""{LABEL}"\""){NEWLINE} {
     int removeChars = (yytext().charAt(0) == 'b')?4:3;
     heredoc = yytext().substring(removeChars).trim();    // for 'b<<<' or '<<<'
     yybegin(ST_START_HEREDOC);

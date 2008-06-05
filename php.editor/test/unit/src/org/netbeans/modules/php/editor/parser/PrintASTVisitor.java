@@ -231,9 +231,13 @@ public class PrintASTVisitor implements Visitor {
         }
     }
 
-    public void visit(ArrayAccess arrayAccess) {
-        addIndentation();
-        buffer.append("### Not supported yet arrayAccess.\n");
+    public void visit(ArrayAccess node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "ArrayAccess",
+                new String[]{ "type", node.getArrayType().name(),
+                    "isDollared", (node.isDollared()?"true":"false")});
+        printNode.addChildrenGroup("Index", new ASTNode[]{node.getIndex()});
+        printNode.addChildrenGroup("Name", new ASTNode[]{node.getName()});
+        printNode.print(this);
     }
 
     public void visit(ArrayCreation arrayCreation) {

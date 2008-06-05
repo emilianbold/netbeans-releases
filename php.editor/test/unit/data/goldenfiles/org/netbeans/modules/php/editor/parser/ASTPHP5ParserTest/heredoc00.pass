@@ -1,0 +1,216 @@
+<testresult testFile='heredoc00.php'>
+    <scanner>
+        <token id='T_VARIABLE' start='3' end='8'>
+            <text>$name</text>
+        </token>
+        <token id='T_EQUAL' start='8' end='9'>
+            <text>=</text>
+        </token>
+        <token id='T_CONSTANT_ENCAPSED_STRING' start='9' end='15'>
+            <text>"Petr"</text>
+        </token>
+        <token id='T_SEMICOLON' start='15' end='16'>
+            <text>;</text>
+        </token>
+        <token id='T_VARIABLE' start='17' end='21'>
+            <text>$age</text>
+        </token>
+        <token id='T_EQUAL' start='21' end='22'>
+            <text>=</text>
+        </token>
+        <token id='T_LNUMBER' start='22' end='24'>
+            <text>10</text>
+        </token>
+        <token id='T_SEMICOLON' start='24' end='25'>
+            <text>;</text>
+        </token>
+        <token id='T_ECHO' start='26' end='30'>
+            <text>echo</text>
+        </token>
+        <token id='T_START_HEREDOC' start='31' end='42'>
+            <text>&lt;&lt;&lt;HEREDOC\n</text>
+        </token>
+        <token id='T_ENCAPSED_AND_WHITESPACE' start='42' end='48'>
+            <text>Name: </text>
+        </token>
+        <token id='T_VARIABLE' start='48' end='53'>
+            <text>$name</text>
+        </token>
+        <token id='T_ENCAPSED_AND_WHITESPACE' start='53' end='69'>
+            <text>&lt;br&gt;\nMy age is: </text>
+        </token>
+        <token id='T_VARIABLE' start='69' end='73'>
+            <text>$age</text>
+        </token>
+        <token id='T_ENCAPSED_AND_WHITESPACE' start='73' end='84'>
+            <text>&lt;br&gt;\nHEREDO</text>
+        </token>
+        <token id='T_END_HEREDOC' start='84' end='85'>
+            <text>C</text>
+        </token>
+        <token id='T_SEMICOLON' start='85' end='86'>
+            <text>;</text>
+        </token>
+        <token id='T_VARIABLE' start='87' end='92'>
+            <text>$name</text>
+        </token>
+        <token id='T_EQUAL' start='92' end='93'>
+            <text>=</text>
+        </token>
+        <token id='T_CONSTANT_ENCAPSED_STRING' start='93' end='100'>
+            <text>"Honza"</text>
+        </token>
+        <token id='T_SEMICOLON' start='100' end='101'>
+            <text>;</text>
+        </token>
+        <token id='T_VARIABLE' start='103' end='105'>
+            <text>$x</text>
+        </token>
+        <token id='T_EQUAL' start='106' end='107'>
+            <text>=</text>
+        </token>
+        <token id='T_START_HEREDOC' start='108' end='124'>
+            <text>&lt;&lt;&lt;ENDOFHEREDOC\n</text>
+        </token>
+        <token id='T_ENCAPSED_AND_WHITESPACE' start='124' end='189'>
+            <text>This is another nowdoc test.\nWith another line in it.\nENDOFHEREDO</text>
+        </token>
+        <token id='T_END_HEREDOC' start='189' end='190'>
+            <text>C</text>
+        </token>
+        <token id='T_SEMICOLON' start='190' end='191'>
+            <text>;</text>
+        </token>
+        <token id='T_VARIABLE' start='194' end='196'>
+            <text>$x</text>
+        </token>
+        <token id='T_EQUAL' start='197' end='198'>
+            <text>=</text>
+        </token>
+        <token id='T_START_HEREDOC' start='199' end='215'>
+            <text>&lt;&lt;&lt;ENDOFHEREDOC\n</text>
+        </token>
+        <token id='T_ENCAPSED_AND_WHITESPACE' start='302' end='334'>
+            <text>\nNow let&apos;s finish it\nENDOFHEREDO</text>
+        </token>
+        <token id='T_END_HEREDOC' start='334' end='335'>
+            <text>C</text>
+        </token>
+        <token id='T_SEMICOLON' start='335' end='336'>
+            <text>;</text>
+        </token>
+        <token id='T_PRINT' start='339' end='344'>
+            <text>print</text>
+        </token>
+        <token id='T_QUATE' start='345' end='346'>
+            <text>"</text>
+        </token>
+        <token id='T_CURLY_OPEN_WITH_DOLAR' start='346' end='347'>
+            <text>{</text>
+        </token>
+        <token id='T_VARIABLE' start='347' end='349'>
+            <text>$x</text>
+        </token>
+        <token id='T_CURLY_CLOSE' start='349' end='350'>
+            <text>}</text>
+        </token>
+        <token id='T_QUATE' start='350' end='351'>
+            <text>"</text>
+        </token>
+        <token id='T_SEMICOLON' start='351' end='352'>
+            <text>;</text>
+        </token>
+        <token id='T_SEMICOLON' start='353' end='356'>
+            <text>?&gt;\n</text>
+        </token>
+        <token id='EOF' start='356' end='356'>
+            <text></text>
+        </token>
+    </scanner>
+    <Program start='0' end='355'>
+        <Statements>
+            <ExpressionStatement start='3' end='16'>
+                <Assignment start='3' end='15' operator='EQUAL'>
+                    <Variable start='3' end='8' isDollared='true'>
+                        <Identifier start='4' end='8' name='name'/>
+                    </Variable>
+                    <Scalar start='9' end='15' type='STRING' value='"Petr"'/>
+                </Assignment>
+            </ExpressionStatement>
+            <ExpressionStatement start='17' end='25'>
+                <Assignment start='17' end='24' operator='EQUAL'>
+                    <Variable start='17' end='21' isDollared='true'>
+                        <Identifier start='18' end='21' name='age'/>
+                    </Variable>
+                    <Scalar start='22' end='24' type='INT' value='10'/>
+                </Assignment>
+            </ExpressionStatement>
+            <EchoStatement start='26' end='86'>
+                <Quote start='31' end='85' type='HEREDOC'>
+                    <Expressions>
+                        <Scalar start='42' end='48' type='STRING' value='Name: '/>
+                        <Variable start='48' end='53' isDollared='true'>
+                            <Identifier start='49' end='53' name='name'/>
+                        </Variable>
+                        <Scalar start='53' end='69' type='STRING' value='&lt;br&gt;\nMy age is: '/>
+                        <Variable start='69' end='73' isDollared='true'>
+                            <Identifier start='70' end='73' name='age'/>
+                        </Variable>
+                        <Scalar start='73' end='84' type='STRING' value='&lt;br&gt;\n'/>
+                    </Expressions>
+                </Quote>
+            </EchoStatement>
+            <ExpressionStatement start='87' end='101'>
+                <Assignment start='87' end='100' operator='EQUAL'>
+                    <Variable start='87' end='92' isDollared='true'>
+                        <Identifier start='88' end='92' name='name'/>
+                    </Variable>
+                    <Scalar start='93' end='100' type='STRING' value='"Honza"'/>
+                </Assignment>
+            </ExpressionStatement>
+            <ExpressionStatement start='103' end='191'>
+                <Assignment start='103' end='190' operator='EQUAL'>
+                    <Variable start='103' end='105' isDollared='true'>
+                        <Identifier start='104' end='105' name='x'/>
+                    </Variable>
+                    <Quote start='108' end='190' type='HEREDOC'>
+                        <Expressions>
+                            <Scalar start='124' end='189' type='STRING' value='This is another nowdoc test.\nWith another line in it.\n'/>
+                        </Expressions>
+                    </Quote>
+                </Assignment>
+            </ExpressionStatement>
+            <ExpressionStatement start='194' end='336'>
+                <Assignment start='194' end='335' operator='EQUAL'>
+                    <Variable start='194' end='196' isDollared='true'>
+                        <Identifier start='195' end='196' name='x'/>
+                    </Variable>
+                    <Quote start='199' end='335' type='HEREDOC'>
+                        <Expressions>
+                            <Scalar start='302' end='334' type='STRING' value='\nNow let&apos;s finish it\n'/>
+                        </Expressions>
+                    </Quote>
+                </Assignment>
+            </ExpressionStatement>
+            <ExpressionStatement start='339' end='352'>
+                <FunctionInvocation start='339' end='351'>
+                    <FucntionName start='339' end='344'>
+                        <Identifier start='339' end='344' name='print'/>
+                    </FucntionName>
+                    <Parameters>
+                        <Quote start='345' end='351' type='QUOTE'>
+                            <Expressions>
+                                <Variable start='346' end='350' isDollared='false'>
+                                    <Variable start='347' end='349' isDollared='true'>
+                                        <Identifier start='348' end='349' name='x'/>
+                                    </Variable>
+                                </Variable>
+                            </Expressions>
+                        </Quote>
+                    </Parameters>
+                </FunctionInvocation>
+            </ExpressionStatement>
+            <EmptyStatement start='353' end='355'/>
+        </Statements>
+    </Program>
+</testresult>
