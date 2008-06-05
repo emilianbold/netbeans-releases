@@ -161,7 +161,7 @@ final class TestsuiteNode extends AbstractNode {
         } else {
             buf.append(NbBundle.getMessage(getClass(),
                                            "MSG_TestsuiteNoname"));     //NOI18N
-            buf.append("&nbsp;");
+            buf.append("&nbsp;");                                       //NOI18N
         }
         if (report != null) {
             final boolean containsFailed = containsFailed();
