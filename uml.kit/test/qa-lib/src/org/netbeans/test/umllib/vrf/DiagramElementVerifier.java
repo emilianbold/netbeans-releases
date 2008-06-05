@@ -620,16 +620,15 @@ public class DiagramElementVerifier extends GenericVerifier{
             int c=0;
             for(int i=0; i<typesToSelect.length; i++){
                 c = c+50;
-                point = dia.getDrawingArea().getFreePoint(100);
-                createElement(EL_NAME+"SEL"+i, typesToSelect[i], 50+c, 90+c);
+                point = dia.getDrawingArea().getFreePoint();
+                createElement(EL_NAME+"SEL"+i, typesToSelect[i], 50+c, 100+c);
                 //createElement(EL_NAME+"SEL"+i, typesToSelect[i], point.x, point.y);
                 eventTool.waitNoEvent(500);
             }
             
-            c=0;
             for(int i=0; i<typesNotToSelect.length; i++){
                 c = c+50;
-                point = dia.getDrawingArea().getFreePoint(200);
+                point = dia.getDrawingArea().getFreePoint();
                 createElement(EL_NAME+"NOTSEL"+i, typesNotToSelect[i], 100+c, 150+c);
                 //createElement(EL_NAME+"NOTSEL"+i, typesNotToSelect[i], point.x, point.y);
                 eventTool.waitNoEvent(500);

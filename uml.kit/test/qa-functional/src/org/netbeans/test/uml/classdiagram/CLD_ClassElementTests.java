@@ -89,14 +89,40 @@ public class CLD_ClassElementTests extends ClassDiagramTestCase {
     }
     
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite(org.netbeans.test.uml.classdiagram.CLD_ClassElementTests.class);
-        return suite;
-    }
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // junit.textui.TestRunner.run(suite());
-        // run only selected test case
-        junit.textui.TestRunner.run(new org.netbeans.test.uml.classdiagram.CLD_ClassElementTests("testCopyAndPasteClassElement"));
+        
+        //NbTestSuite suite = new NbTestSuite(org.netbeans.test.uml.classdiagram.CLD_ClassElementTests.class);
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new CLD_ClassElementTests("testCopyAndPasteByPopup"));
+        suite.addTest(new CLD_ClassElementTests("testCopyAndPasteByShortcut"));
+        // 6.5 Cut is not working
+        //suite.addTest(new CLD_ClassElementTests("testCutAndPasteByPopup"));
+        //suite.addTest(new CLD_ClassElementTests("testCutAndPasteByShortcut"));
+        suite.addTest(new CLD_ClassElementTests("testDeleteByPopup"));
+        suite.addTest(new CLD_ClassElementTests("testDeleteByShortcut"));
+        // 6.5  Lock edit not yet implemented
+        //suite.addTest(new CLD_ClassElementTests("testLockEdit"));
+        suite.addTest(new CLD_ClassElementTests("testSelectAllByPopup"));
+        suite.addTest(new CLD_ClassElementTests("testSelectAllByShortcut"));
+        suite.addTest(new CLD_ClassElementTests("testSelectAllSimilar"));
+        suite.addTest(new CLD_ClassElementTests("testInvertSelection"));
+        // 6.5 Hide/Show not yet implemented
+        /**
+        suite.addTest(new CLD_ClassElementTests("testHideChildrenOneLevel"));
+        suite.addTest(new CLD_ClassElementTests("testHideChildrenAllLevels"));
+        suite.addTest(new CLD_ClassElementTests("testHideParentsOneLevel"));
+        suite.addTest(new CLD_ClassElementTests("testHideParentsAllLevels"));
+        suite.addTest(new CLD_ClassElementTests("testShowChildrenOneLevel"));
+        suite.addTest(new CLD_ClassElementTests("testShowChildrenAllLevels"));
+        suite.addTest(new CLD_ClassElementTests("testShowParentsOneLevel"));
+        suite.addTest(new CLD_ClassElementTests("testShowParentsAllLevels"));
+        **/
+        // 6.5 setColor() not yet working
+        //suite.addTest(new CLD_ClassElementTests("testBorderColor"));
+        //suite.addTest(new CLD_ClassElementTests("testBackgroundColor"));
+        suite.addTest(new CLD_ClassElementTests("testFont"));
+        //suite.addTest(new CLD_ClassElementTests("testFontColor"));
+        
+       return suite;
     }
    
     public void testCopyAndPasteByPopup(){
@@ -112,8 +138,7 @@ public class CLD_ClassElementTests extends ClassDiagramTestCase {
             fail("Test failed. Details in log file.");
         }
     }
-    
-    /**  6.5:  Cut is not working
+   
     public void testCutAndPasteByPopup(){
         boolean result = verifier.checkCutPasteByPopup();
         if (!result){
@@ -127,8 +152,7 @@ public class CLD_ClassElementTests extends ClassDiagramTestCase {
             fail("Test failed. Details in log file.");
         }
     }
-    **/
-    
+   
     public void testDeleteByPopup() throws NotFoundException {
         boolean result = verifier.checkDeleteByPopup();
         if (!result){
@@ -143,16 +167,15 @@ public class CLD_ClassElementTests extends ClassDiagramTestCase {
         }
     }
   
-   /** 6.5 LockEdit is not yet implemented
     public void testLockEdit() throws NotFoundException {
         boolean result = verifier.checkLockEdit();
         if (!result){
             fail("Test failed. Details in log file.");
         }
     }
-    **/
-    
+  
     public void testSelectAllByPopup() throws NotFoundException {
+        // 6.5  Artifact not yet implemented,  replace it with CLASS
         boolean result = verifier.checkSelectAllByPopup(new ElementTypes[]{ElementTypes.INTERFACE, ElementTypes.CLASS});
         if (!result){
             fail("Test failed. Details in log file.");
@@ -160,6 +183,7 @@ public class CLD_ClassElementTests extends ClassDiagramTestCase {
     }
     
     public void testSelectAllByShortcut() throws NotFoundException {
+        // 6.5  Artifact not yet implemented,  replace it with CLASS
         boolean result = verifier.checkSelectAllByShortcut(new ElementTypes[]{ElementTypes.INTERFACE, ElementTypes.CLASS});
         if (!result){
             fail("Test failed. Details in log file.");
@@ -180,7 +204,6 @@ public class CLD_ClassElementTests extends ClassDiagramTestCase {
         }
     }
     
-    /** 6.5  Hide/Show not yet implemented
     public void testHideChildrenOneLevel() throws NotFoundException {
         boolean result = verifier.checkHideChildrenOneLevel(2, 2, LinkTypes.GENERALIZATION, ElementTypes.CLASS);
         if (!result){
@@ -237,22 +260,21 @@ public class CLD_ClassElementTests extends ClassDiagramTestCase {
         }
     }   
     
-    ** 6.5 Menu not yet implemented
+   
     public void testBorderColor() throws NotFoundException {
         boolean result = verifier.checkBorderColor(255, 0, 0);
         if (!result){
             fail("Test failed. Details in log file.");
         }
     }   
-    ** 6.5  setColor() not yet working
+   
     public void testBackgroundColor() throws NotFoundException {
         boolean result = verifier.checkBackgroundColor(0, 255, 0);
         if (!result){
             fail("Test failed. Details in log file.");
         }
     }   
-    **/
-   
+    
       public void testFont() throws NotFoundException {
         boolean result = verifier.checkFont();
         if (!result){
@@ -260,14 +282,13 @@ public class CLD_ClassElementTests extends ClassDiagramTestCase {
         }
     }  
     
-    /** 6.5 setColor() not yet working
     public void testFontColor() throws NotFoundException {
         boolean result = verifier.checkFontColor(100,100,100);
         if (!result){
             fail("Test failed. Details in log file.");
         }
     } 
-    **/  
+  
 //------------------------------------------------------------------------------
     
     protected void setUp() throws FileNotFoundException{
