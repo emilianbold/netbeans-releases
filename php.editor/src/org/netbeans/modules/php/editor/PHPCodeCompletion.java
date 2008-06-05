@@ -336,7 +336,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
             String varName = tokenSequence.token().text().toString();
             String typeName = null;
-            boolean completeDollarPrefix = true;
 
             if (varName.equals("self")) { //NOI18N
                 ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
@@ -362,7 +361,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     typeName = classDecl.getName().getName();
                     staticContext = false;
                     instanceContext = true;
-                    completeDollarPrefix = false;
                     attrMask |= (Modifier.PROTECTED | Modifier.PRIVATE);
                 }
             } else {
@@ -381,7 +379,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     }
                 }
             }
-
+            
             if (typeName != null){
                 Collection<IndexedFunction> methods = includeInherited ?
                     request.index.getAllMethods(request.result, typeName, request.prefix, nameKind, attrMask) :
@@ -401,7 +399,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     if (staticContext && prop.isStatic() || instanceContext && !prop.isStatic()) {
                         PHPCompletionItem.VariableItem item = new PHPCompletionItem.VariableItem(prop, request);
 
-                        if (!completeDollarPrefix) {
+                        if (!staticContext) {
                             item.doNotInsertDollarPrefix();
                         }
 
