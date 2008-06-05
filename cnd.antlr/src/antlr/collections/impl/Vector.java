@@ -6,9 +6,6 @@ package antlr.collections.impl;
  */
 
 import java.util.Enumeration;
-import java.util.NoSuchElementException;
-
-import antlr.collections.Enumerator;
 
 public class Vector implements Cloneable {
     protected Object[] data;
@@ -34,6 +31,7 @@ public class Vector implements Cloneable {
         return data.length;
     }
 
+    @Override
     public Object clone() {
         Vector v = null;
         try {
@@ -84,7 +82,6 @@ public class Vector implements Cloneable {
         // find element
         int i;
         for (i = 0; i <= lastElement && data[i] != o; i++) {
-            ;
         }
         if (i <= lastElement) { // if found it
             data[i] = null;		// kill ref for GC
