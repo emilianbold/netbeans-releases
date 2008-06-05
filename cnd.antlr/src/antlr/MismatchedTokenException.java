@@ -122,8 +122,9 @@ public class MismatchedTokenException extends RecognitionException {
     /**
      * Returns a clean error message (no line number/column information)
      */
+    @Override
     public String getMessage() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         switch (mismatchType) {
             case TOKEN:
@@ -155,8 +156,12 @@ public class MismatchedTokenException extends RecognitionException {
 
         return sb.toString();
     }
-
+    
     private String tokenName(int tokenType) {
+        return tokenName(tokenNames, tokenType);
+    }
+
+    public static String tokenName(String[] tokenNames, int tokenType) {
         if (tokenType == Token.INVALID_TYPE) {
             return "<Set of tokens>";
         }
