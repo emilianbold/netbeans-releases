@@ -4,19 +4,18 @@
  * Created on 24 January 2005, 16:49
  */
 
-package java_code_folding;
+package org.netbeans.test.java.editor.folding;
 
-import code_folding.CodeFoldingTest;
-import lib.JavaEditorTestCase;
+import org.netbeans.test.java.editor.lib.JavaEditorTestCase;
 
 /**
  *
  * @author mato
  */
-public class JavaCodeFoldingTest extends CodeFoldingTest{
+public class JavaCodeFoldingTestCase extends CodeFoldingTestCase{
     
     /** Creates a new instance of JavaCodeFoldingTest */
-    public JavaCodeFoldingTest(String testMethodName) {
+    public JavaCodeFoldingTestCase(String testMethodName) {
         super(testMethodName);
     }
     

@@ -38,20 +38,21 @@
  */
 package org.netbeans.test.java.editor.codegeneration;
 
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.java.editor.jelly.GenerateCodeOperator;
 import org.netbeans.test.java.editor.jelly.GenerateEqualsAndHashCodeOperator;
-import org.netbeans.test.java.editor.jelly.GenerateGettersAndSettersOperator;
 
 /**
  *
  * @author Jiri Prox
  */
-public class CreateEqualsHashcode extends GenerateCode {
+public class CreateEqualsHashcodeTest extends GenerateCodeTestCase {
 
-    public CreateEqualsHashcode(String testMethodName) {
+    public CreateEqualsHashcodeTest(String testMethodName) {
         super(testMethodName);
     }
 
@@ -99,6 +100,11 @@ public class CreateEqualsHashcode extends GenerateCode {
     }
 
     public static void main(String[] args) {
-        TestRunner.run(CreateEqualsHashcode.class);
+        TestRunner.run(CreateEqualsHashcodeTest.class);
+    }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(CreateEqualsHashcodeTest.class).enableModules(".*").clusters(".*"));
     }
 }

@@ -43,15 +43,13 @@ package org.netbeans.test.java.editor.completion;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.test.editor.LineDiff;
+
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import org.netbeans.spi.editor.completion.CompletionProvider;
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.test.java.editor.lib.LineDiff;
 
 /**This class is automatically generated from <I>config.txt</I> using bash
  * script <I>create</I>. For any changes, change the code generating script
@@ -63,7 +61,7 @@ import org.netbeans.spi.editor.completion.CompletionProvider;
  *
  * @see CompletionTest
  */
-public class CompletionTestPerformer extends NbTestCase {
+public class CompletionTestPerformer extends JellyTestCase {
     
     
     // automatic generation of golden files
@@ -73,9 +71,20 @@ public class CompletionTestPerformer extends NbTestCase {
     
     protected PrintWriter logWriter = null;
     
+    
+    private static CompletionTestPerformer instance;
+    
+    public static void openProject(String name) {
+        try {
+            instance.openDataProjects(name);
+        } catch (IOException ex) {
+            fail("Project cannot be opened");
+        }
+    }
     /** Need to be defined because of JUnit */
     public CompletionTestPerformer(String name) {
         super(name);
+        instance = this;
     }
     
     protected void setUp() {

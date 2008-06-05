@@ -39,29 +39,60 @@
  * made subject to such option by the copyright holder.
  */
 
-package java_code_folding;
+package org.netbeans.test.java.editor.smart_enter;
+/*
+ * Main.java
+ *
+ * Created on 23. srpen 2004, 17:25
+ */
 
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestSuite;
+import java.awt.event.KeyEvent;
+import junit.framework.Test;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.test.java.editor.lib.JavaEditorTestCase;
+import org.netbeans.jemmy.operators.JEditorPaneOperator;
+import org.netbeans.junit.NbModuleSuite;
 
 
 /**
- * Test behavior of Java Code Folding
  *
- * @author Martin Roskanin
+ * @author  Petr Felenda
  */
-  public class JavaCodeFoldingTestSuite extends NbTestSuite {
+public class SmartEnterTest extends JavaEditorTestCase {
 
-    public JavaCodeFoldingTestSuite() {
-        super("Java Code Folding");
+    private final int keyCode = KeyEvent.VK_ENTER;
 
-        addTestSuite(JavaFoldsTest.class);
-        addTestSuite(JavaFoldsNavigationTest.class);
+    /** Creates a new instance of Main */
+    public SmartEnterTest(String testMethodName) {
+        super(testMethodName);
     }
+    
 
+    public void testSmartEnter(){
+        openDefaultProject();
+        openDefaultSampleFile();
+        try {
+            
+            EditorOperator editor = getDefaultSampleEditorOperator();
+            
+            // 1. move to adequate place 
+            editor.setCaretPosition(5, 28);
 
-    public static NbTestSuite suite() {
-        return new JavaCodeFoldingTestSuite();
+            // 2. hit Enter 
+            JEditorPaneOperator txtOper = editor.txtEditorPane();
+            txtOper.pushKey(KeyEvent.VK_ENTER);
+
+            // Compare document content to golden file
+            compareReferenceFiles(txtOper.getDocument());
+
+        } finally {
+            closeFileWithDiscard();
+        }
     }
-
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(SmartEnterTest.class).enableModules(".*").clusters(".*"));
+    }
+    
 }

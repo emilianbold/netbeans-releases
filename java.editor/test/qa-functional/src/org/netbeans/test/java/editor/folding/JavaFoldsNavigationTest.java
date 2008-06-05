@@ -39,15 +39,17 @@
  * made subject to such option by the copyright holder.
  */
 
-package java_code_folding;
+package org.netbeans.test.java.editor.folding;
 
 import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Test behavior of navigation through java code folds.
@@ -75,7 +77,7 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
  *
  * @author Martin Roskanin
  */
-  public class JavaFoldsNavigationTest extends JavaCodeFoldingTest {
+  public class JavaFoldsNavigationTest extends JavaCodeFoldingTestCase {
 
     private JEditorPaneOperator txtOper;
     private EditorOperator editor;
@@ -323,6 +325,11 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
     public static void main(String[] args) {
         TestRunner.run(JavaFoldsNavigationTest.class);
     }
+    
+      public static Test suite() {
+          return NbModuleSuite.create(
+                  NbModuleSuite.createConfiguration(JavaFoldsNavigationTest.class).enableModules(".*").clusters(".*"));
+      }
 
     
 }

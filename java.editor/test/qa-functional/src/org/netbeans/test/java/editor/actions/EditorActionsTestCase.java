@@ -39,9 +39,8 @@
  * made subject to such option by the copyright holder.
  */
 
-package editor_actions;
+package org.netbeans.test.java.editor.actions;
 
-import java.awt.datatransfer.Transferable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -50,8 +49,7 @@ import java.io.PrintStream;
 import java.util.Hashtable;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import lib.EditorTestCase;
-import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.test.java.editor.lib.EditorTestCase;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 
 /**
@@ -61,7 +59,7 @@ import org.netbeans.jemmy.operators.JEditorPaneOperator;
  *
  * @author Martin Roskanin
  */
-  public class EditorActionsTest extends EditorTestCase {
+  public class EditorActionsTestCase extends EditorTestCase {
 
     // private PrintStream wrapper for System.out
     private PrintStream systemOutPSWrapper = new PrintStream(System.out);
@@ -69,7 +67,7 @@ import org.netbeans.jemmy.operators.JEditorPaneOperator;
     public static final int WAIT_MAX_MILIS_FOR_UNDO_REDO = 2000;      
       
     /** Creates a new instance of Main */
-    public EditorActionsTest(String testMethodName) {
+    public EditorActionsTestCase(String testMethodName) {
         super(testMethodName);
     }
 

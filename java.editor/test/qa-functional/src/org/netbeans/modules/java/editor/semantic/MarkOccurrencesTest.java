@@ -40,12 +40,14 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.editor.options.MarkOccurencesSettings;
 import org.openide.cookies.EditorCookie;
@@ -61,7 +63,7 @@ import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
  *
  * @author Jiri Prox
  */
-public class TestMarkOccurrences extends NbTestCase {
+public class MarkOccurrencesTest extends NbTestCase {
     
     private FileObject fileObject;
     
@@ -73,7 +75,7 @@ public class TestMarkOccurrences extends NbTestCase {
     
     private JavaSource js;
     
-    private static final SimpleMark[] EMPTY = new TestMarkOccurrences.SimpleMark[]{};
+    private static final SimpleMark[] EMPTY = new MarkOccurrencesTest.SimpleMark[]{};
     
     private final SimpleMark[] TEST_TYPE = new SimpleMark[] {
         new SimpleMark(270,274,null),
@@ -179,7 +181,7 @@ public class TestMarkOccurrences extends NbTestCase {
         return null;
     }
     
-    public TestMarkOccurrences(String name) {
+    public MarkOccurrencesTest(String name) {
         super(name);
     }
     
@@ -525,7 +527,12 @@ public class TestMarkOccurrences extends NbTestCase {
     }
     
     public static void main(String[] args) {
-        new TestRunner().run(TestMarkOccurrences.class);
+        TestRunner.run(MarkOccurrencesTest.class);
     }
     
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(MarkOccurrencesTest.class).enableModules(".*").clusters(".*"));
+    }
+
 }

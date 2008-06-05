@@ -38,11 +38,11 @@
  */
 package org.netbeans.test.java.editor.codegeneration;
 
-import java.util.List;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.java.editor.jelly.GenerateCodeOperator;
 import org.netbeans.test.java.editor.jelly.GenerateGettersAndSettersOperator;
 
@@ -50,9 +50,9 @@ import org.netbeans.test.java.editor.jelly.GenerateGettersAndSettersOperator;
  *
  * @author jp159440
  */
-public class CreateGetterSetter extends GenerateCode {
+public class CreateGetterSetterTest extends GenerateCodeTestCase {
 
-    public CreateGetterSetter(String testMethodName) {
+    public CreateGetterSetterTest(String testMethodName) {
         super(testMethodName);
     }
     
@@ -308,9 +308,14 @@ public class CreateGetterSetter extends GenerateCode {
     }
     
     public static void main(String[] args) {
-        TestRunner.run(CreateGetterSetter.class);
+        TestRunner.run(CreateGetterSetterTest.class);
     }
 
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(CreateGetterSetterTest.class).enableModules(".*").clusters(".*"));
+    }
     
     
     

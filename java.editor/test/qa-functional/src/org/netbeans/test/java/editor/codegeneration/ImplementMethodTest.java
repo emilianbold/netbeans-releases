@@ -27,23 +27,22 @@
  */
 package org.netbeans.test.java.editor.codegeneration;
 
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.java.editor.jelly.GenerateCodeOperator;
-import org.netbeans.test.java.editor.jelly.GenerateConstructorOperator;
 import org.netbeans.test.java.editor.jelly.ImplementMethodsOperator;
 
 /**
  *
  * @author Jiri Prox
  */
-public class ImplementMethod extends GenerateCode {
+public class ImplementMethodTest extends GenerateCodeTestCase {
 
     /** Creates a new instance of CreateConstructor */
-    public ImplementMethod(String name) {
+    public ImplementMethodTest(String name) {
         super(name);
     }
 
@@ -111,6 +110,11 @@ public class ImplementMethod extends GenerateCode {
     }
 
     public static void main(String[] args) {
-        TestRunner.run(ImplementMethod.class);
+        TestRunner.run(ImplementMethodTest.class);
+    }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(ImplementMethodTest.class).enableModules(".*").clusters(".*"));
     }
 }

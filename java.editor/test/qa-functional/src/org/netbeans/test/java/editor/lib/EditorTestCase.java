@@ -45,10 +45,11 @@
  * Created on 24. srpen 2004, 12:32
  */
 
-package lib;
+package org.netbeans.test.java.editor.lib;
 
 import java.awt.datatransfer.Transferable;
 import java.io.File;
+import java.io.IOException;
 import java.util.StringTokenizer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -66,7 +67,6 @@ import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
-import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
@@ -151,10 +151,14 @@ public class EditorTestCase extends JellyTestCase {
             log("Project is open!");
             return;
         }
-        
-        
-        /* 2. open project */
-        Object prj= ProjectSupport.openProject(projectPath);
+      try {
+         /* 2. open project */
+         this.openDataProjects("projects/" + projectName);
+         //Object prj= ProjectSupport.openProject(projectPath);
+      } catch (IOException ex) {
+         fail("Project cannot be openned");
+      }
+        //Object prj= ProjectSupport.openProject(projectPath);
         
     }
    
@@ -200,7 +204,8 @@ public class EditorTestCase extends JellyTestCase {
     }
     
     protected void closeProject(String projectName) {
-        ProjectSupport.closeProject(projectName);
+       this.closeProject(projectName);
+        //ProjectSupport.closeProject(projectName);
     }
     
     
