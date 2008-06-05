@@ -72,7 +72,7 @@ public class GrailsTargetAction extends AbstractAction {
         builder.showProgress(true).frontWindow(true).controllable(true).inputVisible(true);
         builder.postExecution(new RefreshProjectRunnable(prj));
 
-        ExecutionService service = new ExecutionService(callable, displayName, builder.create());
+        ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
         service.run();
     }
 }

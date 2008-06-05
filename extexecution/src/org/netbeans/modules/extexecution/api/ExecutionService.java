@@ -145,7 +145,7 @@ public final class ExecutionService {
         this.descriptor = descriptor;
     }
 
-    public static ExecutionService newInstance(Callable<Process> processCreator, ExecutionDescriptor descriptor, String displayName) {
+    public static ExecutionService newService(Callable<Process> processCreator, ExecutionDescriptor descriptor, String displayName) {
         return new ExecutionService(processCreator, displayName, descriptor);
     }
 
