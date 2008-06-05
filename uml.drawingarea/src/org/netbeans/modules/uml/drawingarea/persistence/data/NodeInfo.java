@@ -183,6 +183,12 @@ public class NodeInfo
     {
         return nodeLabels;
     }
+    
+    public void clearNodeLabels()
+    {
+        nodeLabels.clear();
+    }
+    
     public int addDeviderOffset(String offset)
     {
         deviders.add(offset);
@@ -248,6 +254,7 @@ public class NodeInfo
         private Dimension size;
         private IElement element;
         private String peid;
+        private Object dependentNode;
 
         public NodeLabel()
         {
@@ -299,5 +306,16 @@ public class NodeInfo
         public void setElement(IElement element) {
             this.element = element;
         }
+
+        public Object getDependentNode()
+        {
+            return dependentNode;
+        }
+
+        public void setDependentNode(Object dependentNode)
+        {
+            this.dependentNode = dependentNode;
+        }
+        
     }
 }

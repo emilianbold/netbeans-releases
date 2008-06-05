@@ -258,21 +258,27 @@ public class InteractionOperandWidget extends Widget implements DiagramNodeWrite
         //write contained
         saveChildren(this, nodeWriter);
         nodeWriter.endContained();     
+        //write dependencies for this node
+        if(this.getDependencies().size() > 0) 
+        {
+            PersistenceUtil.saveDependencies(this, nodeWriter);
+        }
         nodeWriter.endGraphNode();
     }
 
     public void saveChildren(Widget widget, NodeWriter nodeWriter) {
-        if (widget == null || nodeWriter == null)
-            return;
-        
-        List<Widget> widList = widget.getChildren();
-        for (Widget child : widList) {
-            if (child instanceof DiagramNodeWriter) {
-                ((DiagramNodeWriter) child).save(nodeWriter);
-            } else {
-                saveChildren(child, nodeWriter);
-            }
-        }
+        //we are not interested in its children.. we just want dependencies (movablelabelwidgets)
+//        if (widget == null || nodeWriter == null)
+//            return;
+//        
+//        List<Widget> widList = widget.getChildren();
+//        for (Widget child : widList) {
+//            if (child instanceof DiagramNodeWriter) {
+//                ((DiagramNodeWriter) child).save(nodeWriter);
+//            } else {
+//                saveChildren(child, nodeWriter);
+//            }
+//        }
     }
     
     public void addContainedChild(Widget widget) {
@@ -285,7 +291,12 @@ public class InteractionOperandWidget extends Widget implements DiagramNodeWrite
         //
         if(nodeReader.getPosition()!=null)setPreferredLocation(nodeReader.getPosition());
     }
-    
+
+    public void loadDependencies(NodeInfo nodeReader)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+            
     protected void setNodeWriterValues(NodeWriter nodeWriter, Widget widget) {
         nodeWriter = PersistenceUtil.populateNodeWriter(nodeWriter, widget);
         nodeWriter.setHasPositionSize(true);

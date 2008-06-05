@@ -48,6 +48,7 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.border.BorderFactory;
@@ -844,5 +845,14 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
         }
     }
     
-    
+    @Override
+    public void loadDependencies(NodeInfo nodeReader) {
+        Collection nodeLabels = nodeReader.getLabels();
+//        for (Iterator it = nodeLabels.iterator(); it.hasNext();)
+//        {
+//            NodeInfo.NodeLabel nodeLabel = (NodeInfo.NodeLabel)it.next();
+//            System.out.println("  NodeLabel details = "+nodeLabel);
+//        }
+        System.out.println(" NodeLabels = "+nodeLabels.toString());
+    }
 }

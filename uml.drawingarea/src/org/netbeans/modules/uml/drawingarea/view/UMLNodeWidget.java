@@ -394,7 +394,7 @@ public abstract class UMLNodeWidget extends Widget
         //write dependencies for this node
         if(this.getDependencies().size() > 0) 
         {
-            saveDependencies(nodeWriter);
+            PersistenceUtil.saveDependencies(this, nodeWriter);
         }
         if (!scene.findNodeEdges(getObject(), true, true).isEmpty()) 
         {
@@ -460,30 +460,7 @@ public abstract class UMLNodeWidget extends Widget
         }        
     }
     
-    protected void saveDependencies(NodeWriter nodeWriter)
-    {
-        Collection depList = this.getDependencies();
-        if (depList.size() > 0)
-        {
-            nodeWriter.beginDependencies();
-            Iterator iter = depList.iterator();
-            while (iter.hasNext())
-            {
-                Object obj = iter.next();
-                if (obj instanceof Anchor)
-                {
-                    //don't do anything yet.. we'll deal with this in anchorage section..
-                }
-                else {
-                    System.out.println(" obj is " + obj);
-                    if (obj instanceof DiagramNodeWriter) {
-                        ((DiagramNodeWriter)obj).save(nodeWriter);
-                    }
-                }
-            }
-            nodeWriter.endDependencies();
-        }        
-    }
+    
     
     protected IPresentationElement getObject()
     {
@@ -626,7 +603,25 @@ public abstract class UMLNodeWidget extends Widget
     {
         //figure out how to handle attr/oper
     }
-    
+
+    public void loadDependencies(NodeInfo nodeReader)
+    {
+       if (nodeReader.getLabels().size() > 0)
+       {
+           if (this instanceof LabelNode)
+           {
+               ((LabelNode)this).showLabel(true);
+//               Widget label = ((LabelNode)this).getLabelWidget();
+//               label.setVisible(true);
+////               label.setPreferredLocation(nodeReader.getLabels().get(0).getPosition());
+////               label.setPreferredSize(nodeReader.getLabels().get(0).getSize());
+//               Point localLocation = nodeReader.getLabels().get(0).getPosition();
+//               label.setPreferredLocation(label.convertLocalToScene(localLocation));
+               
+           }
+       }
+    }
+        
     
     ////////////////////////////////////////////////////////////////////////////
     // PropertyChangedListener
