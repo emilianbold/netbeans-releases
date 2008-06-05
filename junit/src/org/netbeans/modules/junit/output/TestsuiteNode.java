@@ -149,6 +149,7 @@ final class TestsuiteNode extends AbstractNode {
     
     /**
      */
+    @Override
     public String getHtmlDisplayName() {
         
         assert suiteName != null;
@@ -201,6 +202,7 @@ final class TestsuiteNode extends AbstractNode {
         return (report != null) && (report.failures + report.errors != 0);
     }
     
+    @Override
     public SystemAction[] getActions(boolean context) {
         return new SystemAction[0];
     }
