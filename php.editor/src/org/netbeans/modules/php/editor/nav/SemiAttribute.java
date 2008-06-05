@@ -498,10 +498,10 @@ public class SemiAttribute extends DefaultVisitor {
 
                     if (!ce.isInitialized()) {
                         //HACK: should create correct hierarchy, not use All* methods:
-                        for (IndexedFunction m : index.getAllMethods(null, f.getName(), "", NameKind.PREFIX)) {
+                        for (IndexedFunction m : index.getAllMethods(null, f.getName(), "", NameKind.PREFIX, PHPIndex.ANY_ATTR)) {
                             ce.enclosedElements.enterWrite(m.getName(), Kind.FUNC, m);
                         }
-                        for (IndexedConstant m : index.getAllProperties(null, f.getName(), "", NameKind.PREFIX)) {
+                        for (IndexedConstant m : index.getAllProperties(null, f.getName(), "", NameKind.PREFIX, PHPIndex.ANY_ATTR)) {
                             ce.enclosedElements.enterWrite(m.getName(), Kind.CONST, m);
                         }
                         
