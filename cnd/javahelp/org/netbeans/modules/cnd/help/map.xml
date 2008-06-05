@@ -23,7 +23,6 @@
 	<mapID target="cswitch" url="images/cswitch.gif"/>
 	<mapID target="earProjectIcon" url="images/earProjectIcon.gif"/>
 	<mapID target="expand" url="images/expand.gif"/>
-	<mapID target="freeform-project" url="images/freeform-project.png"/>
 	<mapID target="package" url="images/package.gif"/>
 	<mapID target="packageBadge" url="images/packageBadge.gif"/>
 	<mapID target="tip" url="images/tip.gif"/>
