@@ -38,10 +38,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.j2ee.persistence.entitygenerator;
 
 import java.util.Set;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.FetchType;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -53,7 +53,7 @@ import org.openide.filesystems.FileObject;
  * @author Andrei Badea
  */
 public interface GeneratedTables {
-    
+
     /**
      * Should fully qualified table names be used
      */
@@ -63,12 +63,12 @@ public interface GeneratedTables {
      * Returns the names of the tables which should be used to generate classes.
      */
     public Set<String> getTableNames();
-    
+
     /**
      * Returns the schema of the table
      */
     public String getSchema(String tableName);
-    
+
     /**
      * Returns the catalog of the table
      */
@@ -84,10 +84,15 @@ public interface GeneratedTables {
      * Returns the package of the class which will be generated for
      * the specified table.
      */
-    public String  getPackageName(String tableName);
+    public String getPackageName(String tableName);
 
     /**
      * Returns the name of the class to be generated for the specified table.
      */
     public String getClassName(String tableName);
+
+    /** 
+     * Returns the fetch type for the associations
+     */
+    public FetchType getFetchType();
 }

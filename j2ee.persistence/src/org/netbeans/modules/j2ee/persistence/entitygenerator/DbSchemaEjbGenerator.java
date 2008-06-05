@@ -157,7 +157,8 @@ public class DbSchemaEjbGenerator {
                 tableName,
                 genTables.getRootFolder(tableName),
                 genTables.getPackageName(tableName),
-                genTables.getClassName(tableName));
+                genTables.getClassName(tableName),
+                genTables.getFetchType());
         beans.put(tableName, bean);
         
         return bean;

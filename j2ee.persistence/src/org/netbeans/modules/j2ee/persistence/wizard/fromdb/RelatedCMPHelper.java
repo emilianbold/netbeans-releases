@@ -54,6 +54,7 @@ import org.openide.filesystems.*;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.dbschema.SchemaElement;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.FetchType;
 
 /**
  * This class provides a simple collector for information necessary to support
@@ -89,7 +90,8 @@ public class RelatedCMPHelper {
     private PersistenceUnit persistenceUnit;
     
     // Global mapping options added in NB 6.5
-    private boolean fullyQualifiedTableNames = false; 
+    private boolean fullyQualifiedTableNames = false;
+    private FetchType fetchType = FetchType.DEFAULT;
     //TODO: More to come
     
     public RelatedCMPHelper(Project project, FileObject configFilesFolder, PersistenceGenerator persistenceGen) {
@@ -249,6 +251,14 @@ public class RelatedCMPHelper {
         this.fullyQualifiedTableNames = fullyQualifiedNames;
     }
 
+    public FetchType getFetchType() {
+        return fetchType;
+    }
+
+    public void setFetchType(FetchType fetchType) {
+        this.fetchType = fetchType;
+    }
+    
     /**
      * Public because used in J2EE functional tests.
      */
@@ -257,6 +267,7 @@ public class RelatedCMPHelper {
         
         GenerateTablesImpl genTables = new GenerateTablesImpl();
         genTables.setFullyQualifiedTableNames(isFullyQualifiedTableNames());
+        genTables.setFetchType(getFetchType());
         FileObject rootFolder = getLocation().getRootFolder();
         String pkgName = getPackageName();
 
@@ -298,12 +309,14 @@ public class RelatedCMPHelper {
         private final Map<String, FileObject> rootFolders = new HashMap<String, FileObject>();
         private final Map<String, String> packageNames = new HashMap<String, String>();
         private final Map<String, String> classNames = new HashMap<String, String>();
+        private  FetchType fetchType; // global
         
         public Set<String> getTableNames() {
             return Collections.unmodifiableSet(tableNames);
         }
         
-        private void addTable(String schemaName, String catalogName, String tableName, FileObject rootFolder, String packageName, String className) {
+        private void addTable(String schemaName, String catalogName, String tableName, 
+                FileObject rootFolder, String packageName, String className) {
             tableNames.add(tableName);
             schemas.put(tableName, schemaName);
             catalogs.put(tableName, catalogName);
@@ -338,6 +351,14 @@ public class RelatedCMPHelper {
         
         public String getClassName(String tableName) {
             return classNames.get(tableName);
+        }
+        
+        public void setFetchType(FetchType type) {
+            fetchType = type;
+        }
+        
+        public FetchType getFetchType() {
+            return fetchType;
         }
     }
 }
