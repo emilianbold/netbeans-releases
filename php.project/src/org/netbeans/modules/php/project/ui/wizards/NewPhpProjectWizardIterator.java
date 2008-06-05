@@ -54,8 +54,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectType;
+import org.netbeans.modules.php.project.connections.RemoteConfiguration;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -133,8 +136,9 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         FileObject sourceDir = createSourceRoot(helper);
         resultSet.add(sourceDir);
 
+        // XXX
         // UI Logging
-        logUI(helper.getProjectDirectory(), sourceDir, isCopyFiles());
+        //logUI(helper.getProjectDirectory(), sourceDir, isCopyFiles());
 
         // index file
         Boolean createIndexFile = (Boolean) descriptor.getProperty(ConfigureProjectPanel.CREATE_INDEX_FILE);
@@ -223,8 +227,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         configureSources(helper, properties);
         configureIndexFile(properties);
         configureEncoding(properties);
-        configureCopyFiles(properties);
         configureIncludePath(properties);
+        configureRunConfiguration(properties);
 
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, properties);
 
@@ -265,23 +269,57 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         properties.setProperty(PhpProjectProperties.SOURCE_ENCODING, charset.name());
     }
 
-    private void configureCopyFiles(EditableProperties properties) {
-        String copyFilesString = Boolean.FALSE.toString();
-        Boolean copyFiles = isCopyFiles();
-        if (copyFiles != null && copyFiles) {
-            copyFilesString = Boolean.TRUE.toString();
-        }
-        String copyTargetString = ""; // NOI18N
-        LocalServer localServer = (LocalServer) descriptor.getProperty(ConfigureServerPanel.COPY_TARGET);
-        if (localServer != null && localServer.getSrcRoot().length() > 0) {
-            copyTargetString = FileUtil.normalizeFile(new File(localServer.getSrcRoot())).getAbsolutePath();
-        }
-        properties.setProperty(PhpProjectProperties.COPY_SRC_FILES, copyFilesString);
-        properties.setProperty(PhpProjectProperties.COPY_SRC_TARGET, copyTargetString);
-    }
-
     private void configureIncludePath(EditableProperties properties) {
         properties.setProperty(PhpProjectProperties.INCLUDE_PATH, "${" + PhpProjectProperties.GLOBAL_INCLUDE_PATH + "}"); // NOI18N
+    }
+
+    private void configureRunConfiguration(EditableProperties properties) {
+        PhpProjectProperties.RunAsType runAs = (RunAsType) descriptor.getProperty(RunConfigurationPanel.RUN_AS);
+        properties.put(PhpProjectProperties.RUN_AS, runAs.name());
+        switch (runAs) {
+            case LOCAL:
+                configureRunAsLocalWeb(properties);
+                break;
+            case REMOTE:
+                configureRunAsRemoteWeb(properties);
+                break;
+            case SCRIPT:
+                // nothing to store
+                break;
+            default:
+                assert false : "Unhandled RunAsType type: " + runAs;
+                break;
+        }
+    }
+
+    private void configureRunAsLocalWeb(EditableProperties properties) {
+        String url = (String) descriptor.getProperty(RunConfigurationPanel.URL);
+        Boolean copyFiles = (Boolean) descriptor.getProperty(RunConfigurationPanel.COPY_SRC_FILES);
+
+        properties.put(PhpProjectProperties.URL, url);
+        properties.put(PhpProjectProperties.COPY_SRC_FILES, String.valueOf(copyFiles));
+        properties.put(PhpProjectProperties.COPY_SRC_TARGET, getCopySrcTarget());
+    }
+
+    private String getCopySrcTarget() {
+        String copyTargetString = ""; // NOI18N
+        LocalServer localServer = (LocalServer) descriptor.getProperty(RunConfigurationPanel.COPY_SRC_TARGET);
+        if (localServer.getSrcRoot().length() > 0) {
+            copyTargetString = FileUtil.normalizeFile(new File(localServer.getSrcRoot())).getAbsolutePath();
+        }
+        return copyTargetString;
+    }
+
+    private void configureRunAsRemoteWeb(EditableProperties properties) {
+        String url = (String) descriptor.getProperty(RunConfigurationPanel.URL);
+        RemoteConfiguration remoteConfiguration = (RemoteConfiguration) descriptor.getProperty(RunConfigurationPanel.REMOTE_CONNECTION);
+        String remoteDirectory = (String) descriptor.getProperty(RunConfigurationPanel.REMOTE_DIRECTORY);
+        PhpProjectProperties.UploadFiles uploadFiles = (UploadFiles) descriptor.getProperty(RunConfigurationPanel.REMOTE_UPLOAD);
+
+        properties.put(PhpProjectProperties.URL, url);
+        properties.put(PhpProjectProperties.REMOTE_CONNECTION, remoteConfiguration.getName());
+        properties.put(PhpProjectProperties.REMOTE_DIRECTORY, remoteDirectory);
+        properties.put(PhpProjectProperties.REMOTE_UPLOAD, uploadFiles.name());
     }
 
     private FileObject createSourceRoot(AntProjectHelper helper) throws IOException {
@@ -294,10 +332,6 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         DataFolder dataFolder = DataFolder.findFolder(sourceDir);
         DataObject dataTemplate = DataObject.find(template);
         return dataTemplate.createFromTemplate(dataFolder, indexFileName);
-    }
-
-    private Boolean isCopyFiles() {
-        return (Boolean) descriptor.getProperty(ConfigureServerPanel.COPY_FILES);
     }
 
     private String getIndexFileName(String plannedExt) {
