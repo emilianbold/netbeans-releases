@@ -513,32 +513,6 @@ No.
 -->
 <answer id="exec-component">
 Yes. Component can control its persistence and way how they are displayed in container.
-<api type="export" group="property" name="PersistenceType" category="deprecated">
-    Valid values are "Never", "OnlyOpened". Default is "" (empty string) and means always persistent.
-    "Never" means that TopComponent is not persistent at all. It lives only during IDE run.
-    "OnlyOpened" means that TopComponent is serialized only when it is opened. If it is closed
-    instance is lost.
-    Default behaviour is that TopComponent is serialized always regardless it is opened or
-    closed.
-    It is client property of TopComponent. Usage example: To disable persistence of TopComponent
-    use <code>putClientProperty("PersistenceType","Never");</code> in initialization code of TopComponent
-    eg. in constructor.
-    Usage of this client property is deprecated. Use API method <code>TopComponent.getPersistenceType()</code>
-    instead.
-</api>
-<api type="export" group="property" name="SlidingName" category="private">
-    Valid value is any String value representing displayable title of TopComponent in
-    sliding mode. Title is shown on buttons on sides of main window for TopComponents that
-    are currently hidden in sliding state. 
-    This property has no effect on regular display names of TopComponents which are shown in
-    captions of windows/tabs in the window system.
-    It is client property of TopComponent. Usage example: To provide different, preferably
-    shorter and non changing name for sliding title of your TopComponent subclass, 
-    use <code>putClientProperty("SlidingName","your sliding title");</code> in initialization code of TopComponent
-    eg. in constructor.
-    Note that in next releases usage of this client property will be removed and replaced 
-    by API, see issue #55955 in Issuezilla on www.netbeans.org.
-</api>
 <api type="export" group="property" name="KeepNonPersistentTCInModelWhenClosed" category="private">
     Client property "KeepNonPersistentTCInModelWhenClosed" of TopComponent controls behavior of winsys
     when TopComponent with persistence type "Never" or "OnlyOpened" is closed. As some TopComponent wants
@@ -549,6 +523,30 @@ Yes. Component can control its persistence and way how they are displayed in con
     If property is set (to Boolean.TRUE) then TopComponent is kept in model. It means that
     client must explicitly set this client property to get behavior requested by issue #101700.
 </api>
+
+<api type="export" group="property" name="netbeans.winsys.tc.activate_at_startup" category="private">
+     Name of TopComponent's Boolean client property which instructs the window system to activate
+     the given TopComponent at startup time regardless which TopComponent was active at
+     shutdown time. So it's usuable for welcome screen-like behavior. 
+     If more than one TopComponent has this property set to Boolean.TRUE then
+     an arbitrary one will be selected and activated.
+</api>
+
+<api type="export" group="property" name="TopComponentAllowDockAnywhere" category="private">
+    Name of client property (of Boolean type) which says whether the TopComponent is allowed
+    to be docked anywhere (even crossing view-editor border).
+</api>
+
+
+<api type="export" group="property" name="netbeans.winsys.tc.keep_preferred_size_when_slided_in" category="stable">
+     Name of TopComponent's Boolean client property which forces the window system
+     to respect TopComponent's preferred size when it is slided-in from left/right/bottom 
+     sliding bar when set to Boolean.TRUE. Otherwise the slided-in TopComponent
+     will fill the entire width/length of the IDE window (the default behavior).
+     This switch is intended for tools/palette windows like e.g. color chooser, 
+     tool picker etc.
+</api>
+
 
 <!--<api group="property" name="NamingType" type="export" category="private">
     Valid values are "BothOnlyCompName", "SDIOnlyCompName", "MDIOnlyCompName". 

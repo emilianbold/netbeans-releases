@@ -57,6 +57,7 @@ public class OpenSolarisTestCase extends NbTestCase {
                                      //"-Root=/net/d-espb04-127-6/export/home/alexvsimon/opensolaris/java_cp/wsb88",
                                      "-Root=/export/opensolaris/testws88",
                                      "-NBProject=/export/opensolaris/testws88/pomona"
+                                     //,"-NightlyLog=/export/opensolaris/log.2008-05-20.04:26/nightly.log"
         });
     }
 }

@@ -67,6 +67,7 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.test.umllib.project.UMLProject;
 import org.netbeans.test.umllib.DiagramOperator;
 import org.netbeans.test.umllib.ElementTypes;
 import org.netbeans.test.umllib.LinkTypes;
@@ -75,6 +76,7 @@ import org.netbeans.test.umllib.NewUMLProjectStepOperator;
 import org.netbeans.test.umllib.Utils;
 import org.netbeans.test.umllib.actions.AddDiagramAction;
 import org.netbeans.test.umllib.actions.CloseDiagramAction;
+import org.netbeans.test.umllib.project.ProjectType;
 import org.netbeans.test.umllib.testcases.UMLTestCase;
 import org.netbeans.test.umllib.util.LabelsAndTitles;
 import org.netbeans.test.umllib.util.OptionsOperator;
@@ -115,25 +117,26 @@ public class CLDUtils {
         ProjectRootNode root = null;
         int repCount = 5;
         try {
-            NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
-            while(repCount>0) { //Very unstable due to Tootip NPE (From Collab ????)
-                try {
-                    wizard.selectCategory(LabelsAndTitles.UML_PROJECTS_CATEGORY);
-                    repCount = 0;
-                }catch(Exception e) {
-                    repCount--;
-                }
-            }
-            wizard.selectProject(LabelsAndTitles.JAVA_UML_PROJECT_LABEL);
-            wizard.next();
-            NewUMLProjectStepOperator umlWizard = new NewUMLProjectStepOperator();
-            umlWizard.txtProjectName().setText(projName);
-            umlWizard.txtProjectLocation().setText(folderName);
-            //umlWizard.cbSetAsMainProject().changeSelection(false);
-            umlWizard.finish();
-            new JButtonOperator(new JDialogOperator("Create New Diagram"), "Cancel").push();
-            Thread.sleep(1000);
-            
+            UMLProject umlProject   = UMLProject.createProject(projName, ProjectType.UML_JAVA_PLATFORM_MODEL);
+//            NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
+//            while(repCount>0) { //Very unstable due to Tootip NPE (From Collab ????)
+//                try {
+//                    wizard.selectCategory(LabelsAndTitles.UML_PROJECTS_CATEGORY);
+//                    repCount = 0;
+//                }catch(Exception e) {
+//                    repCount--;
+//                }
+//            }
+//            wizard.selectProject(LabelsAndTitles.JAVA_UML_PROJECT_LABEL);
+//            wizard.next();
+//            NewUMLProjectStepOperator umlWizard = new NewUMLProjectStepOperator();
+//            umlWizard.txtProjectName().setText(projName);
+//            umlWizard.txtProjectLocation().setText(folderName);
+//            //umlWizard.cbSetAsMainProject().changeSelection(false);
+//            umlWizard.finish();
+//            new JButtonOperator(new JDialogOperator("Create New Diagram"), "Cancel").pushNoBlock();
+//            Thread.sleep(1000);
+//            
             ProjectsTabOperator pto = ProjectsTabOperator.invoke();
             root = new ProjectRootNode(pto.tree(),projName) ;
             
@@ -151,7 +154,9 @@ public class CLDUtils {
         ProjectsTabOperator pto = ProjectsTabOperator.invoke();
         ProjectRootNode root = new ProjectRootNode(pto.tree(),projName+"|Model");
         new AddDiagramAction().performPopup(root);
+       
         NewDiagramWizardOperator newDWO = new NewDiagramWizardOperator();
+         System.out.println("Set type = "+ NewDiagramWizardOperator.CLASS_DIAGRAM);
         newDWO.setDiagramType(NewDiagramWizardOperator.CLASS_DIAGRAM);
         newDWO.setDiagramName(classDiagramName);
         newDWO.clickOK();
@@ -274,14 +279,14 @@ public class CLDUtils {
             ElementTypes.CLASS,
                     ElementTypes.INTERFACE,
                     ElementTypes.PACKAGE,
-                    ElementTypes.COLLABORATION_LIFELINE,
-                    ElementTypes.ENUMERATION,
-                    ElementTypes.NODE,
+//                    ElementTypes.COLLABORATION_LIFELINE,
+//                    ElementTypes.ENUMERATION,
+//                    ElementTypes.NODE,
                     ElementTypes.DATATYPE,
-                    ElementTypes.ARTIFACT,
-                    ElementTypes.ALIASED,
-                    ElementTypes.UTILITY_CLASS,
-                    ElementTypes.ACTOR_LIFELINE,
+//                    ElementTypes.ARTIFACT,
+//                    ElementTypes.ALIASED,
+//                    ElementTypes.UTILITY_CLASS,
+//                    ElementTypes.ACTOR_LIFELINE,
                     
                     ElementTypes.BOUNDARY_CLASS,
                     ElementTypes.CONTROL_CLASS,
@@ -296,10 +301,10 @@ public class CLDUtils {
                     ElementTypes.ACTOR_ROLE,
                     ElementTypes.CLASS_ROLE,
                     ElementTypes.USE_CASE_ROLE,
-                    ElementTypes.ROLE_BINDING,
+//                    ElementTypes.ROLE_BINDING,
                     
                     ElementTypes.COMMENT,
-                    ElementTypes.LINK_COMMENT
+//                    ElementTypes.LINK_COMMENT
         };  
         
         return et ;

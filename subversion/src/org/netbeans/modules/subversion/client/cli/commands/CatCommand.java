@@ -39,9 +39,13 @@
 
 package org.netbeans.modules.subversion.client.cli.commands;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -61,7 +65,9 @@ public class CatCommand extends SvnCommand {
     private SVNUrl url;
     private File file;    
     private SVNRevision rev;
-
+    
+    private byte[] bytes;
+    
     public CatCommand(SVNUrl url, SVNRevision rev) {        
         this.url = url;                
         this.rev = rev;        
@@ -75,6 +81,35 @@ public class CatCommand extends SvnCommand {
         this.url = null;                
         type = CatType.file;
     }
+
+    public InputStream getOutput() {
+        return new ByteArrayInputStream(bytes == null ? new byte[] {} : bytes);
+    }
+
+    @Override
+    public List<String> getCmdError() {
+        return null; // XXX don't throw errors to emulate svnCA behavior
+    }
+    
+    @Override
+    protected boolean hasBinaryOutput() {
+        return true;
+    }
+
+    @Override
+    protected boolean notifyOutput() {
+        return false;
+    }    
+    
+    @Override
+    public void output(byte[] bytes) {
+        this.bytes = bytes;
+    }
+    
+    @Override
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.CAT;
+    }
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {        
@@ -85,6 +120,7 @@ public class CatCommand extends SvnCommand {
                 break;
             case file:     
                 arguments.add(file);
+                setCommandWorkingDirectory(file);
                 break;
             default :    
                 throw new IllegalStateException("Illegal cattype: " + type);                             

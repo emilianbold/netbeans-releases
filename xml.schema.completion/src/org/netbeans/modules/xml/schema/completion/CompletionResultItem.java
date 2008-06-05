@@ -125,8 +125,10 @@ public abstract class CompletionResultItem implements CompletionItem {
         BaseDocument doc = (BaseDocument)component.getDocument();
         doc.atomicLock();
         try {
-            doc.remove( offset, len );
-            doc.insertString( offset, text, null);
+            if(context.canReplace(text)) {
+                doc.remove( offset, len );
+                doc.insertString( offset, text, null);
+            }
             //position the caret
             component.setCaretPosition(offset+getCaretPosition());            
             String prefix = CompletionUtil.getPrefixFromTag(text);

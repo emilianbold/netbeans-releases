@@ -52,6 +52,8 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 
@@ -110,6 +112,14 @@ public class CsmOffsetResolver {
             if (CsmOffsetUtilities.isInObject(retType, offset)) {
                 context.setLastObject(retType);
                 return retType;
+            }
+            // check template parameters
+            if (CsmKindUtilities.isTemplate(fun)) {
+                Collection<CsmTemplateParameter> templateParams = ((CsmTemplate)fun).getTemplateParameters();
+                CsmTemplateParameter templateParam = CsmOffsetUtilities.findObject(templateParams, context, offset);
+                if (templateParam != null) {
+                    return templateParam;                   
+                }
             }
             // check if offset in parameters
             Collection<CsmParameter> params = fun.getParameters();

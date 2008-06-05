@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+<fontscolors>
+    <fontcolor bgColor="ff2b2b2b" default="error" name="fortran-errors" waveUnderlined="red"/>
+    <fontcolor default="operator" name="fortran-keyword-operators"/>
+    <fontcolor default="string" name="fortran-user-include"/>
+    <fontcolor default="comment" name="fortran-block-comment"/>
+    <fontcolor default="number" name="fortran-numeric-literals"/>
+    <fontcolor default="string" name="fortran-string-literal"/>
+    <fontcolor default="string" name="fortran-sys-include"/>
+    <fontcolor default="keyword" name="fortran-keywords"/>
+    <fontcolor default="identifier" name="fortran-identifier"/>
+    <fontcolor default="char" name="fortran-char-literal"/>
+    <fontcolor default="whitespace" name="fortran-whitespace"/>
+    <fontcolor default="operator" name="fortran-operators"/>
+    <fontcolor default="comment" name="fortran-line-comment"/>
+    <fontcolor default="char" name="fortran-preprocessor">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="char" name="fortran-special-characters"/>
+</fontscolors>

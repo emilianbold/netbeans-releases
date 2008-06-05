@@ -32,43 +32,43 @@ import org.netbeans.modules.iep.model.Property;
  * 
  */
 public enum TypeCollection {
-	EMPTY(createEmpty()),
-	FOR_COMPONENT (createComponent()),
+    EMPTY(createEmpty()),
+    FOR_COMPONENT (createComponent()),
     FOR_PROPERTY (createProperty()),
     FOR_DOCUMENTATION (createDocumentation());
     
-	private Collection<Class<? extends IEPComponent>> types;
+    private Collection<Class<? extends IEPComponent>> types;
 
-	TypeCollection(Collection<Class<? extends IEPComponent>> types) {
-		this.types = types;
-	}
+    TypeCollection(Collection<Class<? extends IEPComponent>> types) {
+        this.types = types;
+    }
 
-	public Collection<Class<? extends IEPComponent>> types() {
-		return types;
-	}
+    public Collection<Class<? extends IEPComponent>> types() {
+        return types;
+    }
 
-	static Collection<Class<? extends IEPComponent>> createEmpty() {
-		Collection<Class<? extends IEPComponent>> c = new ArrayList<Class<? extends IEPComponent>>();
-		return c;
-	}
-	
-	static Collection<Class<? extends IEPComponent>> createComponent() {
-		Collection<Class<? extends IEPComponent>> c = createEmpty();
-		c.add(Component.class);
-		return c;
-	}
+    static Collection<Class<? extends IEPComponent>> createEmpty() {
+        Collection<Class<? extends IEPComponent>> c = new ArrayList<Class<? extends IEPComponent>>();
+        return c;
+    }
+    
+    static Collection<Class<? extends IEPComponent>> createComponent() {
+        Collection<Class<? extends IEPComponent>> c = createEmpty();
+        c.add(Component.class);
+        return c;
+    }
 
     static Collection<Class<? extends IEPComponent>> createProperty() {
-		Collection<Class<? extends IEPComponent>> c = createEmpty();
-		c.add(Component.class);
+        Collection<Class<? extends IEPComponent>> c = createEmpty();
+        c.add(Component.class);
                 c.add(Property.class);
-		return c;
-	}
+        return c;
+    }
         
     static Collection<Class<? extends IEPComponent>> createDocumentation() {
-		Collection<Class<? extends IEPComponent>> c = createEmpty();
-		c.add(Component.class);
+        Collection<Class<? extends IEPComponent>> c = createEmpty();
+        c.add(Component.class);
         c.add(Documentation.class);
-		return c;
-	}
+        return c;
+    }
 }

@@ -25,7 +25,7 @@ public class IEPSemanticValidator implements Validator {
     
     public ValidationResult validate(Model model, Validation validation, ValidationType validationType) {
         if (model instanceof IEPModel) {
-        	IEPModel iepModel = (IEPModel) model;
+            IEPModel iepModel = (IEPModel) model;
 
             List<Model> validatedModels = new ArrayList<Model>();
             if (validationType.equals(ValidationType.COMPLETE) ||

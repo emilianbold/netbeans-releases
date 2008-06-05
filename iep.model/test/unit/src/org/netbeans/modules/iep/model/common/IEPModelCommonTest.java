@@ -52,10 +52,10 @@ public class IEPModelCommonTest extends TestCase {
     public void testModification () throws Exception {
         URL url = IEPModelCommonTest.class.getResource("data/empty.iep");
         URI wfFile = url.toURI();
-    	IEPModelProvider provider = new IEPModelProviderInsideIde ();
-    	IEPModel model = provider.getWLMModel(wfFile);
-    	
-    	IEPComponentFactory factory = new IEPComponentFactoryImpl (model);
+        IEPModelProvider provider = new IEPModelProviderInsideIde ();
+        IEPModel model = provider.getWLMModel(wfFile);
+        
+        IEPComponentFactory factory = new IEPComponentFactoryImpl (model);
         
         Component component = factory.createComponent(model);
         component.setName("test");
@@ -87,15 +87,15 @@ public class IEPModelCommonTest extends TestCase {
     
     public void testCreateModel()  throws Exception{
         URL url = IEPModelCommonTest.class.getResource("data/test.iep");
-    	URI wfFile = url.toURI();
-//    	InputStream is = getClass().getResourceAsStream("data/test.iep");
-//    	InputSource source = new InputSource (is);
-//    	Element rootEl = XmlUtil.createDocument(true, source).getDocumentElement();
-    	IEPModelProvider provider = new IEPModelProviderInsideIde ();
-    	IEPModel model = provider.getWLMModel(wfFile);
-       	model.sync();
-    	assertNotNull(model);
-//    	IEPComponent root = ((AbstractDocumentModel <IEPComponent>) model).createRootComponent(rootEl);
+        URI wfFile = url.toURI();
+//        InputStream is = getClass().getResourceAsStream("data/test.iep");
+//        InputSource source = new InputSource (is);
+//        Element rootEl = XmlUtil.createDocument(true, source).getDocumentElement();
+        IEPModelProvider provider = new IEPModelProviderInsideIde ();
+        IEPModel model = provider.getWLMModel(wfFile);
+           model.sync();
+        assertNotNull(model);
+//        IEPComponent root = ((AbstractDocumentModel <IEPComponent>) model).createRootComponent(rootEl);
         
         //assert properites on the root component
         assertEquals(1, model.getPlanComponent().getProperties().size());

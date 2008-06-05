@@ -41,15 +41,28 @@
 
 package org.openide.text;
 
-
+import java.awt.Dialog;
+import java.beans.PropertyChangeListener;
+import java.beans.VetoableChangeListener;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Date;
 import javax.swing.SwingUtilities;
-import junit.framework.*;
-import org.netbeans.junit.*;
+import junit.framework.Test;
+import junit.framework.TestResult;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.*;
-import org.openide.util.lookup.*;
-
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.UserQuestionException;
+import org.openide.util.test.MockLookup;
+import org.openide.windows.CloneableOpenSupport;
 
 /** Testing usage of UserQuestionException in CES.
  *
@@ -62,57 +75,51 @@ implements CloneableEditorSupport.Env {
     }
     /** the support to work with */
     private CloneableEditorSupport support;
-    /** the content of lookup of support */
-    private InstanceContent ic;
 
-    
     // Env variables
     private String content = "";
     private boolean valid = true;
     private boolean modified = false;
     /** if not null contains message why this document cannot be modified */
     private String cannotBeModified;
-    private java.util.Date date = new java.util.Date ();
-    private java.util.List/*<java.beans.PropertyChangeListener>*/ propL = new java.util.ArrayList ();
-    private java.beans.VetoableChangeListener vetoL;
+    private Date date = new Date();
+    private VetoableChangeListener vetoL;
     private IOException toThrow;
 
-    
-    public CloneableEditorUserQuestionTest (java.lang.String testName) {
+    public CloneableEditorUserQuestionTest(String testName) {
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
     public static Test suite() {
-        TestSuite suite = new NbTestSuite(CloneableEditorUserQuestionTest.class);
-        
-        return suite;
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return new Test() {
+                public int countTestCases() {
+                    return 0;
+                }
+                public void run(TestResult arg0) {}
+            };
+        } else {
+            return new NbTestSuite(CloneableEditorUserQuestionTest.class);
+        }
     }
     
 
-    protected void setUp () {
-        System.setProperty ("org.openide.util.Lookup", "org.openide.text.CloneableEditorUserQuestionTest$Lkp");
-        
-        ic = new InstanceContent ();
-        support = new CES (this, new AbstractLookup (ic));
+    protected @Override void setUp() {
+        MockLookup.setInstances(new DD());
+        support = new CES(this, Lookup.EMPTY);
     }
 
-    
     public void testExceptionThrownWhenDocumentIsBeingReadInAWT () throws Exception {
         class Run implements Runnable {
             public Exception ex;
             public Error err;
             public void run () {
-                
                 try {
                     doExceptionThrownWhenDocumentIsBeingRead ();
-                } catch (Exception ex) {
-                    this.ex = ex;
-                } catch (Error err) {
-                    this.err = err;
+                } catch (Exception x) {
+                    this.ex = x;
+                } catch (Error x) {
+                    this.err = x;
                 }
             }
         }
@@ -127,7 +134,6 @@ implements CloneableEditorSupport.Env {
         doExceptionThrownWhenDocumentIsBeingRead ();
     }
     
-    
     public void testOpenDocumentIsLoadedUsingIOException() throws Exception{
         doOpenDocumentIsLoaded (new IOException ("Plain I/O exc"));
     }
@@ -136,11 +142,11 @@ implements CloneableEditorSupport.Env {
         class MyEx extends UserQuestionException {
             private int confirmed;
             
-            public String getLocalizedMessage () {
+            public @Override String getLocalizedMessage() {
                 return "locmsg";
             }
             
-            public String getMessage () {
+            public @Override String getMessage() {
                 return "msg";
             }
             
@@ -176,11 +182,11 @@ implements CloneableEditorSupport.Env {
         class MyEx extends UserQuestionException {
             private int confirmed;
             
-            public String getLocalizedMessage () {
+            public @Override String getLocalizedMessage() {
                 return "locmsg";
             }
             
-            public String getMessage () {
+            public @Override String getMessage() {
                 return "msg";
             }
             
@@ -193,7 +199,7 @@ implements CloneableEditorSupport.Env {
         MyEx my = new MyEx ();
         toThrow = my;
 
-        DD.toReturn = org.openide.NotifyDescriptor.NO_OPTION;
+        DD.toReturn = NotifyDescriptor.NO_OPTION;
         support.open ();
         
         if (!SwingUtilities.isEventDispatchThread ()) {
@@ -231,23 +237,20 @@ implements CloneableEditorSupport.Env {
     // Implementation of the CloneableEditorSupport.Env
     //
     
-    public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
-        propL.add (l);
-    }    
-    public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
-        propL.remove (l);
-    }
+    public void addPropertyChangeListener(PropertyChangeListener l) {}
+
+    public void removePropertyChangeListener(PropertyChangeListener l) {}
     
-    public synchronized void addVetoableChangeListener(java.beans.VetoableChangeListener l) {
+    public synchronized void addVetoableChangeListener(VetoableChangeListener l) {
         assertNull ("This is the first veto listener", vetoL);
         vetoL = l;
     }
-    public void removeVetoableChangeListener(java.beans.VetoableChangeListener l) {
+    public void removeVetoableChangeListener(VetoableChangeListener l) {
         assertEquals ("Removing the right veto one", vetoL, l);
         vetoL = null;
     }
     
-    public org.openide.windows.CloneableOpenSupport findCloneableOpenSupport() {
+    public CloneableOpenSupport findCloneableOpenSupport() {
         return support;
     }
     
@@ -255,24 +258,24 @@ implements CloneableEditorSupport.Env {
         return "text/plain";
     }
     
-    public java.util.Date getTime() {
+    public Date getTime() {
         return date;
     }
     
-    public java.io.InputStream inputStream() throws java.io.IOException {
+    public InputStream inputStream() throws IOException {
         if (toThrow != null) {
             throw toThrow;
         }
-        return new java.io.ByteArrayInputStream (content.getBytes ());
+        return new ByteArrayInputStream(content.getBytes());
     }
-    public java.io.OutputStream outputStream() throws java.io.IOException {
-        class ContentStream extends java.io.ByteArrayOutputStream {
-            public void close () throws java.io.IOException {
+
+    public OutputStream outputStream() throws IOException {
+        class ContentStream extends ByteArrayOutputStream {
+            public @Override void close() throws IOException {
                 super.close ();
                 content = new String (toByteArray ());
             }
         }
-        
         return new ContentStream ();
     }
     
@@ -284,11 +287,11 @@ implements CloneableEditorSupport.Env {
         return modified;
     }
 
-    public void markModified() throws java.io.IOException {
+    public void markModified() throws IOException {
         if (cannotBeModified != null) {
             final String notify = cannotBeModified;
             IOException e = new IOException () {
-                public String getLocalizedMessage () {
+                public @Override String getLocalizedMessage() {
                     return notify;
                 }
             };
@@ -330,32 +333,18 @@ implements CloneableEditorSupport.Env {
         }
         
     } // end of CES
-    
-    //
-    // Our fake lookup
-    //
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
-        public Lkp () {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private Lkp (org.openide.util.lookup.InstanceContent ic) {
-            super (ic);
-            ic.add (new DD ());
-        }
-    }
 
     /** Our own dialog displayer.
      */
-    private static final class DD extends org.openide.DialogDisplayer {
+    private static final class DD extends DialogDisplayer {
         public static Object[] options;
         public static Object toReturn;
         
-        public java.awt.Dialog createDialog(org.openide.DialogDescriptor descriptor) {
+        public Dialog createDialog(DialogDescriptor descriptor) {
             throw new IllegalStateException ("Not implemented");
         }
         
-        public Object notify(org.openide.NotifyDescriptor descriptor) {
+        public Object notify(NotifyDescriptor descriptor) {
             assertNull (options);
             assertNotNull (toReturn);
             options = descriptor.getOptions();

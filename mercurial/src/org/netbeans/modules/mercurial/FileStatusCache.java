@@ -445,7 +445,7 @@ public class FileStatusCache {
         Map<File, FileInformation> files;
         
         files = (Map<File, FileInformation>) turbo.readEntry(dir, FILE_STATUS_MAP);
-         if (files != null) return files;
+        if (files != null) return files;
         if (isNotManagedByDefault(dir)) {
             if (interestingFiles == null) return FileStatusCache.NOT_MANAGED_MAP;
         }
@@ -453,7 +453,7 @@ public class FileStatusCache {
         dir = FileUtil.normalizeFile(dir);
         files = scanFolder(dir, interestingFiles);
         assert files.containsKey(dir) == false;
-        turbo.writeEntry(dir, FILE_STATUS_MAP, files);
+        turbo.writeEntry(dir, FILE_STATUS_MAP, files.size() == 0 ? null : files);
         if(interestingFiles == null){
             for (Iterator i = files.keySet().iterator(); i.hasNext();) {
                 File file = (File) i.next();
@@ -484,16 +484,25 @@ public class FileStatusCache {
                 if (HgUtils.isIgnored(file)) {
                     Mercurial.LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is NotSharable", file.getAbsolutePath()); // NOI18N
                     fi = FILE_INFORMATION_EXCLUDED;
-                 } else {
-                     return;
-                 }
+                } else {
+                    if (alwaysFireEvent) {
+                        fireFileStatusChanged(file, null, fi);
+                    }
+                    return;
+                }
             } else if (!FileStatusCache.equivalent(FILE_INFORMATION_REMOVEDLOCALLY, fi)) {
+                if (alwaysFireEvent) {
+                    fireFileStatusChanged(file, null, fi);
+                }
                 return;
             }
         }
         if (FileStatusCache.equivalent(FILE_INFORMATION_NEWLOCALLY, fi)) {
             if (FileStatusCache.equivalent(FILE_INFORMATION_EXCLUDED, current)) {
                 Mercurial.LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is Excluded", file.getAbsolutePath()); // NOI18N
+                if (alwaysFireEvent) {
+                    fireFileStatusChanged(file, null, fi);
+                }
                 return;
             } else if (current == null) {
                 if (HgUtils.isIgnored(file)) {
@@ -513,14 +522,10 @@ public class FileStatusCache {
         } else {
             newFiles.put(file, fi);
         }
-        assert files.containsKey(dir) == false;
-        turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles);
+        assert newFiles.containsKey(dir) == false;
+        turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
 
-        if(interestingFiles == null){ 
-            fireFileStatusChanged(file, current, fi);
-        } else if (alwaysFireEvent) {
-            fireFileStatusChanged(file, null, fi);
-        }
+        fireFileStatusChanged(file, current, fi);
         
         return;
     }
@@ -579,7 +584,7 @@ public class FileStatusCache {
                 for (File file : interestingFiles.keySet()) {
                     FileInformation fi = interestingFiles.get(file);
                     Mercurial.LOG.log(Level.FINE, "refreshAll() file: {0} {1} ", new Object[] {file.getAbsolutePath(), fi}); // NOI18N
-                    refreshFileStatus(file, fi, interestingFiles, true);
+                    refreshFileStatus(file, fi, interestingFiles);
                 }
                 if (files != null) {
                     for (File file : files.keySet()) {
@@ -614,6 +619,7 @@ public class FileStatusCache {
      *
      * @param file
      */
+    @SuppressWarnings("unchecked") // Need to change turbo module to remove warning at source
     public void refreshCached(File root) {
         if (root.isDirectory()) {
             File repository = Mercurial.getInstance().getTopmostManagedParent(root);
@@ -634,7 +640,15 @@ public class FileStatusCache {
                     FileInformation fi = allFiles.get(file);
                     if (fi == null) {
                         // We have a file in the cache which seems to have disappeared
-                        refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                        // so remove it from the cache and fireFileStatusChanged
+                        File parent = file.getParentFile();
+                        
+                        Map<File, FileInformation> oldFiles = (Map<File, FileInformation>) turbo.readEntry(parent, FILE_STATUS_MAP);
+                        Map<File, FileInformation> newFiles = new HashMap<File, FileInformation>(oldFiles);
+                        newFiles.remove(file);
+                        turbo.writeEntry(parent, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
+                        fi = oldFiles != null ? oldFiles.get(file) : null;
+                        fireFileStatusChanged(file, fi, FILE_INFORMATION_UNKNOWN);
                     } else {
                         refreshFileStatus(file, fi, null);
                     }
@@ -848,6 +862,10 @@ public class FileStatusCache {
         listenerSupport.firePropertyChange(PROP_FILE_STATUS_CHANGED, null, new ChangedEvent(file, oldInfo, newInfo));
     }
     
+    public void notifyFileChanged(File file) {
+        fireFileStatusChanged(file, null, FILE_INFORMATION_UPTODATE);
+    }
+
     public void refreshDirtyFileSystems() {
         Set<FileSystem> filesystems = getFilesystemsToRefresh();
         FileSystem[]  filesystemsToRefresh = new FileSystem[filesystems.size()];

@@ -73,77 +73,37 @@ if [ -d $prev_generated ]; then
     fi
 fi
 
-sigtest_jar=`pwd`/../sigtestdev.jar
-sigtest_prev=`pwd`/../lastSuccessful/archive/nbbuild/build/sigtests
-sigtest_gen=`pwd`/nbbuild/build/sigtests
-sigtest_out=nbbuild/build/sigtestscheck
+sigtest_prev=`pwd`/../lastSuccessful/archive/nbbuild/build/sigtest/snapshot
 
 echo SigTest: Checking All Changes
-if [ -f $sigtest_jar -a -d $sigtest_prev ]; then
-    ant -Dsigtest.basedir=$sigtest_prev -Dsigtest.jar=$sigtest_jar -Dsigtest.check.type=strictcheck -Dsigtest.output.dir=`pwd`/$sigtest_out check-sigtests > $sigtest_gen.log
-    ERROR_CODE=$?
-    if [ $ERROR_CODE != 0 ]; then
-        for report in `pwd`/$sigtest_out/*; do
-            sigtest_email=`head -n 1 $report | grep "^email:" | cut -c 8-`
-            if [ -z "$sigtest_email" ]; then
-              sigtest_email="api-changes@netbeans.org"
-            fi
-            (
-                echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; 
-                echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$sigtest_out/`basename $report`"; 
-                echo; tail -n 200 $report
-            ) | mail -s "`basename $report` - sigchanges in $JOB_NAME build #$BUILD_NUMBER" $sigtest_email
-        done
+ant -Dsigtest.basedir=$sigtest_prev check-sigtests
+for report in `pwd`/nbbuild/build/sigtest/check-snapshot/*; do
+  if ! expr "$report" : ".*/TESTS-.*" && grep 'failures="1"' $report >/dev/null; then
+    sigtest_email=`cat $report | grep "^email:" | grep -v nbm.domain | cut -c 8-`
+    if [ -z "$sigtest_email" ]; then
+      sigtest_email="api-changes@netbeans.org"
     fi
-
-fi
+    content=`cat $report`
+    (
+        echo "Code changes:";
+        echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; 
+        echo "API changes:";
+        echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/nbbuild/build/sigtest/check-snapshot/html/index.html"; 
+        echo "Failure output is available as StdErr output of sigtest test for appropriate module.";
+#                echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$sigtest_out/`basename $report`"; 
+        echo; 
+        expr "$content" : ".*CDATA\[\(.*\)\]\].*"
+    ) | mail -s "`basename $report` - sigchanges in $JOB_NAME build #$BUILD_NUMBER" $sigtest_email
+  fi
+done
 echo SigTest: Checking All Changes Done
 
 echo SigTest: Generating Golden Files
-if [ -f $sigtest_jar ]; then
-    ant -Dsigtest.basedir=$sigtest_gen -Dsigtest.jar=$sigtest_jar gen-sigtests >$sigtest_gen.log 2>&1
-    ERROR_CODE=$?
-    if [ $ERROR_CODE != 0 ]; then
-        (
-            echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; 
-            echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$sigtest_out/`basename $report`"; 
-            echo; tail -n 200 $sigtest_gen.log
-        ) | mail -s "`basename $report` - cannot generate sigtest golden files in $JOB_NAME build #$BUILD_NUMBER" api-changes@netbeans.org
-
-        cat >$sigtest_gen.xml <<KONEC
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite errors="0" failures="1" name="org.netbeans.nbbuild.SigTest" tests="1" time="0.0">
-    <testcase classname="org.netbeans.GenerateSigTest" name="testSignaturesCanBeGenerated" time="0.0">
-        <failure message="Some module provides wrong API" type="junit.framework.AssertionFailedError">
-KONEC
-        tail -n 50 $sigtest_gen.log >>$sigtest_gen.xml
-cat >>$sigtest_gen.xml <<KONEC
-        </failure>
-        <system-out><![CDATA[
-KONEC
-        cat $sigtest_gen.log >>$sigtest_gen.xml
-        cat >>$sigtest_gen.xml <<KONEC
-]]></system-out>
-        <system-err></system-err>
-    </testcase>
-</testsuite>
-KONEC
-    fi
-else 
-    echo No $sigtest_jar found!
-fi
+ant gen-sigtests 
 echo SigTest: Generating Golden Files Done
 
 echo SigTest: Incompatible Changes
-sigtest_incompat_gen=nbbuild/build/sigtestsincompat
-if ! ant -Dsigtest.output.dir=`pwd`/$sigtest_incompat_gen check-sigtests > `pwd`/$sigtest_incompat_gen.log; then
-    (
-        echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; 
-        echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$sigtest_incompat_gen"; 
-        echo; 
-        cat `pwd`/$sigtest_incompat_gen/*
-    ) | mail -s "Incompatible API change $JOB_NAME build #$BUILD_NUMBER" api-changes@netbeans.org
-fi
+ant check-sigtests-release
 echo SigTest: Incompatible Changes Done
 
 ###############  Commit validation tests  ##########################

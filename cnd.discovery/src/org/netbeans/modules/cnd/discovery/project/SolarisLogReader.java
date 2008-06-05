@@ -53,6 +53,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
@@ -80,6 +81,7 @@ public class SolarisLogReader {
     private List<SourceFileProperties> result;
     private List<InstallLine> copyHeader;
     private Map<String,List<String>> findBase;
+    private TreeMap<String,Set<String>> libraries;
     private String buidMashinePrototype;
     private String buidMashineSources;
     
@@ -93,9 +95,10 @@ public class SolarisLogReader {
     
     private void run() {
         if (TRACE) System.out.println("LogReader is run for " + fileName); //NOI18N
-        Pattern pattern = Pattern.compile(";|\\|\\||&&"); // ;, ||, && //NOI18N
+        Pattern pattern = Pattern.compile(";|\\|\\||&&"); // NOI18N
         result = new ArrayList<SourceFileProperties>();
         copyHeader = new ArrayList<InstallLine>();
+        libraries = new TreeMap<String,Set<String>>();
         File file = new File(fileName);
         if (file.exists() && file.canRead()){
             try {
@@ -340,10 +343,14 @@ public class SolarisLogReader {
     private enum CompilerType {
         CPP, C, UNKNOWN;
     };
+    private enum CompilerFamily {
+        SUN, GNU, UNKNOWN;
+    };
     
     private class LineInfo {
         public String compileLine;
         public CompilerType compilerType = CompilerType.UNKNOWN;
+        public CompilerFamily compilerFamily = CompilerFamily.UNKNOWN;
         
         LineInfo(String line) {
             compileLine = line;
@@ -372,6 +379,7 @@ public class SolarisLogReader {
             start = line.indexOf(INVOKE_GNU_C);
             if (start>=0) {
                 li.compilerType = CompilerType.C;
+                li.compilerFamily = CompilerFamily.GNU;
                 end = start + INVOKE_GNU_C.length();
             }
         } 
@@ -379,6 +387,7 @@ public class SolarisLogReader {
             start = line.indexOf(INVOKE_GNU_CC);
             if (start>=0) {
                 li.compilerType = CompilerType.CPP;
+                li.compilerFamily = CompilerFamily.GNU;
                 end = start + INVOKE_GNU_CC.length();
             }
         } 
@@ -386,6 +395,7 @@ public class SolarisLogReader {
             start = line.indexOf(INVOKE_SUN_C);
             if (start>=0) {
                 li.compilerType = CompilerType.C;
+                li.compilerFamily = CompilerFamily.SUN;
                 end = start + INVOKE_SUN_C.length();
             }
         } 
@@ -393,6 +403,7 @@ public class SolarisLogReader {
             start = line.indexOf(INVOKE_SUN_CC);
             if (start>=0) {
                 li.compilerType = CompilerType.CPP;
+                li.compilerFamily = CompilerFamily.SUN;
                 end = start + INVOKE_SUN_CC.length();
             }
         }
@@ -453,7 +464,7 @@ public class SolarisLogReader {
        
        LineInfo li = testCompilerInvocation(line);
        if (li.compilerType != CompilerType.UNKNOWN) {
-           return gatherLine(li.compileLine, line.startsWith("+"), li.compilerType == CompilerType.CPP);
+           return gatherLine(li.compileLine, line.startsWith("+"), li.compilerType == CompilerType.CPP, li.compilerFamily);
        }
        return false;
     }
@@ -477,7 +488,7 @@ public class SolarisLogReader {
         }
     }
     
-    private boolean gatherLine(String line, boolean isScriptOutput, boolean isCPP) {
+    private boolean gatherLine(String line, boolean isScriptOutput, boolean isCPP, CompilerFamily compiler) {
         // /set/c++/bin/5.9/intel-S2/prod/bin/CC -c -g -DHELLO=75 -Idist  main.cc -Qoption ccfe -prefix -Qoption ccfe .XAKABILBpivFlIc.
         // /opt/SUNWspro/bin/cc -xO3 -xarch=amd64 -Ui386 -U__i386 -Xa -xildoff -errtags=yes -errwarn=%all
         // -erroff=E_EMPTY_TRANSLATION_UNIT -erroff=E_STATEMENT_NOT_REACHED -xc99=%none -W0,-xglobalstatic
@@ -486,7 +497,16 @@ public class SolarisLogReader {
         // -DSUNDDI -DUSE_INET6 -DSOLARIS2=11 -I. -DIPFILTER_LOOKUP -DIPFILTER_LOG -c ../ipmon_l.c -o ipmon_l.o
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
-        String what = DiscoveryUtils.gatherComlilerLine(line, isScriptOutput, userIncludes, userMacros);
+        Set<String> libs = new HashSet<String>();
+        String what = DiscoveryUtils.gatherComlilerLine(line, isScriptOutput, userIncludes, userMacros, libs);
+        if (libs.size()>0){
+            Set<String> l = libraries.get(getWorkingDir());
+            if (l == null){
+                libraries.put(getWorkingDir(), libs);
+            } else {
+                l.addAll(libs);
+            }
+        }
         if (what == null){
             return false;
         }
@@ -524,14 +544,14 @@ public class SolarisLogReader {
                     file = getWorkingDir()+"/"+what;  //NOI18N
                     f = new File(file);
                     if (f.exists() && f.isFile()) {
-                        addToResult(new CommandLineSource(isCPP, getWorkingDir(), what, userIncludesCached, userMacrosCached));
+                        addToResult(new CommandLineSource(isCPP, compiler==CompilerFamily.SUN, getWorkingDir(), what, userIncludesCached, userMacrosCached));
                         return true;
                     }
                 }
                 String search = findFiles(what, getWorkingDir(), relative);
                 if (search != null) {
                     setWorkingDir(search);
-                    addToResult(new CommandLineSource(isCPP, getWorkingDir(), what, userIncludesCached, userMacrosCached));
+                    addToResult(new CommandLineSource(isCPP, compiler==CompilerFamily.SUN, getWorkingDir(), what, userIncludesCached, userMacrosCached));
                     if (TRACE) System.err.println("** Gotcha: " + search + File.separator + what);
                     // kinda adventure but it works
                     return true;
@@ -542,7 +562,7 @@ public class SolarisLogReader {
         } else if (TRACE) {
             if (TRACE) System.err.println("**** Gotcha: " + file);
         }
-        addToResult(new CommandLineSource(isCPP, getWorkingDir(), what, userIncludesCached, userMacrosCached));
+        addToResult(new CommandLineSource(isCPP, compiler==CompilerFamily.SUN, getWorkingDir(), what, userIncludesCached, userMacrosCached));
         return true;
     }
     
@@ -553,21 +573,23 @@ public class SolarisLogReader {
                 // first compilation is GNU, second is SUN
                 if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
                     // Rplace GNU compilation on SUN
-                    result.set(result.size()-1, source);
+                    if (!prev.isSunCompiler && source.isSunCompiler) {
+                        result.set(result.size()-1, source);
+                        return;
+                    }
                 } else {
                     // Skip SUN compilation
+                    if (!prev.isSunCompiler && source.isSunCompiler) {
+                        return;
+                    }
                 }
-                return;
             }
         }
         result.add(source);
     }
     
     private String findFiles(String name, String wd, String relative) {
-        if (findBase == null) {
-            findBase = initSearchMap();
-        }
-        List<String> res = findBase.get(name);
+        List<String> res = getFiles(name);
         if (res != null && res.size()==1) {
             return res.get(0);
         } else if (res != null) {
@@ -584,6 +606,13 @@ public class SolarisLogReader {
         return null;
     }
         
+    private List<String> getFiles(String name){
+        if (findBase == null) {
+            findBase = initSearchMap();
+        }
+        return findBase.get(name);
+    }
+    
     private Map<String,List<String>> initSearchMap(){
         HashSet<String> set = new HashSet<String>();
         File f = new File(root);
@@ -623,7 +652,88 @@ public class SolarisLogReader {
             }
         }
     }
-        
+    
+    /*package-local*/ TreeMap<String,Set<String>> getLibraries(){
+        return libraries;
+    }
+    
+    /*package-local*/ TreeMap<String,Set<String>> readMapFile(){
+        List<String> mapfile = getFiles("mapfile-vers"); //NOI18N
+        if (mapfile != null) {
+            TreeMap<String, Set<String>> res = new TreeMap<String, Set<String>>();
+            Collections.sort(mapfile);
+            for(String name:mapfile){
+                Set<String> set = readMapFile(name+"/mapfile-vers"); //NOI18N
+                if (set != null) {
+                    res.put(name, set);
+                }
+            }
+            return res;
+        }
+        return null;
+    }
+    
+    private Set<String> readMapFile(String name){
+        File file = new File(name);
+        if (file.exists() && file.canRead()){
+            try {
+                Set<String> set = new HashSet<String>();
+                BufferedReader in = new BufferedReader(new FileReader(file));
+                //System.out.println(name);
+                boolean inBlock = false;
+                boolean inGlobal = false;
+                while(true){
+                    String line = in.readLine();
+                    if (line == null){
+                        break;
+                    }
+                    line = line.trim();
+                    if (line.startsWith("#")){ //NOI18N
+                        continue;
+                    }
+                    if (line.endsWith("{")){ //NOI18N
+                        inGlobal = false;
+                        inBlock = true;
+                        continue;
+                    }
+                    if (line.startsWith("}")){ //NOI18N
+                        inGlobal = false;
+                        inBlock = false;
+                        continue;
+                    }
+                    if (inBlock && line.endsWith("global:")){ //NOI18N
+                        inGlobal = true;
+                        continue;
+                    }
+                    if (inBlock && line.endsWith("local:")){ //NOI18N
+                        inGlobal = false;
+                        continue;
+                    }
+                    if (inBlock && inGlobal &&
+                        line.indexOf(";") > 0 &&
+                        line.indexOf("FILTER") < 0){
+                        String res = line.substring(0,line.indexOf(";"));
+                        if (res.indexOf("=")>0) {
+                            res = res.substring(0, res.indexOf("="));
+                        }
+                        if (res.indexOf(".")<0) {
+                            res = res.trim();
+                            set.add(res);
+                            //System.out.println("\t"+res);
+                        }
+                    }
+                }
+                in.close();
+                if (set.size()>0) {
+                    return set;
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return null;
+    }
+    
     private static class CommandLineSource implements SourceFileProperties {
 
         private String compilePath;
@@ -635,14 +745,16 @@ public class SolarisLogReader {
         private Map<String, String> userMacros;
         private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
         private Set<String> includedFiles = Collections.<String>emptySet();
+        private boolean isSunCompiler;
 
-        private CommandLineSource(boolean isCPP, String compilePath, String sourcePath, 
+        private CommandLineSource(boolean isCPP, boolean isSunCompiler, String compilePath, String sourcePath, 
                 List<String> userIncludes, Map<String, String> userMacros) {
             if (isCPP) {
                 language = ItemProperties.LanguageKind.CPP;
             } else {
                 language = ItemProperties.LanguageKind.C;
             }
+            this.isSunCompiler = isSunCompiler;
             this.compilePath =compilePath;
             sourceName = sourcePath;
             if (sourceName.startsWith("/")) { // NOI18N

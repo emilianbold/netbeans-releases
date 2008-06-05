@@ -121,8 +121,8 @@ public class EntityNode extends SimpleNode
         
         Documentation documentation = this.mComp.getDocumentation();
         if(documentation != null) {
-        	getDocumentationNode().setVisible(true);
-        	getDocumentationNode().setToolTipText(documentation.getTextContent());
+            getDocumentationNode().setVisible(true);
+            getDocumentationNode().setToolTipText(documentation.getTextContent());
         }
         
         
@@ -130,17 +130,17 @@ public class EntityNode extends SimpleNode
     
     public JGoObject copyObject(JGoCopyEnvironment env)
     {
-    	EntityNode node = (EntityNode) super.copyObject(env);
-    	node.mComp = this.mComp;
-    	
-    	return node;
+        EntityNode node = (EntityNode) super.copyObject(env);
+        node.mComp = this.mComp;
+        
+        return node;
     }
    
     protected void copyChildren(JGoArea newarea, JGoCopyEnvironment env) {
-	      EntityNode node = (EntityNode)newarea;
-	      node.mComp = this.mComp;
-	      super.copyChildren(newarea, env);
-	      
+          EntityNode node = (EntityNode)newarea;
+          node.mComp = this.mComp;
+          super.copyChildren(newarea, env);
+          
     }
     
     /**
@@ -176,17 +176,17 @@ public class EntityNode extends SimpleNode
         //TcgComponentType ct = mComponent.getType();
         
         try {
-        	TcgComponentType componentType = TcgModelManager.getTcgComponentType(this.mComp.getType());
-    		if(componentType != null) {
-    			ImageIcon icon = componentType.getIcon();
-    			if(icon == null) {
-    				icon = TcgModelConstants.UNKNOWN_ICON;
-    			}
-    			
-    			image.loadImage(icon.getImage(), true);
-    		}
-        	//mIcon = ImageUtil.getImageIcon(mIconName);
-        	
+            TcgComponentType componentType = TcgModelManager.getTcgComponentType(this.mComp.getType());
+            if(componentType != null) {
+                ImageIcon icon = componentType.getIcon();
+                if(icon == null) {
+                    icon = TcgModelConstants.UNKNOWN_ICON;
+                }
+                
+                image.loadImage(icon.getImage(), true);
+            }
+            //mIcon = ImageUtil.getImageIcon(mIconName);
+            
         } catch (Throwable e) {
             // loadImage method throws null pointer exception from within
             // MediaTracker.waitForID(0). This exception must be caught
@@ -238,7 +238,7 @@ public class EntityNode extends SimpleNode
     */
     
     public String getLabelString() {
-    	return mComp.getDisplayName();
+        return mComp.getDisplayName();
     }
     
     /*
@@ -284,17 +284,17 @@ public class EntityNode extends SimpleNode
           
             TopComponent tc = TopComponent.getRegistry().getActivated();
             if(tc != null) {
-        		Node node = new TcgComponentNode(getModelComponent(), getModelComponent().getModel(), pdCanvas);
-            	tc.setActivatedNodes(new Node[]{node});
+                Node node = new TcgComponentNode(getModelComponent(), getModelComponent().getModel(), pdCanvas);
+                tc.setActivatedNodes(new Node[]{node});
             }
         }
     }
     
     public void refreshProperties() {
-    	TopComponent tc = TopComponent.getRegistry().getActivated();
+        TopComponent tc = TopComponent.getRegistry().getActivated();
         if(tc != null) {
-    		Node node = new TcgComponentNode(getModelComponent(), getModelComponent().getModel(), (PlanCanvas) getView());
-        	tc.setActivatedNodes(new Node[]{node});
+            Node node = new TcgComponentNode(getModelComponent(), getModelComponent().getModel(), (PlanCanvas) getView());
+            tc.setActivatedNodes(new Node[]{node});
         }
     }
     
@@ -385,11 +385,11 @@ public class EntityNode extends SimpleNode
         */
         
         public void updateDownstreamNodes() {
-        	PdModel model = getDoc();
-        	if(model != null && model.isReloading()) {
-        		return;
-        	}
-        	
+            PdModel model = getDoc();
+            if(model != null && model.isReloading()) {
+                return;
+            }
+            
             if (mComp == null) {
                 // This happens when this node, its upstream node, and the link between
                 // them are copied from PdCans to Clipboard. See SimpleNodePort.linkChanged
@@ -403,9 +403,9 @@ public class EntityNode extends SimpleNode
                     //List inputIdList = new ArrayList();
                     //List inputSchemaIdList = new ArrayList();
                     //List staticInputIdList = new ArrayList();
-                	StringBuffer inputIdList = new StringBuffer();
-                	StringBuffer inputSchemaIdList = new StringBuffer();
-                	StringBuffer staticInputIdList = new StringBuffer();
+                    StringBuffer inputIdList = new StringBuffer();
+                    StringBuffer inputSchemaIdList = new StringBuffer();
+                    StringBuffer staticInputIdList = new StringBuffer();
                     boolean isSchemaOwner = false;
                     
                     isSchemaOwner = (Boolean) mComp.getComponentType().getPropertyType(IS_SCHEMA_OWNER_KEY).getDefaultValue();
@@ -427,36 +427,36 @@ public class EntityNode extends SimpleNode
                         String outputType = fromComp.getProperty(OUTPUT_TYPE_KEY).getValue();
                         String id = fromComp.getProperty(ID_KEY).getValue();
                         if (outputType.equals(IO_TYPE_TABLE)) {
-                        	if(counter != 0) {
-                        		staticInputIdList.append("\\");
-                        	}
+                            if(counter != 0) {
+                                staticInputIdList.append("\\");
+                            }
                             staticInputIdList.append(id);
                         } else {
-                        	if(counter != 0) {
-                        		inputIdList.append("\\");
-                        	}
+                            if(counter != 0) {
+                                inputIdList.append("\\");
+                            }
                             inputIdList.append(id);
                         }
                         
                         
                         String outputSchemaId = fromComp.getProperty(OUTPUT_SCHEMA_ID_KEY).getValue().trim();
                         if (outputSchemaId != null && !outputSchemaId.equals("") && !outputType.equals(IO_TYPE_TABLE)) {
-                        	if(counter != 0) {
-                        		inputSchemaIdList.append("\\");
-                        	} else {
-                        		resultantOutputSchemaId = outputSchemaId;
-                        	}
+                            if(counter != 0) {
+                                inputSchemaIdList.append("\\");
+                            } else {
+                                resultantOutputSchemaId = outputSchemaId;
+                            }
                             inputSchemaIdList.append(outputSchemaId);
                         }
                         
                         int topoScore = 0;
                         String topoScoreStr = fromComp.getProperty(TOPO_SCORE_KEY).getValue(); 
                         if(topoScoreStr != null) { 
-                        	try {
-                        	topoScore = Integer.parseInt(topoScoreStr);
-                        	} catch(Exception ex) {
-                        		//ignore
-                        	}
+                            try {
+                            topoScore = Integer.parseInt(topoScoreStr);
+                            } catch(Exception ex) {
+                                //ignore
+                            }
                         }
                         maxTopoScore = Math.max(maxTopoScore, topoScore);
                         
@@ -476,27 +476,27 @@ public class EntityNode extends SimpleNode
                     String resultantOutputSchemaIdStr = mComp.getProperty(OUTPUT_SCHEMA_ID_KEY).getValue();
                     
                     if(!inputIdList.toString().equals(inputIdListStr)) {
-                    	mComp.getProperty(INPUT_ID_LIST_KEY).setValue(inputIdList.toString());
+                        mComp.getProperty(INPUT_ID_LIST_KEY).setValue(inputIdList.toString());
                     }
                     
                     if(!inputSchemaIdList.toString().equals(inputSchemaIdListStr)) {
-                    	mComp.getProperty(INPUT_SCHEMA_ID_LIST_KEY).setValue(inputSchemaIdList.toString());
+                        mComp.getProperty(INPUT_SCHEMA_ID_LIST_KEY).setValue(inputSchemaIdList.toString());
                     }
                     
                     if(!staticInputIdList.toString().equals(staticInputListStr)) {
-                    	mComp.getProperty(STATIC_INPUT_ID_LIST_KEY).setValue(staticInputIdList.toString());
+                        mComp.getProperty(STATIC_INPUT_ID_LIST_KEY).setValue(staticInputIdList.toString());
                     }
                     
                     mComp.getProperty(TOPO_SCORE_KEY).setValue(""+new Integer(maxTopoScore + 1));
                     if (!isSchemaOwner) {
                         if (inputSchemaIdList.length() > 0) {
-                        	if(!resultantOutputSchemaId.equals(resultantOutputSchemaIdStr)) {
-                        		mComp.getProperty(OUTPUT_SCHEMA_ID_KEY).setValue(resultantOutputSchemaId);
-                        	}
+                            if(!resultantOutputSchemaId.equals(resultantOutputSchemaIdStr)) {
+                                mComp.getProperty(OUTPUT_SCHEMA_ID_KEY).setValue(resultantOutputSchemaId);
+                            }
                         } else {
-                        	if(!resultantOutputSchemaIdStr.equals("")) {
-                        		mComp.getProperty(OUTPUT_SCHEMA_ID_KEY).setValue("");
-                        	}
+                            if(!resultantOutputSchemaIdStr.equals("")) {
+                                mComp.getProperty(OUTPUT_SCHEMA_ID_KEY).setValue("");
+                            }
                         }
                     }
                     
@@ -594,7 +594,7 @@ public class EntityNode extends SimpleNode
             }
         }
     }
-	*/
+    */
     
         /*
     // Properties
@@ -654,7 +654,7 @@ public class EntityNode extends SimpleNode
     }
     
     public int getInputCount() {
-    	return mComp.getInputOperatorList().size();
+        return mComp.getInputOperatorList().size();
     }
     
     /*
@@ -862,24 +862,24 @@ public class EntityNode extends SimpleNode
 //    }
 
     public OperatorComponent copyObjectAndResetContextProperties(IEPModel targetModel) {
-    	
-    	OperatorComponent operator = this.getModelComponent();
-    	OperatorComponentContainer opContainer = targetModel.getPlanComponent().getOperatorComponentContainer();
         
-    	OperatorComponent newOperator = ModelObjectFactory.getInstance().createOperatorComponent(operator.getType(), targetModel);
-    	
-    	String operatorId = operator.getId(); 
-    	String operatorDisplayName = operator.getDisplayName();
-    	
-    	if(opContainer.findChildComponent(operatorId) != null) {
-    		operatorId = NameGenerator.generateId(opContainer, "o");
-    	}
-    	
-    	if(opContainer.findOperator(operatorDisplayName) != null) {
-    		operatorDisplayName = NameGenerator.generateNewName(opContainer, operator.getComponentType());
-    	}
-    		
-    	newOperator.setDisplayName(operatorDisplayName);
+        OperatorComponent operator = this.getModelComponent();
+        OperatorComponentContainer opContainer = targetModel.getPlanComponent().getOperatorComponentContainer();
+        
+        OperatorComponent newOperator = ModelObjectFactory.getInstance().createOperatorComponent(operator.getType(), targetModel);
+        
+        String operatorId = operator.getId(); 
+        String operatorDisplayName = operator.getDisplayName();
+        
+        if(opContainer.findChildComponent(operatorId) != null) {
+            operatorId = NameGenerator.generateId(opContainer, "o");
+        }
+        
+        if(opContainer.findOperator(operatorDisplayName) != null) {
+            operatorDisplayName = NameGenerator.generateNewName(opContainer, operator.getComponentType());
+        }
+            
+        newOperator.setDisplayName(operatorDisplayName);
         newOperator.setId(operatorId);
         newOperator.setName(operatorId);
         newOperator.setTitle(operatorId);
@@ -889,9 +889,9 @@ public class EntityNode extends SimpleNode
         
         Documentation doc = operator.getDocumentation();
         if(doc != null) {
-        	Documentation newDoc = targetModel.getFactory().createDocumentation(targetModel);
-        	newDoc.setTextContent(doc.getTextContent());
-        	newOperator.setDocumentation(newDoc);
+            Documentation newDoc = targetModel.getFactory().createDocumentation(targetModel);
+            newDoc.setTextContent(doc.getTextContent());
+            newOperator.setDocumentation(newDoc);
         }
         
 //        EntityNode newObj = (EntityNode)super.copyObject(env);
@@ -940,16 +940,16 @@ public class EntityNode extends SimpleNode
              
              
              if (isSchemaOwner) {
-            	 SchemaComponent outputSchemaComp =  operator.getOutputSchemaId();
+                 SchemaComponent outputSchemaComp =  operator.getOutputSchemaId();
                  if (outputSchemaComp != null) {
-                	 SchemaComponentContainer scContainer = targetModel.getPlanComponent().getSchemaComponentContainer();
-                	 
-            		 SchemaComponent newSCComp = copySchemaComponent(outputSchemaComp, targetModel);
-            		 scContainer.addSchemaComponent(newSCComp);
-                	
-            		 Property outputSchema = newOperator.getProperty(OUTPUT_SCHEMA_ID_KEY);
-                	 outputSchema.setValue(newSCComp.getName());
-                	 
+                     SchemaComponentContainer scContainer = targetModel.getPlanComponent().getSchemaComponentContainer();
+                     
+                     SchemaComponent newSCComp = copySchemaComponent(outputSchemaComp, targetModel);
+                     scContainer.addSchemaComponent(newSCComp);
+                    
+                     Property outputSchema = newOperator.getProperty(OUTPUT_SCHEMA_ID_KEY);
+                     outputSchema.setValue(newSCComp.getName());
+                     
                  } 
              }
 
@@ -964,68 +964,68 @@ public class EntityNode extends SimpleNode
      }
 
     private SchemaComponent copySchemaComponent(SchemaComponent component, IEPModel targetModel) {
-    	SchemaComponent sComponent = targetModel.getFactory().createSchema(targetModel);
-    	SchemaComponentContainer scContainer = targetModel.getPlanComponent().getSchemaComponentContainer();
-    	
-    	String schemaName = component.getName();
-    	if(scContainer.findSchema(schemaName) != null) {
-    		schemaName = NameGenerator.generateSchemaName(scContainer);
-    	}
-    	
-    	sComponent.setName(schemaName);
-    	sComponent.setType(component.getType());
-    	sComponent.setTitle(schemaName);
-    	
-    	Documentation scDoc = component.getDocumentation();
-    	if(scDoc != null) {
-	    	Documentation doc = targetModel.getFactory().createDocumentation(targetModel);
-	    	doc.setTextContent(scDoc.getTextContent());
-	    	sComponent.setDocumentation(doc);
-    	}
-    	
-    	List<Property> properties = component.getProperties();
-    	Iterator<Property> itP = properties.iterator();
-    	
-    	while(itP.hasNext()) {
-    		Property property = itP.next();
-    		Property newP = copyProperty(property, targetModel);
-    		sComponent.addProperty(newP);
-    	}
-    	
-    	List<SchemaAttribute> attributes = component.getSchemaAttributes();
-    	Iterator<SchemaAttribute> itSA = attributes.iterator();
-    	
-    	while(itSA.hasNext()) {
-    		SchemaAttribute attr = itSA.next();
-    		SchemaAttribute newAttr = copySchemaAttribute(attr, targetModel);
-    		sComponent.addSchemaAttribute(newAttr);
-    	}
-    	
-    	return sComponent;
+        SchemaComponent sComponent = targetModel.getFactory().createSchema(targetModel);
+        SchemaComponentContainer scContainer = targetModel.getPlanComponent().getSchemaComponentContainer();
+        
+        String schemaName = component.getName();
+        if(scContainer.findSchema(schemaName) != null) {
+            schemaName = NameGenerator.generateSchemaName(scContainer);
+        }
+        
+        sComponent.setName(schemaName);
+        sComponent.setType(component.getType());
+        sComponent.setTitle(schemaName);
+        
+        Documentation scDoc = component.getDocumentation();
+        if(scDoc != null) {
+            Documentation doc = targetModel.getFactory().createDocumentation(targetModel);
+            doc.setTextContent(scDoc.getTextContent());
+            sComponent.setDocumentation(doc);
+        }
+        
+        List<Property> properties = component.getProperties();
+        Iterator<Property> itP = properties.iterator();
+        
+        while(itP.hasNext()) {
+            Property property = itP.next();
+            Property newP = copyProperty(property, targetModel);
+            sComponent.addProperty(newP);
+        }
+        
+        List<SchemaAttribute> attributes = component.getSchemaAttributes();
+        Iterator<SchemaAttribute> itSA = attributes.iterator();
+        
+        while(itSA.hasNext()) {
+            SchemaAttribute attr = itSA.next();
+            SchemaAttribute newAttr = copySchemaAttribute(attr, targetModel);
+            sComponent.addSchemaAttribute(newAttr);
+        }
+        
+        return sComponent;
     }
     
     
     private SchemaAttribute copySchemaAttribute(SchemaAttribute attribute, IEPModel targetModel) {
-    	SchemaAttribute sAttribute = targetModel.getFactory().createSchemaAttribute(targetModel);
+        SchemaAttribute sAttribute = targetModel.getFactory().createSchemaAttribute(targetModel);
     
-    	sAttribute.setName(attribute.getName());
-    	sAttribute.setType(attribute.getType());
-    	sAttribute.setTitle(attribute.getTitle());
-    	sAttribute.setAttributeName(attribute.getAttributeName());
-    	sAttribute.setAttributeType(attribute.getAttributeType());
-    	sAttribute.setAttributeScale(attribute.getAttributeScale());
-    	sAttribute.setAttributeSize(attribute.getAttributeSize());
-    	sAttribute.setAttributeComment(attribute.getAttributeComment());
-    	
-    	return sAttribute;
+        sAttribute.setName(attribute.getName());
+        sAttribute.setType(attribute.getType());
+        sAttribute.setTitle(attribute.getTitle());
+        sAttribute.setAttributeName(attribute.getAttributeName());
+        sAttribute.setAttributeType(attribute.getAttributeType());
+        sAttribute.setAttributeScale(attribute.getAttributeScale());
+        sAttribute.setAttributeSize(attribute.getAttributeSize());
+        sAttribute.setAttributeComment(attribute.getAttributeComment());
+        
+        return sAttribute;
     }
     
     private Property copyProperty(Property property, IEPModel targetModel) {
-    	Property sProperty = targetModel.getFactory().createProperty(targetModel);
-    	sProperty.setName(property.getName());
-    	sProperty.setValue(property.getValue());
-    	
-    	return property;
+        Property sProperty = targetModel.getFactory().createProperty(targetModel);
+        sProperty.setName(property.getName());
+        sProperty.setValue(property.getValue());
+        
+        return property;
     }
     
     
@@ -1104,93 +1104,93 @@ public class EntityNode extends SimpleNode
    
     
     public OperatorComponent getModelComponent() {
-    	return this.mComp;
+        return this.mComp;
     }
     
     @Override
     public void moveChildren(Rectangle prevRect) {
-    	super.moveChildren(prevRect);
-    	
-//    	Runnable r = new Runnable() {
-//    		
-//    		public void run() {
-//    			OperatorComponent opComp = getModelComponent();
-//    	    	int x = getLocation().x;
-//    	    	int y = getLocation().y;
-//    	    	
-//    	    	IEPModel model = opComp.getModel();
-//    	    	model.startTransaction();
-//    	    	opComp.setX(x);
-//    	    	opComp.setY(y);
-//    	    	model.endTransaction();
-//    		}
-//    	};
-//    	
-//    	SwingUtilities.invokeLater(r);
-//    	
+        super.moveChildren(prevRect);
+        
+//        Runnable r = new Runnable() {
+//            
+//            public void run() {
+//                OperatorComponent opComp = getModelComponent();
+//                int x = getLocation().x;
+//                int y = getLocation().y;
+//                
+//                IEPModel model = opComp.getModel();
+//                model.startTransaction();
+//                opComp.setX(x);
+//                opComp.setY(y);
+//                model.endTransaction();
+//            }
+//        };
+//        
+//        SwingUtilities.invokeLater(r);
+//        
     }
     
     
     private void refreshOperator() {
-    	//display name
-    	String operatorDisplayName = this.mComp.getDisplayName();
-    	setOperatorDisplayName(operatorDisplayName);
-    	
-    	//x, y location
-    	Point newLoc = new Point(this.mComp.getX(), this.mComp.getY());
-    	if(!newLoc.equals(getLocation())) { 
-    		setTopLeft(newLoc);
-    	}
+        //display name
+        String operatorDisplayName = this.mComp.getDisplayName();
+        setOperatorDisplayName(operatorDisplayName);
+        
+        //x, y location
+        Point newLoc = new Point(this.mComp.getX(), this.mComp.getY());
+        if(!newLoc.equals(getLocation())) { 
+            setTopLeft(newLoc);
+        }
     }
     
     private void refresh() {
-    	Documentation doc = this.mComp.getDocumentation();
-    	if(doc != null && doc.getTextContent() != null && !doc.getTextContent().trim().equals("")) {
-    		getDocumentationNode().setVisible(true);
-    		getDocumentationNode().setToolTipText(doc.getTextContent());
-    	} else {
-    		getDocumentationNode().setVisible(false);
-    		getDocumentationNode().setToolTipText("");
-    	}
+        Documentation doc = this.mComp.getDocumentation();
+        if(doc != null && doc.getTextContent() != null && !doc.getTextContent().trim().equals("")) {
+            getDocumentationNode().setVisible(true);
+            getDocumentationNode().setToolTipText(doc.getTextContent());
+        } else {
+            getDocumentationNode().setVisible(false);
+            getDocumentationNode().setToolTipText("");
+        }
     }
     
-	class IEPModelListener implements ComponentListener {
-	    	
-	    	public void childrenAdded(ComponentEvent evt) {
-	    		Object source = evt.getSource();
-	    		if(source instanceof OperatorComponent && source.equals(mComp)) {
-	    			refresh();
-	    		} 
-	    	}
-	    	
-	    	public void childrenDeleted(ComponentEvent evt) {
-	    		Object source = evt.getSource();
-	    		if(source instanceof OperatorComponent && source.equals(mComp)) {
-	    			refresh();
-	    		}
-	    		
-	    	}
-	    	
-	    	public void valueChanged(ComponentEvent evt) {
-	    		Object source = evt.getSource();
-	    		if(source instanceof Property) {
-	    			Property prop = (Property) source;
-	    			IEPComponent parent = prop.getParent();
-	    			if(parent.equals(getModelComponent())) {
-	    				refreshOperator();
-	    			}
-	    		}
-	    		//if mouse is moved we do not want to update operator property
-	    		//since we may be moving operators which will trigger update
-	    		//to xy location , and which in turn can trigger update to
-	    		//node's xy location from model which is unnecessary
-	    		//and can still have old xy location in model.
-//	    		if(canvas != null && canvas.getState() != JGoView.MouseStateMove) {
-	    			
-	    			
-//	    		}
-	    	}
-	}
-	
+    class IEPModelListener implements ComponentListener {
+            
+            public void childrenAdded(ComponentEvent evt) {
+                Object source = evt.getSource();
+                if(source instanceof OperatorComponent && source.equals(mComp)) {
+                    refresh();
+                } 
+            }
+            
+            public void childrenDeleted(ComponentEvent evt) {
+                Object source = evt.getSource();
+                if(source instanceof OperatorComponent && source.equals(mComp)) {
+                    refresh();
+                }
+                
+            }
+            
+            public void valueChanged(ComponentEvent evt) {
+                Object source = evt.getSource();
+                if(source instanceof Property) {
+                    Property prop = (Property) source;
+                    IEPComponent parent = prop.getParent();
+                    if(parent.equals(getModelComponent())) {
+                        refreshOperator();
+                    }
+                }
+                //if mouse is moved we do not want to update operator property
+                //since we may be moving operators which will trigger update
+                //to xy location , and which in turn can trigger update to
+                //node's xy location from model which is unnecessary
+                //and can still have old xy location in model.
+//                if(canvas != null && canvas.getState() != JGoView.MouseStateMove) {
+                    
+                    
+//                }
+            }
+    }
+    
 
 }

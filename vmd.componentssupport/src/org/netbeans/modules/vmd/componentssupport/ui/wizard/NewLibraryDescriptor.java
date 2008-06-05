@@ -54,6 +54,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.vmd.componentssupport.ui.helpers.BaseHelper;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileSystem;
@@ -67,15 +68,25 @@ import org.openide.util.NbBundle;
  */
 final class NewLibraryDescriptor implements WizardDescriptor.InstantiatingIterator {
     
-    private static final String LIB_STEPS_COUNT = "LBL_LibStepsCount";      // NOI18N
+    private static final String WIZARD_TITLE    = "LBL_LibraryWizardTitle";   // NOI18N
+    private static final String LIB_STEPS_COUNT = "LBL_LibWizardStepsCount";    // NOI18N
     
-    public static final String  LIBRARY_STEP    = "LBL_LibSelectLibrary";   // NOI18N
+    public static final String  LIBRARY_STEP    = "LBL_LibSelectLibraryStep";   // NOI18N
     public static final String  NAME_LOCATION_STEP
-                                                = "LBL_LibNameAndLocation"; // NOI18N
+                                                = "LBL_LibNameAndLocationStep"; // NOI18N
     
-    public static final String LIBRARY          = "library";                // NOI18N
-    public static final String DISPLAY_NAME     = "displayName";            // NOI18N
-    public static final String LIB_NAME         = "libName";                // NOI18N
+    public static final String LIBRARY          = "library";                    // NOI18N
+    public static final String DISPLAY_NAME     = "displayName";                // NOI18N
+    public static final String LIB_NAME         = "libName";                    // NOI18N
+
+    public static final String EXISTING_LIBRARIES    
+                                                = "existLibrary";               // NOI18N
+    public static final String EXISTING_LIB_NAMES    
+                                                = "existLibName";               // NOI18N
+    
+    public static final String LIBRARY_TYPE_J2SE    
+                                                = "j2se";                       // NOI18N
+    
     
     
     NewLibraryDescriptor( WizardDescriptor mainDesc ){
@@ -111,10 +122,25 @@ final class NewLibraryDescriptor implements WizardDescriptor.InstantiatingIterat
             }
         }    
         
+        wizardDescriptor.setTitle(
+                NbBundle.getMessage(NewLibraryDescriptor.class, WIZARD_TITLE));
+        
+        // put properties useful for current wizard into wizardDescriptor
         wizardDescriptor.putProperty( 
                 CustomComponentWizardIterator.PROJECT_NAME, 
                 myMainWizard.getProperty(
-                        CustomComponentWizardIterator.PROJECT_NAME));
+                        CustomComponentWizardIterator.PROJECT_NAME) );
+        wizardDescriptor.putProperty(
+                CustomComponentWizardIterator.CODE_BASE_NAME, 
+                getCodeNameBase() );
+        wizardDescriptor.putProperty(
+                EXISTING_LIB_NAMES, 
+                myMainWizard.getProperty( 
+                        CustomComponentWizardIterator.LIB_NAMES) );
+        wizardDescriptor.putProperty(
+                EXISTING_LIBRARIES, 
+                myMainWizard.getProperty( 
+                        CustomComponentWizardIterator.LIBRARIES) );
     }
 
     /* (non-Javadoc)
@@ -136,11 +162,11 @@ final class NewLibraryDescriptor implements WizardDescriptor.InstantiatingIterat
                     libNames );
         }
         List names = (List)myMainWizard.getProperty( 
-                CustomComponentWizardIterator.DISPLAY_NAMES);
+                CustomComponentWizardIterator.LIB_DISPLAY_NAMES);
         if ( names == null ){
             names = new LinkedList<String>();
-            myMainWizard.putProperty( CustomComponentWizardIterator.DISPLAY_NAMES, 
-                    names );
+            myMainWizard.putProperty( CustomComponentWizardIterator.LIB_DISPLAY_NAMES, 
+                    names  );
         }
         
         libs.add( myWizard.getProperty(LIBRARY));
@@ -157,13 +183,15 @@ final class NewLibraryDescriptor implements WizardDescriptor.InstantiatingIterat
      * @see org.openide.WizardDescriptor.InstantiatingIterator#uninitialize(org.openide.WizardDescriptor)
      */
     public void uninitialize( WizardDescriptor arg0 ) {
-        myMainWizard.putProperty( CustomComponentWizardIterator.LIBRARIES, null );
-        myMainWizard.putProperty( CustomComponentWizardIterator.LIB_NAMES, null);
-        myMainWizard.putProperty( CustomComponentWizardIterator.DISPLAY_NAMES, null);
-        
         myWizard.putProperty(LIBRARY,null);
         myWizard.putProperty(LIB_NAME,null);
         myWizard.putProperty(DISPLAY_NAME,null);
+        myWizard.putProperty( CustomComponentWizardIterator.PROJECT_NAME, null);
+        myWizard.putProperty(CustomComponentWizardIterator.CODE_BASE_NAME, null);
+        myWizard.putProperty(EXISTING_LIB_NAMES, null);
+        myWizard.putProperty(EXISTING_LIBRARIES, null);
+        myWizard = null;
+        myPanels = null;
     }
 
     /* (non-Javadoc)
@@ -232,15 +260,33 @@ final class NewLibraryDescriptor implements WizardDescriptor.InstantiatingIterat
     
     WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] { 
-              new SelectLibraryPanel(), 
-              new LibNameAndLocationPanel()
+              new SelectLibraryWizardPanel(), 
+              new NameAndLocationWizardPanel()
         };
     }
 
+    /**
+     * creates code name base to be used for layer.xml and Bundle.properties
+     * in "Created and Modified" files preview.
+     * @return codeNameBase string from main wizard if it is already created. Or 
+     * the same default value that will be suggested to user in 
+     * main project creation wizard.
+     */
+    private String getCodeNameBase(){
+        String codeNameBase = (String)myMainWizard.getProperty( 
+                CustomComponentWizardIterator.CODE_BASE_NAME);
+        String projectName = (String)myMainWizard.getProperty( 
+                CustomComponentWizardIterator.PROJECT_NAME);
+        if ( codeNameBase == null ){
+            codeNameBase = BaseHelper.getDefaultCodeNameBase(projectName);
+        }
+        return codeNameBase;
+    }
+    
     private String[] createSteps() {
         return new String[] { 
-                NbBundle.getMessage(SelectLibraryPanel.class, LIBRARY_STEP) ,
-                NbBundle.getMessage(SelectLibraryPanel.class, NAME_LOCATION_STEP) 
+                NbBundle.getMessage(NewLibraryDescriptor.class, LIBRARY_STEP) ,
+                NbBundle.getMessage(NewLibraryDescriptor.class, NAME_LOCATION_STEP) 
                         };
     }
     

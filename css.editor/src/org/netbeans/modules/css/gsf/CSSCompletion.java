@@ -38,23 +38,25 @@
  */
 package org.netbeans.modules.css.gsf;
 
-import java.io.IOException;
-import java.io.StringReader;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.CompletionProposal;
-import org.netbeans.modules.gsf.api.Element;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
@@ -66,17 +68,18 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.css.editor.Css;
+import org.netbeans.modules.css.editor.CssHelpResolver;
 import org.netbeans.modules.css.editor.LexerUtils;
 import org.netbeans.modules.css.editor.Property;
 import org.netbeans.modules.css.editor.PropertyModel;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
-import org.netbeans.modules.css.parser.ASCII_CharStream;
-import org.netbeans.modules.css.parser.CSSParser;
 import org.netbeans.modules.css.parser.CSSParserTreeConstants;
 import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.gsf.api.CodeCompletionContext;
+import org.netbeans.modules.gsf.api.CodeCompletionResult;
+import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
 
 /**
  *
@@ -86,224 +89,236 @@ import org.openide.util.Exceptions;
  *       background-image: url(|) - completing url() and setting the caret 
  *       between the braces
  */
-public class CSSCompletion implements Completable {
+public class CSSCompletion implements CodeCompletionHandler {
 
     private static final Logger LOGGER = Logger.getLogger(CSSCompletion.class.getName());
-    
     private final PropertyModel PROPERTIES = PropertyModel.instance();
-
     private static final Collection<String> AT_RULES = Arrays.asList(new String[]{"@media", "@page", "@import", "@charset", "@font-face"});
-    
-    public List<CompletionProposal> complete(CompilationInfo info, int caretOffset, String prefix, NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
-        try {
 
-//            try {
-//                String source = "/* X ";
-//                CSSParser parser = new CSSParser(new ASCII_CharStream(new StringReader(source)));
-//                parser.styleSheet();
+    public CodeCompletionResult complete(CodeCompletionContext context) {
+        CompilationInfo info = context.getInfo();
+        int caretOffset = context.getCaretOffset();
+        String prefix = context.getPrefix();
+        NameKind kind = context.getNameKind();
+        QueryType queryType = context.getQueryType();
+        boolean caseSensitive = context.isCaseSensitive();
+        HtmlFormatter formatter = context.getFormatter();
+
+//        try {
+//            String source = "/* X ";
+//            CSSParser parser = new CSSParser(new ASCII_CharStream(new StringReader(source)));
+//            parser.styleSheet();
 //
-//            } catch (Throwable t) {
-//                t.printStackTrace();
-//            }
+//        } catch (Throwable t) {
+//            t.printStackTrace();
+//        }
+//
+//        System.out.println("completion");
+//        System.out.println("compilation info: " + info);
+//        System.out.println("prefix: '" + prefix + "'");
+//        System.out.println("kind: " + kind.name());
+//        System.out.println("query type: " + queryType.name());
 
-//            System.out.println("completion");
-//            System.out.println("compilation info: " + info);
-//            System.out.println("prefix: '" + prefix + "'");
-//            System.out.println("kind: " + kind.name());
-//            System.out.println("query type: " + queryType.name());
+        Document document = info.getDocument();
+        if (document == null) {
+            return CodeCompletionResult.NONE;
+        }
 
-            if (prefix == null) {
-                return null;
+        TokenSequence ts = LexerUtils.getCssTokenSequence(document, caretOffset);
+        if (ts == null || prefix == null) {
+            // No CSS tokens here: perhaps we're doing code completion in an
+            // empty CSS context like an empty HTML style attribute; in that case,
+            // just offer the CSS properties.
+            return wrapProperties(PROPERTIES.properties(), CompletionItemKind.PROPERTY, caretOffset, formatter);
+        }
+
+        ts.move(caretOffset - prefix.length());
+        boolean hasNext = ts.moveNext();
+
+
+        //so far the css parser always parses the whole css content
+        ParserResult presult = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator().next();
+        TranslatedSource source = presult.getTranslatedSource();
+        SimpleNode root = ((CSSParserResult) presult).root();
+
+        if (root == null) {
+            //broken source
+            return CodeCompletionResult.NONE;
+        }
+
+        int astCaretOffset = source == null ? caretOffset : source.getAstOffset(caretOffset);
+
+        SimpleNode node = SimpleNodeUtil.findDescendant(root, astCaretOffset);
+        if (node == null) {
+            //the parse tree is likely broken by some text typed, 
+            //but we still need to provide the completion in some cases
+
+            if (hasNext && "@".equals(ts.token().text().toString())) {
+                //complete rules
+                return wrapRAWValues(AT_RULES, CompletionItemKind.VALUE, ts.offset(), formatter);
             }
 
-            TokenSequence ts = LexerUtils.getCssTokenSequence(info.getDocument(), caretOffset);
-            ts.move(caretOffset - prefix.length());
-            boolean hasNext = ts.moveNext();
+            return CodeCompletionResult.NONE; //no parse tree, just quit
+        }
 
-
-            //so far the css parser always parses the whole css content
-            ParserResult presult = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator().next();
-            TranslatedSource source = presult.getTranslatedSource();
-            SimpleNode root = ((CSSParserResult) presult).root();
-
-            if(root == null) {
-                //broken source
-                return null;
-            }
-            
-            int astCaretOffset = source == null ? caretOffset : source.getAstOffset(caretOffset);
-
-            SimpleNode node = SimpleNodeUtil.findDescendant(root, astCaretOffset);
+        if (node.kind() == CSSParserTreeConstants.JJTREPORTERROR) {
+            node = (SimpleNode) node.jjtGetParent();
             if (node == null) {
-                //the parse tree is likely broken by some text typed, 
-                //but we still need to provide the completion in some cases
-                
-                if(hasNext && "@".equals(ts.token().text().toString())) {
-                    //complete rules
-                    return wrapValues(AT_RULES, CompletionItemKind.VALUE, ts.offset(), formatter);
-                }
-                
-                return null; //no parse tree, just quit
+                return CodeCompletionResult.NONE;
             }
-
-            if(node.kind() == CSSParserTreeConstants.JJTREPORTERROR) {
-                node = (SimpleNode)node.jjtGetParent();
-                if(node == null) {
-                    return null;
-                }
-            }
+        }
 //            root.dump("");
 //            System.out.println("AST node kind = " + CSSParserTreeConstants.jjtNodeName[node.kind()]);
 
 
-            //Why we need the (prefix.length() > 0 || astCaretOffset == node.startOffset())???
-            //
-            //We need to filter out situation when the node contains some whitespaces
-            //at the end. For example:
-            //    h1 { color     : red;}
-            // the color property node contains the whole text to the colon
-            //
-            //In such case the prefix is empty and the cc would offer all 
-            //possible values there
-            //
-            if(node.kind() == CSSParserTreeConstants.JJTSTYLESHEETRULELIST) {
-                //complete at keywords without prefix
-                return wrapValues(AT_RULES, CompletionItemKind.VALUE, caretOffset, formatter);
-            } else if(node.kind() == CSSParserTreeConstants.JJTSKIP) {
-                //complete at keywords with prefix - parse tree broken
-                SimpleNode parent = (SimpleNode)node.jjtGetParent();
-                if(parent != null && parent.kind() == CSSParserTreeConstants.JJTUNKNOWNRULE) {  //test the parent node
-                    Collection<String> possibleValues = filterValues(AT_RULES, prefix);
-                    return wrapValues(possibleValues, CompletionItemKind.VALUE, AstUtils.documentPosition(parent.startOffset(), source), formatter);
-                }
-            } else if(node.kind() == CSSParserTreeConstants.JJTIMPORTRULE 
-                    || node.kind() == CSSParserTreeConstants.JJTMEDIARULE 
-                    || node.kind() == CSSParserTreeConstants.JJTPAGERULE
-                    || node.kind() == CSSParserTreeConstants.JJTCHARSETRULE
-                    || node.kind() == CSSParserTreeConstants.JJTFONTFACERULE ) {
-                //complete at keywords with prefix - parse tree OK
-                TokenId id = ts.token().id();
-                if(id == CSSTokenId.IMPORT_SYM || id == CSSTokenId.MEDIA_SYM 
-                        || id == CSSTokenId.PAGE_SYM || id == CSSTokenId.CHARSET_SYM 
-                        || id == CSSTokenId.FONT_FACE_SYM) {
-                    //we are on the right place in the node
-                    
-                    Collection<String> possibleValues = filterValues(AT_RULES, prefix);
-                    return wrapValues(possibleValues, CompletionItemKind.VALUE, AstUtils.documentPosition(node.startOffset(), source), formatter);
-                }
-                
-            } else if (node.kind() == CSSParserTreeConstants.JJTPROPERTY && (prefix.length() > 0 || astCaretOffset == node.startOffset())) {
-                //css property name completion with prefix
-                Collection<Property> possibleProps = filterProperties(PROPERTIES.properties(), prefix);
-                return wrapProperties(possibleProps, CompletionItemKind.PROPERTY, AstUtils.documentPosition(node.startOffset(), source), formatter);
+        //Why we need the (prefix.length() > 0 || astCaretOffset == node.startOffset())???
+        //
+        //We need to filter out situation when the node contains some whitespaces
+        //at the end. For example:
+        //    h1 { color     : red;}
+        // the color property node contains the whole text to the colon
+        //
+        //In such case the prefix is empty and the cc would offer all 
+        //possible values there
+        //
+        if (node.kind() == CSSParserTreeConstants.JJTSTYLESHEETRULELIST) {
+            //complete at keywords without prefix
+            return wrapRAWValues(AT_RULES, CompletionItemKind.VALUE, caretOffset, formatter);
+        } else if (node.kind() == CSSParserTreeConstants.JJTSKIP) {
+            //complete at keywords with prefix - parse tree broken
+            SimpleNode parent = (SimpleNode) node.jjtGetParent();
+            if (parent != null && parent.kind() == CSSParserTreeConstants.JJTUNKNOWNRULE) {  //test the parent node
+                Collection<String> possibleValues = filterStrings(AT_RULES, prefix);
+                return wrapRAWValues(possibleValues, CompletionItemKind.VALUE, AstUtils.documentPosition(parent.startOffset(), source), formatter);
+            }
+        } else if (node.kind() == CSSParserTreeConstants.JJTIMPORTRULE || node.kind() == CSSParserTreeConstants.JJTMEDIARULE || node.kind() == CSSParserTreeConstants.JJTPAGERULE || node.kind() == CSSParserTreeConstants.JJTCHARSETRULE || node.kind() == CSSParserTreeConstants.JJTFONTFACERULE) {
+            //complete at keywords with prefix - parse tree OK
+            TokenId id = ts.token().id();
+            if (id == CSSTokenId.IMPORT_SYM || id == CSSTokenId.MEDIA_SYM || id == CSSTokenId.PAGE_SYM || id == CSSTokenId.CHARSET_SYM || id == CSSTokenId.FONT_FACE_SYM) {
+                //we are on the right place in the node
 
-            } else if (node.kind() == CSSParserTreeConstants.JJTSTYLERULE) {
-                //should be no prefix 
-                return wrapProperties(PROPERTIES.properties(), CompletionItemKind.PROPERTY, caretOffset, formatter);
-            } else if (node.kind() == CSSParserTreeConstants.JJTDECLARATION) {
-                //value cc without prefix
-                //find property node
-
-                final SimpleNode[] result = new SimpleNode[1];
-                NodeVisitor propertySearch = new NodeVisitor() {
-
-                    public void visit(SimpleNode node) {
-                        if (node.kind() == CSSParserTreeConstants.JJTPROPERTY) {
-                            result[0] = node;
-                        }
-                    }
-                };
-                node.visitChildren(propertySearch);
-
-                SimpleNode property = result[0];
-
-                Property prop = PROPERTIES.getProperty(property.image());
-                if (prop != null) {
-                    //known property
-                    Collection<String> values = prop.values();
-                    return wrapValues(values, CompletionItemKind.VALUE, caretOffset, formatter);
-                }
-
-            //Why we need the (prefix.length() > 0 || astCaretOffset == node.startOffset())???
-            //please refer to the comment above
-            } else if (node.kind() == CSSParserTreeConstants.JJTTERM && (prefix.length() > 0 || astCaretOffset == node.startOffset())) {
-                //value cc with prefix
-                //find property node
-
-                //1.find declaration node first
-
-                final SimpleNode[] result = new SimpleNode[1];
-                NodeVisitor declarationSearch = new NodeVisitor() {
-
-                    public void visit(SimpleNode node) {
-                        if (node.kind() == CSSParserTreeConstants.JJTDECLARATION) {
-                            result[0] = node;
-                        }
-                    }
-                };
-                SimpleNodeUtil.visitAncestors(node, declarationSearch);
-                SimpleNode declaratioNode = result[0];
-
-                //2.find the property node
-                result[0] = null;
-                NodeVisitor propertySearch = new NodeVisitor() {
-
-                    public void visit(SimpleNode node) {
-                        if (node.kind() == CSSParserTreeConstants.JJTPROPERTY) {
-                            result[0] = node;
-                        }
-                    }
-                };
-                SimpleNodeUtil.visitChildren(declaratioNode, propertySearch);
-
-                SimpleNode property = result[0];
-
-                Property prop = PROPERTIES.getProperty(property.image());
-                if(prop == null) {
-                    return null;
-                }
-                
-                Collection<String> values = prop.values();
-                return wrapValues(filterValues(values, prefix), CompletionItemKind.VALUE, AstUtils.documentPosition(node.startOffset(), source), formatter);
-
-
+                Collection<String> possibleValues = filterStrings(AT_RULES, prefix);
+                return wrapRAWValues(possibleValues, CompletionItemKind.VALUE, AstUtils.documentPosition(node.startOffset(), source), formatter);
             }
 
+        } else if (node.kind() == CSSParserTreeConstants.JJTPROPERTY && (prefix.length() > 0 || astCaretOffset == node.startOffset())) {
+            //css property name completion with prefix
+            Collection<Property> possibleProps = filterProperties(PROPERTIES.properties(), prefix);
+            return wrapProperties(possibleProps, CompletionItemKind.PROPERTY, AstUtils.documentPosition(node.startOffset(), source), formatter);
+
+        } else if (node.kind() == CSSParserTreeConstants.JJTSTYLERULE) {
+            //should be no prefix 
+            return wrapProperties(PROPERTIES.properties(), CompletionItemKind.PROPERTY, caretOffset, formatter);
+        } else if (node.kind() == CSSParserTreeConstants.JJTDECLARATION) {
+            //value cc without prefix
+            //find property node
+
+            final SimpleNode[] result = new SimpleNode[1];
+            NodeVisitor propertySearch = new NodeVisitor() {
+
+                public void visit(SimpleNode node) {
+                    if (node.kind() == CSSParserTreeConstants.JJTPROPERTY) {
+                        result[0] = node;
+                    }
+                }
+            };
+            node.visitChildren(propertySearch);
+
+            SimpleNode property = result[0];
+
+            Property prop = PROPERTIES.getProperty(property.image());
+            if (prop != null) {
+                //known property
+                Collection<String> values = prop.values();
+                return wrapPropertyValues(prop, values, CompletionItemKind.VALUE, caretOffset, formatter);
+            }
+
+        //Why we need the (prefix.length() > 0 || astCaretOffset == node.startOffset())???
+        //please refer to the comment above
+        } else if (node.kind() == CSSParserTreeConstants.JJTTERM && (prefix.length() > 0 || astCaretOffset == node.startOffset())) {
+            //value cc with prefix
+            //find property node
+
+            //1.find declaration node first
+
+            final SimpleNode[] result = new SimpleNode[1];
+            NodeVisitor declarationSearch = new NodeVisitor() {
+
+                public void visit(SimpleNode node) {
+                    if (node.kind() == CSSParserTreeConstants.JJTDECLARATION) {
+                        result[0] = node;
+                    }
+                }
+            };
+            SimpleNodeUtil.visitAncestors(node, declarationSearch);
+            SimpleNode declaratioNode = result[0];
+
+            //2.find the property node
+            result[0] = null;
+            NodeVisitor propertySearch = new NodeVisitor() {
+
+                public void visit(SimpleNode node) {
+                    if (node.kind() == CSSParserTreeConstants.JJTPROPERTY) {
+                        result[0] = node;
+                    }
+                }
+            };
+            SimpleNodeUtil.visitChildren(declaratioNode, propertySearch);
+
+            SimpleNode property = result[0];
+
+            Property prop = PROPERTIES.getProperty(property.image());
+            if (prop == null) {
+                return CodeCompletionResult.NONE;
+            }
+
+            Collection<String> values = prop.values();
+            return wrapPropertyValues(prop, filterStrings(values, prefix), CompletionItemKind.VALUE, AstUtils.documentPosition(node.startOffset(), source), formatter);
 
 
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         }
 
-        return null;
+        return CodeCompletionResult.NONE;
     }
 
-    private List<CompletionProposal> wrapValues(Collection<String> props, CompletionItemKind kind, int anchor, HtmlFormatter formatter) {
+    private CodeCompletionResult wrapRAWValues(Collection<String> props, CompletionItemKind kind, int anchor, HtmlFormatter formatter) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
-        for (String p : props) {
-            CompletionProposal proposal = new CSSCompletionItem(p, kind, anchor, formatter);
+        for (String value : props) {
+            CSSElement handle = new CSSElement(value);
+            CompletionProposal proposal = createCompletionItem(handle, value, kind, anchor, formatter);
             proposals.add(proposal);
         }
-        return proposals;
+        return new DefaultCompletionResult(proposals, false);
     }
 
-    private Collection<String> filterValues(Collection<String> props, String propertyNamePrefix) {
+    private CodeCompletionResult wrapPropertyValues(Property property, Collection<String> props, CompletionItemKind kind, int anchor, HtmlFormatter formatter) {
+        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
+        for (String value : props) {
+            CSSElement handle = new CssValueElement(property, value);
+            CompletionProposal proposal = createCompletionItem(handle, value, kind, anchor, formatter);
+            proposals.add(proposal);
+        }
+        return new DefaultCompletionResult(proposals, false);
+    }
+
+    private Collection<String> filterStrings(Collection<String> values, String propertyNamePrefix) {
         List<String> filtered = new ArrayList<String>();
-        for (String p : props) {
-            if (p.startsWith(propertyNamePrefix)) {
-                filtered.add(p);
+        for (String value : values) {
+            if (value.startsWith(propertyNamePrefix)) {
+                filtered.add(value);
             }
         }
         return filtered;
     }
 
-    private List<CompletionProposal> wrapProperties(Collection<Property> props, CompletionItemKind kind, int anchor, HtmlFormatter formatter) {
+    private CodeCompletionResult wrapProperties(Collection<Property> props, CompletionItemKind kind, int anchor, HtmlFormatter formatter) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
         for (Property p : props) {
-            CompletionProposal proposal = new CSSCompletionItem(p.name(), kind, anchor, formatter);
+            CSSElement handle = new CssPropertyElement(p);
+            CompletionProposal proposal = createCompletionItem(handle, p.name(), kind, anchor, formatter);
             proposals.add(proposal);
         }
-        return proposals;
+        return new DefaultCompletionResult(proposals, false);
     }
 
     private Collection<Property> filterProperties(Collection<Property> props, String propertyNamePrefix) {
@@ -317,46 +332,54 @@ public class CSSCompletion implements Completable {
     }
 
     public String document(CompilationInfo info, ElementHandle element) {
-        return "doc not supported yet";
-    }
+        if (element instanceof CssValueElement) {
+            CssValueElement e = (CssValueElement) element;
 
-    public ElementHandle resolveLink(String link, ElementHandle originalHandle) {
+//            System.out.println("property = " + e.property().name() + "\n value = " + e.value());
+            return CssHelpResolver.instance().getPropertyHelp(e.property().name());
+
+        } else if (element instanceof CssPropertyElement) {
+            CssPropertyElement e = (CssPropertyElement) element;
+//            System.out.println("property = " + e.property().name());
+            return CssHelpResolver.instance().getPropertyHelp(e.property().name());
+        }
         return null;
     }
-
+   
+    public ElementHandle resolveLink(String link, ElementHandle elementHandle) {
+        return new ElementHandle.UrlHandle(CssHelpResolver.HELP_URL + link);
+    }
+    
     public String getPrefix(CompilationInfo info, int caretOffset, boolean upToOffset) {
-        try {
-            TokenSequence ts = LexerUtils.getCssTokenSequence(info.getDocument(), caretOffset);
+        Document document = info.getDocument();
+        if (document == null) {
+            return null;
+        }
+        TokenSequence ts = LexerUtils.getCssTokenSequence(document, caretOffset);
 
-            //we are out of any css
-            if (ts == null) {
-                return null;
-            }
-
-            int diff = ts.move(caretOffset);
-            if (diff == 0) {
-                if (!ts.movePrevious()) {
-                    //beginning of the token sequence, cannot get any prefix
-                    return "";
-                }
-            } else {
-                if (!ts.moveNext()) {
-                    return null;
-                }
-            }
-            Token t = ts.token();
-
-            if (t.id() == CSSTokenId.COLON) {
-                return "";
-            } else {
-                return t.text().subSequence(0, diff == 0 ? t.text().length() : diff).toString().trim();
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        //we are out of any css
+        if (ts == null) {
+            return null;
         }
 
-        return null;
+        int diff = ts.move(caretOffset);
+        if (diff == 0) {
+            if (!ts.movePrevious()) {
+                //beginning of the token sequence, cannot get any prefix
+                return "";
+            }
+        } else {
+            if (!ts.moveNext()) {
+                return null;
+            }
+        }
+        Token t = ts.token();
 
+        if (t.id() == CSSTokenId.COLON) {
+            return "";
+        } else {
+            return t.text().subSequence(0, diff == 0 ? t.text().length() : diff).toString().trim();
+        }
     }
 
     public QueryType getAutoQuery(JTextComponent component, String typedText) {
@@ -386,12 +409,121 @@ public class CSSCompletion implements Completable {
     }
 
     public ParameterInfo parameters(CompilationInfo info, int caretOffset, CompletionProposal proposal) {
-        return null;
+        return ParameterInfo.NONE;
     }
 
     private static enum CompletionItemKind {
-
         PROPERTY, VALUE;
+    }
+
+    private CSSCompletionItem createCompletionItem(CSSElement element, String value, CompletionItemKind kind, int anchorOffset, HtmlFormatter formatter) {
+        if (element instanceof CssValueElement) {
+            CssValueElement valueElement = (CssValueElement) element;
+            Property owningProperty = valueElement.property();
+            String propertyName = owningProperty.name();
+            if ("color".equals(propertyName) || "background-color".equals(propertyName)) {
+                return new ColorCompletionItem(element, value, kind, anchorOffset, formatter);
+            }
+            
+            return new ValueCompletionItem(element, value, kind, anchorOffset, formatter);
+        }
+
+        //default
+        return new CSSCompletionItem(element, value, kind, anchorOffset, formatter);
+    }
+    private final HashMap<String, String> colors = new HashMap<String, String>(20);
+
+    
+    //TODO add support for non w3c standart colors, CSS3 seems to be more vague in checking the color values
+    private synchronized HashMap<String, String> colors() {
+        if (colors.isEmpty()) {
+            //init default html4.0 colors
+            //http://www.w3.org/TR/html4/types.html#type-color
+            
+            colors.put("red", "ff0000");
+            colors.put("black", "000000");
+            colors.put("green", "00ff00");
+            colors.put("blue", "0000ff");
+            colors.put("silver", "C0C0C0");
+            colors.put("gray", "808080");
+            colors.put("white", "ffffff");
+            colors.put("maroon", "800000");
+            colors.put("purple", "800080");
+            colors.put("fuchsia", "ff00ff");
+            colors.put("lime", "00ff00");
+            colors.put("olive", "808000");
+            colors.put("yellow", "ffff00");
+            colors.put("navy", "000080");
+            colors.put("teal", "008080");
+            colors.put("aqua", "00ffff");
+        }
+        return colors;
+    }
+
+    private class ValueCompletionItem extends CSSCompletionItem {
+        
+        private ValueCompletionItem(
+                CSSElement element, String value, CompletionItemKind kind, int anchorOffset, HtmlFormatter formatter) {
+                super(element, value, kind, anchorOffset, formatter);
+        }
+        
+        @Override
+        public String getInsertPrefix() {
+            return getName() + ";";
+        }
+        
+        @Override
+        public String getLhsHtml() {
+            Property owningProperty = ((CssValueElement)getElement()).property();
+            String initialValue = owningProperty.initialValue();
+            if(initialValue != null && initialValue.equals(getName())) {
+                //initial value
+                return "<i>" + super.getLhsHtml() + "</i>";
+            }
+            
+            return super.getLhsHtml();
+        }
+        
+    }
+    
+    private class ColorCompletionItem extends ValueCompletionItem {
+
+        final byte COLOR_ICON_SIZE = 12; //px
+        
+        private ColorCompletionItem(
+                CSSElement element, String value, CompletionItemKind kind, int anchorOffset, HtmlFormatter formatter) {
+                super(element, value, kind, anchorOffset, formatter);
+        }
+        
+//        @Override
+//        public String getLhsHtml() {
+//            formatter.reset();
+//            String colorCode = colors().get(getName());
+//            if(colorCode != null) {
+//                formatter.appendHtml("<font color=\"" + colorCode + "\">" + getName() + "</font>");
+//            } else {
+//                //unknown color
+//                formatter.appendHtml(getName());
+//            }
+//            return formatter.getText();
+//
+//        }
+        
+        @Override
+        public ImageIcon getIcon() {
+            BufferedImage i = new BufferedImage(COLOR_ICON_SIZE, COLOR_ICON_SIZE, BufferedImage.TYPE_INT_RGB);
+            Graphics g = i.createGraphics();
+            String colorCode = colors().get(getName());
+            
+            if(colorCode == null) {
+                return  null; //unknown colo code
+            }
+            
+            g.setColor(Color.decode("0x"+colorCode));
+            g.fillRect(0,0,COLOR_ICON_SIZE, COLOR_ICON_SIZE);
+            
+            return new ImageIcon(i);
+        }
     }
 
     /**
@@ -402,48 +534,23 @@ public class CSSCompletion implements Completable {
 
         private static final String CSS_PROPERTY = "org/netbeans/modules/css/resources/methodPublic.png"; //NOI18N
         private static final String CSS_VALUE = "org/netbeans/modules/css/resources/fieldPublic.png"; //NOI18N
-          
-          
-        private   ImageIcon 
-         propertyIcon ,   valueIcon ;
-        private   
+        private  ImageIcon propertyIcon,   valueIcon ;
+        private int anchorOffset;
+        private String value;
+        protected HtmlFormatter formatter;
+        protected CompletionItemKind kind;
+        private CSSElement element;
 
-             int anchorOffset;   
-              
-              
-              
-              
-        
+        private CSSCompletionItem() {
+        }
 
-        private   String 
-             value;
-        
-
-        private  HtmlFormatter formatter 
-             ;
-        
-
-        private  CompletionItemKind kind 
-             ;
-
-        
-
-        private  CSSCompletionItem (
-                 
-             String
-        
-
-         value  
-             
-        
-
-           
-                
-                   , CompletionItemKind kind, int anchorOffset, HtmlFormatter formatter) {
+        private CSSCompletionItem(
+                CSSElement element, String value, CompletionItemKind kind, int anchorOffset, HtmlFormatter formatter) {
             this.anchorOffset = anchorOffset;
             this.value = value;
             this.kind = kind;
             this.formatter = formatter;
+            this.element = element;
         }
 
         public int getAnchorOffset() {
@@ -461,7 +568,6 @@ public class CSSCompletion implements Completable {
         public String getSortText() {
             return getName();
         }
-
 
         public ElementKind getKind() {
             return ElementKind.OTHER;
@@ -518,7 +624,7 @@ public class CSSCompletion implements Completable {
         }
 
         public ElementHandle getElement() {
-            return null;
+            return element;
         }
     }
 }

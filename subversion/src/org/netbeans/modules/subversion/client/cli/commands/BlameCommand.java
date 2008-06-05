@@ -56,6 +56,7 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 import org.openide.xml.XMLUtil;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -106,6 +107,16 @@ public class BlameCommand extends SvnCommand {
     }
     
     @Override
+    protected boolean notifyOutput() {
+        return false;
+    }    
+    
+    @Override
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.ANNOTATE;
+    }
+    
+    @Override
     public void outputText(String lineString) {
         output.append(lineString);
     }
@@ -125,6 +136,7 @@ public class BlameCommand extends SvnCommand {
                 break;
             case file:     
                 arguments.add(file);
+                setCommandWorkingDirectory(file);
                 break;
             default :    
                 throw new IllegalStateException("Illegal blametype: " + type);                             

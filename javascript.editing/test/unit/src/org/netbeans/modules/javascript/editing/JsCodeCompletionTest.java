@@ -43,10 +43,9 @@ package org.netbeans.modules.javascript.editing;
 
 import javax.swing.JTextArea;
 import javax.swing.text.Caret;
-import org.netbeans.modules.gsf.api.Completable.QueryType;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
-import org.netbeans.modules.gsf.api.Completable;
 
 /**
  *
@@ -58,12 +57,7 @@ public class JsCodeCompletionTest extends JsTestBase {
         super(testName);
     }
     
-    @Override
-    protected Completable getCodeCompleter() {
-        return new JsCodeCompletion();
-    }
-    
-    @Override
+//    @Override
     protected void checkCall(GsfTestCompilationInfo info, int caretOffset, String param, boolean expectSuccess) {
         IndexedFunction[] methodHolder = new IndexedFunction[1];
         int[] paramIndexHolder = new int[1];

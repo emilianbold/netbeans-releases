@@ -63,6 +63,8 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
+import org.netbeans.modules.soa.ui.SoaUtil;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -92,18 +94,18 @@ public final class LineUtil {
     int number;
     Component component = item.getComponents();
 
-    if (component != null) {
-      number = getLineNumber(item.getComponents());
+    if (component == null) {
+      number = item.getLineNumber() - 1;
     }
     else {
-      number = item.getLineNumber() - 1;
+      number = getLineNumber(item.getComponents());
     }
 //System.out.println("  number: " + number);
 
     if (number < 1) {
       return null;
     }
-    FileObject file = getFileObjectByModel(component == null ? item.getModel() : component.getModel());
+    FileObject file = SoaUtil.getFileObjectByModel(component == null ? item.getModel() : component.getModel());
 
     if (file == null) {
       return null;
@@ -129,17 +131,25 @@ public final class LineUtil {
   }
 
   public static String getValidationError(File file, ResultItem result) {
-    Component component = result.getComponents();
     StringBuffer buffer = new StringBuffer();
-
-    int line = getLineNumber(component);
-    int column = getColumnNumber(component);
+    buffer.append(getLocation(file, result.getComponents()));
 
     String description = result.getDescription();
     String type = result.getType().name();
 
+    buffer.append("\n" + type + ": " + description); // NOI18N
+
+    return buffer.toString();
+  }
+
+  public static String getLocation(File file, Component component) {
+    StringBuffer buffer = new StringBuffer();
+
+    int line = getLineNumber(component) + 1;
+    int column = getColumnNumber(component);
+
     if (file != null) {
-      buffer.append(file.getPath());
+      buffer.append(file.getPath().replace("\\", "/")); // NOI18N;
 
       if (line != -1) {
         buffer.append(":"); // NOI18N
@@ -150,8 +160,6 @@ public final class LineUtil {
         buffer.append(column);
       }
     }
-    buffer.append("\n" + type + ": " + description); // NOI18N
-
     return buffer.toString();
   }
 
@@ -212,23 +220,6 @@ public final class LineUtil {
       return -1;
     }
     return NbDocument.findLineNumber(document, entity.findPosition());
-  }
-
-  public static FileObject getFileObjectByModel(Model model) {
-    if (model == null) {
-      return null;
-    }
-    ModelSource src = model.getModelSource();
-
-    if (src == null) {
-     return null;
-    }
-    Lookup lookup = src.getLookup();
-
-    if (lookup == null) {
-      return null;
-    }
-    return lookup.lookup(FileObject.class);
   }
 
   private static int findColumn(AbstractDocument doc, int argInt) {

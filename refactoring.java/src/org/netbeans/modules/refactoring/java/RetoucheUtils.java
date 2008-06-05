@@ -585,7 +585,10 @@ public class RetoucheUtils {
             FileObject ownerRoot = null;
             if (fo != null) {
                 p = FileOwnerQuery.getOwner(fo);
-                ownerRoot = ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo);
+                ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                if (cp!=null) {
+                    ownerRoot = cp.findOwnerRoot(fo);
+                }
             }
             if (p != null && ownerRoot != null) {
                 URL sourceRoot = URLMapper.findURL(ownerRoot, URLMapper.INTERNAL);

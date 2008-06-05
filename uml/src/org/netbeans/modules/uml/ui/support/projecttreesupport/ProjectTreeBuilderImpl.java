@@ -1590,9 +1590,8 @@ public class ProjectTreeBuilderImpl implements IProjectTreeBuilder
     * @param pEle    Element in which to retrieve its owned diagrams
     * @param retList A collection of tree items (diagrams)
     */
-   public void retrieveDiagramsForElement(Object    parent, 
-                                             IElement  pEle, 
-                                             ArrayList < ITreeItem > retList)
+   public void retrieveDiagramsForElement(
+       Object parent, IElement pEle, ArrayList<ITreeItem> retList)
    {
       // only namespace elements can own diagrams
       if (pEle instanceof INamespace)
@@ -1605,24 +1604,25 @@ public class ProjectTreeBuilderImpl implements IProjectTreeBuilder
             // get the diagrams owned by this namespace and add them to
             // the out array
             ETList<IProxyDiagram> diagrams = manager.getDiagramsInNamespace(space);
-            if((diagrams != null) && diagrams != null)
+            if (diagrams != null && diagrams.size() > 0)
             {
-               String diagName = null;
+               String diagramName = null;
                for (int index = 0; index < diagrams.size(); index++)
                {
                   //ITreeDiagram newItem = new ProjectTreeDiagramNode(diagrams.get(index));
-                  if(getNodeFactory() != null)
+                  if (getNodeFactory() != null)
                   {
-                     diagName = diagrams.get(index).getNameWithAlias();
-                     logger.fine("*** retrieveDiagramsForElement: diagramNameWithAlias = "+ diagName);
-                     ITreeDiagram newItem = getNodeFactory().createDiagramNode(diagrams.get(index));
-                     newItem.setDisplayedName(diagName);
-                     // cvc - CR#6265213   
-                     // the tree node's and the diagram's name was constantly 
-                     // being reset to the diagram type name ???
-                     // newItem.setName(diagrams.get(index).getDiagramKindName());
-                     newItem.setName(diagName);
-                     newItem.setSortPriority(getSortPriority(diagrams.get(index).getDiagramKindName()));
+                     ITreeDiagram newItem = getNodeFactory()
+                         .createDiagramNode(diagrams.get(index));
+                     
+                     diagramName = diagrams.get(index).getNameWithAlias();
+                     logger.fine("*** retrieveDiagramsForElement: diagramNameWithAlias = "+ diagramName);
+                     newItem.setDisplayedName(diagramName);
+                     newItem.setName(diagramName);
+                     
+                     newItem.setSortPriority(getSortPriority(
+                         diagrams.get(index).getDiagramKindName()));
+                     
                      setTreeItemParent(newItem, parent);
                      retList.add(newItem);
                   }

@@ -100,7 +100,7 @@ class Ordering {
             if (pos instanceof Number) {
                 childrenByPosition.add(new ChildAndPosition(child, (Number) pos));
             } else if (logWarnings && pos != null) {
-                LOG.warning("Encountered nonnumeric position attribute " + pos + " for " + child.getPath());
+                LOG.warning("Encountered nonnumeric position attribute " + pos + " of " + pos.getClass() + " for " + child.getPath());
             }
             if (parent == null) {
                 parent = child.getParent();

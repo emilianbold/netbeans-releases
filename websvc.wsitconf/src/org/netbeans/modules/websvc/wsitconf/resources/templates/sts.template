@@ -66,6 +66,7 @@ made subject to such option by the copyright holder.
                             <wsp:Policy>
                                 <sp:X509Token sp:IncludeToken="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy/IncludeToken/Never">
                                     <wsp:Policy>
+                                        <sp:RequireIssuerSerialReference/>
                                         <sp:RequireDerivedKeys /> 
                                         <sp:RequireThumbprintReference/>
                                         <sp:WssX509V3Token10/>
@@ -99,7 +100,6 @@ made subject to such option by the copyright holder.
                 </sp:SignedSupportingTokens>
                 <sp:Wss11 xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
                     <wsp:Policy>
-                        <sp:MustSupportRefKeyIdentifier/>
                         <sp:MustSupportRefIssuerSerial/>
                         <sp:MustSupportRefThumbprint/>
                         <sp:MustSupportRefEncryptedKey/>

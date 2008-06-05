@@ -43,22 +43,16 @@
 package org.netbeans.test.uml.re.operation;
 
 import java.util.ArrayList;
-import org.netbeans.jellytools.MainWindowOperator;
+import java.util.List;
 import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.junit.AssertionFailedErrorException;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETEdge;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETLabel;
+import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
+import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.test.umllib.DiagramElementOperator;
 import org.netbeans.test.umllib.DiagramOperator;
 import org.netbeans.test.umllib.DiagramTypes;
+import org.netbeans.test.umllib.UMLWidgetOperator;
 import org.netbeans.test.umllib.project.JavaProject;
 import org.netbeans.test.umllib.project.Project;
 import org.netbeans.test.umllib.project.ProjectType;
@@ -145,40 +139,30 @@ public class REOperationTestCase extends UMLTestCase{
     }
     
     
-    public void showDiagramElement(DiagramElementOperator diagramElement ){
-        
+    public void showDiagramElement(DiagramElementOperator diagramElement) {
+
         System.out.println("name = " + diagramElement.getName());
         System.out.println("type = " + diagramElement.getType());
-        IETGraphObject graphObject  = diagramElement.getGraphObject();
-        
-        ETList<ICompartment> compartments = graphObject.getEngine().getCompartments();
-        
-        
-        for(ICompartment comp : compartments){
-            System.out.println("  comp name      = " + comp.getName());
+        Widget widget = diagramElement.getGraphObject();
+
+        //TODO:  Will a long list.find what should be list here
+        List<Widget> compList = widget.getChildren();
+        for (Widget child : compList) {
+            System.out.println(" compartment name = " + (new UMLWidgetOperator(child)).getName());
         }
-        
-        
-        if(graphObject instanceof IETEdge){
-            
-            IETEdge edgeGraphObject = (IETEdge) graphObject;
-            ETList<IETLabel> labelList = edgeGraphObject.getLabels();
-            
-            if(labelList != null){
-                for(IETLabel label : labelList){
-                    System.out.println("  label name = \"" + label.getText() + "\"");
+        if (widget instanceof UMLEdgeWidget) {
+            Widget edgeWidget = (Widget) widget;
+            List<Widget> list = edgeWidget.getChildren();
+            for (Widget child : list) {
+                if (child instanceof UMLLabelWidget) {
+                    System.out.println("  label name = \"" + ((UMLLabelWidget)child).getLabel() + "\"");
                 }
             }
-            
         }
-        
-        System.out.println();
-        
     }
-    
-    
-    public void createDiagram(String node, String diagramName){
-        
+
+    public void createDiagram(String node, String diagramName) {
+
         try{
             umlProject.reverseEngineerOperation(node, diagramName, DiagramTypes.SEQUENCE);
         }catch(TimeoutExpiredException  e){

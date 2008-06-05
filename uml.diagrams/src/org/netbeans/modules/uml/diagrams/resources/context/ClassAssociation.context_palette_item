@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<palette_item version="1.0">
+  <element name="AssociationClass" />
+  <defaultType name="Class" />
+
+  <icon16 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/association-class.png" />
+  <icon32 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/association-class-32.png" />
+
+  <description localizing-bundle="org.netbeans.modules.uml.diagrams.resources.context.Bundle"
+               display-name-key="NAME_ClassAssociation" 
+               tooltip-key="HINT_ClassAssociation" />
+</palette_item>

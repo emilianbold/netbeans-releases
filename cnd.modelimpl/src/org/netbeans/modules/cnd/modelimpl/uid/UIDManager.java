@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.utils.cache.WeakSharedSet;
 public class UIDManager {
     private final UIDStorage storage;
     private static final int UID_MANAGER_DEFAULT_CAPACITY=1024;
-    private static final int UID_MANAGER_DEFAULT_SLICED_NUMBER = 29;
+    private static final int UID_MANAGER_DEFAULT_SLICED_NUMBER = 30;
 
     
     private static final UIDManager instance = new UIDManager();

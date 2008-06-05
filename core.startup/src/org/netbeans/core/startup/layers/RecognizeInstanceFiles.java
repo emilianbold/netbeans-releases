@@ -50,10 +50,10 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.Lookups;
@@ -192,7 +192,12 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
                 r = fo.getAttribute("instanceCreate");
                 if (r == null) {
                     try {
-                        r = getType().newInstance();
+                        Class<?> type = getType();
+                        if (SharedClassObject.class.isAssignableFrom(type)) {
+                            r = SharedClassObject.findObject(type.asSubclass(SharedClassObject.class), true);
+                        } else {
+                            r = type.newInstance();
+                        }
                     } catch (InstantiationException ex) {
                         Exceptions.printStackTrace(ex);
                     } catch (IllegalAccessException ex) {
@@ -278,7 +283,7 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
             return name;
         }
 
-        public boolean equals(Object obj) {
+        public @Override boolean equals(Object obj) {
             if (obj == null)
                 return false;
             if (getClass() != obj.getClass())
@@ -291,7 +296,7 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
             return true;
         }
 
-        public int hashCode() {
+        public @Override int hashCode() {
             int hash = 3;
 
             hash = 11 * hash + (this.fo != null ? this.fo.hashCode()

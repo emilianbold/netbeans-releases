@@ -42,9 +42,14 @@ package org.netbeans.modules.subversion.client.cli;
 
 import java.util.logging.Logger;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.util.FileUtils;
-import org.openide.util.Exceptions;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  * Encapsulates svn shell process. 
@@ -57,17 +62,21 @@ class Commandline {
     private BufferedReader    ctOutput;
     private BufferedReader    ctError;
 
-    private String executable; 
+    private String executable;
+    private boolean canceled = false;
     
     /**
      * Creates a new cleartool shell process.
      */
-    public Commandline() {        
+    Commandline() {
+        // XXX add path heuristics for mac, bubuntu & co.
         executable = SvnModuleConfig.getDefault().getExecutableBinaryPath();
         if(executable == null || executable.trim().equals("")) {
             executable = "svn";
-        }                        
-    }        
+        } else {
+            executable = executable + "/svn";
+        }                      
+    }
 
     /**
      * Forcibly closes the cleartool console, just like using Ctrl-C.
@@ -81,114 +90,101 @@ class Commandline {
     }
    
     private void destroy() throws IOException {
+        canceled = true;
         if(cli != null) {
-            cli.destroy();
-        }
-        if (ctOutput != null) {
-            ctOutput.close();
-        }
-        if (ctError != null) {
-            ctError.close();
-        }                
-        Logger.getLogger(Commandline.class.getName()).fine("cli: Process destroyed");
+            try { cli.getErrorStream().close(); } catch (IOException iOException) { }
+            try { cli.getInputStream().close(); } catch (IOException iOException) { }
+            try { cli.getOutputStream().close(); } catch (IOException iOException) { }            
+            cli.destroy();             
+        }        
+        Subversion.LOG.fine("cli: Process destroyed");
     }
     
-    // XXX set env vars
-    public void exec(SvnCommand command) throws IOException {        
-
-        command.prepareCommand();
-        String cmd = executable + " " + command.getStringCommand();
-        Logger.getLogger(Commandline.class.getName()).fine("cli: Executing \"" + cmd + "\"");
+    void exec(SvnCommand command) throws IOException {        
+        canceled = false;
+        command.prepareCommand();        
         
-        Logger.getLogger(Commandline.class.getName()).fine("cli: Creating process...");        
-        try {
-            cli = Runtime.getRuntime().exec(command.getCliArguments(executable));
-            cli.waitFor();
-            ctOutput = new BufferedReader(new InputStreamReader(cli.getInputStream()));
-            ctError = new BufferedReader(new InputStreamReader(cli.getErrorStream()));
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-            // XXX log and set invalid
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            // XXX log and set invalid
-        }
-        Logger.getLogger(Commandline.class.getName()).fine("cli: process created");
-                
+        String cmd = executable + " " + command.getStringCommand();
+        Subversion.LOG.fine("cli: Executing \"" + cmd + "\"");
+        
+        Subversion.LOG.fine("cli: Creating process...");        
         command.commandStarted();
-
-        try {
-            // XXX need pumper
-            while (isStreamReady(ctOutput)) {                
-                String line = ctOutput.readLine();
-                Logger.getLogger(Commandline.class.getName()).fine("cli: OUTPUT \"" + line + "\"");
-                command.outputText(line);
-            }
-            while (isStreamReady(ctError)) {                
-                String line = ctError.readLine();
-                Logger.getLogger(Commandline.class.getName()).fine("cli: ERROR \"" + line + "\"");
-                command.errorText(line);
-            }
-        } finally {
-            command.commandFinished();
-        }        
-    }
-    
-    // return byte[]
-    public InputStream execBinary(SvnCommand command) throws IOException {        
-
-        command.prepareCommand();
-        String cmd = executable + " " + command.getStringCommand();
-        Logger.getLogger(Commandline.class.getName()).fine("cli: Executing \"" + cmd + "\"");
-        
-        Logger.getLogger(Commandline.class.getName()).fine("cli: Creating process...");        
-        InputStream ret = null;        
         try {        
-            try {
-                cli = Runtime.getRuntime().exec(command.getCliArguments(executable));
-                cli.waitFor();
+            cli = Runtime.getRuntime().exec(command.getCliArguments(executable), getEnvVar());
+            if(canceled) return;
+            ctError = new BufferedReader(new InputStreamReader(cli.getErrorStream()));
+
+            Subversion.LOG.fine("cli: process created");
+
+            String line = null;                
+            if(command.hasBinaryOutput()) {
+                ByteArrayOutputStream b = new ByteArrayOutputStream();
+                int i = -1;
+                if(canceled) return;
+                Subversion.LOG.fine("cli: ready for binary OUTPUT \"");                
+                while(!canceled && (i = cli.getInputStream().read()) != -1) {
+                    b.write(i);
+                }
+                if(Subversion.LOG.isLoggable(Level.FINER)) Subversion.LOG.finer("cli: BIN OUTPUT \"" + (new String(b.toByteArray())) + "\"");
+                command.output(b.toByteArray());
+            } else {             
+                if(canceled) return;
+                Subversion.LOG.fine("cli: ready for OUTPUT \"");                     
                 ctOutput = new BufferedReader(new InputStreamReader(cli.getInputStream()));
-                ctError = new BufferedReader(new InputStreamReader(cli.getErrorStream()));
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-                // XXX log and set invalid
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-                // XXX log and set invalid
+                while (!canceled && (line = ctOutput.readLine()) != null) {                                        
+                    Subversion.LOG.fine("cli: OUTPUT \"" + line + "\"");
+                    command.outputText(line);
+                }    
             }
-            Logger.getLogger(Commandline.class.getName()).fine("cli: process created");
-
-            command.commandStarted();
             
-
-            // XXX need pumper
-            // XXX merge with void exec()
-            File tmp = File.createTempFile("svn-cat", null);
-            FileUtils.copyStreamToFile(cli.getInputStream(), tmp);
-            ret = new FileInputStream(tmp);
-            
-            while (isStreamReady(ctError)) {                
-                String line = ctError.readLine();
-                Logger.getLogger(Commandline.class.getName()).fine("cli: ERROR \"" + line + "\"");
+            while (!canceled && (line = ctError.readLine()) != null) {                                    
+                Subversion.LOG.info("cli: ERROR \"" + line + "\"");
                 command.errorText(line);
+            }     
+            if(canceled) return;
+            cli.waitFor();
+        } catch (Throwable t) {
+            if(canceled) {
+                Subversion.LOG.fine(t.getMessage());
+            } else {
+                if(t instanceof IOException) {
+                    throw (IOException) t;
+                } else {
+                    throw new IOException(t.getMessage());
+                }
             }
         } finally {
+            if(cli != null) {
+                try { cli.getErrorStream().close(); } catch (IOException iOException) { }
+                try { cli.getInputStream().close(); } catch (IOException iOException) { }
+                try { cli.getOutputStream().close(); } catch (IOException iOException) { }
+            }            
+            ctError = null;
+            ctOutput = null;
+            Subversion.LOG.fine("cli: process finnished");            
             command.commandFinished();
-            if(ctOutput != null) ctOutput.close();
-            if(ctError  != null) ctError.close();
         }        
-        return ret;
-    }
+    }    
 
-    private boolean isStreamReady(BufferedReader reader) throws IOException {
-        if(reader == null) return false;
-        if(reader.ready()) return true;
-        Thread.yield();
-        return reader.ready();
-    }
-
-    private void readAll(BufferedReader in) throws IOException {
-        while (in.ready()) in.read();
-    }
+    private String[] getEnvVar() {
+        Map vars = System.getenv();            
+        List ret = new ArrayList(vars.keySet().size());           
+        for (Iterator it = vars.keySet().iterator(); it.hasNext();) {
+            String key = (String) it.next();                
+            if(key.equals("LC_ALL")) {
+                ret.add("LC_ALL=");
+            } else if(key.equals("LC_MESSAGES")) {
+                ret.add("LC_MESSAGES=C");
+            } else if(key.equals("LC_TIME")) {
+                ret.add("LC_TIME=C");
+            } else {
+                ret.add(key + "=" + vars.get(key));                        
+            }		                
+        }                       
+        if(!vars.containsKey("LC_ALL"))      ret.add("LC_ALL=");
+        if(!vars.containsKey("LC_MESSAGES")) ret.add("LC_MESSAGES=C");
+        if(!vars.containsKey("LC_TIME"))     ret.add("LC_TIME=C");            
+        return (String[]) ret.toArray(new String[ret.size()]);
+    }	    
     
 }

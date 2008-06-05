@@ -42,13 +42,4 @@ made subject to such option by the copyright holder.
 -->
 <project name="core/startup/test-unit" basedir="." default="all">
     <import file="../../nbbuild/templates/xtest-unit.xml"/>
-
-
-    <target name="default-compiler" depends="init,init-cp">
-        <ant dir="unit/src/org/netbeans/core/startup"/>
-        <buildTests srcdir="unit/src" compileexcludes="**/jars/**,**/data/**">
-            <classpath refid="test.unit.compile.cp"/>
-        </buildTests>
-    </target>
-
 </project>

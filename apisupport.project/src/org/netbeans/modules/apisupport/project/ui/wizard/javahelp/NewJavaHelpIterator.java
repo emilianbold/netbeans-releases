@@ -133,7 +133,7 @@ public class NewJavaHelpIterator extends BasicWizardIterator {
                         tokens,
                         null,
                         // Pick an arbitrary place to put it. Can always be moved elsewhere if anyone cares:
-                        Collections.<String,Object>singletonMap("position", Integer.toString(3000 + new Random().nextInt(1000))))); // NOI18N
+                        Collections.<String,Object>singletonMap("position", 3000 + new Random().nextInt(1000)))); // NOI18N
                 
                 //copying templates
                 for (int i = 0; i < TEMPLATE_SUFFIXES.length; i++) {

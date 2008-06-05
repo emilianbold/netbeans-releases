@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
 import org.netbeans.modules.subversion.client.cli.SvnCommand.Arguments;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -53,27 +54,32 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 public class CheckoutCommand extends SvnCommand {
 
     private final SVNUrl url;
-    private final File path;
+    private final File file;
     private final SVNRevision revision;
     private final boolean recursive;
 
     public CheckoutCommand(SVNUrl url, File path, SVNRevision revision, boolean recursive) {
         this.url = url;
-        this.path = path;
+        this.file = path;
         this.revision = revision;
         this.recursive = recursive;
+    }
+    
+    @Override
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.CHECKOUT;
     }
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {
         arguments.add("co");        
         arguments.add(revision);
-        arguments.add(url); // XXX 
-        arguments.add(path);
+        arguments.add(url); 
+        arguments.add(file);
         if (!recursive) {
             arguments.add("-N");
         }
-        setCommandWorkingDirectory(path);
+        setCommandWorkingDirectory(file);
     }
     
 }

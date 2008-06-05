@@ -42,8 +42,7 @@
 package org.netbeans.modules.websvc.wsitmodelext;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
 import javax.xml.namespace.QName;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing10QName;
@@ -57,7 +56,6 @@ import org.netbeans.modules.websvc.wsitmodelext.rm.RMSunClientQName;
 import org.netbeans.modules.websvc.wsitmodelext.rm.RMSunQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.SecurityQName;
-import org.netbeans.modules.websvc.wsitmodelext.security.algosuite.AlgorithmSuiteQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ProprietaryPolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ProprietarySCClientQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ProprietarySecurityPolicyQName;
@@ -65,13 +63,13 @@ import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.Proprietary
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.ProprietarySCServiceQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.ProprietarySecurityPolicyServiceQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.ProprietaryTrustServiceQName;
-import org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokensQName;
 import org.netbeans.modules.websvc.wsitmodelext.transport.FIQName;
 import org.netbeans.modules.websvc.wsitmodelext.transport.TCPQName;
 import org.netbeans.modules.websvc.wsitmodelext.trust.TrustQName;
 import org.netbeans.modules.websvc.wsitmodelext.tx.TxQName;
 import org.netbeans.modules.websvc.wsitmodelext.util.TestCatalogModel;
 import org.netbeans.modules.websvc.wsitmodelext.util.Util;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
@@ -105,22 +103,29 @@ public class PolicyTest extends NbTestCase {
 
         Definitions d = model.getDefinitions();
         ExtensibilityElement e = null;
-        Set<QName> qnames = new HashSet<QName>();
+        ArrayList<QName> qnames = new ArrayList<QName>();
         
-        qnames.addAll(PolicyQName.getQNames());
+        qnames.addAll(PolicyQName.getQNames(ConfigVersion.CONFIG_1_0));
+        qnames.addAll(PolicyQName.getQNames(ConfigVersion.CONFIG_1_2));
+        
         qnames.addAll(MtomQName.getQNames());
         qnames.addAll(FIQName.getQNames());
         qnames.addAll(TCPQName.getQNames());
         qnames.addAll(AddressingQName.getQNames());
         qnames.addAll(Addressing10QName.getQNames());
         qnames.addAll(Addressing10WsdlQName.getQNames());
-        qnames.addAll(RMQName.getQNames());
+        
+        qnames.addAll(RMQName.getQNames(ConfigVersion.CONFIG_1_0));
+        qnames.addAll(RMQName.getQNames(ConfigVersion.CONFIG_1_2));
+        
         qnames.addAll(RMSunQName.getQNames());
         qnames.addAll(RMSunClientQName.getQNames());
         qnames.addAll(RMMSQName.getQNames());
         qnames.addAll(SecurityQName.getQNames());
-        qnames.addAll(SecurityPolicyQName.getQNames());
-        qnames.addAll(AlgorithmSuiteQName.getQNames());
+        
+        qnames.addAll(SecurityPolicyQName.getQNames(ConfigVersion.CONFIG_1_0));
+        qnames.addAll(SecurityPolicyQName.getQNames(ConfigVersion.CONFIG_1_2));
+
         qnames.addAll(ProprietaryPolicyQName.getQNames());
         qnames.addAll(ProprietarySCClientQName.getQNames());
         qnames.addAll(ProprietarySecurityPolicyQName.getQNames());
@@ -128,7 +133,6 @@ public class PolicyTest extends NbTestCase {
         qnames.addAll(ProprietaryTrustClientQName.getQNames());
         qnames.addAll(ProprietaryTrustServiceQName.getQNames());
         qnames.addAll(ProprietarySCServiceQName.getQNames());
-        qnames.addAll(TokensQName.getQNames());
         qnames.addAll(TrustQName.getQNames());
         qnames.addAll(TxQName.getQNames());
 

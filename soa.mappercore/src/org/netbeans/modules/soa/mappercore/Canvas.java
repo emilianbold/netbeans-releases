@@ -33,16 +33,19 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.dnd.Autoscroll;
+import java.awt.event.ActionEvent;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.CellRendererPane;
 import javax.swing.InputMap;
@@ -71,7 +74,11 @@ import org.netbeans.modules.soa.mappercore.model.Vertex;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
 import org.netbeans.modules.soa.mappercore.utils.ScrollPaneWrapper;
 import org.netbeans.modules.soa.mappercore.utils.Utils;
+import org.openide.actions.CopyAction;
+import org.openide.actions.PasteAction;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.CallbackSystemAction;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -96,7 +103,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
     private InplaceEditor inplaceEditor;
     private GraphSubset bufferCopyPaste;
     private boolean printMode = false;
-    
+        
     public Canvas(Mapper mapper) {
         super(mapper);
 
@@ -132,15 +139,18 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         registerAction(new MoveUpCanvasAction(this));
         registerAction(new MoveDownCanvasAction(this));
         registerAction(new LinkConnectAction(this));
-        registerAction(new CopyCanvasAction(this));
-        registerAction(new PasteCanvasAction(this));
+        registerAction(new CopyMapperAction(this));
+        registerAction(new PasteMapperAction(this));
+        registerAction(new CutMapperAction(this));
+        registerAction(new DeleteMapperAction(this));
+        registerAction(new ShowPopapMenuAction(this));
     
         getAccessibleContext().setAccessibleName(NbBundle
                 .getMessage(Canvas.class, "ACSN_Canvas")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle
                 .getMessage(Canvas.class, "ACSD_Canvas")); // NOI18N
     }
-
+    
     @Override
     public String getToolTipText(MouseEvent event) {
         CanvasSearchResult searchResult = find(event.getX(), event.getY());
@@ -286,7 +296,9 @@ public class Canvas extends MapperPanel implements VertexCanvas,
     }
     
     public void setBufferCopyPaste(GraphSubset graphSubset) {
+        GraphSubset oldBuffer = bufferCopyPaste;
         bufferCopyPaste = new GraphSubset(graphSubset);
+        firePropertyChange(Mapper.BUFFER_PROPERTY, oldBuffer, bufferCopyPaste);
     }
     
     
@@ -1067,5 +1079,17 @@ public class Canvas extends MapperPanel implements VertexCanvas,
             getScrollPane().validate();
             repaint();
         }
+    }
+    
+    private class Copy extends CopyAction {
+
+        @Override
+        public void actionPerformed(ActionEvent ev) {
+            super.actionPerformed(ev);
+            System.out.println("123445**************");
+        }
+        
+            
+        
     }
 }

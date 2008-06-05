@@ -105,7 +105,8 @@ public class Scene extends Widget {
     private Widget focusedWidget = this;
     private WidgetAction widgetHoverAction;
     boolean extendSceneOnly = false;
-
+    private ResourceTable resourceTable = null;
+    
     /**
      * Creates a scene.
      */
@@ -627,7 +628,17 @@ public class Scene extends Widget {
         }
         return widgetHoverAction;
     }
-
+    
+    public void setResourceTable(ResourceTable table) {
+        
+        // TODO: What to do if a resource table already exist.
+        resourceTable = table;
+    }
+    
+    public ResourceTable getResourceTable() {
+        return resourceTable;
+    }
+    
     private class WidgetHoverAction implements TwoStateHoverProvider {
 
         public void unsetHovering (Widget widget) {

@@ -72,10 +72,13 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.core.ClientWizardProperties;
+import org.netbeans.modules.websvc.core.ServerType;
+import org.netbeans.modules.websvc.core.WSStackUtils;
 import org.netbeans.modules.websvc.core.WsdlRetriever;
 import org.netbeans.modules.websvc.core.jaxws.JaxWsExplorerPanel;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 
+import org.netbeans.modules.websvc.serverapi.api.WSStack;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -102,8 +105,10 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
 
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
+import org.netbeans.modules.websvc.core.JaxWsStackProvider;
 import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.netbeans.modules.websvc.core.WsWsdlCookie;
+import org.netbeans.modules.websvc.serverapi.api.WSStackFeature;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
@@ -652,10 +657,11 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             }
         }
         
-        boolean jsr109OldSupported = isJsr109OldSupported(project);
-        boolean jsr109Supported = isJsr109Supported(project);
-        boolean jwsdpSupported = isJwsdpSupported(project);
-        boolean jaxWsInJ2ee14Supported = isJaxWsInJ2ee14Supported(project);
+        WSStackUtils utils = new WSStackUtils(project);
+        boolean jsr109Supported = utils.isJsr109Supported();
+        boolean jsr109OldSupported = utils.isJsr109OldSupported();
+        //boolean jwsdpSupported = isJwsdpSupported(project);
+        boolean jaxWsInJ2ee14Supported = ServerType.JBOSS == WSStackUtils.getServerType(project);
         if (projectType > 0) {
             //jLabelJaxVersion.setEnabled(false);
             //jComboBoxJaxVersion.setEnabled(false);
@@ -664,7 +670,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             }
             else{
                 if ((!jsr109OldSupported && !jsr109Supported) || jaxWsInJ2ee14Supported ||
-                        (!jsr109Supported && jsr109OldSupported && jwsdpSupported )){
+                        (!jsr109Supported && jsr109OldSupported /* && jwsdpSupported*/ )){
                     jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
                     jLabelJaxVersion.setEnabled(false);
                     jComboBoxJaxVersion.setEnabled(false);
@@ -771,7 +777,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
                 //if platform is non-JSR109, select the JAXRPC static stub type
                 //and disable the combobox
                 if ((!jsr109OldSupported && !jsr109Supported)
-                        || (!jsr109Supported && jsr109OldSupported && jwsdpSupported)) {
+                        || (!jsr109Supported && jsr109OldSupported /*&& jwsdpSupported*/)) {
                     selectedStub = getJAXRPCClientStub(clientStubs);
                     jCbxClientType.setEnabled(false);
                 }
@@ -1203,13 +1209,13 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
      * @param project
      * @return true if jsr109(and jaxws) supported, false otherwise.
      */
-    private boolean isJsr109Supported(Project project){
-        J2eePlatform j2eePlatform = getJ2eePlatform(project);
-        if(j2eePlatform != null){
-            return j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
-        }
-        return false;
-    }
+//    private boolean isJsr109Supported(Project project){
+//        J2eePlatform j2eePlatform = getJ2eePlatform(project);
+//        if(j2eePlatform != null){
+//            return j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
+//        }
+//        return false;
+//    }
     
     /**
      * This api check if the target server for this project supports WSCOMPILE (JAX-RPC).
@@ -1218,13 +1224,13 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
      * @param project
      * @return true if WSCOMPILE(JAX-RPC) supported, false otherwise
      */
-    private boolean isJsr109OldSupported(Project project){
-        J2eePlatform j2eePlatform = getJ2eePlatform(project);
-        if(j2eePlatform != null){
-            return j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE);
-        }
-        return false;
-    }
+//    private boolean isJsr109OldSupported(Project project){
+//        J2eePlatform j2eePlatform = getJ2eePlatform(project);
+//        if(j2eePlatform != null){
+//            return j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE);
+//        }
+//        return false;
+//    }
     
     /**
      * This api check if the target server for this project supports JWSDP.
@@ -1232,13 +1238,13 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
      * @param project
      * @return true if JWSDP supported, false otherwise
      */
-    private boolean isJwsdpSupported(Project project){
-        J2eePlatform j2eePlatform = getJ2eePlatform(project);
-        if(j2eePlatform != null){
-            return j2eePlatform.isToolSupported(J2eePlatform.TOOL_JWSDP);
-        }
-        return false;
-    }
+//    private boolean isJwsdpSupported(Project project){
+//        J2eePlatform j2eePlatform = getJ2eePlatform(project);
+//        if(j2eePlatform != null){
+//            return j2eePlatform.isToolSupported(J2eePlatform.TOOL_JWSDP);
+//        }
+//        return false;
+//    }
     
     /**
      * This api check if the target server for this project supports JaxWs-in-j2ee14-supported.
@@ -1246,13 +1252,13 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
      * @param project
      * @return true if JaxWs-in-j2ee14-supported supported, false otherwise
      */
-    public boolean isJaxWsInJ2ee14Supported(Project project) {
-        J2eePlatform j2eePlatform = getJ2eePlatform(project);
-        if(j2eePlatform != null){
-            return j2eePlatform.isToolSupported("JaxWs-in-j2ee14-supported");
-        }
-        return false;
-    }
+//    public boolean isJaxWsInJ2ee14Supported(Project project) {
+//        J2eePlatform j2eePlatform = getJ2eePlatform(project);
+//        if(j2eePlatform != null){
+//            return j2eePlatform.isToolSupported("JaxWs-in-j2ee14-supported");
+//        }
+//        return false;
+//    }
     
     /**
      * If the project the web service client is being created is not on a JSR 109 platform,
@@ -1264,16 +1270,20 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         // javase client should be source level 1.4 or higher
         // other types of projects should have source level 1.5 or higher
         if(pInfo.getProjectType()!=ProjectInfo.JSE_PROJECT_TYPE) {
-            boolean jsr109Supported = isJsr109Supported(project);
-            boolean jsr109oldSupported = isJsr109OldSupported(project);
-            boolean jwsdpSupported = isJwsdpSupported(project);
-            boolean jaxWsInJ2ee14Supported = isJaxWsInJ2ee14Supported(project);
-            if ( (!jsr109Supported && !jsr109oldSupported) || jaxWsInJ2ee14Supported ||
-                    (!jsr109Supported && jsr109oldSupported && jwsdpSupported)) {
-                if (Util.isSourceLevel14orLower(project)) {
-                    wizardDescriptor.putProperty("WizardPanel_errorMessage",
-                            NbBundle.getMessage(ClientInfo.class, "ERR_NeedProperSourceLevel")); // NOI18N
-                    return false;
+            J2eePlatform j2eePlatform = getJ2eePlatform(project);
+            if (j2eePlatform != null) {
+                WSStackUtils stackUtils = new WSStackUtils(project);
+                boolean jsr109Supported = stackUtils.isJsr109Supported();
+                boolean jsr109oldSupported = stackUtils.isJsr109OldSupported();
+                //boolean jwsdpSupported = isJwsdpSupported(project);
+                boolean jaxWsInJ2ee14Supported = ServerType.JBOSS == WSStackUtils.getServerType(project);
+                if ( (!jsr109Supported && !jsr109oldSupported) || jaxWsInJ2ee14Supported ||
+                        (!jsr109Supported && jsr109oldSupported/* && jwsdpSupported*/)) {
+                    if (Util.isSourceLevel14orLower(project)) {
+                        wizardDescriptor.putProperty("WizardPanel_errorMessage",
+                                NbBundle.getMessage(ClientInfo.class, "ERR_NeedProperSourceLevel")); // NOI18N
+                        return false;
+                    }
                 }
             }
         } else {

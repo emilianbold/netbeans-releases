@@ -73,7 +73,7 @@ public class InvokeStreamOperatorComponentImpl extends OperatorComponentImpl imp
 
     public String getExternalIEPProcessQualifiedName() {
         String name = null;
-		
+        
         Property p = super.getProperty(PROP_EXTERNAL_IEP_PROCESS_QUALIFIED_NAME);
         if(p != null) {
             name = p.getValue();
@@ -96,7 +96,7 @@ public class InvokeStreamOperatorComponentImpl extends OperatorComponentImpl imp
 
     public String getExternalOperatorName() {
         String name = null;
-		
+        
         Property p = super.getProperty(PROP_EXTERNAL_OPERATOR_NAME);
         if(p != null) {
             name = p.getValue();

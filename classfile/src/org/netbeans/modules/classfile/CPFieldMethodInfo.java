@@ -83,6 +83,7 @@ abstract class CPFieldMethodInfo extends CPNameAndTypeInfo {
 	return ((CPNameAndTypeInfo)pool.cpEntries[iNameAndType]).getName();
     }
 
+    @Override
     public String toString() {
         return getClass().getName() + ": class=" + getClassName() +     //NOI18N
             ", name=" + getName() + ", descriptor=" + getDescriptor();  //NOI18N
@@ -133,6 +134,7 @@ abstract class CPFieldMethodInfo extends CPNameAndTypeInfo {
         return sb.toString();
     }
     
+    @Override
     void resolve(CPEntry[] cpEntries) {
         // Read in NameAndTypeInfo values.
         CPNameAndTypeInfo nati = (CPNameAndTypeInfo)cpEntries[iNameAndType];

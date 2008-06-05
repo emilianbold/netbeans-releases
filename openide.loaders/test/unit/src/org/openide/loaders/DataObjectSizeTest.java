@@ -46,6 +46,7 @@ import java.util.HashSet;
 import junit.textui.TestRunner;
 import org.openide.filesystems.*;
 import java.util.Enumeration;
+import org.openide.loaders.DataObjectPool.Item;
 import org.openide.nodes.Node;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.Repository;
@@ -96,8 +97,21 @@ public class DataObjectSizeTest extends NbTestCase {
             HashSet items = new HashSet ();
             
             public boolean reject(java.lang.Object obj) {
-                if (obj instanceof DataObjectPool.Item) {
-                    items.add (obj);
+                if (obj instanceof Item) {
+                    Item item = (Item) obj;
+                    try {
+                        DataObject dobj = item.getDataObjectOrNull();
+                        if (dobj == null) {
+                            // Unreproducible NPE in NB-Core-Build #672
+                            return false;
+                        }
+                        if (dobj.getPrimaryFile().getFileSystem().isDefault()) {
+                            return false;
+                        }
+                        items.add(obj);
+                    } catch (FileStateInvalidException fileStateInvalidException) {
+                        return false;
+                    }
                 }
                 
                 return false;

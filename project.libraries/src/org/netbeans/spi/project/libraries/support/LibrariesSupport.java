@@ -175,11 +175,16 @@ public final class LibrariesSupport {
                 throw new IllegalArgumentException("library location must be a file - "+libraryLocation.toExternalForm()); //NOI18N
             }
             File libBase = libLocation.getParentFile();
-            URI u = libBase.toURI().resolve(libraryEntry);
-            if (libraryEntry.getPath().contains("!/")) { // NOI18N
-                u = URI.create("jar:"+u.toString()); // NOI18N
+            /* Do not use URI.resolve because of http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4723726 (URI.normalize() ruins URI built from UNC File) */
+            String basePath = libBase.toURI().toString();
+            if(!basePath.endsWith("/")) {  // NOI18N
+                basePath += "/";  // NOI18N
             }
-            return u;
+            if (libraryEntry.getPath().contains("!/")) { // NOI18N
+                return URI.create("jar:"+basePath+libraryEntry.getRawPath()); // NOI18N
+            } else {
+                return URI.create(basePath+libraryEntry.getRawPath());
+            }
         }
     }
     
