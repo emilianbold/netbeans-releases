@@ -57,6 +57,14 @@ import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
  * @author Jan Becicka
  */
 class SearchResultRender extends JLabel implements ListCellRenderer {
+    
+    private JLabel fake = new JLabel("XXXXXXXXXXXXX");
+    static int shift;
+
+    public SearchResultRender() {
+        super();
+        shift = fake.getPreferredSize().width;
+    }
 
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         if (value instanceof ItemResult) {
@@ -68,8 +76,9 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
             rendererComponent.setLayout(new BorderLayout());
             categoryLabel.setOpaque(true);
             rendererComponent.add(categoryLabel, BorderLayout.WEST);
-            categoryLabel.setPreferredSize(new JLabel("XXXXXXXXXXXXX").getPreferredSize());
+            categoryLabel.setPreferredSize(fake.getPreferredSize());
             categoryLabel.setForeground(QuickSearchComboBar.getCategoryTextColor());
+            shift = categoryLabel.getPreferredSize().width;
             JLabel itemLabel = new JLabel(((ItemResult) value).getDisplayName());
             itemLabel.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 2));
             ListModel model = list.getModel();

@@ -57,9 +57,11 @@ public class RecentProvider implements SearchProvider, CategoryDescription {
 
     public void evaluate(SearchRequest request, SearchResponse response) {
         for (ItemResult itemR : RecentSearches.getDefault().getSearches()) {
-            if (!response.addResult(itemR.getAction(), itemR.getDisplayName(),
-                    itemR.getShortcut(), itemR.getDisplayHint())) {
-                break;
+            if (itemR.getDisplayName().toLowerCase().indexOf(request.getText().toLowerCase()) != -1) {
+                if (!response.addResult(itemR.getAction(), itemR.getDisplayName(),
+                        itemR.getShortcut(), itemR.getDisplayHint())) {
+                    break;
+                }
             }
         }
     }
