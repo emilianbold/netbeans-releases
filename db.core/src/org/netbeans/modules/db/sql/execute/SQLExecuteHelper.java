@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.db.core.SQLOptions;
 import org.netbeans.modules.db.sql.history.SQLHistoryManager;
+import org.openide.util.Exceptions;
 
 /**
  * Support class for executing SQL statements.
@@ -84,6 +85,12 @@ public final class SQLExecuteHelper {
         
         List<SQLExecutionResult> resultList = new ArrayList<SQLExecutionResult>();
         long totalExecutionTime = 0;
+        String url = null;
+        try {
+            url = conn.getMetaData().getURL();
+        } catch (SQLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         
         for (Iterator i = statements.iterator(); i.hasNext();) {
             
@@ -126,7 +133,7 @@ public final class SQLExecuteHelper {
                 totalExecutionTime += executionTime;
 
                 // Save SQL statements executed for the SQLHistoryManager
-                SQLHistoryManager.getInstance().saveSQL(new SQLHistory(sql, conn.getMetaData().getURL(), new Date(startTime)));
+                SQLHistoryManager.getInstance().saveSQL(new SQLHistory(url, sql, new Date(startTime)));
 
                 if (isResultSet) {
                     result = new SQLExecutionResult(info, stmt, stmt.getResultSet(), executionTime);

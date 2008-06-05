@@ -42,7 +42,7 @@
 /**
  * The support API for processing the growing streams or files. The API
  * provides classes for automated processing of such inputs. The processing
- * is byte or line based.
+ * is character or line based.
  *
  * @see org.netbeans.modules.extexecution.api.input.InputReaderTask
  */
