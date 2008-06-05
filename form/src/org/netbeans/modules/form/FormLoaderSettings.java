@@ -168,24 +168,6 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
     public void setUseIndentEngine(boolean value) {
         getPreferences().putBoolean(PROP_USE_INDENT_ENGINE, value);
     }
-    
-    /**
-     * Returns event variable name.
-     * 
-     * @return event variable name.
-     */
-    public String getEventVariableName() {
-        return getPreferences().get(PROP_EVENT_VARIABLE_NAME, "evt");
-    }
-
-    /**
-     * Sets event variable name.
-     * 
-     * @param value event variable name.
-     */
-    public void setEventVariableName(String value) {
-        getPreferences().put(PROP_EVENT_VARIABLE_NAME, value);
-    }
 
     /**
      * Getter for the event listener code generation style option.

@@ -165,7 +165,7 @@ class JavaCodeGenerator extends CodeGenerator {
     static final int LAYOUT_CODE_LIBRARY = 2;
 
     private static final String EVT_SECTION_PREFIX = "event_"; // NOI18N
-
+    private static final String EVT_VARIABLE_NAME = "evt"; // NOI18N
     private static final String DEFAULT_LISTENER_CLASS_NAME = "FormListener"; // NOI18N
 
     static final String CUSTOM_CODE_MARK = "\u001F"; // NOI18N
@@ -3307,7 +3307,7 @@ class JavaCodeGenerator extends CodeGenerator {
         if (paramTypes.length == 1
             && EventObject.class.isAssignableFrom(paramTypes[0]))
         {
-            paramNames = new String[] { formSettings.getEventVariableName() };
+            paramNames = new String[] { EVT_VARIABLE_NAME };
         }
         else {
             paramNames = new String[paramTypes.length];
