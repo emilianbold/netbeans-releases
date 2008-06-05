@@ -40,6 +40,8 @@ package org.netbeans.modules.cnd.modelui.switcher;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import org.netbeans.api.progress.ProgressHandle;
@@ -50,11 +52,13 @@ import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceXRef;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.SharedClassObject;
 import org.openide.util.actions.NodeAction;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -70,15 +74,54 @@ public class TestProjectReferencesAction extends NodeAction {
     private static boolean running = false;
     private final JMenuItem presenter;
     private final static boolean TEST_XREF = Boolean.getBoolean("test.xref.action"); // NOI18N
-
+    private final boolean allReferences;
+    private final boolean analyzeStatistics;
+    
     private enum State {
 
         Enabled, Disabled, Indeterminate
     }
 
-    public TestProjectReferencesAction() {
-        presenter = new JMenuItem();
-        model = CsmModelAccessor.getModel();
+    public static Action getSmartCompletionAnalyzerAction() {
+        System.err.println("called getSmartCompletionAnalyzerAction()");
+        return SharedClassObject.findObject(SmartCompletionAnalyzerAction.class, true);
+    }
+    
+    public static Action getDirectUsageReferencesAction() {
+        System.err.println("called getDirectUsageReferencesAction()");
+        return SharedClassObject.findObject(DirectUsageAction.class, true);
+    }
+    
+    public static Action getAllReferencesAction() {
+        System.err.println("called getAllReferencesAction()");
+        return SharedClassObject.findObject(AllUsagesAction.class, true);
+    }
+    
+    static final class SmartCompletionAnalyzerAction extends TestProjectReferencesAction {
+
+        SmartCompletionAnalyzerAction() {
+            super(false, true);
+        }
+    }
+    
+    static final class DirectUsageAction extends TestProjectReferencesAction {
+        DirectUsageAction() {
+            super(false, false);
+        }
+    }
+    
+    static final class AllUsagesAction extends TestProjectReferencesAction {
+
+        AllUsagesAction() {
+            super(true, false);
+        }
+    }
+    
+    protected TestProjectReferencesAction(boolean allReferences, boolean analyzeStatistics) {
+        this.allReferences = allReferences;
+        this.analyzeStatistics = analyzeStatistics;
+        this.presenter = new JMenuItem();
+        this.model = CsmModelAccessor.getModel();
         org.openide.awt.Actions.connect(presenter, (Action) this, true);
     }
 
@@ -118,7 +161,13 @@ public class TestProjectReferencesAction extends NodeAction {
     }
     
     public String getName() {
-        return NbBundle.getMessage(getClass(), ("CTL_TestProjectReferencesAction")); // NOI18N
+        String nameKey;
+        if (analyzeStatistics) {
+            nameKey = "CTL_TestProjectSmartCCDirectUsageReferencesAction";
+        } else {
+            nameKey = (allReferences ? "CTL_TestProjectReferencesAction" : "CTL_TestProjectDirectUsageReferencesAction");
+        }
+        return NbBundle.getMessage(getClass(), nameKey); // NOI18N
     }
 
     public HelpCtx getHelpCtx() {
@@ -213,7 +262,7 @@ public class TestProjectReferencesAction extends NodeAction {
 
     
     private void testProject(NativeProject p) {
-        String task = "xRef - " + p.getProjectDisplayName(); // NOI18N
+        String task = (this.allReferences ? "All " : "Direct usage ") + "xRef - " + p.getProjectDisplayName() + (this.analyzeStatistics ? " Statistics" : ""); // NOI18N
         InputOutput io = IOProvider.getDefault().getIO(task, false);
         io.select();
         final ProgressHandle handle = ProgressHandleFactory.createHandle(task);
@@ -222,7 +271,9 @@ public class TestProjectReferencesAction extends NodeAction {
         final OutputWriter err = io.getErr();
         final long[] time = new long[2];
         time[0] = System.currentTimeMillis();
-        TraceXRef.traceProjectRefsStatistics(p, out, err, new CsmProgressAdapter() {
+        Set<CsmReferenceKind> interestedElems = this.allReferences ? CsmReferenceKind.ALL : EnumSet.<CsmReferenceKind>of(CsmReferenceKind.DIRECT_USAGE);
+            
+        TraceXRef.traceProjectRefsStatistics(p, new TraceXRef.StatisticsParameters(interestedElems, analyzeStatistics), out, err, new CsmProgressAdapter() {
             private int handled = 0;
             @Override
             public void projectFilesCounted(CsmProject project, int filesCount) {
