@@ -44,13 +44,21 @@ made subject to such option by the copyright holder.
     <import file="../nbbuild/templates/projectized.xml"/>
     
     <target name="build61modules">
-        <get src="http://deadlock.netbeans.org/hudson/job/javadoc-nbms/lastSuccessfulBuild/artifact/nbbuild/nbms/enterprise5/org-netbeans-modules-websvc-wsitconf.nbm"/>
-        <get src="http://deadlock.netbeans.org/hudson/job/javadoc-nbms/lastSuccessfulBuild/artifact/nbbuild/nbms/enterprise5/org-netbeans-modules-websvc-wsitmodelext.nbm"/>
-
-        <mkdir dir="nbm"/>
         
-        <unzip src="org-netbeans-modules-websvc-wsitconf.nbm" dest="nbm"/>
-                
+        <get src="http://smetiste.czech.sun.com/builds/netbeans/trunk/daily/latest/zip/netbeans-trunk-nightly-200806051204-src.zip" dest="nb65src.zip"/>
+
+        <unzip src="nb61src.zip" dest="61src"/>
+
+        <delete dir="61src/websvc.wsitmodelext"/>
+        <delete dir="61src/websvc.wsitconf"/>
+
+        <copy dir="websvc.wsitmodelext" todir="61src"/>
+        <copy dir="websvc.wsitconf" todir="61src"/>
+        
+        <delete dir="61src/websvc.wsitconf/nbproject/project.xml"/>
+
+        <copy file="61src/websvc.wsitmodelext/nbproject/project61.xml" tofile="61src/websvc.wsitmodelext/nbproject/project.xml"/>
+        
     </target>
     
 </project>
