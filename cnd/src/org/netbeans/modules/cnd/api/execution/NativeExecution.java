@@ -57,6 +57,11 @@ public abstract class NativeExecution extends ExecutionSupport implements Native
     
     private static NativeExecution instance;
     
+    /**
+     * Since NativeExecution is abstract, we can't instantiate it. So we instantiate
+     * a SimpleNativeExecution instead, who's whole purpose is to provide the implementation
+     * of NativeExecutionProvider.getNativeExecution().
+     */
     public static NativeExecution getDefault() {
         if (instance == null) {
             instance = new SimpleNativeExecution();
@@ -100,8 +105,11 @@ public abstract class NativeExecution extends ExecutionSupport implements Native
     
     public abstract void stop();
     
+    /**
+     * Simple class whose sole purpose is to let us instantiate a NativeExecution so we can
+     * call the getNativeExecution() method.
+     */
     private static class SimpleNativeExecution extends NativeExecution {
-
         @Override
         public int executeCommand(File runDirFile, String executable, String arguments, String[] envp, PrintWriter out, Reader in) throws IOException, InterruptedException {
             throw new UnsupportedOperationException("Not supported.");
