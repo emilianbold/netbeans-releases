@@ -194,13 +194,14 @@ public class StartTask extends BasicTask<OperationState> {
         }
         String jarLocation = jar.getAbsolutePath();
         
-        Map<String, String> argMap = readJvmArgs(getDomain(serverHome));
+        Map<String, String> argMap = readJvmArgs(getDomainFolder(serverHome));
         
         StringBuilder argumentBuf = new StringBuilder(1024);
         appendSystemVars(argMap, argumentBuf);
         appendJavaOpts(argumentBuf);
         argumentBuf.append(" -client -jar ");
         argumentBuf.append(quote(jarLocation));
+        argumentBuf.append(" --domain " + getDomainName());
         
         String arguments = argumentBuf.toString();
         Logger.getLogger("glassfish").log(Level.FINE, "V3 JVM Command: " + startScript + arguments);
@@ -265,9 +266,13 @@ public class StartTask extends BasicTask<OperationState> {
         return process;
     }
     
-    private File getDomain(String serverHome) {
+    private File getDomainFolder(String serverHome) {
         // !PW FIXME default domain hardcoded.
-        return new File(serverHome, "domains" + File.separatorChar + "domain1");
+        return new File(serverHome, "domains" + File.separatorChar + getDomainName());
+    }
+    
+    private static final String getDomainName() {
+        return "domain1";
     }
     
     private Map<String, String> readJvmArgs(File domainRoot) {
