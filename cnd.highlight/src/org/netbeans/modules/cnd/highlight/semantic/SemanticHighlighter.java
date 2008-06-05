@@ -98,7 +98,7 @@ public class SemanticHighlighter extends HighlighterBase {
                     if (SHOW_TIMES) System.err.println("#@# Highlighter '" + se.getName() + "' have started [" + (start2 - start) + " ms].");
                     if (SemanticHighlightingOptions.instance().isEnabled(se.getName())) {
                         for (CsmOffsetable block : se.getBlocks(csmFile)) {
-                            newBag.addHighlight(block.getStartOffset(), block.getEndOffset(), se.getColor(null));
+                            newBag.addHighlight(block.getStartOffset(), block.getEndOffset(), se.getColor(block));
                         }
                     }
                     if (SHOW_TIMES) System.err.println("#@# Highlighter '" + se.getName() + "' have finished. Took " + (System.currentTimeMillis() - start2) + "ms.");
