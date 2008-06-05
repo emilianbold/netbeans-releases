@@ -49,7 +49,7 @@ import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
  *
  * @author mkrauskopf
  */
-final class DotClassPath {
+public final class DotClassPath {
 
     private DotClassPathEntry output;
     

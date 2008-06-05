@@ -43,10 +43,12 @@ package org.apache.tools.ant.module.api.support;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
@@ -248,6 +250,14 @@ public class TargetListerTest extends NbTestCase {
             getTargets(testdir.getFileObject("loads-malformed-unicode.xml"));
             fail();
         } catch (IOException x) {/* OK */}
+    }
+
+    public void testNetBeansProperties() throws Exception { // #130460
+        AntSettings.setProperties(Collections.singletonMap("imported", "imported.xml"));
+        List<TargetLister.Target> targets = getTargets(testdir.getFileObject("nbproperties/importing.xml"));
+        assertEquals(1, targets.size());
+        TargetLister.Target t = targets.get(0);
+        assertEquals("correct qname", "imported.t", t.getQualifiedName());
     }
     
     private static List<TargetLister.Target> getTargets(FileObject fo) throws IOException {

@@ -37,28 +37,30 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.history;
+package org.netbeans.modules.projectimport.eclipse.core;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
 
 /**
  *
- * @author John Baker
+ * @author david
  */
-public interface SQLHistoryModel {
-    void initialize();
+public class EclipseProjectTestUtils {
+
+    public static EclipseProject createEclipseProject(File proj, DotClassPath cp) {
+        EclipseProject ep = new EclipseProject(proj);
+        ep.setClassPath(cp);
+        return ep;
+    }
     
-    void setFilter(String filter);
-        
-    String getFilter();
-    
-    void setUrl(String url);
-    
-    String getUrl();
-    
-    void registerObserver(SQLHistoryFilterObserver filterObserver);
-    
-    void removeObserver(SQLHistoryFilterObserver filterObserver);
-    
-    void registerObserver(SQLHistoryUrlObserver urlObserver);
-    
-    void removeObserver(SQLHistoryUrlObserver urlObserver);
+    public static DotClassPathEntry createDotClassPathEntry(String ... keyvalue) {
+        Map<String, String> map = new HashMap<String, String>();
+        for (int i=0; i<keyvalue.length; i = i +2) {
+            map.put(keyvalue[i], keyvalue[i+1]);
+        }
+        return new DotClassPathEntry(map, null);
+    }
 }

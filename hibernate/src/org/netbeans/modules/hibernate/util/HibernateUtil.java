@@ -40,13 +40,14 @@
 package org.netbeans.modules.hibernate.util;
 
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
-
 import java.util.Enumeration;
-
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
@@ -203,6 +204,27 @@ public class HibernateUtil {
         }
         return javaSourceGroup;
     }
+    
+    /**
+     * Returns the project classpath including project build paths.
+     * Can be used to set classpath for custom classloader.
+     * 
+     * @param projectFile file in current project.
+     * @return List of java.io.File objects representing each entry on the classpath.
+     */
+    public static ArrayList<File> getProjectClassPathEntries(FileObject projectFile) {
+        ArrayList<File> projectClassPathEntries = new ArrayList<File>();
+        ClassPath cp = ClassPath.getClassPath(projectFile, ClassPath.EXECUTE);
+
+        StringTokenizer classPathTokens = new StringTokenizer(cp.toString(), ":");
+        while (classPathTokens.hasMoreTokens()) {
+            File f = new File(classPathTokens.nextToken());
+            projectClassPathEntries.add(f);
+        }
+
+        return projectClassPathEntries;
+    }
+    
 
     /**
      * Seaches mapping files under the given project and returns the list of 
