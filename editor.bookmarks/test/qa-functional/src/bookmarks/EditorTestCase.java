@@ -47,8 +47,8 @@
 
 package bookmarks;
 
-import java.awt.datatransfer.Transferable;
 import java.io.File;
+import java.io.IOException;
 import java.util.StringTokenizer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -63,10 +63,7 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JEditorPaneOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
@@ -137,8 +134,13 @@ public class EditorTestCase extends JellyTestCase {
             return;
         }
                 
-        /* 2. open project */
-        Object prj= ProjectSupport.openProject(projectPath);        
+        /* 2. open project */        
+        try {
+         openDataProjects(new String[] {"projects/"+projectName});
+        } catch(IOException ioe) {
+           fail("cannot opne project");
+        }
+        //Object prj= ProjectSupport.openProject(projectPath);        
     }
    
     /**
@@ -169,7 +171,7 @@ public class EditorTestCase extends JellyTestCase {
     }
     
     protected void closeProject(String projectName) {
-        ProjectSupport.closeProject(projectName);
+       // ProjectSupport.closeProject(projectName);
     }
     
     

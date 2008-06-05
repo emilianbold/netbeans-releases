@@ -66,9 +66,12 @@ public class NewWebFreeFormActionsStepOperatorTest extends JellyTestCase {
      * @return  created suite
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new NewWebFreeFormActionsStepOperatorTest("testVerify"));
         return suite;
+         */
+        return createModuleTest(NewWebFreeFormActionsStepOperatorTest.class, "testVerify");
     }
 
     

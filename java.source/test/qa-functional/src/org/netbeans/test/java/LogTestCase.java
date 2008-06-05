@@ -50,7 +50,7 @@ import org.netbeans.junit.diff.LineDiff;
 /** LogTestCase
  * @author Jan Becicka
  */
-public class LogTestCase extends NbTestCase {
+public class LogTestCase extends JavaTestCase {
 
     /**
      * state - true - testing

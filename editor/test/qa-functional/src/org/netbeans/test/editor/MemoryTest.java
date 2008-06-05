@@ -51,8 +51,10 @@ import java.util.Map;
 import javax.swing.JEditorPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
+import junit.framework.Test;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -267,4 +269,9 @@ public class MemoryTest extends NbTestCase {
         }
         return topComponent;
     }
+    
+    public static Test suite() {
+      return NbModuleSuite.create(
+              NbModuleSuite.createConfiguration(MemoryTest.class).enableModules(".*").clusters(".*"));
+   }
 }

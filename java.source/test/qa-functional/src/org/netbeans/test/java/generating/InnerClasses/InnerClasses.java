@@ -51,25 +51,22 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
+import junit.framework.Test;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.openide.loaders.*;
 import org.netbeans.junit.*;
 import org.netbeans.test.java.Common;
 import org.openide.filesystems.FileObject;
@@ -112,10 +109,6 @@ public class InnerClasses extends org.netbeans.test.java.XRunner {
     
     public InnerClasses(java.lang.String testName) {
         super(testName);
-    }
-    
-    public static NbTest suite() {
-        return new NbTestSuite(InnerClasses.class);
     }
     
     /** "body" of this TestCase
@@ -249,5 +242,10 @@ public class InnerClasses extends org.netbeans.test.java.XRunner {
     //        clazz.addMethod(Common.createMethod("method2", Modifier.PUBLIC | Modifier.STATIC, Type.LONG, Common.PARS3));
     //
     //    }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(InnerClasses.class).enableModules(".*").clusters(".*"));
+    }
     
 }

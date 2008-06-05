@@ -78,6 +78,7 @@ public enum SecurityPolicyQName {
     REQUIREDELEMENTS(createSecurityPolicyQName("RequiredElements")),  //NOI18N
     XPATH(createSecurityPolicyQName("XPath")),  //NOI18N
     BODY(createSecurityPolicyQName("Body")),  //NOI18N
+    ATTACHMENTS(createSecurityPolicyQName("Attachments")),  //NOI18N
     HEADER(createSecurityPolicyQName("Header")),  //NOI18N
 
     TRANSPORTBINDING(createSecurityPolicyQName("TransportBinding")),  //NOI18N

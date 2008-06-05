@@ -88,7 +88,7 @@ public class DatabasesNode extends Node {
     }
     
     /** tests popup menu items for presence */
-    void verifyPopup() {
+    public void verifyPopup() {
         verifyPopup(new Action[]{
             enableDebugAction,
             disableDebugAction,

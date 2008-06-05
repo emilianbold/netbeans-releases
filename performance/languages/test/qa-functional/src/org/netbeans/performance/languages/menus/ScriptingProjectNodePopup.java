@@ -73,7 +73,9 @@ public class ScriptingProjectNodePopup extends  PerformanceTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new ScriptingProjectNodePopup("testRubyProjectNodePopupMenu","Ruby Project node popup in Projects View"));
-        suite.addTest(new ScriptingProjectNodePopup("testRailsyProjectNodePopupMenu","Rails Project node popup in Projects View"));
+        suite.addTest(new ScriptingProjectNodePopup("testRailsProjectNodePopupMenu","Rails Project node popup in Projects View"));
+        suite.addTest(new ScriptingProjectNodePopup("testPHPProjectNodePopupMenu","PHP Project node popup in Projects View"));
+         
         return suite;
     }
     /**
@@ -114,9 +116,15 @@ public class ScriptingProjectNodePopup extends  PerformanceTestCase {
     public void testRubyProjectNodePopupMenu() {
         testNode(getProjectNode(Projects.RUBY_PROJECT));        
     }
+    
     public void testRailsProjectNodePopupMenu() {
         testNode(getProjectNode(Projects.RAILS_PROJECT));        
-    }    
+    }
+    
+    public void testPHPProjectNodePopupMenu() {
+        testNode(getProjectNode(Projects.PHP_PROJECT));
+    }
+    
     public void testNode(Node node){
         dataObjectNode = node;
         doMeasurement();

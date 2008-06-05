@@ -47,18 +47,11 @@
 
 package org.netbeans.test.java.generating.SuperClassInterfaces;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.Tree;
 import org.netbeans.test.java.Common;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import org.netbeans.api.java.source.CancellableTask;
+import junit.framework.Test;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.openide.loaders.*;
 import org.netbeans.junit.*;
 import org.openide.filesystems.FileObject;
 
@@ -102,10 +95,6 @@ public class SuperClassInterfaces extends org.netbeans.test.java.XRunner {
         super(testName);
     }
     
-    public static NbTest suite() {
-        return new NbTestSuite(SuperClassInterfaces.class);
-    }
-    
     /** "body" of this TestCase
      * @param o SourceElement - target for generating
      * @param log log is used for logging StackTraces
@@ -130,6 +119,11 @@ public class SuperClassInterfaces extends org.netbeans.test.java.XRunner {
         super.setUp();
         name = "JavaTestSourceSuperClassInterfaces";
         packageName = "org.netbeans.test.java.testsources";
+    }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(SuperClassInterfaces.class).enableModules(".*").clusters(".*"));
     }
     
 }

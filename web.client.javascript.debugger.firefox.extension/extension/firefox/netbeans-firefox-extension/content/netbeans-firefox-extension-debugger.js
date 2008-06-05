@@ -316,7 +316,7 @@
                         currentFirebugContext = context;
                         releaseFirebugContext = false;
                         netBeansDebugger.onInit(netBeansDebugger);
-                        NetBeans.NetMonitor.initMonitor(context, browser);
+                        NetBeans.NetMonitor.initMonitor(context, browser,socket);
                     }
                 },
 

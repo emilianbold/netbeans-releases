@@ -51,6 +51,10 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.actions.ViewAction;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.junit.NbTestSuite;
@@ -73,17 +77,21 @@ public class NewWebProjectTest extends JellyTestCase {
      * @return  created suite
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new NewWebProjectTest("createSampleWebProject"));
         return suite;
+         */
+        return createModuleTest(NewWebProjectTest.class, "createSampleWebProject");
     }
 
     @Override
     public void setUp() {
         System.out.println("### "+getName()+" ###");
     }
-        
+            
     public void createSampleWebProject() throws Exception {
+        getGlassFishV2Node();
         String prjName = "SampleWebApplication";
         String web = Bundle.getStringTrimmed(
                 "org.netbeans.modules.web.core.Bundle",
@@ -127,6 +135,11 @@ public class NewWebProjectTest extends JellyTestCase {
             } catch (ClassNotFoundException x) {
                 System.err.println("Warning: org.netbeans.api.java.source.SourceUtils could not be found, will not wait for scan to finish");
             }
+        } else {
+            openDataProjects(prjName);
+            new OpenAction().perform(
+                    new Node(new ProjectsTabOperator().getProjectRootNode(prjName),
+                                    "Web Pages|index.jsp")); // NOI18N
         }
     }
     

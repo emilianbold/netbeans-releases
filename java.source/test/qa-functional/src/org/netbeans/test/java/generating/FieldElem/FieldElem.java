@@ -44,12 +44,11 @@
  *
  * Created on June 26, 2000, 9:29 AM
  */
-
 package org.netbeans.test.java.generating.FieldElem;
 
 import java.util.EnumSet;
-import java.util.Iterator;
 import javax.lang.model.element.Modifier;
+import junit.framework.Test;
 import org.netbeans.test.java.Common;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.junit.*;
@@ -77,62 +76,61 @@ import org.openide.filesystems.FileObject;
  *
  * @author Jan Becicka <Jan.Becicka@sun.com>
  */
-
-
 public class FieldElem extends org.netbeans.test.java.XRunner {
-    
+
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(suite());
     }
-    
+
     public FieldElem() {
         super("");
     }
-    
+
     public FieldElem(java.lang.String testName) {
         super(testName);
     }
-    
-    public static NbTest suite() {
-        return new NbTestSuite(FieldElem.class);
-    }
-    
+
     /** "body" of this TestCase
      * @param o SourceElement - target for generating
      * @param log log is used for logging StackTraces
      * @throws Exception
      * @return true if test passed
      * false if failed
-     */    
+     */
     public boolean go(Object o, java.io.PrintWriter log) throws Exception {
-                
+
         FileObject fo = (FileObject) o;
-        JavaSource js = JavaSource.forFileObject(fo);    
-        
+        JavaSource js = JavaSource.forFileObject(fo);
+
         //let's add some fields newField1 .. newField4        
-        int i=1;
-        EnumSet<Modifier> set = EnumSet.of(Modifier.PUBLIC,Modifier.STATIC);
-        Common.addField(js,Common.getFieldName(i++), set, "boolean");
-        
-        set = EnumSet.of(Modifier.PRIVATE,Modifier.STATIC);        
-        Common.addField(js,Common.getFieldName(i++), set, "int");
-        
+        int i = 1;
+        EnumSet<Modifier> set = EnumSet.of(Modifier.PUBLIC, Modifier.STATIC);
+        Common.addField(js, Common.getFieldName(i++), set, "boolean");
+
+        set = EnumSet.of(Modifier.PRIVATE, Modifier.STATIC);
+        Common.addField(js, Common.getFieldName(i++), set, "int");
+
         set = EnumSet.of(Modifier.PROTECTED);
-        Common.addField(js,Common.getFieldName(i++), set, "boolean");
-        
-        set = EnumSet.of(Modifier.SYNCHRONIZED,Modifier.PUBLIC);        
-        Common.addField(js,Common.getFieldName(i++), set, "float");
-        
-        set = EnumSet.of(Modifier.FINAL,Modifier.PUBLIC,Modifier.STATIC);        
-        Common.addField(js,Common.getFieldName(i++), set, "String");
-        return true;        
+        Common.addField(js, Common.getFieldName(i++), set, "boolean");
+
+        set = EnumSet.of(Modifier.SYNCHRONIZED, Modifier.PUBLIC);
+        Common.addField(js, Common.getFieldName(i++), set, "float");
+
+        set = EnumSet.of(Modifier.FINAL, Modifier.PUBLIC, Modifier.STATIC);
+        Common.addField(js, Common.getFieldName(i++), set, "String");
+        return true;
     }
-    
+
     /**
-     */    
+     */
     protected void setUp() {
         super.setUp();
         name = "JavaTestSourceFieldElem";
         packageName = "org.netbeans.test.java.testsources";
+    }
+
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(FieldElem.class).enableModules(".*").clusters(".*"));
     }
 }

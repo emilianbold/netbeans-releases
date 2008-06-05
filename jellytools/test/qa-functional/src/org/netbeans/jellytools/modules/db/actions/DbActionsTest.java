@@ -63,9 +63,12 @@ public class DbActionsTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new DbActionsTest("testInstantiateActions"));
         return suite;
+         */
+        return createModuleTest(DbActionsTest.class, "testInstantiateActions");
     }
     
     /** Use for internal test execution inside IDE

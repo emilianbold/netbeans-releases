@@ -72,6 +72,7 @@ public class CheckoutWizardOperatorTest extends JellyTestCase {
      * @return  created suite
      */
     public static Test suite() {
+        /*
         TestSuite suite = new NbTestSuite();
         suite.addTest(new CheckoutWizardOperatorTest("testInvoke"));
         suite.addTest(new CheckoutWizardOperatorTest("testEditCVSRoot"));
@@ -79,6 +80,13 @@ public class CheckoutWizardOperatorTest extends JellyTestCase {
         suite.addTest(new CheckoutWizardOperatorTest("testModuleToCheckout"));
         suite.addTest(new CheckoutWizardOperatorTest("testFinish"));
         return suite;
+         */
+        return createModuleTest(CheckoutWizardOperatorTest.class,
+        "testInvoke",
+        "testEditCVSRoot",
+        "testProxy",
+        "testModuleToCheckout",
+        "testFinish");
     }
     
     /** Set up executed before each test case. */
