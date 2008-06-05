@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
@@ -20,7 +20,7 @@
  * Contributor(s):
  * 
  * The Original Software is NetBeans. The Initial Developer of the Original Software
- * is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun Microsystems, Inc. All
+ * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
  * 
  * If you wish your version of this file to be governed by only the CDDL or only the
@@ -34,53 +34,67 @@
  * copyright holder.
  */
 
-package org.netbeans.installer.utils.cli.options;
+package org.netbeans.installer.wizard.components.actions;
 
-import org.netbeans.installer.utils.cli.*;
 import java.io.File;
+import java.util.List;
 import org.netbeans.installer.product.Registry;
+import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.exceptions.CLIOptionException;
+import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.exceptions.InitializationException;
+import org.netbeans.installer.utils.helper.Dependency;
+import org.netbeans.installer.wizard.components.WizardAction;
 
 /**
  *
- * @author Dmitry Lipin
+ * @author Kirill Sorokin
  */
-public class RecordOption extends CLIOptionOneArgument {
-
-    @Override
-    public void execute(CLIArgumentsList arguments) throws CLIOptionException {
-        File stateFile = new File(arguments.next()).getAbsoluteFile();
-        if (stateFile.exists()) {
-            throw new CLIOptionException(ResourceUtils.getString(
-                    RecordOption.class,
-                    WARNING_TARGET_STATE_FILE_EXISTS_KEY,
-                    RECORD_ARG,
-                    stateFile));
-        } else {
-            System.setProperty(
-                    Registry.TARGET_STATE_FILE_PATH_PROPERTY,
-                    stateFile.getAbsolutePath());
+public class SetInstallationLocationDepAction extends WizardAction {
+    public static final String SOURCE_PROPERTY = 
+            "source.location.property";//NOI18N
+    public static final String RELATIVE_LOCATION_PROPERTY = 
+            "relative.location";//NOI18N
+    
+    public void execute() {
+        final String prop              = getProperty(SOURCE_PROPERTY);
+        final String relativeLocation  = getProperty(RELATIVE_LOCATION_PROPERTY);
+        
+        if (prop == null) {
+            ErrorManager.notifyError("Source location property is not set");
+            return;
         }
-
-
+        
+        // we do expect the property container of the wizard to be a product, if
+        // it's not we should fail
+        final Product product = (Product) getWizard().getContext().get(Product.class);
+        
+        
+        if (product == null) {
+            ErrorManager.notifyError("Running this action outside of product context is impossible");
+            return;
+        }
+        
+        final File sourceLocation = new File(product.getProperty(prop));
+        
+        final File location;
+        if (relativeLocation != null) {
+            location = new File(sourceLocation, relativeLocation);
+        } else {
+            location = sourceLocation;
+        }
+        
+        product.setInstallationLocation(location.getAbsoluteFile());
     }
-
+    
     @Override
-    protected String getLackOfArgumentsMessage() {
-        return ResourceUtils.getString(
-                RecordOption.class,
-                WARNING_BAD_TARGET_STATE_FILE_ARG_KEY,
-                RECORD_ARG);
+    public WizardActionUi getWizardUi() {
+        return null; // we do not have any ui for this action
     }
-
-    public String getName() {
-        return RECORD_ARG;
+    
+    public boolean isCancellable() {
+        return false;
     }
-    public static final String RECORD_ARG =
-            "--record";// NOI18N
-    private static final String WARNING_TARGET_STATE_FILE_EXISTS_KEY =
-            "O.warning.target.state.file.exists"; // NOI18N
-    private static final String WARNING_BAD_TARGET_STATE_FILE_ARG_KEY =
-            "O.warning.bad.target.state.file.arg"; // NOI18N
+    
 }

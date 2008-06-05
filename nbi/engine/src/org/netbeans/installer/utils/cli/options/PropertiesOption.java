@@ -44,7 +44,7 @@ import java.io.InputStream;
 import java.util.Properties;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.exceptions.CLIArgumentException;
+import org.netbeans.installer.utils.exceptions.CLIOptionException;
 
 /**
  *
@@ -53,7 +53,7 @@ import org.netbeans.installer.utils.exceptions.CLIArgumentException;
 public class PropertiesOption extends CLIOptionOneArgument {
 
     @Override
-    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+    public void execute(CLIArgumentsList arguments) throws CLIOptionException {
         final File propertiesFile = new File(arguments.next());
         InputStream is = null;
         try {

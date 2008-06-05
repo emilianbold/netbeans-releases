@@ -38,7 +38,7 @@ package org.netbeans.installer.utils.cli.options;
 
 import org.netbeans.installer.utils.cli.*;
 import org.netbeans.installer.Installer;
-import org.netbeans.installer.utils.exceptions.CLIArgumentException;
+import org.netbeans.installer.utils.exceptions.CLIOptionException;
 
 /**
  *
@@ -47,7 +47,7 @@ import org.netbeans.installer.utils.exceptions.CLIArgumentException;
 public class IgnoreLockOption extends CLIOptionZeroArguments {
 
     @Override
-    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+    public void execute(CLIArgumentsList arguments) throws CLIOptionException {
         System.setProperty(Installer.IGNORE_LOCK_FILE_PROPERTY, UNARY_ARG_VALUE);
     }
 

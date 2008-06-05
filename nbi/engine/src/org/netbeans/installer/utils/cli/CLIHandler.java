@@ -44,7 +44,7 @@ import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.cli.options.*;
-import org.netbeans.installer.utils.exceptions.CLIArgumentException;
+import org.netbeans.installer.utils.exceptions.CLIOptionException;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 
 /**
@@ -73,7 +73,7 @@ public class CLIHandler {
                             option.init();
                             option.validateOptions(args);
                             option.execute(args);
-                        } catch (CLIArgumentException e) {
+                        } catch (CLIOptionException e) {
                             ErrorManager.notifyWarning(e.getMessage());
                         } finally {
                             option.finish();
