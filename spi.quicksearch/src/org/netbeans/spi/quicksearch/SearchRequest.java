@@ -37,41 +37,35 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.quicksearch.recent;
+package org.netbeans.spi.quicksearch;
 
-import java.util.LinkedList;
-import java.util.List;
-import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
-
+import javax.swing.KeyStroke;
+import org.netbeans.modules.quicksearch.Accessor;
 
 /**
  *
- * @author Jan Becicka
+ * @author Dafe Simonek
  */
-public class RecentSearches {
-    private LinkedList<ItemResult> recent;
-    private static final int MAX_ITEMS = 5;
-    private static RecentSearches instance;
+public final class SearchRequest {
+    
+    static {
+        Accessor.DEFAULT = new AccessorImpl();
+    }    
+    
+    private String text;
+    private KeyStroke stroke;
 
-    private RecentSearches() {
-        recent = new LinkedList<ItemResult>();
+    SearchRequest (String text, KeyStroke stroke) {
+        this.text = text;
+        this.stroke = stroke;
     }
     
-    public static RecentSearches getDefault() {
-        if (instance==null) {
-            instance = new RecentSearches();
-        }
-        return instance;
-    } 
-    
-    public void add(ItemResult result) {
-        if (recent.size()>=MAX_ITEMS) {
-            recent.removeLast();
-        }
-        recent.addFirst(result);
+    public String getText () {
+        return text;
     }
-    
-    public List<ItemResult> getSearches() {
-        return recent;
+            
+    public KeyStroke getShortcut () {
+        return stroke;
     }
+
 }

@@ -40,23 +40,18 @@
 
 package org.netbeans.spi.quicksearch;
 
-import org.openide.util.Cancellable;
-import java.util.List;
-
-
 /**
  * Search Provider.
  * Implement to provide new group of results for quick search
- * @author  Jan Becicka
+ * 
+ * @author  Jan Becicka, Dafe Simonek
  */
-public interface SearchProvider extends Cancellable {
+public interface SearchProvider {
     
     /**
-     * find result matching given pattern
-     * @param pattern
-     * @return
+     * Find result matching given pattern
      */
-    List<SearchResult> evaluate (String pattern);
+    void evaluate (SearchRequest request, SearchResponse response);
     
     CategoryDescription getCategory ();
     

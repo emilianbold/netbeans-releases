@@ -41,9 +41,7 @@
 package org.netbeans.modules.jumpto.quicksearch;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.swing.Action;
@@ -51,7 +49,8 @@ import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.spi.KeymapManager;
 import org.netbeans.spi.quicksearch.CategoryDescription;
 import org.netbeans.spi.quicksearch.SearchProvider;
-import org.netbeans.spi.quicksearch.SearchResult;
+import org.netbeans.spi.quicksearch.SearchRequest;
+import org.netbeans.spi.quicksearch.SearchResponse;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -75,30 +74,25 @@ public class ActionsSearchProvider implements SearchProvider, CategoryDescriptio
         }
         return actions;
     }
-
-    public List<SearchResult> evaluate(String pattern) {
-        List<SearchResult> result = new ArrayList<SearchResult>();
-        for (ShortcutAction a:getActions()) {
-            if (a.getDisplayName().toLowerCase().indexOf(pattern.toLowerCase()) != -1) {
-                result.add(new ActionResult(a));
+    
+    public void evaluate(SearchRequest request, SearchResponse response) {
+        for (ShortcutAction a : getActions()) {
+            if (a.getDisplayName().toLowerCase().indexOf(request.getText()) != -1) {
+                if (!response.addResult(new ActionResult(a), a.getDisplayName())) {
+                    break;
+                }
             }
         }
-        return result;
     }
     
-    public boolean cancel() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
-    private static class ActionResult implements SearchResult {
+    private static class ActionResult implements Runnable {
         private ShortcutAction command;
         
         public ActionResult(ShortcutAction command) {
             this.command = command;
         }
         
-        
-        public void invoke() {
+        public void run() {
             Class clazz = command.getClass();
             Field f = null;
             try {
@@ -116,11 +110,6 @@ public class ActionsSearchProvider implements SearchProvider, CategoryDescriptio
                 Exceptions.printStackTrace(ex);
             }
         }
-
-        public String getDisplayName() {
-            return command.getDisplayName();
-        }
-
     }
 
     public CategoryDescription getCategory() {

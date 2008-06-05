@@ -50,7 +50,7 @@ import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.border.EmptyBorder;
-import org.netbeans.spi.quicksearch.SearchResult;
+import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
 
 /**
  * ListCellRenderer for SearchResults
@@ -59,7 +59,7 @@ import org.netbeans.spi.quicksearch.SearchResult;
 class SearchResultRender extends JLabel implements ListCellRenderer {
 
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-        if (value instanceof SearchResult) {
+        if (value instanceof ItemResult) {
             JLabel categoryLabel = new JLabel();
             JPanel rendererComponent = new JPanel();
             categoryLabel.setText("XXXXXXXXXXXXXX");
@@ -70,11 +70,11 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
             rendererComponent.add(categoryLabel, BorderLayout.WEST);
             categoryLabel.setPreferredSize(new JLabel("XXXXXXXXXXXXX").getPreferredSize());
             categoryLabel.setForeground(QuickSearchComboBar.getCategoryTextColor());
-            JLabel itemLabel = new JLabel(((SearchResult) value).getDisplayName());
+            JLabel itemLabel = new JLabel(((ItemResult) value).getDisplayName());
             itemLabel.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 2));
             ListModel model = list.getModel();
-            if (model instanceof ResultsModel && ((ResultsModel) model).isFirstinCat((SearchResult) value)) {
-                ProviderModel.Category cat = ((ResultsModel) model).getCategory((SearchResult) value);
+            if (model instanceof ResultsModel && ((ResultsModel) model).isFirstinCat((ItemResult) value)) {
+                ProviderModel.Category cat = ((ResultsModel) model).getCategory((ItemResult) value);
                 categoryLabel.setText(cat.getDisplayName());
                 if (index > 0) {
                     JPanel x = new JPanel();

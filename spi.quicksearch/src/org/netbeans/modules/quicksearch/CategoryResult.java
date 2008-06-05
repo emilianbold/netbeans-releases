@@ -41,29 +41,35 @@ package org.netbeans.modules.quicksearch;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.spi.quicksearch.*;
+import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
 
 /**
  *
  * @author  Jan Becicka, Dafe Simonek
  */
-final class  CategoryResult {
+public final class CategoryResult {
     
     private ProviderModel.Category category;
     
-    private List<SearchResult> items;
+    private List<ItemResult> items;
 
-    public CategoryResult (ProviderModel.Category category) {
+    CategoryResult (ProviderModel.Category category) {
         this.category = category;
-        items = new ArrayList<SearchResult>();
+        items = new ArrayList<ItemResult>();
     }
     
-    public void addItem (SearchResult item) {
+    public boolean addItem (ItemResult item) {
         items.add(item);
+        // TBD, return false if category is already full or whole this search
+        // was cancelled
+        return true;
     }
     
-    public void addAll (List<SearchResult> newItems) {
+    public boolean addAll (List<ItemResult> newItems) {
         items.addAll(newItems);
+        // TBD, return false if category is already full or whole this search
+        // was cancelled
+        return true;
     }
 
     /**
@@ -71,7 +77,7 @@ final class  CategoryResult {
      *
      * @return the value of item
      */
-    public List<SearchResult> getItems() {
+    public List<ItemResult> getItems() {
         return items;
     }
 
@@ -83,6 +89,5 @@ final class  CategoryResult {
     public ProviderModel.Category getCategory() {
         return category;
     }
-    
 
 }

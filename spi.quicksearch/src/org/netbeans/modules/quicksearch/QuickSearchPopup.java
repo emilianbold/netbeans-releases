@@ -44,7 +44,7 @@ import java.awt.Dimension;
 import javax.swing.JList;
 import javax.swing.JWindow;
 import org.netbeans.modules.quicksearch.recent.RecentSearches;
-import org.netbeans.spi.quicksearch.SearchResult;
+import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
 
 /**
  * Component representing drop down for quick search
@@ -62,9 +62,9 @@ public class QuickSearchPopup extends javax.swing.JPanel {
     }
 
     void invoke() {
-        SearchResult result = ((SearchResult) jList1.getModel().getElementAt(jList1.getSelectedIndex()));
+        ItemResult result = ((ItemResult) jList1.getModel().getElementAt(jList1.getSelectedIndex()));
         RecentSearches.getDefault().add(result);
-        result.invoke();
+        result.getAction().run();
     }
 
     void selectNext() {

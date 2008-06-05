@@ -44,6 +44,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.spi.quicksearch.SearchProvider;
+import org.netbeans.spi.quicksearch.SearchRequest;
+import org.netbeans.spi.quicksearch.SearchResponse;
 
 /**
  * Command Evaluator. It evaluates commands from toolbar and creates results
@@ -63,25 +65,40 @@ public class CommandEvaluator {
      * @param command
      * @return 
      */
-    public static Iterable<? extends CategoryResult> evaluate(String command) {
+    public static Iterable<? extends CategoryResult> evaluate (String command) {
         
         List<CategoryResult> l = new ArrayList<CategoryResult>();
         Matcher m = COMMAND_PATTERN.matcher(command);
-        boolean isCommand = m.matches() && ProviderRegistry.getInstance().getProviders().isKnownCommand(m.group(1));
+        String commandString = null;
+        String text = null;
+        if (m.matches()) {
+            commandString = m.group(1);
+            if (ProviderRegistry.getInstance().getProviders().isKnownCommand(commandString)) {
+                text = m.group(3);
+            } else {
+                commandString = null;
+                text = command;
+            }
+        } else {
+            text = command;
+        }
+        
+        SearchRequest sRequest = Accessor.DEFAULT.createRequest(text, null);
         
         for (ProviderModel.Category cat : ProviderRegistry.getInstance().getProviders().getCategories()) {
-            CategoryResult curRes = new CategoryResult(cat);
+            CategoryResult catResult = new CategoryResult(cat);
+            SearchResponse sResponse = Accessor.DEFAULT.createResponse(catResult);
             for (SearchProvider provider : cat.getProviders()) {
-                if (isCommand) {
+                if (commandString != null) {
                     String commandPrefix = provider.getCategory().getCommandPrefix();
-                    if (commandPrefix != null && commandPrefix.equalsIgnoreCase(m.group(1))) {
-                        curRes.addAll(provider.evaluate(m.group(3)));
+                    if (commandPrefix != null && commandPrefix.equalsIgnoreCase(commandString)) {
+                        provider.evaluate(sRequest, sResponse);
                     }
                 } else {
-                    curRes.addAll(provider.evaluate(command));
+                    provider.evaluate(sRequest, sResponse);
                 }
             }
-            l.add(curRes);
+            l.add(catResult);
         }
 
         return l;
