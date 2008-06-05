@@ -71,6 +71,7 @@ public class SQLHistoryManager  {
     private List<SQLHistory> sqlList = new ArrayList<SQLHistory>();
     
     private SQLHistoryManager() {
+        generateSerializedFilename();
         SQLEditorRegistryListener editorRegistry = new SQLEditorRegistryListener();
         editorRegistry.initialize();
     }
@@ -83,9 +84,7 @@ public class SQLHistoryManager  {
     }
 
     public void saveSQL(SQLHistory sqlStored) {
-        generateSerializedFilename();
         sqlList.add(sqlStored);
-
     }
 
     private void generateSerializedFilename()  {
