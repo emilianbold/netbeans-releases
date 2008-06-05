@@ -355,20 +355,27 @@ public class TaskProcessor {
     
     private final static Map<Source,Request> rst = new HashMap<Source, Request>();
     
-    public static void resetState (final Source source, final boolean invalidate) {
+    //DO NOT CALL DIRECTLY - called by Source
+    public static Request resetState (final Source source,
+            final boolean mayInterruptParser,
+            final boolean sync) {
         assert source != null;
-        TaskProcessor.Request r = currentRequest.getTaskToCancel (invalidate);
+        TaskProcessor.Request r = currentRequest.getTaskToCancel (mayInterruptParser);
         if (r != null) {
             r.task.cancel();
-            Request oldR;
-            synchronized (rst) {                
-                oldR = rst.get(source);
-                rst.put(source,r);
+            if (sync) {
+                Request oldR;
+                synchronized (rst) {                
+                    oldR = rst.get(source);
+                    rst.put(source,r);
+                }
+                assert oldR == null;
             }
-            assert oldR == null;
         }
+        return r;
     }
     
+    //DO NOT CALL DIRECTLY - called by Source
     public static void resetStateImpl (final Source source) {
         assert source != null;
         Request r;
@@ -394,6 +401,11 @@ public class TaskProcessor {
                 requests.addAll(cr);
             }
         }
+    }
+    
+    //DO NOT CALL DIRECTLY - called by Source
+    public static void resetStateImplAsync (final Request request) {
+        currentRequest.cancelCompleted(request);
     }
     
     //Package private methods needed by the Utilities accessor    
@@ -672,7 +684,7 @@ public class TaskProcessor {
      * Request for performing a task on given Source
      */
     //@ThreadSafe
-    private static class Request {
+    public static class Request {
         
         static final Request DUMMY = new Request ();
         
