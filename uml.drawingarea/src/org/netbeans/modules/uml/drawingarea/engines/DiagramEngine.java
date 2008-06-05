@@ -323,8 +323,9 @@ abstract public class DiagramEngine {
         JButton relButtion = new JButton (new DiscoverRelationshipAction(getScene()));
         JButton syncButton = new JButton (new SyncDiagramAction(getScene()));
         JButton exportImageButton = new JButton (new ExportImageAction(getScene()));
-        JButton orthogonalLayoutButton = new JButton (new OrthogonalLayoutAction(getScene()));
         JButton hierarchicalLayoutButton = new JButton (new HierarchicalLayoutAction(getScene()));
+        //Kris - out until layout is better
+        //JButton orthogonalLayoutButton = new JButton (new OrthogonalLayoutAction(getScene()));
         
         bar.add(new JToolBar.Separator());
         bar.add(selectToolButton);
@@ -339,9 +340,6 @@ abstract public class DiagramEngine {
         
         bar.add(new JToolBar.Separator());
         
-        bar.add(orthogonalLayoutButton) ;
-        bar.add(hierarchicalLayoutButton) ;
-        
         bar.add(new JToolBar.Separator());
         
         bar.add(exportImageButton);
@@ -354,6 +352,9 @@ abstract public class DiagramEngine {
         bar.add(moveToFront);
         bar.add(moveToBack);
         bar.add(new JToolBar.Separator());
+        
+        bar.add(hierarchicalLayoutButton) ;
+        //bar.add(orthogonalLayoutButton) ;
     }
     
     /**
