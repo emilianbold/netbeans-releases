@@ -199,12 +199,12 @@ public final class Source {
                         ((AbstractDocument) document).readUnlock ();
                 }
                 return new Snapshot (
-                    text, this, mimeType, new int[][] {new int[] {0, 0}}
+                    text, this, mimeType, new int[][] {new int[] {0, 0, text.length()}}
                 );
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace (ex);
                 return new Snapshot (
-                    "", this, mimeType, new int[][] {new int[] {0, 0}}
+                    "", this, mimeType, new int[][] {new int[] {0, 0, 0}}
                 );
             }
         }
@@ -219,12 +219,12 @@ public final class Source {
                 i = bufferedReader.read (charBuffer);
             }
             return new Snapshot (
-                sb.toString (), this, mimeType, new int[][] {new int[] {0, 0}}
+                sb.toString (), this, mimeType, new int[][] {new int[] {0, 0, sb.length()}}
             );
         } catch (IOException ex) {
             Exceptions.printStackTrace (ex);
             return new Snapshot (
-                "", this, mimeType, new int[][] {new int[] {0, 0}}
+                "", this, mimeType, new int[][] {new int[] {0, 0, 0}}
             );
         }
     }

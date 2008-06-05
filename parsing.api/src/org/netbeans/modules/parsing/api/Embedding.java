@@ -93,7 +93,7 @@ public final class Embedding {
             sb.append (snapshot.getText ());
             int[][] p = snapshot.positions;
             for (int i = 0; i < p.length; i++) {
-                positions.add (new int[] {p [i] [0] + offset, p [i] [1]});
+                positions.add (new int[] {p [i] [0] + offset, p [i] [1], p[i][2]});
             }
             offset +=snapshot.getText ().length ();
         }

@@ -94,7 +94,7 @@ public final class Snapshot {
             getText ().subSequence (offset, offset + length),
             source,
             mimeType,
-            new int[][] {new int[] {0, originalOffset}}
+            new int[][] {new int[] {0, originalOffset, length}}
         );
         return new Embedding (
             snapshot, 
@@ -152,24 +152,32 @@ public final class Snapshot {
     public int getOriginalOffset (
         int                 offset
     ) {
-	int low = 0;
-	int high = positions.length - 1;
-
-	while (low <= high) {
-	    int mid = (low + high) >> 1;
-	    int cmp = positions [mid] [0];
-            
-            if (cmp > offset) 
-		high = mid - 1;
-            else
-            if (mid == positions.length - 1 ||
-                positions [mid + 1] [0] > offset
-            )
-                return offset - positions [mid] [0] + positions [mid] [1];
-            else
-		low = mid + 1;
-	}
-	return -1;
+        //XXX: quick hack, should likely use binary search:
+        for (int[] p : positions) {
+            if (p[0] <= offset && offset <= p[0] + p[2]) {
+                return offset - p[0] + p[1];
+            }
+        }
+        
+        return -1;
+//	int low = 0;
+//	int high = positions.length - 1;
+//
+//	while (low <= high) {
+//	    int mid = (low + high) >> 1;
+//	    int cmp = positions [mid] [0];
+//            
+//            if (cmp > offset) 
+//		high = mid - 1;
+//            else
+//            if (mid == positions.length - 1 ||
+//                positions [mid + 1] [0] > offset
+//            )
+//                return offset - positions [mid] [0] + positions [mid] [1];
+//            else
+//		low = mid + 1;
+//	}
+//	return -1;
     }
     
     /**
@@ -185,27 +193,35 @@ public final class Snapshot {
     public int getEmbeddedOffset (
         int                 originalOffset
     ) {
-	int low = 0;
-	int high = positions.length - 1;
-
-	while (low <= high) {
-	    int mid = (low + high) >> 1;
-	    int cmp = positions [mid] [1];
-            
-            if (cmp > originalOffset) 
-		high = mid - 1;
-            else
-            if (mid == positions.length - 1 ||
-                positions [mid + 1] [1] > originalOffset
-            )
-                if (originalOffset < positions [mid + 1] [0] - positions [mid] [0] + positions [mid] [1])
-                    return originalOffset - positions [mid] [1] + positions [mid] [0];
-                else
-                    return -1;
-            else
-		low = mid + 1;
-	}
-	return -1;
+        //XXX: quick hack, should likely use binary search:
+        for (int[] p : positions) {
+            if (p[1] <= originalOffset && originalOffset <= p[1] + p[2]) {
+                return originalOffset - p[1] + p[0];
+            }
+        }
+        
+        return -1;
+//	int low = 0;
+//	int high = positions.length - 1;
+//
+//	while (low <= high) {
+//	    int mid = (low + high) >> 1;
+//	    int cmp = positions [mid] [1];
+//            
+//            if (cmp > originalOffset) 
+//		high = mid - 1;
+//            else
+//            if (mid == positions.length - 1 ||
+//                positions [mid + 1] [1] > originalOffset
+//            )
+//                if (originalOffset < positions [mid + 1] [0] - positions [mid] [0] + positions [mid] [1])
+//                    return originalOffset - positions [mid] [1] + positions [mid] [0];
+//                else
+//                    return -1;
+//            else
+//		low = mid + 1;
+//	}
+//	return -1;
     }
     
     /**
