@@ -171,4 +171,8 @@ public interface XslComponentFactory extends ComponentFactory<XslComponent> {
      */
     When createWhen();
     
+    /**
+     * @return instantiated "with-param" component.
+     */
+    WithParam createWithParam();
 }
