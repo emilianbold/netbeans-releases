@@ -43,7 +43,7 @@ public class BitSet implements Cloneable {
     }
 
     /** Construction from a static array of longs */
-    public BitSet(long[] bits_) {
+    public BitSet(long... bits_) {
         bits = bits_;
     }
 
