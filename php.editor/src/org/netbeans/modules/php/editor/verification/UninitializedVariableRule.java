@@ -47,6 +47,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.openide.util.NbBundle;
 
@@ -80,6 +81,8 @@ public class UninitializedVariableRule  extends PHPRule {
             }
         } else if (parent instanceof FunctionName){
             // this is just a method call, ignore it
+            return;
+        } else if (parent instanceof SingleFieldDeclaration){
             return;
         }
         
