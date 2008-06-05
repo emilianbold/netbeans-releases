@@ -42,4 +42,9 @@ made subject to such option by the copyright holder.
 -->
 <project basedir="." default="netbeans" name="websvc.wsitconf">
     <import file="../nbbuild/templates/projectized.xml"/>
+    
+    <target name="replacefiles">
+        <copy file="nbproject/project61.xml" tofile="nbproject/project.xml" />
+    </target>
+    
 </project>
