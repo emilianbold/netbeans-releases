@@ -886,12 +886,12 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     relationAnn = "OneToOne";  //NOI18N
                 }
                 
-                if (!role.isToMany()) { // meaning ManyToOne and OneToOne
-                    // Add optional=false if the relationship is not optional/non-nullable
-                    if(!role.isOptional()) {
+                if (!role.isToMany()) { // meaning ManyToOne or OneToOne
+                    // Add optional=false if the relationship is not optional/non-nullable 
+                    if(!role.isOptional() && (role.isMany() || role.equals(role.getParent().getRoleA())) ) {
                         annArguments.add(genUtils.createAnnotationArgument("optional", false)); // NOI18N
                     }
-                }
+                } 
                 annotations.add(genUtils.createAnnotation("javax.persistence." + relationAnn, annArguments)); // NOI18N
 
                 properties.add(new Property(Modifier.PRIVATE, annotations, fieldType, memberName));

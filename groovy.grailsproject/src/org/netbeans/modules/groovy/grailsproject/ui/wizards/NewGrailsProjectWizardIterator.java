@@ -109,7 +109,7 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
             builder.outProcessor(InputProcessors.bridge(new ProgressSnooper(handle, 100, 2)));
             // TODO refresh
             
-            ExecutionService service = new ExecutionService(callable, displayName, builder.create());
+            ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
             Task task = service.run();
             task.waitFinished();
         } finally {

@@ -393,8 +393,7 @@ public class SQLCloneableEditor extends CloneableEditor {
 
         public void showHistory() {
             // XXX under construction
-            SQLHistoryManager.getInstance();
-            SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc", "sql"));
+            
         }
     }
 }

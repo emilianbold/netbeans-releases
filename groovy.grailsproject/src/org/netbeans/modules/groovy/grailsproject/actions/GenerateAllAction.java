@@ -51,7 +51,7 @@ public final class GenerateAllAction extends NodeAction {
         builder.controllable(true).frontWindow(true).inputVisible(true).showProgress(true);
         builder.postExecution(new RefreshProjectRunnable(prj));
 
-        ExecutionService service = new ExecutionService(callable, displayName, builder.create());
+        ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
         service.run();
     }
 

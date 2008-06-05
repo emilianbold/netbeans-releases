@@ -67,6 +67,7 @@ public interface AST {
     /** Set the token type for this node */
     public void setType(int ttype);
 
+    @Override
     public String toString();
 
     public String toStringList();

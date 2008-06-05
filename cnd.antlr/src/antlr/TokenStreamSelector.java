@@ -5,11 +5,6 @@ package antlr;
  * Software rights: http://www.antlr.org/license.html
  */
 
-import java.util.Hashtable;
-
-import antlr.ASdebug.ASDebugStream;
-import antlr.ASdebug.IASDebugStream;
-import antlr.ASdebug.TokenOffsetInfo;
 import antlr.collections.Stack;
 import antlr.collections.impl.LList;
 

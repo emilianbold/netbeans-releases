@@ -76,12 +76,12 @@ made subject to such option by the copyright holder.
     <!-- Preprocessor categories -->
     <fontcolor name="preprocessor" foreColor="009B00"/>
     <fontcolor name="preprocessor-keyword-directive" default="preprocessor">
-        <font style="bold" />
+        <!--font style="bold" /-->
     </fontcolor>
     <fontcolor name="preprocessor-keyword" default="preprocessor-keyword-directive">
     </fontcolor>
     <fontcolor name="preprocessor-system-include-literal" default="string">
-        <font style="italic"/>
+        <!--font style="italic"/-->
     </fontcolor>
     <fontcolor name="preprocessor-user-include-literal" default="string">
     </fontcolor>

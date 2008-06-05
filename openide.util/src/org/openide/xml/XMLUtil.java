@@ -300,7 +300,7 @@ public final class XMLUtil extends Object {
      * @throws SAXException is thrown if a parser error occurs
      * @throws FactoryConfigurationError Application developers should never need to directly catch errors of this type.
      *
-     * @return document representing given input, or null if a parsing error occurs
+     * @return document representing given input
      */
     public static Document parse(
         InputSource input, boolean validate, boolean namespaceAware, ErrorHandler errorHandler,

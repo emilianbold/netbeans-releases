@@ -69,11 +69,13 @@ public class LLkParser extends Parser {
 		System.out.println("");
 	}
 
+    @Override
 	public void traceIn(String rname) {
 		traceDepth += 1;
 		trace("> ", rname);
 	}
 
+    @Override
 	public void traceOut(String rname) {
 		trace("< ", rname);
 		traceDepth -= 1;
