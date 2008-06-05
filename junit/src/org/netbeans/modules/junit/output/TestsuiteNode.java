@@ -154,7 +154,7 @@ final class TestsuiteNode extends AbstractNode {
         
         assert suiteName != null;
         
-        StringBuffer buf = new StringBuffer(60);
+        StringBuilder buf = new StringBuilder(60);
         if (suiteName != ResultDisplayHandler.ANONYMOUS_SUITE) {
             buf.append(suiteName);
             buf.append("&nbsp;&nbsp;");                                 //NOI18N
