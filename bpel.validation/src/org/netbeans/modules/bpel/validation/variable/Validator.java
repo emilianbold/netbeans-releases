@@ -98,8 +98,6 @@ public final class Validator extends BpelValidator {
   // # 94195
   @Override
   public void visit(VariableContainer container) {
-    if (true) return;// todo r
-
     Variable [] variables = container.getVariables();
 //out();
 //out("WE: " + container.getParent().getClass().getName());
@@ -124,16 +122,16 @@ public final class Validator extends BpelValidator {
       isUsed = info.isUsed();
       Variable variable = info.getVariable();
       String name = variable.getName();
-//todo a
+
       if ( !isInitialized && !isUsed) {
-//      addWarning("FIX_not_initialized_and_not_used", variable, name); // NOI18N
+        addWarning("FIX_not_initialized_and_not_used", variable, name); // NOI18N
       }
       else if ( !isInitialized && isUsed) {
-//      addError("FIX_not_initialized_but_used", variable, name); // NOI18N
+        addError("FIX_not_initialized_but_used", variable, name); // NOI18N
       }
-      else if (isInitialized && !isUsed) {
-//      addWarning("FIX_initialized_and_not_used", variable, name); // NOI18N
-      }
+//      else if (isInitialized && !isUsed) {
+//todo r        addWarning("FIX_initialized_and_not_used", variable, name); // NOI18N
+//      }
     }
   }
 
@@ -144,24 +142,15 @@ public final class Validator extends BpelValidator {
     Collection<BpelEntity> children = entity.getChildren();
 
     for (BpelEntity child : children) {
-//    if (child instanceof Scope) {
-//      continue;
-//    }
       findVariables(child, infos);
     }
   }
 
   private void checkInitialization(BpelEntity entity, List<VariableInfo> infos) {
-    if (isForInitialized(entity)) {
+    if (entity instanceof To || entity instanceof Receive || entity instanceof OnMessage) {
       checkInitializationVariableReference((VariableReference) entity, infos);
     }
-    if (entity instanceof Receive) {
-      checkInitializationVariableReference((Receive) entity, infos);
-    }
-    if (entity instanceof OnMessage) {
-      checkInitializationVariableReference((OnMessage) entity, infos);
-    }
-    if (entity instanceof ContentElement && !isForUsed(entity)) {
+    if (entity instanceof ContentElement && entity instanceof To) {
       checkInitializationContent((ContentElement) entity, infos);
     }
     if (entity instanceof Invoke) {
@@ -173,36 +162,23 @@ public final class Validator extends BpelValidator {
   }
 
   private void checkUsages(BpelEntity entity, List<VariableInfo> infos) {
-    if (isForUsed(entity)) {// todo here
+    if (entity instanceof From || entity instanceof Reply) {
       checkUsagesVariableReference((VariableReference) entity, infos);
     }
-    if (entity instanceof Receive) {
-      checkUsagesVariableReference((Receive) entity, infos);
-    }
-    if (entity instanceof OnMessage) {
-      checkUsagesVariableReference((OnMessage) entity, infos);
-    }
-    if (entity instanceof ContentElement && !isForInitialized(entity)) {
+    if (entity instanceof ContentElement && !(entity instanceof To)) {
       checkUsagesContent((ContentElement) entity, infos);
     }
     if (entity instanceof Invoke) {
       checkInfoVariableDeclaration(((Invoke) entity).getInputVariable(), infos, true);
-      checkInfoVariableDeclaration(((Invoke) entity).getOutputVariable(), infos, true);
     }
     if (entity instanceof Throw) {
       checkInfoVariableDeclaration(((Throw) entity).getFaultVariable(), infos, true);
     }
-  }
-
-  private boolean isForInitialized(BpelEntity entity) {
-    return entity instanceof To;
-  }
-
-  private boolean isForUsed(BpelEntity entity) {
-    return
-      entity instanceof From ||
-      entity instanceof OnEvent ||
-      entity instanceof Reply;
+    //!
+// todo r
+//    if (entity instanceof OnMessage) {
+//      checkUsagesVariableReference((VariableReference) entity, infos);
+//    }
   }
 
   private void checkInitializationContent(ContentElement content, List<VariableInfo> infos) {
