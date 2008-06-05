@@ -44,8 +44,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -82,7 +84,6 @@ import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeReader;
 import org.netbeans.modules.uml.drawingarea.persistence.data.ConnectorInfo;
 import org.netbeans.modules.uml.drawingarea.persistence.data.EdgeInfo;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
-import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.support.ProxyPresentationElement;
 import org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator.SQDDiagramEngineExtension;
 import org.netbeans.modules.uml.drawingarea.ui.trackbar.JTrackBar;
@@ -94,7 +95,6 @@ import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.windows.TopComponent;
 
 /**
  *
@@ -121,7 +121,7 @@ class DiagramLoader
     private Stack<String> prevGraphNodePEID = new Stack();
     
     private Stack edgeContainedStack = new Stack();
-    private Stack<Widget> widgetStack = new Stack();
+    private Stack/*<Widget>*/ widgetStack = new Stack();
     private final String CONTAINED = "CONTAINED";
     private EdgeInfo.EndDetails mostRecentEnd = null;
     private Point edgePosition = null;
@@ -129,6 +129,7 @@ class DiagramLoader
     private Hashtable<String, String> diagProperties = new Hashtable();
     private List<EdgeInfo> edgeInfoList = new ArrayList<EdgeInfo>();
     private boolean groupEdges = false;
+    private NodeInfo lastKnownGoodWidgetInfo = new NodeInfo();
 
     public DiagramLoader(String fileName, UMLDiagramTopComponent tc,
                          boolean groupEdges)
@@ -254,6 +255,12 @@ class DiagramLoader
             processGraphNode();
             return;
         }
+        if (reader.getName().getLocalPart().equalsIgnoreCase("GraphElement.dependencies"))
+        {
+            processDependencies();
+            return;
+        }
+
         if (reader.getName().getLocalPart().equalsIgnoreCase("GraphElement.anchorage"))
         {
             processAnchorage();
@@ -544,25 +551,6 @@ class DiagramLoader
                         nodeProperties = processProperties();
                         nodeInfo.setProperties(nodeProperties);
                     }
-                    else if (reader.getName().getLocalPart().equalsIgnoreCase("SimpleSemanticModelElement"))
-                    {
-                        String typeInfo = reader.getAttributeValue(null, "typeinfo");
-                        if (typeInfo.length() > 0)
-                        {
-                            NodeInfo.NodeLabel nLabel = new NodeInfo.NodeLabel();
-                            nLabel.setLabel(typeInfo);
-                            nLabel.setPosition(nodeInfo.getPosition());
-                            nLabel.setSize(nodeInfo.getSize());
-                            if (getParent() != null)
-                            {
-                                nodeInfo.getLabels().add(nLabel);
-                            }
-//                            else
-//                            {
-//                                mostRecentEnd.getEndEdgeLabels().add(eLabel);
-//                            }
-                        }
-                    }
                     else if (reader.getName().getLocalPart().equalsIgnoreCase("Uml2SemanticModelBridge.element"))
                     {
                         reader.nextTag();
@@ -622,9 +610,9 @@ class DiagramLoader
                 //
                 if (widget instanceof DiagramNodeReader)
                 {
-                    if (getParent() instanceof DiagramNodeReader)
+                    if (getParentWidget() instanceof DiagramNodeReader)
                     {
-                        DiagramNodeReader parent = (DiagramNodeReader) getParent();
+                        DiagramNodeReader parent = (DiagramNodeReader) getParentWidget();
                         parent.addContainedChild(widget);
                     }
 
@@ -634,6 +622,9 @@ class DiagramLoader
                     //add it to the widget stack to maintain hierarchy
                     widgetStack.pop();
                     widgetStack.push(widget);
+                    
+                    //store the nodeInfo obj for ref in dependencies
+                    lastKnownGoodWidgetInfo = nodeInfo;
 
                     //store this in a temp var until you come across anchorage
                     prevNonContainerModelElt.push(nodeInfo.getMEID()); //stored for anchorage ref
@@ -645,6 +636,8 @@ class DiagramLoader
             else
             {
                 System.out.println("  engine.createWidget is returning null.... ");
+                widgetStack.pop();
+                widgetStack.push(elt); //replace null with IElement
             }
         }
         catch (Exception e)
@@ -658,18 +651,38 @@ class DiagramLoader
         widgetStack.pop();
     }
 
-    private Widget getParent()
+    private Object getParent()
+    {
+        Object parent = null;
+        if (!widgetStack.empty())
+        {
+            //search the stack to see if a widget is found
+//            for (Iterator<Object> it = widgetStack.iterator(); it.hasNext();)
+            for (int i=widgetStack.size()-1; i>=0; i--)
+            {
+//                Object obj = it.next();
+                Object obj = widgetStack.get(i);
+                if (obj != null)
+                {
+                    parent = obj;
+                    break;
+                }
+            }
+        }
+        return parent;
+    }
+    private Widget getParentWidget()
     {
         Widget parent = null;
         if (!widgetStack.empty())
         {
             //search the stack to see if a widget is found
-            for (Iterator<Widget> it = widgetStack.iterator(); it.hasNext();)
+            for (Iterator<Object> it = widgetStack.iterator(); it.hasNext();)
             {
-                Widget widget = it.next();
-                if (widget != null)
+                Object obj = it.next();
+                if (obj != null && obj instanceof Widget)
                 {
-                    parent = widget;
+                    parent = (Widget)obj;
                     break;
                 }
             }
@@ -762,6 +775,82 @@ class DiagramLoader
             Exceptions.printStackTrace(ex);
         }
     }
+        
+    private void processDependencies()
+    {
+        try
+        {
+            Point position = null;
+            Dimension size = null;
+            String peid = reader.getAttributeValue(null, "xmi.id");
+            Object parent = getParent();
+            if (parent == null)
+                return;
+            while (reader.hasNext())
+            {
+                if (XMLStreamConstants.START_ELEMENT == reader.next())
+                {
+                    //we are only intersted in data of particular start elements
+                    if (reader.getName().getLocalPart().equalsIgnoreCase("GraphElement.position"))
+                    {
+                        position = getPosition("GraphElement.position");
+                    } 
+                    else if (reader.getName().getLocalPart().equalsIgnoreCase("GraphNode.size"))
+                    {
+                        size = getSize();
+                    } 
+                    else if (reader.getName().getLocalPart().equalsIgnoreCase("DiagramElement.property"))
+                    {
+                    } 
+                    else if (reader.getName().getLocalPart().equalsIgnoreCase("SimpleSemanticModelElement"))
+                    {
+                        String typeInfo = reader.getAttributeValue(null, "typeinfo");
+                        if (typeInfo.length() > 0)
+                        {
+                            NodeInfo.NodeLabel nLabel = new NodeInfo.NodeLabel();
+                            nLabel.setLabel(typeInfo);
+                            nLabel.setPosition(position);
+                            nLabel.setSize(size);               
+                            nLabel.setPEID(peid);
+                            if (parent != null)
+                            {
+                                nLabel.setDependentNode(parent);
+                                lastKnownGoodWidgetInfo.addNodeLabel(nLabel);
+                            }
+                        }
+                    }                     
+                }                   
+                else if (reader.isEndElement() && reader.getName().getLocalPart().equalsIgnoreCase("GraphNode"))
+                {
+                    position = null; size = null; peid = null;
+//                    break;
+                }
+                else if (reader.isEndElement() && reader.getName().getLocalPart().equalsIgnoreCase("GraphElement.dependencies"))
+                {
+                    //we are done with nodelabels..
+                    Widget parentWidget = getParentWidget();
+                    if ( parentWidget instanceof DiagramNodeReader)
+                    {
+                        //flush all node labels
+                        ((DiagramNodeReader)parentWidget).loadDependencies(lastKnownGoodWidgetInfo); 
+                        //now clear all previous nodelabels
+                        lastKnownGoodWidgetInfo.clearNodeLabels();
+                    }
+                    return;
+                }
+                else if (reader.isEndElement() && reader.getName().getLocalPart().equalsIgnoreCase("GraphElement.contained"))
+                {
+                    //this should never happen.. if it does.. just be safe
+                    return;
+                }
+            }
+        }
+        catch (XMLStreamException ex)
+        {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
 
     //Graph Edge handling..
     private void processGraphEdge()

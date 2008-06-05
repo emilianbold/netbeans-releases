@@ -77,15 +77,15 @@ public class InteractionOperandConstraintWidget extends FeatureWidget implements
     
     
     
-    @Override
-    public void save(NodeWriter nodeWriter) {
-        nodeWriter = PersistenceUtil.populateNodeWriter(nodeWriter, this);
-        nodeWriter.setTypeInfo("InteractionOperandConstraintWidget");
-        nodeWriter.setHasPositionSize(true);        
-        PersistenceUtil.populateProperties(nodeWriter, this);
-        nodeWriter.beginGraphNode();
-        nodeWriter.endGraphNode();
-    }
+//    @Override
+//    public void save(NodeWriter nodeWriter) {
+//        nodeWriter = PersistenceUtil.populateNodeWriter(nodeWriter, this);
+//        nodeWriter.setTypeInfo("InteractionOperandConstraintWidget");
+//        nodeWriter.setHasPositionSize(true);        
+//        PersistenceUtil.populateProperties(nodeWriter, this);
+//        nodeWriter.beginGraphNode();
+//        nodeWriter.endGraphNode();
+//    }
 
     public void propertyChange(PropertyChangeEvent evt) {
         updateUI();
