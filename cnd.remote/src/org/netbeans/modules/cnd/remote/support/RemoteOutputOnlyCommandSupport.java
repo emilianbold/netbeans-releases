@@ -37,50 +37,72 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.execution;
+package org.netbeans.modules.cnd.remote.support;
 
-import java.io.File;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSchException;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Reader;
-import org.netbeans.modules.cnd.api.execution.NativeExecution;
-import org.netbeans.modules.cnd.remote.support.RemoteOutputOnlyCommandSupport;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import org.openide.util.Exceptions;
 
 /**
- * This implementation of NativeExecution provides execution on a remote server.
  *
  * @author gordonp
  */
-public class RemoteNativeExecution extends NativeExecution {
-    
-    /**
-     * Execute an executable, a makefile, or a script
-     * @param runDir absolute path to directory from where the command should be executed
-     * @param executable absolute or relative path to executable, makefile, or script
-     * @param arguments space separated list of arguments
-     * @param envp environment variables (name-value pairs of the form ABC=123)
-     * @param out Output
-     * @param io Input
-     * @param parseOutput true if output should be parsed for compiler errors
-     * @return completion code
-     */
-    public int executeCommand(
-            File runDirFile,
-            String executable,
-            String arguments,
-            String[] envp,
-            PrintWriter out,
-            Reader in) throws IOException, InterruptedException {
-        String host = System.getProperty("cnd.remote.server");
-        String user = System.getProperty("user.name");
-        if (host != null && host.length() > 0) {
-            RemoteOutputOnlyCommandSupport support = new RemoteOutputOnlyCommandSupport(host, user);
-            out.print(support.toString());
+public class RemoteOutputOnlyCommandSupport extends RemoteConnectionSupport {
+        
+    private BufferedReader in;
+    private StringWriter out;
+
+    public RemoteOutputOnlyCommandSupport(String host, String user) {
+        super(host, user);
+                
+        try {
+            InputStream is = channel.getInputStream();
+            in = new BufferedReader(new InputStreamReader(is));
+            out = new StringWriter();
+            
+            while (is.available() > 0) {
+                String line = in.readLine();
+                if (line != null) {
+                    out.write(line);
+                    out.flush();
+                }
+            }
+            in.close();
+            is.close();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        return 0;
+
     }
     
-    public void stop() {
+    public String toString() {
+        if (out != null) {
+            return out.toString();
+        } else {
+            return "";
+        }
+    }
+
+    @Override
+    protected Channel createChannel() throws JSchException {
+        ChannelExec echannel = (ChannelExec) session.openChannel("exec");
+        String cmd = System.getProperty("cnd.remote.program");
+        
+        if (cmd == null) {
+            cmd = "/home/gordonp/.netbeans/rddev/cnd.remote/scripts/hello.sh";
+        }
+        
+        echannel.setCommand(cmd);
+        echannel.setInputStream(null);
+        echannel.setErrStream(System.err);
+        return echannel;
+
     }
 
 }

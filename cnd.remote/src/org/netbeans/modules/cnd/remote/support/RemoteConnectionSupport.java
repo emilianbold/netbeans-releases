@@ -37,50 +37,47 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.execution;
+package org.netbeans.modules.cnd.remote.support;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Reader;
-import org.netbeans.modules.cnd.api.execution.NativeExecution;
-import org.netbeans.modules.cnd.remote.support.RemoteOutputOnlyCommandSupport;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.UserInfo;
 
 /**
- * This implementation of NativeExecution provides execution on a remote server.
  *
  * @author gordonp
  */
-public class RemoteNativeExecution extends NativeExecution {
+public abstract class RemoteConnectionSupport {
     
-    /**
-     * Execute an executable, a makefile, or a script
-     * @param runDir absolute path to directory from where the command should be executed
-     * @param executable absolute or relative path to executable, makefile, or script
-     * @param arguments space separated list of arguments
-     * @param envp environment variables (name-value pairs of the form ABC=123)
-     * @param out Output
-     * @param io Input
-     * @param parseOutput true if output should be parsed for compiler errors
-     * @return completion code
-     */
-    public int executeCommand(
-            File runDirFile,
-            String executable,
-            String arguments,
-            String[] envp,
-            PrintWriter out,
-            Reader in) throws IOException, InterruptedException {
-        String host = System.getProperty("cnd.remote.server");
-        String user = System.getProperty("user.name");
-        if (host != null && host.length() > 0) {
-            RemoteOutputOnlyCommandSupport support = new RemoteOutputOnlyCommandSupport(host, user);
-            out.print(support.toString());
+    private JSch jsch;
+    protected Session session;
+    protected Channel channel;
+    
+    public RemoteConnectionSupport(String host, String user) {
+        assert host != null && user != null;
+        
+        try {
+            jsch = new JSch();
+            jsch.setKnownHosts(System.getProperty("user.home") + "/.ssh/known_hosts");
+            session = jsch.getSession(user, host, 22);
+
+            UserInfo ui = RemoteUserInfo.getUserInfo(host, user);
+            session.setUserInfo(ui);
+            session.connect();
+            channel = createChannel();
+            channel.connect();
+        } catch (JSchException jsce) {
+            System.err.println("RPB<Init>: Got JSchException [" + jsce.getMessage() + "]");
         }
-        return 0;
     }
     
-    public void stop() {
+    protected abstract Channel createChannel() throws JSchException;
+    
+    protected void disconnect() {
+        channel.disconnect();
+        session.disconnect();
     }
 
 }

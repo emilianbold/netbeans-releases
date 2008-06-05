@@ -64,8 +64,7 @@ public class RemoteNativeExecutionProvider implements NativeExecutionProvider {
      *  eqivalent with some cnd.makeproject API).
      */
     private static boolean isRemote() {
-//        Project project = getCurrentProject();
-//        return project.isCndProject() && project.isRemote();
-        return true;
+        boolean remote = Boolean.getBoolean("cnd.remote.enabled");
+        return remote;
     }
 }
