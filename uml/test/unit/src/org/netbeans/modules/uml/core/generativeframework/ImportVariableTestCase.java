@@ -44,18 +44,14 @@ package org.netbeans.modules.uml.core.generativeframework;
 
 import java.io.File;
 
-import org.dom4j.DocumentFactory;
-import org.dom4j.Node;
 
 import org.netbeans.modules.uml.core.AbstractUMLTestCase;
 import org.netbeans.modules.uml.core.ModuleUnitTestSuiteBuilder;
-import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface;
 import org.netbeans.modules.uml.core.support.umlsupport.INamedCollection;
 import org.netbeans.modules.uml.core.support.umlsupport.NamedCollection;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.products.ad.diagramengines.actions.OrthogonalLayoutAction;
 
 /**
  * @author aztec
