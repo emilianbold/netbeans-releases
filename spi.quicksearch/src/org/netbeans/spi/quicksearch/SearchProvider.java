@@ -43,18 +43,20 @@ package org.netbeans.spi.quicksearch;
 import org.openide.util.Lookup;
 
 /**
- * Search Provider, implement to provide new group of results for quick search.
+ * Main interface of Quick Search API. Implement this interface
+ * to provide new group of results for quick search.
  * 
- * In order to plug into quick search UI, implementations of SearchProvider
- * must be registered through xml layer in following way:
+ * In order to plug into Quick Search UI and show quick search results for your
+ * providers, implementations of SearchProvider must be registered through xml
+ * layer in following way:
  * 
  * <pre>
- *  <folder name="QuickSearch">
- *      <folder name="MyCategoryID">
- *          <file name="org-netbeans-mymodule-mypackage-MySearchProviderImpl.instance"/>
- *          <attr name="position" intvalue="500"/>
- *      </folder>
- *  </folder>
+ *  &lt;folder name="QuickSearch"&gt;
+ *      &lt;folder name="MyCategoryID"&gt;
+ *          &lt;file name="org-netbeans-mymodule-mypackage-MySearchProviderImpl.instance"/&gt;
+ *          &lt;attr name="position" intvalue="500"/&gt;
+ *      &lt;/folder&gt;
+ *  &lt;/folder&gt;
  * </pre>
  * 
  * @author  Jan Becicka, Dafe Simonek
@@ -62,7 +64,8 @@ import org.openide.util.Lookup;
 public interface SearchProvider {
     
     /**
-     * Evaluates given request and fills response object with apropriate results.
+     * Method is called by infrastructure when search operation was requested.
+     * Implementors should evaluate given request and fill response object with apropriate results.
      * 
      * Typical implementation would look like follows:
      * 
@@ -89,9 +92,10 @@ public interface SearchProvider {
     public void evaluate (SearchRequest request, SearchResponse response);
     
     /**
-     * Returns lookup content of this provider.
+     * Method is called by infrastructure during search operation.
      * 
-     * Implementors should return Lookup instance that contains instances of:
+     * Implementors should return <a href="@org-openide-util@/org/openide/util/Lookup.html">Lookup</a>
+     * instance that contains instances of:<p></p>
      * 
      * <ul>
      * <li><b>CategoryDescription:</b> Description of visual category of 
