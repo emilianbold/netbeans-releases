@@ -40,8 +40,15 @@
 package org.netbeans.modules.xslt.core.text.completion;
 
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
@@ -52,6 +59,7 @@ import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xslt.core.XSLTDataLoader;
 import org.netbeans.modules.xslt.model.XslComponent;
+import org.netbeans.modules.xslt.model.XslModel;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -61,24 +69,91 @@ public class XSLTCompletionModelProvider extends CompletionModelProvider {
     private static final String 
         STYLESHEET_ELEMENT_NAME = "stylesheet", // NOI18N
         RESOURCES_DIR = "resources",
+        XSLT_VERSION_1_0 = "1.0", // NOI18N
+        XSLT_VERSION_1_1 = "1.1", // NOI18N
+        XSLT_VERSION_2_0 = "2.0", // NOI18N
         FILE_XSLT_1_0_SCHEMA = "xslt_1_0.xsd", // NOI18N
         FILE_XSLT_1_1_SCHEMA = "xslt_1_1.xsd", // NOI18N
         FILE_XSLT_2_0_SCHEMA = "xslt_2_0.xsd"; // NOI18N
-    public List<CompletionModel> getModels(CompletionContext context) {
-        // Fix for IZ#  93505
-        if (! isXsltFile(context)) return null;
+    
+    private static Set<String> setSupportedXsltVersions = new HashSet<String>(
+        Arrays.asList(new String[] {XSLT_VERSION_1_0, XSLT_VERSION_1_1, XSLT_VERSION_2_0}));
+    
+    private static Map<String, String>
+        // key - String:XSLT_version, value - String:XSLT_Schema__File_Name
+        mapXsltSchemaFileNames = new HashMap<String, String>(3);
+    
+    private static Map<String, SchemaModel> 
+        // key - String:XSLT_version, value - SchemaModel:XSLT_Schema_Model
+        mapXsltSchemaModels = new HashMap<String, SchemaModel>(3);
+    
+    private static Map<SchemaModel, CompletionModel> 
+        // key - SchemaModel:XSLT_Schema_Model, value - CompletionModel:Completion_Model
+        mapCompletionModels = new HashMap<SchemaModel, CompletionModel>(3);
         
-        CompletionModel complModel = getCompletionModel();
-        return  Collections.singletonList(complModel);
+    static {
+        mapXsltSchemaFileNames.put(XSLT_VERSION_1_0, FILE_XSLT_1_0_SCHEMA);
+        mapXsltSchemaFileNames.put(XSLT_VERSION_1_1, FILE_XSLT_1_1_SCHEMA);
+        mapXsltSchemaFileNames.put(XSLT_VERSION_2_0, FILE_XSLT_2_0_SCHEMA);
+    }
+    
+    public List<CompletionModel> getModels(CompletionContext context) {
+        if (! isXsltFile(context)) return null; // fix for IZ bug #93505
+        
+        CompletionModel completionModel = getCompletionModel();
+        return (completionModel == null ? Collections.EMPTY_LIST :
+            Collections.singletonList(completionModel));
     }
 
-    public static CompletionModel getCompletionModel() {
-        SchemaModel model = createMetaSchemaModel();
-        if (model == null) {
+    public CompletionModel getCompletionModel() {
+        SchemaModel xsltSchemaModel = getXSLTSchemaModel();
+        if (xsltSchemaModel == null) {
             return null;
         }
-        CompletionModel completionModel = new XSLTCompletionModelImpl(model);
+        CompletionModel completionModel = mapCompletionModels.get(xsltSchemaModel);
+        if (completionModel == null) {
+            completionModel = new XSLTCompletionModelImpl(xsltSchemaModel);
+            mapCompletionModels.put(xsltSchemaModel, completionModel);
+        }
         return completionModel;
+    }
+
+    private SchemaModel getXSLTSchemaModel() {
+        InputStream inputStream = null;
+        try {
+            Document document = XSLTCompletionUtil.getXsltDataEditorSupport().getDocument();
+            XslModel xslModel = XSLTCompletionUtil.getXslModel(document);
+            String xsltVersion = xslModel.getStylesheet().getVersion().toString().trim();
+            if (! setSupportedXsltVersions.contains(xsltVersion)) {
+                throw new IllegalXsltVersionException(xsltVersion);
+            }
+            SchemaModel xsltSchemaModel = mapXsltSchemaModels.get(xsltVersion);
+            if (xsltSchemaModel == null) { 
+                String xsltSchemaFileName = mapXsltSchemaFileNames.get(xsltVersion);
+                String resourcePath = RESOURCES_DIR + "/" + xsltSchemaFileName;
+
+                inputStream = XSLTDataLoader.class.getResourceAsStream(resourcePath);
+
+                Document doc = AbstractDocumentModel.getAccessProvider().loadSwingDocument(inputStream);
+                ModelSource modelSource = new ModelSource(Lookups.singleton(doc), false);
+                xsltSchemaModel = SchemaModelFactory.getDefault().createFreshModel(
+                    modelSource);
+                mapXsltSchemaModels.put(xsltVersion, xsltSchemaModel);
+            }
+            xsltSchemaModel.sync();
+            return xsltSchemaModel;
+        }
+        catch (IllegalXsltVersionException ixve) {
+            Logger.getLogger(XSLTCompletionModelProvider.class.getName()).log(
+                Level.WARNING, ixve.getMessage(), ixve);
+            return null;
+        } catch (Exception ex) {
+            return null;
+        } finally {
+            if (inputStream != null) {
+                try { inputStream.close();} catch(Exception e) {}
+            }
+        }
     }
     
     private boolean isXsltFile(CompletionContext context) {
@@ -95,30 +170,5 @@ public class XSLTCompletionModelProvider extends CompletionModelProvider {
         String fileExt = context.getPrimaryFile().getExt();
         return (XSLTDataLoader.PRIMARY_EXTENSION.equals(fileExt)) || 
                (XSLTDataLoader.PRIMARY_EXTENSION2.equals(fileExt));
-    }
-
-    private static SchemaModel createMetaSchemaModel() {
-        InputStream inputStream = null;
-        try {
-//********????????? String resourcePath = RESOURCES_DIR + "/" + FILE_XSLT_1_0_SCHEMA;
-String resourcePath = RESOURCES_DIR + "/" + FILE_XSLT_2_0_SCHEMA;
-            
-            inputStream = XSLTDataLoader.class.getResourceAsStream(
-                resourcePath);
-
-            Document doc = AbstractDocumentModel.getAccessProvider().loadSwingDocument(inputStream);
-            ModelSource modelSource = new ModelSource(Lookups.singleton(doc), false);
-            SchemaModel schemaModel = SchemaModelFactory.getDefault().createFreshModel(
-                modelSource);
-            schemaModel.sync();
-            return schemaModel;
-        }
-        catch (Exception ex) {
-            return null;
-        } finally {
-            if (inputStream != null) {
-                try { inputStream.close();} catch(Exception e) {}
-            }
-        }
     }
 }
