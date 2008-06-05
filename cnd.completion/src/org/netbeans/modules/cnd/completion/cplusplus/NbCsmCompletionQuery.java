@@ -291,7 +291,7 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
         }
 
         public TemplateParameterResultItem createTemplateParameterResultItem(CsmTemplateParameter par) {
-            return new NbCsmResultItem.TemplateParameterResultItem(par, LOCAL_VAR_PRIORITY);
+            return new NbCsmResultItem.TemplateParameterResultItem(par, CLASS_ENUMERATOR_PRIORITY);
         }
     }
 }

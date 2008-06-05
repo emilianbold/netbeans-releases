@@ -50,7 +50,7 @@ import org.netbeans.jemmy.operators.JDialogOperator;
 public class ParametersPanelOperator extends JDialogOperator {
 
     public ParametersPanelOperator(String name) {
-        super(java.util.ResourceBundle.getBundle("org.netbeans.modules.refactoring.spi.impl.Bundle").getString("LBL_FindUsagesDialog"));
+        super(name);
     }
     
     private JButtonOperator back;

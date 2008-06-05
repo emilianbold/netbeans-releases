@@ -65,6 +65,7 @@ import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.XMLUtils;
+import org.netbeans.installer.utils.cli.CLIHandler;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.EngineResources;
 import org.netbeans.installer.utils.helper.ExtendedUri;
@@ -213,6 +214,12 @@ public class CreateBundleAction extends WizardAction {
             StreamUtils.transferData(
                     ResourceUtils.getResource(EngineResources.ENGINE_CONTENTS_LIST),
                     output);
+            InputStream commands = ResourceUtils.getResource(CLIHandler.COMMANDS_LIST);
+            if (commands != null) {
+                //transfer engine commands list
+                output.putNextEntry(new JarEntry(CLIHandler.COMMANDS_LIST));
+                StreamUtils.transferData(commands, output);
+            }
             
             // load default engine properties and set all components to be installed by default
             String [] contents = StringUtils.splitByLines(

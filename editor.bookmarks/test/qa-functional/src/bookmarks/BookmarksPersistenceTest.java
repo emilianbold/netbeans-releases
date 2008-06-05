@@ -44,8 +44,11 @@ package bookmarks;
 import java.awt.event.KeyEvent;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
+import org.netbeans.junit.NbModuleSuite.Configuration;
 import org.netbeans.lib.editor.bookmarks.api.BookmarkList;
 
 /**
@@ -223,4 +226,12 @@ public class BookmarksPersistenceTest extends EditorBookmarksTestCase {
         Element root = doc.getDefaultRootElement();
         return root.getElementIndex(offset);
     }
+    
+    public static Test suite() {      
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(BookmarksPersistenceTest.class).enableModules(".*").clusters(".*")
+        );
+     }
+    
+    
 }

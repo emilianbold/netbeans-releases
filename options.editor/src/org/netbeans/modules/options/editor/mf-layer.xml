@@ -108,6 +108,13 @@ made subject to such option by the copyright holder.
                 <file name="expand-all-scripting-folds"/>
                 <file name="expand-fold"/>
             </folder>
+            <folder name="Refactor">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
+                <file name="introduce-method"/>
+                <file name="introduce-field"/>
+                <file name="introduce-variable"/>
+                <file name="introduce-constant"/>
+            </folder>
 
 <!--            <folder name="Hidden">
                 <file name="Add.shadow">
