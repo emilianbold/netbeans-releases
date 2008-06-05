@@ -18,7 +18,9 @@
  */
 package org.netbeans.modules.xslt.model.impl;
 
+import org.netbeans.modules.xslt.model.ApplyTemplates;
 import org.netbeans.modules.xslt.model.Attribute;
+import org.netbeans.modules.xslt.model.CallTemplate;
 import org.netbeans.modules.xslt.model.Choose;
 import org.netbeans.modules.xslt.model.Document;
 import org.netbeans.modules.xslt.model.ForEach;
@@ -36,6 +38,7 @@ import org.netbeans.modules.xslt.model.Template;
 import org.netbeans.modules.xslt.model.ValueOf;
 import org.netbeans.modules.xslt.model.Variable;
 import org.netbeans.modules.xslt.model.When;
+import org.netbeans.modules.xslt.model.WithParam;
 import org.netbeans.modules.xslt.model.XslComponent;
 import org.netbeans.modules.xslt.model.XslVisitorAdapter;
 import org.w3c.dom.Element;
@@ -188,6 +191,7 @@ class XslComponentsBuildVisitor extends XslVisitorAdapter {
         visitSequenceConstructor( when );
     }
     
+    @Override
     public void visit( Choose choose ) {
         if ( isAcceptable( XslElements.WHEN )) {
             setResult( new WhenImpl( getModel() , getElement() ) );
@@ -197,6 +201,23 @@ class XslComponentsBuildVisitor extends XslVisitorAdapter {
         }
     }
     
+    @Override
+    public void visit( CallTemplate callTemplate ) {
+        if ( isAcceptable( XslElements.WHITH_PARAM )) {
+            setResult( new WithParamImpl( getModel() , getElement() ) );
+        }
+    }
+
+    @Override
+    public void visit( ApplyTemplates applyTemplates ) {
+        if ( isAcceptable( XslElements.WHITH_PARAM )) {
+            setResult( new WithParamImpl( getModel() , getElement() ) );
+        }
+        else if ( isAcceptable( XslElements.SORT )) {
+            setResult( new SortImpl( getModel() , getElement() ) );
+        }
+    }
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.xslt.model.XslVisitorAdapter#visit(org.netbeans.modules.xslt.model.LiteralResultElement)
      */

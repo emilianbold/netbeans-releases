@@ -5,7 +5,6 @@ package antlr;
  * Software rights: http://www.antlr.org/license.html
  */
 
-import java.util.Hashtable;
 import java.util.Enumeration;
 
 import antlr.collections.impl.Vector;

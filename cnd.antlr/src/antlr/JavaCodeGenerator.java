@@ -3671,16 +3671,27 @@ public class JavaCodeGenerator extends CodeGenerator {
                 println("switch(type) {");
                 tabs++;
 	        // Walk the token vocabulary and generate puts.
+                        String previousType = null;
 			Vector v = grammar.tokenManager.getVocabulary();
 			for (int i = 0; i < v.size(); i++) {
 				String s = (String)v.elementAt(i);
 				if (s != null) {
 					TokenSymbol ts = grammar.tokenManager.getTokenSymbol(s);
-					if (ts != null && ts.getASTNodeType() != null) {
-						println("case " + ts.getTokenType() +" : return new "+ ts.getASTNodeType() + "();");
-					}
+                                        if (ts != null) {
+                                            String currentType = ts.getASTNodeType();
+                                            if (currentType != null) {
+                                                if (!currentType.equals(previousType) && previousType != null) {
+                                                    println("\treturn new "+ previousType + "();");
+                                                }
+                                                println("case " + ts.getTokenType() +" : ");
+                                                previousType =currentType;
+                                            }
+                                        }
 				}
 			}
+                        if (previousType != null) {
+                            println("\treturn new "+ previousType + "();");
+                        }
                 tabs--;
                 println("}");
                 //println("assert(true) : \"AST token type not found\";");

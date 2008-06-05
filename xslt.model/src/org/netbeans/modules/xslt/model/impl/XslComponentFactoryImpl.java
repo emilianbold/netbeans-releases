@@ -47,6 +47,7 @@ import org.netbeans.modules.xslt.model.Text;
 import org.netbeans.modules.xslt.model.ValueOf;
 import org.netbeans.modules.xslt.model.Variable;
 import org.netbeans.modules.xslt.model.When;
+import org.netbeans.modules.xslt.model.WithParam;
 import org.netbeans.modules.xslt.model.XslComponent;
 import org.netbeans.modules.xslt.model.XslComponentFactory;
 
@@ -253,6 +254,13 @@ class XslComponentFactoryImpl implements XslComponentFactory {
      */
     public When createWhen() {
         return new WhenImpl( getModel() );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.xslt.model.XslComponentFactory#createWithParam()
+     */
+    public WithParam createWithParam() {
+        return new WithParamImpl( getModel() );
     }
 
     /* (non-Javadoc)

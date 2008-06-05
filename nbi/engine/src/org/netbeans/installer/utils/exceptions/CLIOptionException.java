@@ -40,12 +40,12 @@ package org.netbeans.installer.utils.exceptions;
  *
  * @author Dmitry Lipin
  */
-public class CLIArgumentException extends Exception{
+public class CLIOptionException extends Exception{
 /**
      * 
      * @param message 
      */
-    public CLIArgumentException(String message) {
+    public CLIOptionException(String message) {
         super(message);
     }
     
@@ -54,7 +54,7 @@ public class CLIArgumentException extends Exception{
      * @param message 
      * @param cause 
      */
-    public CLIArgumentException(String message, Throwable cause) {
+    public CLIOptionException(String message, Throwable cause) {
         super(message, cause);
     }
 }

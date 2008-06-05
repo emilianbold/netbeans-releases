@@ -5,13 +5,8 @@ package antlr.collections.impl;
  * Software rights: http://www.antlr.org/license.html
  */
 
-import antlr.collections.List;
-import antlr.collections.Stack;
-
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
-
-import antlr.collections.impl.LLCell;
 
 /**An enumeration of a LList.  Maintains a cursor through the list.
  * bad things would happen if the list changed via another thread
