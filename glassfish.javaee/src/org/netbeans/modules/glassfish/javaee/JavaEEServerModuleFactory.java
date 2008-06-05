@@ -178,10 +178,14 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                     libraryList.add(ServerUtilities.fileToUrl(f));
                 }
                 
+                List<URL> docList = new ArrayList<URL>();
                 File j2eeDoc = InstalledFileLocator.getDefault().locate(
                         "docs/" + PERSISTENCE_JAVADOC, null, false); // NOI18N
-                List<URL> docList = new ArrayList<URL>();
-                docList.add(ServerUtilities.fileToUrl(j2eeDoc));
+                if(j2eeDoc != null) {
+                    docList.add(ServerUtilities.fileToUrl(j2eeDoc));
+                } else {
+                    Logger.getLogger("glassfish-javaee").log(Level.WARNING, "Warning: Java EE documentation not found when registering EclipseLink library.");
+                }
 
                 Map<String, List<URL>> contents = new HashMap<String, List<URL>>();
                 contents.put(CLASSPATH_VOLUME, libraryList);
