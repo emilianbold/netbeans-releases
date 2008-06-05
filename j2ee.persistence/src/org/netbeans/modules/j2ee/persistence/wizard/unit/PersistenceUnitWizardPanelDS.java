@@ -150,10 +150,6 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         return unitNameTextField.getText();
     }
     
-    public Library getPersistenceLibrary() {
-        return PersistenceLibrarySupport.getLibrary((Provider) providerCombo.getSelectedItem());
-    }
-    
     public String getDatasource() {
         return ((JTextComponent)dsCombo.getEditor().getEditorComponent()).getText();
     }

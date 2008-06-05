@@ -162,10 +162,6 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
         return panel.getPersistenceUnitName();
     }
     
-    Library getPersistenceLibrary() {
-        return panel.getPersistenceLibrary();
-    }
-    
     DatabaseConnection getPersistenceConnection() {
         return jdbcPanel == null ? null : jdbcPanel.getPersistenceConnection();
     }
