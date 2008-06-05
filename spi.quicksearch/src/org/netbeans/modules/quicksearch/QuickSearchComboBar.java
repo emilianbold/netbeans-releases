@@ -275,7 +275,6 @@ private void commandFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_
     
     static Color getCategoryTextColor () {
         Color shadow = UIManager.getColor("textInactiveText");
-        System.out.println("Inactive text color: " + shadow);        
         return shadow != null ? shadow : Color.DARK_GRAY;
     }
     

@@ -77,7 +77,7 @@ public class ActionsSearchProvider implements SearchProvider, CategoryDescriptio
     
     public void evaluate(SearchRequest request, SearchResponse response) {
         for (ShortcutAction a : getActions()) {
-            if (a.getDisplayName().toLowerCase().indexOf(request.getText()) != -1) {
+            if (a.getDisplayName().toLowerCase().indexOf(request.getText().toLowerCase()) != -1) {
                 if (!response.addResult(new ActionResult(a), a.getDisplayName())) {
                     break;
                 }
