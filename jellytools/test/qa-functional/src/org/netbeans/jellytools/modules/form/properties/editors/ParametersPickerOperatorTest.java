@@ -40,6 +40,7 @@
  */
 package org.netbeans.jellytools.modules.form.properties.editors;
 
+import java.io.IOException;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
@@ -65,6 +66,7 @@ public class ParametersPickerOperatorTest extends FormPropertiesEditorsTestCase 
      * @return  created suite
      */
     public static NbTestSuite suite() {
+        /*
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new ParametersPickerOperatorTest("testLblGetParameterFrom"));
         suite.addTest(new ParametersPickerOperatorTest("testRbComponent"));
@@ -84,10 +86,29 @@ public class ParametersPickerOperatorTest extends FormPropertiesEditorsTestCase 
         suite.addTest(new ParametersPickerOperatorTest("testSelectMethod"));
         suite.addTest(new ParametersPickerOperatorTest("testClose"));
         return suite;
+         */
+        return (NbTestSuite) createModuleTest(NbTestSuite.class,
+        "testLblGetParameterFrom",
+        "testRbComponent",
+        "testCboComponent",
+        "testRbProperty",
+        "testTxtProperty",
+        "testBtSelectProperty",
+        "testRbMethodCall",
+        "testTxtMethodCall",
+        "testBtSelectMethod",
+        // Component radion button is disabled in sample JFrame
+        //"testComponent",
+        //"testSetComponent",
+        "testProperty",
+        "testSelectProperty",
+        "testMethodCall",
+        "testSelectMethod",
+        "testClose");
     }
     
     /** Opens method picker. */
-    protected void setUp() {
+    protected void setUp() throws IOException {
         super.setUp();
         if(ppo == null) {
             // need to wait because combo box is not refreshed in time

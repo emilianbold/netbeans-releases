@@ -61,10 +61,13 @@ import java.io.PrintStream;
 import java.util.Vector;
 import javax.swing.JDialog;
 
+import javax.swing.tree.TreePath;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.jellytools.modules.j2ee.nodes.GlassFishV2ServerNode;
+import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.junit.*;
 
 import org.netbeans.jemmy.*;
@@ -298,7 +301,7 @@ public class JellyTestCase extends NbTestCase {
         Vector<Project> newProjects = new Vector<Project>();
         Project pr;
         for(String p : projects) {
-            pr = ProjectManager.getDefault().findProject(FileUtil.createFolder(new File(p)));
+            pr = ProjectManager.getDefault().findProject(FileUtil.toFileObject(new File(p)));
             boolean alreadyOpened = false;
             for(Project prr : OpenProjects.getDefault().getOpenProjects()) {
                 if(prr.equals(pr)) {
@@ -362,6 +365,10 @@ public class JellyTestCase extends NbTestCase {
      */
     private static final DistributingHierarchyListener 
                 distributingHierarchyListener = new DistributingHierarchyListener();
+
+    public GlassFishV2ServerNode getGlassFishV2Node() {
+        return GlassFishV2ServerNode.getGlassFishV2Node(System.getProperty("com.sun.aas.installRoot"));
+    }
     
     private static class DistributingHierarchyListener implements AWTEventListener {
         
