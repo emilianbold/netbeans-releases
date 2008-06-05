@@ -233,7 +233,6 @@ public class UMLClassWidget  extends SwitchableWidget
             retVal = true;
             ObjectScene scene = (ObjectScene) getScene();
 
-//            classView = new CustomizableWidget(scene, getResourcePath(), "Default", getResourceTable()); 
             classView = new Widget(scene){
                 @Override
                 protected void paintBackground()
@@ -616,23 +615,33 @@ public class UMLClassWidget  extends SwitchableWidget
         private static final int TEMPLATE_EXTENDS = 10;
         public void layout(Widget widget)
         {
-            Rectangle bounds = classView.getPreferredBounds();
-            int viewY = 0;
-            if(bounds != null)
+            // When the user presses the diagram synch button it frist tell the
+            // node to refresh, which removes everything.  The act of removing 
+            // the nodes contents also calls validate.  Which tries to layout 
+            // the node.  This causes can NPE because classView is null.
+            //
+            // Therefore if we are in the situation where classView is null, 
+            // do nothing.
+            if(classView != null)
             {
-                int viewHalf = bounds.width / 2;
-                Rectangle paramBounds = parameterWidget.getPreferredBounds();
-                viewY = paramBounds.height / 2;
-
-                if(paramBounds.width < (viewHalf + TEMPLATE_EXTENDS))
+                Rectangle bounds = classView.getPreferredBounds();
+                int viewY = 0;
+                if(bounds != null)
                 {
-                    paramBounds.width = viewHalf + TEMPLATE_EXTENDS;
-                }
+                    int viewHalf = bounds.width / 2;
+                    Rectangle paramBounds = parameterWidget.getPreferredBounds();
+                    viewY = paramBounds.height / 2;
 
-                parameterWidget.resolveBounds(new Point(bounds.width / 2, -paramBounds.y), paramBounds);
-    
-                Point bodyLocation = new Point(0, paramBounds.height - (paramBounds.height / 3));
-                classView.resolveBounds(bodyLocation, new Rectangle(new Point(0, 0), bounds.getSize()));
+                    if(paramBounds.width < (viewHalf + TEMPLATE_EXTENDS))
+                    {
+                        paramBounds.width = viewHalf + TEMPLATE_EXTENDS;
+                    }
+
+                    parameterWidget.resolveBounds(new Point(bounds.width / 2, -paramBounds.y), paramBounds);
+
+                    Point bodyLocation = new Point(0, paramBounds.height - (paramBounds.height / 3));
+                    classView.resolveBounds(bodyLocation, new Rectangle(new Point(0, 0), bounds.getSize()));
+                }
             }
         }
 
@@ -643,22 +652,26 @@ public class UMLClassWidget  extends SwitchableWidget
 
         public void justify(Widget widget)
         {
-            Rectangle clientArea = widget.getClientArea();
-            
-            int bodyWidth = clientArea.width - TEMPLATE_EXTENDS;
-            int bodyHalf = bodyWidth / 2;
-            
-            Rectangle paramBounds = parameterWidget.getPreferredBounds();
-            Dimension paramSize = new Dimension(clientArea.width - bodyHalf, paramBounds.height );
-            
-            int bodyY = paramSize.height - (paramSize.height / 3);
-            Dimension bodySize = new Dimension(bodyWidth, clientArea.height - bodyY);
+            // See the comment in the layout method.
+            if(classView != null)
+            {
+                Rectangle clientArea = widget.getClientArea();
 
-            Point paramLocation = new Point(bodyHalf, -paramBounds.y);
-            Point bodyLocation = new Point(0, bodyY);
-            
-            parameterWidget.resolveBounds(paramLocation, new Rectangle(paramBounds.getLocation(), paramSize));
-            classView.resolveBounds(bodyLocation, new Rectangle(new Point(0, 0), bodySize));
+                int bodyWidth = clientArea.width - TEMPLATE_EXTENDS;
+                int bodyHalf = bodyWidth / 2;
+
+                Rectangle paramBounds = parameterWidget.getPreferredBounds();
+                Dimension paramSize = new Dimension(clientArea.width - bodyHalf, paramBounds.height );
+
+                int bodyY = paramSize.height - (paramSize.height / 3);
+                Dimension bodySize = new Dimension(bodyWidth, clientArea.height - bodyY);
+
+                Point paramLocation = new Point(bodyHalf, -paramBounds.y);
+                Point bodyLocation = new Point(0, bodyY);
+
+                parameterWidget.resolveBounds(paramLocation, new Rectangle(paramBounds.getLocation(), paramSize));
+                classView.resolveBounds(bodyLocation, new Rectangle(new Point(0, 0), bodySize));
+            }
         }
         
     }
