@@ -77,7 +77,7 @@ public class AddAndRemoveBeansTest  extends ExtJellyTestCase {
     /**
      * Creates suite from particular test cases.
      */
-    public static Test suite() {
+    public static @Override Test suite() {
         return NbModuleSuite.create(NbModuleSuite.createConfiguration(AddAndRemoveBeansTest.class)
                 .addTest("testAddingBeans", "testRemovingBeans").gui(true).clusters(".*").enableModules(".*"));
        
