@@ -65,7 +65,7 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performFileParserTest("TextSearchQuery");
     }
     
-    public void xtestPHPDoc () throws Exception {
+    public void testPHPDoc () throws Exception {
         //unfinished phpdoc
         performFileParserTest("test01");
     }

@@ -948,8 +948,9 @@ yybegin(ST_DOCBLOCK);
                 comment = yytext();
               }
               else {
-                  return null;
+                return createSymbol(ASTPHP5Symbols.EOF);
               }
+              
 }
 
 <ST_IN_SCRIPTING>"/**/" {
@@ -1065,6 +1066,9 @@ yybegin(ST_DOCBLOCK);
 <ST_IN_SCRIPTING>b?"<<<"{TABS_AND_SPACES}({LABEL}|"\""{LABEL}"\""){NEWLINE} {
     int removeChars = (yytext().charAt(0) == 'b')?4:3;
     heredoc = yytext().substring(removeChars).trim();    // for 'b<<<' or '<<<'
+    if (heredoc.charAt(0) == '"') {
+        heredoc = heredoc.substring(1, heredoc.length()-1);
+    }
     yybegin(ST_START_HEREDOC);
     return createSymbol(ASTPHP5Symbols.T_START_HEREDOC);
 }
@@ -1185,6 +1189,6 @@ but jflex doesn't support a{n,} so we changed a{2,} to aa+
     return createSymbol(ASTPHP5Symbols.T_BACKQUATE);
 }
 
-<ST_IN_SCRIPTING,YYINITIAL,ST_DOUBLE_QUOTES,ST_BACKQUOTE,ST_HEREDOC,ST_START_HEREDOC,ST_END_HEREDOC, ST_NOWDOC,ST_START_NOWDOC,ST_END_NOWDOC,ST_VAR_OFFSET>{ANY_CHAR} {
+<ST_IN_SCRIPTING,YYINITIAL,ST_DOUBLE_QUOTES,ST_BACKQUOTE,ST_HEREDOC,ST_START_HEREDOC,ST_END_HEREDOC, ST_NOWDOC,ST_START_NOWDOC,ST_END_NOWDOC,ST_VAR_OFFSET, ST_DOCBLOCK>{ANY_CHAR} {
 	// do nothing
 }
