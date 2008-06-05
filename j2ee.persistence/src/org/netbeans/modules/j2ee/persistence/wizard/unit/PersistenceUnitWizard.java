@@ -49,6 +49,7 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
@@ -145,7 +146,7 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
                 
                 //Only add library for Hibernate in NB 6.5
                 if(providerClass.equals("org.hibernate.ejb.HibernatePersistence")){
-                    Library lib = PersistenceLibrarySupport.getLibrary(descriptor.getSelectedProvider());
+                    Library lib =  LibraryManager.getDefault().getLibrary("hibernate-support"); //NOI18N 
                     if (lib != null) {
                         Util.addLibraryToProject(project, lib);
                     }
