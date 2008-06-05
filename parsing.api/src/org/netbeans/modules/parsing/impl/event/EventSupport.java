@@ -234,7 +234,7 @@ public final class EventSupport {
         private final FileObject fobj;
         private PropertyChangeListener wlistener;
         
-        public DataObjectListener(final DataObject fo) {            
+        public DataObjectListener(final DataObject dobj) {            
             this.dobj = dobj;
             this.fobj = dobj.getPrimaryFile();
             wlistener = WeakListeners.propertyChange(this, dobj);

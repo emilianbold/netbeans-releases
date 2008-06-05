@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.parsing.impl;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
@@ -73,9 +72,11 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskScheduler;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -685,7 +686,22 @@ public class TaskProcessor {
     //@ThreadSafe
     public static class Request {
         
-        static final Request DUMMY = new Request ();
+        static final Request DUMMY = new Request (new ParserResultTask(){
+            @Override
+            public int getPriority() {
+                return 0;
+            }
+            @Override
+            public Class<? extends TaskScheduler> getSchedulerClass() {
+                return null;
+            }
+            @Override
+            public void cancel() {
+            }
+            @Override
+            public void run(Result result, Snapshot snapshot) {
+            }
+        },null, false);
         
         private final SchedulerTask task;
         private final Source source;

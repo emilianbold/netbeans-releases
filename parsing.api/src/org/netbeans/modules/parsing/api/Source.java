@@ -303,6 +303,6 @@ public final class Source {
     private final EventSupport support = new EventSupport (this);
     
     private void assignListeners () {
-//        support.init(); commented out until Hanz removed
+        support.init();
     }        
 }
