@@ -43,6 +43,7 @@ import java.awt.Component;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -102,6 +103,8 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     private RunAsLocalWeb runAsLocalWeb = null;
     private RunAsRemoteWeb runAsRemoteWeb = null;
     private RunAsScript runAsScript = null;
+    private String defaultLocalUrl = null;
+    private boolean copyToFolderValid = false;
 
     public RunConfigurationPanel(String[] steps, SourcesFolderNameProvider sourcesFolderNameProvider) {
         this.sourcesFolderNameProvider = sourcesFolderNameProvider;
@@ -128,7 +131,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                 runAsScript,
             };
             runConfigurationPanelVisual = new RunConfigurationPanelVisual(this, sourcesFolderNameProvider, configManager, insidePanels);
-            addListeners();
         }
         return runConfigurationPanelVisual;
     }
@@ -144,7 +146,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         // we don't want to get events now
         removeListeners();
 
-        // XXX url + adjusting
+        adjustUrl();
         runAsLocalWeb.setLocalServerModel(getLocalServerModel());
 
         // register back to receive events
@@ -184,9 +186,10 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         }
         model = new LocalServer.ComboBoxModel();
 
-        List<DocumentRoot> roots = PhpEnvironment.get().getDocumentRoots(sourcesFolderNameProvider.getSourcesFolderName());
-        for (DocumentRoot root : roots) {
-            LocalServer ls = new LocalServer(root.getDocumentRoot());
+        List<DocumentRoot> copyToFolderRoots = PhpEnvironment.get().getDocumentRoots();
+        for (DocumentRoot root : copyToFolderRoots) {
+            String srcRoot = new File(root.getDocumentRoot(), sourcesFolderNameProvider.getSourcesFolderName()).getAbsolutePath();
+            LocalServer ls = new LocalServer(null, root.getUrl(), root.getDocumentRoot(), srcRoot, true);
             model.addElement(ls);
         }
         return model;
@@ -245,7 +248,95 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         return false;
     }
 
+    private void adjustUrl() {
+        if (getRunAsType() != RunAsType.LOCAL) {
+            // only local url is adjusted
+            return;
+        }
+        String currentUrl = runAsLocalWeb.getUrl();
+        if (defaultLocalUrl == null) {
+            defaultLocalUrl = currentUrl;
+        }
+        if (!defaultLocalUrl.equals(currentUrl)) {
+            return;
+        }
+        LocalServer sources = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.SOURCES_FOLDER);
+        assert sources != null;
+        String url = null;
+        if (runAsLocalWeb.isCopyFiles()) {
+            if (!copyToFolderValid) {
+                // error exactly in the copy-to-folder field => do nothing
+                return;
+            }
+            LocalServer ls = runAsLocalWeb.getLocalServer();
+            String documentRoot = ls.getDocumentRoot();
+            assert documentRoot != null;
+            String srcRoot = ls.getSrcRoot();
+            int idx = documentRoot.length();
+            assert idx > 0;
+            String urlSuffix = getUrlSuffix(documentRoot, srcRoot);
+            if (urlSuffix == null) {
+                // user changed path to a different place => use the name of the directory
+                urlSuffix = new File(srcRoot).getName();
+            }
+            String urlPrefix = ls.getUrl() != null ? ls.getUrl() : "http://localhost/"; // NOI18N
+            url = urlPrefix + urlSuffix;
+        } else if (ConfigureProjectPanel.isProjectFolder(sources)) {
+            // project/web => check project name and url
+            String correctUrl = getDefaultUrl();
+            if (!defaultLocalUrl.equals(correctUrl)) {
+                url = correctUrl;
+            }
+        } else {
+            // /var/www or similar => check source folder name and url
+            String srcRoot = sources.getSrcRoot();
+            @SuppressWarnings("unchecked")
+            List<DocumentRoot> srcRoots = (List<DocumentRoot>) descriptor.getProperty(ConfigureProjectPanel.ROOTS);
+            assert srcRoots != null;
+            for (DocumentRoot root : srcRoots) {
+                String urlSuffix = getUrlSuffix(root.getDocumentRoot(), srcRoot);
+                if (urlSuffix != null) {
+                    url = root.getUrl() + urlSuffix;
+                    break;
+                }
+            }
+            if (url == null) {
+                // not found => get the name of the sources
+                url = "http://localhost/" + new File(sources.getSrcRoot()).getName(); // NOI18N
+            }
+        }
+        // we have to do it here because we need correct url BEFORE the following comparison [!defaultLocalUrl.equals(url)]
+        if (url != null && !url.endsWith("/")) { // NOI18N
+            url += "/"; // NOI18N
+        }
+        if (url != null && !defaultLocalUrl.equals(url)) {
+            defaultLocalUrl = url;
+            // first remove and re-add listeners to avoid getting event change
+            removeListeners();
+            runAsLocalWeb.setUrl(url);
+            addListeners();
+        }
+    }
+
+    private String getUrlSuffix(String documentRoot, String srcRoot) {
+        if (!documentRoot.endsWith(File.separator)) {
+            documentRoot += File.separator;
+        }
+        if (!srcRoot.startsWith(documentRoot)) {
+            return null;
+        }
+        // handle situations like: /var/www/xxx///// or c:\\apache\htdocs\aaa\bbb
+        srcRoot = srcRoot.replaceAll(Pattern.quote(File.separator) + "+", "/");
+        return srcRoot.substring(documentRoot.length());
+    }
+
+    private String getDefaultUrl() {
+        return "http://localhost/" + sourcesFolderNameProvider.getSourcesFolderName() // NOI18N
+                + "/" + ConfigureProjectPanel.DEFAULT_SOURCES_FOLDER + "/"; // NOI18N
+    }
+
     public void stateChanged(ChangeEvent e) {
+        adjustUrl();
         fireChangeEvent();
     }
 
@@ -301,6 +392,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private String validateServerLocation() {
+        copyToFolderValid = false;
         if (!runAsLocalWeb.isCopyFiles()) {
             return null;
         }
@@ -325,6 +417,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         String url = runAsLocalWeb.getUrl();
         String warning = NbBundle.getMessage(RunConfigurationPanel.class, "MSG_TargetFolderVisible", url);
         descriptor.putProperty("WizardPanel_errorMessage", warning); // NOI18N
+        copyToFolderValid = true;
         return null;
     }
 

@@ -317,22 +317,32 @@ public final class Utils {
      * @param sources project sources.
      * @param copyTarget directory for copying files.
      * @return <code>true</code> if the directories are "independent".
+     * @see #subdirectories(java.lang.String, java.lang.String)
      */
     public static String validateSourcesAndCopyTarget(String sources, String copyTarget) {
-        assert sources != null;
-        assert copyTarget != null;
-        // handle "/myDir" and "/myDirectory"
-        if (!sources.endsWith(File.separator)) {
-            sources = sources + File.separator;
-        }
-        if (!copyTarget.endsWith(File.separator)) {
-            copyTarget = copyTarget + File.separator;
-        }
-        if (sources.startsWith(copyTarget)
-                || copyTarget.startsWith(sources)) {
+        if (subdirectories(sources, copyTarget)) {
             return NbBundle.getMessage(Utils.class, "MSG_SourcesEqualCopyTarget");
         }
         return null;
+    }
+
+    /**
+     * Check whether the <em>dir1</em> is underneath the <em>dir2</em> and vice versa. Both paths have to be normalized.
+     * @param dir1 a directory.
+     * @param dir2 a directory.
+     * @return <code>true</code> if the directories are subdirectories.
+     */
+    public static boolean subdirectories(String dir1, String dir2) {
+        assert dir1 != null;
+        assert dir2 != null;
+        // handle "/myDir" and "/myDirectory"
+        if (!dir1.endsWith(File.separator)) {
+            dir1 = dir1 + File.separator;
+        }
+        if (!dir2.endsWith(File.separator)) {
+            dir2 = dir2 + File.separator;
+        }
+        return dir1.startsWith(dir2) || dir2.startsWith(dir1);
     }
 
     public static class EncodingModel extends DefaultComboBoxModel {

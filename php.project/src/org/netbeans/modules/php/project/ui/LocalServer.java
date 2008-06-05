@@ -52,12 +52,14 @@ import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
 import org.openide.util.ChangeSupport;
 
+// XXX should be replaced (?) by PhpEnvironment.DocumentRoot
 /**
  * @author Tomas Mysik
  */
 public class LocalServer implements Comparable<LocalServer> {
 
     private final String virtualHost;
+    private final String url;
     private final String documentRoot;
     private final boolean editable;
     private String srcRoot;
@@ -79,7 +81,11 @@ public class LocalServer implements Comparable<LocalServer> {
     }
 
     public LocalServer(String virtualHost, String documentRoot, String srcRoot, boolean editable) {
+        this(virtualHost, null, documentRoot, srcRoot, editable);
+    }
+    public LocalServer(String virtualHost, String url, String documentRoot, String srcRoot, boolean editable) {
         this.virtualHost = virtualHost;
+        this.url = url;
         this.documentRoot = documentRoot;
         this.srcRoot = srcRoot;
         this.editable = editable;
@@ -87,6 +93,10 @@ public class LocalServer implements Comparable<LocalServer> {
 
     public String getVirtualHost() {
         return virtualHost;
+    }
+
+    public String getUrl() {
+        return url;
     }
 
     public String getDocumentRoot() {
@@ -114,6 +124,8 @@ public class LocalServer implements Comparable<LocalServer> {
         sb.append(getClass().getName());
         sb.append("[virtualHost: "); // NOI18N
         sb.append(virtualHost);
+        sb.append(", url: "); // NOI18N
+        sb.append(url);
         sb.append(", documentRoot: "); // NOI18N
         sb.append(documentRoot);
         sb.append(", srcRoot: "); // NOI18N
