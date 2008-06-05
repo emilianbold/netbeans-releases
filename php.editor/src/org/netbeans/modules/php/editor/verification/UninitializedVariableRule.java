@@ -44,9 +44,11 @@ import org.netbeans.modules.gsf.api.HintSeverity;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.openide.util.NbBundle;
 
@@ -78,8 +80,10 @@ public class UninitializedVariableRule  extends PHPRule {
                 // variable is just being initialized, do not check it 
                 return;
             }
-        } else if (parent instanceof FunctionName){
-            // this is just a method call, ignore it
+        } else if (parent instanceof FunctionName 
+                || parent instanceof SingleFieldDeclaration
+                || parent instanceof FieldAccess){
+            
             return;
         }
         

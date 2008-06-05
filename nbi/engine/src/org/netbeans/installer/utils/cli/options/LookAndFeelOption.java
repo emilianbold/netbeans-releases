@@ -40,7 +40,7 @@ import org.netbeans.installer.utils.cli.*;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.UiUtils;
-import org.netbeans.installer.utils.exceptions.CLIArgumentException;
+import org.netbeans.installer.utils.exceptions.CLIOptionException;
 
 /**
  *
@@ -48,7 +48,7 @@ import org.netbeans.installer.utils.exceptions.CLIArgumentException;
  */
 public class LookAndFeelOption extends CLIOptionOneArgument {
 
-    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+    public void execute(CLIArgumentsList arguments) throws CLIOptionException {
         final String value = arguments.next();
         System.setProperty(
                 UiUtils.LAF_CLASS_NAME_PROPERTY,

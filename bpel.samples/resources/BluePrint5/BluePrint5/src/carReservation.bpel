@@ -51,19 +51,13 @@
             importType="http://www.w3.org/2001/XMLSchema"></import>
     
     <partnerLinks>
-        <partnerLink name="reservationPLink"
-                     partnerLinkType="ns0:CarReservationPLinkType"
-                     myRole="reservingRole"/>
-        <partnerLink name="reservationStatusPLink"
-                     partnerLinkType="ns0:CarReservStatusPLinkType"
-                     partnerRole="statusReceivingRole"/>
+        <partnerLink name="reservationPLink" partnerLinkType="ns0:CarReservationPLinkType" myRole="reservingRole"/>
+        <partnerLink name="reservationStatusPLink" partnerLinkType="ns0:CarReservStatusPLinkType" partnerRole="statusReceivingRole"/>
     </partnerLinks>
     
     <variables>
-        <variable name="reserveCar"
-                  messageType="ns0:CarReservation"></variable>
-        <variable name="sendCarStatus"
-                  messageType="ns0:CarReservationStatus"></variable>
+        <variable name="reserveCar" messageType="ns0:CarReservation"></variable>
+        <variable name="sendCarStatus" messageType="ns0:CarReservationStatus"></variable>
     </variables>
     
     <sequence>

@@ -38,7 +38,7 @@ package org.netbeans.installer.utils.cli.options;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.exceptions.CLIArgumentException;
+import org.netbeans.installer.utils.exceptions.CLIOptionException;
 import org.netbeans.installer.utils.cli.CLIArgumentsList;
 import org.netbeans.installer.utils.cli.CLIOptionTwoArguments;
 
@@ -48,7 +48,7 @@ import org.netbeans.installer.utils.cli.CLIOptionTwoArguments;
  */
 public class TargetOption extends CLIOptionTwoArguments {
 
-    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+    public void execute(CLIArgumentsList arguments) throws CLIOptionException {
         final String uid = arguments.next();
         final String version = arguments.next();
 
