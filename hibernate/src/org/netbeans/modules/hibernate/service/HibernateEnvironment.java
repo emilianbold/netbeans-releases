@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.hibernate.service;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -246,6 +247,17 @@ public class HibernateEnvironment implements HibernateFileLocationProvider {
             }
         }
         return hibernateConfigurations;
+    }
+    
+    /**
+     * Returns the project classpath including project build paths.
+     * Can be used to set classpath for custom classloader.
+     * 
+     * @param projectFile file in current project.
+     * @return List of java.io.File objects representing each entry on the classpath.
+     */
+    public ArrayList<File> getProjectClassPath(FileObject projectFile) {
+        return HibernateUtil.getProjectClassPathEntries(projectFile);
     }
 
     /**

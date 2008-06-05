@@ -40,6 +40,7 @@
 package org.netbeans.modules.db.sql.execute;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,14 +51,15 @@ import java.util.logging.Logger;
 public class SQLHistory implements Serializable {
     String sql;
     String url;
-    
+    Date   date;
     private static final Logger LOGGER = Logger.getLogger(SQLHistory.class.getName());
      
-    public SQLHistory(String url, String sql) {
+    public SQLHistory(String url, String sql, Date date) {
         this.url = url;
         this.sql = sql;
+        this.date = date;
         // XXX temporary for testing functionality
-        LOGGER.log(Level.INFO, "URL = " + url + ", SQL = " + sql + "\n");
+        LOGGER.log(Level.INFO, "URL = " + url + ", SQL = " + sql + ", Date = " + date);
     }
     
     public String getUrl() {
@@ -66,6 +68,10 @@ public class SQLHistory implements Serializable {
     
     public String getSql() {
         return sql;
+    }
+    
+    public Date getDate() {
+        return date;
     }
 
 }

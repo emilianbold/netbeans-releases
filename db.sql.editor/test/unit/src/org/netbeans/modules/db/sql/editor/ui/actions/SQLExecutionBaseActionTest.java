@@ -187,5 +187,9 @@ public class SQLExecutionBaseActionTest extends NbTestCase {
         public DatabaseConnection getDatabaseConnection() {
             return null;
         }
+
+        public void showHistory() {
+            // not tested
+        }
     }
 }

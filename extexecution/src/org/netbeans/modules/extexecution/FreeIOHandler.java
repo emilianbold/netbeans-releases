@@ -46,7 +46,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.WeakHashMap;
-import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 
