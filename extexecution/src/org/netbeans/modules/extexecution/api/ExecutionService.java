@@ -65,7 +65,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.extexecution.api.input.InputReaderTask;
 import org.netbeans.modules.extexecution.api.input.InputReaders;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
@@ -183,7 +182,7 @@ public final class ExecutionService {
                 try {
                     io.getOut().reset();
                 } catch (IOException exc) {
-                    ErrorManager.getDefault().notify(exc);
+                    LOGGER.log(Level.INFO, null, exc);
                 }
 
                 // Note - do this AFTER the reset() call above; if not, weird bugs occur
@@ -227,7 +226,7 @@ public final class ExecutionService {
                 try {
                     io.getOut().reset();
                 } catch (IOException exc) {
-                    ErrorManager.getDefault().notify(exc);
+                    LOGGER.log(Level.INFO, null, exc);
                 }
 
                 // Note - do this AFTER the reset() call above; if not, weird bugs occur
@@ -266,7 +265,7 @@ public final class ExecutionService {
                             process.destroy();
                         }
                     } catch (Exception ex) {
-                        ErrorManager.getDefault().notify(ex);
+                        LOGGER.log(Level.WARNING, null, ex);
                     }
                 }
             };
