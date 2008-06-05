@@ -95,7 +95,7 @@ public class AlignWithMoveStrategyProvider extends org.netbeans.modules.uml.draw
                 }
             }
         }
-        if(horizontalOnly)ret.y=originalLocation.y;
+        if(horizontalOnly==Boolean.TRUE)ret.y=originalLocation.y;
         else if((ret.y+widget.getBounds().y)<0)ret.y-=(ret.y+widget.getBounds().y);
         //
         //
