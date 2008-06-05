@@ -40,24 +40,26 @@
 
 package org.netbeans.modules.quicksearch.recent;
 
-import java.util.List;
+import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
 import org.netbeans.spi.quicksearch.CategoryDescription;
 import org.netbeans.spi.quicksearch.SearchProvider;
-import org.netbeans.spi.quicksearch.SearchResult;
+import org.netbeans.spi.quicksearch.SearchRequest;
+import org.netbeans.spi.quicksearch.SearchResponse;
 
+    
 /**
  * Recent searches
  * @author  Jan Becicka
  */
 public class RecentProvider implements SearchProvider, CategoryDescription {
 
-
-    public List<SearchResult> evaluate(String pattern) {
-        return RecentSearches.getDefault().getSearches();
-    }
-    
-    public boolean cancel() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void evaluate(SearchRequest request, SearchResponse response) {
+        for (ItemResult itemR : RecentSearches.getDefault().getSearches()) {
+            if (!response.addResult(itemR.getAction(), itemR.getDisplayName(),
+                    itemR.getShortcut(), itemR.getDisplayHint())) {
+                break;
+            }
+        }
     }
 
     public CategoryDescription getCategory() {

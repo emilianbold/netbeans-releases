@@ -40,12 +40,11 @@
 
 package org.netbeans.modules.jumpto.quicksearch;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.spi.quicksearch.SearchProvider;
-import org.netbeans.spi.quicksearch.SearchResult;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.netbeans.spi.quicksearch.CategoryDescription;
+import org.netbeans.spi.quicksearch.SearchRequest;
+import org.netbeans.spi.quicksearch.SearchResponse;
 
 /**
  *
@@ -53,32 +52,27 @@ import org.netbeans.spi.quicksearch.CategoryDescription;
  */
 public class JavaTypeSearchProvider implements SearchProvider, CategoryDescription {
 
-    public List<SearchResult> evaluate(String pattern) {
-        GoToTypeWorker worker = new GoToTypeWorker(pattern);
+    public void evaluate(SearchRequest request, SearchResponse response) {
+        GoToTypeWorker worker = new GoToTypeWorker(request.getText());
         worker.run();
-        List<SearchResult> result = new ArrayList<SearchResult>();
+        
         for (TypeDescriptor td : worker.getTypes()) {
-            result.add(new GoToTypeCommand(td));
+            if (!response.addResult(new GoToTypeCommand(td), td.getSimpleName())) {
+                break;
+            }
         }
-        return result;
     }
     
-    private static class GoToTypeCommand implements SearchResult {
+    private static class GoToTypeCommand implements Runnable {
         private TypeDescriptor command;
         
         public GoToTypeCommand(TypeDescriptor command) {
             this.command = command;
         }
-        
-        
-        public void invoke() {
+
+        public void run() {
             command.open();
         }
-
-        public String getDisplayName() {
-            return command.getSimpleName();
-        }
-
     }
 
     public CategoryDescription getCategory() {
@@ -95,10 +89,6 @@ public class JavaTypeSearchProvider implements SearchProvider, CategoryDescripti
 
     public String getHint() {
         return null;
-    }
-    
-    public boolean cancel() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

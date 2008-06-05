@@ -37,41 +37,32 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.quicksearch.recent;
+package org.netbeans.spi.quicksearch;
 
-import java.util.LinkedList;
-import java.util.List;
-import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
-
-
+import javax.swing.KeyStroke;
+import org.netbeans.modules.quicksearch.CategoryResult;
+import org.netbeans.modules.quicksearch.ResultsModel;
+    
 /**
  *
- * @author Jan Becicka
+ * @author Dafe Simonek
  */
-public class RecentSearches {
-    private LinkedList<ItemResult> recent;
-    private static final int MAX_ITEMS = 5;
-    private static RecentSearches instance;
+public final class SearchResponse {
 
-    private RecentSearches() {
-        recent = new LinkedList<ItemResult>();
+    private CategoryResult catResult;
+    
+    SearchResponse(CategoryResult catResult) {
+        this.catResult = catResult;
     }
     
-    public static RecentSearches getDefault() {
-        if (instance==null) {
-            instance = new RecentSearches();
-        }
-        return instance;
-    } 
-    
-    public void add(ItemResult result) {
-        if (recent.size()>=MAX_ITEMS) {
-            recent.removeLast();
-        }
-        recent.addFirst(result);
+    public boolean addResult (Runnable action, String displayName) {
+        return catResult.addItem(new ResultsModel.ItemResult(action, displayName));
     }
     
-    public List<ItemResult> getSearches() {
-        return recent;
+    public boolean addResult (Runnable action, String displayName,
+                            KeyStroke shortcut, String displayHint) {
+        return catResult.addItem(
+                new ResultsModel.ItemResult(action, displayName, shortcut, displayHint));
     }
+
 }
