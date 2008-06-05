@@ -149,18 +149,19 @@ final class TestsuiteNode extends AbstractNode {
     
     /**
      */
+    @Override
     public String getHtmlDisplayName() {
         
         assert suiteName != null;
         
-        StringBuffer buf = new StringBuffer(60);
+        StringBuilder buf = new StringBuilder(60);
         if (suiteName != ResultDisplayHandler.ANONYMOUS_SUITE) {
             buf.append(suiteName);
             buf.append("&nbsp;&nbsp;");                                 //NOI18N
         } else {
             buf.append(NbBundle.getMessage(getClass(),
                                            "MSG_TestsuiteNoname"));     //NOI18N
-            buf.append("&nbsp;");
+            buf.append("&nbsp;");                                       //NOI18N
         }
         if (report != null) {
             final boolean containsFailed = containsFailed();
@@ -201,6 +202,7 @@ final class TestsuiteNode extends AbstractNode {
         return (report != null) && (report.failures + report.errors != 0);
     }
     
+    @Override
     public SystemAction[] getActions(boolean context) {
         return new SystemAction[0];
     }
