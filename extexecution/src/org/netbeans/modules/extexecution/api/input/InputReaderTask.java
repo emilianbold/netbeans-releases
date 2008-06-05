@@ -110,20 +110,32 @@ public final class InputReaderTask implements Runnable {
         this.outputProcessor = outputProcessor;
     }
 
+    /**
+     * Creates the new task. The task will read the data from reader
+     * throwing them away.
+     *
+     * @param reader data producer
+     * @return task handling the read process
+     */
     public static InputReaderTask newTask(InputReader reader) {
         return new InputReaderTask(reader);
     }
 
+    /**
+     * Creates the new task. The task will read the data from reader processing
+     * them through processor (if any).
+     *
+     * @param reader data producer
+     * @param processor processor consuming the data, may be <code>null</code>
+     * @return task handling the read process
+     */
     public static InputReaderTask newTask(InputReader reader, InputProcessor processor) {
         return new InputReaderTask(reader, processor);
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Task repeatedly reads the data from the InputReader, passing the content
      * to InputProcessor (if any).
-     * </p>
      */
     public void run() {
         boolean interrupted = false;
