@@ -43,6 +43,7 @@ package org.netbeans.swing.tabcontrol;
 
 import java.awt.Component;
 
+
 /**
  * Interface that provides external information (provided by window system)
  * that TabbedContainers need to know in order to work fully.<p>
@@ -52,21 +53,36 @@ import java.awt.Component;
  *
  * @see TabbedContainer#TabbedContainer
  *
- * @author Dafe Simonek
+ * @author S. Aubrecht
  */
-public interface WinsysInfoForTabbed {
+public abstract class WinsysInfoForTabbedContainer implements WinsysInfoForTabbed {
 
-    /** Returns global orientation of given component.
-     *
-     * @return Orientation of component, as defined in
-     * TabDisplayer.ORIENTATION_XXX constants
-     */
-    public Object getOrientation (Component comp);
+    public boolean isTopComponentSlidingEnabled() {
+        return true;
+    }
     
-    /** Finds out in what state is window system mode containing given component.
-     * 
-     * @return true if given component is inside mode which is in maximized state,
-     * false otherwise 
-     */
-    public boolean inMaximizedMode (Component comp);
+    public boolean isTopComponentClosingEnabled() {
+        return true;
+    }
+    
+    public static WinsysInfoForTabbedContainer getDefault( WinsysInfoForTabbed winsysInfo ) {
+        return new DefaultWinsysInfoForTabbedContainer( winsysInfo );
+    }
+    
+    private static class DefaultWinsysInfoForTabbedContainer extends WinsysInfoForTabbedContainer {
+        
+        private WinsysInfoForTabbed delegate;
+        
+        public DefaultWinsysInfoForTabbedContainer( WinsysInfoForTabbed winsysInfo ) {
+            this.delegate = winsysInfo;
+        }
+
+        public Object getOrientation(Component comp) {
+            return null == delegate ? TabDisplayer.ORIENTATION_CENTER : delegate.getOrientation(comp);
+        }
+
+        public boolean inMaximizedMode(Component comp) {
+            return null == delegate ? false : delegate.inMaximizedMode(comp);
+        }
+    }
 }

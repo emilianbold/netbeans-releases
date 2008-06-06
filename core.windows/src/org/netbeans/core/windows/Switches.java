@@ -39,34 +39,60 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.swing.tabcontrol;
+package org.netbeans.core.windows;
 
-import java.awt.Component;
+import java.util.MissingResourceException;
+import org.openide.util.NbBundle;
 
 /**
- * Interface that provides external information (provided by window system)
- * that TabbedContainers need to know in order to work fully.<p>
+ * Window system switches
  *
- * Tab control uses info to provide for example tab buttons reacting on 
- * the position of the container or on maximization state.
- *
- * @see TabbedContainer#TabbedContainer
- *
- * @author Dafe Simonek
+ * @author  S. Aubrecht
  */
-public interface WinsysInfoForTabbed {
+public final class Switches {
 
-    /** Returns global orientation of given component.
-     *
-     * @return Orientation of component, as defined in
-     * TabDisplayer.ORIENTATION_XXX constants
-     */
-    public Object getOrientation (Component comp);
+    public static boolean isTopComponentDragAndDropEnabled() {
+        return getSwitchValue( "TopComponent.DragAndDrop.Enabled", true ); //NOI18N
+    }
     
-    /** Finds out in what state is window system mode containing given component.
-     * 
-     * @return true if given component is inside mode which is in maximized state,
-     * false otherwise 
-     */
-    public boolean inMaximizedMode (Component comp);
+    public static boolean isTopComponentUndockingEnabled() {
+        return getSwitchValue( "TopComponent.Undocking.Enabled", true ); //NOI18N
+    }
+    
+    public static boolean isTopComponentSlidingEnabled() {
+        return getSwitchValue( "TopComponent.Sliding.Enabled", true ); //NOI18N
+    }
+    
+    public static boolean isTopComponentResizingEnabled() {
+        return getSwitchValue( "TopComponent.Resizing.Enabled", true ); //NOI18N
+    }
+    
+    public static boolean isViewTopComponentClosingEnabled() {
+        return getSwitchValue( "View.TopComponent.Closing.Enabled", true ); //NOI18N
+    }
+    
+    public static boolean isEditorTopComponentClosingEnabled() {
+        return getSwitchValue( "Editor.TopComponent.Closing.Enabled", true ); //NOI18N
+    }
+    
+    public static boolean isTopComponentMaximizationEnabled() {
+        return getSwitchValue( "TopComponent.Maximization.Enabled", true ); //NOI18N
+    }
+    
+    public static boolean isSplitterRespectMinimumSizeEnabled() {
+        return getSwitchValue( "Splitter.Respect.MinimumSize.Enabled", false ); //NOI18N
+    }
+    
+    private static boolean getSwitchValue( String switchName, boolean defaultValue ) {
+        boolean result = defaultValue;
+        try {
+            String resValue = NbBundle.getMessage(Switches.class, switchName );
+            result = "true".equals( resValue.toLowerCase() ); //NOI18N
+        } catch( MissingResourceException mrE ) {
+            //ignore
+        }
+        return result;
+    }
+    
+    private Switches() {}
 }
