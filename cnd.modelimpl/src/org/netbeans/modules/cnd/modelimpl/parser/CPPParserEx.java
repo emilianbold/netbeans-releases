@@ -1155,7 +1155,7 @@ public class CPPParserEx extends CPPParser {
     }
 
     public interface ErrorDelegate {
-        void onError(String message, int line, int column);
+        void onError(RecognitionException e);
     }
     
     private ErrorDelegate errorDelegate;
@@ -1167,7 +1167,7 @@ public class CPPParserEx extends CPPParser {
     protected void onError(RecognitionException e) {
         ErrorDelegate delegate = errorDelegate;
         if( delegate != null ) {
-            delegate.onError(e.getMessage(), e.getLine(), e.getColumn());
+            delegate.onError(e);
         }
     }
 }
