@@ -875,11 +875,13 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
     @Override
     public void loadDependencies(NodeInfo nodeReader) {
         Collection nodeLabels = nodeReader.getLabels();
-//        for (Iterator it = nodeLabels.iterator(); it.hasNext();)
-//        {
-//            NodeInfo.NodeLabel nodeLabel = (NodeInfo.NodeLabel)it.next();
-//            System.out.println("  NodeLabel details = "+nodeLabel);
-//        }
+        for (Iterator it = nodeLabels.iterator(); it.hasNext();)
+        {
+            NodeInfo.NodeLabel nodeLabel = (NodeInfo.NodeLabel)it.next();
+            InteractionOperandWidget iow = operands.get(nodeLabel.getDependentNode());
+            iow.show(LabeledWidget.TYPE.BODY);
+        }
         System.out.println(" NodeLabels = "+nodeLabels.toString());
     }
+    
 }
