@@ -54,6 +54,7 @@ public class FileModelTest extends TraceModelTestBase {
     @Override
     protected void setUp() throws Exception {
 	System.setProperty("parser.report.errors", "true");
+        System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
         super.setUp();
     }
 

@@ -249,10 +249,11 @@ public final class InputProcessors {
         public void processInput(char[] chars) {
             assert chars != null;
 
-            if (convertor == null) {
-                out.print(String.valueOf(chars));
-                return;
-            }
+// TODO this does not color standard error lines :(
+//            if (convertor == null) {
+//                out.print(String.valueOf(chars));
+//                return;
+//            }
 
             String[] lines = helper.parse(chars);
             for (String line : lines) {
@@ -280,6 +281,11 @@ public final class InputProcessors {
         }
 
         private void convert(String line) {
+            if (convertor == null) {
+                out.println(line);
+                return;
+            }
+
             for (ConvertedLine converted : convertor.convert(line)) {
                 if (converted.getListener() == null) {
                     out.println(converted.getText());

@@ -15,9 +15,6 @@ public abstract class DebuggingCharScanner extends CharScanner implements Debugg
 	public DebuggingCharScanner(InputBuffer cb) {
 		super(cb);
 	}
-	public DebuggingCharScanner(LexerSharedInputState state) {
-		super(state);
-	}
 	public void addMessageListener(MessageListener l) {
 		parserEventSupport.addMessageListener(l);
 	}
@@ -52,29 +49,29 @@ public abstract class DebuggingCharScanner extends CharScanner implements Debugg
 	}
 	protected void fireEnterRule(int num, int data) {
 		if (isDebugMode())
-			parserEventSupport.fireEnterRule(num,inputState.guessing,data);
+			parserEventSupport.fireEnterRule(num,guessing,data);
 	}
 	protected void fireExitRule(int num, int ttype) {
 		if (isDebugMode())
-			parserEventSupport.fireExitRule(num,inputState.guessing, ttype);
+			parserEventSupport.fireExitRule(num,guessing, ttype);
 	}
 	protected boolean fireSemanticPredicateEvaluated(int type, int num, boolean condition) {
 		if (isDebugMode())
-			return parserEventSupport.fireSemanticPredicateEvaluated(type,num,condition,inputState.guessing);
+			return parserEventSupport.fireSemanticPredicateEvaluated(type,num,condition,guessing);
 		else
 			return condition;
 	}
 	protected void fireSyntacticPredicateFailed() {
 		if (isDebugMode())
-			parserEventSupport.fireSyntacticPredicateFailed(inputState.guessing);
+			parserEventSupport.fireSyntacticPredicateFailed(guessing);
 	}
 	protected void fireSyntacticPredicateStarted() {
 		if (isDebugMode())
-			parserEventSupport.fireSyntacticPredicateStarted(inputState.guessing);
+			parserEventSupport.fireSyntacticPredicateStarted(guessing);
 	}
 	protected void fireSyntacticPredicateSucceeded() {
 		if (isDebugMode())
-			parserEventSupport.fireSyntacticPredicateSucceeded(inputState.guessing);
+			parserEventSupport.fireSyntacticPredicateSucceeded(guessing);
 	}
 	public String getRuleName(int num) {
 		return ruleNames[num];
@@ -115,11 +112,11 @@ public abstract class DebuggingCharScanner extends CharScanner implements Debugg
 		char la_1 = LA(1);
 		try {
 			super.match(c);
-			parserEventSupport.fireMatch(c, inputState.guessing);
+			parserEventSupport.fireMatch(c, guessing);
 		}
 		catch (MismatchedCharException e) {
-			if (inputState.guessing == 0)
-				parserEventSupport.fireMismatch(la_1, c, inputState.guessing);
+			if (guessing == 0)
+				parserEventSupport.fireMismatch(la_1, c, guessing);
 			throw e;
 		}
 	}
@@ -128,11 +125,11 @@ public abstract class DebuggingCharScanner extends CharScanner implements Debugg
 		char la_1 = LA(1);
 		try {
 			super.match(b);
-			parserEventSupport.fireMatch(la_1, b, text, inputState.guessing);
+			parserEventSupport.fireMatch(la_1, b, text, guessing);
 		}
 		catch (MismatchedCharException e) {
-			if (inputState.guessing == 0)
-				parserEventSupport.fireMismatch(la_1, b, text, inputState.guessing);
+			if (guessing == 0)
+				parserEventSupport.fireMismatch(la_1, b, text, guessing);
 			throw e;
 		}
 	}
@@ -149,11 +146,11 @@ public abstract class DebuggingCharScanner extends CharScanner implements Debugg
 
 		try {
 			super.match(s);
-			parserEventSupport.fireMatch(s, inputState.guessing);
+			parserEventSupport.fireMatch(s, guessing);
 		}
 		catch (MismatchedCharException e) {
-			if (inputState.guessing == 0)
-				parserEventSupport.fireMismatch(la_s.toString(), s, inputState.guessing);
+			if (guessing == 0)
+				parserEventSupport.fireMismatch(la_s.toString(), s, guessing);
 			throw e;
 		}
 
@@ -162,11 +159,11 @@ public abstract class DebuggingCharScanner extends CharScanner implements Debugg
 		char la_1 = LA(1);
 		try {
 			super.matchNot(c);
-			parserEventSupport.fireMatchNot(la_1, c, inputState.guessing);
+			parserEventSupport.fireMatchNot(la_1, c, guessing);
 		}
 		catch (MismatchedCharException e) {
-			if (inputState.guessing == 0)
-				parserEventSupport.fireMismatchNot(la_1, c, inputState.guessing);
+			if (guessing == 0)
+				parserEventSupport.fireMismatchNot(la_1, c, guessing);
 			throw e;
 		}
 
@@ -175,11 +172,11 @@ public abstract class DebuggingCharScanner extends CharScanner implements Debugg
 		char la_1 = LA(1);
 		try {
 			super.matchRange(c1,c2);
-			parserEventSupport.fireMatch(la_1, ""+c1+c2, inputState.guessing);
+			parserEventSupport.fireMatch(la_1, ""+c1+c2, guessing);
 		}
 		catch (MismatchedCharException e) {
-			if (inputState.guessing == 0)
-				parserEventSupport.fireMismatch(la_1, ""+c1+c2, inputState.guessing);
+			if (guessing == 0)
+				parserEventSupport.fireMismatch(la_1, ""+c1+c2, guessing);
 			throw e;
 		}
 

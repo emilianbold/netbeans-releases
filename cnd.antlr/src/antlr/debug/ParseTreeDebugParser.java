@@ -34,10 +34,6 @@ public class ParseTreeDebugParser extends LLkParser {
 		super(k_);
 	}
 
-	public ParseTreeDebugParser(ParserSharedInputState state, int k_) {
-		super(state,k_);
-	}
-
 	public ParseTreeDebugParser(TokenBuffer tokenBuf, int k_) {
 		super(tokenBuf, k_);
 	}
@@ -54,16 +50,19 @@ public class ParseTreeDebugParser extends LLkParser {
 		return numberOfDerivationSteps;
 	}
 
+    @Override
 	public void match(int i) throws MismatchedTokenException {
 		addCurrentTokenToParseTree();
 		super.match(i);
 	}
 
+    @Override
 	public void match(BitSet bitSet) throws MismatchedTokenException {
 		addCurrentTokenToParseTree();
 		super.match(bitSet);
 	}
 
+    @Override
 	public void matchNot(int i) throws MismatchedTokenException {
 		addCurrentTokenToParseTree();
 		super.matchNot(i);
@@ -77,7 +76,7 @@ public class ParseTreeDebugParser extends LLkParser {
 	 *  matched() (the lookahead failed to predict an alternative).
 	 */
 	protected void addCurrentTokenToParseTree() {
-		if (inputState.guessing>0) {
+		if (guessing>0) {
 			return;
 		}
 		ParseTreeRule root = (ParseTreeRule)currentParseTreeRoot.peek();
@@ -93,7 +92,7 @@ public class ParseTreeDebugParser extends LLkParser {
 
 	/** Create a rule node, add to current tree, and make it current root */
 	public void traceIn(String s) {
-		if (inputState.guessing>0) {
+		if (guessing>0) {
 			return;
 		}
 		ParseTreeRule subRoot = new ParseTreeRule(s);
@@ -107,7 +106,7 @@ public class ParseTreeDebugParser extends LLkParser {
 
 	/** Pop current root; back to adding to old root */
 	public void traceOut(String s) {
-		if (inputState.guessing>0) {
+		if (guessing>0) {
 			return;
 		}
 		mostRecentParseTreeRoot = (ParseTreeRule)currentParseTreeRoot.pop();
