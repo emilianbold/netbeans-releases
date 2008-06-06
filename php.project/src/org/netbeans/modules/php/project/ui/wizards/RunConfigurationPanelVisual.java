@@ -62,7 +62,6 @@ public class RunConfigurationPanelVisual extends JPanel {
 
         this.insidePanels = insidePanels;
         initComponents();
-        infoLabel.setText(NbBundle.getMessage(RunConfigurationPanelVisual.class, "LBL_RunConfigurationInfo"));
     }
     /** This method is called from within the constructor to
      * initialize the form.
@@ -73,10 +72,13 @@ public class RunConfigurationPanelVisual extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        infoLabel = new javax.swing.JLabel();
+        infoLabel1 = new javax.swing.JLabel();
+        infoLabel2 = new javax.swing.JLabel();
         runAsPanel = new RunAsPanel(insidePanels);
 
-        org.openide.awt.Mnemonics.setLocalizedText(infoLabel, "dummy"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(infoLabel1, org.openide.util.NbBundle.getMessage(RunConfigurationPanelVisual.class, "LBL_RunConfigurationInfo1")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(infoLabel2, org.openide.util.NbBundle.getMessage(RunConfigurationPanelVisual.class, "LBL_RunConfigurationInfo2")); // NOI18N
 
         runAsPanel.setLayout(new java.awt.CardLayout());
 
@@ -84,21 +86,29 @@ public class RunConfigurationPanelVisual extends JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(infoLabel)
-            .add(runAsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(infoLabel1)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(infoLabel2)
+                .addContainerGap())
+            .add(runAsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(infoLabel)
+                .add(infoLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(infoLabel2)
                 .add(18, 18, 18)
-                .add(runAsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 98, Short.MAX_VALUE))
+                .add(runAsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel infoLabel;
+    private javax.swing.JLabel infoLabel1;
+    private javax.swing.JLabel infoLabel2;
     private javax.swing.JPanel runAsPanel;
     // End of variables declaration//GEN-END:variables
 }
