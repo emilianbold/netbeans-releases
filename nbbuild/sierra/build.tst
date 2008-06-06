@@ -231,11 +231,11 @@
         <antcall target="do-test-jbi"><param name="dir" value="samples/SynchronousSample"/></antcall>
 
         <!-- scalability -->
-        <!-- antcall target="do-test-jbi"><param name="dir" value="scalability/ScalabilityBpel"/></antcall -->
+        <antcall target="do-test-jbi"><param name="dir" value="scalability/ScalabilityBpel"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="scalability/Test2/ScalabilityTest2BP"/></antcall>
 
         <!-- scenarios -->
-        <!-- antcall target="do-test-jbi"><param name="dir" value="scenarios/CandidateSelection/SelectionProcess"/></antcall -->
+        <antcall target="do-test-jbi"><param name="dir" value="scenarios/CandidateSelection/SelectionProcess"/></antcall>
 
         <!-- SchemaElemDecl -->
         <antcall target="do-test-jbi"><param name="dir" value="SchemaElemDecl/BPwithElemRef"/></antcall>

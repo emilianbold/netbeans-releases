@@ -282,28 +282,6 @@ public final class Validator extends WsdlValidator {
     return null;
   }
 
-  private Component getType(Part part) {
-    NamedComponentReference<GlobalType> ref1 = part.getType();
-
-    if (ref1 != null) {
-      GlobalType type = ref1.get();
-
-      if (type != null) {
-        return getTypeOfElement(type);
-      }
-    }
-    NamedComponentReference<GlobalElement> ref2 = part.getElement();
-
-    if (ref2 != null) {
-      GlobalElement element = ref2.get();
-
-      if (element != null) {
-        return getTypeOfElement(element);
-      }
-    }
-    return null;
-  }
-
   private DocumentComponent getWrongQuery(PropertyAlias alias) {
     List<WSDLComponent> children = alias.getChildren();
 

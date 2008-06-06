@@ -965,9 +965,10 @@ public final class Validator extends BpelValidator {
        * specify the type of a variable. Exactly one of these attributes 
        * MUST be used.
        */
-      int count = variable.getType()== null?0:1;
-      count+=variable.getMessageType()==null?0:1;
-      count+=variable.getElement()==null?0:1;
+      int count = variable.getType() == null ? 0 : 1;
+      count += variable.getMessageType() == null ? 0 : 1;
+      count += variable.getElement() == null ? 0 : 1;
+
       if (count != 1) {
           addError("FIX_SA00025", variable); // NOI18N
       }
