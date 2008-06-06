@@ -39,9 +39,9 @@
     <xs:complexType  name="purchaseOrderType">
         <xs:sequence>
             <xs:element name="orderId" type="xs:int"/>
-            <xs:element name="customerId" type="xs:int" />
-            <xs:element name="orderDescription" type="xs:string" />
-            <xs:element name="price" type="xs:string" />
+            <xs:element name="customerId" type="xs:int"/>
+            <xs:element name="orderDescription" type="xs:string"/>
+            <xs:element name="price" type="xs:string"/>
         </xs:sequence>
     </xs:complexType>
 </xs:schema>

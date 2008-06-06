@@ -76,6 +76,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.DeadlockDetector.Deadlock;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.modules.debugger.jpda.ui.views.ViewModelListener;
 
 import org.netbeans.spi.viewmodel.Models;
@@ -498,14 +499,21 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             for (TreePath path : treeView.getVisiblePaths()) {
                 Node node = Visualizer.findNode(path.getLastPathComponent());
                 JPDAThread jpdaThread = node.getLookup().lookup(JPDAThread.class);
-                if (jpdaThread != null) {
+                JPDAThreadGroup jpdaThreadGroup = node.getLookup().lookup(JPDAThreadGroup.class);
+                if (jpdaThread != null || jpdaThreadGroup != null) {
                     if (leftBarHeight > 0) {
                         leftPanel.add(new BarPanel(isCurrent, isAtBreakpoint, isInDeadlock, leftBarHeight));
                     }
                     leftBarHeight = 0;
-                    isCurrent = jpdaThread == currentThread && jpdaThread.isSuspended();
-                    isAtBreakpoint = threadsListener.isBreakpointHit(jpdaThread);
-                    isInDeadlock = deadlockedThreads.contains(jpdaThread);
+                    if (jpdaThread != null) {
+                        isCurrent = jpdaThread == currentThread && jpdaThread.isSuspended();
+                        isAtBreakpoint = threadsListener.isBreakpointHit(jpdaThread);
+                        isInDeadlock = deadlockedThreads.contains(jpdaThread);
+                    } else {
+                        isCurrent = false;
+                        isAtBreakpoint = false;
+                        isInDeadlock = false;
+                    }
                 }
 
                 JTree tree = treeView.getTree();
@@ -587,6 +595,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             }
             if (isCurrent && isInDeadlock) {
                 secondaryBarColor = greenBarColor;
+                toolTipText = NbBundle.getMessage(DebuggingView.class, "LBL_CURRENT_DEADLOCKED_TIP");
             }
         }
         

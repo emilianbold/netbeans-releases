@@ -72,6 +72,9 @@ public abstract class DebuggerEngineProvider {
      * Returns array of services for 
      * {@link org.netbeans.api.debugger.DebuggerEngine} provided by this 
      * DebuggerEngineProvider.
+     * If there are instanceof of {@link java.beans.beancontext.BeanContextChildComponentProxy},
+     * the provided components are opened when the engine starts and are closed
+     * when the debugging session finishes.
      *
      * @return array of services
      */
