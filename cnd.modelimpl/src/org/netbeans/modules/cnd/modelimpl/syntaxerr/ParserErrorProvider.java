@@ -36,15 +36,19 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.modelimpl.syntaxerr;
 
-package org.netbeans.modules.cnd.modelimpl.csm.core;
-
+import antlr.RecognitionException;
+import java.util.ArrayList;
+import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.CharSeq;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.openide.util.Utilities;
 
 /**
  * Error provider based on parser errors
@@ -53,17 +57,26 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 public class ParserErrorProvider extends CsmErrorProvider {
 
     private static final boolean ENABLE = getBoolean("cnd.parser.error.provider", true);
-    
+
     @Override
     public Collection<CsmErrorInfo> getErrors(BaseDocument doc, CsmFile file) {
-        return ENABLE ? ((FileImpl) file).getErrors(doc) : Collections.<CsmErrorInfo>emptyList();
+        if (ENABLE) {
+            Collection<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
+            Collection<RecognitionException> errors = ((FileImpl) file).getErrors();
+            ParserErrorFilter.getDefault().filter(errors, result, doc);
+            return result;
+        } else {
+            return Collections.<CsmErrorInfo>emptyList();
+        }
     }
-    
+
     private static boolean getBoolean(String name, boolean result) {
         String text = System.getProperty(name);
-        if( text != null ) {
+        if (text != null) {
             result = Boolean.parseBoolean(text);
         }
         return result;
-    }     
+    }
+
+
 }
