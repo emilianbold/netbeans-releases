@@ -104,8 +104,9 @@
     var socket;
     
     var requests = [];
-    
+    var topWindow;
     this.initMonitor = function  (context, browser, _socket) {
+        topWindow = context.window;
         if( !netFeatures.disableNetMonitor ){
             monitorContext(context, browser);
             if( !_socket ) 
@@ -118,6 +119,7 @@
         if (context.networkListener) {
             unmonitorContext(context, browser);
             socket = null;
+            topWindow = null;
         }
             
     }
@@ -154,23 +156,33 @@
          */
         onModifyRequest: function (aNsISupport) {
             var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
-            
-            requests.push(request);
-            var activity = getHttpRequestHeaders(request);
-            activity.time = nowTime();
-            activity.category = getRequestCategory(request);
-            //activity.win = webProgress ? safeGetWindow(webProgress) : null;
 
-            sendNetActivity(activity);
+            if ( isRelevantWindow(request) ){
+                requests.push(request);
+                var activity = getHttpRequestHeaders(request);
+                activity.time = nowTime();
+                activity.category = getRequestCategory(request);
+                sendNetActivity(activity);
+            }
         },
         
-        onExamineResponse: function( request ){
-            var activity = getHttpResponseHeaders(request);
-            activity.time = nowTime();
-            sendExamineNetResponse(activity);
+        onExamineResponse: function( aNsISupport ){
+            
+            var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
+            if( isRelevantWindow(request) ){
+                var activity = getHttpResponseHeaders(request);
+                activity.time = nowTime();
+                sendExamineNetResponse(activity);
+            }
         }
         
         
+    }
+    
+    function isRelevantWindow(aRequest) {
+        var webProgress = getRequestWebProgress(aRequest)
+        var win = webProgress ? safeGetWindow(webProgress) : null;
+        return (topWindow == win);
     }
 
     function NetProgressListener(context)
@@ -193,9 +205,9 @@
         //void onProgressChange ( nsIWebProgress webProgress , nsIRequest request , PRInt32 curSelfProgress , PRInt32 maxSelfProgress , PRInt32 curTotalProgress , PRInt32 maxTotalProgress )   
         onProgressChange : function(progress, request, current, max, total, maxTotal)
         {
-          if ( requests.indexOf(request) != -1){
-            NetBeans.Logger.log("On ProgressChange: " + Object.prototype.toString.apply(progress.wrappedJSObject) + " Request: " + Object.prototype.toString.apply(request) + " max: " + max + " total: " + total + " maxTotal: " + maxTotal);
-          }
+            if ( requests.indexOf(request) != -1){
+                NetBeans.Logger.log("On ProgressChange: " + Object.prototype.toString.apply(progress.wrappedJSObject) + " Request: " + Object.prototype.toString.apply(request) + " max: " + max + " total: " + total + " maxTotal: " + maxTotal);
+            }
         },
         //void onLocationChange ( nsIWebProgress webProgress , nsIRequest request , nsIURI location )  
         onLocationChange: function() {
@@ -334,7 +346,7 @@
             activity.urlParams = parseURLParams(activity.href);
 
             //if (!activity.mimeType && aRequest.contentType )
-           //     activity.mimeType = getMimeType(aRequest.contentType, aRequest.name);
+            //     activity.mimeType = getMimeType(aRequest.contentType, aRequest.name);
 
             var requestHeaders = [];
 
@@ -405,7 +417,7 @@
                         NetBeans.Logger.log("       " + headers[header].name + " : " + headers[header].value);
                     }
                 } else {
-                  NetBeans.Logger.log("   >" + key + " : " + aActivity[key]);
+                    NetBeans.Logger.log("   >" + key + " : " + aActivity[key]);
                 }
             }
         }
@@ -415,24 +427,24 @@
      * @param {NetActivity} aActivity;
      */
     function sendExamineNetResponse ( aActivity ){
-//        var href = aRequest.name;
-//        var referrer = aRequest.referrer;
-//        var status = aRequest.responseStatus;
-//        var statusText = aRequest.responseStatusText;
-//        
-//        var method = null;
-//        var params = null;
-//        if( aRequest.requestMethod  ){
-//            method = aRequest.requestMethod;
-//            if( method != "POST"){
-//                params = parseURLParmas(href);
-//            }
-//        }
-//        
-//        var loadFlags = null;
-//        if( aRequest.loadFlags){
-//            loadFlags = aRequest.loadFlags;
-//        }
+        //        var href = aRequest.name;
+        //        var referrer = aRequest.referrer;
+        //        var status = aRequest.responseStatus;
+        //        var statusText = aRequest.responseStatusText;
+        //        
+        //        var method = null;
+        //        var params = null;
+        //        if( aRequest.requestMethod  ){
+        //            method = aRequest.requestMethod;
+        //            if( method != "POST"){
+        //                params = parseURLParmas(href);
+        //            }
+        //        }
+        //        
+        //        var loadFlags = null;
+        //        if( aRequest.loadFlags){
+        //            loadFlags = aRequest.loadFlags;
+        //        }
         if (DEBUG){
             for( var key in aActivity ){
                 if ( key == "responseHeaders"){
@@ -442,7 +454,7 @@
                         NetBeans.Logger.log("       " + headers[header].name + " : " + headers[header].value);
                     }
                 } else {
-                  NetBeans.Logger.log("   <" + key + " : " + aActivity[key]);
+                    NetBeans.Logger.log("   <" + key + " : " + aActivity[key]);
                 }
             }
         }
@@ -470,6 +482,11 @@
     }
     
     
+    /*
+     * getRequestWebProgress
+     * @param request
+     * @return {nsIWebProgress}
+     */
     function getRequestWebProgress(request)
     {
         try
@@ -498,6 +515,20 @@
         catch (exc) {}
     }
     
+    /*
+     * @param {nsIWebProgress} webProgress
+     */
+    function safeGetWindow(webProgress)
+    {
+        try
+        {
+            return webProgress.DOMWindow;
+        }
+        catch (exc)
+        {
+            return null;
+        }
+    }
     function getRequestCategory(request)
     {
         try
@@ -511,17 +542,6 @@
     }
     
     
-    function safeGetWindow(webProgress)
-    {
-        try
-        {
-            return webProgress.DOMWindow;
-        }
-        catch (exc)
-        {
-            return null;
-        }
-    }
     
 
     
