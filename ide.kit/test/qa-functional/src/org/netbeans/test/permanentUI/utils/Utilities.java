@@ -60,6 +60,7 @@ import javax.swing.MenuElement;
  * @author Lukas Hasik
  */
 public class Utilities {
+    private static boolean debug = true;
 
     /**
      * @param args the command line arguments
@@ -102,6 +103,8 @@ public class Utilities {
             Scanner scanner = new Scanner(new File(filename));
             //starts "| Item |"
             String menuName = scanner.nextLine();
+            if(debug)
+                System.out.println("1: "+menuName);
             int from;
             if ((from = menuName.indexOf("| ")) != -1) {
                 parsedMenu.setName(menuName.substring(from + "| ".length(), menuName.lastIndexOf(" |")));
@@ -112,8 +115,10 @@ public class Utilities {
             }
             //skip ====== bellow menu name
             menuName = scanner.nextLine();
+            if(debug)
+                System.out.println("2: "+menuName);
             if (!(menuName.matches("^={5,}+"))) {
-                System.out.println("Wrong file: missing ===== - bellow  menu name");
+                System.err.println("Wrong file: missing ===== - bellow  menu name");
                 return null;
             }
             //parse the menu items structure
@@ -192,7 +197,8 @@ public class Utilities {
         //parse line
         Scanner line = new Scanner(lineText);
         NbMenuItem menuitem = new NbMenuItem();
-
+        if(debug)
+                System.out.println("Parsing line: "+line);
         //is it separator? "======="
         if (line.hasNext("^={5,}+")) { //at least 5x =
 
@@ -305,22 +311,22 @@ public class Utilities {
         }
         return textLines;
     }
-    
-        public static ArrayList<String> parseFileByLinesLeaveSpaces(String filename) {
-            ArrayList<String> textLines = new ArrayList<String>();
 
-            try {
-                Scanner scanner = new Scanner(new File(filename));
-                while (scanner.hasNextLine()) {
-                    String nextLine = scanner.nextLine();
-                    int spaces = 0;
-                    while (nextLine.charAt(spaces) == ' ') {
-                        spaces++;
-                    }
-                    nextLine = nextLine.substring(spaces);
-                    for (int i = 0; i < spaces / 4; i++) {
-                        nextLine = "+-" + nextLine;
-                    }
+    public static ArrayList<String> parseFileByLinesLeaveSpaces(String filename) {
+        ArrayList<String> textLines = new ArrayList<String>();
+
+        try {
+            Scanner scanner = new Scanner(new File(filename));
+            while (scanner.hasNextLine()) {
+                String nextLine = scanner.nextLine();
+                int spaces = 0;
+                while (nextLine.charAt(spaces) == ' ') {
+                    spaces++;
+                }
+                nextLine = nextLine.substring(spaces);
+                for (int i = 0; i < spaces / 4; i++) {
+                    nextLine = "+-" + nextLine;
+                }
 
 //                for(int i = 0; nextLine.charAt(i)==' ';i++){
 //                    nextLine = nextLine.substring(4);
@@ -328,13 +334,13 @@ public class Utilities {
 ////                    nextLine.replaceFirst("    ", "+-");
 ////                    System.out.println("replacing");
 //                }
-                    textLines.add(nextLine);
-                }
-
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger(Utilities.class.getName()).log(Level.SEVERE, null, ex);
+                textLines.add(nextLine);
             }
-            return textLines;
+
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Utilities.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return textLines;
     }
 
     /**
@@ -352,8 +358,8 @@ public class Utilities {
                 trimmedText.append(" ");
             }
         }
-        int trimmedTextLengt = trimmedText.length(); 
-        if (trimmedTextLengt > 0){ 
+        int trimmedTextLengt = trimmedText.length();
+        if (trimmedTextLengt > 0) {
             trimmedTextLengt--; //remove the last space if line is not empty
         }
         return trimmedText.substring(0, trimmedTextLengt);
@@ -369,7 +375,7 @@ public class Utilities {
      */
     public static String compareNbMenuItems(NbMenuItem menuOrigin, NbMenuItem menuCompare, int submenuLevel) {
         String returnText = "";
-        System.out.println(menuOrigin.toString()+" comparing with \n"+menuCompare); //DEBUG
+        System.out.println(menuOrigin.toString() + " comparing with \n" + menuCompare); //DEBUG
         if (!menuOrigin.equals(menuCompare)) {
             returnText = menuOrigin.findDifference(menuCompare);
         }
@@ -381,29 +387,24 @@ public class Utilities {
                 NbMenuItem originItem = null;
                 NbMenuItem compareItem = null;
                 while (itOrigin.hasNext() || itCompare.hasNext()) {
-                    try {
-                        originItem = itOrigin.next();
-                    } catch (NoSuchElementException e) {
-                        originItem = null;
-                    }
-                    try {
-                        compareItem = itCompare.next();
-                    } catch (NoSuchElementException e) {
-                        compareItem = null;
-                    }
-                    if(originItem == null) {
-                        if(compareItem == null) {
-                            returnText += "BOTH ITEMS ARE NULL. THIS STATE SHOULDN'T HAPPEN";
-                        } else { //only originItem is null
-                            returnText += compareItem.getName() + " is missing in the menu. ["+compareItem.toString()+"]";
-                        }
+                    if (itOrigin.hasNext()) {
+                        if (itCompare.hasNext()) { //both items exist
+                            originItem = itOrigin.next();
+                            compareItem = itCompare.next();
+                            returnText += compareNbMenuItems(originItem, compareItem, submenuLevel - 1);
+                        } else { //compareItem doesn't exist
+                            originItem = itOrigin.next();
+                            returnText += originItem.getName() + " shoul NOT be in the menu. [" + originItem.toString() + "]";
+                        }                        
                     } else {
-                        if(compareItem == null) {
-                            returnText += originItem.getName() + " shoul NOT be in the menu. ["+originItem.toString()+"]";                          
-                        } else { 
+                        if (itCompare.hasNext()) {//originItem doesn't exist
+                            compareItem = itCompare.next();
+                            returnText += compareItem.getName() + " is missing in the menu. [" + compareItem.toString() + "]";
+                        } else {
+                            returnText += "BOTH ITEMS ARE NULL. THIS STATE SHOULDN'T HAPPEN";
                         }
                     }
-                    returnText += compareNbMenuItems(originItem, compareItem, submenuLevel - 1);
+
                 }
             }
         }
