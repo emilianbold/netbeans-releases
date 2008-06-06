@@ -223,6 +223,7 @@ terminal T_OPEN_PARENTHESE,T_CLOSE_PARENTHESE;
 terminal T_NEKUDOTAIM;
 terminal T_DOLLAR;
 terminal T_QUATE,T_BACKQUATE;
+terminal T_START_NOWDOC, T_END_NOWDOC;
 
 /* Non terminals */
 
@@ -2083,6 +2084,12 @@ T_LNUMBER:scalar
 {:
 	Scalar s = new Scalar(scalarleft, scalarright, /*parser.ast,*/ "__FUNCTION__", Scalar.Type.SYSTEM);
 	RESULT = s;
+:}
+
+| T_START_NOWDOC:start T_ENCAPSED_AND_WHITESPACE:scalar T_END_NOWDOC:end	
+{:
+        Scalar s = new Scalar(startleft, endright, scalar, Scalar.Type.STRING);
+        RESULT = s;
 :}
 ;
 

@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.php.editor.lexer;
 
-import org.netbeans.modules.php.editor.PHPVersion;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 %%
@@ -59,6 +58,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %state ST_PHP_HEREDOC
 %state ST_PHP_START_HEREDOC
 %state ST_PHP_END_HEREDOC
+%state ST_PHP_NOWDOC
+%state ST_PHP_START_NOWDOC
+%state ST_PHP_END_NOWDOC
 %state ST_PHP_LOOKING_FOR_PROPERTY
 %state ST_PHP_VAR_OFFSET
 %state ST_PHP_COMMENT
@@ -256,14 +258,18 @@ ANY_CHAR=(.|[\n])
 NEWLINE=("\r"|"\n"|"\r\n")
 DOUBLE_QUOTES_LITERAL_DOLLAR=("$"+([^a-zA-Z_\x7f-\xff$\"\\{]|("\\"{ANY_CHAR})))
 BACKQUOTE_LITERAL_DOLLAR=("$"+([^a-zA-Z_\x7f-\xff$`\\{]|("\\"{ANY_CHAR})))
+
 HEREDOC_LITERAL_DOLLAR=("$"+([^a-zA-Z_\x7f-\xff$\n\r\\{]|("\\"[^\n\r])))
-HEREDOC_NEWLINE=((({LABEL}";"?((("{"+|"$"+)"\\"?)|"\\"))|(("{"*|"$"*)"\\"?)){NEWLINE})
+HEREDOC_NEWLINE=((({LABEL}";"?((("{"+|"$"+)"\\"?)|"\\"))|(("{"*|"$"*)"\\"?)){NEWLINE}) 
 HEREDOC_CURLY_OR_ESCAPE_OR_DOLLAR=(("{"+[^$\n\r\\{])|("{"*"\\"[^\n\r])|{HEREDOC_LITERAL_DOLLAR})
 HEREDOC_NON_LABEL=([^a-zA-Z_\x7f-\xff$\n\r\\{]|{HEREDOC_CURLY_OR_ESCAPE_OR_DOLLAR})
 HEREDOC_LABEL_NO_NEWLINE=({LABEL}([^a-zA-Z0-9_\x7f-\xff;$\n\r\\{]|(";"[^$\n\r\\{])|(";"?{HEREDOC_CURLY_OR_ESCAPE_OR_DOLLAR})))
+
 DOUBLE_QUOTES_CHARS=("{"*([^$\"\\{]|("\\"{ANY_CHAR}))|{DOUBLE_QUOTES_LITERAL_DOLLAR})
 BACKQUOTE_CHARS=("{"*([^$`\\{]|("\\"{ANY_CHAR}))|{BACKQUOTE_LITERAL_DOLLAR})
+
 HEREDOC_CHARS=("{"*([^$\n\r\\{]|("\\"[^\n\r]))|{HEREDOC_LITERAL_DOLLAR}|({HEREDOC_NEWLINE}+({HEREDOC_NON_LABEL}|{HEREDOC_LABEL_NO_NEWLINE})))
+NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\x7f-\xff;\n\r][^\n\r]*)|({LABEL}[;][^\n\r]+)))
 PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-="|"*="|"/="|".="|"%="|"<<="|">>="|"&="|"|="|"^="|"||"|"&&"|"OR"|"AND"|"XOR"|"<<"|">>"
 
 
@@ -890,13 +896,76 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
 }
 
-<ST_PHP_IN_SCRIPTING>b?"<<<"{TABS_AND_SPACES}{LABEL}{NEWLINE} {
+<ST_PHP_IN_SCRIPTING>b?"<<<"{TABS_AND_SPACES}[']{LABEL}[']{NEWLINE} {
+	int bprefix = (yytext().charAt(0) != '<') ? 1 : 0;
+        int startString=3+bprefix;
+        /* 3 is <<<, 2 is quotes, 1 is newline */
+        heredoc_len = yylength()-bprefix-3-2-1-(yytext().charAt(yylength()-2)=='\r'?1:0);
+        while ((yytext().charAt(startString) == ' ') || (yytext().charAt(startString) == '\t')) {
+            startString++;
+            heredoc_len--;
+        }
+        // first quate
+        startString++;
+        heredoc = yytext().substring(startString, heredoc_len+startString);
+        yybegin(ST_PHP_START_NOWDOC);
+        return PHPTokenId.PHP_NOWDOC_TAG;
+}
+
+<ST_PHP_START_NOWDOC>{ANY_CHAR} {
+	yypushback(1);
+	yybegin(ST_PHP_NOWDOC);
+}
+
+<ST_PHP_START_NOWDOC>{LABEL}";"?[\r\n] {
+    int label_len = yylength() - 1;
+
+    if (yytext().charAt(label_len-1)==';') {
+        label_len--;
+    }
+
+    if (label_len==heredoc_len && yytext().substring(0,label_len).equals(heredoc)) {
+        heredoc=null;
+        heredoc_len=0;
+        yybegin(ST_PHP_IN_SCRIPTING);
+        return PHPTokenId.PHP_NOWDOC_TAG;
+    } else {
+        return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
+    }
+}
+
+               
+<ST_PHP_NOWDOC>{NOWDOC_CHARS}*{NEWLINE}+{LABEL}";"?[\n\r] {
+    int label_len = yylength() - 1;
+
+    if (yytext().charAt(label_len-1)==';') {
+	   label_len--;
+    }
+    if (label_len > heredoc_len && yytext().substring(label_len - heredoc_len,label_len).equals(heredoc)) {
+        yybegin(ST_PHP_END_NOWDOC);
+    }
+    yypushback(1);
+    return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
+}
+
+<ST_PHP_END_NOWDOC>{ANY_CHAR} {
+    heredoc=null; heredoc_len=0;
+    yybegin(ST_PHP_IN_SCRIPTING);
+    return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
+}
+                     
+<ST_PHP_IN_SCRIPTING>b?"<<<"{TABS_AND_SPACES}({LABEL}|"\""{LABEL}"\""){NEWLINE} {
     int bprefix = (yytext().charAt(0) != '<') ? 1 : 0;
     int startString=3+bprefix;
     heredoc_len = yylength()-bprefix-3-1-(yytext().charAt(yylength()-2)=='\r'?1:0);
     while ((yytext().charAt(startString) == ' ') || (yytext().charAt(startString) == '\t')) {
         startString++;
         heredoc_len--;
+    }
+    // HEREDOC PHP 5.3
+    if (yytext().charAt(startString) == '"') {
+        heredoc_len -= 2;
+        startString ++;
     }
     heredoc = yytext().substring(startString,heredoc_len+startString);
     yybegin(ST_PHP_START_HEREDOC);
@@ -1026,7 +1095,7 @@ but jflex doesn't support a{n,} so we changed a{2,} to aa+
    This rule must be the last in the section!!
    it should contain all the states.
    ============================================ */
-<ST_PHP_IN_SCRIPTING,ST_PHP_DOUBLE_QUOTES,ST_PHP_VAR_OFFSET,ST_PHP_BACKQUOTE,ST_PHP_HEREDOC,ST_PHP_START_HEREDOC,ST_PHP_END_HEREDOC>. {
+<ST_PHP_IN_SCRIPTING,ST_PHP_DOUBLE_QUOTES,ST_PHP_VAR_OFFSET,ST_PHP_BACKQUOTE,ST_PHP_HEREDOC,ST_PHP_START_HEREDOC,ST_PHP_END_HEREDOC,ST_PHP_NOWDOC,ST_PHP_START_NOWDOC,ST_PHP_END_NOWDOC>. {
     yypushback(1);
     pushState(ST_PHP_HIGHLIGHTING_ERROR);
 }

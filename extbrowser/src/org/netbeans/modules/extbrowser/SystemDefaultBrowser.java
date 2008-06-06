@@ -115,13 +115,19 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
     }
 
     /** Determines whether the browser should be visible or not
-     *  @return true when OS is Windows.
+     *  @return true when OS is not Windows and is not Unix with Default Browser capability and is not JDK 6.
      *          false in all other cases.
      */
     public static Boolean isHidden() {
-        return Boolean.valueOf(!Utilities.isWindows() && JDK_6_DESKTOP_BROWSE == null);
+        return Boolean.valueOf(
+                (!Utilities.isWindows() && !defaultBrowserUnixReady())
+                && JDK_6_DESKTOP_BROWSE == null);
     }
 
+    private static boolean defaultBrowserUnixReady() {
+        return Utilities.isUnix() && NbDefaultUnixBrowserImpl.isAvailable();
+    }
+    
     /** Creates new ExtWebBrowser */
     public SystemDefaultBrowser() {
     }
@@ -136,6 +142,8 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
             return new Jdk6BrowserImpl();
         } else if (Utilities.isWindows()) {
             return new NbDdeBrowserImpl(this);
+        } else if (Utilities.isUnix()) {
+            return new NbDefaultUnixBrowserImpl(this);
         } else {
             throw new UnsupportedOperationException(NbBundle.getMessage(SystemDefaultBrowser.class, "MSG_CannotUseBrowser"));
         }

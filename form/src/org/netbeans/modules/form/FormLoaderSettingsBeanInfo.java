@@ -73,10 +73,6 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                                        FormLoaderSettings.class,
                                        "getUseIndentEngine", // NOI18N
                                        "setUseIndentEngine"), // NOI18N
-                new PropertyDescriptor(FormLoaderSettings.PROP_EVENT_VARIABLE_NAME,
-                                       FormLoaderSettings.class,
-                                       "getEventVariableName", // NOI18N
-                                       "setEventVariableName"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_LISTENER_GENERATION_STYLE,
                                        FormLoaderSettings.class,
                                        "getListenerGenerationStyle", // NOI18N
