@@ -47,7 +47,6 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.IllegalCharsetNameException;
 import java.util.AbstractList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -71,8 +70,9 @@ import org.openide.util.Utilities;
  */
 public final class Utils {
 
-    public static final String URL_REGEXP = "^https?://[^/?# ]+(:\\d+)?/[^?# ]*(\\?[^#]*)?(#\\w*)?$";
+    public static final String URL_REGEXP = "^https?://[^/?# ]+(:\\d+)?/[^?# ]*(\\?[^#]*)?(#\\w*)?$"; // NOI18N
     private static final Pattern URL_PATTERN = Pattern.compile(URL_REGEXP);
+    private static final char[] INVALID_FILENAME_CHARS = new char[] {'/', '\\', '|', ':', '*', '?', '"', '<', '>'}; // NOI18N
 
     private Utils() {
     }
@@ -123,7 +123,6 @@ public final class Utils {
         LocalServer localServer = new LocalServer(newLocation, projectLocation);
         localServerComboBoxModel.addElement(localServer);
         localServerComboBox.setSelectedItem(localServer);
-        sortComboBoxModel(localServerComboBoxModel);
     }
 
     public static void locateLocalServerAction() {
@@ -151,43 +150,6 @@ public final class Utils {
         };
     }
 
-    /**
-     * Sort {@link MutableComboBoxModel} according to the natural ordering of its items
-     * and preserves selected item if any.
-     * @param comboBoxModel {@link MutableComboBoxModel} to sort.
-     */
-    public static void sortComboBoxModel(MutableComboBoxModel comboBoxModel) {
-        int size = comboBoxModel.getSize();
-        if (size < 2) {
-            return;
-        }
-        Object selected = comboBoxModel.getSelectedItem();
-        Object[] items = removeComboBoxItems(comboBoxModel);
-        Arrays.sort(items);
-        putComboBoxItems(comboBoxModel, items);
-        if (selected != null) {
-            comboBoxModel.setSelectedItem(selected);
-        }
-    }
-
-    public static Object[] removeComboBoxItems(MutableComboBoxModel comboBoxModel) {
-        int size = comboBoxModel.getSize();
-        Object[] items = new Object[size];
-        for (int i = size - 1; i >= 0; i--) {
-            items[i] = comboBoxModel.getElementAt(i);
-            comboBoxModel.removeElementAt(i);
-        }
-        assert comboBoxModel.getSize() == 0;
-        return items;
-    }
-
-    public static void putComboBoxItems(MutableComboBoxModel comboBoxModel, Object[] items) {
-        int size = items.length;
-        for (int i = 0; i < size; i++) {
-            comboBoxModel.addElement(items[i]);
-        }
-    }
-
     public static File getCanonicalFile(File file) {
         try {
             return file.getCanonicalFile();
@@ -203,31 +165,61 @@ public final class Utils {
      * @return <code>true</true> if the provided String is valid file name.
      */
     public static boolean isValidFileName(String fileName) {
-        return fileName != null && fileName.trim().length() > 0
-                && fileName.indexOf('/')  == -1 // NOI18N
-                && fileName.indexOf('\\') == -1 // NOI18N
-                && fileName.indexOf(':') == -1; // NOI18N
+        assert fileName != null;
+        for (char ch : INVALID_FILENAME_CHARS) {
+            if (fileName.indexOf(ch) != -1) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
-     * Check whether the provided File has a valid file name. File is not
-     * {@link FileUtil#normalizeFile(java.io.File) normalized}, caller should do it if needed.
+     * Check whether the provided File has a valid file name. Only the non-existing file names in the file paths are checked.
+     * It means that if you pass existing directory, no check is done.
+     * <p>
+     * For example for <em>C:\Documents And Settings\ExistingDir\NonExistingDir\NonExistingDir2\Newdir</em> the last free file names
+     * are checked.
+     * <p>
+     * File is not {@link FileUtil#normalizeFile(java.io.File) normalized}, caller should do it if needed.
      * @param file File to check.
      * @return <code>true</true> if the provided File has valid file name.
      * @see #isValidFileName(java.lang.String)
      */
     public static boolean isValidFileName(File file) {
         assert file != null;
-        // #132520
-        if (file.isAbsolute() && file.getParentFile() == null) {
-            return true;
+        File tmp = file;
+        while (tmp != null && !tmp.exists()) {
+            // #132520
+            if (tmp.isAbsolute() && tmp.getParentFile() == null) {
+                return true;
+            } else if (!isValidFileName(tmp.getName())) {
+                return false;
+            }
+            tmp = tmp.getParentFile();
         }
-        return isValidFileName(file.getName());
+        return true;
     }
 
     /**
      * Validate the path and get the error message or <code>null</code> if it's all right.
-     * @param projectPath the path to validate
+     * @param projectPath the path to validate.
+     * @param type the type for error messages, currently "Project", "Sources" and "Folder".
+     *             Add other to Bundle.properties file if more types are needed.
+     * @param allowNonEmpty <code>true</code> if the folder can exist and can be non empty.
+     * @param allowInRoot  <code>true</code> if the folder can exist and can be a root directory "/"
+     *                     (this parameter is taken into account only for *NIX OS).
+     * @return localized error message in case of error, <code>null</code> otherwise.
+     * @see #validateProjectDirectory(java.io.File, java.lang.String, boolean, boolean)
+     */
+    public static String validateProjectDirectory(String projectPath, String type, boolean allowNonEmpty,
+            boolean allowInRoot) {
+        return validateProjectDirectory(new File(projectPath), type, allowNonEmpty, allowInRoot);
+    }
+
+    /**
+     * Validate the file and get the error message or <code>null</code> if it's all right.
+     * @param project the file to validate.
      * @param type the type for error messages, currently "Project", "Sources" and "Folder".
      *             Add other to Bundle.properties file if more types are needed.
      * @param allowNonEmpty <code>true</code> if the folder can exist and can be non empty.
@@ -235,12 +227,11 @@ public final class Utils {
      *                     (this parameter is taken into account only for *NIX OS).
      * @return localized error message in case of error, <code>null</code> otherwise.
      */
-    public static String validateProjectDirectory(String projectPath, String type, boolean allowNonEmpty,
+    public static String validateProjectDirectory(File project, String type, boolean allowNonEmpty,
             boolean allowInRoot) {
-        assert projectPath != null;
+        assert project != null;
         assert type != null;
 
-        File project = new File(projectPath);
         // #131753
         if (!project.isAbsolute()) {
             return NbBundle.getMessage(Utils.class, "MSG_" + type + "NotAbsolute");
@@ -287,26 +278,40 @@ public final class Utils {
      * @param sources project sources.
      * @param copyTarget directory for copying files.
      * @return <code>true</code> if the directories are "independent".
+     * @see #subdirectories(java.lang.String, java.lang.String)
      */
     public static String validateSourcesAndCopyTarget(String sources, String copyTarget) {
-        assert sources != null;
-        assert copyTarget != null;
-        // handle "/myDir" and "/myDirectory"
-        if (!sources.endsWith(File.separator)) {
-            sources = sources + File.separator;
-        }
-        if (!copyTarget.endsWith(File.separator)) {
-            copyTarget = copyTarget + File.separator;
-        }
-        if (sources.startsWith(copyTarget)
-                || copyTarget.startsWith(sources)) {
+        if (subdirectories(sources, copyTarget)) {
             return NbBundle.getMessage(Utils.class, "MSG_SourcesEqualCopyTarget");
         }
         return null;
     }
 
+    /**
+     * Check whether the <em>dir1</em> is underneath the <em>dir2</em> and vice versa. Both paths have to be normalized.
+     * @param dir1 a directory.
+     * @param dir2 a directory.
+     * @return <code>true</code> if the directories are subdirectories.
+     */
+    public static boolean subdirectories(String dir1, String dir2) {
+        assert dir1 != null;
+        assert dir2 != null;
+        // handle "/myDir" and "/myDirectory"
+        if (!dir1.endsWith(File.separator)) {
+            dir1 = dir1 + File.separator;
+        }
+        if (!dir2.endsWith(File.separator)) {
+            dir2 = dir2 + File.separator;
+        }
+        return dir1.startsWith(dir2) || dir2.startsWith(dir1);
+    }
+
     public static class EncodingModel extends DefaultComboBoxModel {
         private static final long serialVersionUID = -3139920099217726436L;
+
+        public EncodingModel() {
+            this(null);
+        }
 
         public EncodingModel(String originalEncoding) {
             Charset defEnc = null;

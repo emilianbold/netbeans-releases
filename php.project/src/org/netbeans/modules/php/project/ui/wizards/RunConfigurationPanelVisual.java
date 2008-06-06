@@ -39,75 +39,31 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
-import java.awt.BorderLayout;
 import javax.swing.JPanel;
-import javax.swing.MutableComboBoxModel;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.php.project.ui.CopyFilesVisual;
-import org.netbeans.modules.php.project.ui.LocalServer;
-import org.netbeans.modules.php.project.ui.WebFolderNameProvider;
+import org.netbeans.modules.php.project.connections.ConfigManager;
+import org.netbeans.modules.php.project.ui.SourcesFolderNameProvider;
+import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
 import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
-public class ConfigureServerPanelVisual extends JPanel {
-    private static final long serialVersionUID = 186471932981722630L;
+public class RunConfigurationPanelVisual extends JPanel {
+    private static final long serialVersionUID = -2998474632476302L;
+    private final RunAsPanel.InsidePanel[] insidePanels;
 
-    private final CopyFilesVisual copyFilesVisual;
-
-    /** Creates new form ConfigureServerPanelVisual */
-    public ConfigureServerPanelVisual(ConfigureServerPanel wizardPanel, WebFolderNameProvider webFolderNameProvider) {
-
+    public RunConfigurationPanelVisual(RunConfigurationPanel wizardPanel, SourcesFolderNameProvider sourcesFolderNameProvider,
+            ConfigManager configManager, RunAsPanel.InsidePanel[] insidePanels) {
         // Provide a name in the title bar.
-        setName(NbBundle.getMessage(ConfigureServerPanelVisual.class, "LBL_ProjectServer"));
+        setName(NbBundle.getMessage(RunConfigurationPanelVisual.class, "LBL_RunConfiguration"));
         putClientProperty("WizardPanel_contentSelectedIndex", 1); // NOI18N
         // Step name (actually the whole list for reference).
         putClientProperty("WizardPanel_contentData", wizardPanel.getSteps()); // NOI18N
 
+        this.insidePanels = insidePanels;
         initComponents();
-
-        copyFilesVisual = new CopyFilesVisual(webFolderNameProvider);
-        copyFilesPanel.add(BorderLayout.NORTH, copyFilesVisual);
+        infoLabel.setText(NbBundle.getMessage(RunConfigurationPanelVisual.class, "LBL_RunConfigurationInfo"));
     }
-
-    public void addServerListener(ChangeListener listener) {
-        copyFilesVisual.addChangeListener(listener);
-    }
-
-    public void removeServerListener(ChangeListener listener) {
-        copyFilesVisual.removeChangeListener(listener);
-    }
-
-
-    public boolean isCopyFiles() {
-        return copyFilesVisual.isCopyFiles();
-    }
-
-    public void setCopyFiles(boolean copyFiles) {
-        copyFilesVisual.setCopyFiles(copyFiles);
-    }
-
-    public LocalServer getLocalServer() {
-        return copyFilesVisual.getLocalServer();
-    }
-
-    public MutableComboBoxModel getLocalServerModel() {
-        return copyFilesVisual.getLocalServerModel();
-    }
-
-    public void setLocalServerModel(MutableComboBoxModel localServers) {
-        copyFilesVisual.setLocalServerModel(localServers);
-    }
-
-    public void selectLocalServer(LocalServer localServer) {
-        copyFilesVisual.selectLocalServer(localServer);
-    }
-
-    public void setState(boolean enabled) {
-        copyFilesVisual.setState(enabled);
-    }
-
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -117,30 +73,32 @@ public class ConfigureServerPanelVisual extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        copyFilesPanel = new javax.swing.JPanel();
+        infoLabel = new javax.swing.JLabel();
+        runAsPanel = new RunAsPanel(insidePanels);
 
-        copyFilesPanel.setLayout(new java.awt.BorderLayout());
+        org.openide.awt.Mnemonics.setLocalizedText(infoLabel, "dummy"); // NOI18N
+
+        runAsPanel.setLayout(new java.awt.CardLayout());
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(0, 0, 0)
-                .add(copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
-                .addContainerGap())
+            .add(infoLabel)
+            .add(runAsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                .add(infoLabel)
+                .add(18, 18, 18)
+                .add(runAsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 98, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel copyFilesPanel;
+    private javax.swing.JLabel infoLabel;
+    private javax.swing.JPanel runAsPanel;
     // End of variables declaration//GEN-END:variables
-
 }

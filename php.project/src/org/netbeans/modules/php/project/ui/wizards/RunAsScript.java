@@ -36,17 +36,19 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.ui.customizer;
+package org.netbeans.modules.php.project.ui.wizards;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JTextField;
-import javax.swing.event.DocumentListener;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.project.api.PhpOptions;
-import org.netbeans.modules.php.project.ui.Utils;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -54,40 +56,24 @@ import org.openide.util.NbBundle;
  */
 public class RunAsScript extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = -5593489817914071L;
-    private final JLabel[] labels;
-    private final JTextField[] textFields;
-    private final String[] propertyNames;
     private final String displayName;
-    final Category category;
+    final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    public RunAsScript(ConfigManager manager, Category category) {
-        this(manager, category, NbBundle.getMessage(RunAsScript.class, "LBL_ConfigScript"));
+    public RunAsScript(ConfigManager manager) {
+        this(manager, NbBundle.getMessage(RunAsScript.class, "LBL_ConfigScript"));
     }
 
-    private RunAsScript(ConfigManager manager, Category category, String displayName) {
+    private RunAsScript(ConfigManager manager, String displayName) {
         super(manager);
-        this.category = category;
         this.displayName = displayName;
 
         initComponents();
-        this.labels = new JLabel[] {
-            indexFileLabel,
-            argsLabel
-        };
-        this.textFields = new JTextField[] {
-            indexFileTextField,
-            argsTextField
-        };
-        this.propertyNames = new String[] {
-            PhpProjectProperties.INDEX_FILE,
-            PhpProjectProperties.ARGS
-        };
-        assert labels.length == textFields.length && labels.length == propertyNames.length;
-        for (int i = 0; i < textFields.length; i++) {
-            DocumentListener dl = new FieldUpdater(propertyNames[i], labels[i], textFields[i]);
-            textFields[i].getDocument().addDocumentListener(dl);
-        }
         interpreterTextField.setText(PhpOptions.getInstance().getPhpInterpreter());
+        runAsCombo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                changeSupport.fireChange();
+            }
+        });
     }
 
     @Override
@@ -111,44 +97,20 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
     }
 
     protected void loadFields() {
-        for (int i = 0; i < textFields.length; i++) {
-            textFields[i].setText(getValue(propertyNames[i]));
-        }
     }
 
     protected void validateFields() {
-        String indexFile = indexFileTextField.getText();
-        String err = null;
-        if (!Utils.isValidFileName(indexFile)) {
-            err = NbBundle.getMessage(RunAsScript.class, "MSG_IllegalIndexName");
-        }
-        category.setErrorMessage(err);
-        category.setValid(err == null);
+        // nothing needed in this panel
     }
 
-    String composeHint() {
-        String php = interpreterTextField.getText();
-        String script = "./" + indexFileTextField.getText(); // NOI18N
-        String args = argsTextField.getText();
-        return php + " " + script + " " + args; // NOI18N
+    public void addRunAsScriptListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
     }
 
-    private class FieldUpdater extends TextFieldUpdater {
-
-        public FieldUpdater(String propName, JLabel label, JTextField field) {
-            super(propName, label, field);
-        }
-
-        protected final String getDefaultValue() {
-            return RunAsScript.this.getDefaultValue(getPropName());
-        }
-
-        @Override
-        protected void processUpdate() {
-            super.processUpdate();
-            hintLabel.setText(composeHint());
-        }
+    public void removeRunAsScriptListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
+
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -161,30 +123,16 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
 
         interpreterLabel = new javax.swing.JLabel();
         interpreterTextField = new javax.swing.JTextField();
-        argsLabel = new javax.swing.JLabel();
-        argsTextField = new javax.swing.JTextField();
         runAsLabel = new javax.swing.JLabel();
         runAsCombo = new javax.swing.JComboBox();
-        indexFileLabel = new javax.swing.JLabel();
-        indexFileTextField = new javax.swing.JTextField();
-        hintLabel = new javax.swing.JLabel();
 
         interpreterLabel.setLabelFor(interpreterTextField);
         org.openide.awt.Mnemonics.setLocalizedText(interpreterLabel, org.openide.util.NbBundle.getMessage(RunAsScript.class, "LBL_PhpInterpreter")); // NOI18N
 
         interpreterTextField.setEditable(false);
 
-        argsLabel.setLabelFor(argsTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(argsLabel, org.openide.util.NbBundle.getMessage(RunAsScript.class, "LBL_Arguments")); // NOI18N
-
         runAsLabel.setLabelFor(runAsCombo);
         org.openide.awt.Mnemonics.setLocalizedText(runAsLabel, org.openide.util.NbBundle.getMessage(RunAsScript.class, "LBL_RunAs")); // NOI18N
-
-        indexFileLabel.setLabelFor(indexFileTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(indexFileLabel, org.openide.util.NbBundle.getMessage(RunAsScript.class, "LBL_IndexFile")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(hintLabel, "dummy"); // NOI18N
-        hintLabel.setEnabled(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -194,22 +142,12 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                 .add(runAsLabel)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(interpreterLabel)
-                    .add(indexFileLabel)
-                    .add(argsLabel))
+                .add(interpreterLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(hintLabel)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, argsTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, indexFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, runAsCombo, 0, 222, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, interpreterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE))
-                        .add(0, 0, 0))))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, runAsCombo, 0, 222, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, interpreterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE))
+                .add(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -220,26 +158,10 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(interpreterLabel)
-                    .add(interpreterTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(indexFileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(indexFileLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(argsTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(argsLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(hintLabel)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(interpreterTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel argsLabel;
-    private javax.swing.JTextField argsTextField;
-    private javax.swing.JLabel hintLabel;
-    private javax.swing.JLabel indexFileLabel;
-    private javax.swing.JTextField indexFileTextField;
     private javax.swing.JLabel interpreterLabel;
     private javax.swing.JTextField interpreterTextField;
     private javax.swing.JComboBox runAsCombo;
