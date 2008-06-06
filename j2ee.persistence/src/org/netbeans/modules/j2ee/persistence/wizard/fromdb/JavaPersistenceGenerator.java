@@ -513,9 +513,20 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     columnAnnArguments.add(genUtils.createAnnotationArgument("nullable", false)); //NOI18N
                 }
                 Integer length = m.getLength();
-                if (entityClass.isRegenSchemaAttrs() && length != null && isCharacterType(memberType)) {
-                    columnAnnArguments.add(genUtils.createAnnotationArgument("length", length)); // NOI18N
+                Integer precision = m.getPrecision();
+                Integer scale = m.getScale();
+                if (entityClass.isRegenSchemaAttrs() ) {
+                    if(length != null) {
+                        columnAnnArguments.add(genUtils.createAnnotationArgument("length", length)); // NOI18N
+                    }
+                    if(precision != null) {
+                        columnAnnArguments.add(genUtils.createAnnotationArgument("precision", precision)); // NOI18N
+                    }
+                    if(scale != null) {
+                        columnAnnArguments.add(genUtils.createAnnotationArgument("scale", scale)); // NOI18N
+                    }
                 }
+                
                 annotations.add(genUtils.createAnnotation("javax.persistence.Column", columnAnnArguments)); //NOI18N
 
                 String temporalType = getMemberTemporalType(m);
