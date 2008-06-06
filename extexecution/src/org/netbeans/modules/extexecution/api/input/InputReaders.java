@@ -59,16 +59,54 @@ public final class InputReaders {
         super();
     }
 
+    /**
+     * Returns the input reader backed by the given reader.
+     * <p>
+     * The client should not use the reader passed as argument anymore. When
+     * the returned input reader is closed reader passed as argument is closed
+     * respectively.
+     * <p>
+     * Returned reader is <i>not thread safe</i> so it can't be used in
+     * multiple instances of {@link InputReaderTask}.
+     *
+     * @param reader real source of the data
+     * @return input reader backed by the given reader
+     */
     public static InputReader forReader(Reader reader) {
         return new DefaultInputReader(reader, true);
     }
 
+    /**
+     * Returns the input reader backed by the given stream. To convert read
+     * bytes to characters specified charset is used.
+     * <p>
+     * The client should not use the stream passed as argument anymore. When
+     * the returned input reader is closed stream is closed respectively.
+     * <p>
+     * Returned reader is <i>not thread safe</i> so it can't be used in
+     * multiple instances of {@link InputReaderTask}.
+     *
+     * @param stream real source of the data
+     * @param charset bytes to characters conversion charset
+     * @return input reader backed by the given stream
+     */
     public static InputReader forStream(InputStream stream, Charset charset) {
         Parameters.notNull("stream", stream);
 
         return forReader(new InputStreamReader(stream, charset));
     }
 
+    /**
+     * Returns the input reader for the given file. To convert read bytes
+     * to characters specified charset is used.
+     * <p>
+     * Returned reader is <i>not thread safe</i> so it can't be used in
+     * multiple instances of {@link InputReaderTask}.
+     *
+     * @param file file to read from
+     * @param charset bytes to characters conversion charset
+     * @return input reader for the given file
+     */
     public static InputReader forFile(File file, Charset charset) {
         Parameters.notNull("file", file);
         Parameters.notNull("charset", charset);
@@ -82,33 +120,78 @@ public final class InputReaders {
         });
     }
 
+    /**
+     * Returns the input reader reading data from the given provider.
+     * <p>
+     * This means
+     * that the actual file (and the corresponding charset) used can change
+     * during the processing. This is specifically useful for rotating
+     * log files.
+     * <p>
+     * Returned reader is <i>not thread safe</i> so it can't be used in
+     * multiple instances of {@link InputReaderTask}.
+     *
+     * @param fileProvider provider used to get the file to process
+     * @return input reader for the given provider
+     */
     public static InputReader forFileInputProvider(FileInput.Provider fileProvider) {
         Parameters.notNull("fileProvider", fileProvider);
 
         return new FileInputReader(fileProvider);
     }
 
+    /**
+     * Represents the file with associated charset for reading from it.
+     *
+     * This class is <i>immutable</i>.
+     */
     public static final class FileInput {
 
         private final File file;
 
         private final Charset charset;
 
+        /**
+         * Creates the new input representing the given file.
+         *
+         * @param file file to represent
+         * @param charset associated charset
+         */
         public FileInput(File file, Charset charset) {
             this.file = file;
             this.charset = charset;
         }
 
+        /**
+         * Returns the charset for reading the file.
+         *
+         * @return the charset for reading the file
+         */
         public Charset getCharset() {
             return charset;
         }
 
+        /**
+         * Returns the file represented by this input.
+         *
+         * @return the file represented by this input
+         */
         public File getFile() {
             return file;
         }
 
+        /**
+         * Provides the file input.
+         *
+         * @see InputReaders#forFileInputProvider(org.netbeans.modules.extexecution.api.input.InputReaders.FileInput.Provider)
+         */
         public interface Provider {
 
+            /**
+             * Returns the file input to use.
+             *
+             * @return the file input to use
+             */
             FileInput getFileInput();
 
         }
