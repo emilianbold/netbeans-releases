@@ -46,8 +46,11 @@ import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.graph.GraphScene;
@@ -65,6 +68,8 @@ import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ICombinedFragment;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
+import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
+import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 import org.netbeans.modules.uml.drawingarea.actions.SceneAcceptProvider;
 import org.netbeans.modules.uml.drawingarea.actions.WidgetAcceptAction;
 import org.netbeans.modules.uml.drawingarea.util.Util;
@@ -391,7 +396,7 @@ public class ContainerWidget extends Widget
             ObjectScene scene = (ObjectScene) widget.getScene();
             boolean convertLocation = false;
             boolean isMovingWidget = false;
-            
+            Set <Object> selected = null;
             if(isWidgetMove(transferable) == true)
             {
                 try
@@ -413,7 +418,7 @@ public class ContainerWidget extends Widget
                 // Now the new Nodes should be selected.  So get the widgets and 
                 // add them to the container.
                 target = new Widget[scene.getSelectedObjects().size()];
-                Set <Object> selected = (Set<Object>) scene.getSelectedObjects();
+                selected = (Set<Object>) scene.getSelectedObjects();
                 Object[] selectedArray = new Object[selected.size()];
                 selected.toArray(selectedArray);
 
@@ -424,7 +429,8 @@ public class ContainerWidget extends Widget
                     target[i] = curWidget;
                 }
             }
-            
+            final Set finalselected=selected!=null ? new HashSet(selected):null;
+            boolean reselect=false;
             for(Widget curWidget : target)
             {
                 // Only add the node to the container if it is fully contained
@@ -498,14 +504,35 @@ public class ContainerWidget extends Widget
                         }
                         cfNs.addOwnedElement(element);
                     }
-                }
+                    reselect=true;
+               }
             }
             
             if(target.length > 0)
             {
                 firePropertyChange(CHILDREN_CHANGED, null, null);
             }
+            if(reselect && finalselected!=null)
+            {
+                //workaround for issue 136552, automatic reselection, may need a better solution later.
+                new AfterValidationExecutor(new ActionProvider() {
+                    public void perfomeAction() {
+                        final DesignerScene scene=(DesignerScene) getScene();
+                        scene.setSelectedObjects(new TreeSet());//workaround for issue
+                        new AfterValidationExecutor(new ActionProvider() {
+                            public void perfomeAction() {
+                                scene.setSelectedObjects(finalselected);
+                                revalidate();
+                                scene.validate();
+                            }
+                        }, scene);
+                        revalidate();
+                        scene.validate();
+                    }
+                }, scene);
+            }
             revalidate();
+            scene.validate();
         }
         
         @Override

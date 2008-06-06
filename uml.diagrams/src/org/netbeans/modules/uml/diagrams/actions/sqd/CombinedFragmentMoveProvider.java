@@ -238,7 +238,7 @@ public class CombinedFragmentMoveProvider  implements MoveProvider {
                             }
                             if(changed)l.setPreferredLocation(loc);
                             IPresentationElement el=(IPresentationElement) scene.findObject(l);
-                            tb.moveObject(el);
+                            if(tb!=null)tb.moveObject(el);
                         }
                         else if(child instanceof CombinedFragmentWidget)
                         {
