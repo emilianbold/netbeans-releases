@@ -44,12 +44,15 @@ import java.awt.Image;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.Set;
 import javax.swing.Action;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /** Default DataObject.Factory implementation.
  * 
@@ -60,7 +63,7 @@ class MimeFactory<T extends DataObject> implements DataObject.Factory {
     final Class<? extends T> clazz;
     final Constructor<? extends T> factory;
     final String mimeType;
-    final Image img;
+    Image img;
     final FileObject fo;
 
     public MimeFactory(Class<? extends T> clazz, String mimeType, Image img, FileObject fo) {
@@ -122,7 +125,15 @@ class MimeFactory<T extends DataObject> implements DataObject.Factory {
         return obj;
     }
     
-    final Image getImage() {
+    final Image getImage(int type) {
+        if (img == null && fo != null) {
+            img = Utilities.loadImage("org/openide/loaders/empty.gif", true); // NOI18N
+            try {
+                img = fo.getFileSystem().getStatus().annotateIcon(img, type, Collections.singleton(fo));
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
         return img;
     }
     

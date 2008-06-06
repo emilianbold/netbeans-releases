@@ -247,9 +247,9 @@ public class DataNode extends AbstractNode {
          return super.getHtmlDisplayName();
      }    
      
-     private java.awt.Image getImageFromFactory() {
+     private java.awt.Image getImageFromFactory(int type) {
          MimeFactory<?> fact = getLookup().lookup(MimeFactory.class);
-         return fact != null ? fact.getImage() : null;
+         return fact != null ? fact.getImage(type) : null;
      }
 
     /** Get the displayed icon for this node.
@@ -261,7 +261,7 @@ public class DataNode extends AbstractNode {
     */
     @Override
     public java.awt.Image getIcon (int type) {
-        java.awt.Image img = getImageFromFactory();
+        java.awt.Image img = getImageFromFactory(type);
         if (img == null) {
             img = super.getIcon (type);
         }
@@ -284,7 +284,7 @@ public class DataNode extends AbstractNode {
     */
     @Override
     public java.awt.Image getOpenedIcon (int type) {
-        java.awt.Image img = getImageFromFactory();
+        java.awt.Image img = getImageFromFactory(type);
         if (img == null) {
             img = super.getOpenedIcon(type);
         }
