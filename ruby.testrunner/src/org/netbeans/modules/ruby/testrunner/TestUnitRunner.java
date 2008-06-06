@@ -74,18 +74,24 @@ public final class TestUnitRunner implements TestRunner {
     }
 
     public void runSingleTest(FileObject testFile, String testMethod) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        List<String> additionalArgs = getTestFileArgs(testFile);
+        additionalArgs.add("-m");
+        additionalArgs.add(testMethod);
+        run(FileOwnerQuery.getOwner(testFile), additionalArgs, testMethod);
     }
 
     public void runTest(FileObject testFile) {
+        run(FileOwnerQuery.getOwner(testFile), getTestFileArgs(testFile), testFile.getName());
+    }
+
+    private List<String> getTestFileArgs(FileObject testFile) {
         String testFilePath = FileUtil.toFile(testFile).getAbsolutePath();
         List<String> additionalArgs = new ArrayList<String>();
         additionalArgs.add("-f"); //NOI18N
         additionalArgs.add(testFilePath);
-        run(FileOwnerQuery.getOwner(testFile), additionalArgs, testFile.getName());
-
+        return additionalArgs;
     }
-
+    
     static File getMediatorScript() {
         File mediatorScript = InstalledFileLocator.getDefault().locate(
                 MEDIATOR_SCRIPT_NAME, "org.netbeans.modules.ruby.testrunner", false);  // NOI18N

@@ -53,9 +53,14 @@ import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
+import org.netbeans.modules.tomcat5.ws.TomcatJaxWsStack;
+import org.netbeans.modules.websvc.serverapi.spi.WSStackFactory;
+import org.netbeans.modules.websvc.serverapi.spi.WSStackSPI;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Tomcat's implementation of the J2eePlatformImpl.
@@ -354,6 +359,7 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
         if (J2eePlatform.TOOL_WSIMPORT.equals(toolName)) {
             File homeDir = tp.getCatalinaHome();
             boolean wsit = isToolSupported(J2eePlatform.TOOL_WSIT);
+            
             if (wsit) {
                 for (int i = 0; i < WSIT_WSIMPORT_LIBS.length; i++) {
                     if (!new File(homeDir, WSIT_WSIMPORT_LIBS[i]).exists()) {
@@ -465,6 +471,11 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
     
     public JavaPlatform getJavaPlatform() {
         return tp.getJavaPlatform();
+    }
+    
+    public Lookup getLookup() {
+        WSStackSPI jaxWsStack = new TomcatJaxWsStack(tp.getCatalinaHome());
+        return Lookups.fixed(WSStackFactory.createWSStack(jaxWsStack));
     }
     
     // private helper methods -------------------------------------------------

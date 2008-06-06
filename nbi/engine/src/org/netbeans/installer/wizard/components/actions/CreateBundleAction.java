@@ -214,11 +214,11 @@ public class CreateBundleAction extends WizardAction {
             StreamUtils.transferData(
                     ResourceUtils.getResource(EngineResources.ENGINE_CONTENTS_LIST),
                     output);
-            InputStream commands = ResourceUtils.getResource(CLIHandler.COMMANDS_LIST);
-            if (commands != null) {
-                //transfer engine commands list
-                output.putNextEntry(new JarEntry(CLIHandler.COMMANDS_LIST));
-                StreamUtils.transferData(commands, output);
+            InputStream optionsListStream = ResourceUtils.getResource(CLIHandler.OPTIONS_LIST);
+            if (optionsListStream != null) {
+                //transfer engine command-line options list
+                output.putNextEntry(new JarEntry(CLIHandler.OPTIONS_LIST));
+                StreamUtils.transferData(optionsListStream, output);
             }
             
             // load default engine properties and set all components to be installed by default

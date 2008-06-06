@@ -54,32 +54,36 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 
 import java.beans.Customizer;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
+import org.netbeans.api.debugger.jpda.MonitorInfo;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.api.debugger.jpda.ThreadsCollector;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  * The implementation of JPDAThread.
  */
 public final class JPDAThreadImpl implements JPDAThread, Customizer {
-    
-    /**
-     * Suspended property of the thread. Fired when isSuspended() changes.
-     */
-    public static final String PROP_SUSPENDED = "suspended";
     
     private ThreadReference     threadReference;
     private JPDADebuggerImpl    debugger;
@@ -94,6 +98,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     private int                 cachedFramesFrom = -1;
     private int                 cachedFramesTo = -1;
     private Object              cachedFramesLock = new Object();
+    private JPDABreakpoint      currentBreakpoint;
+    private PropertyChangeListener threadsResumeListener;
 
     public JPDAThreadImpl (
         ThreadReference     threadReference,
@@ -195,6 +201,19 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     
     public synchronized void holdLastOperations(boolean doHold) {
         doKeepLastOperations = doHold;
+    }
+
+    public synchronized JPDABreakpoint getCurrentBreakpoint() {
+        return currentBreakpoint;
+    }
+
+    public void setCurrentBreakpoint(JPDABreakpoint currentBreakpoint) {
+        JPDABreakpoint oldBreakpoint;
+        synchronized (this) {
+            oldBreakpoint = this.currentBreakpoint;
+            this.currentBreakpoint = currentBreakpoint;
+        }
+        pch.firePropertyChange(PROP_BREAKPOINT, oldBreakpoint, currentBreakpoint);
     }
 
 
@@ -348,14 +367,37 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      */
     public CallStackFrame[] getCallStack (int from, int to) 
     throws AbsentInformationException {
+        synchronized (this) {
+            if (threadsResumeListener == null) {
+                threadsResumeListener = new ThreadsResumeListener();
+                debugger.getThreadsCollector().addPropertyChangeListener(WeakListeners.propertyChange(threadsResumeListener, debugger.getThreadsCollector()));
+            }
+        }
         try {
             int max = threadReference.frameCount();
             from = Math.min(from, max);
             to = Math.min(to, max);
-            if (to - from > 1) {
+            CallStackFrame[] theCachedFrames = null;
+            if (to - from > 1) {  /*TODO: Frame caching cause problems with invalid frames. Some fix is necessary...
+             *  as a workaround, frames caching is disabled.*/
                 synchronized (cachedFramesLock) {
                     if (from == cachedFramesFrom && to == cachedFramesTo) {
                         return cachedFrames;
+                    }
+                    if (from >= cachedFramesFrom && to <= cachedFramesTo) {
+                        // TODO: Arrays.copyOfRange(cachedFrames, from - cachedFramesFrom, to);
+                        return copyOfRange(cachedFrames, from - cachedFramesFrom, to - cachedFramesFrom);
+                    }
+                    if (cachedFramesFrom >= 0 && cachedFramesTo > cachedFramesFrom) {
+                        int length = to - from;
+                        theCachedFrames = new CallStackFrame[length];
+                        for (int i = 0; i < length; i++) {
+                            if (i >= cachedFramesFrom && i < cachedFramesTo) {
+                                theCachedFrames[i] = cachedFrames[i - cachedFramesFrom];
+                            } else {
+                                theCachedFrames[i] = null;
+                            }
+                        }
                     }
                 }
             }
@@ -376,18 +418,22 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             int n = l.size();
             CallStackFrame[] frames = new CallStackFrame[n];
             for (int i = 0; i < n; i++) {
-                frames[i] = new CallStackFrameImpl((StackFrame) l.get(i), from + i, debugger);
+                if (theCachedFrames != null && theCachedFrames[i] != null) {
+                    frames[i] = theCachedFrames[i];
+                } else {
+                    frames[i] = new CallStackFrameImpl(this, (StackFrame) l.get(i), from + i, debugger);
+                }
                 if (from == 0 && i == 0 && currentOperation != null) {
                     ((CallStackFrameImpl) frames[i]).setCurrentOperation(currentOperation);
                 }
             }
-            if (to - from > 1) {
+            //if (to - from > 1) {
                 synchronized (cachedFramesLock) {
                     cachedFrames = frames;
                     cachedFramesFrom = from;
                     cachedFramesTo = to;
                 }
-            }
+            //}
             return frames;
         } catch (IncompatibleThreadStateException ex) {
             AbsentInformationException aiex = new AbsentInformationException(ex.getLocalizedMessage());
@@ -407,6 +453,17 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         }
     }
     
+    private static CallStackFrame[] copyOfRange(CallStackFrame[] original, int from, int to) {
+        // TODO: Use Arrays.copyOfRange(cachedFrames, from, to);
+        int newLength = to - from;
+        if (newLength < 0)
+            throw new IllegalArgumentException(from + " > " + to);
+        CallStackFrame[] copy = new CallStackFrame[newLength];
+        System.arraycopy(original, from, copy, 0,
+                         Math.min(original.length - from, newLength));
+        return copy;
+    }
+
     private void cleanCachedFrames() {
         synchronized (cachedFramesLock) {
             cachedFrames = null;
@@ -497,6 +554,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             waitUntilMethodInvokeDone();
             setReturnVariable(null); // Clear the return var on resume
             setCurrentOperation(null);
+            currentBreakpoint = null;
             if (!doKeepLastOperations) {
                 clearLastOperations();
             }
@@ -544,6 +602,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             if (clearVars) {
                 setCurrentOperation(null);
                 setReturnVariable(null); // Clear the return var on resume
+                currentBreakpoint = null;
                 if (!doKeepLastOperations) {
                     clearLastOperations();
                 }
@@ -702,7 +761,40 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             }
         }
         if (or == null) return null;
-        return new ThisVariable (debugger, or, "");
+        return new ThisVariable (debugger, or, "" + or.uniqueID());
+    }
+    
+    public MonitorInfo getContendedMonitorAndOwner() {
+        ObjectVariable monitor = getContendedMonitor();
+        if (monitor == null) return null;
+        // Search for the owner:
+        MonitorInfo monitorInfo = null;
+        JPDAThread thread = null;
+        List<JPDAThread> threads = debugger.getThreadsCollector().getAllThreads();
+        for (JPDAThread t : threads) {
+            if (this == t) continue;
+            ObjectVariable[] ms = t.getOwnedMonitors();
+            for (ObjectVariable m : ms) {
+                if (monitor.equals(m)) {
+                    thread = t;
+                    List<MonitorInfo> mf = t.getOwnedMonitorsAndFrames();
+                    for (MonitorInfo mi : mf) {
+                        if (monitor.equals(mi.getMonitor())) {
+                            monitorInfo = mi;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            if (thread != null) {
+                break;
+            }
+        }
+        if (monitorInfo != null) {
+            return monitorInfo;
+        }
+        return new MonitorInfoImpl(thread, null, monitor);
     }
     
     /**
@@ -758,7 +850,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         int i, k = l.size ();
         ObjectVariable[] vs = new ObjectVariable [k];
         for (i = 0; i < k; i++) {
-            vs [i] = new ThisVariable (debugger, (ObjectReference) l.get (i), "");
+            ObjectReference var = (ObjectReference) l.get (i);
+            vs [i] = new ThisVariable (debugger, var, ""+var.uniqueID());
         }
         return vs;
     }
@@ -792,4 +885,84 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         throw new UnsupportedOperationException("Not supported, do not call. Implementing Customizer interface just because of add/remove PropertyChangeListener.");
     }
 
+    public List<MonitorInfo> getOwnedMonitorsAndFrames() {
+        if (CallStackFrameImpl.IS_JDK_16) {
+            try {
+                java.lang.reflect.Method canGetMonitorFrameInfoMethod =
+                        threadReference.virtualMachine().getClass().getMethod("canGetMonitorFrameInfo"); // NOTICES
+                canGetMonitorFrameInfoMethod.setAccessible(true);
+                boolean canGetMonitorFrameInfo = (Boolean) canGetMonitorFrameInfoMethod.invoke(threadReference.virtualMachine());
+                //boolean canGetMonitorFrameInfo = threadReference.virtualMachine().canGetMonitorFrameInfo();
+                if (canGetMonitorFrameInfo) {
+                    java.lang.reflect.Method ownedMonitorsAndFramesMethod = threadReference.getClass().getMethod("ownedMonitorsAndFrames"); // NOI18N
+                    List monitorInfos = (List) ownedMonitorsAndFramesMethod.invoke(threadReference, new java.lang.Object[]{});
+                    if (monitorInfos.size() > 0) {
+                        List<MonitorInfo> mis = new ArrayList<MonitorInfo>(monitorInfos.size());
+                        for (Object monitorInfo : monitorInfos) {
+                            mis.add(createMonitorInfo(monitorInfo));
+                        }
+                        return Collections.unmodifiableList(mis);
+                    }
+                }
+            } catch (IllegalAccessException ex) {
+                org.openide.ErrorManager.getDefault().notify(ex);
+            } catch (InvocationTargetException ex) {
+                org.openide.ErrorManager.getDefault().notify(ex);
+            } catch (java.lang.NoSuchMethodException ex) {
+                org.openide.ErrorManager.getDefault().notify(ex);
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * 
+     * @param mi com.sun.jdi.MonitorInfo
+     * @return monitor info
+     */
+    private MonitorInfo createMonitorInfo(Object mi) {
+        //com.sun.jdi.MonitorInfo _mi = (com.sun.jdi.MonitorInfo) mi;
+        try {
+            java.lang.reflect.Method stackDepthMethod =
+                    mi.getClass().getMethod("stackDepth"); // NOTICES
+            int depth = (Integer) stackDepthMethod.invoke(mi);
+            //int depth = _mi.stackDepth();
+            CallStackFrame frame = null;
+            if (depth >= 0) {
+                try {
+                    CallStackFrame[] frames = getCallStack(depth, depth + 1);
+                    //frame = new CallStackFrameImpl(this, threadReference.frame(depth), depth, debugger);
+                    frame = frames[0];
+                //} catch (IncompatibleThreadStateException ex) {
+                } catch (AbsentInformationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            java.lang.reflect.Method monitorMethod =
+                    mi.getClass().getMethod("monitor"); // NOTICES
+            ObjectReference or = (ObjectReference) monitorMethod.invoke(mi);
+            //ObjectReference or = _mi.monitor();
+            ObjectVariable monitor = new ThisVariable (debugger, or, "" + or.uniqueID());
+            return new MonitorInfoImpl(this, frame, monitor);
+        } catch (IllegalAccessException ex) {
+            org.openide.ErrorManager.getDefault().notify(ex);
+        } catch (InvocationTargetException ex) {
+            org.openide.ErrorManager.getDefault().notify(ex);
+        } catch (java.lang.NoSuchMethodException ex) {
+            org.openide.ErrorManager.getDefault().notify(ex);
+        }
+        return null;
+    }
+    
+    
+    private class ThreadsResumeListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (ThreadsCollector.PROP_THREAD_RESUMED.equals(evt.getPropertyName())) {
+                // When ANY thread is resumed, stack frames become invalid!
+                cleanCachedFrames();
+            }
+        }
+        
+    }
 }

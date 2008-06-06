@@ -558,17 +558,6 @@ public abstract class Children extends Object {
         }
     }
 
-    /** Called when the nodes have been removed from the children.
-     * This method should allow subclasses to clean the nodes somehow.
-     * <p>
-     * Current implementation notifies all listeners on the nodes
-     * that nodes have been deleted.
-     *
-     * @param arr array of deleted nodes
-     */
-    protected void destroyNodes(Node[] arr) {
-    }
-    
     /** Interface that provides a set of nodes.
     */
     static interface Entry {

@@ -52,10 +52,18 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
  */
 public class ParserErrorProvider extends CsmErrorProvider {
 
-    private static final boolean ENABLE = Boolean.getBoolean("cnd.parser.error.provider");
+    private static final boolean ENABLE = getBoolean("cnd.parser.error.provider", true);
     
     @Override
     public Collection<CsmErrorInfo> getErrors(BaseDocument doc, CsmFile file) {
         return ENABLE ? ((FileImpl) file).getErrors(doc) : Collections.<CsmErrorInfo>emptyList();
     }
+    
+    private static boolean getBoolean(String name, boolean result) {
+        String text = System.getProperty(name);
+        if( text != null ) {
+            result = Boolean.parseBoolean(text);
+        }
+        return result;
+    }     
 }

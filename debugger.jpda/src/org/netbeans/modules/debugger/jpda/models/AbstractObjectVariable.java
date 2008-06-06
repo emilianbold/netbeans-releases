@@ -470,6 +470,9 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
                 (getID().equals (((AbstractObjectVariable) o).getID()));
     }
     
+    public int hashCode() {
+        return getID().hashCode();
+    }
     
     // other methods............................................................
     
