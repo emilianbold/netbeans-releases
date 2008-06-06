@@ -16,7 +16,7 @@
  * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
+ * accompanied this code. If applicable, add thttp://bea.starehory.sk/nazory.phphe following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
@@ -120,7 +120,7 @@ public class WSStackUtils {
     
     public static ServerType getServerType(Project project) {
         J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
-        if (j2eeModuleProvider.getServerInstanceID() == null) {
+        if (j2eeModuleProvider == null || j2eeModuleProvider.getServerInstanceID() == null) {
             return ServerType.NOT_SPECIFIED;
         }
         String serverId = j2eeModuleProvider.getServerID();
