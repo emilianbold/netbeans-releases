@@ -53,6 +53,7 @@ import org.openide.util.Parameters;
 import org.openide.windows.OutputWriter;
 
 /**
+ * Factory methods for {@link InputReader} classes.
  *
  * @author Petr Hejl
  */
@@ -64,28 +65,112 @@ public final class InputProcessors {
         super();
     }
 
+    /**
+     * Returns the processor converting characters to the whole lines passing
+     * them to the given line processor.
+     * <p>
+     * Any reset is delegated to the corresponding method of line processor.
+     * <p>
+     * Returned processor is <i> not thread safe</i>.
+     *
+     * @param lineProcessor processor consuming parsed lines
+     * @return the processor converting characters to the whole lines
+     */
     public static InputProcessor bridge(LineProcessor lineProcessor) {
         return new Bridge(lineProcessor);
     }
 
+    /**
+     * Returns the processor acting as a proxy.
+     * <p>
+     * Any action taken on this processor is distributed to all processors
+     * passed as arguments in the same order as they were passed to this method.
+     * <p>
+     * Proxy is thread safe if all passed processors are thread safe.
+     *
+     * @param processors processor to which the actions will be ditributed
+     * @return the processor acting as a proxy
+     */
     public static InputProcessor proxy(InputProcessor... processors) {
         return new ProxyInputProcessor(processors);
     }
 
+    /**
+     * Returns the processor that writes every character passed for processing
+     * to the given writer.
+     * <p>
+     * Reset action on the returned processor is noop. Writer is never closed
+     * by the processor.
+     * <p>
+     * Returned processor is <i> not thread safe</i>.
+     *
+     * @param writer processed characters will be written to this writer
+     * @return the processor that writes every character passed for processing
+     *             to the given writer
+     */
     public static InputProcessor copying(Writer writer) {
         return new CopyingInputProcessor(writer);
     }
 
+    /**
+     * Returns the processor printing all characters passed for processing to
+     * the given output writer.
+     * <p>
+     * Reset action on the returned processor resets the writer if it is enabled
+     * by passing <code>true</code> as <code>resetEnabled</code>.
+     * <p>
+     * Returned processor is <i> not thread safe</i>.
+     *
+     * @param out where to print received characters
+     * @param resetEnabled determines whether the reset operation will work
+     *             (will reset the writer if so)
+     * @return the processor printing all characters passed for processing to
+     *             the given output writer
+     */
     public static InputProcessor printing(OutputWriter out, boolean resetEnabled) {
         return printing(out, null, resetEnabled);
     }
-    
-    public static InputProcessor ansiStripping(InputProcessor delegate) {
-        return new AnsiStrippingInputProcessor(delegate);
-    }
 
+    /**
+     * Returns the processor converting <i>whole</i> lines with convertor and
+     * printing the result including unterminated tail (if present) to the
+     * given output writer.
+     * <p>
+     * Reset action on the returned processor resets the writer if it is enabled
+     * by passing <code>true</code> as <code>resetEnabled</code>.
+     * <p>
+     * Returned processor is <i> not thread safe</i>.
+     *
+     * @param out where to print converted lines and characters
+     * @param convertor convertor converting the <i>whole</i> lines
+     *             before printing
+     * @param resetEnabled determines whether the reset operation will work
+     *             (will reset the writer if so)
+     * @return the processor converting <i>whole</i> lines with convertor and
+     *             printing the result including unterminated tail (if present)
+     *             to the given output writer
+     * @see LineConvertor
+     */
     public static InputProcessor printing(OutputWriter out, LineConvertor convertor, boolean resetEnabled) {
         return new PrintingInputProcessor(out, convertor, resetEnabled);
+    }
+
+    /**
+     * Returns the processor that strips any
+     * <a href="http://en.wikipedia.org/wiki/ANSI_escape_code">ANSI escape sequences</a>
+     * and passes the result to the delegate.
+     * <p>
+     * Reset action on the returned processor is noop.
+     * <p>
+     * If the delegate is thread safe this processor is thread safe as well.
+     *
+     * @param delegate processor that will receive characters without control
+     *             sequences
+     * @return the processor that strips any ansi escape sequences and passes
+     *             the result to the delegate
+     */
+    public static InputProcessor ansiStripping(InputProcessor delegate) {
+        return new AnsiStrippingInputProcessor(delegate);
     }
 
     private static class Bridge implements InputProcessor {
@@ -164,6 +249,11 @@ public final class InputProcessors {
         public void processInput(char[] chars) {
             assert chars != null;
 
+            if (convertor == null) {
+                out.print(String.valueOf(chars));
+                return;
+            }
+
             String[] lines = helper.parse(chars);
             for (String line : lines) {
                 LOGGER.log(Level.FINEST, "{0}\\n", line);
@@ -190,21 +280,17 @@ public final class InputProcessors {
         }
 
         private void convert(String line) {
-            if (convertor != null) {
-                for (ConvertedLine converted : convertor.convert(line)) {
-                    if (converted.getListener() == null) {
+            for (ConvertedLine converted : convertor.convert(line)) {
+                if (converted.getListener() == null) {
+                    out.println(converted.getText());
+                } else {
+                    try {
+                        out.println(converted.getText(), converted.getListener());
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
                         out.println(converted.getText());
-                    } else {
-                        try {
-                            out.println(converted.getText(), converted.getListener());
-                        } catch (IOException ex) {
-                            LOGGER.log(Level.INFO, null, ex);
-                            out.println(converted.getText());
-                        }
                     }
                 }
-            } else {
-                out.println(line);
             }
         }
     }
@@ -228,9 +314,9 @@ public final class InputProcessors {
         }
 
     }
-    
+
     private static class AnsiStrippingInputProcessor implements InputProcessor {
-        
+
         private final InputProcessor delegate;
 
         public AnsiStrippingInputProcessor(InputProcessor delegate) {
@@ -249,7 +335,7 @@ public final class InputProcessors {
         public void reset() throws IOException {
             // noop
         }
-        
+
         private static boolean containsAnsiColors(String sequence) {
             // RSpec will color output with ANSI color sequence terminal escapes
             return sequence.indexOf("\033[") != -1; // NOI18N
@@ -281,6 +367,6 @@ public final class InputProcessors {
             }
 
             return sb.toString();
-        }        
+        }
     }
 }
