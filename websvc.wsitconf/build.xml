@@ -66,6 +66,7 @@ made subject to such option by the copyright holder.
         <copy todir="61src/websvc.wsitconf">
             <fileset dir="../websvc.wsitconf">
                 <exclude name="*61src*"/>
+                <exclude name="*65src*"/>
             </fileset>
         </copy>
 
