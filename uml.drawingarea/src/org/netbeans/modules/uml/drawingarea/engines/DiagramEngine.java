@@ -83,7 +83,7 @@ import org.netbeans.modules.uml.drawingarea.actions.DiscoverRelationshipAction;
 import org.netbeans.modules.uml.drawingarea.actions.ExportImageAction;
 import org.netbeans.modules.uml.drawingarea.actions.HierarchicalLayoutAction;
 import org.netbeans.modules.uml.drawingarea.actions.InteractiveZoomAction;
-import org.netbeans.modules.uml.drawingarea.actions.OrthogonalLayoutAction;
+//import org.netbeans.modules.uml.drawingarea.actions.OrthogonalLayoutAction;
 import org.netbeans.modules.uml.drawingarea.actions.PanAction;
 import org.netbeans.modules.uml.drawingarea.actions.SceneAcceptProvider;
 import org.netbeans.modules.uml.drawingarea.actions.SyncDiagramAction;

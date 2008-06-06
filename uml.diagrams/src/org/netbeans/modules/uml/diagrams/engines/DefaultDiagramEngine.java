@@ -253,7 +253,8 @@ public class DefaultDiagramEngine extends  DiagramEngine {
      */
     public Router getEdgeRouter(LayerWidget... layers)
     {
-        return RouterFactory.createOrthogonalSearchRouter(layers);
+//        return RouterFactory.createOrthogonalSearchRouter(layers);
+        return RouterFactory.createDirectRouter() ;
     }
     
     public ConnectionWidget createConnectionWidget(DesignerScene scene, 
