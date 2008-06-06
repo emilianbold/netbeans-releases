@@ -53,7 +53,7 @@ import org.openide.util.Parameters;
 import org.openide.windows.OutputWriter;
 
 /**
- * Factory methods for {@link InputReader} classes.
+ * Factory methods for {@link InputProcessor} classes.
  *
  * @author Petr Hejl
  */
@@ -146,7 +146,7 @@ public final class InputProcessors {
      *             before printing
      * @param resetEnabled determines whether the reset operation will work
      *             (will reset the writer if so)
-     * @return the processor converting <i>whole</i> lines with convertor and
+     * @return the processor converting the <i>whole</i> lines with convertor and
      *             printing the result including unterminated tail (if present)
      *             to the given output writer
      * @see LineConvertor
