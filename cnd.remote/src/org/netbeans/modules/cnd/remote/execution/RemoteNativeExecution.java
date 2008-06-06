@@ -44,7 +44,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
-import org.netbeans.modules.cnd.remote.support.RemoteOutputOnlyCommandSupport;
+import org.netbeans.modules.cnd.remote.support.RemoteNativeExecutionSupport;
 
 /**
  * This implementation of NativeExecution provides execution on a remote server.
@@ -74,8 +74,9 @@ public class RemoteNativeExecution extends NativeExecution {
         String host = System.getProperty("cnd.remote.server");
         String user = System.getProperty("user.name");
         if (host != null && host.length() > 0) {
-            RemoteOutputOnlyCommandSupport support = new RemoteOutputOnlyCommandSupport(host, user);
-            out.print(support.toString());
+//            RemoteOutputOnlyCommandSupport support = new RemoteOutputOnlyCommandSupport(host, user);
+//            out.print(support.toString());
+            RemoteNativeExecutionSupport support = new RemoteNativeExecutionSupport(host, user, runDirFile, executable, arguments, envp, out);
         }
         return 0;
     }
