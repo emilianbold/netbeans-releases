@@ -23,7 +23,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <api-answers
   question-version="1.29"
-  author="yourname@netbeans.org"
+  author="dsimonek@netbeans.org"
 >
 
   &api-questions;
@@ -46,9 +46,30 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="arch-overall">
-  <p>
-   XXX no answer for arch-overall
-  </p>
+    <p>  
+    Quick Search API in infrastrcuture which enables module clients to plug into
+    Quick Search UI and provide results of search that end user performed in UI.
+    Quick Search UI is represented by a small text field in toolbar area on right
+    hand side, with asociated popup window to show search results.
+    </p>
+
+    <p>
+    Clients that want to extend Quick Search capabilities and provide data to search in
+    are expected to implement <api group="java" name="SearchProvider" category="devel" type="export" url="@TOP@/org/netbeans/spi/quicksearch/SearchProvider.html" />
+    SPI and choose category in which results will be shown by implementing
+    <api group="java" name="CategoryDescription" category="devel" type="export" url="@TOP@/org/netbeans/spi/quicksearch/CategoryDescription.html"  />
+    SPI.</p>
+    
+    <p>SearchProvider implementations are registered through module's xml layer file,
+    as explained in <a href="@TOP@/org/netbeans/spi/quicksearch/SearchProvider.html">SearchProvider SPI</a>
+    javadoc and detailed <a href="@org-openide-util@/org/openide/util/doc-files/api.html#instances">Instantiation rules</a>.
+    </p>
+    
+    <p>Main task of SearchProvider implementations is to evaluate input 
+<api group="java" name="SearchRequest" category="devel" type="export" url="@TOP@/org/netbeans/spi/quicksearch/SearchRequest.html" />,
+        perform search in its data model and feed <api group="java" name="SearchResponse" category="devel" type="export" url="@TOP@/org/netbeans/spi/quicksearch/SearchResponse.html" />
+        response object by results apropriate for given request.
+    </p>
  </answer>
 
 
@@ -68,7 +89,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-quality">
   <p>
-   XXX no answer for arch-quality
+        There are unit tests in test package.
   </p>
  </answer>
 
@@ -111,7 +132,81 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-usecases">
   <p>
-   XXX no answer for arch-usecases
+      
+   <usecase id="newProvider" name="How To Add New Quick Search Provider" >
+      In order to plug in a new Quick Search provider and new category of results,
+      module writers need to complete following steps:
+
+      <ol>
+        <li><b>Implement <a href="@TOP@/org/netbeans/spi/quicksearch/SearchProvider.html">SearchProvider</a>
+         interface.</b></li>
+        <li><b>Describe new category of results by implementing <a href="@TOP@/org/netbeans/spi/quicksearch/CategoryDescription.html">CategoryDescription</a>
+         interface.</b></li>
+        <li><b>Register implementation class in xml layer</b></li>
+      </ol>
+
+      <h5>1. Implementing SearchProvider</h5>
+        <ul>
+            <li>Implement body of <b><code>SearchProvider.evaluate</code></b> method
+            like suggested in its <a href="@TOP@/org/netbeans/spi/quicksearch/SearchProvider.html#evaluate">javadoc</a>.
+            </li>
+            <li>Implement getLookup() method by creating some <a href="@org-openide-util@/org/openide/util/Lookup.html">Lookup</a>
+            that will contain instance of CategoryDescription that you will create in step 2. below.
+            Use for example <a href="@org-openide-util@/org/openide/util/lookup/Lookups.html#fixed">Lookups.fixed</a>
+            utility for Lookup creation.
+            </li>
+        </ul>
+      
+      
+      <h5>2. Implementing CategoryDescription</h5>
+            Implement CategoryDescription methods easily like suggested in its 
+            <a href="@TOP@/org/netbeans/spi/quicksearch/CategoryDescription.html">javadoc</a>.
+            Note that display name and hint should be localized strings as they are
+            shown in QuickSearch UI.
+      
+      <h5>3. Registering SearchProvider</h5>
+            Register your SearchProvider implementation in your module's xml layer file under
+            main "/QuickSearch" folder. Registration xml syntax is following:
+            
+            <pre>
+              &lt;folder name="QuickSearch"&gt;
+                  &lt;folder name="Category1_ID"&gt;
+                      &lt;file name="org-netbeans-module1-package1-Provider1Impl.instance"/&gt;
+                  &lt;/folder&gt;
+                  &lt;folder name="Category2_ID"&gt;
+                      &lt;file name="org-netbeans-module2-package2-Provider2Impl.instance"/&gt;
+                      &lt;attr name="position" intvalue="300"/&gt;
+                      &lt;file name="org-netbeans-module2-package3-Provider3Impl.instance"/&gt;
+                      &lt;attr name="position" intvalue="200"/&gt;
+                  &lt;/folder&gt;
+              &lt;/folder&gt;
+            </pre>
+            
+            <b>Notes:</b>
+            <ul>
+                <li>Subfolders of "QuickSearch" define search result categories and their order.</li>
+                <li>Providers can share category by putting themselves under same subfolder.</li>
+                <li>Ordering is done through NetBeans standard FileSystem API ordering attribute.</li>
+                <li>While ID and order of result categories is defined in xml,
+                    localized display name and hint of each category is defined in CategoryDescription
+                    implementation.</li>
+            </ul>
+        
+   </usecase> 
+   
+   <usecase id="shareCategory" name="How To Share Category Of Results" >
+       
+   </usecase>
+
+   <usecase id="categoryOrder" name="How To Define and Modify Order of Categories" >
+       
+   </usecase>
+
+   <usecase id="hideProvider" name="How To Hide Recent Searches Results and Others" >
+       
+   </usecase>
+   
+   
   </p>
  </answer>
 
