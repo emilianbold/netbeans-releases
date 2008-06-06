@@ -76,7 +76,7 @@ public class DefaultInputReader implements InputReader {
         this.buffer = new char[greedy ? BUFFER_SIZE * 2 : BUFFER_SIZE];
     }
 
-    public int readOutput(InputProcessor outputProcessor) throws IOException {
+    public int readInput(InputProcessor inputProcessor) throws IOException {
         if (closed) {
             throw new IllegalStateException("Already closed reader");
         }
@@ -96,8 +96,8 @@ public class DefaultInputReader implements InputReader {
             }
         } while (reader.ready() && greedy);
 
-        if (outputProcessor != null && fetched > 0) {
-            outputProcessor.processInput(builder.toString().toCharArray());
+        if (inputProcessor != null && fetched > 0) {
+            inputProcessor.processInput(builder.toString().toCharArray());
         }
 
         return fetched;

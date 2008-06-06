@@ -44,7 +44,7 @@ import java.io.IOException;
 
 /**
  * This interface represents abstraction for reading characters. It allows
- * custom processing of such characters through given processor.
+ * custom processing of such characters through the given processor.
  *
  * @author Petr Hejl
  */
@@ -57,6 +57,6 @@ public interface InputReader extends Closeable {
      * @return number of characters read
      * @throws IOException if any read or process error occurs
      */
-    int readOutput(InputProcessor processor) throws IOException;
+    int readInput(InputProcessor processor) throws IOException;
 
 }
