@@ -731,19 +731,37 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     newClassTree = genUtils.addImplementsClause(newClassTree, "java.io.Serializable"); // NOI18N
                 }
                 newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Entity")); // NOI18N
-                //ExpressionTree tableNameArgument = genUtils.createAnnotationArgument("name", dbMappings.getTableName()); // NOI18N
                 List<ExpressionTree> tableAnnArgs = new ArrayList<ExpressionTree>();
                 tableAnnArgs.add(genUtils.createAnnotationArgument("name", dbMappings.getTableName())); // NOI18N
                 if(entityClass.isFullyQualifiedTblNames()) {
                     String schemaName = entityClass.getSchemaName();
                     String catalogName = entityClass.getCatalogName();
                     if(schemaName != null ) {
-                        tableAnnArgs.add(genUtils.createAnnotationArgument("schema", schemaName)); // NI18N
+                        tableAnnArgs.add(genUtils.createAnnotationArgument("schema", schemaName)); // NOI18N
                     }
                     if(catalogName != null) {
-                        tableAnnArgs.add(genUtils.createAnnotationArgument("catalog", catalogName)); // NI18N
+                        tableAnnArgs.add(genUtils.createAnnotationArgument("catalog", catalogName)); // NOI18N
                     }
                 }
+                
+                // UniqueConstraint annotations for the table
+                if(entityClass.isRegenSchemaAttrs() && entityClass.getUniqueConstraints() != null &&
+                        entityClass.getUniqueConstraints().size() != 0) {
+                    List<ExpressionTree> uniqueConstraintAnnotations = new ArrayList<ExpressionTree>();
+                    for(String[] constraintCols : entityClass.getUniqueConstraints()) {
+
+                        List<ExpressionTree> colArgs = new ArrayList<ExpressionTree>();
+                        for(int colIx = 0; colIx < constraintCols.length; colIx ++ ) {
+                            colArgs.add(genUtils.createAnnotationArgument(null, constraintCols[colIx]));
+                        }
+                        ExpressionTree columnNamesArg = genUtils.createAnnotationArgument("columnNames", colArgs); // NOI18N
+                        uniqueConstraintAnnotations.add(genUtils.createAnnotation("javax.persistence.UniqueConstraint", 
+                                Collections.singletonList(columnNamesArg))); //NOI18N
+                    }
+                    
+                    tableAnnArgs.add(genUtils.createAnnotationArgument("uniqueConstraints", uniqueConstraintAnnotations)); // NOI18N
+                }
+                
                 newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Table", tableAnnArgs));
 
                 if (needsPKClass) {
