@@ -63,7 +63,7 @@ public final class FiltersDescriptor {
     public static final String SHOW_QUALIFIED_NAMES = "show_fqn";
     public static final String SHOW_MONITORS = "show_monitors";
     public static final String SHOW_SYSTEM_THREADS = "show_system_threads";
-    public static final String SHOW_SUSPEND_TABLE = "show.suspend_table";
+    public static final String SHOW_SUSPEND_TABLE = "show_suspend_table";
     public static final String SHOW_THREAD_GROUPS = "thread_group";
 
     /** List of <Item> describing filters properties */
@@ -230,6 +230,8 @@ public final class FiltersDescriptor {
             Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
             if (name.equals(SHOW_SYSTEM_THREADS)) {
                 isSelected = preferences.getBoolean(DebuggingTreeModel.SHOW_SYSTEM_THREADS, false);
+            } else if (name.equals(SHOW_THREAD_GROUPS)) {
+                isSelected = preferences.getBoolean(DebuggingTreeModel.SHOW_THREAD_GROUPS, false);
             } else if (name.equals(ALPHABETIC_SORT)) {
                 isSelected = preferences.getBoolean(DebuggingTreeModel.SORT_ALPHABET, true);
             } else if (name.equals(SUSPEND_SORT)) {
@@ -244,7 +246,7 @@ public final class FiltersDescriptor {
             } else if (name.equals(SHOW_SUSPEND_TABLE)){
                 isSelected = preferences.getBoolean(SHOW_SUSPEND_TABLE, true);
             } else {
-                isSelected = false; // [TODO]
+                isSelected = false;
             }
         }
 
@@ -253,6 +255,8 @@ public final class FiltersDescriptor {
             Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
             if (name.equals(SHOW_SYSTEM_THREADS)) {
                 keyName = DebuggingTreeModel.SHOW_SYSTEM_THREADS;
+            } else if (name.equals(SHOW_THREAD_GROUPS)) {
+                keyName = DebuggingTreeModel.SHOW_THREAD_GROUPS;
             } else if (name.equals(ALPHABETIC_SORT)) {
                 keyName = DebuggingTreeModel.SORT_ALPHABET;
             } else if (name.equals(SUSPEND_SORT)) {
@@ -267,7 +271,6 @@ public final class FiltersDescriptor {
             if (keyName != null) {
                 preferences.putBoolean(keyName, isSelected);
             }
-            // [TODO]
         }
         
     }
