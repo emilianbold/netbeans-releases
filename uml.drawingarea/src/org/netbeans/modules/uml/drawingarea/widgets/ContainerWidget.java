@@ -445,16 +445,22 @@ public class ContainerWidget extends Widget
                     curWidget.getParentWidget().removeChild(curWidget);
                 }
                 
-                Point curPt = curWidget.getLocation();
+                Point curPt = curWidget.getPreferredLocation();
+                if(curPt==null)curPt = curWidget.getLocation();
                 addChild(curWidget);
+                Object data = scene.findObject(curWidget);
+                INamedElement element = (INamedElement) ((IPresentationElement)data).getFirstSubject();
                 
                 if(convertLocation == true)
                 {
                     curWidget.setPreferredLocation(convertSceneToLocal(curPt));
                 }
+                else if(element instanceof ILifeline)//lifeline need correction because need to be on certain level, not on dropped position
+                {
+                    curPt.y=convertSceneToLocal(curPt).y;
+                    curWidget.setPreferredLocation(curPt);
+                }
                 
-                Object data = scene.findObject(curWidget);
-                INamedElement element = (INamedElement) ((IPresentationElement)data).getFirstSubject();
                 INamespace ns = getContainerNamespace();
                 IElement containerElem = getContainerElement();
                 
