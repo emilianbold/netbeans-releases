@@ -103,6 +103,8 @@
     };
     var socket;
     
+    var requests = [];
+    
     this.initMonitor = function  (context, browser, _socket) {
         if( !netFeatures.disableNetMonitor ){
             monitorContext(context, browser);
@@ -119,9 +121,6 @@
         }
             
     }
-    
-    
-
     
     var NetObserver = 
     {
@@ -156,6 +155,7 @@
         onModifyRequest: function (aNsISupport) {
             var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
             
+            requests.push(request);
             var activity = getHttpRequestHeaders(request);
             activity.time = nowTime();
             activity.category = getRequestCategory(request);
@@ -193,7 +193,9 @@
         //void onProgressChange ( nsIWebProgress webProgress , nsIRequest request , PRInt32 curSelfProgress , PRInt32 maxSelfProgress , PRInt32 curTotalProgress , PRInt32 maxTotalProgress )   
         onProgressChange : function(progress, request, current, max, total, maxTotal)
         {
-        //NetBeans.Logger.log("On ProgressChange: " + Object.prototype.toString.apply(progress.wrappedJSObject) + " Request: " + Object.prototype.toString.apply(request));
+          if ( requests.indexOf(request) != -1){
+            NetBeans.Logger.log("On ProgressChange: " + Object.prototype.toString.apply(progress.wrappedJSObject) + " Request: " + Object.prototype.toString.apply(request) + " max: " + max + " total: " + total + " maxTotal: " + maxTotal);
+          }
         },
         //void onLocationChange ( nsIWebProgress webProgress , nsIRequest request , nsIURI location )  
         onLocationChange: function() {
@@ -433,7 +435,15 @@
 //        }
         if (DEBUG){
             for( var key in aActivity ){
-                NetBeans.Logger.log("   <" + key + " : " + aActivity[key]);
+                if ( key == "responseHeaders"){
+                    var headers = aActivity[key];
+                    NetBeans.Logger.log("   < Response Headers");
+                    for( var header in headers ){
+                        NetBeans.Logger.log("       " + headers[header].name + " : " + headers[header].value);
+                    }
+                } else {
+                  NetBeans.Logger.log("   <" + key + " : " + aActivity[key]);
+                }
             }
         }
     }
