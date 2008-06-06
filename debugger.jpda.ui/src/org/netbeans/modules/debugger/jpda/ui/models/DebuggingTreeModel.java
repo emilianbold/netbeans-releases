@@ -95,7 +95,8 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
                                                            "Signal Dispatcher",
                                                            "Finalizer",
                                                            "Java2D Disposer",
-                                                           "TimerQueue"}));
+                                                           "TimerQueue",
+                                                           "Attach Listener"}));
     private static final Set<String> SYSTEM_MAIN_THREAD_NAMES = new HashSet<String>(Arrays.asList(new String[] {
                                                            "DestroyJavaVM",
                                                            "AWT-XAWT",
