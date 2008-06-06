@@ -1,5 +1,5 @@
 | Navigate |                   N (mnemonics)
-============                    
+============
 Go to File...                  F
 Go to Type...                  T
 ============================  
