@@ -100,4 +100,9 @@ public interface GeneratedTables {
      * Should the attributes used for regenenating schema from the entity classes be included
      */
     public boolean isRegenSchemaAttrs();
+    
+    /**
+     * Returns the unique constraints defined on the table
+     */
+    public Set<String[]> getUniqueConstraints(String tableName);
 }

@@ -54,23 +54,30 @@ public abstract class RemoteConnectionSupport {
     private JSch jsch;
     protected Session session;
     protected Channel channel;
+    protected String host;
+    protected String user;
     
-    public RemoteConnectionSupport(String host, String user) {
+    public RemoteConnectionSupport(String host, String user, int port) {
         assert host != null && user != null;
+        this.host = host;
+        this.user = user;
         
         try {
             jsch = new JSch();
             jsch.setKnownHosts(System.getProperty("user.home") + "/.ssh/known_hosts");
-            session = jsch.getSession(user, host, 22);
+            session = jsch.getSession(user, host, port);
 
             UserInfo ui = RemoteUserInfo.getUserInfo(host, user);
             session.setUserInfo(ui);
             session.connect();
             channel = createChannel();
-            channel.connect();
         } catch (JSchException jsce) {
             System.err.println("RPB<Init>: Got JSchException [" + jsce.getMessage() + "]");
         }
+    }
+    
+    public RemoteConnectionSupport(String host, String user) {
+        this(host, user, 22);
     }
     
     protected Channel getChannel() {
