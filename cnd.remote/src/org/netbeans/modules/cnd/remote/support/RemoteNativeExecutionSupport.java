@@ -43,62 +43,70 @@ import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringWriter;
+import java.io.PrintWriter;
+import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 
 /**
  *
  * @author gordonp
  */
-public class RemoteOutputOnlyCommandSupport extends RemoteConnectionSupport {
+public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
         
     private BufferedReader in;
-    private StringWriter out;
+    private ChannelExec echannel;
 
-    public RemoteOutputOnlyCommandSupport(String host, String user) {
+    public RemoteNativeExecutionSupport(String host, String user, File dirf, String exe, String args, String[] envp, PrintWriter out) {
         super(host, user);
                 
         try {
+            setChannelCommand(dirf, exe, args, envp);
             InputStream is = channel.getInputStream();
             in = new BufferedReader(new InputStreamReader(is));
-            out = new StringWriter();
             
             String line;
             while ((line = in.readLine()) != null) {
-                out.write(line);
+                out.println(line);
                 out.flush();
             }
             in.close();
             is.close();
+        } catch (JSchException jse) {
         } catch (IOException ex) {
-        }
-    }
-    
-    @Override
-    public String toString() {
-        if (out != null) {
-            return out.toString();
-        } else {
-            return "";
         }
     }
 
     @Override
     protected Channel createChannel() throws JSchException {
-        ChannelExec echannel = (ChannelExec) session.openChannel("exec");
-        String cmd = System.getProperty("cnd.remote.program");
-        
-        if (cmd == null) {
-            cmd = "/home/gordonp/.netbeans/rddev/cnd.remote/scripts/hello.sh";
-        }
-        
-        echannel.setCommand(cmd);
-        echannel.setInputStream(null);
-        echannel.setErrStream(System.err);
-        echannel.connect();
+        echannel = (ChannelExec) session.openChannel("exec");
         return echannel;
     }
-
+    
+    private void setChannelCommand(File dirf, String exe, String args, String[] envp) throws JSchException {
+        String dircmd;
+        String path = RemotePathMap.getMapper(host, user).getPath(dirf.getAbsolutePath());
+        
+        if (path != null) {
+            dircmd = "cd " + path + "; "; // NOI18N
+        } else {
+            dircmd = "";
+        }
+        
+        // The following code is important! But ChannelExec.setEnv(...) was added after JSch 0.1.24,
+        // so it can't be used until we get an updated version of JSch.
+//        for (String ev : envp) {
+//            int pos = ev.indexOf('=');
+//            String var = ev.substring(0, pos);
+//            String val = ev.substring(pos + 1);
+//            echannel.setEnv(var, val); // not in 0.1.24
+//        }
+        
+        echannel.setCommand(dircmd + exe + " " + args); //NOI18N
+        echannel.setInputStream(System.in);
+        echannel.setErrStream(System.err);
+        echannel.connect();
+    }
 }
