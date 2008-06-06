@@ -246,15 +246,13 @@ public class IdeValidateBpelProjectTask extends Task {
     private void validateFile(File file) throws BuildException {
       try {
         Model model = IdeBpelCatalogModel.getDefault().getBPELModel(file);
-        boolean isError = new Controller(model).ideValidate(file);
 
-        if (isError) {
+        if (new Controller(model).ideValidate(file)) {
           throw new BuildException(LineUtil.FOUND_VALIDATION_ERRORS);
         }
       }
       catch (Exception e) {
         throw new BuildException(e);
-//        throw new RuntimeException("Error while trying to create Model", e);
       }
     }
 
