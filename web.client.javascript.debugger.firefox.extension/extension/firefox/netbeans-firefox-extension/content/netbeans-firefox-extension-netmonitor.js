@@ -40,7 +40,7 @@
 
 (function() {
     const ignoreThese = /about:|javascript:|resource:|chrome:|jar:/;
-    const DEBUG = true;
+    const DEBUG = false;
     
     //Should we move this to constants.js?
     const STATE_IS_WINDOW = NetBeans.Constants.WebProgressListenerIF.STATE_IS_WINDOW;
