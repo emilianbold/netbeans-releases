@@ -50,9 +50,9 @@ made subject to such option by the copyright holder.
         </condition>
         <antcall target="download61src"/>
 
-        <condition property="61srcexpanded">
+<!--        <condition property="61srcexpanded">
           <available file="61src"/>
-        </condition>
+        </condition>-->
         <antcall target="expand61src"/>
 
         <delete dir="61src/websvc.wsitmodelext"/>
