@@ -52,9 +52,13 @@ made subject to such option by the copyright holder.
         <delete dir="61src/websvc.wsitmodelext"/>
         <delete dir="61src/websvc.wsitconf"/>
 
-        <copy dir="websvc.wsitmodelext" todir="61src"/>
-        <copy dir="websvc.wsitconf" todir="61src"/>
-        
+        <copy todir="61src">
+            <fileset dir="websvc.wsitmodelext"/>
+        </copy>
+        <copy todir="61src">
+            <fileset dir="websvc.wsitconf"/>
+        </copy>
+
         <delete dir="61src/websvc.wsitconf/nbproject/project.xml"/>
 
         <copy file="61src/websvc.wsitmodelext/nbproject/project61.xml" tofile="61src/websvc.wsitmodelext/nbproject/project.xml"/>
