@@ -600,15 +600,20 @@ public class NbModuleSuite {
         }
 
         private static String asString(InputStream is, boolean close) throws IOException {
-            byte[] arr = new byte[is.available()];
-            int len = is.read(arr);
-            if (len != arr.length) {
-                throw new IOException("Not fully read: " + arr.length + " was " + len);
+            StringBuilder builder = new StringBuilder();
+
+            byte[] bytes = new byte[4096];
+            try {
+                for (int i; (i = is.read(bytes)) != -1;) {
+                    builder.append(new String(bytes, 0, i, "UTF-8"));
+                }
+            } finally {
+                if (close) {
+                    is.close();
+                }
             }
-            if (close) {
-                is.close();
-            }
-            return new String(arr, "UTF-8"); // NOI18N
+
+            return builder.toString();
         }
 
         private static final class JUnitLoader extends ClassLoader {
