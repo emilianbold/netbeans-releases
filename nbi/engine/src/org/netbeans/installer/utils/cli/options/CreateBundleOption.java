@@ -40,7 +40,7 @@ import org.netbeans.installer.utils.cli.*;
 import java.io.File;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.exceptions.CLIArgumentException;
+import org.netbeans.installer.utils.exceptions.CLIOptionException;
 import org.netbeans.installer.utils.cli.CLIArgumentsList;
 import org.netbeans.installer.utils.helper.ExecutionMode;
 
@@ -50,10 +50,10 @@ import org.netbeans.installer.utils.helper.ExecutionMode;
  */
 public class CreateBundleOption extends CLIOptionOneArgument {
 
-    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+    public void execute(CLIArgumentsList arguments) throws CLIOptionException {
         File targetFile = new File(arguments.next()).getAbsoluteFile();
         if (targetFile.exists()) {
-            throw new CLIArgumentException(ResourceUtils.getString(
+            throw new CLIOptionException(ResourceUtils.getString(
                     CreateBundleOption.class,
                     WARNING_BUNDLE_FILE_EXISTS_KEY,
                     CREATE_BUNDLE_ARG,

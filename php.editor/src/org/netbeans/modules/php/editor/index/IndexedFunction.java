@@ -42,7 +42,9 @@ package org.netbeans.modules.php.editor.index;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
 
 /**
  *
@@ -128,4 +130,14 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
         String modifierStr = getModifiersString();
         return modifierStr.length() == 0 ? getSignature() : (getModifiersString() + " " + getSignature());
     }
+
+    @Override
+    public Set<Modifier> getModifiers() {
+        
+        
+        
+        return super.getModifiers();
+    }
+    
+    
 }

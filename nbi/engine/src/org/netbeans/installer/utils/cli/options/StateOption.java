@@ -39,7 +39,7 @@ import org.netbeans.installer.utils.cli.*;
 import java.io.File;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.exceptions.CLIArgumentException;
+import org.netbeans.installer.utils.exceptions.CLIOptionException;
 
 /**
  *
@@ -48,10 +48,10 @@ import org.netbeans.installer.utils.exceptions.CLIArgumentException;
 public class StateOption extends CLIOptionOneArgument {
 
     @Override
-    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+    public void execute(CLIArgumentsList arguments) throws CLIOptionException {
         File stateFile = new File(arguments.next()).getAbsoluteFile();
         if (!stateFile.exists()) {
-            throw new CLIArgumentException(ResourceUtils.getString(
+            throw new CLIOptionException(ResourceUtils.getString(
                     StateOption.class,
                     WARNING_MISSING_STATE_FILE_KEY,
                     STATE_ARG,
