@@ -100,4 +100,8 @@ public class EntityRelation {
     public RelationshipRole[] getRoles() {
         return roles;
     }
+    
+    public static enum FetchType {
+        DEFAULT, EAGER, LAZY
+    }
 }

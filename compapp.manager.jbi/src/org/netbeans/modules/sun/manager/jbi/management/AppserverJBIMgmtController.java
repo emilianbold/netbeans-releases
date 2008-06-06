@@ -50,6 +50,7 @@ import com.sun.esb.management.client.ManagementClientFactory;
 import com.sun.esb.management.common.ManagementRemoteException;
 import java.io.File;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.management.MBeanServerConnection;
@@ -318,8 +319,9 @@ public class AppserverJBIMgmtController {
                 // For local domains, use instance LOCATION instead of url location  (#90749)
                 String localInstanceLocation = instance.getLocation();
                 assert localInstanceLocation != null;
+                
                 localInstanceLocation = localInstanceLocation.replace('\\', '/'); // NOI18N
-
+                
                 if (isLocalHost) {
                     logger.fine("    localInstanceLocation=" + localInstanceLocation);
                     logger.fine("                  appBase=" + appBase);

@@ -249,6 +249,7 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
             hro.addReveng();
             hro.save();
             generateClasses(hro.getPrimaryFile());
+            updateConfiguration();
             return Collections.singleton(hro.getPrimaryFile());
         } catch (Exception e) {
             return Collections.EMPTY_SET;
@@ -307,19 +308,19 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
         try {
             oldClassLoader = Thread.currentThread().getContextClassLoader();
             Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
-            
+
             // Configuring the reverse engineering strategy
             try {
 
                 cfg = new JDBCMetaDataConfiguration();
-                OverrideRepository or = new OverrideRepository();             
+                OverrideRepository or = new OverrideRepository();
                 Configuration c = cfg.configure(confFile);
                 or.addFile(FileUtil.toFile(revengFile));
                 DefaultReverseEngineeringStrategy strategy = new DefaultReverseEngineeringStrategy();
                 settings = new ReverseEngineeringSettings(strategy);
                 settings.setDefaultPackageName(helper.getPackageName());
                 strategy.setSettings(settings);
-                cfg.setReverseEngineeringStrategy(strategy);
+                cfg.setReverseEngineeringStrategy(or.getReverseEngineeringStrategy(strategy));
                 cfg.readFromJDBC();
             } catch (Exception e) {
                 Exceptions.printStackTrace(e);
@@ -347,15 +348,22 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
                 Exceptions.printStackTrace(ex);
             }
 
-            // Update mapping entries in the selected configuration file            
+        } finally {
+            Thread.currentThread().setContextClassLoader(oldClassLoader);
+        }
+    }
+
+    // Update mapping entries in the selected configuration file 
+    public void updateConfiguration() {        
+        try {
             DataObject confDataObject = DataObject.find(helper.getConfigurationFile());
             HibernateCfgDataObject hco = (HibernateCfgDataObject) confDataObject;
             SessionFactory sf = hco.getHibernateConfiguration().getSessionFactory();
             FileObject pkg = SourceGroups.getFolderForPackage(helper.getLocation(), helper.getPackageName(), false);
             if (pkg != null && pkg.isFolder()) {
-                Enumeration<? extends FileObject> enumeration = pkg.getChildren(false);
+                Enumeration<? extends FileObject> enumeration = pkg.getChildren(true);            
                 while (enumeration.hasMoreElements()) {
-                    FileObject fo = enumeration.nextElement();
+                    FileObject fo = enumeration.nextElement();                    
                     if (fo.getNameExt() != null && fo.getMIMEType().equals(HibernateMappingDataLoader.REQUIRED_MIME)) {
                         int mappingIndex = sf.addMapping(true);
                         sf.setAttributeValue(SessionFactory.MAPPING, mappingIndex, resourceAttr, HibernateUtil.getRelativeSourcePath(fo, Util.getSourceRoot(project)));
@@ -363,9 +371,9 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
                         hco.save();
                     }
                 }
-            }
-        } finally {
-            Thread.currentThread().setContextClassLoader(oldClassLoader);
+            }            
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
