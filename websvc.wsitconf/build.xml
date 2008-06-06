@@ -65,8 +65,11 @@ made subject to such option by the copyright holder.
         <mkdir dir="61src/websvc.wsitconf"/>   
         <copy todir="61src/websvc.wsitconf">
             <fileset dir="../websvc.wsitconf">
-                <exclude name="*61src*"/>
-                <exclude name="*65src*"/>
+                <include name="nbproject"/>
+                <include name="src"/>
+                <include name="test"/>
+                <include name="build.xml"/>
+                <include name="manifest.mf"/>
             </fileset>
         </copy>
 
