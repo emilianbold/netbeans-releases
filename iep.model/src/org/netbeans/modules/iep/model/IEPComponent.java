@@ -31,8 +31,8 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author wlm
- * Base interface of all WLM entity
+ * @author iep
+ * Base interface of all IEP entity
  */
 public interface IEPComponent extends DocumentComponent<IEPComponent> {
  
@@ -49,7 +49,7 @@ public interface IEPComponent extends DocumentComponent<IEPComponent> {
 //     * @param type actual type of the target
 //     * @return the global reference.
 //     */
-//    <T extends ReferenceableWLMComponent> NamedComponentReference<T> createReferenceTo(T target, Class<T> type);
+//    <T extends ReferenceableIEPComponent> NamedComponentReference<T> createReferenceTo(T target, Class<T> type);
     
     /**
      * Returns map of attribute names and string values.
