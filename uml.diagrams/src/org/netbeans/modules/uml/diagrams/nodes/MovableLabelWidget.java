@@ -261,6 +261,9 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
 
     public void save(NodeWriter nodeWriter)
     {
+        if (!(this.isVisible()))
+            return;
+        
         nodeWriter = PersistenceUtil.populateNodeWriter(nodeWriter, this);
         nodeWriter.setTypeInfo("MovableLabel");
         nodeWriter.setHasPositionSize(true);        
