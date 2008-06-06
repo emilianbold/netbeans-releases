@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.navigation.hierarchy;
 import java.awt.BorderLayout;
 import java.io.Serializable;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
@@ -57,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.navigation.classhierarchy.ClassHierarchyPanel;
 import org.netbeans.modules.cnd.navigation.includeview.IncludeHierarchyPanel;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.Utilities;
@@ -70,6 +72,9 @@ final class HierarchyTopComponent extends TopComponent implements CsmModelListen
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/classhierarchy/resources/subtypehierarchy.gif"; // NOI18N
     private static final String PREFERRED_ID = "HierarchyTopComponent"; // NOI18N
+    private static final String OPENED_VIEW_PREFERENCE = "HierarchyViewWasOpened"; // NOI18N
+    private static final String OPENED_DIALOG_PREFERENCE = "HierarchyDialodWasOpened"; // NOI18N
+    public static final boolean USE_VIEW_AS_DIALOG = false;
     private JComponent last = null;
 
     private HierarchyTopComponent() {
@@ -79,12 +84,40 @@ final class HierarchyTopComponent extends TopComponent implements CsmModelListen
         setIcon(Utilities.loadImage(ICON_PATH, true));
     }
 
-    void setClass(CsmClass decl) {
+    public boolean isUserOpenView(){
+        if (USE_VIEW_AS_DIALOG) {
+            Preferences ps = NbPreferences.forModule(HierarchyTopComponent.class);
+            return ps.getBoolean(HierarchyTopComponent.OPENED_VIEW_PREFERENCE, false);
+        }
+        return true;
+    }
+
+    public void setUserOpenView(){
+        if (USE_VIEW_AS_DIALOG) {
+            Preferences ps = NbPreferences.forModule(HierarchyTopComponent.class);
+            ps.putBoolean(HierarchyTopComponent.OPENED_VIEW_PREFERENCE, true);
+        }
+    }
+
+    public boolean isUserOpenDialog(){
+        if (USE_VIEW_AS_DIALOG) {
+            Preferences ps = NbPreferences.forModule(HierarchyTopComponent.class);
+            return ps.getBoolean(HierarchyTopComponent.OPENED_DIALOG_PREFERENCE, false);
+        }
+        return true;
+    }
+
+    public void setUserOpenDialog(){
+        if (USE_VIEW_AS_DIALOG) {
+            Preferences ps = NbPreferences.forModule(HierarchyTopComponent.class);
+            ps.putBoolean(HierarchyTopComponent.OPENED_DIALOG_PREFERENCE, true);
+        }
+    }
+
+    void setClass(CsmClass decl, boolean setClose) {
         setName(decl.getName()+" - "+NbBundle.getMessage(getClass(), "CTL_HierarchyTopComponent")); // NOI18N
         setToolTipText(NbBundle.getMessage(getClass(), "HINT_TypeHierarchyTopComponent")); // NOI18N
-        if (last instanceof ClassHierarchyPanel) {
-            ((ClassHierarchyPanel)last).setClass(decl);
-        } else {
+        if (!(last instanceof ClassHierarchyPanel)) {
             removeAll();
             ClassHierarchyPanel panel = new ClassHierarchyPanel(true);
             add(panel, BorderLayout.CENTER);
@@ -92,23 +125,31 @@ final class HierarchyTopComponent extends TopComponent implements CsmModelListen
             panel.setClass(decl);
             last = panel;
         }
+        if (setClose) {
+            ((ClassHierarchyPanel)last).setClose();
+        } else {
+            ((ClassHierarchyPanel)last).clearClose();
+        }
+        ((ClassHierarchyPanel)last).setClass(decl);
         last.requestFocusInWindow();
     }
 
-    void setFile(CsmFile file) {
+    void setFile(CsmFile file, boolean setClose) {
         setName(file.getName()+" - "+NbBundle.getMessage(getClass(), "CTL_HierarchyTopComponent")); // NOI18N
         setToolTipText(NbBundle.getMessage(getClass(), "HINT_IncludeHierarchyTopComponent")); // NOI18N
-        if (last instanceof IncludeHierarchyPanel) {
-            ((IncludeHierarchyPanel)last).setFile(file);
-        } else {
+        if (!(last instanceof IncludeHierarchyPanel)) {
             removeAll();
             IncludeHierarchyPanel panel = new IncludeHierarchyPanel(true);
             add(panel, BorderLayout.CENTER);
             validate();
-            panel.setFile(file);
             last = panel;
         }
-        validate();
+        if (setClose) {
+            ((IncludeHierarchyPanel)last).setClose();
+        } else {
+            ((IncludeHierarchyPanel)last).clearClose();
+        }
+        ((IncludeHierarchyPanel)last).setFile(file);
         last.requestFocusInWindow();
     }
 
