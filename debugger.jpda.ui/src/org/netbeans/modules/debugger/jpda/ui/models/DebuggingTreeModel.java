@@ -51,6 +51,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -87,20 +88,22 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     public static final String SORT_ALPHABET = "sort.alphabet";
     public static final String SORT_SUSPEND = "sort.suspend";
     public static final String SHOW_SYSTEM_THREADS = "show.systemThreads";
+    public static final String SHOW_THREAD_GROUPS = "show.threadGroups";
     
     private static final Set<String> SYSTEM_THREAD_NAMES = new HashSet<String>(Arrays.asList(new String[] {
                                                            "Reference Handler",
                                                            "Signal Dispatcher",
                                                            "Finalizer",
                                                            "Java2D Disposer",
-                                                           "TimerQueue"}));
+                                                           "TimerQueue",
+                                                           "Attach Listener"}));
     private static final Set<String> SYSTEM_MAIN_THREAD_NAMES = new HashSet<String>(Arrays.asList(new String[] {
                                                            "DestroyJavaVM",
                                                            "AWT-XAWT",
                                                            "AWT-Shutdown"}));
     
     private JPDADebugger debugger;
-    private Listener            listener;
+    private Listener listener;
     private PreferenceChangeListener prefListener;
     private Collection<ModelListener> listeners = new HashSet<ModelListener>();
     private Map<JPDAThread, ThreadStateListener> threadStateListeners = new WeakHashMap<JPDAThread, ThreadStateListener>();
@@ -113,10 +116,17 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefListener, preferences));
     }
 
+    private static int counter = 0;
+    
     @Override
     protected Object[] computeChildren(Object parent) throws UnknownTypeException {
         if (parent == ROOT) {
-            return debugger.getThreadsCollector().getAllThreads().toArray();
+            boolean showThreadGroups = preferences.getBoolean(SHOW_THREAD_GROUPS, false);
+            if (showThreadGroups) {
+                return getTopLevelThreadsAndGroups();
+            } else {
+                return debugger.getThreadsCollector().getAllThreads().toArray();
+            }
         }
         if (parent instanceof JPDAThread) {
             JPDAThread t = (JPDAThread) parent;
@@ -126,6 +136,14 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             } catch (AbsentInformationException aiex) {
                 return new Object[0];
             }
+        }
+        if (parent instanceof JPDAThreadGroup) {
+            Object[] threads = ((JPDAThreadGroup)parent).getThreads();
+            Object[] groups = ((JPDAThreadGroup)parent).getThreadGroups();
+            Object[] result = new Object[threads.length + groups.length];
+            System.arraycopy(threads, 0, result, 0, threads.length);
+            System.arraycopy(groups, 0, result, threads.length, groups.length);
+            return result;
         }
         if (parent instanceof CallStackFrame) {
             return new Object[0];
@@ -167,6 +185,24 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             }
         }
         return (list != null) ? list.toArray() : nodes;
+    }
+
+    private Object[] getTopLevelThreadsAndGroups() {
+        List result = new LinkedList();
+        Set groups = new HashSet();
+        for (JPDAThread thread : debugger.getThreadsCollector().getAllThreads()) {
+            JPDAThreadGroup group = thread.getParentThreadGroup();
+            if (group == null) {
+                result.add(thread);
+            } else {
+                while (group.getParentThreadGroup() != null) {
+                    group = group.getParentThreadGroup();
+                } // while
+                groups.add(group);
+            } // if
+        } // for
+        result.addAll(groups);
+        return result.toArray();
     }
     
     private boolean isSystem(JPDAThread t) {
@@ -267,6 +303,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         // there is at most one
         private RequestProcessor.Task task;
         private Set<Object> nodesToRefresh;
+        private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
         
         public Listener (
             DebuggingTreeModel tm,
@@ -278,7 +315,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             debugger.addPropertyChangeListener(this);
             //tc.addPropertyChangeListener(this);
         }
-        
+
         private DebuggingTreeModel getModel () {
             DebuggingTreeModel tm = model.get ();
             if (tm == null) {
@@ -315,17 +352,23 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             } else if (e.getPropertyName() == JPDADebugger.PROP_THREAD_DIED) {
                 JPDAThread t = (JPDAThread) e.getOldValue();
                 tg = t.getParentThreadGroup();
+                while (tg != null && tg.getThreads().length == 0 && tg.getThreadGroups().length == 0) {
+                    tg = t.getParentThreadGroup();
+                }
             } else if (e.getPropertyName() == JPDADebugger.PROP_THREAD_GROUP_ADDED) {
                 tg = (JPDAThreadGroup) e.getNewValue();
                 tg = tg.getParentThreadGroup();
             } else {
                 return ;
             }
-            Object node;
-            if (tg == null || !false) { // TODO: !DebuggingView.getInstance().isThreadGroupsVisible()) {
-                node = ROOT;
-            } else {
-                node = tg;
+            Collection nodes = new ArrayList();
+            if (tg == null || !preferences.getBoolean(SHOW_SYSTEM_THREADS, false)) {
+                nodes.add(ROOT);
+            } else if (tg != null) {
+                do {
+                    nodes.add(tg);
+                    tg = tg.getParentThreadGroup();
+                } while (tg != null);
             }
             synchronized (this) {
                 if (task == null) {
@@ -334,7 +377,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
                 if (nodesToRefresh == null) {
                     nodesToRefresh = new LinkedHashSet<Object>();
                 }
-                nodesToRefresh.add(node);
+                nodesToRefresh.addAll(nodes);
                 task.schedule(100);
             }
         }
@@ -368,6 +411,17 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         for (ModelListener ml : ls) {
             ml.modelChanged (event);
         }
+        if (node instanceof JPDAThread && preferences.getBoolean(SHOW_THREAD_GROUPS, false)) {
+            JPDAThread thread = (JPDAThread)node;
+            JPDAThreadGroup group = thread.getParentThreadGroup();
+            while (group != null) {
+                event = new ModelEvent.NodeChanged(this, group, ModelEvent.NodeChanged.ICON_MASK);
+                for (ModelListener ml : ls) {
+                    ml.modelChanged (event);
+                } // for
+                group = group.getParentThreadGroup();
+            } // while
+        } // if
     }
     
     private void watchState(JPDAThread t) {
@@ -551,6 +605,16 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     private static final class ThreadAlphabetComparator implements Comparator {
 
         public int compare(Object o1, Object o2) {
+            if (o1 instanceof JPDAThreadGroup) {
+                if (o2 instanceof JPDAThreadGroup) {
+                    String tgn1 = ((JPDAThreadGroup) o1).getName();
+                    String tgn2 = ((JPDAThreadGroup) o2).getName();
+                    return java.text.Collator.getInstance().compare(tgn1, tgn2);
+                }
+                return 1;
+            } else if (o2 instanceof JPDAThreadGroup) {
+                return -1;
+            }
             if (!(o1 instanceof JPDAThread) && !(o2 instanceof JPDAThread)) {
                 return 0;
             }
@@ -564,6 +628,14 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     private static final class ThreadSuspendComparator implements Comparator {
 
         public int compare(Object o1, Object o2) {
+            if (o1 instanceof JPDAThreadGroup) {
+                if (o2 instanceof JPDAThreadGroup) {
+                    return 0;
+                }
+                return 1;
+            } else if (o2 instanceof JPDAThreadGroup) {
+                return -1;
+            }
             if (!(o1 instanceof JPDAThread) && !(o2 instanceof JPDAThread)) {
                 return 0;
             }
@@ -582,6 +654,8 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             String key = evt.getKey();
             if (SORT_ALPHABET.equals(key) || SORT_SUSPEND.equals(key) || SHOW_SYSTEM_THREADS.equals(key)) {
                 fireThreadStateChanged(ROOT);
+            } else if (SHOW_THREAD_GROUPS.equals(key)) {
+                fireNodeChanged(ROOT);
             }
         }
         

@@ -346,8 +346,7 @@ public final class DebuggerManager implements ContextProvider {
                         engineProviders.get (j);
                     Object[] services = ep.getServices ();
                     engine = new DebuggerEngine (
-                        ((DebuggerEngineProvider) engineProviders.get (j)).
-                            getEngineTypeID (),
+                        ep.getEngineTypeID (),
                         s,
                         services,
                         l

@@ -37,33 +37,32 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.csm.core;
+package org.netbeans.modules.cnd.remote.compilers;
 
-import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetProvider;
+import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
+import org.netbeans.modules.cnd.remote.support.manager.CompilerSetScriptManager;
 
 /**
- * Error provider based on parser errors
- * @author Vladimir Kvashin
+ *
+ * @author gordonp
  */
-public class ParserErrorProvider extends CsmErrorProvider {
-
-    private static final boolean ENABLE = getBoolean("cnd.parser.error.provider", true);
+public class RemoteCompilerSetProvider implements CompilerSetProvider {
     
-    @Override
-    public Collection<CsmErrorInfo> getErrors(BaseDocument doc, CsmFile file) {
-        return ENABLE ? ((FileImpl) file).getErrors(doc) : Collections.<CsmErrorInfo>emptyList();
+    public RemoteCompilerSetProvider() {
+        String host = System.getProperty("cnd.remote.server");
+        String user = System.getProperty("user.name");
+        
+        RemoteScriptSupport support = new RemoteScriptSupport(host, user, new CompilerSetScriptManager());
     }
-    
-    private static boolean getBoolean(String name, boolean result) {
-        String text = System.getProperty(name);
-        if( text != null ) {
-            result = Boolean.parseBoolean(text);
-        }
-        return result;
-    }     
+
+    public boolean hasMoreCompilerSets() {
+        return false;
+    }
+
+    public CompilerSet getNextCompilerSet() {
+        return null;
+    }
+
 }
