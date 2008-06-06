@@ -42,6 +42,7 @@ package org.netbeans.modules.vmd.componentssupport.ui.helpers;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -56,6 +57,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.vmd.componentssupport.ui.wizard.CustomComponentWizardIterator;
 import org.netbeans.modules.vmd.componentssupport.ui.wizard.NewComponentDescriptor;
@@ -65,8 +67,10 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -431,7 +435,9 @@ public abstract class CustomComponentHelper extends BaseHelper {
             if (myLayerPath == null){
                 Manifest manifest = getManifest();
                 Attributes attrs = manifest.getMainAttributes();
-                myLayerPath = SRC + attrs.getValue(OPENIDE_MODULE_LAYER);
+                if (attrs.containsKey(OPENIDE_MODULE_LAYER)){
+                    myLayerPath = SRC + attrs.getValue(OPENIDE_MODULE_LAYER);
+                }
             }
             return myLayerPath;
         }
@@ -639,12 +645,38 @@ public abstract class CustomComponentHelper extends BaseHelper {
             return file.exists() ? true : false;
         }
         
+        private FileObject createAndRegisterLayerXml() 
+                throws IOException
+        {
+            FileObject prjDir = getProject().getProjectDirectory();
+            String cnb = getCodeNameBase().replace(".", "/");
+            String layerXmlPath = cnb + "/" + LayerXmlHelper.LAYER_XML;
+            
+            // create layer xml file
+            FileObject layerFO = LayerXmlHelper.createLayerXml(
+                    prjDir, SRC + layerXmlPath);
+            
+            // register layer in manifest.mf
+            Manifest manifest = getManifest();
+            Attributes attrs = manifest.getMainAttributes();
+            attrs.putValue(OPENIDE_MODULE_LAYER, layerXmlPath);
+            saveManifest(manifest);
+            
+            return layerFO;
+        }
+        
         private Set<FileObject> configureLayerXml()
                 throws IOException
         {
             String layerXmlPath = getLayer();
             FileObject prjDir = getProject().getProjectDirectory();
-            FileObject layerXmlFO = FileUtil.createData(prjDir, layerXmlPath);
+            
+            FileObject layerXmlFO = null;
+            if (layerXmlPath == null || !isFileExist(prjDir, layerXmlPath)){
+                layerXmlFO = createAndRegisterLayerXml();
+            } else {
+                layerXmlFO = FileUtil.createData(prjDir, layerXmlPath);
+            }
             
             try {
                 Document doc = LayerXmlHelper.parseXmlDocument(layerXmlFO);
@@ -662,15 +694,16 @@ public abstract class CustomComponentHelper extends BaseHelper {
                 cd.setAttribute( LayerXmlHelper.LAYER_NAME, getCDLayerInstanceName() );
                 compsNode.appendChild(cd);
                 
-                Node produsersNode = goToProducersNode(doc, xpath, vmdMidpNode);
+                Node produsersNode;
                 
                 Element prod = doc.createElement(LayerXmlHelper.LAYER_FOLDER);
+                produsersNode = goToProducersNode(doc, xpath, vmdMidpNode);
                 prod.setAttribute( LayerXmlHelper.LAYER_NAME, getProducerLayerInstanceName() );
                 produsersNode.appendChild(prod);
                 
                 LayerXmlHelper.saveXmlDocument(doc, layerXmlFO);
                 
-            } catch (Exception ex) {
+            } catch (XPathExpressionException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
             
@@ -818,25 +851,71 @@ public abstract class CustomComponentHelper extends BaseHelper {
         }
 
         private Manifest getManifest() {
-            if(myManifest != null){
+            if (myManifest != null) {
                 return myManifest;
             }
-            
+            myManifest = ProjectManager.mutex().readAccess(new Mutex.Action<Manifest>() {
+
+                public Manifest run() {
+                    try {
+                        return doReadManifest();
+                    } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ex);
+                    }
+                    return null;
+                }
+            });
+            return myManifest;
+        }
+        
+        private Manifest doReadManifest() throws IOException {
+            Manifest manifest = null;
             FileObject manifestFO = getProject().getProjectDirectory().
                     getFileObject(MANIFEST);
             if (manifestFO != null) {
+                InputStream is = manifestFO.getInputStream();
                 try {
-                    InputStream is = manifestFO.getInputStream();
-                    try {
-                        myManifest = new Manifest(is);
-                    } finally {
-                        is.close();
-                    }
-                } catch (IOException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    manifest = new Manifest(is);
+                } finally {
+                    is.close();
                 }
             }
-            return myManifest;
+            return manifest;
+        }
+
+        private void saveManifest(final Manifest manifest) {
+            if (manifest == null) {
+                return;
+            }
+            ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+
+                public Void run() {
+                    try {
+                        doWriteManifest(manifest);
+                    } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ex);
+                    }
+                    return null;
+                }
+            });
+        }
+        
+        private void doWriteManifest(Manifest manifest) throws IOException {
+            FileObject manifestFO = getProject().getProjectDirectory().
+                    getFileObject(MANIFEST);
+            if (manifestFO != null) {
+                FileLock lock = manifestFO.lock();
+                try {
+                    OutputStream os = manifestFO.getOutputStream(lock);
+                    try {
+                        manifest.write(os);
+                    } finally {
+                        os.close();
+                    }
+                } finally {
+                    lock.releaseLock();
+                }
+            }
         }
 
         /*
