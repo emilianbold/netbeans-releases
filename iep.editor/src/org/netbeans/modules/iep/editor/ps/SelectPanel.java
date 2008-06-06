@@ -136,7 +136,7 @@ public class SelectPanel extends JPanel implements SharedConstants {
         mComponent = component;
         try {
             boolean isSchemaOwner = component.isSchemaOwner();
-            String inputType = component.getProperty(INPUT_TYPE_KEY).getValue();
+            String inputType = component.getInputType().getType();
             mReadOnly = !isSchemaOwner;
             mHasExpressionColumn = isSchemaOwner && !inputType.equals(IO_TYPE_NONE);
             mNameCol = mHasExpressionColumn? 1 : 0;

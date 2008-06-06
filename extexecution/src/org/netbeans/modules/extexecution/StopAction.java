@@ -57,7 +57,7 @@ import org.openide.util.Utilities;
  */
 public final class StopAction extends AbstractAction {
 
-    private Process process;
+    private transient Process process;
 
     public StopAction() {
         setEnabled(false); // initially, until ready
@@ -76,7 +76,9 @@ public final class StopAction extends AbstractAction {
 
     public synchronized void actionPerformed(ActionEvent e) {
         setEnabled(false); // discourage repeated clicking
-        process.destroy();
+        if (process != null) {
+            process.destroy();
+        }
     }
 
 }

@@ -37,68 +37,13 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.support;
+package org.netbeans.modules.xslt.core.text.completion;
 
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSchException;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
+import javax.swing.JEditorPane;
 
 /**
- *
- * @author gordonp
+ * @author Alex Petrov (06.06.2008)
  */
-public class RemoteOutputOnlyCommandSupport extends RemoteConnectionSupport {
-        
-    private BufferedReader in;
-    private StringWriter out;
-
-    public RemoteOutputOnlyCommandSupport(String host, String user) {
-        super(host, user);
-                
-        try {
-            InputStream is = channel.getInputStream();
-            in = new BufferedReader(new InputStreamReader(is));
-            out = new StringWriter();
-            
-            String line;
-            while ((line = in.readLine()) != null) {
-                out.write(line);
-                out.flush();
-            }
-            in.close();
-            is.close();
-        } catch (IOException ex) {
-        }
-    }
-    
-    @Override
-    public String toString() {
-        if (out != null) {
-            return out.toString();
-        } else {
-            return "";
-        }
-    }
-
-    @Override
-    protected Channel createChannel() throws JSchException {
-        ChannelExec echannel = (ChannelExec) session.openChannel("exec");
-        String cmd = System.getProperty("cnd.remote.program");
-        
-        if (cmd == null) {
-            cmd = "/home/gordonp/.netbeans/rddev/cnd.remote/scripts/hello.sh";
-        }
-        
-        echannel.setCommand(cmd);
-        echannel.setInputStream(null);
-        echannel.setErrStream(System.err);
-        echannel.connect();
-        return echannel;
-    }
-
+public interface XSLTEditorComponentHolder {
+    JEditorPane getSourceEditorComponent();
 }

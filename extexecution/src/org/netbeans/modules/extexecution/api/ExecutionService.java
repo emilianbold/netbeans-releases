@@ -96,14 +96,14 @@ public final class ExecutionService {
     private static final Logger LOGGER = Logger.getLogger(ExecutionService.class.getName());
 
     static {
-        RerunAction.Accessor.DEFAULT = new RerunAction.Accessor() {
+        RerunAction.Accessor.setDefault(new RerunAction.Accessor() {
 
             @Override
             public Task rerun(ExecutionService service) {
                 return service.rerun();
             }
 
-        };
+        });
     }
 
     static {

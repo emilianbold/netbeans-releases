@@ -112,9 +112,9 @@ public class EntityNode extends SimpleNode
         Point dc = new Point(operator.getX(), operator.getY());
       
         // create an input port and an output port, each instances of SimpleNodePort
-        String type = (String)this.mComp.getProperty(INPUT_TYPE_KEY).getValue();
+        String type = (String)this.mComp.getInputType().getType();
         boolean hasInput = type.equals(IO_TYPE_STREAM) || type.equals(IO_TYPE_RELATION);
-        type = (String)this.mComp.getProperty(OUTPUT_TYPE_KEY).getValue();
+        type = (String)this.mComp.getOutputType().getType();
         boolean hasOutput = type.equals(IO_TYPE_STREAM) || type.equals(IO_TYPE_RELATION)|| type.equals(IO_TYPE_TABLE);
         
         super.initialize(dc, getStdSize(), getImage(), getLabelString(), hasInput, hasOutput);
@@ -424,7 +424,7 @@ public class EntityNode extends SimpleNode
                         EntityNode fromNode= inputLink.getFromNode();
                         OperatorComponent fromComp = fromNode.mComp;
                         
-                        String outputType = fromComp.getProperty(OUTPUT_TYPE_KEY).getValue();
+                        String outputType = fromComp.getOutputType().getType();
                         String id = fromComp.getProperty(ID_KEY).getValue();
                         if (outputType.equals(IO_TYPE_TABLE)) {
                             if(counter != 0) {
@@ -752,7 +752,7 @@ public class EntityNode extends SimpleNode
     
     public String getInputType() {
         try {
-            return mComp.getProperty(INPUT_TYPE_KEY).getValue();
+            return mComp.getInputType().getType();
         } catch (Exception e) {
             //e.printStackTrace();
             mLog.warning("Exception:"+ e.getMessage());
@@ -773,7 +773,7 @@ public class EntityNode extends SimpleNode
     
     public String getOutputType() {
         try {
-            return mComp.getProperty(OUTPUT_TYPE_KEY).getValue();
+            return mComp.getOutputType().getType();
         } catch (Exception e) {
             //e.printStackTrace();
             mLog.warning("Exception:"+ e.getMessage());
