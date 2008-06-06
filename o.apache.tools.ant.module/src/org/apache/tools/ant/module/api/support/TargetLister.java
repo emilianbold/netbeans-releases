@@ -57,6 +57,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
+import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.xml.AntProjectSupport;
 import org.openide.filesystems.FileObject;
@@ -114,6 +115,7 @@ public class TargetLister {
     public static Set<Target> getTargets(AntProjectCookie script) throws IOException {
         Set<File> alreadyImported = new HashSet<File>();
         Map<String,String> properties = NbCollections.checkedMapByFilter(System.getProperties(), String.class, String.class, false);
+        properties.putAll(AntSettings.getProperties()); // #130460
         Script main = new Script(null, script, alreadyImported, properties, Collections.<String,Element>emptyMap());
         Set<Target> targets = new HashSet<Target>();
         Set<AntProjectCookie> visitedScripts = new HashSet<AntProjectCookie>();

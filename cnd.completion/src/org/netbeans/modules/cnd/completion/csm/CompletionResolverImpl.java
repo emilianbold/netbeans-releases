@@ -209,50 +209,23 @@ public class CompletionResolverImpl implements CompletionResolver {
         Collection libNSs         = null; 
         Collection libNsAliases   = null; // NOT YET IMPL
 
-        Collection templateParameters  = null; // NOT YET IMPL
+        Collection templateParameters  = null;
         
         CsmProject prj = file != null ? file.getProject() : null;
         if (prj == null) {
             return;
         }
                 
-        boolean needTemplateParameters = false;
         //long timeStart = System.nanoTime();
         if (needClasses(context, offset)) {
             // list of classesEnumsTypedefs
             classesEnumsTypedefs = getClassesEnums(context, prj, strPrefix, match, offset,false);
-            needTemplateParameters = true;
         } else if (needContextClasses(context, offset)) {
             classesEnumsTypedefs = getClassesEnums(context, prj, strPrefix, match, offset,true);           
-            needTemplateParameters = true;
         }
         
-        if (needTemplateParameters) {
-            needTemplateParameters = false;
-            CsmFunction fun = CsmContextUtilities.getFunction(context);
-            CsmClass clazz = fun == null ? null : CsmBaseUtilities.getFunctionClass(fun);
-            clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false);
-            if (CsmKindUtilities.isTemplate(clazz)){
-                if (templateParameters == null) {
-                    templateParameters = new ArrayList<CsmTemplateParameter>();
-                }
-                for(CsmTemplateParameter elem : ((CsmTemplate)clazz).getTemplateParameters()){
-                    if (CsmSortUtilities.matchName(elem.getName(), strPrefix, match, caseSensitive)) {
-                        templateParameters.add(elem);
-                    }
-                }
-            }  
-            if (CsmKindUtilities.isTemplate(fun)){
-                if (templateParameters == null) {
-                    templateParameters = new ArrayList<CsmTemplateParameter>();
-                }
-                for(CsmTemplateParameter elem : ((CsmTemplate)fun).getTemplateParameters()){
-                    if (CsmSortUtilities.matchName(elem.getName(), strPrefix, match, caseSensitive)) {
-                        templateParameters.add(elem);
-                    }
-                }
-            }
-            
+        if (needTemplateParameters(context, offset)) {
+            templateParameters = getTemplateParameters(context, strPrefix, match);
         }
         if (needLocalVars(context, offset)) {
             fileLocalEnumerators = contResolver.getFileLocalEnumerators(context, strPrefix, match);            
@@ -280,16 +253,6 @@ public class CompletionResolverImpl implements CompletionResolver {
                         fileLocalEnumerators.add(elem);
                     }
                 }
-                if (CsmKindUtilities.isTemplate(fun) && needTemplateParameters){
-                    if (templateParameters == null) {
-                        templateParameters = new ArrayList<CsmTemplateParameter>();
-                    }
-                    for(CsmTemplateParameter elem : ((CsmTemplate)fun).getTemplateParameters()){
-                        if (CsmSortUtilities.matchName(elem.getName(), strPrefix, match, caseSensitive)) {
-                            templateParameters.add(elem);
-                        }
-                    }
-                }
             }
 
             if (needClassElements(context, offset)) {
@@ -303,16 +266,6 @@ public class CompletionResolverImpl implements CompletionResolver {
 
                     // get class methods visible in this method
                     classMethods = contResolver.getMethods(clazz, fun, strPrefix, staticContext, match, true,false);
-                    if (CsmKindUtilities.isTemplate(clazz) && needTemplateParameters){
-                        if (templateParameters == null) {
-                            templateParameters = new ArrayList<CsmTemplateParameter>();
-                        }
-                        for(CsmTemplateParameter elem : ((CsmTemplate)clazz).getTemplateParameters()){
-                            if (CsmSortUtilities.matchName(elem.getName(), strPrefix, match, caseSensitive)) {
-                                templateParameters.add(elem);
-                            }
-                        }
-                    }
                 }
             }
         } else if (needClassElements(context, offset)) {
@@ -343,14 +296,6 @@ public class CompletionResolverImpl implements CompletionResolver {
                         classesEnumsTypedefs = new ArrayList<CsmDeclaration>();
                     }
                     classesEnumsTypedefs.addAll(innerCls);
-                }
-                if (CsmKindUtilities.isTemplate(clazz) && needTemplateParameters){
-                    if (templateParameters == null) {
-                        templateParameters = new ArrayList<CsmTemplateParameter>();
-                    }
-                    for(CsmTemplateParameter elem : ((CsmTemplate)clazz).getTemplateParameters()){
-                        templateParameters.add(elem);
-                    }
                 }
             }
         }
@@ -450,6 +395,7 @@ public class CompletionResolverImpl implements CompletionResolver {
                 hideTypes &= ~RESOLVE_FILE_PRJ_MACROS;
                 hideTypes &= ~RESOLVE_GLOB_NAMESPACES;
                 hideTypes &= ~RESOLVE_CLASSES;        
+                hideTypes &= ~RESOLVE_TEMPLATE_PARAMETERS;        
                 hideTypes &= ~RESOLVE_GLOB_VARIABLES;
                 hideTypes &= ~RESOLVE_GLOB_FUNCTIONS;
                 hideTypes &= ~RESOLVE_GLOB_ENUMERATORS;
@@ -564,7 +510,35 @@ public class CompletionResolverImpl implements CompletionResolver {
     private static Collection merge(Collection orig, Collection newList) {
         return CsmUtilities.merge(orig, newList);
     }
-    
+
+    private Collection getTemplateParameters(CsmContext context, String strPrefix, boolean match) {
+        Collection templateParameters = null;
+        CsmFunction fun = CsmContextUtilities.getFunction(context);
+        CsmClass clazz = fun == null ? null : CsmBaseUtilities.getFunctionClass(fun);
+        clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false);
+        if (CsmKindUtilities.isTemplate(clazz)) {
+            if (templateParameters == null) {
+                templateParameters = new ArrayList<CsmTemplateParameter>();
+            }
+            for (CsmTemplateParameter elem : ((CsmTemplate) clazz).getTemplateParameters()) {
+                if (CsmSortUtilities.matchName(elem.getName(), strPrefix, match, caseSensitive)) {
+                    templateParameters.add(elem);
+                }
+            }
+        }
+        if (CsmKindUtilities.isTemplate(fun)) {
+            if (templateParameters == null) {
+                templateParameters = new ArrayList<CsmTemplateParameter>();
+            }
+            for (CsmTemplateParameter elem : ((CsmTemplate) fun).getTemplateParameters()) {
+                if (CsmSortUtilities.matchName(elem.getName(), strPrefix, match, caseSensitive)) {
+                    templateParameters.add(elem);
+                }
+            }
+        }
+        return templateParameters;
+    }
+
     private Collection getClassesEnums(CsmContext context, CsmProject prj, String strPrefix, boolean match, int offset,boolean contextOnly) {
         if (prj == null) {
             return null;
@@ -1356,6 +1330,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             
             // namespaces and classes could be everywhere, hide should decide what to disable
             resolveTypes |= RESOLVE_CLASSES;
+            resolveTypes |= RESOLVE_TEMPLATE_PARAMETERS;
             resolveTypes |= RESOLVE_GLOB_NAMESPACES;
             resolveTypes |= RESOLVE_LIB_CLASSES;
             resolveTypes |= RESOLVE_LIB_NAMESPACES;

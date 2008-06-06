@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.navigation.hierarchy;
 
-import org.netbeans.modules.cnd.navigation.classhierarchy.*;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.loaders.CCDataObject;
 import org.netbeans.modules.cnd.loaders.HDataObject;
@@ -50,6 +49,8 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
+import org.openide.windows.Mode;
+import org.openide.windows.WindowManager;
 
 public final class ShowClassHierarchyAction extends CookieAction {
     
@@ -57,9 +58,27 @@ public final class ShowClassHierarchyAction extends CookieAction {
         CsmClass decl = ContextUtils.getContextClass(activatedNodes);
         if (decl != null){
             HierarchyTopComponent view = HierarchyTopComponent.findInstance();
-            view.setClass(decl);
-            view.open();
-            view.requestActive();
+            if (!view.isOpened()) {
+                if (HierarchyTopComponent.USE_VIEW_AS_DIALOG) {
+                    if (!view.isUserOpenView()) {
+                        if (!view.isUserOpenDialog()) {
+                            Mode preferedMode = WindowManager.getDefault().findMode("rightSlidingSide");
+                            if (preferedMode != null) {
+                                preferedMode.dockInto(view);
+                            }
+                            view.setUserOpenDialog();
+                        }
+                    }
+                    view.open();
+                    view.setClass(decl, true);
+                    view.requestActive();
+                } else {
+                    HierarchyDialog.show(decl);
+                }
+            } else {
+                view.setClass(decl, false);
+                view.requestActive();
+            }
         } else {
             String msg = NbBundle.getMessage(getClass(), "MESSAGE_NoContextClass"); // NOI18N
             StatusDisplayer.getDefault().setStatusText(msg);

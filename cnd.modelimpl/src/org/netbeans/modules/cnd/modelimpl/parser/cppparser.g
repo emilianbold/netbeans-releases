@@ -108,6 +108,7 @@ options {
 	codeGenBitsetTestThreshold = 3;
 	noConstructors = true;
 	buildAST = true;
+        genASTClassMap = false;
 }
 
 //
@@ -424,7 +425,7 @@ tokens {
 
 	public void reportError(RecognitionException e) {
             // Do not report errors that we had reported already
-            if (lastRecoveryPosition == inputState.input.index()) {
+            if (lastRecoveryPosition == input.index()) {
                 return;
             }
 
@@ -463,7 +464,7 @@ tokens {
         private int lastRecoveryPosition = -1;
         
         public void recover(RecognitionException ex, BitSet tokenSet) {
-            if (lastRecoveryPosition == inputState.input.index()) {
+            if (lastRecoveryPosition == input.index()) {
                 if (recoveryCounter > RECOVERY_LIMIT) {
                     consume();
                     recoveryCounter = 0;
@@ -472,7 +473,7 @@ tokens {
                 }
             } else {
                 recoveryCounter = 0;
-                lastRecoveryPosition = inputState.input.index();
+                lastRecoveryPosition = input.index();
             }
             tokenSet.orInPlace(stopSet);
             consumeUntil(tokenSet);
@@ -1162,7 +1163,8 @@ member_declaration
 		// This is separated out otherwise the next alternative
 		// would look for "class A { ... } f() {...}" which is
 		// an unacceptable level of backtracking.
-		( (LITERAL_typedef)? class_head) => 
+                // we need "static" here for the case "static struct XX {...} myVar; - see issue #135149
+		( (LITERAL_typedef | LITERAL_static)? class_head) => 
 		{if (statementTrace>=1) 
 			printf("member_declaration_1[%d]: Class definition\n",
 				LT(1).getLine());

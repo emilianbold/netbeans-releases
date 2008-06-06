@@ -46,15 +46,8 @@ import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
-import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
-import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
 
@@ -63,7 +56,7 @@ import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingO
  * @author Sergey Grinev
  */
 public class SemanticEntitiesProvider {
-
+    
     List<SemanticEntity> list;
 
     public List<SemanticEntity> get() {
@@ -72,37 +65,6 @@ public class SemanticEntitiesProvider {
 
     private SemanticEntitiesProvider() {
         list = new ArrayList<SemanticEntity>();
-
-        // Class Fields
-        list.add(new AbstractSemanticEntity() {
-
-            public String getName() {
-                return "class-fields"; // NOI18N
-
-            }
-
-            public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
-                return ModelUtils.getFieldsBlocks(csmFile);
-            }
-        });
-
-        // Function Names
-        list.add(new AbstractSemanticEntity() {
-
-            public String getName() {
-                return "functions-names"; // NOI18N
-
-            }
-
-            public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
-                return ModelUtils.getFunctionNames(csmFile);
-            }
-
-            @Override
-            public void initFontColors(FontColorSettings fcs) {
-                color = AttributesUtilities.createImmutable(StyleConstants.Bold, Boolean.TRUE);
-            }
-        });
 
         // Inactive Code
         list.add(new AbstractSemanticEntity() {
@@ -117,50 +79,84 @@ public class SemanticEntitiesProvider {
             }
         });
 
-        // Macro
-        list.add(new AbstractSemanticEntity() {
-
-            public String getName() {
-                return MACROS;
-
-            }
-            private boolean diffSystem = true;
-
-            public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
-                diffSystem = SemanticHighlightingOptions.instance().getDifferSystemMacros();
-                return ModelUtils.getMacroBlocks(csmFile);
-            }
-
-            @Override
-            public AttributeSet getColor(CsmOffsetable obj) {
-                if (obj == null || !diffSystem) {
-                    return super.getColor(null);
-                }
-                CsmMacro macro = (CsmMacro) ((CsmReference) obj).getReferencedObject();
-                return macro == null || !macro.isSystem() ? color : sysMacroColors;
-            }
-            protected AttributeSet sysMacroColors;
-
-            @Override
-            public void initFontColors(FontColorSettings fcs) {
-                super.initFontColors(fcs);
-                sysMacroColors = getFontColor(fcs, "macros-system"); // NOI18N
-
-            }
-        });
+        if (!HighlighterBase.MINIMAL) { // for QEs who want to save performance on UI tests
         
-        // typedefs
-        list.add(new AbstractSemanticEntity() {
+            // Class Fields
+            list.add(new AbstractSemanticEntity() {
 
-            public String getName() {
-                return "typedefs"; // NOI18N
+                public String getName() {
+                    return "class-fields"; // NOI18N
 
-            }
+                }
 
-            public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
-                return ModelUtils.getTypedefBlocks(csmFile);
-            }
-        });
+                public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
+                    return ModelUtils.getFieldsBlocks(csmFile);
+                }
+            });
+
+            // Function Names
+            list.add(new AbstractSemanticEntity() {
+
+                public String getName() {
+                    return "functions-names"; // NOI18N
+
+                }
+
+                public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
+                    return ModelUtils.getFunctionNames(csmFile);
+                }
+
+                @Override
+                public void initFontColors(FontColorSettings fcs) {
+                    color = AttributesUtilities.createImmutable(StyleConstants.Bold, Boolean.TRUE);
+                }
+            });
+
+            // Macro
+            list.add(new AbstractSemanticEntity() {
+
+                public String getName() {
+                    return MACROS;
+
+                }
+                private boolean diffSystem = true;
+
+                public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
+                    diffSystem = SemanticHighlightingOptions.instance().getDifferSystemMacros();
+                    return ModelUtils.getMacroBlocks(csmFile);
+                }
+
+                @Override
+                public AttributeSet getColor(CsmOffsetable obj) {
+                    if (obj == null || !diffSystem) {
+                        return super.getColor(null);
+                    }
+                    CsmMacro macro = (CsmMacro) ((CsmReference) obj).getReferencedObject();
+                    return macro == null || !macro.isSystem() ? color : sysMacroColors;
+                }
+                protected AttributeSet sysMacroColors;
+
+                @Override
+                public void initFontColors(FontColorSettings fcs) {
+                    super.initFontColors(fcs);
+                    sysMacroColors = getFontColor(fcs, "macros-system"); // NOI18N
+
+                }
+            });
+
+            // typedefs
+            list.add(new AbstractSemanticEntity() {
+
+                public String getName() {
+                    return "typedefs"; // NOI18N
+
+                }
+
+                public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
+                    return ModelUtils.getTypedefBlocks(csmFile);
+                }
+            });
+        } // if (!HighlighterBase.MINIMAL)
     }
 
     // public name for special handling

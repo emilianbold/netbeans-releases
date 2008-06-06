@@ -11,14 +11,9 @@ package antlr;
  * @see antlr.TokenBuffer
  */
 public class LLkParser extends Parser {
-	int k;
+	final int k;
 
 	public LLkParser(int k_) {
-		k = k_;
-	}
-
-	public LLkParser(ParserSharedInputState state, int k_) {
-		super(state);
 		k = k_;
 	}
 
@@ -41,20 +36,20 @@ public class LLkParser extends Parser {
 	 * consumed will be overwritten with the 3rd.
 	 */
 	public final void consume() {
-		inputState.input.consume();
+		input.consume();
 	}
 
 	public final int LA(int i) {
-		return inputState.input.LA(i);
+		return input.LA(i);
 	}
 
 	public final Token LT(int i) {
-		return inputState.input.LT(i);
+		return input.LT(i);
 	}
 
 	private void trace(String ee, String rname) {
 		traceIndent();
-		System.out.print(ee + rname + ((inputState.guessing > 0)?"; [guessing="+inputState.guessing+"]":"; "));
+		System.out.print(ee + rname + ((guessing > 0)?"; [guessing="+guessing+"]":"; "));
 		for (int i = 1; i <= k; i++) {
 			if (i != 1) {
 				System.out.print(", ");
@@ -69,11 +64,13 @@ public class LLkParser extends Parser {
 		System.out.println("");
 	}
 
+    @Override
 	public void traceIn(String rname) {
 		traceDepth += 1;
 		trace("> ", rname);
 	}
 
+    @Override
 	public void traceOut(String rname) {
 		trace("< ", rname);
 		traceDepth -= 1;

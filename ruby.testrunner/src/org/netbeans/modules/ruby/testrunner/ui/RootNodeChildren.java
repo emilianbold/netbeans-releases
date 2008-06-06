@@ -111,7 +111,9 @@ final class RootNodeChildren extends Children.Array {
     TestsuiteNode displayReport(final Report report) {
         assert EventQueue.isDispatchThread();
         assert (runningSuiteNode != null)
-               == (live && (runningSuiteName != null));
+               == (live && (runningSuiteName != null)) 
+               // for tracking down #136415
+               : "runningSuiteNode: " + runningSuiteNode + ", live: " + live + ", runningSuiteName: " + runningSuiteName;
         
         TestsuiteNode correspondingNode;
         

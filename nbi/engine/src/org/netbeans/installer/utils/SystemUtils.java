@@ -228,14 +228,20 @@ public final class SystemUtils {
         }
         
         // R for Resource
-        matcher = Pattern.compile("(?<!\\\\)\\$R\\{(.*?)\\}").matcher(parsed);
+        matcher = Pattern.compile("(?<!\\\\)\\$R\\{(.*?)(;(.*)?)?}").matcher(parsed);
         while (matcher.find()) {
             String path = matcher.group(1);
-            
+            String charset = matcher.group(3);
+            if(charset!=null) {
+                charset = charset.trim();
+                if(charset.equals(StringUtils.EMPTY_STRING)) {
+                    charset = null;
+                }
+            } 
             InputStream inputStream = null;
             try {
                 inputStream  = ResourceUtils.getResource(path, loader);
-                parsed = parsed.replace(matcher.group(), StringUtils.readStream(inputStream));
+                parsed = parsed.replace(matcher.group(), StringUtils.readStream(inputStream, charset));
             } catch (IOException e) {
                 ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
                         ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
@@ -746,6 +752,8 @@ public final class SystemUtils {
                 if (osArch.contains("ppc")) {
                     currentPlatform =
                             is64bit ? Platform.LINUX_PPC64 : Platform.LINUX_PPC;
+                } else if(osArch.contains("sparc")) {
+                    currentPlatform = Platform.LINUX_SPARC;
                 } else {
                     currentPlatform =
                             is64bit ? Platform.LINUX_X64 : Platform.LINUX_X86;

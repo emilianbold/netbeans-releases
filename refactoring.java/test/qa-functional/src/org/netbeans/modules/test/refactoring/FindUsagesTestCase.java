@@ -51,7 +51,7 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
-import org.netbeans.modules.test.refactoring.operators.FindUsagesAction;
+import org.netbeans.modules.test.refactoring.actions.FindUsagesAction;
 import org.netbeans.modules.test.refactoring.operators.FindUsagesClassOperator;
 import org.netbeans.modules.test.refactoring.operators.FindUsagesResultOperator;
 
@@ -90,7 +90,7 @@ public class FindUsagesTestCase extends RefactoringTestCase {
         openSourceFile(packName, fileName);
         EditorOperator editor = new EditorOperator(fileName);
         editor.setCaretPosition(row, col);
-        new FindUsagesAction().performPopup(editor);
+        new FindUsagesAction().perform(editor);
         new EventTool().waitNoEvent(1000);
         FindUsagesClassOperator findUsagesClassOperator = new FindUsagesClassOperator();
         if ((modifiers & SEARCH_IN_COMMENTS) != 0)

@@ -45,6 +45,28 @@ made subject to such option by the copyright holder.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">
+              <folder name="Actions">
+            <file name="org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createVariable"/>
+            </file>
+            <file name="org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createConstant"/>
+            </file>
+            <file name="org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createField"/>
+            </file>
+            <file name="org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMethod"/>
+            </file>
+              </folder>
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-java-hints-keybindings.xml" url="keybindings.xml"/> 
+                        </folder>
+                    </folder>
+                </folder>
+                
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-java-hints-infrastructure-JavaUpToDateStateProviderFactory.instance"/>
                 </folder>
@@ -254,16 +276,16 @@ made subject to such option by the copyright holder.
     <folder name="Actions">
         <folder name="Refactoring">
             <file name="org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createVariable"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMenuVariable"/>
             </file>
             <file name="org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createConstant"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMenuConstant"/>
             </file>
             <file name="org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createField"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMenuField"/>
             </file>
             <file name="org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMethod"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMenuMethod"/>
             </file>
             <file name="org-netbeans-modules-java-hints-ConvertAnonymousToInnerAction.instance"/>
         </folder>
@@ -291,6 +313,6 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="1700"/>
             </file>            
             </folder>
-    </folder>
+    </folder>   
     
 </filesystem>

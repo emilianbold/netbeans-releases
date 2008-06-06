@@ -120,7 +120,7 @@ made subject to such option by the copyright holder.
     <folder name="Services">
         <folder name="MIMEResolver">
             <file name="sql-resolver.xml" url="sql-resolver.xml">
-                <attr name="position" intvalue="195"/>
+                <attr name="position" intvalue="196"/>
             </file>
         </folder>
     </folder>

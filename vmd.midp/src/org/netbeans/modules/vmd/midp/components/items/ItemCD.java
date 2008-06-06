@@ -77,6 +77,10 @@ import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresent
 import org.netbeans.modules.vmd.midp.screen.display.ItemDisplayPresenter;
 
 import java.util.*;
+import org.netbeans.modules.vmd.midp.codegen.MIDPDataBinderBindCodePresenter;
+import org.netbeans.modules.vmd.midp.codegen.MIDPDataBinderRegisterCodePresenter;
+import org.netbeans.modules.vmd.midp.codegen.MIDPDatabindingCodeSupport;
+import org.netbeans.modules.vmd.midp.components.DataSetCD;
 import org.openide.util.NbBundle;
 
 
@@ -122,6 +126,10 @@ public class ItemCD extends ComponentDescriptor {
     public static final String PROP_APPEARANCE_MODE = "appearanceMode"; // NOI18N
     
     public static final String PROP_OLD_ITEM_COMMAND_LISTENER = "itemCommandlistener"; //NOI18N
+    
+    //Databinding
+    public static final String PROP_DATASET_LABEL = "dataSetLabale"; //NOI18N
+    public static final String PROP_DATASET_LABEL_EXPRESSION = "dataSetLabelExpression"; //NOI18N
 
     public static final PropertyValue UNLOCKED_VALUE = MidpTypes.createIntegerValue(-1);
     
@@ -153,7 +161,9 @@ public class ItemCD extends ComponentDescriptor {
                 new PropertyDescriptor(PROP_PREFERRED_WIDTH, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue (-1), false, true, MidpVersionable.MIDP_2),
                 new PropertyDescriptor(PROP_COMMANDS, ItemCommandEventSourceCD.TYPEID.getArrayType(), PropertyValue.createEmptyArray(ItemCommandEventSourceCD.TYPEID), false, true, MidpVersionable.MIDP_2),
                 new PropertyDescriptor(PROP_DEFAULT_COMMAND, ItemCommandEventSourceCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
-                new PropertyDescriptor(PROP_ITEM_COMMAND_LISTENER, ItemCommandListenerCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2)
+                new PropertyDescriptor(PROP_ITEM_COMMAND_LISTENER, ItemCommandListenerCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
+                new PropertyDescriptor(PROP_DATASET_LABEL, DataSetCD.TYPEID, PropertyValue.createNull(), true, false, MidpVersionable.MIDP_2),
+                new PropertyDescriptor(PROP_DATASET_LABEL_EXPRESSION, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, false, MidpVersionable.MIDP_2)
         );
     }
 
@@ -226,6 +236,8 @@ public class ItemCD extends ComponentDescriptor {
                             RootCode.collectRequiredComponents (component, requiredComponents);
                     }
                 },
+                MIDPDataBinderRegisterCodePresenter.create(PROP_DATASET_LABEL),
+                MIDPDataBinderBindCodePresenter.create(PROP_DATASET_LABEL, PROP_DATASET_LABEL_EXPRESSION, MIDPDatabindingCodeSupport.ProviderType.Item, MIDPDatabindingCodeSupport.FeatureType.Item_FEATURE_LABEL),
                 // delete
                 DeleteDependencyPresenter.createDependentOnParentComponentPresenter (),
                 DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_ITEM_COMMAND_LISTENER),

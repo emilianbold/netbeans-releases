@@ -46,13 +46,17 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Map;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.websvc.core.JaxWsStackProvider;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.api.JaxWsTesterCookie;
+import org.netbeans.modules.websvc.serverapi.api.WSStackFeature;
+import org.netbeans.modules.websvc.serverapi.api.WSStack;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -155,9 +159,12 @@ public class WsTesterPageAction extends CookieAction {
             String serverInstance = (String)properties.get("j2ee.server.instance"); //NOI18N
             if (serverInstance != null) {
                 J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
-                if (j2eePlatform != null) {
-                    return j2eePlatform.isToolSupported("jaxws-tester"); //NOI18N
-                }
+                WSStack wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
+                System.out.println("TesterPage:wsStack="+wsStack.hashCode());
+                return wsStack != null && wsStack.getServiceFeatures().contains(WSStackFeature.TESTER_PAGE);
+//                if (j2eePlatform != null) {
+//                    return j2eePlatform.isToolSupported("jaxws-tester"); //NOI18N
+//                }
             }
         }
         return false;
