@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
     
     <target name="build61modules">
         
-        <get src="http://smetiste.czech.sun.com/builds/netbeans/trunk/daily/latest/zip/netbeans-trunk-nightly-200806051204-src.zip" dest="nb65src.zip"/>
+        <get src="http://smetiste.czech.sun.com/builds/netbeans/6.1/fcs/2008-04-21_18-33-08/zip/netbeans-6.1-200804211638-src.zip" dest="nb61src.zip"/>
 
         <unzip src="nb61src.zip" dest="61src"/>
 
