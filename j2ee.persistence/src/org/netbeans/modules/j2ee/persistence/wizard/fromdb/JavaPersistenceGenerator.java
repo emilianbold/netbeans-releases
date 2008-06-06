@@ -75,6 +75,7 @@ import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistenc
 import org.netbeans.modules.j2ee.persistence.entitygenerator.CMPMappingModel;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityClass;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityMember;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.FetchType;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.RelationshipRole;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -507,12 +508,12 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
                 String columnName = (String) dbMappings.getCMPFieldMapping().get(memberName);
                 columnAnnArguments.add(genUtils.createAnnotationArgument("name", columnName)); //NOI18N
-                // XXX do not generate nullable=false See issue 129869
-                //if (!m.isNullable()) {
-                //    columnAnnArguments.add(genUtils.createAnnotationArgument("nullable", false)); //NOI18N
-                //}
+              
+                if (entityClass.isRegenSchemaAttrs() && !m.isNullable()) {
+                    columnAnnArguments.add(genUtils.createAnnotationArgument("nullable", false)); //NOI18N
+                }
                 Integer length = m.getLength();
-                if (length != null && isCharacterType(memberType)) {
+                if (entityClass.isRegenSchemaAttrs() && length != null && isCharacterType(memberType)) {
                     columnAnnArguments.add(genUtils.createAnnotationArgument("length", length)); // NOI18N
                 }
                 annotations.add(genUtils.createAnnotation("javax.persistence.Column", columnAnnArguments)); //NOI18N
@@ -904,6 +905,16 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                         annArguments.add(genUtils.createAnnotationArgument("optional", false)); // NOI18N
                     }
                 } 
+                
+                //FetchType
+                FetchType fetchType = entityClass.getFetchType();
+                if(fetchType.equals(FetchType.LAZY)) {
+                    annArguments.add(genUtils.createAnnotationArgument("fetch", "javax.persistence.FetchType", "LAZY")); // NOI18N
+                } else if(fetchType.equals(FetchType.EAGER)) {
+                    annArguments.add(genUtils.createAnnotationArgument("fetch", "javax.persistence.FetchType", "EAGER")); // NOI18N
+                }
+                
+                // Create the relationship annotation 
                 annotations.add(genUtils.createAnnotation("javax.persistence." + relationAnn, annArguments)); // NOI18N
 
                 properties.add(new Property(Modifier.PRIVATE, annotations, fieldType, memberName));

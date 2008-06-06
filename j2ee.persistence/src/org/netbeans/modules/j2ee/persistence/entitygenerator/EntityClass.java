@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.persistence.entitygenerator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.FetchType;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -59,6 +60,8 @@ public class EntityClass {
     private final FileObject rootFolder;
     private final String className;
     private final String packageName;
+    private final FetchType fetchType;
+    private final boolean regenSchemaAttrs;
     
     private List<RelationshipRole> roles;
     private List<EntityMember> fields;
@@ -68,7 +71,9 @@ public class EntityClass {
     
     private boolean forTable = true;  // false means forView
     
-    public EntityClass(boolean fullyQualifiedTblNames, String schemaName, String catalogName, String tableName, FileObject rootFolder, String packageName, String className) {
+    public EntityClass(boolean fullyQualifiedTblNames, String schemaName, String catalogName, String tableName, 
+            FileObject rootFolder, String packageName, String className,
+            FetchType fetchType, boolean regenSchemaAttrs) {
         this.fullyQualifiedTblNames = fullyQualifiedTblNames;
         this.schemaName = schemaName;
         this.catalogName = catalogName;
@@ -76,6 +81,8 @@ public class EntityClass {
         this.rootFolder = rootFolder;
         this.packageName = packageName;
         this.className = className;
+        this.fetchType = fetchType;
+        this.regenSchemaAttrs = regenSchemaAttrs;
         
         roles = Collections.<RelationshipRole>emptyList();
         fields = new ArrayList<EntityMember>();
@@ -92,6 +99,10 @@ public class EntityClass {
     
     public boolean isFullyQualifiedTblNames() {
         return this.fullyQualifiedTblNames;
+    }
+
+    public boolean isRegenSchemaAttrs() {
+        return regenSchemaAttrs;
     }
     
     public void addRole(RelationshipRole role) {
@@ -113,6 +124,7 @@ public class EntityClass {
         this.fields = fields;
     }
     
+    @Override
     public String toString() {
         String cmpFields = ""; // NOI18N
         for (EntityMember entityMember : getFields()) {
@@ -144,6 +156,10 @@ public class EntityClass {
     
     public String getClassName() {
         return className;
+    }
+
+    public FetchType getFetchType() {
+        return fetchType;
     }
     
     public FileObject getPackageFileObject() {
