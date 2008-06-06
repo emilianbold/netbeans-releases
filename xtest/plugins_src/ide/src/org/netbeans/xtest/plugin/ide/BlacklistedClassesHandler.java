@@ -58,6 +58,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -81,7 +82,7 @@ public class BlacklistedClassesHandler extends Handler {
     private boolean violation = false;
     // TODO: Is it necessary to use synchronizedMap? Should the list be synchronized?
     final private Map blacklist = Collections.synchronizedMap(new HashMap());
-    final private Map whitelistViolators = Collections.synchronizedMap(new HashMap());
+    final private Map whitelistViolators = Collections.synchronizedMap(new TreeMap());
     final private Set whitelist = Collections.synchronizedSortedSet(new TreeSet());
     final private Set previousWhitelist = Collections.synchronizedSortedSet(new TreeSet());
     final private Set newWhitelist = Collections.synchronizedSortedSet(new TreeSet());

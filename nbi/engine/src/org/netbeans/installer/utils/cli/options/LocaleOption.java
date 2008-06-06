@@ -40,7 +40,7 @@ import java.util.Locale;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
-import org.netbeans.installer.utils.exceptions.CLIArgumentException;
+import org.netbeans.installer.utils.exceptions.CLIOptionException;
 
 /**
  *
@@ -50,7 +50,7 @@ public class LocaleOption extends CLIOptionOneArgument {
 
     private Locale targetLocale;
 
-    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+    public void execute(CLIArgumentsList arguments) throws CLIOptionException {
         Locale.setDefault(targetLocale);
         LogManager.log(
                 "... locale set to: " + targetLocale); // NOI18N
@@ -82,7 +82,7 @@ public class LocaleOption extends CLIOptionOneArgument {
     }
 
     @Override
-    public void validateOptions(CLIArgumentsList arguments) throws CLIArgumentException {
+    public void validateOptions(CLIArgumentsList arguments) throws CLIOptionException {
         super.validateOptions(arguments);
         final String value = arguments.next();
 
@@ -92,7 +92,7 @@ public class LocaleOption extends CLIOptionOneArgument {
             LogManager.log(
                     "... locale is not set properly, using " + // NOI18N
                     "system default: " + Locale.getDefault()); // NOI18N
-            throw new CLIArgumentException(ResourceUtils.getString(
+            throw new CLIOptionException(ResourceUtils.getString(
                     LocaleOption.class,
                     WARNING_BAD_LOCALE_ARG_PARAM_KEY,
                     LOCALE_ARG,

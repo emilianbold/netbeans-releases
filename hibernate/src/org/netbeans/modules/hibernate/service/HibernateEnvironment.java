@@ -38,8 +38,8 @@
  */
 package org.netbeans.modules.hibernate.service;
 
-import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import org.hibernate.HibernateException;
@@ -256,7 +256,7 @@ public class HibernateEnvironment implements HibernateFileLocationProvider {
      * @param projectFile file in current project.
      * @return List of java.io.File objects representing each entry on the classpath.
      */
-    public ArrayList<File> getProjectClassPath(FileObject projectFile) {
+    public ArrayList<URL> getProjectClassPath(FileObject projectFile) {
         return HibernateUtil.getProjectClassPathEntries(projectFile);
     }
 

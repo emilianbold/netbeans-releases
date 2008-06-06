@@ -6,10 +6,6 @@ package antlr;
  */
 
 import java.io.*;
-import java.util.Hashtable;
-import java.util.Enumeration;
-
-import antlr.collections.impl.Vector;
 
 /** Static implementation of the TokenManager, used for importVocab option  */
 class ImportVocabTokenManager extends SimpleTokenManager implements Cloneable {
