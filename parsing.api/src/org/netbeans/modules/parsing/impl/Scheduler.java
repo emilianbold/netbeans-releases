@@ -99,11 +99,6 @@ public class Scheduler {
             }
             Set<Source> oldSources = new HashSet<Source> (sourceToTasks.keySet ());
             for (Source source : sources) {
-                synchronized (source) {
-                    final Set<SourceFlags> flags = SourceAccessor.getINSTANCE ().getFlags (source);
-                    flags.add (SourceFlags.INVALID);
-                    flags.remove(SourceFlags.CHANGE_EXPECTED);
-                }
                 Collection<SchedulerTask> tasks = sourceToTasks.get (source);
                 if (tasks == null) {
                     tasks = createTasks (source, taskScheduler);

@@ -79,7 +79,7 @@ public class CursorSensitiveTaskScheduller extends CurrentEditorTaskScheduller {
     private class ACaretListener implements CaretListener {
 
         public void caretUpdate (CaretEvent e) {
-//todo: Hanz will fix this            scheduleTasks (new SchedulerEvent (this) {});
+            scheduleTasks (new SchedulerEvent (this) {});
         }
     }
 }
