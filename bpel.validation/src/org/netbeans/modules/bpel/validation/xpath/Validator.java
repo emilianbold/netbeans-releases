@@ -252,7 +252,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     if (from == null) {
       return null;
     }
-    Component variableType = getVariableType(from);
+    Component variableType = getVariableReferenceType(from);
 //out("  var: " + variableType);
 
     if (variableType != null) {
@@ -273,7 +273,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     if (to == null) {
       return null;
     }
-    Component variableType = getVariableType(to);
+    Component variableType = getVariableReferenceType(to);
 
     if (variableType != null) {
       Component partType = getPartType(to);
@@ -288,49 +288,13 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     return checkXPath(to);
   }
 
-  private Component getVariableType(VariableReference reference) {
+  private Component getVariableReferenceType(VariableReference reference) {
     BpelReference<VariableDeclaration> ref = reference.getVariable();
 
     if (ref == null) {
       return null;
     }
-    VariableDeclaration declaration = ref.get();
-
-    if (declaration == null) {
-      return null;
-    }
-    // message type
-    WSDLReference<Message> wsdlRef = declaration.getMessageType();
-
-    if (wsdlRef != null) {
-      Message message = wsdlRef.get();
-
-      // # 130764
-      if (message != null) {
-        return message;
-      }
-    }
-    // element
-    SchemaReference<GlobalElement> elementRef = declaration.getElement();
-
-    if (elementRef != null) {
-      GlobalElement element = elementRef.get();
-
-      if (element != null) {
-        return element;
-      }
-    }
-    // type
-    SchemaReference<GlobalType> typeRef = declaration.getType();
-
-    if (typeRef != null) {
-      GlobalType type = typeRef.get();
-
-      if (type != null) {
-        return type;
-      }
-    }
-    return null;
+    return getVariableDeclarationType(ref.get());
   }
 
   private SchemaComponent getPartType(PartReference reference) {
