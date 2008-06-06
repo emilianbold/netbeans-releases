@@ -44,10 +44,16 @@ made subject to such option by the copyright holder.
     <import file="../nbbuild/templates/projectized.xml"/>
     
     <target name="build61modules">
-        
-        <get src="http://smetiste.czech.sun.com/builds/netbeans/6.1/fcs/2008-04-21_18-33-08/zip/netbeans-6.1-200804211638-src.zip" dest="nb61src.zip"/>
 
-        <unzip src="nb61src.zip" dest="61src"/>
+        <condition property="61srcdownloaded">
+          <available file="nb61src.zip"/>
+        </condition>
+        <antcall target="download61src"/>
+
+        <condition property="61srcexpanded">
+          <available file="61src"/>
+        </condition>
+        <antcall target="expand61src"/>
 
         <delete dir="61src/websvc.wsitmodelext"/>
         <delete dir="61src/websvc.wsitconf"/>
@@ -68,5 +74,13 @@ made subject to such option by the copyright holder.
         <copy file="61src/websvc.wsitmodelext/nbproject/project61.xml" tofile="61src/websvc.wsitmodelext/nbproject/project.xml"/>
         
     </target>
-    
+
+    <target name="download61src" unless="61srcdownloaded">
+        <get src="http://smetiste.czech.sun.com/builds/netbeans/6.1/fcs/2008-04-21_18-33-08/zip/netbeans-6.1-200804211638-src.zip" dest="nb61src.zip"/>
+    </target>
+
+    <target name="expand61src" unless="61srcexpanded">
+        <unzip src="nb61src.zip" dest="61src"/>
+    </target>
+
 </project>
