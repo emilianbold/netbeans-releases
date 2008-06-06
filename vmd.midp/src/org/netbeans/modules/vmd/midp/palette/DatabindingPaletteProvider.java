@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.vmd.databinding.palette;
+package org.netbeans.modules.vmd.midp.palette;
 
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.palette.PaletteProvider;

@@ -38,9 +38,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.vmd.databinding.categories;
+package org.netbeans.modules.vmd.midp.components.categories;
 
-import org.netbeans.modules.vmd.databinding.components.*;
+
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
@@ -50,7 +50,7 @@ import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
 
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.midp.components.categories.CategoryCD;
+import org.netbeans.modules.vmd.midp.components.DataSetCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.CategoryPC;
 import org.openide.util.NbBundle;
 /**
@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
 public final class DatabindingCategoryCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "#DatabindingCategory"); // NOI18N
-    public static final String ICON_PATH_CATEGORY_DATABINDING = "org/netbeans/modules/vmd/databinding/resources/components/category_databinding_16.gif";// NOI18N
+    public static final String ICON_PATH_CATEGORY_DATABINDING = "org/netbeans/modules/vmd/midp/resources/components/category_resources_16.gif";// NOI18N
 
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor (CategoryCD.TYPEID, TYPEID, true, true);

@@ -128,6 +128,9 @@ public final class InputReaders {
      * during the processing. This is specifically useful for rotating
      * log files.
      * <p>
+     * When processing the input {@link InputProcessor#reset()} is called on
+     * each file change (when provided file input differs from the previous one).
+     * <p>
      * Returned reader is <i>not thread safe</i> so it can't be used in
      * multiple instances of {@link InputReaderTask}.
      *

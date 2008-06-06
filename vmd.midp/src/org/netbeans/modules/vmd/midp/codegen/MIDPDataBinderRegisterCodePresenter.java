@@ -36,17 +36,49 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.vmd.midp.codegen;
 
-package org.netbeans.modules.vmd.databinding.presenters;
-
-import org.netbeans.modules.vmd.api.codegen.CodePresenter;
+import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
+import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 
 /**
- *
- * @author karolharezlak
+ * This presenters helps generate code to register DataSets based on the references to the particular DataSet
+ * stored in the provided properties. 
+ * 
+ * Code generation for DataSet with instance name "dataSet"
+ * Example: "DataBinder.register(dataset, "dataset");" 
+ * 
+ * @author Karol Harezlak
  */
-public class DataSetCodeGenerationPresenter extends CodePresenter {
-    
-    
+public final class MIDPDataBinderRegisterCodePresenter {
 
+    /**
+     * @param propertyNames - property names with the references to the DataSets which 
+     * this class generates rigistration code for.
+     */
+    public static CodeClassInitHeaderFooterPresenter create(final String... propertyNames) {
+        assert propertyNames.length != 0;
+        return new CodeClassInitHeaderFooterPresenter() {
+            @Override
+            public void generateClassInitializationHeader(MultiGuardedSection section) {
+            }
+
+            @Override
+            public void generateClassInitializationFooter(MultiGuardedSection section) {
+                for (String propertyName : propertyNames) {
+                    DesignComponent dataSet = getComponent().readProperty(propertyName).getComponent();
+                    if (dataSet != null) {
+                        String codeAccess = CodeReferencePresenter.generateAccessCode(dataSet);
+                        String directAccess = CodeReferencePresenter.generateDirectAccessCode(dataSet);
+                        section.getWriter().write("    DataBinder.registerDataSet(" + codeAccess + ", \"" + directAccess + "\");"); //NOI18N
+                    }
+                }
+            }
+        };
+    }
+    
+    //Empty privae constructor
+    private MIDPDataBinderRegisterCodePresenter() {
+    }
 }
