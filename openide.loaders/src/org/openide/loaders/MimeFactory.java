@@ -107,6 +107,9 @@ class MimeFactory<T extends DataObject> implements DataObject.Factory {
         } catch (IllegalArgumentException ex) {
             e = ex;
         } catch (InvocationTargetException ex) {
+            if (ex.getTargetException() instanceof IOException) {
+                throw (IOException)ex.getTargetException();
+            }
             e = ex;
         }
         if (obj == null) {

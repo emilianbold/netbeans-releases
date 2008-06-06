@@ -49,6 +49,8 @@ import java.io.IOException;
 import java.util.*;
 import org.netbeans.junit.*;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import javax.swing.Action;
 import junit.framework.Test;
@@ -171,6 +173,15 @@ public class DataLoaderInLayerTest extends NbTestCase {
             
             assertSame("Icon is propagated for open", img, node.getOpenedIcon(0));
             assertSame("Icon is propagated", img, node.getIcon(0));
+            
+            Reference<DataFolder> ref = new WeakReference<DataFolder>(df);
+            df = null;
+            assertGC("Folder can go away", ref);
+            
+            df = DataFolder.findFolder(fo);
+            arr = df.getChildren();
+            assertEquals("One object", 1, arr.length);
+            assertEquals("Object is the same", dob, arr[0]);
         } finally {
             addRemove("text/plain", f, false);
         }
