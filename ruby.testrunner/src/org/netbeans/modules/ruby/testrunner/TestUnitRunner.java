@@ -123,6 +123,7 @@ public final class TestUnitRunner implements TestRunner {
         String charsetName = null;
         desc = new ExecutionDescriptor(platform, name, FileUtil.toFile(project.getProjectDirectory()), targetPath);
         desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
+        desc.initialArgs("-Ilib:test"); //NOI18N
 
         desc.debug(false);
         desc.allowInput();

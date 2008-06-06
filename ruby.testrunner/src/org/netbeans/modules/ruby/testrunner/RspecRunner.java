@@ -61,14 +61,17 @@ import org.openide.modules.InstalledFileLocator;
 
 /**
  * Test runner for RSpec tests.
+ * 
+ * <i>TODO: get rid of duplication with RSpecSupport, such as finding the rspec binary</i>.
  *
  * @author Erno Mononen
  */
 public class RspecRunner implements TestRunner {
 
+    private static final String PLUGIN_SPEC_PATH = "vendor/plugins/rspec/bin/spec"; // NOI18N
     private static final TestRunner INSTANCE = new RspecRunner();
-    public static final String RSPEC_MEDIATOR_SCRIPT = "nb_rspec_mediator.rb"; //NOI18N
 
+    public static final String RSPEC_MEDIATOR_SCRIPT = "nb_rspec_mediator.rb"; //NOI18N
     public TestRunner getInstance() {
         return INSTANCE;
     }
@@ -138,13 +141,27 @@ public class RspecRunner implements TestRunner {
                 new TestSession(locator), 
                 RspecHandlerFactory.getHandlers());
         desc.addOutputRecognizer(recognizer);
-        desc.cmd(getSpec(platform));
+        desc.cmd(getSpec(project));
         new RubyExecution(desc, charsetName).run();
     }
 
-    private File getSpec(RubyPlatform platform) {
+    private File getSpec(Project project) {
+        RubyPlatform platform = RubyPlatform.platformFor(project);
         String spec = platform.findExecutable("spec"); //NOI18N
-        return new File(spec);
+        if (spec != null) {
+            return new File(spec);
+        }
+        FileObject projectDir = project.getProjectDirectory();
+        if (projectDir != null) {
+            FileObject pluginSpec = projectDir.getFileObject(PLUGIN_SPEC_PATH);
+            if (pluginSpec != null) {
+                return FileUtil.toFile(pluginSpec);
+            }
+        }
+        // this should not happen as the presence of the binary
+        // should be checked before invoking this test runner
+        assert false : "Could not find RSpec binary"; //NOI18N
+        return null;
     }
 
     private static File getMediatorScript() {

@@ -44,12 +44,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
-import java.util.concurrent.Callable;
 import org.netbeans.modules.extexecution.input.FileInputReader;
 import org.netbeans.modules.extexecution.input.DefaultInputReader;
 import org.openide.util.Parameters;
 
 /**
+ * Factory methods for {@link InputReader} classes.
  *
  * @author Petr Hejl
  */
@@ -69,20 +69,48 @@ public final class InputReaders {
         return forReader(new InputStreamReader(stream, charset));
     }
 
-    public static InputReader forFile(final File file, final Charset charset) {
+    public static InputReader forFile(File file, Charset charset) {
         Parameters.notNull("file", file);
+        Parameters.notNull("charset", charset);
 
-        return forFileGenerator(new Callable<File>() {
+        final FileInput fileInput = new FileInput(file, charset);
+        return forFileInputProvider(new FileInput.Provider() {
 
-            public File call() throws Exception {
-                return file;
+            public FileInput getFileInput() {
+                return fileInput;
             }
-        }, charset);
+        });
     }
 
-    public static InputReader forFileGenerator(Callable<File> fileGenerator, Charset charset) {
-        Parameters.notNull("fileGenerator", fileGenerator);
+    public static InputReader forFileInputProvider(FileInput.Provider fileProvider) {
+        Parameters.notNull("fileProvider", fileProvider);
 
-        return new FileInputReader(fileGenerator, charset);
+        return new FileInputReader(fileProvider);
+    }
+
+    public static final class FileInput {
+
+        private final File file;
+
+        private final Charset charset;
+
+        public FileInput(File file, Charset charset) {
+            this.file = file;
+            this.charset = charset;
+        }
+
+        public Charset getCharset() {
+            return charset;
+        }
+
+        public File getFile() {
+            return file;
+        }
+
+        public interface Provider {
+
+            FileInput getFileInput();
+
+        }
     }
 }
