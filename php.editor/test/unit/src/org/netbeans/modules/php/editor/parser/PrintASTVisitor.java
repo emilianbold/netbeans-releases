@@ -120,6 +120,12 @@ public class PrintASTVisitor implements Visitor {
             addChildrenGroup("", nodes);
         }
         
+        public void addChild(String name, ASTNode node) {
+            ArrayList<ASTNode> nodes = new ArrayList<ASTNode>();
+            nodes.add(node);
+            addChildrenGroup(name, nodes);
+        }
+        
         public void print(Visitor visitor) {
             addIndentation();
             buffer.append("<").append(name);
@@ -185,27 +191,6 @@ public class PrintASTVisitor implements Visitor {
         }
     }
 
-    private void addSimpleElement(String name, ASTNode node) {
-        addIndentation();
-        buffer.append("<").append(name);
-        addOffsets(node);
-        buffer.append("/>").append(NEW_LINE);
-    }
-
-    private void openElement(String name, ASTNode node, boolean close) {
-        addIndentation();
-        buffer.append("<").append(name);
-        addOffsets(node);
-        if (close) {
-            buffer.append(">").append(NEW_LINE);
-        }
-    }
-
-    private void closeElement(String name) {
-        addIndentation();
-        buffer.append("</").append(name).append(">").append(NEW_LINE);
-    }
-
     private void addNodeDescription(String name, ASTNode node, boolean newline) {
         addIndentation();
         buffer.append(name);
@@ -224,15 +209,17 @@ public class PrintASTVisitor implements Visitor {
         printNode.print(this);
     }
 
-    public void visit(ArrayCreation arrayCreation) {
-        addIndentation();
-        buffer.append("### Not supported yet ArrayCreation.\n");
+    public void visit(ArrayCreation node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "ArrayCreation");
+        printNode.addChildren(node.getElements());
+        printNode.print(this);
     }
 
-    public void visit(ArrayElement arrayElement) {
-
-        addIndentation();
-        buffer.append("### Not supported yet ArrayElement.\n");
+    public void visit(ArrayElement node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "ArrayElement");
+        printNode.addChild("Key", node.getKey());
+        printNode.addChild("Value", node.getValue());
+        printNode.print(this);
     }
 
     public void visit(Assignment assignment) {
@@ -247,9 +234,10 @@ public class PrintASTVisitor implements Visitor {
         (new XMLPrintNode(astError, "ASTError")).print(this);
     }
 
-    public void visit(BackTickExpression backTickExpression) {
-        addIndentation();
-        buffer.append("### Not supported yet BackTickExpression.\n");
+    public void visit(BackTickExpression node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "BackTickExpression");
+        printNode.addChildren(node.getExpressions());
+        printNode.print(this);
     }
 
     public void visit(Block block) {
@@ -259,19 +247,24 @@ public class PrintASTVisitor implements Visitor {
         printNode.print(this);
     }
 
-    public void visit(BreakStatement breakStatement) {
-        addIndentation();
-        buffer.append("### Not supported yet BreakStatement.\n");
+    public void visit(BreakStatement node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "BreakStatement");
+        printNode.addChild(node.getExpression());
+        printNode.print(this);
     }
 
-    public void visit(CastExpression castExpression) {
-        addIndentation();
-        buffer.append("### Not supported yet CastExpression.\n");
+    public void visit(CastExpression node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "CastExpression",
+                new String[]{"castingType", node.getCastingType().name()});
+        printNode.addChild(node.getExpression());
+        printNode.print(this);
     }
 
-    public void visit(CatchClause catchClause) {
-        addIndentation();
-        buffer.append("### Not supported yet CatchClause.\n");
+    public void visit(CatchClause node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "CatchClause");
+        printNode.addChild("ClassName", node.getClassName());
+        printNode.addChild(node.getVariable());
+        printNode.addChild(node.getBody());
     }
 
     public void visit(ClassConstantDeclaration node) {
@@ -291,9 +284,11 @@ public class PrintASTVisitor implements Visitor {
         printNode.print(this);
     }
 
-    public void visit(ClassInstanceCreation classInstanceCreation) {
-        addIndentation();
-        buffer.append("### Not supported yet ClassInstanceCreation.\n");
+    public void visit(ClassInstanceCreation node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "ClassInstanceCreation");
+        printNode.addChild(node.getClassName());
+        printNode.addChildrenGroup("Parameters", node.ctorParams());
+        printNode.print(this);
     }
 
     public void visit(ClassName className) {
@@ -302,9 +297,10 @@ public class PrintASTVisitor implements Visitor {
         printNode.print(this);
     }
 
-    public void visit(CloneExpression cloneExpression) {
-        addIndentation();
-        buffer.append("### Not supported yet CloneExpression.\n");
+    public void visit(CloneExpression node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "CloneExpression");
+        printNode.addChild(node.getExpression());
+        printNode.print(this);
     }
 
     public void visit(Comment comment) {
@@ -312,24 +308,33 @@ public class PrintASTVisitor implements Visitor {
 	buffer.append(" commentType='").append(comment.getCommentType()).append("'/>").append(NEW_LINE); 
     }
 
-    public void visit(ConditionalExpression conditionalExpression) {
-        addIndentation();
-        buffer.append("### Not supported yet ConditionalExpression.\n");
+    public void visit(ConditionalExpression node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "ConditionalExpression");
+        printNode.addChild("Condition", node.getCondition());
+        printNode.addChild("Then", node.getIfTrue());
+        printNode.addChild("Else", node.getIfFalse());
+        printNode.print(this);
     }
 
-    public void visit(ContinueStatement continueStatement) {
-        addIndentation();
-        buffer.append("### Not supported yet ContinueStatement.\n");
+    public void visit(ContinueStatement node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "ContinueStatement");
+        printNode.addChild(node.getExpression());
+        printNode.print(this);                
     }
 
-    public void visit(DeclareStatement declareStatement) {
-        addIndentation();
-        buffer.append("### Not supported yet DeclareStatement.\n");
+    public void visit(DeclareStatement node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "DeclareStatement");
+        printNode.addChildrenGroup("DirectiveNames", node.getDirectiveNames());
+        printNode.addChildrenGroup("DirectiveValues", node.getDirectiveValues());
+        printNode.addChild(node.getBody());
+        printNode.print(this);
     }
 
-    public void visit(DoStatement doStatement) {
-        addIndentation();
-        buffer.append("### Not supported yet DoStatement.\n");
+    public void visit(DoStatement node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "DoStatement");
+        printNode.addChild("Condition", node.getCondition());
+        printNode.addChild(node.getBody());
+        printNode.print(this);
     }
 
     public void visit(EchoStatement echoStatement) {
@@ -355,75 +360,48 @@ public class PrintASTVisitor implements Visitor {
         printNode.print(this);
     }
 
-    public void visit(FieldsDeclaration fieldsDeclaration) {
-        addNodeDescription("FieldsDeclaration", fieldsDeclaration, false);
-        buffer.append(" modifier='").append(fieldsDeclaration.getModifierString()).append("'>").append(NEW_LINE);
-        indent++;
-        for (SingleFieldDeclaration node : fieldsDeclaration.getFields()) {
-            addIndentation();
-            buffer.append("<VariableName>\n");
-            indent++;
-            node.getName().accept(this);
-            indent--;
-            addIndentation();
-            buffer.append("</VariableName>\n");
-            addIndentation();
-            buffer.append("<InitialValue>\n");
-            Expression expr = node.getValue();
-            if (expr != null) {
-                indent++;
-                expr.accept(this);
-                indent--;
-            }
-            addIndentation();
-            buffer.append("</InitialValue>\n");
-        }
-        indent--;
-        addIndentation();
-        buffer.append("</FieldsDeclaration>").append(NEW_LINE);
-
+    public void visit(FieldsDeclaration node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "FieldsDeclaration",
+                new String[]{"modifier", node.getModifierString() });
+        printNode.addChildrenGroup("VariableNames", node.getVariableNames());
+        printNode.addChildrenGroup("InitialValues", node.getVariableNames());
+        printNode.print(this);
     }
 
-    public void visit(ForEachStatement forEachStatement) {
-        addIndentation();
-        buffer.append("### Not supported yet ForEachStatement.\n");
+    public void visit(ForEachStatement node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "ForEachStatement");
+        printNode.addChild("Key", node.getKey());
+        printNode.addChild("Expression", node.getExpression());
+        printNode.addChild("Statement",node.getStatement());
+        printNode.addChild("Value", node.getValue());
+        printNode.print(this);
     }
 
-    public void visit(FormalParameter formalParameter) {
-        addNodeDescription("FormalParameter", formalParameter, false);
-        buffer.append(" isMandatory: '").append(formalParameter.isMandatory()).append("'").append(NEW_LINE);
-        indent++;
-        if (formalParameter.getParameterType() != null) {
-            formalParameter.getParameterType().accept(this);
-        } else {
-            addIndentation();
-            buffer.append("ParameterType null").append(NEW_LINE);
-        }
-        formalParameter.getParameterName().accept(this);
-        if (formalParameter.getDefaultValue() != null) {
-            formalParameter.getDefaultValue().accept(this);
-        } else {
-            addIndentation();
-            buffer.append("DefaultValue null").append(NEW_LINE);
-        }
-        indent--;
+    public void visit(FormalParameter node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "FormalParameter",
+                new String[]{"isMandatory", (node.isMandatory()?"true":"false")});
+        printNode.addChild("ParametrType", node.getParameterType());
+        printNode.addChild("ParametrName", node.getParameterName());
+        printNode.addChild("DefaultValue", node.getDefaultValue());
+        printNode.print(this);
     }
 
-    public void visit(ForStatement forStatement) {
-        addIndentation();
-        buffer.append("### Not supported yet ForStatement.\n");
+    public void visit(ForStatement node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "ForStatement");
+        printNode.addChildrenGroup("Initializers", node.getInitializers());
+        printNode.addChildrenGroup("Conditions", node.getConditions());
+        printNode.addChildrenGroup("Updaters", node.getUpdaters());
+        printNode.addChild(node.getBody());
+        printNode.print(this);
     }
 
-    public void visit(FunctionDeclaration functionDeclaration) {
-        addNodeDescription("FunctionDeclaration", functionDeclaration, false);
-        buffer.append(" isReference: '").append(functionDeclaration.isReference()).append("'").append(NEW_LINE);
-        indent++;
-        functionDeclaration.getFunctionName().accept(this);
-        for (FormalParameter node : functionDeclaration.getFormalParameters()) {
-            node.accept(this);
-        }
-        functionDeclaration.getBody().accept(this);
-        indent--;
+    public void visit(FunctionDeclaration node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "FunctionDeclaration",
+                new String[]{"isReference", (node.isReference()?"true":"false")});
+        printNode.addChild(node.getFunctionName());
+        printNode.addChildrenGroup("FormalParameters", node.getFormalParameters());
+        printNode.addChild(node.getBody());
+        printNode.print(this);
     }
 
     public void visit(FunctionInvocation functionInvocation) {
@@ -439,27 +417,28 @@ public class PrintASTVisitor implements Visitor {
        printNode.print(this);
     }
 
-    public void visit(GlobalStatement globalStatement) {
-        addNodeDescription("GlobalStatement", globalStatement, true);
-        indent++;
-        for (Variable node : globalStatement.getVariables()) {
-            node.accept(this);
-        }
-        indent--;
+    public void visit(GlobalStatement node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "GlobalStatement");
+        printNode.addChildren(node.getVariables());
+        printNode.print(this);
     }
 
     public void visit(Identifier identifier) {
         (new XMLPrintNode(identifier, "Identifier", new String[]{"name", identifier.getName()})).print(this);
     }
 
-    public void visit(IfStatement ifStatement) {
-        addIndentation();
-        buffer.append("### Not supported yet IfStatement.\n");
+    public void visit(IfStatement node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "IfStatement");
+        printNode.addChild("Condition", node.getCondition());
+        printNode.addChild("Then", node.getTrueStatement());
+        printNode.addChild("Else", node.getFalseStatement());
+        printNode.print(this);
     }
 
-    public void visit(IgnoreError ignoreError) {
-        addIndentation();
-        buffer.append("### Not supported yet IgnoreError.\n");
+    public void visit(IgnoreError node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "IgnoreError");
+        printNode.addChild(node.getExpression());
+        printNode.print(this);
     }
 
     public void visit(Include include) {
@@ -478,22 +457,26 @@ public class PrintASTVisitor implements Visitor {
     }
 
     public void visit(InLineHtml inLineHtml) {
-        addSimpleElement("InLineHtml", inLineHtml);
+        (new XMLPrintNode(inLineHtml, "InLineHtml")).print(this);
     }
 
-    public void visit(InstanceOfExpression instanceOfExpression) {
-        addIndentation();
-        buffer.append("### Not supported yet InstanceOfExpression.\n");
+    public void visit(InstanceOfExpression node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "InstanceOfExpression");
+        printNode.addChild(node.getExpression());
+        printNode.print(this);
     }
 
-    public void visit(InterfaceDeclaration interfaceDeclaration) {
-        addIndentation();
-        buffer.append("### Not supported yet InterfaceDeclaration.\n");
+    public void visit(InterfaceDeclaration node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "InterfaceDeclaration");
+        printNode.addChild("Name", node.getName());
+        printNode.addChild(node.getBody());
+        printNode.print(this);
     }
 
-    public void visit(ListVariable listVariable) {
-        addIndentation();
-        buffer.append("### Not supported yet ListVariable.\n");
+    public void visit(ListVariable node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "ListVariable");
+        printNode.addChildren(node.getVariables());
+        printNode.print(this);
     }
 
     public void visit(MethodDeclaration node) {
@@ -503,24 +486,31 @@ public class PrintASTVisitor implements Visitor {
         printNode.print(this);
     }
 
-    public void visit(MethodInvocation methodInvocation) {
-        addIndentation();
-        buffer.append("### Not supported yet MethodInvocation.\n");
+    public void visit(MethodInvocation node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "MethodInvocation");
+        printNode.addChild(node.getMember());
+        printNode.addChild(node.getMethod());
+        printNode.print(this);
     }
 
-    public void visit(ParenthesisExpression parenthesisExpression) {
-        addIndentation();
-        buffer.append("### Not supported yet ParenthesisExpression.\n");
+    public void visit(ParenthesisExpression node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "ParenthesisExpression");
+        printNode.addChild(node.getExpression());
+        printNode.print(this);
     }
 
-    public void visit(PostfixExpression postfixExpression) {
-        addIndentation();
-        buffer.append("### Not supported yet PostfixExpression.\n");
+    public void visit(PostfixExpression node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "PostfixExpression",
+                new String[]{"operator", node.getOperator().name()});
+        printNode.addChild(node.getVariable());
+        printNode.print(this);
     }
 
-    public void visit(PrefixExpression prefixExpression) {
-        addIndentation();
-        buffer.append("### Not supported yet PrefixExpression.\n");
+    public void visit(PrefixExpression node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "PrefixExpression", 
+                new String[]{"operator", node.getOperator().name()});
+        printNode.addChild(node.getVariable());
+        printNode.print(this);
     }
 
     public void visit(Program program) {
@@ -530,24 +520,26 @@ public class PrintASTVisitor implements Visitor {
     }
 
     public void visit(Quote quote) {
-        XMLPrintNode xmlNode = new XMLPrintNode(quote, "Quote", new String[]{"type", quote.getQuoteType().name()});
-        xmlNode.addChildrenGroup("Expressions", quote.getExpressions());
-        xmlNode.print(this);
+        XMLPrintNode printNode = new XMLPrintNode(quote, "Quote", new String[]{"type", quote.getQuoteType().name()});
+        printNode.addChildrenGroup("Expressions", quote.getExpressions());
+        printNode.print(this);
     }
 
     public void visit(Reference reference) {
-        addIndentation();
-        buffer.append("### Not supported yet Reference.\n");
+        XMLPrintNode printNode = new XMLPrintNode(reference, "Reference");
+        printNode.addChild(reference.getExpression());
+        printNode.print(this);
     }
 
-    public void visit(ReflectionVariable reflectionVariable) {
-        addIndentation();
-        buffer.append("### Not supported yet ReflectionVariable.\n");
+    public void visit(ReflectionVariable node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "ReflectionVariable");
+        printNode.addChild(node.getName());
+        printNode.print(this);
     }
 
-    public void visit(ReturnStatement returnStatement) {
-        addIndentation();
-        buffer.append("### Not supported yet ReturnStatement.\n");
+    public void visit(ReturnStatement node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "ReturnStatement");
+        printNode.addChild(node.getExpression());
     }
 
     public void visit(Scalar scalar) {
@@ -556,39 +548,42 @@ public class PrintASTVisitor implements Visitor {
                 "value", PHPLexerUtils.getXmlStringValue(scalar.getStringValue())})).print(this);
     }
 
-    public void visit(SingleFieldDeclaration singleFieldDeclaration) {
-        addIndentation();
-        buffer.append("### Not supported yet SingleFieldDeclaration.\n");
+    public void visit(SingleFieldDeclaration node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "SingleFieldDeclaration");
+        printNode.addChild("Name",node.getName());
+        printNode.addChild("Value", node.getValue());
+        printNode.print(this);
     }
 
-    public void visit(StaticConstantAccess classConstantAccess) {
-        addIndentation();
-        buffer.append("### Not supported yet StaticConstantAccess.\n");
+    public void visit(StaticConstantAccess node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "StaticConstantAccess");
+        printNode.addChild("ClassName", node.getClassName());
+        printNode.addChild("Constant", node.getConstant());
+        printNode.addChild("Member", node.getMember());
+        printNode.print(this);
     }
 
-    public void visit(StaticFieldAccess staticFieldAccess) {
-        addIndentation();
-        buffer.append("### Not supported yet StaticFieldAccess.\n");
+    public void visit(StaticFieldAccess node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "StaticFieldAccess");
+        printNode.addChild("ClassName", node.getClassName());
+        printNode.addChild("Field", node.getField());
+        printNode.addChild("Member", node.getMember());
+        printNode.print(this);
     }
 
-    public void visit(StaticMethodInvocation staticMethodInvocation) {
-        openElement("StaticMethodInvocation", staticMethodInvocation, true);
-        indent++;
-        addIndentation();
-        buffer.append("<ClassName>").append(NEW_LINE);
-        indent++;
-        staticMethodInvocation.getClassName().accept(this);
-        indent--;
-        addIndentation();
-        buffer.append("</ClassName>").append(NEW_LINE);
-        staticMethodInvocation.getMethod().accept(this);
-        indent--;
-        closeElement("StaticMethodInvocation");
+    public void visit(StaticMethodInvocation node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "StaticMethodInvocation");
+        printNode.addChild("ClassName", node.getClassName());
+        printNode.addChild("Member", node.getMember());
+        printNode.addChild(node.getMethod());
+        printNode.print(this);
     }
 
-    public void visit(StaticStatement staticStatement) {
-        addIndentation();
-        buffer.append("### Not supported yet StaticStatement.\n");
+    public void visit(StaticStatement node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "StaticStatement");
+        printNode.addChildrenGroup("Variables", node.getVariables());
+        printNode.addChildrenGroup("Expressions", node.getExpressions());
+        printNode.print(this);
     }
 
     public void visit(SwitchCase node) {
@@ -606,19 +601,24 @@ public class PrintASTVisitor implements Visitor {
         printNode.print(this);
     }
 
-    public void visit(ThrowStatement throwStatement) {
-        addIndentation();
-        buffer.append("### Not supported yet ThrowStatement.\n");
+    public void visit(ThrowStatement node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "ThrowStatement");
+        printNode.addChild(node.getExpression());
+        printNode.print(this);
     }
 
-    public void visit(TryStatement tryStatement) {
-        addIndentation();
-        buffer.append("### Not supported yet TryStatement.\n");
+    public void visit(TryStatement node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "TryStatement");
+        printNode.addChildrenGroup("CatchClauses", node.getCatchClauses());
+        printNode.addChild(node.getBody());
+        printNode.print(this);
     }
 
-    public void visit(UnaryOperation unaryOperation) {
-        addIndentation();
-        buffer.append("### Not supported yet UnaryOperation.\n");
+    public void visit(UnaryOperation node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "UnaryOperation",
+                new String[]{"operator", node.getOperator().name()});
+        printNode.addChild(node.getExpression());
+        printNode.print(this);
     }
 
     public void visit(Variable variable) {
@@ -629,9 +629,11 @@ public class PrintASTVisitor implements Visitor {
         printNode.print(this);
     }
 
-    public void visit(WhileStatement whileStatement) {
-        addIndentation();
-        buffer.append("### Not supported yet WhileStatement.\n");
+    public void visit(WhileStatement node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "WhileStatement");
+        printNode.addChild("Condition", node.getCondition());
+        printNode.addChild(node.getBody());
+        printNode.print(this);
     }
 
     public void visit(ASTNode node) {
