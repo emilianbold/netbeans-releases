@@ -752,6 +752,8 @@ public final class SystemUtils {
                 if (osArch.contains("ppc")) {
                     currentPlatform =
                             is64bit ? Platform.LINUX_PPC64 : Platform.LINUX_PPC;
+                } else if(osArch.contains("sparc")) {
+                    currentPlatform = Platform.LINUX_SPARC;
                 } else {
                     currentPlatform =
                             is64bit ? Platform.LINUX_X64 : Platform.LINUX_X86;
