@@ -41,7 +41,7 @@ import java.util.Arrays;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
-import org.netbeans.installer.utils.exceptions.CLIArgumentException;
+import org.netbeans.installer.utils.exceptions.CLIOptionException;
 
 /**
  *
@@ -50,7 +50,7 @@ import org.netbeans.installer.utils.exceptions.CLIArgumentException;
 public class RegistryOption extends CLIOptionOneArgument {
 
     @Override
-    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+    public void execute(CLIArgumentsList arguments) throws CLIOptionException {
 
         final String value = arguments.next();
 

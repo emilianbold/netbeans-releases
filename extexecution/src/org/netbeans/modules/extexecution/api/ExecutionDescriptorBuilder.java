@@ -43,7 +43,6 @@ import java.io.Writer;
 import org.netbeans.modules.extexecution.api.input.InputProcessor;
 import org.netbeans.modules.extexecution.api.input.InputProcessors;
 import org.netbeans.modules.extexecution.api.print.LineConvertor;
-import org.openide.filesystems.FileObject;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 

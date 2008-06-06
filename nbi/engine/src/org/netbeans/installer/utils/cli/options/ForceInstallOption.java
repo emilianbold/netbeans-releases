@@ -37,7 +37,7 @@
 package org.netbeans.installer.utils.cli.options;
 
 import org.netbeans.installer.product.Registry;
-import org.netbeans.installer.utils.exceptions.CLIArgumentException;
+import org.netbeans.installer.utils.exceptions.CLIOptionException;
 import org.netbeans.installer.utils.cli.CLIArgumentsList;
 import org.netbeans.installer.utils.cli.CLIOptionZeroArguments;
 
@@ -48,7 +48,7 @@ import org.netbeans.installer.utils.cli.CLIOptionZeroArguments;
 public class ForceInstallOption extends CLIOptionZeroArguments {
 
     @Override
-    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+    public void execute(CLIArgumentsList arguments) throws CLIOptionException {
         System.setProperty(Registry.FORCE_INSTALL_PROPERTY, UNARY_ARG_VALUE);
     }
 
