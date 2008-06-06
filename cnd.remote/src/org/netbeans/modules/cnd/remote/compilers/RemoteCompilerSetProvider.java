@@ -37,51 +37,32 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.support;
+package org.netbeans.modules.cnd.remote.compilers;
 
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
-import com.jcraft.jsch.UserInfo;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetProvider;
+import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
+import org.netbeans.modules.cnd.remote.support.manager.CompilerSetScriptManager.CompilerSetScriptManager;
 
 /**
  *
  * @author gordonp
  */
-public abstract class RemoteConnectionSupport {
+public class RemoteCompilerSetProvider implements CompilerSetProvider {
     
-    private JSch jsch;
-    protected Session session;
-    protected Channel channel;
-    
-    public RemoteConnectionSupport(String host, String user) {
-        assert host != null && user != null;
+    public RemoteCompilerSetProvider() {
+        String host = System.getProperty("cnd.remote.server");
+        String user = System.getProperty("user.name");
         
-        try {
-            jsch = new JSch();
-            jsch.setKnownHosts(System.getProperty("user.home") + "/.ssh/known_hosts");
-            session = jsch.getSession(user, host, 22);
+        RemoteScriptSupport support = new RemoteScriptSupport(host, user, new CompilerSetScriptManager());
+    }
 
-            UserInfo ui = RemoteUserInfo.getUserInfo(host, user);
-            session.setUserInfo(ui);
-            session.connect();
-            channel = createChannel();
-            channel.connect();
-        } catch (JSchException jsce) {
-            System.err.println("RPB<Init>: Got JSchException [" + jsce.getMessage() + "]");
-        }
+    public boolean hasMoreCompilerSets() {
+        return false;
     }
-    
-    protected Channel getChannel() {
-        return channel;
-    }
-    
-    protected abstract Channel createChannel() throws JSchException;
-    
-    protected void disconnect() {
-        channel.disconnect();
-        session.disconnect();
+
+    public CompilerSet getNextCompilerSet() {
+        return null;
     }
 
 }

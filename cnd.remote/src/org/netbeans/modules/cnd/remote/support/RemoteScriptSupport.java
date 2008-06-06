@@ -40,48 +40,31 @@
 package org.netbeans.modules.cnd.remote.support;
 
 import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
-import com.jcraft.jsch.UserInfo;
 
 /**
  *
  * @author gordonp
  */
-public abstract class RemoteConnectionSupport {
+public class RemoteScriptSupport extends RemoteConnectionSupport {
     
-    private JSch jsch;
-    protected Session session;
-    protected Channel channel;
+    private ChannelExec echannel;
     
-    public RemoteConnectionSupport(String host, String user) {
-        assert host != null && user != null;
+    public RemoteScriptSupport(String host, String user, ScriptManager manager) {
+        super(host, user);
+        setChannelCommand(manager.getScript());
         
-        try {
-            jsch = new JSch();
-            jsch.setKnownHosts(System.getProperty("user.home") + "/.ssh/known_hosts");
-            session = jsch.getSession(user, host, 22);
-
-            UserInfo ui = RemoteUserInfo.getUserInfo(host, user);
-            session.setUserInfo(ui);
-            session.connect();
-            channel = createChannel();
-            channel.connect();
-        } catch (JSchException jsce) {
-            System.err.println("RPB<Init>: Got JSchException [" + jsce.getMessage() + "]");
-        }
-    }
-    
-    protected Channel getChannel() {
-        return channel;
-    }
-    
-    protected abstract Channel createChannel() throws JSchException;
-    
-    protected void disconnect() {
-        channel.disconnect();
-        session.disconnect();
+        manager.runScript(this); 
     }
 
+    @Override
+    protected Channel createChannel() throws JSchException {
+        echannel = (ChannelExec) session.openChannel("exec");
+        return echannel;
+    }
+    
+    private void setChannelCommand(String script) {
+        ((ChannelExec) getChannel()).setCommand(System.getProperty("user.home") + "/.netbeans/rddev/cnd.remote/scripts/" + script); //NOI18N
+    }
 }

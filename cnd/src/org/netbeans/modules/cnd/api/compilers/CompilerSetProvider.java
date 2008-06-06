@@ -37,51 +37,15 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.support;
-
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
-import com.jcraft.jsch.UserInfo;
+package org.netbeans.modules.cnd.api.compilers;
 
 /**
  *
  * @author gordonp
  */
-public abstract class RemoteConnectionSupport {
-    
-    private JSch jsch;
-    protected Session session;
-    protected Channel channel;
-    
-    public RemoteConnectionSupport(String host, String user) {
-        assert host != null && user != null;
-        
-        try {
-            jsch = new JSch();
-            jsch.setKnownHosts(System.getProperty("user.home") + "/.ssh/known_hosts");
-            session = jsch.getSession(user, host, 22);
+public interface CompilerSetProvider {
 
-            UserInfo ui = RemoteUserInfo.getUserInfo(host, user);
-            session.setUserInfo(ui);
-            session.connect();
-            channel = createChannel();
-            channel.connect();
-        } catch (JSchException jsce) {
-            System.err.println("RPB<Init>: Got JSchException [" + jsce.getMessage() + "]");
-        }
-    }
+    public boolean hasMoreCompilerSets();
     
-    protected Channel getChannel() {
-        return channel;
-    }
-    
-    protected abstract Channel createChannel() throws JSchException;
-    
-    protected void disconnect() {
-        channel.disconnect();
-        session.disconnect();
-    }
-
+    public CompilerSet getNextCompilerSet();
 }
