@@ -46,7 +46,6 @@ import java.io.IOException;
  * <p>
  * When the implementation is used just by single InputReader it
  * does not have to be thread safe.
- * </p>
  *
  * @author Petr Hejl
  * @see InputReader

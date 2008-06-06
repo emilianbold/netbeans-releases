@@ -393,7 +393,7 @@ public class ClientHandlerButtonListener implements ActionListener {
         // re-generate java artifacts
         Project project = FileOwnerQuery.getOwner(srcRoot);
         if (project != null) {
-            FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+            FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
             try {
                 String name = client.getName();
                 ExecutorTask wsimportTask =

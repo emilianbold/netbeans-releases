@@ -54,6 +54,7 @@ public enum Platform {
     LINUX_X64(OS_FAMILY_LINUX, HARDWARE_X64, null, null, "Linux X64"),
     LINUX_PPC(OS_FAMILY_LINUX, HARDWARE_PPC, null, null, "Linux PowerPC"),
     LINUX_PPC64(OS_FAMILY_LINUX, HARDWARE_PPC64, null, null, "Linux PowerPC X64"),
+    LINUX_SPARC(OS_FAMILY_LINUX, HARDWARE_SPARC, null, null, "Linux SPARC"),
     
     SOLARIS(OS_FAMILY_SOLARIS, null, null, null, "Solaris"),
     SOLARIS_X86(OS_FAMILY_SOLARIS, HARDWARE_X86, null, null, "Solaris X86"),
