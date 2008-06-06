@@ -158,7 +158,6 @@
             
             var activity = getHttpRequestHeaders(request);
             activity.time = nowTime();
-            activity.webProgress = getRequestWebProgress(request, this);
             activity.category = getRequestCategory(request);
             //activity.win = webProgress ? safeGetWindow(webProgress) : null;
 
@@ -397,7 +396,15 @@
     function sendNetActivity ( aActivity ){
         if (DEBUG){
             for( var key in aActivity ){
-                NetBeans.Logger.log("Item: " + key + "Value: " + aActivity[key]);
+                if ( key == "requestHeaders"){
+                    var headers = aActivity[key];
+                    NetBeans.Logger.log("   > Request Headers");
+                    for( var header in headers ){
+                        NetBeans.Logger.log("       " + headers[header].name + " : " + headers[header].value);
+                    }
+                } else {
+                  NetBeans.Logger.log("   >" + key + " : " + aActivity[key]);
+                }
             }
         }
     }
@@ -426,20 +433,8 @@
 //        }
         if (DEBUG){
             for( var key in aActivity ){
-                NetBeans.Logger.log("Item: " + key + "Value: " + aActivity[key]);
+                NetBeans.Logger.log("   <" + key + " : " + aActivity[key]);
             }
-//            NetBeans.Logger.log("   <-- net.netprogress.sendNetResponse");
-//            NetBeans.Logger.log("   < Request: " + aRequest);
-//            NetBeans.Logger.log("   < Time " + aTime);
-//            NetBeans.Logger.log("   < Win " + aWin);
-//            NetBeans.Logger.log("   < Category " + aCategory);
-//            NetBeans.Logger.log("   < Method " + method);
-//            NetBeans.Logger.log("   < LoadFlags " + loadFlags);
-//            NetBeans.Logger.log("   < Href " + href);
-//            NetBeans.Logger.log("   < Referrer " + referrer);
-//            NetBeans.Logger.log("   < Params " + params);
-//            NetBeans.Logger.log("   < Status " + status);
-//            NetBeans.Logger.log("   < StatusText " + statusText);
         }
     }
     
