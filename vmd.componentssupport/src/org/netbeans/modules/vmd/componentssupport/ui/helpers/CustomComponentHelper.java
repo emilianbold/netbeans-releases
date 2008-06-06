@@ -310,7 +310,6 @@ public abstract class CustomComponentHelper extends BaseHelper {
         private static final String VMD_PROPERTIES_VERSION = "1.1";//NOI18N
         private static final String OPENIDE_UTIL_NAME = "org.openide.util";//NOI18N
         private static final String OPENIDE_UTIL_VERSION = "7.12";//NOI18N
-        
                 
         /**
          * Constructor to be used in main wizard 
@@ -405,47 +404,23 @@ public abstract class CustomComponentHelper extends BaseHelper {
         
         @Override
         public String getCodeNameBase() {
-            if (myCodeNameBase == null){
-                Manifest manifest = getManifest();
-                Attributes attrs = manifest.getMainAttributes();
-        String codename = attrs.getValue(OPENIDE_MODULE);
-        if (codename != null) {
-            int slash = codename.lastIndexOf('/');
-            if (slash == -1) {
-                myCodeNameBase = codename;
-            } else {
-                myCodeNameBase = codename.substring(0, slash);
+            if (myCodeNameBase != null) {
+                return myCodeNameBase;
             }
-        }
-            
+            Manifest manifest = getManifest();
+            Attributes attrs = manifest.getMainAttributes();
+            String codename = attrs.getValue(OPENIDE_MODULE);
+            if (codename != null) {
+                int slash = codename.lastIndexOf('/');
+                if (slash == -1) {
+                    myCodeNameBase = codename;
+                } else {
+                    myCodeNameBase = codename.substring(0, slash);
+                }
             }
             return myCodeNameBase;
         }
-        
-        protected String getLocalizingBundle(){
-            if (myBundlePath == null){
-                Manifest manifest = getManifest();
-                Attributes attrs = manifest.getMainAttributes();
-                myBundlePath = attrs.getValue(OPENIDE_MODULE_LOCALIZING_BUNDLE);
-            }
-            return myBundlePath;
-        }
-        
-        protected String getLayer(){
-            if (myLayerPath == null){
-                Manifest manifest = getManifest();
-                Attributes attrs = manifest.getMainAttributes();
-                if (attrs.containsKey(OPENIDE_MODULE_LAYER)){
-                    myLayerPath = SRC + attrs.getValue(OPENIDE_MODULE_LAYER);
-                }
-            }
-            return myLayerPath;
-        }
-        
-        protected Project getProject(){
-            return myProject;
-        }
-        
+
         public String getCDPkg() {
             return getCodeNameBase() + "." + DESCRIPTORS;
         }
@@ -472,6 +447,30 @@ public abstract class CustomComponentHelper extends BaseHelper {
                     name + INSTANCE_NAME_EXTENSION;                             // NOI18N
         }
     
+        protected String getLocalizingBundle(){
+            if (myBundlePath == null){
+                Manifest manifest = getManifest();
+                Attributes attrs = manifest.getMainAttributes();
+                myBundlePath = attrs.getValue(OPENIDE_MODULE_LOCALIZING_BUNDLE);
+            }
+            return myBundlePath;
+        }
+        
+        protected String getLayer(){
+            if (myLayerPath == null){
+                Manifest manifest = getManifest();
+                Attributes attrs = manifest.getMainAttributes();
+                if (attrs.containsKey(OPENIDE_MODULE_LAYER)){
+                    myLayerPath = SRC + attrs.getValue(OPENIDE_MODULE_LAYER);
+                }
+            }
+            return myLayerPath;
+        }
+        
+        protected Project getProject(){
+            return myProject;
+        }
+        
         private FileObject configureComponentDescriptor()
                 throws IOException
         {
@@ -710,48 +709,48 @@ public abstract class CustomComponentHelper extends BaseHelper {
             return Collections.EMPTY_SET;
         }
 
-    private static Node goToProducersNode(Document doc, XPath xpath, Node parent)
-            throws XPathExpressionException 
-    {
-        String expression = LAYER_XPATH_PRODUCERS;
-        Node libsNode = (Node) xpath.evaluate(expression, parent, XPathConstants.NODE);
-        if (libsNode == null) {
-            Element libsElement = doc.createElement(LayerXmlHelper.LAYER_FOLDER);
-            libsElement.setAttribute(LayerXmlHelper.LAYER_NAME, LAYER_TAG_PRODUCERS);
-            parent.appendChild(libsElement);
-            libsNode = libsElement;
+        private static Node goToProducersNode(Document doc, XPath xpath, Node parent)
+                throws XPathExpressionException 
+        {
+            String expression = LAYER_XPATH_PRODUCERS;
+            Node libsNode = (Node) xpath.evaluate(expression, parent, XPathConstants.NODE);
+            if (libsNode == null) {
+                Element libsElement = doc.createElement(LayerXmlHelper.LAYER_FOLDER);
+                libsElement.setAttribute(LayerXmlHelper.LAYER_NAME, LAYER_TAG_PRODUCERS);
+                parent.appendChild(libsElement);
+                libsNode = libsElement;
+            }
+            return libsNode;
         }
-        return libsNode;
-    }
     
-    private static Node goToComponentsNode(Document doc, XPath xpath, Node parent)
-            throws XPathExpressionException 
-    {
-        String expression = LAYER_XPATH_COMPONENTS;
-        Node libsNode = (Node) xpath.evaluate(expression, parent, XPathConstants.NODE);
-        if (libsNode == null) {
-            Element libsElement = doc.createElement(LayerXmlHelper.LAYER_FOLDER);
-            libsElement.setAttribute(LayerXmlHelper.LAYER_NAME, LAYER_TAG_COMPONENTS);
-            parent.appendChild(libsElement);
-            libsNode = libsElement;
+        private static Node goToComponentsNode(Document doc, XPath xpath, Node parent)
+                throws XPathExpressionException 
+        {
+            String expression = LAYER_XPATH_COMPONENTS;
+            Node libsNode = (Node) xpath.evaluate(expression, parent, XPathConstants.NODE);
+            if (libsNode == null) {
+                Element libsElement = doc.createElement(LayerXmlHelper.LAYER_FOLDER);
+                libsElement.setAttribute(LayerXmlHelper.LAYER_NAME, LAYER_TAG_COMPONENTS);
+                parent.appendChild(libsElement);
+                libsNode = libsElement;
+            }
+            return libsNode;
         }
-        return libsNode;
-    }
-    
-    private static Node goToVmdMidpNode(Document doc, XPath xpath, Node parent) 
-            throws XPathExpressionException
-    {
-        String expression = LAYER_XPATH_VMD_MIDP;
-        Node libsAreaNode = (Node) xpath.evaluate(expression, parent, XPathConstants.NODE);
-        if (libsAreaNode == null) {
-            Element libsAreaElement = doc.createElement(LayerXmlHelper.LAYER_FOLDER);
-            libsAreaElement.setAttribute(LayerXmlHelper.LAYER_NAME, LAYER_TAG_VMD_MIDP);
-            parent.appendChild(libsAreaElement);
-            libsAreaNode = libsAreaElement;
-        }
-        return libsAreaNode;
 
-    }
+        private static Node goToVmdMidpNode(Document doc, XPath xpath, Node parent)
+                throws XPathExpressionException 
+        {
+            String expression = LAYER_XPATH_VMD_MIDP;
+            Node libsAreaNode = (Node) xpath.evaluate(expression, parent, XPathConstants.NODE);
+            if (libsAreaNode == null) {
+                Element libsAreaElement = doc.createElement(LayerXmlHelper.LAYER_FOLDER);
+                libsAreaElement.setAttribute(LayerXmlHelper.LAYER_NAME, LAYER_TAG_VMD_MIDP);
+                parent.appendChild(libsAreaElement);
+                libsAreaNode = libsAreaElement;
+            }
+            return libsAreaNode;
+
+        }
             
         private Set<FileObject> configureIcons()
                 throws IOException {
@@ -805,24 +804,30 @@ public abstract class CustomComponentHelper extends BaseHelper {
 
 
 
-    private void configureDependencies(){
+        private void configureDependencies() {
             try {
 
                 FileObject prjDir = getProject().getProjectDirectory();
-                FileObject projectXmlFO = FileUtil.createData(prjDir, AntProjectHelper.PROJECT_XML_PATH);
+                FileObject projectXmlFO = FileUtil.createData(prjDir, 
+                        AntProjectHelper.PROJECT_XML_PATH);
 
                 Document doc = LayerXmlHelper.parseXmlDocument(projectXmlFO);
 
                 XPath xpath = XPathFactory.newInstance().newXPath();
 
-                Node confData = ProjectXmlHelper.getPrimaryConfigurationData(xpath, doc.getDocumentElement());
+                Node confData = ProjectXmlHelper.getPrimaryConfigurationData(xpath, 
+                        doc.getDocumentElement());
 
                 Node modDeps = ProjectXmlHelper.goToModuleDependencies(doc, xpath, confData);
 
-                ProjectXmlHelper.testAndAddDependency(doc, xpath, modDeps, VMD_MIDP_NAME, VMD_MIDP_VERSION);
-                ProjectXmlHelper.testAndAddDependency(doc, xpath, modDeps, VMD_MODEL_NAME, VMD_MODEL_VERSION);
-                ProjectXmlHelper.testAndAddDependency(doc, xpath, modDeps, VMD_PROPERTIES_NAME, VMD_PROPERTIES_VERSION);
-                ProjectXmlHelper.testAndAddDependency(doc, xpath, modDeps, OPENIDE_UTIL_NAME, OPENIDE_UTIL_VERSION);
+                ProjectXmlHelper.testAndAddDependency(doc, xpath, modDeps, 
+                        VMD_MIDP_NAME, VMD_MIDP_VERSION);
+                ProjectXmlHelper.testAndAddDependency(doc, xpath, modDeps, 
+                        VMD_MODEL_NAME, VMD_MODEL_VERSION);
+                ProjectXmlHelper.testAndAddDependency(doc, xpath, modDeps, 
+                        VMD_PROPERTIES_NAME, VMD_PROPERTIES_VERSION);
+                ProjectXmlHelper.testAndAddDependency(doc, xpath, modDeps, 
+                        OPENIDE_UTIL_NAME, OPENIDE_UTIL_VERSION);
 
 
                 ProjectXmlHelper.saveXmlDocument(doc, projectXmlFO);
@@ -851,10 +856,14 @@ public abstract class CustomComponentHelper extends BaseHelper {
         }
 
         private Manifest getManifest() {
-            if (myManifest != null) {
-                return myManifest;
+            if (myManifest == null) {
+                myManifest = readManifest();
             }
-            myManifest = ProjectManager.mutex().readAccess(new Mutex.Action<Manifest>() {
+            return myManifest;
+        }
+        
+        private Manifest readManifest() {
+            return ProjectManager.mutex().readAccess(new Mutex.Action<Manifest>() {
 
                 public Manifest run() {
                     try {
@@ -865,10 +874,10 @@ public abstract class CustomComponentHelper extends BaseHelper {
                     return null;
                 }
             });
-            return myManifest;
         }
         
         private Manifest doReadManifest() throws IOException {
+            
             Manifest manifest = null;
             FileObject manifestFO = getProject().getProjectDirectory().
                     getFileObject(MANIFEST);
@@ -891,7 +900,7 @@ public abstract class CustomComponentHelper extends BaseHelper {
 
                 public Void run() {
                     try {
-                        doWriteManifest(manifest);
+                        doSaveManifest(manifest);
                     } catch (IOException ex) {
                         ErrorManager.getDefault().notify(ex);
                     }
@@ -900,7 +909,7 @@ public abstract class CustomComponentHelper extends BaseHelper {
             });
         }
         
-        private void doWriteManifest(Manifest manifest) throws IOException {
+        private void doSaveManifest(Manifest manifest) throws IOException {
             FileObject manifestFO = getProject().getProjectDirectory().
                     getFileObject(MANIFEST);
             if (manifestFO != null) {
@@ -918,45 +927,6 @@ public abstract class CustomComponentHelper extends BaseHelper {
             }
         }
 
-        /*
-        private void configureLibraries(){
-            addLibraryToProject(myProject, "org.netbeans.modules.vmd.midp");
-            addLibraryToProject(myProject, "org.netbeans.modules.vmd.model");
-            addLibraryToProject(myProject, "org.netbeans.modules.vmd.properties");
-        }
-        
-        private static void addLibraryToProject(final Project project, final String... libraryNames) {
-            RequestProcessor.getDefault().post(new Runnable() {
-
-                public void run() {
-                    if (project == null) {
-                        return;
-                    }
-                    Library[] libraries = getLibrariesByNames(libraryNames);
-                    try {
-                        FileObject projectDir = project.getProjectDirectory();
-                        ProjectClassPathModifier.addLibraries(libraries,
-                                projectDir, ClassPath.COMPILE);
-                    } catch (IOException e) {
-                        ErrorManager.getDefault().notify(e);
-                    }
-                };
-            });
-        }
-
-        private static Library[] getLibrariesByNames(final String... libraryNames) {
-            List<Library> libraries = new ArrayList<Library>();
-            final LibraryManager libraryManager = LibraryManager.getDefault();
-            for (String libraryName : libraryNames) {
-                final Library library = libraryManager.getLibrary(libraryName);
-                if (library != null) {
-                    libraries.add(library);
-                }
-            }
-            return libraries.toArray(new Library[]{});
-        }
-        */
-        
         private Project myProject;
         private Map<String, Object> myComponent;
         private WizardDescriptor myComponentWizard;
