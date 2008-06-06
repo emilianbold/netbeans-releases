@@ -321,6 +321,7 @@ public abstract class BaseAST implements AST, Serializable {
         return tokenNames;
     }
     
+    @Override
     public String toString() {
         StringBuffer b = new StringBuffer();
         // if verbose and type name not same as text (keyword probably)
