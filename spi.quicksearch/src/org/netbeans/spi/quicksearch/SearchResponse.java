@@ -44,21 +44,52 @@ import org.netbeans.modules.quicksearch.CategoryResult;
 import org.netbeans.modules.quicksearch.ResultsModel;
     
 /**
- *
+ * Response object for collecting results of {@link SearchProvider#evaluate} search
+ * operation. SearchProvider implementors are expected to fill SearchResponse
+ * in steps by calling various {@link SearchResponse#addResult} methods.
+ * 
  * @author Dafe Simonek
  */
 public final class SearchResponse {
 
     private CategoryResult catResult;
-    
-    SearchResponse(CategoryResult catResult) {
+   
+    /** Package private creation, made available to other packages via
+     * Accessor pattern.
+     * @param catResult CategoryResult for storing response data 
+     */
+    SearchResponse (CategoryResult catResult) {
         this.catResult = catResult;
     }
-    
+
+    /**
+     * Adds new result of quick search operation.
+     *  
+     * @param action Action to invoke when this result item is chosen by user
+     * @param displayName Localized display name of this result item
+     * 
+     * @return true when result was accepted and more results are needed if available.
+     * False when no further results are needed.
+     * {@link SearchProvider} implementore should stop computing and leave
+     * SearchProvider.evaluate(...) immediatelly if false is returned.
+     */
     public boolean addResult (Runnable action, String displayName) {
         return catResult.addItem(new ResultsModel.ItemResult(action, displayName));
     }
     
+    /**
+     * Adds new result of quick search operation.
+     *  
+     * @param action Action to invoke when this result item is chosen by user
+     * @param displayName Localized display name of this result item
+     * @param shortcut Shortcut of this result item or null if shorcut isn't available
+     * @param displayHint Localized display hint of this result item or null if not available
+     * 
+     * @return true when result was accepted and more results are needed if available.
+     * False when no further results are needed.
+     * {@link SearchProvider} implementore should stop computing and leave
+     * SearchProvider.evaluate(...) immediatelly if false is returned.
+     */
     public boolean addResult (Runnable action, String displayName,
                             KeyStroke shortcut, String displayHint) {
         return catResult.addItem(

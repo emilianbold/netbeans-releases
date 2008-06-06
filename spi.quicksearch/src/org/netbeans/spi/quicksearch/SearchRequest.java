@@ -43,27 +43,48 @@ import javax.swing.KeyStroke;
 import org.netbeans.modules.quicksearch.Accessor;
 
 /**
+ * Description of quick search request.
+ * 
+ * Implementors of {@link SearchProvider} are expected to get information from
+ * SearchRequest instance and perform search appropriately in 
+ * {@link SearchProvider#evaluate} method.
  *
  * @author Dafe Simonek
  */
 public final class SearchRequest {
     
     static {
+        // init of accessor implementation, part of Accessor pattern
         Accessor.DEFAULT = new AccessorImpl();
     }    
     
+    /** Text to search for */
     private String text;
+    
+    /** Shortcut to search for */
     private KeyStroke stroke;
 
     SearchRequest (String text, KeyStroke stroke) {
         this.text = text;
         this.stroke = stroke;
     }
-    
+
+    /**
+     * Access to text used for searching. Can be null if shortcut was entered by
+     * user instead of plain text.
+     * 
+     * @return Text entered by user into Quick Search UI or null.
+     */
     public String getText () {
         return text;
     }
-            
+       
+    /**
+     * Access to shortcut used for searching. Can be null if plain text was
+     * entered by user instead of shortcut.
+     * 
+     * @return Shortcut entered by user into Quick Search UI or null.
+     */
     public KeyStroke getShortcut () {
         return stroke;
     }

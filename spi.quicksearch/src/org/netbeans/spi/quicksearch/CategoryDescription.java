@@ -40,18 +40,36 @@
 package org.netbeans.spi.quicksearch;
 
 /**
- *
+ * Description of visual category of quick search results. 
+ * 
+ * Usage: Put implementation of this interface into 
+ * <a href="@org-openide-util@/org/openide/util/Lookup.html">Lookup</a> which
+ * is returned from {@link SearchProvider#evaluate} 
+ * 
+ * 
  * @author Dafe Simonek
  */
 public interface CategoryDescription {
-    
+
+    /**
+     * Display name of this category of quick search results.
+     * 
+     * @return Display name, must not be null
+     */
     public String getDisplayName ();
     
+    /**
+     * Textual hint explaining category meaning.
+     * 
+     * @return Textual hint describing category or null
+     */
     public String getHint ();
     
      /** 
-      * Prefix for this category
-     * @return
+      * Command prefix for this category for restricting searches only to
+      * this category.
+      * 
+      * @return Command prefix, usually one character only.
      */
     public String getCommandPrefix ();
 
