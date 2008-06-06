@@ -58,8 +58,6 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.plaf.UIResource;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -123,19 +121,6 @@ public final class Utils {
         LocalServer localServer = new LocalServer(newLocation, projectLocation);
         localServerComboBoxModel.addElement(localServer);
         localServerComboBox.setSelectedItem(localServer);
-    }
-
-    public static void locateLocalServerAction() {
-        // XXX
-        String message = "Not implemented yet."; // NOI18N
-        NotifyDescriptor descriptor = new NotifyDescriptor(
-                message,
-                message,
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.INFORMATION_MESSAGE,
-                new Object[] {NotifyDescriptor.OK_OPTION},
-                NotifyDescriptor.OK_OPTION);
-        DialogDisplayer.getDefault().notify(descriptor);
     }
 
     public static List getAllItems(final JComboBox comboBox) {

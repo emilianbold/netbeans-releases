@@ -321,7 +321,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         if (!srcRoot.startsWith(documentRoot)) {
             return null;
         }
-        // handle situations like: /var/www/xxx///// or c:\\apache\htdocs\aaa\bbb
+        // handle situations like: /var/www///// or c:\\apache\htdocs\aaa\bbb
         srcRoot = srcRoot.replaceAll(Pattern.quote(File.separator) + "+", "/");
         return srcRoot.substring(documentRoot.length());
     }
