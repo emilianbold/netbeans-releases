@@ -40,8 +40,11 @@
  */
 package org.netbeans.performance.enterprise;
 
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
 
 /**
  * Test suite that actually does not perform any test but sets up user directory
@@ -54,28 +57,32 @@ public class MeasureEnterpriseSetupTest extends NbTestCase {
     public MeasureEnterpriseSetupTest(java.lang.String testName) {
         super(testName);
     }
+    
+    public static Test suite(NbTestSuite suite) {
+        suite.addTest(NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(EnterpriseSetup.class)
+            .addTest("closeMemoryToolbar")
+            .addTest("closeWelcome")
+            .addTest("openWebProject")
 
-    public static NbTestSuite suite() {
+//            // FIXME: Remove this workaround of manual App Server addition
+//            .addTest("addApplicationServer")
+
+            .addTest("openReservationPartnerServicesProject")
+            .addTest("openTravelReservationServiceProject")
+            .addTest("openTravelReservationServiceApplicationProject")
+            .addTest("openSoaTestProject")
+            .addTest("openBPELTestProject")
+            .addTest("closeAllDocuments")
+            .enableModules(".*")
+            .clusters(".*")
+        ));    
+        
+        return suite;        
+    }
+
+    public static Test suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Enterprise Setup suite");
-
-//            suite.addTest(new EnterpriseSetupTest("closeMemoryToolbar"));
-//        
-//        suite.addTest(new EnterpriseSetupTest("closeWelcome"));
-//        
-////TODO no tomcat - see issue 101104        suite.addTest(new EnterpriseSetupTest("openWebProject"));
-//
-//        // FIXME: Remove this workaround of manual App Server addition
-//        suite.addTest(new EnterpriseSetupTest("addApplicationServer"));
-//        suite.addTest(new EnterpriseSetupTest("openReservationPartnerServicesProject"));
-//        suite.addTest(new EnterpriseSetupTest("openTravelReservationServiceProject"));
-//        suite.addTest(new EnterpriseSetupTest("openTravelReservationServiceApplicationProject"));
-//
-//        suite.addTest(new EnterpriseSetupTest("openSoaTestProject"));
-//        suite.addTest(new EnterpriseSetupTest("openBPELTestProject"));
-//        
-//        suite.addTest(new EnterpriseSetupTest("closeAllDocuments"));
-//        suite.addTest(NbModuleSuite.create(J2SESetup.class, ".*", ".*"));
-
-        return suite;
+        return suite(suite);
     }
 }
