@@ -61,6 +61,7 @@ public class EntityClass {
     private final String className;
     private final String packageName;
     private final FetchType fetchType;
+    private final boolean regenSchemaAttrs;
     
     private List<RelationshipRole> roles;
     private List<EntityMember> fields;
@@ -72,7 +73,7 @@ public class EntityClass {
     
     public EntityClass(boolean fullyQualifiedTblNames, String schemaName, String catalogName, String tableName, 
             FileObject rootFolder, String packageName, String className,
-            FetchType fetchType) {
+            FetchType fetchType, boolean regenSchemaAttrs) {
         this.fullyQualifiedTblNames = fullyQualifiedTblNames;
         this.schemaName = schemaName;
         this.catalogName = catalogName;
@@ -81,6 +82,7 @@ public class EntityClass {
         this.packageName = packageName;
         this.className = className;
         this.fetchType = fetchType;
+        this.regenSchemaAttrs = regenSchemaAttrs;
         
         roles = Collections.<RelationshipRole>emptyList();
         fields = new ArrayList<EntityMember>();
@@ -97,6 +99,10 @@ public class EntityClass {
     
     public boolean isFullyQualifiedTblNames() {
         return this.fullyQualifiedTblNames;
+    }
+
+    public boolean isRegenSchemaAttrs() {
+        return regenSchemaAttrs;
     }
     
     public void addRole(RelationshipRole role) {

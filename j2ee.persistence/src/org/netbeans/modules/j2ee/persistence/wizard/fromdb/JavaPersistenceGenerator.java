@@ -508,12 +508,12 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
                 String columnName = (String) dbMappings.getCMPFieldMapping().get(memberName);
                 columnAnnArguments.add(genUtils.createAnnotationArgument("name", columnName)); //NOI18N
-                // XXX do not generate nullable=false See issue 129869
-                //if (!m.isNullable()) {
-                //    columnAnnArguments.add(genUtils.createAnnotationArgument("nullable", false)); //NOI18N
-                //}
+              
+                if (entityClass.isRegenSchemaAttrs() && !m.isNullable()) {
+                    columnAnnArguments.add(genUtils.createAnnotationArgument("nullable", false)); //NOI18N
+                }
                 Integer length = m.getLength();
-                if (length != null && isCharacterType(memberType)) {
+                if (entityClass.isRegenSchemaAttrs() && length != null && isCharacterType(memberType)) {
                     columnAnnArguments.add(genUtils.createAnnotationArgument("length", length)); // NOI18N
                 }
                 annotations.add(genUtils.createAnnotation("javax.persistence.Column", columnAnnArguments)); //NOI18N

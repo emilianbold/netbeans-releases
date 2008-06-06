@@ -92,7 +92,7 @@ public class RelatedCMPHelper {
     // Global mapping options added in NB 6.5
     private boolean fullyQualifiedTableNames = false;
     private FetchType fetchType = FetchType.DEFAULT;
-    //TODO: More to come
+    private boolean regenSchemaAttrs = true;
     
     public RelatedCMPHelper(Project project, FileObject configFilesFolder, PersistenceGenerator persistenceGen) {
         this.project = project;
@@ -258,6 +258,14 @@ public class RelatedCMPHelper {
     public void setFetchType(FetchType fetchType) {
         this.fetchType = fetchType;
     }
+
+    public boolean isRegenSchemaAttrs() {
+        return regenSchemaAttrs;
+    }
+
+    public void setRegenSchemaAttrs(boolean regenSchemaAttrs) {
+        this.regenSchemaAttrs = regenSchemaAttrs;
+    }
     
     /**
      * Public because used in J2EE functional tests.
@@ -268,6 +276,7 @@ public class RelatedCMPHelper {
         GenerateTablesImpl genTables = new GenerateTablesImpl();
         genTables.setFullyQualifiedTableNames(isFullyQualifiedTableNames());
         genTables.setFetchType(getFetchType());
+        genTables.setRegenSchemaAttrs(isRegenSchemaAttrs());
         FileObject rootFolder = getLocation().getRootFolder();
         String pkgName = getPackageName();
 
@@ -310,6 +319,7 @@ public class RelatedCMPHelper {
         private final Map<String, String> packageNames = new HashMap<String, String>();
         private final Map<String, String> classNames = new HashMap<String, String>();
         private  FetchType fetchType; // global
+        private boolean regenSchemaAttrs; // global
         
         public Set<String> getTableNames() {
             return Collections.unmodifiableSet(tableNames);
@@ -359,6 +369,14 @@ public class RelatedCMPHelper {
         
         public FetchType getFetchType() {
             return fetchType;
+        }
+
+        public boolean isRegenSchemaAttrs() {
+            return regenSchemaAttrs;
+        }
+
+        public void setRegenSchemaAttrs(boolean regenSchemaAttrs) {
+            this.regenSchemaAttrs = regenSchemaAttrs;
         }
     }
 }

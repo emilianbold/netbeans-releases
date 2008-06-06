@@ -95,4 +95,9 @@ public interface GeneratedTables {
      * Returns the fetch type for the associations
      */
     public FetchType getFetchType();
+    
+    /**
+     * Should the attributes used for regenenating schema from the entity classes be included
+     */
+    public boolean isRegenSchemaAttrs();
 }
