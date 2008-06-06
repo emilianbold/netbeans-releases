@@ -39,9 +39,11 @@
 
 package org.netbeans.modules.vmd.componentssupport.ui.helpers;
 
+import java.io.IOException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
+import org.openide.filesystems.FileObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -51,6 +53,8 @@ import org.w3c.dom.Node;
  */
 public class LayerXmlHelper extends XmlHelper{
 
+    public static final String TEMPLATE_LAYER_XML   = "layer.xml"; //NOI18N
+    
     // browsing layer.xml dom tree
     //// names
     protected static final String LAYER_FILESYSTEM    = "filesystem";             //NOI18N
@@ -72,6 +76,13 @@ public class LayerXmlHelper extends XmlHelper{
             parent.appendChild(fsNode);
         }
         return fsNode;
+    }
+    
+    protected static FileObject createLayerXml(FileObject prjDir, String layerXmlPath) 
+            throws IOException
+    {
+        FileObject template = getTemplate(TEMPLATE_LAYER_XML);
+        return doCopyFile(prjDir, layerXmlPath, template, null);
     }
     
 }
