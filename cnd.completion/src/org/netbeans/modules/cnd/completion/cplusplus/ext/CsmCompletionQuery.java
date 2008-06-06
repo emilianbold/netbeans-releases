@@ -1152,8 +1152,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 CsmType typ = resolveType(item.getParameter(0));
                 if (typ != null) {
                     lastType = typ;
-                    break;
                 }
+                break;
             }
             case CsmCompletionExpression.GENERIC_TYPE_OPEN:
             case CsmCompletionExpression.OPERATOR:

@@ -120,7 +120,7 @@ public class WSStackUtils {
     
     public static ServerType getServerType(Project project) {
         J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
-        if (j2eeModuleProvider.getServerInstanceID() == null) {
+        if (j2eeModuleProvider == null || j2eeModuleProvider.getServerInstanceID() == null) {
             return ServerType.NOT_SPECIFIED;
         }
         String serverId = j2eeModuleProvider.getServerID();
