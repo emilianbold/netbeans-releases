@@ -45,14 +45,8 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.tree.TreePath;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -84,7 +78,6 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
@@ -93,14 +86,7 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
-//import org.netbeans.junit.ide.ProjectSupport;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
-/*
-import org.netbeans.progress.module.Controller;
-import org.netbeans.progress.spi.InternalHandle;
-import org.netbeans.progress.spi.TaskModel;
-*/
 
 /**
  * Utilities for Performance tests, workarrounds, often used methods, ...
@@ -117,10 +103,46 @@ public class CommonUtilities {
     private static int size=0;
     private static String prev="";
     
+    private static String projectsDir; // <nbextra>/data/
+    private static String tempDir; // <nbjunit.workdir>/tmpdir
+    
+    static {
+        String workDir = System.getProperty("nbjunit.workdir");
+        if (workDir != null) {
+            projectsDir = workDir + File.separator;
+            try {
+                projectsDir = new File(projectsDir + File.separator + ".." 
+                        + File.separator + ".." + File.separator + ".." 
+                        + File.separator + ".." + File.separator + ".." 
+                        + File.separator + ".." + File.separator + ".." 
+                        + File.separator + "nbextra" + File.separator + "data")
+                        .getCanonicalPath() + File.separator;
+            } catch (IOException ex) {
+                System.err.println("Exception: " + ex);
+            }
+
+            tempDir = workDir + File.separator;
+            try {
+                File dir = new File(tempDir + File.separator + "tmpdir");
+                tempDir = dir.getCanonicalPath() + File.separator;
+                dir.mkdirs();
+            } catch (IOException ex) {
+                System.err.println("Exception: " + ex);
+            }
+        }
+    }
+    
+    public static String getProjectsDir() {
+        return projectsDir;
+    }
+    
+    public static String getTempDir() {
+        return tempDir;
+    }
+    
     /** Creates a new instance of Utilities */
     public CommonUtilities() {
     }
-
 
     public static String getTimeIndex() {
         return new SimpleDateFormat("HHmmssS",Locale.US).format(new Date());
@@ -344,7 +366,7 @@ public class CommonUtilities {
     
     protected static void waitForProjectCreation(int delay, boolean wait){
         try {
-            Thread.currentThread().sleep(delay);
+            Thread.sleep(delay);
         } catch (InterruptedException exc) {
             exc.printStackTrace(System.err);
         }
