@@ -66,21 +66,18 @@ public class RemoteOutputOnlyCommandSupport extends RemoteConnectionSupport {
             in = new BufferedReader(new InputStreamReader(is));
             out = new StringWriter();
             
-            while (is.available() > 0) {
-                String line = in.readLine();
-                if (line != null) {
-                    out.write(line);
-                    out.flush();
-                }
+            String line;
+            while ((line = in.readLine()) != null) {
+                out.write(line);
+                out.flush();
             }
             in.close();
             is.close();
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         }
-
     }
     
+    @Override
     public String toString() {
         if (out != null) {
             return out.toString();
