@@ -71,11 +71,14 @@ public class DebuggingViewLazyListener extends LazyActionsManagerListener {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 DebuggingView debuggingView = DebuggingView.getInstance();
-                debuggingView.close();
-                TopComponent lastSelectedTC = lastSelectedTCRef.get();
-                if (lastSelectedTC != null) {
-                    lastSelectedTC.requestActive();
+                Mode debuggingMode = WindowManager.getDefault().findMode(debuggingView);
+                if (debuggingMode.getSelectedTopComponent() == debuggingView) {
+                    TopComponent lastSelectedTC = lastSelectedTCRef.get();
+                    if (lastSelectedTC != null) {
+                        lastSelectedTC.requestActive();
+                    }
                 }
+                debuggingView.close();
             }
         });
     }

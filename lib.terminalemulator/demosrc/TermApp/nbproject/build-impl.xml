@@ -354,6 +354,7 @@ is divided into following sections:
             -->
     <target depends="init" name="deps-jar" unless="no.deps">
         <ant antfile="${project.TermSupport}/build.xml" inheritall="false" target="jar"/>
+        <ant antfile="${project.TermSupport-1}/build.xml" inheritall="false" target="jar"/>
         <ant antfile="${project.org_netbeans_lib_terminalemulator}/build.xml" inheritall="false" target="netbeans"/>
     </target>
     <target depends="init,deps-jar" name="-pre-pre-compile">
@@ -663,6 +664,7 @@ is divided into following sections:
             -->
     <target depends="init" name="deps-clean" unless="no.deps">
         <ant antfile="${project.TermSupport}/build.xml" inheritall="false" target="clean"/>
+        <ant antfile="${project.TermSupport-1}/build.xml" inheritall="false" target="clean"/>
         <ant antfile="${project.org_netbeans_lib_terminalemulator}/build.xml" inheritall="false" target="clean"/>
     </target>
     <target depends="init" name="-do-clean">

@@ -255,7 +255,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
                     new PropertySupport.Reflection(
                     options,
                     java.awt.Color.class,
-                    "selectionBorderColor"));
+                    "selectionBorderColor")); // NOI18N
         } catch (NoSuchMethodException ex) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, ex.getMessage(), ex);
         }
@@ -264,7 +264,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
                     new PropertySupport.Reflection(
                     options,
                     java.awt.Color.class,
-                    "guidingLineColor"));
+                    "guidingLineColor")); // NOI18N
         } catch (NoSuchMethodException ex) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, ex.getMessage(), ex);
         }

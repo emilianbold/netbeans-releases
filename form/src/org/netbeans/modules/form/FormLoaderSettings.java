@@ -56,9 +56,6 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
     private static final FormLoaderSettings INSTANCE = new FormLoaderSettings();
     public static final String PROP_USE_INDENT_ENGINE = "useIndentEngine"; // NOI18N
 
-    /** Property name of the eventVariableName property */
-    public static final String PROP_EVENT_VARIABLE_NAME = "eventVariableName"; // NOI18N
-
     /** Property name of the event listener code generation style option. */
     public static final String PROP_LISTENER_GENERATION_STYLE = "listenerGenerationStyle"; // NOI18N
 
@@ -632,9 +629,5 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
 
     public HelpCtx getHelpCtx() {
         return new HelpCtx("gui.configuring"); // NOI18N
-    }
-    
-    private static BeanNode createViewNode() throws java.beans.IntrospectionException {
-        return new BeanNode<FormLoaderSettings>(FormLoaderSettings.getInstance());
-    }         
+    } 
 }
