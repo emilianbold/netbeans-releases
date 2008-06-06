@@ -52,6 +52,7 @@ import org.netbeans.modules.xslt.model.TypeSpec;
 import org.netbeans.modules.xslt.model.UseAttributesSetsSpec;
 import org.netbeans.modules.xslt.model.UseCharacterMapsSpec;
 import org.netbeans.modules.xslt.model.ValidationSpec;
+import org.netbeans.modules.xslt.model.WithParam;
 import org.netbeans.modules.xslt.model.enums.Annotaions;
 import org.netbeans.modules.xslt.model.enums.DefaultValidation;
 import org.netbeans.modules.xslt.model.enums.Standalone;
@@ -86,6 +87,7 @@ enum XslAttributes implements Attribute {
     SEPARATOR( org.netbeans.modules.xslt.model.Attribute.SEPARATOR, 
             AttributeValueTemplate.class ), 
     NAME_OF_CALL_TMPL( CallTemplate.NAME , Template.class ), 
+    NAME_OF_REF_PARAM( WithParam.NAME , WithParam.class ), 
     COLLATION( CollationSpec.COLLATION , String.class ), 
     INHERIT_NAMESPACES( InheritNamespacesSpec.INHERIT_NAMESPACES, TBoolean.class ),
     ENCODING( Output.ENCODING, String.class ),

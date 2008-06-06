@@ -53,6 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.extexecution.api.input.InputProcessor;
 import org.netbeans.modules.extexecution.api.input.InputReader;
+import org.netbeans.modules.extexecution.api.input.InputReaders;
 
 /**
  *
@@ -65,13 +66,11 @@ public class FileInputReader implements InputReader {
 
     private static final int BUFFER_SIZE = 512;
 
-    private final Callable<File> fileGenerator;
-
-    private final Charset charset;
+    private final InputReaders.FileInput.Provider fileProvider;
 
     private final char[] buffer = new char[BUFFER_SIZE];
 
-    private File currentFile;
+    private InputReaders.FileInput currentFile;
 
     private Reader reader;
 
@@ -79,24 +78,23 @@ public class FileInputReader implements InputReader {
 
     private boolean closed;
 
-    public FileInputReader(Callable<File> fileGenerator, Charset charset) {
-        assert fileGenerator != null;
+    public FileInputReader(InputReaders.FileInput.Provider fileProvider) {
+        assert fileProvider != null;
 
-        this.fileGenerator = fileGenerator;
-        this.charset = charset;
+        this.fileProvider = fileProvider;
     }
 
-    public int readOutput(InputProcessor outputProcessor) {
+    public int readInput(InputProcessor inputProcessor) {
         if (closed) {
             throw new IllegalStateException("Already closed reader");
         }
 
         int fetched = 0;
         try {
-            File file = fileGenerator.call();
+            InputReaders.FileInput file = fileProvider.getFileInput();
 
             if ((currentFile != file && (currentFile == null || !currentFile.equals(file)))
-                    || fileLength > currentFile.length() || reader == null) {
+                    || fileLength > currentFile.getFile().length() || reader == null) {
 
                 if (reader != null) {
                     reader.close();
@@ -104,14 +102,14 @@ public class FileInputReader implements InputReader {
 
                 currentFile = file;
 
-                if (currentFile != null && currentFile.exists()
-                        && currentFile.canRead()) {
+                if (currentFile != null && currentFile.getFile().exists()
+                        && currentFile.getFile().canRead()) {
 
                     reader = new BufferedReader(new InputStreamReader(
-                            new FileInputStream(currentFile), charset));
+                            new FileInputStream(currentFile.getFile()), currentFile.getCharset()));
                 }
                 if (fileLength > 0) {
-                    outputProcessor.reset();
+                    inputProcessor.reset();
                 }
                 fileLength = 0;
             }
@@ -125,10 +123,10 @@ public class FileInputReader implements InputReader {
                 fileLength += size;
                 fetched += size;
 
-                if (outputProcessor != null) {
+                if (inputProcessor != null) {
                     char[] toProcess = new char[size];
                     System.arraycopy(buffer, 0, toProcess, 0, size);
-                    outputProcessor.processInput(toProcess);
+                    inputProcessor.processInput(toProcess);
                 }
             }
         } catch (Exception ex) {

@@ -314,7 +314,7 @@ public class HgConfigFiles {
 
         if(system == null) {
             system = new Ini();
-            Mercurial.LOG.log(Level.WARNING, "Could not load the file " + filePath + ". Falling back on hg defaults."); // NOI18N
+            Mercurial.LOG.log(Level.FINE, "Could not load the file " + filePath + ". Falling back on hg defaults."); // NOI18N
         }
         return system;
     }

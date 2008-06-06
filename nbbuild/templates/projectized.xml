@@ -880,6 +880,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
 
     <target name="-sigtest-init" depends="build-init">
         <property name="sigtest.basedir" location="nbproject"/>
+        <property name="sigtest.output.dir" location="build/test/sigtest/results"/>
         <mkdir dir="${sigtest.basedir}"/>
         <property name="sigtest.file" location="${sigtest.basedir}/${code.name.base.dashes}.sig"/>
         <property name="sigtest.public.packages" value="${public.packages}"/>
@@ -933,6 +934,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
 
     <target name="check-sigtest" depends="-sigtest-init" unless="sigtest.skip.check.condition">
         <property name="sigtest.check.type" value="check"/>
+        <mkdir dir="${sigtest.output.dir}"/>
         <sigtest fileName="${sigtest.file}"
                  sigtestJar="${sigtest.jar}"
                  classpath="${sigtest.class.path}"

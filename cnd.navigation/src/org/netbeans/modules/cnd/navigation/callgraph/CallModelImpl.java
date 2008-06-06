@@ -105,6 +105,17 @@ public class CallModelImpl implements CallModel {
         return name;
     }
 
+    public void setRoot(Function newRoot) {
+        if (newRoot instanceof FunctionImpl) {
+            FunctionImpl impl = (FunctionImpl)newRoot;
+            CsmFunction f = impl.getDefinition();
+            if (f != null) {
+                uin = new FunctionUIN(project, f);
+                name = f.getName().toString();
+            }
+        }
+    }
+
     public List<Call> getCallers(Function declaration) {
         FunctionImpl functionImpl = (FunctionImpl) declaration;
         CsmFunction owner = functionImpl.getDeclaration();

@@ -189,12 +189,6 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
     
     @Override
     public void visit(MethodDeclaration node) {
-        varStack.blockStart(VariableStack.BlockType.FUNCTION);
-        
-        for (FormalParameter param : node.getFunction().getFormalParameters()){
-            varStack.addVariableDefinition(param);
-        }
-        
         for (PHPRule rule : rules){
             rule.setContext(context);
             rule.visit(node);
@@ -203,7 +197,6 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
         }
         
         super.visit(node);
-        varStack.blockEnd();
     }
 
     @Override
@@ -266,7 +259,7 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
     public static class VariableStack{
         static final Collection<String> SUPERGLOBALS = new TreeSet<String>(Arrays.asList(
             "GLOBALS", "_SERVER", "_GET", "_POST", "_FILES", //NOI18N
-            "_COOKIE", "_SESSION", "_REQUEST", "_ENV")); //NOI18N
+            "_COOKIE", "_SESSION", "_REQUEST", "_ENV", "this")); //NOI18N
         
         private enum BlockType {BLOCK, FUNCTION};
         private LinkedList<LinkedHashMap<VariableWrapper, String>> vars = new LinkedList<LinkedHashMap<VariableWrapper, String>>();
