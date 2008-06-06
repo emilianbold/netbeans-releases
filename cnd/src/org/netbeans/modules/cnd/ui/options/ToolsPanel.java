@@ -704,7 +704,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 FileObject fo = FileUtil.toFileObject(file.getCanonicalFile());
                 if (fo != null) {
                     String mime = fo.getMIMEType();
-                    if (mime.startsWith("application/x-exe") || mime.equals(MIMENames.SHELL_MIME_TYPE)) { // NOI18N
+                    if (mime.startsWith(MIMENames.EXE_MIME_TYPE) || mime.equals(MIMENames.SHELL_MIME_TYPE)) { // NOI18N
                         VersionCommand versionCommand = new VersionCommand(flavor, path);
                         version = versionCommand.getVersion();
                     }
