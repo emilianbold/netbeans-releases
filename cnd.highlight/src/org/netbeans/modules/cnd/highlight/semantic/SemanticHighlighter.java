@@ -40,26 +40,11 @@
  */
 package org.netbeans.modules.cnd.highlight.semantic;
 
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
-import javax.swing.text.StyleConstants;
-import org.netbeans.api.editor.settings.AttributesUtilities;
-import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
-import org.netbeans.modules.cnd.api.model.CsmMacro;
-import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
-import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
@@ -96,6 +81,8 @@ public class SemanticHighlighter extends HighlighterBase {
 
         return bag;
     }
+    
+    private static final boolean SHOW_TIMES = Boolean.getBoolean("cnd.highlighting.times");
 
     private void update() {
         BaseDocument doc = getDocument();
@@ -103,17 +90,22 @@ public class SemanticHighlighter extends HighlighterBase {
             OffsetsBag newBag = new OffsetsBag(doc);
             newBag.clear();
             final CsmFile csmFile = CsmUtilities.getCsmFile(doc, false);
-
+            long start = System.currentTimeMillis();
+            if (SHOW_TIMES) System.err.println("#@# Semantic Highlighting update() have started for file " + csmFile.getAbsolutePath());
             if (csmFile != null && csmFile.isParsed()) {
                 for (SemanticEntity se : SemanticEntitiesProvider.instance().get()) {
+                    long start2 = System.currentTimeMillis();
+                    if (SHOW_TIMES) System.err.println("#@# Highlighter '" + se.getName() + "' have started [" + (start2 - start) + " ms].");
                     if (SemanticHighlightingOptions.instance().isEnabled(se.getName())) {
                         for (CsmOffsetable block : se.getBlocks(csmFile)) {
-                            newBag.addHighlight(block.getStartOffset(), block.getEndOffset(), se.getColor(null));
+                            newBag.addHighlight(block.getStartOffset(), block.getEndOffset(), se.getColor(block));
                         }
                     }
+                    if (SHOW_TIMES) System.err.println("#@# Highlighter '" + se.getName() + "' have finished. Took " + (System.currentTimeMillis() - start2) + "ms.");
                 }
             }
             getHighlightsBag(doc).setHighlights(newBag);
+            if (SHOW_TIMES) System.err.println("#@# Semantic Highlighting update() done in "+ (System.currentTimeMillis() - start) +"ms for file " + csmFile.getAbsolutePath());
         }
     }
 

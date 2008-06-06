@@ -5,13 +5,7 @@ package antlr;
  * Software rights: http://www.antlr.org/license.html
  */
 
-import java.util.Hashtable;
-import java.util.Enumeration;
 import java.io.IOException;
-
-import antlr.collections.impl.BitSet;
-import antlr.collections.impl.Vector;
-
 
 /** Parser-specific grammar subclass */
 class ParserGrammar extends Grammar {

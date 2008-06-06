@@ -36,7 +36,7 @@
 package org.netbeans.installer.utils.cli.options;
 
 import org.netbeans.installer.utils.cli.*;
-import org.netbeans.installer.utils.exceptions.CLIArgumentException;
+import org.netbeans.installer.utils.exceptions.CLIOptionException;
 import org.netbeans.installer.utils.helper.UiMode;
 
 
@@ -47,7 +47,7 @@ import org.netbeans.installer.utils.helper.UiMode;
 public class SilentOption extends CLIOptionZeroArguments {
 
     @Override
-    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+    public void execute(CLIArgumentsList arguments) throws CLIOptionException {
          UiMode.setCurrentUiMode(UiMode.SILENT);
     }
 

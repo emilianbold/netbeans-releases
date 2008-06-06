@@ -39,7 +39,7 @@ package org.netbeans.installer.utils.cli.options;
 import org.netbeans.installer.utils.cli.*;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.exceptions.CLIArgumentException;
+import org.netbeans.installer.utils.exceptions.CLIOptionException;
 
 /**
  *
@@ -48,7 +48,7 @@ import org.netbeans.installer.utils.exceptions.CLIArgumentException;
 public class PlatformOption extends CLIOptionOneArgument {
 
     @Override
-    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+    public void execute(CLIArgumentsList arguments) throws CLIOptionException {
         System.setProperty(Registry.TARGET_PLATFORM_PROPERTY, arguments.next());
     }
 

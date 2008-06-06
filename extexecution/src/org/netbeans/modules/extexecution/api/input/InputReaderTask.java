@@ -50,13 +50,11 @@ import org.openide.util.Parameters;
  * Task consuming data from the certain reader, processing them with the given
  * processor.
  * <p>
- * When exception occurs while running the task is terminated.
+ * When exception occurs while running the task it is terminated.
  * Task is responsive to interruption. InputReader is closed on finish (includes
- * both thrown exception and interruption).
- * </p>
+ * both cases throwing an exception and interruption).
  * <p>
- * Task is <i>not</i> finished implicitly by reaching the end of the reader.
- * </p>
+ * Task is <i>not finished</i> implicitly by reaching the end of the reader.
  * <div class="nonnormative">
  * <p>
  * Sample usage - reading standard output of the process (throwing the data away):
@@ -82,7 +80,6 @@ import org.openide.util.Parameters;
  *
  *     executorService.shutdownNow();
  * </pre>
- * </p>
  * </div>
  *
  * @author Petr Hejl
@@ -93,37 +90,49 @@ public final class InputReaderTask implements Runnable {
 
     private static final int DELAY = 50;
 
-    private final InputReader outputReader;
+    private final InputReader inputReader;
 
-    private final InputProcessor outputProcessor;
+    private final InputProcessor inputProcessor;
 
-    private InputReaderTask(InputReader outputReader) {
-        this(outputReader, null);
+    private InputReaderTask(InputReader inputReader) {
+        this(inputReader, null);
     }
 
-    private InputReaderTask(InputReader outputReader,
-            InputProcessor outputProcessor) {
+    private InputReaderTask(InputReader inputReader,
+            InputProcessor inputProcessor) {
 
-        Parameters.notNull("lineReader", outputReader);
+        Parameters.notNull("inputReader", inputReader);
 
-        this.outputReader = outputReader;
-        this.outputProcessor = outputProcessor;
+        this.inputReader = inputReader;
+        this.inputProcessor = inputProcessor;
     }
 
+    /**
+     * Creates the new task. The task will read the data from reader
+     * throwing them away.
+     *
+     * @param reader data producer
+     * @return task handling the read process
+     */
     public static InputReaderTask newTask(InputReader reader) {
         return new InputReaderTask(reader);
     }
 
+    /**
+     * Creates the new task. The task will read the data from reader processing
+     * them through processor (if any).
+     *
+     * @param reader data producer
+     * @param processor processor consuming the data, may be <code>null</code>
+     * @return task handling the read process
+     */
     public static InputReaderTask newTask(InputReader reader, InputProcessor processor) {
         return new InputReaderTask(reader, processor);
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Task repeatedly reads the data from the InputReader, passing the content
      * to InputProcessor (if any).
-     * </p>
      */
     public void run() {
         boolean interrupted = false;
@@ -134,7 +143,7 @@ public final class InputReaderTask implements Runnable {
                     break;
                 }
 
-                outputReader.readOutput(outputProcessor);
+                inputReader.readInput(inputProcessor);
 
                 try {
                     // give the producer some time to write the output
@@ -145,7 +154,7 @@ public final class InputReaderTask implements Runnable {
                 }
             }
 
-            outputReader.readOutput(outputProcessor);
+            inputReader.readInput(inputProcessor);
         } catch (Exception ex) {
             if (!interrupted && !Thread.currentThread().isInterrupted()) {
                 LOGGER.log(Level.FINE, null, ex);
@@ -153,7 +162,7 @@ public final class InputReaderTask implements Runnable {
         } finally {
             // perform cleanup
             try {
-                outputReader.close();
+                inputReader.close();
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, null, ex);
             } finally {

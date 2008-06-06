@@ -62,16 +62,16 @@ public class InputReadersReaderTest extends NbTestCase {
         super(name);
     }
 
-    public void testReadOutput() throws IOException {
+    public void testReadInput() throws IOException {
         Reader reader = new InputStreamReader(TestInputUtils.prepareInputStream(
                 TEST_CHARS, TEST_CHARSET), TEST_CHARSET);
-        InputReader outputReader = InputReaders.forReader(reader);
+        InputReader inputReader = InputReaders.forReader(reader);
         TestInputProcessor processor = new TestInputProcessor(false);
 
         int read = 0;
         int retries = 0;
         while (read < TEST_CHARS.length && retries < MAX_RETRIES) {
-            read += outputReader.readOutput(processor);
+            read += inputReader.readInput(processor);
             retries++;
         }
 

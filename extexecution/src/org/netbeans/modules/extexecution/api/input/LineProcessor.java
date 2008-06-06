@@ -42,21 +42,22 @@
 package org.netbeans.modules.extexecution.api.input;
 
 /**
- * Process the lines fetched by {@link LineReader}.
+ * Processes the lines fetched by {@link InputReader} usually with help
+ * of the {@link InputProcessors#bridge(LineProcessor)}.
  * <p>
- * When the implementation is used just by single {@link LineReader} it
+ * When the implementation is used just by single bridge it
  * does not have to be thread safe.
  *
  * @author Petr Hejl
- * @see LineReader
+ * @see InputProcessors#bridge(LineProcessor)
+ * @see InputReader
  */
 public interface LineProcessor {
 
     /**
-     * Processes the line. One line can be processed multiple times as
-     * described in {@link LineReader#readLines(LineProcessor, boolean)}.
+     * Processes the line.
      *
-     * @param line the line to process, can be <code>null</code>
+     * @param line the line to process
      */
     void processLine(String line);
 

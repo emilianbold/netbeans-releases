@@ -5,8 +5,6 @@ package antlr.preprocessor;
  * Software rights: http://www.antlr.org/license.html
  */
 
-import antlr.collections.impl.Vector;
-
 class Option {
     protected String name;
     protected String rhs;

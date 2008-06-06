@@ -90,8 +90,9 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
     }
     
     public void removeService(String serviceName) {
+        assert serviceName != null;
         JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
-        if (jaxWsModel!=null) {
+        if (jaxWsModel != null && serviceName != null) {
             Service service = jaxWsModel.findServiceByName(serviceName);
             if (service!=null) {
                 // remove the service element as well as the implementation class
@@ -275,7 +276,7 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
                         ErrorManager.getDefault().notify(ex); //TODO handle this
                     }
                 }
-                FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+                FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
                 try {
                     ExecutorTask wsimportTask =
                             ActionUtils.runTarget(buildImplFo,new String[]{"wsimport-service-"+finalServiceName},null); //NOI18N

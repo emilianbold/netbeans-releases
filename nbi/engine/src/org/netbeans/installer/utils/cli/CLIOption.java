@@ -38,7 +38,7 @@ package org.netbeans.installer.utils.cli;
 
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.StringUtils;
-import org.netbeans.installer.utils.exceptions.CLIArgumentException;
+import org.netbeans.installer.utils.exceptions.CLIOptionException;
 
 /**
  *
@@ -62,14 +62,14 @@ public abstract class CLIOption {
         LogManager.unindent(); // NOI18N
     }
 
-    public void validateOptions(CLIArgumentsList arguments) throws CLIArgumentException {
+    public void validateOptions(CLIArgumentsList arguments) throws CLIOptionException {
         validateArgumentsNumber(arguments);
     }
 
-    private void validateArgumentsNumber(CLIArgumentsList arguments) throws CLIArgumentException {
+    private void validateArgumentsNumber(CLIArgumentsList arguments) throws CLIOptionException {
         final int number = getNumberOfArguments();
         if (number != 0 && (number + arguments.getIndex()) >= arguments.length()) {
-            throw new CLIArgumentException(getLackOfArgumentsMessage());
+            throw new CLIOptionException(getLackOfArgumentsMessage());
         }
     }
 
@@ -81,5 +81,5 @@ public abstract class CLIOption {
 
     public abstract String getName();
 
-    public abstract void execute(CLIArgumentsList arguments) throws CLIArgumentException;
+    public abstract void execute(CLIArgumentsList arguments) throws CLIOptionException;
 }

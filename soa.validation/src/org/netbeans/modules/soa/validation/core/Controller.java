@@ -41,6 +41,7 @@
 package org.netbeans.modules.soa.validation.core;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -136,35 +137,39 @@ public final class Controller implements ComponentListener {
     DELAY);
   }
 
-  public boolean cliValidate(File file, boolean allowBuildWithError) {
-    boolean isError = false;
-    List<ResultItem> result = validate(ValidationType.COMPLETE);
-      
-    for (ResultItem item : result) {
-      if ( !allowBuildWithError) {
-        if (item.getType() == Validator.ResultType.ERROR) {
-          System.out.println(LineUtil.getValidationError(file, item));
-          System.out.println();
-        }
-      }
-      if (item.getType() == Validator.ResultType.ERROR) {
-        isError = true;
-      }
-    }
-    return isError;
+  public boolean cliValidate(File file) {
+    return validate(file, true);
   }
 
   public boolean ideValidate(File file) {
+    return validate(file, false);
+  }
+
+  private boolean validate(File file, boolean isCommandLine) {
+    PrintStream stream;
+    List<ResultItem> result;
+
+    if (isCommandLine) {
+      stream = System.out;
+      result = validate(ValidationType.PARTIAL);
+    }
+    else {
+      stream = System.err;
+      result = validate(ValidationType.COMPLETE);
+    }
     boolean isError = false;
-    List<ResultItem> result = validate(ValidationType.COMPLETE);
 
     for (ResultItem item : result) {
-      System.err.println(LineUtil.getValidationError(file, item));
-      System.err.println();
-
       if (item.getType() == Validator.ResultType.ERROR) {
         isError = true;
       }
+      else {
+        if (isCommandLine) {
+          continue;
+        }
+      }
+      stream.println(LineUtil.getValidationError(file, item));
+      stream.println();
     }
     return isError;
   }

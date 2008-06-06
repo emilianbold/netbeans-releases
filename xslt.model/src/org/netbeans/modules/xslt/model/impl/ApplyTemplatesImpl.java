@@ -24,6 +24,7 @@ import javax.xml.namespace.QName;
 
 import org.netbeans.modules.xslt.model.ApplyTemplateChild;
 import org.netbeans.modules.xslt.model.ApplyTemplates;
+import org.netbeans.modules.xslt.model.WithParam;
 import org.netbeans.modules.xslt.model.XslComponent;
 import org.netbeans.modules.xslt.model.XslVisitor;
 import org.w3c.dom.Element;
@@ -104,5 +105,32 @@ class ApplyTemplatesImpl extends SequenceElementImpl implements
     public void setMode( QName mode ) {
         setAttribute( XslAttributes.MODE, mode );
     }
-    
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.xslt.model.WithParamContainer#addWithParam(org.netbeans.modules.xslt.model.WithParam, int)
+     */
+    public void addWithParam( WithParam withParam, int position ) {
+        insertAtIndex( WITH_PARAM, withParam, position);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.xslt.model.WithParamContainer#appendWithParam(org.netbeans.modules.xslt.model.WithParam)
+     */
+    public void appendWithParam( WithParam withParam ) {
+        appendChild( WITH_PARAM, withParam);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.xslt.model.WithParamContainer#getWithParams()
+     */
+    public List<WithParam> getWithParams() {
+        return getChildren( WithParam.class );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.xslt.model.WithParamContainer#removeWithParam(org.netbeans.modules.xslt.model.WithParam)
+     */
+    public void removeWithParam( WithParam withParam ) {
+        removeChild( WITH_PARAM, withParam);
+    }
 }

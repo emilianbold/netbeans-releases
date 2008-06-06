@@ -1152,8 +1152,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 CsmType typ = resolveType(item.getParameter(0));
                 if (typ != null) {
                     lastType = typ;
-                    break;
                 }
+                break;
             }
             case CsmCompletionExpression.GENERIC_TYPE_OPEN:
             case CsmCompletionExpression.OPERATOR:
@@ -1273,7 +1273,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 if (item.getParameterCount() > 0) {
                     lastType = resolveType(item.getParameter(0));
                     staticOnly = false;
-                    CsmClassifier cls = CsmCompletionQuery.getClassifier(lastType, CsmFunction.OperatorKind.POINTER);
+                    CsmClassifier cls = lastType == null ? null : CsmCompletionQuery.getClassifier(lastType, CsmFunction.OperatorKind.POINTER);
                     if (cls != null) {
                         lastType = CsmCompletion.getType(cls, 0);
                     }

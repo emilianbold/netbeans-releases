@@ -219,7 +219,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 	        else {
                     if (!Tool.cloneGuessing || (context.guessing == Context.NO_GUESSING)) {
                         if (grammar.hasSyntacticPredicate && !Tool.cloneGuessing) {
-                            println("if ( inputState.guessing==0 ) {");
+                            println("if ( guessing==0 ) {");
                             tabs++;
                         }
                                     // get the name of the followSet for the current rule so that we
@@ -492,17 +492,17 @@ public class JavaCodeGenerator extends CodeGenerator {
 	        //if (grammar.debuggingOutput)
 	            //println("this(new LexerSharedInputState(new antlr.debug.DebuggingInputBuffer(ib)));");
 	        //else
-	            println("this(new LexerSharedInputState(ib));");
+	            println("this(new LexerSharedInputState(), ib);");
 	        tabs--;
 	        println("}");
 	
 	        //
 	        // Generate the constructor from InputBuffer (char or byte)
 	        //
-	        println("public " + grammar.getClassName() + "(LexerSharedInputState state) {");
+	        println("public " + grammar.getClassName() + "(LexerSharedInputState state, InputBuffer ib) {");
 	        tabs++;
 	
-	        println("super(state);");
+	        println("super(ib);");
 	        // if debugging, set up array variables and call user-overridable
 	        //   debugging setup method
 	        if (grammar.debuggingOutput) {
@@ -730,7 +730,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 	        println("import antlr.NoViableAltException;");
 	        println("import antlr.MismatchedTokenException;");
 	        println("import antlr.SemanticException;");
-	        println("import antlr.ParserSharedInputState;");
+	        //println("import antlr.ParserSharedInputState;");
 	        println("import antlr.collections.impl.BitSet;");
 	        if ( genAST ) {
 				println("import antlr.collections.AST;");
@@ -814,7 +814,9 @@ public class JavaCodeGenerator extends CodeGenerator {
 	            println("  setupDebugging(tokenBuf);");
 	        }
 			if ( grammar.buildAST ) {
-				println("  buildTokenTypeASTClassMap();");
+                                if (grammar.genASTClassMap) {
+                                    println("  buildTokenTypeASTClassMap();");
+                                }
 				println("  astFactory = new ASTFactory(getTokenTypeToASTClassMap());");
 			}
 	        println("}");
@@ -838,8 +840,10 @@ public class JavaCodeGenerator extends CodeGenerator {
 	            println("  setupDebugging(lexer);");
 	        }
 			if ( grammar.buildAST ) {
+                            if (grammar.genASTClassMap) {
 				println("  buildTokenTypeASTClassMap();");
-				println("  astFactory = new ASTFactory(getTokenTypeToASTClassMap());");
+                            }
+                            println("  astFactory = new ASTFactory(getTokenTypeToASTClassMap());");
 			}
 			if ( Tool.memoization ) {
 				println(" ruleMemo = new HashMap["+grammar.rules.size()+"];");
@@ -852,15 +856,17 @@ public class JavaCodeGenerator extends CodeGenerator {
 	        println("}");
 	        println("");
 	
-	        println("public " + grammar.getClassName() + "(ParserSharedInputState state) {");
+	        /*println("public " + grammar.getClassName() + "(ParserSharedInputState state) {");
 	        println("  super(state," + grammar.maxk + ");");
 	        println("  tokenNames = _tokenNames;");
 			if ( grammar.buildAST ) {
+                            if (grammar.genASTClassMap) {
 				println("  buildTokenTypeASTClassMap();");
-				println("  astFactory = new ASTFactory(getTokenTypeToASTClassMap());");
+                            }
+                            println("  astFactory = new ASTFactory(getTokenTypeToASTClassMap());");
 			}
 	        println("}");
-	        println("");
+	        println("");*/
 	
 	        // Generate code for each rule in the grammar
 	        Enumeration ids = grammar.rules.elements();
@@ -883,8 +889,10 @@ public class JavaCodeGenerator extends CodeGenerator {
 	        genTokenStrings();
 	
 			if ( grammar.buildAST ) {
+                            if (grammar.genASTClassMap) {
 				genTokenASTNodeMap();
-                                genTokenASTCreateMethod();
+                            }
+                            genTokenASTCreateMethod();
 			}
 	
 	        // Generate the bitsets used throughout the grammar
@@ -996,7 +1004,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 	                )
 	                );
 	            if (doNoGuessTest) {
-	                // println("if (inputState.guessing==0) {");
+	                // println("if (guessing==0) {");
 	                // tabs++;
 	            }
 	
@@ -1010,7 +1018,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 	                        // println("theASTFactory.addASTChild(currentAST, returnAST);");
                                 if (!Tool.cloneGuessing || (context.guessing == Context.NO_GUESSING)) {
                                     if (!Tool.cloneGuessing) {
-                                        print("if ( inputState.guessing==0 ) ");
+                                        print("if ( guessing==0 ) ");
                                     }
                                     println("astFactory.addASTChild(currentAST, returnAST);");
                                 }
@@ -1535,7 +1543,7 @@ public class JavaCodeGenerator extends CodeGenerator {
                 // Set the AST return value for the rule
                 RuleBlock rblk = (RuleBlock)blk;
                 if (grammar.hasSyntacticPredicate) {
-                    // println("if ( inputState.guessing==0 ) {");
+                    // println("if ( guessing==0 ) {");
                     // tabs++;
                 }
                 println(rblk.getRuleName() + "_AST = (" + labeledElementASTType + ")currentAST.root;", CONTINUE_LAST_MAPPING);
@@ -2293,7 +2301,7 @@ public class JavaCodeGenerator extends CodeGenerator {
                     if (!Tool.cloneGuessing || (context.guessing == Context.NO_GUESSING)) {
                         // Enclose actions with !guessing
                         if (doNoGuessTest && !Tool.cloneGuessing) {
-                             println("if (inputState.guessing==0) {");
+                             println("if (guessing==0) {");
                              tabs++;
                         }
 
@@ -2381,7 +2389,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 	            tabs++;
                     if (!Tool.cloneGuessing) {
                         if (grammar.hasSyntacticPredicate) {
-                            println("if (inputState.guessing==0) {");
+                            println("if (guessing==0) {");
                             tabs++;
                         }
                     }
@@ -2970,8 +2978,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 			// MEMOIZATION
 			if ( Tool.memoization && grammar instanceof ParserGrammar) {
-				println("int _startIndex = inputState.input.index();");
-				println("if ( inputState.guessing>0 && alreadyParsedRule("+ruleNum+") ) {");
+				println("int _startIndex = input.index();");
+				println("if ( guessing>0 && alreadyParsedRule("+ruleNum+") ) {");
 				if (grammar.traceRules) {
 					if (grammar instanceof TreeWalkerGrammar) {
 						println("traceOut(\"" + s.getId() + "\",_t);");
@@ -3031,7 +3039,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 	            // Parser member used to pass AST returns from rule invocations
 	            println("returnAST = null;");
 	            // Tracks AST construction
-	            // println("ASTPair currentAST = (inputState.guessing==0) ? new ASTPair() : null;");
+	            // println("ASTPair currentAST = (guessing==0) ? new ASTPair() : null;");
 	            println("ASTPair currentAST = new ASTPair();");
 	            // User-settable return value for rule.
 	            println(labeledElementASTType + " " + s.getId() + "_AST = null;");
@@ -3170,7 +3178,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 	            tabs++;
 
 				if ( Tool.memoization && grammar instanceof ParserGrammar ){
-					println("if ( inputState.guessing>0 ) { memoize("+ruleNum+", _startIndex); }");
+					println("if ( guessing>0 ) { memoize("+ruleNum+", _startIndex); }");
 				}
 
 				// If debugging, generate calls to mark exit of rule
@@ -3250,7 +3258,7 @@ public class JavaCodeGenerator extends CodeGenerator {
         // Generate code to handle error if not guessing
         if (!Tool.cloneGuessing) {
             if (grammar.hasSyntacticPredicate) {
-                println("if (inputState.guessing==0) {");
+                println("if (guessing==0) {");
                 tabs++;
             }
         }
@@ -3438,7 +3446,7 @@ public class JavaCodeGenerator extends CodeGenerator {
             println("{matchError=true;");
             if (!Tool.cloneGuessing || (context.guessing == Context.NO_GUESSING)) {
                 if (!Tool.cloneGuessing) {
-                    print("if (inputState.guessing == 0) ");
+                    print("if (guessing == 0) ");
                 }
                 println("matchException = new SemanticException(\"" + escapedPred + "\");", line);
             }
@@ -3487,7 +3495,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 	
 	        // Once inside the try, assume synpred works unless exception caught
 	        //println("synPredMatched" + blk.ID + " = true;");
-	        println("inputState.guessing++;");
+	        println("guessing++;");
 	
 	        // if debugging, tell listeners that a synpred has started
 	        if (grammar.debuggingOutput && ((grammar instanceof ParserGrammar) ||
@@ -3497,7 +3505,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
                 //vk++
                 if ( grammar.traceSyntacticPredicates && (grammar instanceof ParserGrammar)) {
-                    println("  syntacticPredicateStarted(" + syntacticPredId + ',' + "inputState.guessing-1" + ',' + blk.line + ");");
+                    println("  syntacticPredicateStarted(" + syntacticPredId + ',' + "guessing-1" + ',' + blk.line + ");");
                 }
                 //vk--	
                 
@@ -3535,7 +3543,7 @@ public class JavaCodeGenerator extends CodeGenerator {
                     println("rewind(_m" + blk.ID + ");");
 	        }
 	
-	        println("inputState.guessing--;");
+	        println("guessing--;");
 	
 	        // if debugging, tell listeners how the synpred turned out
 	        if (grammar.debuggingOutput && ((grammar instanceof ParserGrammar) ||
@@ -3549,9 +3557,9 @@ public class JavaCodeGenerator extends CodeGenerator {
                 //vk++
                 if ( grammar.traceSyntacticPredicates && (grammar instanceof ParserGrammar)) {
                     println("if (synPredMatched" + blk.ID + ")");
-                    println("  syntacticPredicateSucceeded(" + syntacticPredId + ',' + "inputState.guessing);");
+                    println("  syntacticPredicateSucceeded(" + syntacticPredId + ',' + "guessing);");
                     println("else");
-                    println("  syntacticPredicateFailed(" + syntacticPredId + ',' + "inputState.guessing);");
+                    println("  syntacticPredicateFailed(" + syntacticPredId + ',' + "guessing);");
                 }
                 syntacticPredId++;
                 //vk--
@@ -3671,16 +3679,27 @@ public class JavaCodeGenerator extends CodeGenerator {
                 println("switch(type) {");
                 tabs++;
 	        // Walk the token vocabulary and generate puts.
+                        String previousType = null;
 			Vector v = grammar.tokenManager.getVocabulary();
 			for (int i = 0; i < v.size(); i++) {
 				String s = (String)v.elementAt(i);
 				if (s != null) {
 					TokenSymbol ts = grammar.tokenManager.getTokenSymbol(s);
-					if (ts != null && ts.getASTNodeType() != null) {
-						println("case " + ts.getTokenType() +" : return new "+ ts.getASTNodeType() + "();");
-					}
+                                        if (ts != null) {
+                                            String currentType = ts.getASTNodeType();
+                                            if (currentType != null) {
+                                                if (!currentType.equals(previousType) && previousType != null) {
+                                                    println("\treturn new "+ previousType + "();");
+                                                }
+                                                println("case " + ts.getTokenType() +" : ");
+                                                previousType =currentType;
+                                            }
+                                        }
 				}
 			}
+                        if (previousType != null) {
+                            println("\treturn new "+ previousType + "();");
+                        }
                 tabs--;
                 println("}");
                 //println("assert(true) : \"AST token type not found\";");
@@ -4227,7 +4246,7 @@ public class JavaCodeGenerator extends CodeGenerator {
             result = "matchError=true;";
             if (!Tool.cloneGuessing || (context.guessing == Context.NO_GUESSING)) {
                 if (!Tool.cloneGuessing) {
-                    result += "if (inputState.guessing == 0) ";
+                    result += "if (guessing == 0) ";
                 }
                 if (grammar instanceof ParserGrammar && Tool.extendedErrors) {
                     result += "matchException= new NoViableAltException(LT(1), getFilename(), " + getBitsetName(markBitsetForGen(analyzer.look(1, blk).fset)) + ", tokenNames);";
