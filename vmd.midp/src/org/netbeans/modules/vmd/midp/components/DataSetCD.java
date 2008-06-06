@@ -36,7 +36,7 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.vmd.databinding.components;
+package org.netbeans.modules.vmd.midp.components;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,16 +44,15 @@ import java.util.List;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
-import org.netbeans.modules.vmd.databinding.categories.DatabindingCategoryCD;
-import org.netbeans.modules.vmd.databinding.presenters.DataSetBodyCodeGeneration;
+import org.netbeans.modules.vmd.midp.components.categories.DatabindingCategoryCD;
+import org.netbeans.modules.vmd.midp.codegen.MIDPDataSetBodyCodePresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
-import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.InspectorPositionControllerSupport;
 
@@ -63,7 +62,7 @@ import org.netbeans.modules.vmd.midp.inspector.controllers.InspectorPositionCont
  */
 public class DataSetCD extends ComponentDescriptor {
 
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/databinding/resources/components/dataset_16.gif"; // NOI18N
+    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/dataset_16.gif"; // NOI18N
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.databinding.DataSet"); //NOI18N
     
 
@@ -99,7 +98,7 @@ public class DataSetCD extends ComponentDescriptor {
                 // code
                 MidpCodePresenterSupport.createAddImportPresenter("org.netbeans.microedition.databinding.DataBindingException", //NOI18N
                                                                   "org.netbeans.microedition.databinding.DataBinder"), //NOI18N
-                new DataSetBodyCodeGeneration("/org/netbeans/modules/vmd/databinding/presenters/dataset_java.code"), //NOI18N
+                MIDPDataSetBodyCodePresenter.create("/org/netbeans/modules/vmd/midp/codegen/dataset_java.code"), //NOI18N
                 //inspector
                 new InspectorFolderComponentPresenter(true),
                 InspectorPositionPresenter.create(InspectorPositionControllerSupport.createHierarchical(DatabindingCategoryCD.TYPEID)));   

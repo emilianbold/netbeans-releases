@@ -36,6 +36,48 @@
 # However, if you add GPL Version 2 code and therefore, elected the GPL
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
+    __start_guardedblock__   
+    __instancename__ = new DataSet() {  
+        public Class getType(String type) throws DataBindingException {
+        __stop_guardedblock__
+            throw new IllegalStateException("Not implemented yet");
+        __start_guardedblock__
+        }
+        __stop_guardedblock__
+        
+        __start_guardedblock__
+        public Object getValue(String vlue) throws DataBindingException {
+        __stop_guardedblock__
+            throw new IllegalStateException("Not implemented yet");
+        __start_guardedblock__
+        }
+        __stop_guardedblock__
 
-vmd-midp/palette/databinding=Databinding
+        __start_guardedblock__
+        public void setValue(String name, Object value) throws DataBindingException {
+        __stop_guardedblock__
+            //TODO Implement this methode
+            DataBinder.fireDataSetChanged(this , name);
+        __start_guardedblock__
+        }
+        __stop_guardedblock__
 
+        __start_guardedblock__
+        public void setAsString(String name, String stringValue) throws DataBindingException {
+        __stop_guardedblock__
+             //TODO Implement this methode
+            DataBinder.fireDataSetChanged(this , name);
+        __start_guardedblock__
+        }
+        __stop_guardedblock__
+
+        __start_guardedblock__
+        public boolean isReadOnly(String readOnly) throws DataBindingException {
+        __stop_guardedblock__
+            throw new IllegalStateException("Not implemented yet");
+        __start_guardedblock__
+        }
+        __stop_guardedblock__
+
+    __start_guardedblock__
+    };
