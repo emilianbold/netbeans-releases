@@ -93,7 +93,7 @@ public class LanguageRegistry implements Iterable<Language> {
     private static final String BRACKET_COMPLETION = "bracket.instance";
     private static final String DECLARATION_FINDER = "declarationfinder.instance";
     private static final String INDEXER = "indexer.instance";
-    private static final String PALETTE = "palette.instance";
+    //private static final String PALETTE = "palette.instance";
     private static final String STRUCTURE = "structure.instance";
     private static final String HINTS = "hints.instance";
     private static final String SEMANTIC = "semantic.instance";
@@ -510,86 +510,43 @@ public class LanguageRegistry implements Iterable<Language> {
                         language.setIconBase(iconBase);
                     }
                 }
+                
+                boolean foundConfig = false;
+                for (FileObject fo : mimeFile.getChildren()) {
+                    String name = fo.getNameExt();
+                    if (LANGUAGE.equals(name)) {
+                        foundConfig = true;
+                        language.setGsfLanguageFile(fo);
+                    } else if (HINTS.equals(name)) {
+                        language.setHintsProviderFile(fo);
+                    } else if (STRUCTURE.equals(name)) {
+                        language.setStructureFile(fo);
+                    } else if (PARSER.equals(name)) {
+                        language.setParserFile(fo);
+                    } else if (COMPLETION.equals(name)) {
+                        language.setCompletionProviderFile(fo);
+                    } else if (RENAMER.equals(name)) {
+                        language.setInstantRenamerFile(fo);
+                    } else if (FORMATTER.equals(name)) {
+                        language.setFormatterFile(fo);
+                    } else if (DECLARATION_FINDER.equals(name)) {
+                        language.setDeclarationFinderFile(fo);
+                    } else if (BRACKET_COMPLETION.equals(name)) {
+                        language.setBracketCompletionFile(fo);
+                    } else if (INDEXER.equals(name)) {
+                        language.setIndexerFile(fo);
+                    //} else if (PALETTE.equals(name)) {
+                    //    language.setPaletteFile(fo);
+                    } else if (SEMANTIC.equals(name)) {
+                        language.setSemanticAnalyzer(fo);
+                    } else if (OCCURRENCES.equals(name)) {
+                        language.setOccurrencesFinderFile(fo);
+                    }
+                }
 
-                FileObject languageFile = mimeFile.getFileObject(LANGUAGE, null);
-
-                if (languageFile != null) {
-                    language.setGsfLanguageFile(languageFile);
-                } else {
+                if (!foundConfig) {
                     // Emit warning
                     Logger.getLogger(getClass().getName()).log(Level.WARNING, "No GSF language registered for mime type " + mime);
-                }
-
-                FileObject parserFile = mimeFile.getFileObject(PARSER, null);
-
-                if (parserFile != null) {
-                    language.setParserFile(parserFile);
-                }
-
-                FileObject completionFile = mimeFile.getFileObject(COMPLETION, null);
-
-                if (completionFile != null) {
-                    language.setCompletionProviderFile(completionFile);
-                }
-
-                FileObject renamerFile = mimeFile.getFileObject(RENAMER, null);
-
-                if (renamerFile != null) {
-                    language.setInstantRenamerFile(renamerFile);
-                }
-
-                FileObject formatterFile = mimeFile.getFileObject(FORMATTER, null);
-
-                if (formatterFile != null) {
-                    language.setFormatterFile(formatterFile);
-                }
-
-                FileObject finderFile = mimeFile.getFileObject(DECLARATION_FINDER, null);
-
-                if (finderFile != null) {
-                    language.setDeclarationFinderFile(finderFile);
-                }
-
-                FileObject bracketFile = mimeFile.getFileObject(BRACKET_COMPLETION, null);
-
-                if (bracketFile != null) {
-                    language.setBracketCompletionFile(bracketFile);
-                }
-
-                FileObject indexerFile = mimeFile.getFileObject(INDEXER, null);
-
-                if (indexerFile != null) {
-                    language.setIndexerFile(indexerFile);
-                }
-
-                FileObject structureFile = mimeFile.getFileObject(STRUCTURE, null);
-
-                if (structureFile != null) {
-                    language.setStructureFile(structureFile);
-                }
-
-                FileObject hintsFile = mimeFile.getFileObject(HINTS, null);
-
-                if (hintsFile != null) {
-                    language.setHintsProviderFile(hintsFile);
-                }
-
-                FileObject paletteFile = mimeFile.getFileObject(PALETTE, null);
-
-                if (paletteFile != null) {
-                    language.setPaletteFile(paletteFile);
-                }
-                
-                FileObject semanticFile = mimeFile.getFileObject(SEMANTIC, null);
-
-                if (semanticFile != null) {
-                    language.setSemanticAnalyzer(semanticFile);
-                }
-                
-                FileObject occurrencesFile = mimeFile.getFileObject(OCCURRENCES, null);
-
-                if (occurrencesFile != null) {
-                    language.setOccurrencesFinderFile(occurrencesFile);
                 }
             }
         }

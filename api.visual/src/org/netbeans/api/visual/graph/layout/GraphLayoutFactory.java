@@ -40,6 +40,9 @@
  */
 package org.netbeans.api.visual.graph.layout;
 
+import org.netbeans.api.visual.graph.GraphScene;
+import org.netbeans.modules.visual.graph.layout.HierarchicalLayout;
+import org.netbeans.modules.visual.graph.layout.OrthogonalLayout;
 import org.netbeans.modules.visual.graph.layout.TreeGraphLayout;
 
 /**
@@ -66,5 +69,24 @@ public class GraphLayoutFactory {
     public static <N,E> GraphLayout<N,E> createTreeGraphLayout (int originX, int originY, int verticalGap, int horizontalGap, boolean vertical) {
         return new TreeGraphLayout<N,E> (originX, originY, verticalGap, horizontalGap, vertical);
     }
-
+    
+    /**
+     * 
+     * @param graphScene
+     * @param animate
+     * @return
+     */
+    public static <N,E> GraphLayout<N,E> createOrthogonalGraphLayout (GraphScene<N,E> graphScene, boolean animate) {
+        return new OrthogonalLayout(graphScene, animate);
+    }
+    
+    /**
+     * 
+     * @param graphScene
+     * @param animate
+     * @return
+     */
+    public static <N,E> GraphLayout<N,E> createHierarchicalGraphLayout (GraphScene<N,E> graphScene, boolean animate) {
+        return new HierarchicalLayout(graphScene, animate);
+    }
 }

@@ -46,7 +46,6 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
 /**
@@ -59,13 +58,6 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
     
     public FieldImpl(AST ast, CsmFile file, CsmType type, String name, ClassImpl cls, CsmVisibility visibility) {
         super(ast, file, type, name, /*cls*/null, false);
-        for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
-            switch( token.getType() ) {
-                case CPPTokenTypes.LITERAL_static:
-                    setStatic(true);
-                    break;
-            }
-        }
         this.visibility = visibility;
 	setScope(cls);
     }

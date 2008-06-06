@@ -120,48 +120,46 @@ public class CSSStructureScanner implements StructureScanner {
     }
 
     public Map<String, List<OffsetRange>> folds(CompilationInfo info) {
-        try {
-            //so far the css parser always parses the whole css content
-            ParserResult presult = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator().next();
-            final TranslatedSource source = presult.getTranslatedSource();
-            final BaseDocument doc = (BaseDocument) info.getDocument();
-            SimpleNode root = ((CSSParserResult) presult).root();
+        final BaseDocument doc = (BaseDocument) info.getDocument();
+        if (doc == null) {
+            return Collections.emptyMap();
+        }
 
-            if (root == null) {
-                //serious error in the source, no results
-                return Collections.emptyMap();
-            }
+        //so far the css parser always parses the whole css content
+        ParserResult presult = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator().next();
+        final TranslatedSource source = presult.getTranslatedSource();
+        SimpleNode root = ((CSSParserResult) presult).root();
 
-            final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
-            final List<OffsetRange> foldRange = new ArrayList<OffsetRange>();
+        if (root == null) {
+            //serious error in the source, no results
+            return Collections.emptyMap();
+        }
 
-            NodeVisitor foldsSearch = new NodeVisitor() {
+        final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
+        final List<OffsetRange> foldRange = new ArrayList<OffsetRange>();
 
-                public void visit(SimpleNode node) {
-                    if (node.kind() == CSSParserTreeConstants.JJTSTYLERULE) {
-                        int so = AstUtils.documentPosition(node.startOffset(), source);
-                        int eo = AstUtils.documentPosition(node.endOffset(), source);
-                        try {
-                            if (Utilities.getLineOffset(doc, so) < Utilities.getLineOffset(doc, eo)) {
-                                //do not creare one line folds
-                                //XXX this logic could possibly seat in the GSF folding impl.
-                                foldRange.add(new OffsetRange(so, eo));
-                            }
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
+        NodeVisitor foldsSearch = new NodeVisitor() {
+
+            public void visit(SimpleNode node) {
+                if (node.kind() == CSSParserTreeConstants.JJTSTYLERULE) {
+                    int so = AstUtils.documentPosition(node.startOffset(), source);
+                    int eo = AstUtils.documentPosition(node.endOffset(), source);
+                    try {
+                        if (Utilities.getLineOffset(doc, so) < Utilities.getLineOffset(doc, eo)) {
+                            //do not creare one line folds
+                            //XXX this logic could possibly seat in the GSF folding impl.
+                            foldRange.add(new OffsetRange(so, eo));
                         }
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 }
-            };
-            root.visitChildren(foldsSearch);
-            folds.put("codeblocks", foldRange);
+            }
+        };
+        root.visitChildren(foldsSearch);
+        folds.put("codeblocks", foldRange);
 
-            return folds;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        
-        return Collections.emptyMap();
+        return folds;
         
     }
     

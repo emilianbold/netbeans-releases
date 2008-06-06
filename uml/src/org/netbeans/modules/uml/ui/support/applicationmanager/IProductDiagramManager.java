@@ -126,5 +126,7 @@ public interface IProductDiagramManager
     */
     
     public void closeAllDiagrams();
+
+    public void setDiagramDirty(IDiagram diagram,boolean b);
     
 }

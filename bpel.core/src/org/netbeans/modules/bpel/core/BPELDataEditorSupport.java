@@ -41,18 +41,28 @@
 package org.netbeans.modules.bpel.core;
 
 import java.awt.EventQueue;
+import java.io.ByteArrayOutputStream;
+import java.io.CharConversionException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.JComponent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.AbstractDocument;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 
 import org.netbeans.api.xml.cookies.CookieObserver;
@@ -71,7 +81,6 @@ import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.spi.BpelModelFactory;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.validation.ShowCookie;
-import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
@@ -98,8 +107,11 @@ import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.netbeans.modules.soa.ui.UndoRedoManagerProvider;
-import org.netbeans.modules.bpel.editors.api.EditorUtil;
+import org.netbeans.modules.xml.api.EncodingUtil;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.SaveCookie;
+import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
 
 /**
@@ -108,6 +120,8 @@ import org.openide.util.UserCancelException;
 public class BPELDataEditorSupport extends DataEditorSupport implements
     OpenCookie, EditCookie, EditorCookie.Observable, ShowCookie, ValidateXMLCookie, UndoRedoManagerProvider {
 
+    private static final Logger LOGGER = Logger.getLogger(BPELDataEditorSupport.class.getName());
+    
     public BPELDataEditorSupport( BPELDataObject obj ) {
         super(obj, new BPELEnv(obj));
         setMIMEType(BPELDataLoader.MIME_TYPE);
@@ -131,12 +145,6 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
         return getModelFactory().getModel(modelSource);
     }
 
-    public void saveDocument() throws IOException {
-        super.saveDocument();
-        syncModel();
-        getDataObject().setModified(false);
-    }
-
     /**
      * Sync Bpel model with source.
      */
@@ -150,6 +158,164 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
         catch (IOException e) {}
     }
 
+    // following 5 methods are copied from schemaeditorsupport.
+    @Override
+    protected void loadFromStreamToKit(StyledDocument doc, InputStream in,
+            EditorKit kit) throws IOException, BadLocationException {
+        // Detect the encoding to get optimized reader if UTF-8.
+        String enc = EncodingUtil.detectEncoding(in);
+        if (enc == null) {
+            enc = "UTF8"; // NOI18N
+        }
+        Reader reader = null;
+        try {
+            reader = EncodingUtil.getUnicodeReader(in, enc);
+            kit.read(reader, doc, 0);
+        } catch (CharConversionException cce) {
+            LOGGER.log(Level.WARNING, cce.getMessage());
+        } catch (UnsupportedEncodingException uee) {
+            LOGGER.log(Level.WARNING, uee.getMessage());
+        } finally {
+            if(reader != null) {
+                reader.close();
+            }
+        }
+    }
+    
+    @Override
+    protected void saveFromKitToStream(StyledDocument doc, EditorKit kit,
+            OutputStream out) throws IOException, BadLocationException {
+        // Detect the encoding, using UTF8 if the encoding is not set.
+        String enc = EncodingUtil.detectEncoding(doc);
+        if (enc == null) {
+            enc = "UTF8"; // NOI18N
+        }
+        try {
+            // Test the encoding on a dummy stream.
+            new OutputStreamWriter(new ByteArrayOutputStream(1), enc);
+            // If that worked, we can go ahead with the encoding.
+            Writer writer = new OutputStreamWriter(out, enc);
+            kit.write(writer, doc, 0, doc.getLength());
+        } catch (UnsupportedEncodingException uee) {
+            // Safest option is to write nothing, preserving the original file.
+            IOException ioex = new IOException("Unsupported encoding " + enc); // NOI18N
+            ErrorManager.getDefault().annotate(ioex,
+                    NbBundle.getMessage(BPELDataEditorSupport.class,
+                    "MSG_BPELDataEditorSupport_Unsupported_Encoding", enc));
+            throw ioex;
+        }
+    }
+      
+    public void saveDocument() throws IOException {
+        final StyledDocument doc = getDocument();
+        // Save document using encoding declared in XML prolog if possible,
+        // otherwise use UTF-8 (in such case it updates the prolog).
+        String enc = EncodingUtil.detectEncoding(doc);
+        if (enc == null) {
+            enc = "UTF8"; // NOI18N
+        }
+        try {
+            // Test the encoding on a dummy stream.
+            new OutputStreamWriter(new ByteArrayOutputStream(1), enc);
+            if (!checkCharsetConversion(EncodingUtil.getJava2IANAMapping(enc))){
+                return;
+            }
+            super.saveDocument();
+            getDataObject().setModified(false);
+            
+        } catch (UnsupportedEncodingException uee) {
+            NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
+                    java.text.MessageFormat.format(
+                    NbBundle.getMessage(BPELDataEditorSupport.class,
+                    "MSG_BPELDataEditorSupport_Use_UTF8"),
+                    new Object[] {enc}));
+            Object res = DialogDisplayer.getDefault().notify(descriptor);
+            
+            if (res.equals(NotifyDescriptor.YES_OPTION)) {
+                updateDocumentWithNewEncoding(doc);
+            } else {
+                throw new UserCancelException();                
+            }
+        }
+    }
+    
+    /**
+     * update prolog to new valid encoding
+     */
+    private void updateDocumentWithNewEncoding(final StyledDocument doc) throws IOException {
+        try {
+            final int MAX_PROLOG = 1000;
+            int maxPrologLen = Math.min(MAX_PROLOG, doc.getLength());
+            final char prolog[] = doc.getText(0, maxPrologLen).toCharArray();
+            int prologLen = 0;
+            if (prolog[0] == '<' && prolog[1] == '?' && prolog[2] == 'x') {
+                for (int i = 3; i < maxPrologLen; i++) {
+                    if (prolog[i] == '?' && prolog[i + 1] == '>') {
+                        prologLen = i + 1;
+                        break;
+                    }
+                }
+            }
+
+            final int passPrologLen = prologLen;
+            Runnable edit = new Runnable() {
+                public void run() {
+                    try {
+                        doc.remove(0, passPrologLen + 1);
+                        doc.insertString(0, "<?xml version='1.0' encoding='UTF-8' ?>\n<!-- was: " +
+                                new String(prolog, 0, passPrologLen + 1) + " -->", null); // NOI18N
+                    } catch (BadLocationException ble) {
+                        if (System.getProperty("netbeans.debug.exceptions") != null) {// NOI18N                           
+                            ble.printStackTrace();
+                        }
+                    }
+                }
+            };
+            NbDocument.runAtomic(doc, edit);
+
+            super.saveDocument();
+            getDataObject().setModified(false);
+
+        } catch (BadLocationException lex) {
+            ErrorManager.getDefault().notify(lex);
+        }
+    }    
+    
+    /**
+     * Validate the selected encoding to determine if it is usuable or not.
+     * If there is a problem, prompt the user to confirm the encoding.
+     *
+     * @param  encoding  the character set encoding to validate.
+     * @return  true if encoding can be used, false otherwise.
+     */
+    private boolean checkCharsetConversion(String encoding) {
+        boolean value = true;
+        try {
+            java.nio.charset.CharsetEncoder coder =
+                    java.nio.charset.Charset.forName(encoding).newEncoder();
+            if (!coder.canEncode(getDocument().getText(0,
+                    getDocument().getLength()))){
+                Object[] margs = new Object[] {
+                    getDataObject().getPrimaryFile().getNameExt(),
+                    encoding
+                };
+                String msg = NbBundle.getMessage(BPELDataEditorSupport.class,
+                        "MSG_BPELDataEditorSupport_BadCharConversion", margs);
+                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg,
+                        NotifyDescriptor.YES_NO_OPTION,
+                        NotifyDescriptor.WARNING_MESSAGE);
+                nd.setValue(NotifyDescriptor.NO_OPTION);
+                DialogDisplayer.getDefault().notify(nd);
+                if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
+                    value = false;
+                }
+            }
+        } catch (BadLocationException ble) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ble);
+        }
+        return value;
+    }
+    
     @Override
     public void initializeCloneableEditor(CloneableEditor editor) {
         super.initializeCloneableEditor(editor);
@@ -541,7 +707,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
         });
     }
 
-    protected BPELEnv getEnv() {
+    BPELEnv getEnv() {
         return (BPELEnv) env;
     }
 

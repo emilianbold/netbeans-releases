@@ -43,6 +43,7 @@
 package org.netbeans.test.uml.robustness;
 import java.awt.AWTException;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -52,8 +53,7 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTextAreaOperator;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.uml.core.support.umlsupport.IETRect;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.test.uml.robustness.utils.RUtils;
 import org.netbeans.test.umllib.DiagramElementOperator;
 import org.netbeans.test.umllib.DiagramOperator;
@@ -61,6 +61,7 @@ import org.netbeans.test.umllib.ElementTypes;
 import org.netbeans.test.umllib.LinkTypes;
 import org.netbeans.test.umllib.NewDiagramWizardOperator;
 import org.netbeans.test.umllib.UMLPaletteOperator;
+import org.netbeans.test.umllib.UMLWidgetOperator;
 import org.netbeans.test.umllib.testcases.UMLTestCase;
 import org.netbeans.test.umllib.util.LabelsAndTitles;
 import org.netbeans.test.umllib.vrf.GenericVerifier;
@@ -147,15 +148,17 @@ public class RobustnessOther extends UMLTestCase {
         
     }
     
-    public void testCLD_DeleteWhileResizeClass() throws AWTException, InterruptedException{
+     public void testCLD_DeleteWhileResizeClass() throws AWTException, InterruptedException{
         DiagramOperator diagram = RUtils.openDiagram(prName, cldName1, NewDiagramWizardOperator.CLASS_DIAGRAM, workDir);
         if (diagram == null){
             fail("Can't open diagram '" + cldName1 + "', project '" + prName + "'.");
         }
         DiagramElementOperator e1 = diagram.putElementOnDiagram(className1, ElementTypes.CLASS);
-        IETGraphObject elementGraphObject = e1.getGraphObject();
-        IETRect rect = elementGraphObject.getEngine().getBoundingRect();
-        Point point = rect.getBottomRight();
+        Widget elementGraphObject = e1.getGraphObject();
+        UMLWidgetOperator wo = new UMLWidgetOperator(elementGraphObject);
+        Rectangle rect = wo.getRectangle();
+        //TODO: uncomment it once implement getBottomRight()
+        Point point = wo.getBottomRight();
         e1.select();
         diagram.getDrawingArea().moveMouse(point.x+4, point.y+4);
         Robot robot = new Robot();

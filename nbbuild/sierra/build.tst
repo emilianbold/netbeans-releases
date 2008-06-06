@@ -91,7 +91,7 @@
         <antcall target="do-test-jbi"><param name="dir" value="assign/AtomicAssign"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="assign/CopyByValue/CopyByValueBpel"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="assign/DataTypes"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="assign/MessageWithNoParts"/></antcall>
+        <!-- antcall target="do-test-jbi"><param name="dir" value="assign/MessageWithNoParts"/></antcall -->
         <antcall target="do-test-jbi"><param name="dir" value="assign/predicates"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="assign/VariableAssignments"/></antcall>
         <!-- antcall target="do-test-jbi"><param name="dir" value="assign/virtualassignBpel"/></antcall -->

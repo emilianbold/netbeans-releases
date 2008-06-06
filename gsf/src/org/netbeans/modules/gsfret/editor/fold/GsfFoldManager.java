@@ -303,12 +303,7 @@ public class GsfFoldManager implements FoldManager {
          * @return true If folds were found, false if cancelled
          */
         private boolean gsfFoldScan(GsfFoldManager manager, CompilationInfo info, List<FoldInfo> folds) {
-            BaseDocument doc = null;
-            try {
-                doc = (BaseDocument)info.getDocument();
-            } catch (IOException ioe) {
-                org.openide.ErrorManager.getDefault().notify(ioe);
-            }
+            BaseDocument doc = (BaseDocument)info.getDocument();
             if (doc == null) {
                 return false;
             }

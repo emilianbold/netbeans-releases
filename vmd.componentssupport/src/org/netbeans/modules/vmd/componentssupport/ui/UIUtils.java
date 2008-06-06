@@ -40,6 +40,8 @@
 package org.netbeans.modules.vmd.componentssupport.ui;
 
 import java.util.StringTokenizer;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Utilities;
 
 /**
@@ -86,6 +88,11 @@ public class UIUtils {
             delimExpected = !delimExpected;
         }
         return delimExpected;
+    }
+
+    public static boolean userConfirmOkCancel(String title, String msg) {
+        NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, title, NotifyDescriptor.OK_CANCEL_OPTION);
+        return DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION;
     }
     
 }

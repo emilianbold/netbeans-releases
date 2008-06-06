@@ -215,7 +215,10 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
     public String getTargetName() {
         String documentName = documentNameTextField.getText().trim();
         
-        if ( documentName.length() == 0 || documentName.charAt(documentName.length() - 1) == '.') {
+        if ( documentName.length() == 0 
+                || documentName.charAt(documentName.length() - 1) == '.'
+                || documentName.charAt(0) == '.') {
+            // ignore invalid filenames
             return null;
         }
         else {

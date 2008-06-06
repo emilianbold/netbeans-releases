@@ -581,10 +581,10 @@ public class CompletionContextImpl extends CompletionContext {
                 get(XMLConstants.XMLNS_ATTRIBUTE+":"+prefix) != null;
     }
     
-    public boolean canReplace() {
+    public boolean canReplace(String text) {
         if(completionType == CompletionType.COMPLETION_TYPE_ELEMENT && element instanceof Tag) {
             String name = ((Tag)element).getTagName();
-            if(name != null && name.equals(typedChars))
+            if(name != null && name.equals(typedChars) && text.equals(name))
                 return false;
         }
         if(completionType == CompletionType.COMPLETION_TYPE_ATTRIBUTE) {

@@ -28,8 +28,6 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import org.netbeans.modules.gsf.api.InstantRenamer;
-
 /**
  *
  * @author Tor Norbye
@@ -38,11 +36,6 @@ public class JsRenameHandlerTest extends JsTestBase {
     
     public JsRenameHandlerTest(String testName) {
         super(testName);
-    }
-
-    @Override
-    protected InstantRenamer getRenameHandler() {
-        return new JsRenameHandler();
     }
 
     public void testRename1() throws Exception {
@@ -111,5 +104,9 @@ public class JsRenameHandlerTest extends JsTestBase {
 
     public void testRename14() throws Exception {
         checkRenameSections("testfiles/webuifunc.js", " @param test^param");
+    }
+
+    public void testOffsets136162() throws Exception {
+        checkRenameSections("testfiles/rename2.js", "f^oo = \"bar\";");
     }
 }

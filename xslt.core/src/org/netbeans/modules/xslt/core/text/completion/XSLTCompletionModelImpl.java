@@ -48,10 +48,10 @@ import org.netbeans.modules.xml.schema.model.SchemaModel;
 public class XSLTCompletionModelImpl extends CompletionModel {
     private static final String SCHEMA_ELEMENT_PREFIX = "xsl"; // NOI18N
 
-    private SchemaModel myModel;
+    private SchemaModel xslSchemaModel;
     
-    XSLTCompletionModelImpl(SchemaModel model) {
-        myModel = model;
+    XSLTCompletionModelImpl(SchemaModel schemaModel) {
+        xslSchemaModel = schemaModel;
     }
     
     public String getSuggestedPrefix() {
@@ -59,10 +59,11 @@ public class XSLTCompletionModelImpl extends CompletionModel {
     }
     
     public SchemaModel getSchemaModel() {
-        return myModel;
+        return xslSchemaModel;
     }
     
     public String getTargetNamespace() {
-        return myModel.getSchema().getTargetNamespace();
+        return (xslSchemaModel == null ? null :
+                xslSchemaModel.getSchema().getTargetNamespace());
     }
 }

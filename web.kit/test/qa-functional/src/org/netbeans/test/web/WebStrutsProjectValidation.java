@@ -72,13 +72,8 @@ public class WebStrutsProjectValidation extends WebProjectValidationEE5 {
 
     static {
         PROJECT_NAME = "WebStrutsProject";
-        PROJECT_FOLDER = PROJECT_LOCATION + File.separator + PROJECT_NAME;
+//        PROJECT_FOLDER = PROJECT_LOCATION + File.separator + PROJECT_NAME;
     }
-
-    // folder of sample project
-    protected TestURLDisplayer urlDisplayer;
-    private static final String BUILD_SUCCESSFUL = "BUILD SUCCESSFUL";
-    protected static int logIdx = 0;
 
     /** Need to be defined because of JUnit */
     public WebStrutsProjectValidation(String name) {
@@ -89,31 +84,32 @@ public class WebStrutsProjectValidation extends WebProjectValidationEE5 {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new WebStrutsProjectValidation("testPreconditions"));
         suite.addTest(new WebStrutsProjectValidation("testNewStrutsWebProject"));
-//        suite.addTest(new WebVWJSFProjectValidation("testNewJSP"));
-//        suite.addTest(new WebVWJSFProjectValidation("testNewJSP2"));
-//        suite.addTest(new WebVWJSFProjectValidation("testJSPNavigator"));
-//        suite.addTest(new WebVWJSFProjectValidation("testNewServlet"));
-//        suite.addTest(new WebVWJSFProjectValidation("testNewServlet2"));
+        suite.addTest(new WebStrutsProjectValidation("testRedeployProject"));
+//        suite.addTest(new WebStrutsProjectValidation("testNewJSP"));
+//        suite.addTest(new WebStrutsProjectValidation("testNewJSP2"));
+//        suite.addTest(new WebStrutsProjectValidation("testJSPNavigator"));
+//        suite.addTest(new WebStrutsProjectValidation("testNewServlet"));
+//        suite.addTest(new WebStrutsProjectValidation("testNewServlet2"));
         suite.addTest(new WebStrutsProjectValidation("testBuildProject"));
         suite.addTest(new WebStrutsProjectValidation("testCompileAllJSP"));
-//        suite.addTest(new WebVWJSFProjectValidation("testCompileJSP"));
+//        suite.addTest(new WebStrutsProjectValidation("testCompileJSP"));
         suite.addTest(new WebStrutsProjectValidation("testCleanProject"));
-//        suite.addTest(new WebVWJSFProjectValidation("testRunProject"));
-//        suite.addTest(new WebVWJSFProjectValidation("testRunJSP"));
-//        suite.addTest(new WebVWJSFProjectValidation("testViewServlet"));
-//        suite.addTest(new WebVWJSFProjectValidation("testRunServlet"));
-//        suite.addTest(new WebVWJSFProjectValidation("testCreateTLD"));
-//        suite.addTest(new WebVWJSFProjectValidation("testCreateTagHandler"));
-//        suite.addTest(new WebVWJSFProjectValidation("testRunTag"));
-//        suite.addTest(new WebVWJSFProjectValidation("testNewHTML"));
-//        suite.addTest(new WebVWJSFProjectValidation("testHTMLNavigator"));
-//        suite.addTest(new WebVWJSFProjectValidation("testRunHTML"));
-//        suite.addTest(new WebVWJSFProjectValidation("testNewSegment"));
-//        suite.addTest(new WebVWJSFProjectValidation("testNewDocument"));
-//        suite.addTest(new WebVWJSFProjectValidation("testStopServer"));
-//        suite.addTest(new WebVWJSFProjectValidation("testStartServer"));
-//        suite.addTest(new WebVWJSFProjectValidation("testBrowserSettings"));
-//        suite.addTest(new WebVWJSFProjectValidation("testFinish"));
+//        suite.addTest(new WebStrutsProjectValidation("testRunProject"));
+//        suite.addTest(new WebStrutsProjectValidation("testRunJSP"));
+//        suite.addTest(new WebStrutsProjectValidation("testViewServlet"));
+//        suite.addTest(new WebStrutsProjectValidation("testRunServlet"));
+//        suite.addTest(new WebStrutsProjectValidation("testCreateTLD"));
+//        suite.addTest(new WebStrutsProjectValidation("testCreateTagHandler"));
+//        suite.addTest(new WebStrutsProjectValidation("testRunTag"));
+//        suite.addTest(new WebStrutsProjectValidation("testNewHTML"));
+//        suite.addTest(new WebStrutsProjectValidation("testHTMLNavigator"));
+//        suite.addTest(new WebStrutsProjectValidation("testRunHTML"));
+//        suite.addTest(new WebStrutsProjectValidation("testNewSegment"));
+//        suite.addTest(new WebStrutsProjectValidation("testNewDocument"));
+        suite.addTest(new WebStrutsProjectValidation("testStopServer"));
+//        suite.addTest(new WebStrutsProjectValidation("testStartServer"));
+//        suite.addTest(new WebStrutsProjectValidation("testBrowserSettings"));
+//        suite.addTest(new WebStrutsProjectValidation("testFinish"));
         return suite;
     }
 
@@ -133,12 +129,12 @@ public class WebStrutsProjectValidation extends WebProjectValidationEE5 {
                 "Templates/JSP_Servlet");
         projectWizard.selectCategory(category);
         projectWizard.next();
-        NewWebProjectNameLocationStepOperator nameStep =
-                new NewWebProjectNameLocationStepOperator();
+        NewWebProjectNameLocationStepOperator nameStep = new NewWebProjectNameLocationStepOperator();
         nameStep.txtProjectName().setText("");
         nameStep.txtProjectName().typeText(PROJECT_NAME);
         nameStep.txtProjectLocation().setText("");
-        nameStep.txtProjectLocation().typeText(getProjectFolder(PROJECT_NAME));
+        String sFolder = getProjectFolder(PROJECT_NAME);
+        nameStep.txtProjectLocation().typeText(sFolder);
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
         serverStep.selectServer("GlassFish V2");

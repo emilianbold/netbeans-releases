@@ -40,8 +40,6 @@
 package org.netbeans.modules.gsfret.editor.semantic;
 
 import junit.framework.TestCase;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.api.ColoringAttributes.Coloring;
 import org.netbeans.modules.gsf.api.OffsetRange;
 
 /**

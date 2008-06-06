@@ -83,7 +83,7 @@ public class JaxWsGenWSDLImpl implements JaxWsGenWSDLCookie {
         dlg.getAccessibleContext().setAccessibleDescription(dlg.getTitle());
         dlg.setVisible(true);
         if (descriptor.getValue().equals(NotifyDescriptor.OK_OPTION)) {
-            FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+            FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
             try {
                 ExecutorTask wsimportTask =
                         ActionUtils.runTarget(buildImplFo,

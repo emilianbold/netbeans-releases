@@ -299,14 +299,13 @@ public class JsUtils {
     /** Includes things you'd want selected as a unit when double clicking in the editor */
     public static boolean isIdentifierChar(char c) {
         return Character.isJavaIdentifierPart(c) || (// Globals, fields and parameter prefixes (for blocks and symbols)
-                c == '$') || (c == '@') || (c == '&') || (c == ':') || (// Function name suffixes
-                c == '!') || (c == '?') || (c == '=');
+                c == '$');
     }
 
     /** Includes things you'd want selected as a unit when double clicking in the editor */
     public static boolean isStrictIdentifierChar(char c) {
         return Character.isJavaIdentifierPart(c) ||
-                (c == '!') || (c == '?') || (c == '=');
+                (c == '$');
     }
 
     /** The following keywords apply inside a call expression */

@@ -51,17 +51,12 @@ import org.netbeans.modules.xml.schema.model.Enumeration;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.NamedReferenceable;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
-import org.netbeans.modules.xslt.core.XSLTDataEditorSupport;
 import org.netbeans.modules.xslt.model.XslComponent;
 import org.netbeans.modules.xslt.model.XslModel;
-import org.netbeans.modules.xslt.model.spi.XslModelFactory;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
-import org.openide.util.lookup.Lookups;
-import org.openide.windows.TopComponent;
 
 /**
  * @author Alex Petrov (30.04.2008)
@@ -88,17 +83,20 @@ public class XSLTCompletionQuery extends AsyncCompletionQuery implements Runnabl
     }
     
     private void makeResultSet() {
-        if ((resultSet == null) || (document == null) || (caretOffset < 0)) return;
-        XslModel xslModel = getXslModel(document);
-
+        if ((resultSet == null) || (document == null) || 
+            (srcEditorPane == null) || (caretOffset < 0)) {
+            resultSet.finish();
+            return;
+        }
+        XslModel xslModel = XSLTCompletionUtil.getXslModel(document);
         if (xslModel != null) {
-            XslComponent activeXslComponent = findActiveXslComponent(xslModel, document);
+            XslComponent activeXslComponent = findActiveXslComponent(xslModel);
             if (XSLTCompletionUtil.attributeValueExpected(document, caretOffset)) {
                 String attributeName = XSLTCompletionUtil.extractAttributeName(
                     document, caretOffset, activeXslComponent);
                 if (attributeName != null) {
                     CompletionModel completionModel = 
-                        XSLTCompletionModelProvider.getCompletionModel();
+                        new XSLTCompletionModelProvider().getCompletionModel();
                     if ((completionModel != null) && 
                         (completionModel.getSchemaModel() != null)){
                         SchemaModel schemaModel = completionModel.getSchemaModel();
@@ -140,10 +138,10 @@ public class XSLTCompletionQuery extends AsyncCompletionQuery implements Runnabl
         resultSet.finish();
     }
 
-    private XslComponent findActiveXslComponent(XslModel xslModel, Document doc) {
+    private XslComponent findActiveXslComponent(XslModel xslModel) {
          if (srcEditorPane == null) return null;
          
-         int dotPos = caretOffset; // srcEditorPane.getCaret().getDot();
+         int dotPos = srcEditorPane.getCaret().getDot(); // caretOffset;
          DocumentComponent docComponent = xslModel.findComponent(dotPos);    
          return ((XslComponent) docComponent);
     }
@@ -151,27 +149,29 @@ public class XSLTCompletionQuery extends AsyncCompletionQuery implements Runnabl
     @Override
     protected void prepareQuery(JTextComponent component) {
         super.prepareQuery(component);
-        srcEditorPane = getXslSourceEditor();
-    }
-    
-    private JEditorPane getXslSourceEditor() {
-        TopComponent topComponent = TopComponent.getRegistry().getActivated();
-        if (topComponent != null) {
-            XSLTDataEditorSupport editorSupport = topComponent.getLookup().lookup(
-                XSLTDataEditorSupport.class);
-            
-            JEditorPane[] editorPanes = editorSupport.getOpenedPanes();
-            if ((editorPanes == null) || (editorPanes.length < 1)) return null;
-                
-            return editorPanes[0];
-        }
-        return null;
+        srcEditorPane = (XSLTCompletionUtil.getXsltDataEditorSupport() == null ? 
+            null : (JEditorPane) component); // XSLTCompletionUtil.getXslSourceEditor();
+        // srcEditorPane = getXslSourceEditor();
     }
 
-    private XslModel getXslModel(Document doc) {
-        ModelSource modelSource = new ModelSource(Lookups.singleton(doc), false);
-        XslModelFactory xslModelFactory = XslModelFactory.XslModelFactoryAccess.getFactory();
-        XslModel xslModel = xslModelFactory.getModel(modelSource);
-        return xslModel;
+    /*
+    private JEditorPane getXslSourceEditor() {
+        try {
+            XSLTDataEditorSupport editorSupport = 
+                XSLTCompletionUtil.getXsltDataEditorSupport();
+            if (editorSupport == null) return null;
+     
+            //*** Attention: method "editorSupport.getOpenedPanes()"
+            //*** can be invoked inside AWT thread ONLY !!!
+            JEditorPane[] editorPanes = editorSupport.getOpenedPanes();
+            if ((editorPanes == null) || (editorPanes.length < 1)) return null;
+
+            return editorPanes[0];
+        } catch(Exception e) {
+            Logger logger = Logger.getLogger(XSLTCompletionUtil.class.getName());
+            logger.log(Level.INFO, null, e);
+            return null;
+        }
     }
+    */
 }

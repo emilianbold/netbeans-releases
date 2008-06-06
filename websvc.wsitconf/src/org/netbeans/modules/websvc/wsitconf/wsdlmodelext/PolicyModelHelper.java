@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 import javax.xml.namespace.QName;
 import javax.xml.namespace.QName;
 import javax.xml.namespace.QName;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitmodelext.policy.All;
 import org.netbeans.modules.websvc.wsitmodelext.policy.ExactlyOne;
 import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
@@ -111,10 +112,10 @@ public class PolicyModelHelper {
     
     /** 
      */
-    public static void setConfigVersion(Binding b, ConfigVersion cfgVersion) {
+    public static void setConfigVersion(Binding b, ConfigVersion cfgVersion, Project project) {
         ConfigVersion currentCfgVersion = getWrittenConfigVersion(b);                
         if (!cfgVersion.equals(currentCfgVersion)) {
-            WSITModelSupport.moveCurrentConfig(b, currentCfgVersion, cfgVersion);
+            WSITModelSupport.moveCurrentConfig(b, currentCfgVersion, cfgVersion, project);
         }            
     }
         

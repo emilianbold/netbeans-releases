@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.php.editor;
 
-import java.io.IOException;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
@@ -73,33 +72,32 @@ public class PHPCompletionResult extends DefaultCompletionResult{
                 IndexedElement elem = (IndexedElement) phpItem.getElement();
                 
                 if (!elem.isResolved()){
+                    BaseDocument doc = (BaseDocument) completionContext.getInfo().getDocument();
+                    if (doc == null) {
+                        return;
+                    }
+
+                    doc.atomicLock();
+
                     try {
-                        BaseDocument doc = (BaseDocument) completionContext.getInfo().getDocument();
-                        
-                        doc.atomicLock();
-                        
-                        try {
-                            FileObject currentFolder = completionContext.getInfo().getFileObject().getParent();
-                            String includePath = FileUtil.getRelativePath(currentFolder, elem.getFileObject());
-                            
-                            StringBuilder builder = new StringBuilder();
-                            builder.append("\nrequire \""); //NOI18N
-                            builder.append(includePath);
-                            builder.append("\";\n"); //NOI18N
-                            
-                            // TODO use the index of previous AST instead
-                            int prevLineNumber = Utilities.getLineOffset(doc, completionContext.getCaretOffset());
-                            int prevLineEnd = Utilities.getRowStartFromLineOffset(doc, prevLineNumber);
-                                                       
-                            doc.insertString(prevLineEnd, builder.toString(), null);
-                            Utilities.reformatLine(doc, Utilities.getRowStart(doc, prevLineEnd + 1));
-                        } catch (BadLocationException e){
-                            Exceptions.printStackTrace(e);
-                        } finally {
-                            doc.atomicUnlock();
-                        }
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
+                        FileObject currentFolder = completionContext.getInfo().getFileObject().getParent();
+                        String includePath = FileUtil.getRelativePath(currentFolder, elem.getFileObject());
+
+                        StringBuilder builder = new StringBuilder();
+                        builder.append("\nrequire \""); //NOI18N
+                        builder.append(includePath);
+                        builder.append("\";\n"); //NOI18N
+
+                        // TODO use the index of previous AST instead
+                        int prevLineNumber = Utilities.getLineOffset(doc, completionContext.getCaretOffset());
+                        int prevLineEnd = Utilities.getRowStartFromLineOffset(doc, prevLineNumber);
+
+                        doc.insertString(prevLineEnd, builder.toString(), null);
+                        Utilities.reformatLine(doc, Utilities.getRowStart(doc, prevLineEnd + 1));
+                    } catch (BadLocationException e){
+                        Exceptions.printStackTrace(e);
+                    } finally {
+                        doc.atomicUnlock();
                     }
                 }
             }

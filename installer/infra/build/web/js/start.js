@@ -62,6 +62,7 @@ function initialize() {
 
 	    if(query!="" && query != string && query.indexOf(sep)!=-1)  {
 	            url      = query.substring(0, query.indexOf(sep));	                
+	            url      = BINARIES_LOCATION + url;
 		    filename = url.substring(url.lastIndexOf("/") + 1, url.length);
 		    query = query.substring(query.indexOf(sep) + 1, query.length);
 		    

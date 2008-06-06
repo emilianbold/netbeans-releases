@@ -896,7 +896,7 @@ public class PreferenceManager implements IPreferenceManager2{
 						}
 						if (saveSubElements(doc, ele))
 						{
-							XMLManip.save(doc, file2);
+			                                XMLManip.save(doc, file2);
 						}
 						else
 						{

@@ -42,10 +42,10 @@ public class LLkParserNoEx extends LLkParser {
         super(lexer, k_);
     }
     
+    @Override
     public void match(int t) {
         if (LA(1) == t) {
             consume();
-            //matchError=false;
         } else {
             if (inputState.guessing == 0) {
                 matchException = new MismatchedTokenException(tokenNames, LT(1), t, false, getFilename());
@@ -54,10 +54,10 @@ public class LLkParserNoEx extends LLkParser {
         }
     }
 
+    @Override
     public void match(BitSet b) {
         if (b.member(LA(1))) {
             consume();
-            //matchError=false;
         } else {
             if (inputState.guessing == 0) {
                 matchException = new MismatchedTokenException(tokenNames, LT(1), b, false, getFilename());
@@ -66,10 +66,10 @@ public class LLkParserNoEx extends LLkParser {
         }
     }
 
+    @Override
     public void matchNot(int t) {
         if (LA(1) != t) {
             consume();
-            //matchError=false;
         } else {
             if (inputState.guessing == 0) {
                 matchException = new MismatchedTokenException(tokenNames, LT(1), t, true, getFilename());

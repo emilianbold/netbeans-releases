@@ -198,4 +198,8 @@ public interface ComboConstants {
     String MEX_HTTP = NbBundle.getMessage(ComboConstants.class, "COMBO_MEX_HTTP");      //NOI18N
     String MEX_HTTPS = NbBundle.getMessage(ComboConstants.class, "COMBO_MEX_HTTPS");    //NOI18N
 
+    String TRUST_10 = NbBundle.getMessage(ComboConstants.class, "COMBO_TRUST_10");      //NOI18N
+    String TRUST_10_POLICYSTR = NbBundle.getMessage(ComboConstants.class, "COMBO_TRUST_10_POLICY");      //NOI18N
+    String TRUST_13 = NbBundle.getMessage(ComboConstants.class, "COMBO_TRUST_13");      //NOI18N
+    String TRUST_13_POLICYSTR = NbBundle.getMessage(ComboConstants.class, "COMBO_TRUST_13_POLICY");      //NOI18N
 }

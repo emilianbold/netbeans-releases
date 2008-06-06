@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<palette_item version="1.0">
+
+  <element name="ActivityEdge" />
+  <icon16 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/activity-edge.png" />
+  <icon32 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/activity-edge-32.png" />
+
+  <description localizing-bundle="org.netbeans.modules.uml.diagrams.resources.context.Bundle"
+               display-name-key="NAME_ActivityEdge" 
+               tooltip-key="HINT_ActivityEdge" />
+</palette_item>

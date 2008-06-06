@@ -93,8 +93,8 @@ public interface LabelsAndTitles {
     public static final String CLD_PALETTE_GROUP_DESIGNPATTERN = "Design Pattern" ;
     public static final String CLD_PALETTE_GROUP_COMMENTS = "Comments" ;
     //edit control context for classes
-    public static final String POPUP_ADD_ATTRIBUTE="Insert Attribute";
-    public static final String POPUP_ADD_OPERATION="Insert Operation";
+    public static final String POPUP_ADD_ATTRIBUTE="Create Attribute";
+    public static final String POPUP_ADD_OPERATION="Create Operation";
     public static final String POPUP_DELETE_ATTRIBUTE="Delete Attribute";
     public static final String POPUP_DELETE_OPERATION="Delete Operation";
     //options

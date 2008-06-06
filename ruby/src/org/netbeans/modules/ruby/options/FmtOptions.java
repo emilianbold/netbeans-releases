@@ -70,7 +70,7 @@ import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
-import org.netbeans.modules.ruby.Formatter;
+import org.netbeans.modules.ruby.RubyFormatter;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.Exceptions;
@@ -139,7 +139,7 @@ public class FmtOptions {
 
     // Ruby needs its own indent size; the global "4" isn't a good match
     //    public static int getGlobalIndentSize() {
-    //        org.netbeans.editor.Formatter f = (org.netbeans.editor.Formatter)Settings.getValue(getKitClass(), "formatter");
+    //        org.netbeans.editor.RubyFormatter f = (org.netbeans.editor.RubyFormatter)Settings.getValue(getKitClass(), "formatter");
     //        if (f != null)
     //            return f.getShiftWidth();
     //        return getDefaultAsInt(indentSize);
@@ -306,7 +306,7 @@ public class FmtOptions {
 
                 doc.insertString(0, previewText, null);
 
-                Formatter formatter = new Formatter(codeStyle, rm);
+                RubyFormatter formatter = new RubyFormatter(codeStyle, rm);
                 formatter.reformat(doc, 0, doc.getLength(), null);
 
                 String formatted = doc.getText(0, doc.getLength());

@@ -111,12 +111,14 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
 
         AstPath path = new AstPath();
         path.descend(root);
-        try {
-            SemanticAnalysisVisitor visitor = new SemanticAnalysisVisitor((ModuleNode) root, (BaseDocument) info.getDocument());
-            highlights.putAll(visitor.annotate());
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+
+        BaseDocument doc = (BaseDocument) info.getDocument();
+        if (doc == null) {
+            return;
         }
+        SemanticAnalysisVisitor visitor = new SemanticAnalysisVisitor((ModuleNode) root, doc);
+        highlights.putAll(visitor.annotate());
+
         path.ascend();
 
         if (isCancelled()) {

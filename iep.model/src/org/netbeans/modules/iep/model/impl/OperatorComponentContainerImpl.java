@@ -11,6 +11,7 @@ import org.netbeans.modules.iep.model.IEPVisitor;
 import org.netbeans.modules.iep.model.InvokeStreamOperatorComponent;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.OperatorComponentContainer;
+import org.netbeans.modules.iep.model.TableInputOperatorComponent;
 import org.w3c.dom.Element;
 
 public class OperatorComponentContainerImpl extends ComponentImpl implements OperatorComponentContainer {
@@ -150,5 +151,19 @@ public class OperatorComponentContainerImpl extends ComponentImpl implements Ope
         
     }
         
+    public List<TableInputOperatorComponent> getTableInputOperatorComponent() {
+        List<TableInputOperatorComponent> tableInputOps = new ArrayList<TableInputOperatorComponent>();
+        List<OperatorComponent> ops =  getAllOperatorComponent();
+        Iterator<OperatorComponent> it = ops.iterator();
+        while(it.hasNext()) {
+            OperatorComponent op = it.next();
+            
+            if(op instanceof TableInputOperatorComponent) {
+                tableInputOps.add((TableInputOperatorComponent) op);
+            }
+        }
         
+        return tableInputOps;
+        
+    }
 }

@@ -48,8 +48,13 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.JPanel;
 
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.vmd.componentssupport.ui.UIUtils;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -60,13 +65,34 @@ public class JavaMELibsVisualPanel extends JPanel {
     private static final String CONTENT_NUMBERED  = "WizardPanel_contentNumbered";  // NOI18N
     private static final String CONTENT_DISPLAYED = "WizardPanel_contentDisplayed"; // NOI18N
     private static final String AUTO_WIZARD_STYLE = "WizardPanel_autoWizardStyle";  // NOI18N
+
+    private static final String DLD_DELETE_TITLE = "MSG_LibraryDeleteTitle";  // NOI18N
+    private static final String DLD_DELETE_MSG = "MSG_LibraryDeleteMsg";  // NOI18N
     
     /** Creates new form JavaMELibsVisualPanel */
     public JavaMELibsVisualPanel() {
         initComponents();
         
         myLibDescList.setModel( new LibraryListModel() );
+        myLibDescList.getSelectionModel().setSelectionMode(
+                ListSelectionModel.SINGLE_SELECTION);
+        myLibDescList.getSelectionModel().addListSelectionListener(
+                new ListSelectionListener() {
+                    public void valueChanged(ListSelectionEvent e) {
+                        updateRemoveButton();
+                    }
+                });
+        updateRemoveButton();
     }
+
+    private void updateRemoveButton(){
+        if (myLibDescList.isSelectionEmpty()) {
+            myRemoveButton.setEnabled(false);
+        } else {
+            myRemoveButton.setEnabled(true);
+        }
+    }
+    
 
     void readData( WizardDescriptor settings ) {
         myWizardDescriptor = settings;
@@ -183,13 +209,22 @@ private void addPressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPr
 
 private void removePressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removePressed
     int index = myLibDescList.getSelectedIndex();
-    // remove in UI
-    ((LibraryListModel)myLibDescList.getModel()).remove(index);
-    // remove from WizardDescriptor
     List<String> libNames = (List<String>)myWizardDescriptor.getProperty( 
                 CustomComponentWizardIterator.LIB_NAMES);
     List<String> libDisplayNames = (List<String>)myWizardDescriptor.getProperty( 
                 CustomComponentWizardIterator.LIB_DISPLAY_NAMES);
+
+    // remove in UI
+    String name = libNames.get(index);
+    
+    String title = getMessage(DLD_DELETE_TITLE);
+    String msg = getMessage(DLD_DELETE_MSG, name);
+    if (!UIUtils.userConfirmOkCancel(title, msg)){
+        return;
+    }
+    
+    ((LibraryListModel)myLibDescList.getModel()).remove(index);
+    // remove from WizardDescriptor
     libNames.remove(index);
     libDisplayNames.remove(index);
     
@@ -204,6 +239,10 @@ private void removePressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_re
     private javax.swing.JButton myRemoveButton;
     // End of variables declaration//GEN-END:variables
 
+    private static String getMessage(String key, Object... args) {
+        return NbBundle.getMessage(JavaMELibsVisualPanel.class, key, args);
+    }
+    
     private class LibraryListModel extends EditableListModel{
 
         public void updateModel(List<String> libNames,  List<String> libDisplayNames){

@@ -102,8 +102,10 @@ public class DBSchemaTableProvider implements TableProvider {
                 }
             }
 
+            String schemaName = tableElement.getDeclaringSchema().getSchema().getName();
+            String catalogName = tableElement.getDeclaringSchema().getCatalog().getName();
             String tableName = tableElement.getName().getName();
-            DBSchemaTable table = new DBSchemaTable(tableName, join, disabledReason, persistenceGen, tableElement.isTable());
+            DBSchemaTable table = new DBSchemaTable(schemaName, catalogName, tableName, join, disabledReason, persistenceGen, tableElement.isTable());
 
             name2Table.put(tableName, table);
             name2Referenced.put(tableName, new HashSet<Table>());
@@ -178,13 +180,13 @@ public class DBSchemaTableProvider implements TableProvider {
         private Set<Table> referencedByTables;
         private Set<Table> joinTables;
 
-        public DBSchemaTable(String name, boolean join, DisabledReason disabledReason, PersistenceGenerator persistenceGen) {
-            super(name, join, disabledReason);
+        public DBSchemaTable(String schema, String catalog, String name, boolean join, DisabledReason disabledReason, PersistenceGenerator persistenceGen) {
+            super(schema, catalog, name, join, disabledReason);
             this.persistenceGen = persistenceGen;
         }
         
-        public DBSchemaTable(String name, boolean join, DisabledReason disabledReason, PersistenceGenerator persistenceGen, boolean isTable) {
-            super(name, join, disabledReason, isTable);
+        public DBSchemaTable(String schema, String catalog, String name, boolean join, DisabledReason disabledReason, PersistenceGenerator persistenceGen, boolean isTable) {
+            super(schema, catalog, name, join, disabledReason, isTable);
             this.persistenceGen = persistenceGen;
         }
 

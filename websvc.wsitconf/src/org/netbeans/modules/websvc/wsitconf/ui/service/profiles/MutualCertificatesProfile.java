@@ -194,7 +194,7 @@ public class MutualCertificatesProfile extends ProfileBase
 
     public void enableSecureConversation(WSDLComponent component, boolean enable) {
         ProfilesModelHelper pmh= ProfilesModelHelper.getInstance(PolicyModelHelper.getConfigVersion(component));
-        pmh.enableSecureConversation(component, enable);
+        pmh.setSecureConversation(component, enable);
     }
     
 }

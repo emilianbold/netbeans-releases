@@ -39,13 +39,17 @@
 
 package org.netbeans.modules.subversion.client.cli;
 
+import java.io.File;
 import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -56,44 +60,82 @@ public class CancelTest extends AbstractCLITest {
     public CancelTest(String testName) throws Exception {
         super(testName);
     }
-            
-    public void testCancel() throws Exception {                                                
-        final ISVNClientAdapter c = getNbClient();        
-        Blocker blocker = new Blocker("cli: process created");
-        
-        Logger.getLogger("").addHandler(blocker);
-        RequestProcessor rp = new RequestProcessor("clitest");
-        rp.post(new Runnable() {
-            public void run() {
-                try {
-                    c.getInfo(getRepoUrl());
-                } catch (SVNClientException ex) {
-                    System.out.println("");
-                }
+    
+    public void testCancelBeforeExec() throws Exception {   
+        ISVNClientAdapter c = getNbClient();
+        cancel(new Blocker("cli: process created", "cli: Process destroyed", c), new CommandRunnable(c));
+    }         
+    
+    public void testCancelDuringOutput() throws Exception {    
+        ISVNClientAdapter c = getNbClient();
+        cancel(new Blocker("cli: OUTPUT", "cli: Process destroyed", c), new CommandRunnable(getNbClient()));
+    }         
+    
+    public void testCancelDuringError() throws Exception {    
+        ISVNClientAdapter c = getNbClient();
+        CommandRunnable cmd = new CommandRunnable(c) {
+            protected void execCommand() throws Exception {
+                c.getInfo(new SVNUrl("file:///hokus/pokus"));
             }
-        }); 
+        };
+        cancel(new Blocker("cli: ERROR", "cli: Process destroyed", c), cmd);
+    }    
+    
+    public void testCancelBinOutput() throws Exception {    
+        final File f = createFile("file");
+        commit(f);
+        
+        ISVNClientAdapter c = getNbClient();
+        CommandRunnable cmd = new CommandRunnable(c) {
+            protected void execCommand() throws Exception {
+                c.getContent(f, SVNRevision.HEAD);
+            }
+        };
+        cancel(new Blocker("cli: ready for binary OUTPUT", "cli: Process destroyed", c), cmd);
+    }         
+    
+    private void cancel(Blocker blocker, CommandRunnable cmd) throws Exception {                                                
+        Logger.getLogger("").addHandler(blocker);
+
+        cmd.exec();
         Thread.sleep(1000);
-        c.cancelOperation();
-        assertTrue(blocker.destroyed);
+        cmd.task.waitFinished();
+        assertTrue(blocker.msgIntercepted);
+        assertTrue(blocker.destroyed);       
+        if(cmd.th != null) {
+            if(!(cmd.th instanceof SVNClientException))  fail(cmd.th.getMessage());  // no exception should be thrown
+        }
     }            
     
     private class Blocker extends Handler {
-        private final String msg;
+        private final String blockMsg;
+        private final String destroyMsg;
         private boolean destroyed = false;
-        public Blocker(String msg) {
-            this.msg = msg;
+        private boolean msgIntercepted = false;
+        private ISVNClientAdapter c;
+        private SVNClientException e;
+        public Blocker(String blockMsg, String destroyMsg, ISVNClientAdapter c) {
+            this.blockMsg = blockMsg;
+            this.destroyMsg = destroyMsg;
+            this.c = c;
         }
         @Override
         public void publish(LogRecord record) {
-            if(record.getMessage().indexOf(msg) > -1) {
-                while(true) {
+            if(record == null) return;
+            if(record.getMessage() == null) return;
+            if(record.getMessage().indexOf(blockMsg) > -1) {
+                msgIntercepted = true;
+                while(!destroyed) {
                     try {
                         Thread.sleep(200);
+                        c.cancelOperation();
                     } catch (InterruptedException ex) {
                         break;
+                    } catch (SVNClientException ex) {
+                        e = ex;
                     }
                 }
-            } else if(record.getMessage().indexOf("cli: Process destroyed") > -1) {
+            } else if(record.getMessage().indexOf(destroyMsg) > -1) {
                 destroyed = true;
             }
         }
@@ -102,5 +144,35 @@ public class CancelTest extends AbstractCLITest {
         @Override
         public void close() throws SecurityException { }
     }
+    
+    private class CommandRunnable  {
+        private RequestProcessor rp = new RequestProcessor("clitest");
+        Throwable th = null;
+        protected ISVNClientAdapter c;
+        private Task task;
+
+        public CommandRunnable(ISVNClientAdapter c) {
+            this.c = c;
+        }
+        
+        public void exec() {
+            task = rp.post(new Runnable() {
+                public void run() {
+                    try {
+                        execCommand();
+                    } catch (Throwable t) {
+                        th = t;
+                    }
+                }
+            });
+        }
+        protected void execCommand() throws Exception {
+            c.getInfo(getRepoUrl());
+        }
+        void waitFinnishe() {
+            task.waitFinished();
+        }
+    }
+            
     
 }

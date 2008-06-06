@@ -12,8 +12,8 @@
     </xsd:complexType>
     <xsd:complexType name="C2">
         <xsd:sequence>
-            <xsd:element name="C21"/>
-            <xsd:element name="C22"/>
+            <xsd:element name="C21" type="tns:D1"/>
+            <xsd:element name="C22" type="tns:D2"/>
         </xsd:sequence>
     </xsd:complexType>
 </xsd:schema>

@@ -95,7 +95,7 @@ import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 import org.netbeans.modules.uml.core.typemanagement.ITypeManager;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.swing.drawingarea.DiagramEngine;
+import org.netbeans.modules.uml.ui.controls.newdialog.NewElementUI;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -1091,6 +1091,7 @@ public class Classifier extends Namespace implements IClassifier,
 
 	/**
 	 *
+
 	 * Adds the association end to this classifier's list of ends.
 	 *
 	 * @param end [in] 
@@ -1172,7 +1173,7 @@ public class Classifier extends Namespace implements IClassifier,
 		{
 			DialogDisplayer.getDefault().notify(
 							new NotifyDescriptor.Message(NbBundle.getMessage(
-								DiagramEngine.class, "IDS_NAMESPACECOLLISION")));
+								NewElementUI.class, "IDS_NAMESPACECOLLISION")));
 							
 			return null;
 		}
@@ -2907,8 +2908,8 @@ public class Classifier extends Namespace implements IClassifier,
 		}
 		return retStereo;
 	}
-
-
+	
+    
 	public void moveAssociatedElements(INamespace space) {
             if (space == null) {
                 return;
@@ -2940,8 +2941,8 @@ public class Classifier extends Namespace implements IClassifier,
                 a.setNamespace(to);
             }
         }
-	
-    
+
+
      public void delete() 
      {
         IGeneralization gen = null;
@@ -3513,6 +3514,7 @@ public class Classifier extends Namespace implements IClassifier,
                 sourcesStr.append(curArt.getLanguage().getName()).append(':');
             }
             sourcesStr.append(curArt.getFileName());
+
         }
         
         return sourcesStr.toString();
