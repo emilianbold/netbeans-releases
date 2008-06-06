@@ -147,7 +147,7 @@ public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
                     i += 1;
                 }
             }
-            if (i < 8) {
+            if (i < SecurityTokensModelHelper.SUPPORTING_TOKENS.length) {
                 if (i > 3) {
                     encrypted = true;
                     i = i - 4;

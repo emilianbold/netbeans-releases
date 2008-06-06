@@ -44,7 +44,6 @@ package org.netbeans.modules.javascript.editing;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.javascript.editing.JsAnalyzer.AnalysisResult;
 
 /**
@@ -67,11 +66,6 @@ public class JsAnalyzerTest extends JsTestBase {
         super.tearDown();
     }
 
-    @Override
-    public StructureScanner getStructureScanner() {
-        return new JsAnalyzer();
-    }
-    
     private void checkImports(String relFilePath) throws Exception {
         CompilationInfo info = getInfo(relFilePath);
         JsParseResult result = AstUtilities.getParseResult(info);

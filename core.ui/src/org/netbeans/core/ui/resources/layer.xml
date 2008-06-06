@@ -50,10 +50,10 @@ made subject to such option by the copyright holder.
         <file name="org-netbeans-core-ui-warmup-DiagnosticTask.instance"/>
     </folder>
     <folder name="Actions">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
         
         <folder name="Edit">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-netbeans-core-ui-sysopen-SystemOpenAction.instance"/>
             <file name="org-openide-actions-CopyAction.instance"/>
             <file name="org-openide-actions-CutAction.instance"/>
@@ -67,7 +67,7 @@ made subject to such option by the copyright holder.
         </folder>
         
         <folder name="System">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-openide-actions-EditAction.instance"/>
             <file name="org-netbeans-core-actions-SystemExit.instance"/>
             <file name="org-openide-actions-GarbageCollectAction.instance"/>
@@ -98,39 +98,38 @@ made subject to such option by the copyright holder.
         </folder>
         
         <folder name="View">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-openide-actions-CustomizeAction.instance"/>
             <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
             <file name="org-netbeans-core-actions-LogAction.instance"/>	 
         </folder>        
         
         <folder name="Tools">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
         </folder>
         
         <folder name="Window">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
             <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
             <file name="org-netbeans-core-actions-PreviousViewCallbackAction.instance"/>
             <file name="org-netbeans-core-actions-NextViewCallbackAction.instance"/>
         </folder>
         
         <folder name="Help">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-netbeans-core-actions-AboutAction.instance"/>
         </folder>
         
        <folder name="Other">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
         </folder> 
         
     </folder>
     
     
     <folder name="Menu">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
         <folder name="File">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <attr name="position" intvalue="100"/>
             <file name="Separator2.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
@@ -165,7 +164,7 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
         <folder name="Edit">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <attr name="position" intvalue="200"/>
             <file name="org-openide-actions-UndoAction.instance">
                 <attr name="position" intvalue="200"/>
@@ -212,7 +211,7 @@ made subject to such option by the copyright holder.
         </folder>
         
         <folder name="View">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-netbeans-core-actions-HTMLViewAction.instance">
                 <attr name="position" intvalue="400"/>
             </file>
@@ -222,7 +221,7 @@ made subject to such option by the copyright holder.
         </folder>
         
         <folder name="GoTo">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <attr name="position" intvalue="400"/>
             <file name="SeparatorBeforeGoToLine.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
@@ -235,7 +234,7 @@ made subject to such option by the copyright holder.
             </folder>
         
         <folder name="Tools">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <attr name="position" intvalue="1000"/>
             <file name="org-openide-actions-ToolsAction.instance">
                 <attr name="position" intvalue="100"/>
@@ -259,7 +258,7 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
         <folder name="Help">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <attr name="position" intvalue="1300"/>
             <file name="Separator1.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
@@ -274,6 +273,8 @@ made subject to such option by the copyright holder.
     </folder>
     
     <folder name="Toolbars">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/toolbarsOption.gif"/>
         <!-- 
         Specifying the file Standard.xml in this place in your layer will
         override the default toolbar configuration.
@@ -283,7 +284,7 @@ made subject to such option by the copyright holder.
         of your module will customize the main window toolbars.
         -->
         <folder name="Edit">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-openide-actions-CutAction.instance">
                 <attr name="position" intvalue="100"/>
             </file>
@@ -302,13 +303,13 @@ made subject to such option by the copyright holder.
             <!-- #100902: Find action removed upon usability expert request -->
         </folder>
         <folder name="File">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-openide-actions-SaveAllAction.instance">
                 <attr name="position" intvalue="400"/>
             </file>
         </folder>
         <folder name="Memory">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-openide-actions-GarbageCollectAction.instance">
                 <attr name="position" intvalue="100"/>
             </file>
@@ -316,7 +317,7 @@ made subject to such option by the copyright holder.
         
         <!-- specify toolbar configuration for platform ui. -->
         <file name="Standard.xml" url="Standard.xml">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
         </file>
     </folder> <!-- Toolbars -->
     
@@ -330,7 +331,7 @@ made subject to such option by the copyright holder.
             
             <folder name="Browsers">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/webbrowsercateg.gif"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             </folder>
             
         </folder>    
@@ -358,9 +359,8 @@ made subject to such option by the copyright holder.
     <folder name="Services">
         <folder name="Browsers">
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/webbrowsercateg.gif"/>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="SwingBrowser.settings" url="SwingBrowser.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.Bundle"/>
                 <attr name="SystemFileSystem.icon" stringvalue="nbres:org/openide/resources/html/htmlView.gif"/>
                 <attr name="hidden" boolvalue="true"/>
                 <attr name="position" intvalue="700"/>
@@ -370,7 +370,7 @@ made subject to such option by the copyright holder.
         
         
         <file name="org-openide-text-PrintSettings.settings" url="PrintSettings.settings">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/text/printSettings.gif"/>
         </file>
     </folder>
@@ -378,15 +378,15 @@ made subject to such option by the copyright holder.
     <folder name="UI">
         <!-- settings categories UI presentation -->
         <folder name="Services">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/session.gif"/>
             <attr name="helpID" stringvalue="org.netbeans.core.ControlPanelNode"/>
             
             <folder name="IDEConfiguration"> <!-- PENDING rename to somethink like APP Settings or so -->
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
                 
                 <folder name="LookAndFeel"> 
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
                     
                     <file name="Actions.instance">
                         <attr name="instanceCreate" newvalue="org.netbeans.core.ActionsPoolNode"/>
@@ -405,7 +405,7 @@ made subject to such option by the copyright holder.
                 </folder> <!-- LookAndFeel -->
 
                 <folder name="System">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
                     
                     <file name="ObjectTypes.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createObjectTypes"/>
@@ -428,7 +428,7 @@ made subject to such option by the copyright holder.
 
                 <folder name="ServerAndExternalToolSettings">
 
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
 
                 </folder> <!-- ServerAndExternalToolSettings -->
             </folder> <!-- IDEConfiguration -->

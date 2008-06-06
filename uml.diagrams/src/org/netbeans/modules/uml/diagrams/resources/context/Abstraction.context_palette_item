@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<palette_item version="1.0">
+
+  <element name="Abstraction" />
+  <icon16 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/abstraction.png" />
+  <icon32 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/abstraction-32.png" />
+
+  <description localizing-bundle="org.netbeans.modules.uml.diagrams.resources.context.Bundle"
+               display-name-key="NAME_Abstraction" 
+               tooltip-key="HINT_Abstraction" />
+</palette_item>

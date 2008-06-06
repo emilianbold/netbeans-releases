@@ -68,6 +68,9 @@ public class Tool {
         // Clone rules to avoid flag checking
         public static boolean cloneGuessing = true;
         
+        // True for extended errors description
+        public static boolean extendedErrors = true;
+        
         // Here lies all of the optimizations which works with CND grammar, but may not in common case
         public static boolean agressive = false; 
 

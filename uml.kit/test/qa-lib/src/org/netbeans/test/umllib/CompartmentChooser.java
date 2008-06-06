@@ -42,7 +42,8 @@
 
 
 package org.netbeans.test.umllib;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
+ 
+ import org.netbeans.api.visual.widget.Widget;
 
 
 /**
@@ -56,7 +57,10 @@ public interface CompartmentChooser {
      * @param compartment Compartment for check
      * @return true id parameteter is suitable and false otherwise
      */
-    public boolean checkCompartment(ICompartment compartment);
+    public boolean checkCompartment(Widget compartment);
+    
+     public boolean checkCompartment(Widget compartment, String info);
+     
     
     /**
      * Return description for this Chooser.

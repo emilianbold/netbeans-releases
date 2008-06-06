@@ -265,11 +265,11 @@ public class MakeProjectGenerator {
         FileObject dirFO;
         if(!dir.exists()) {
             //Refresh before mkdir not to depend on window focus
-            refreshFileSystem (dir);
+            // refreshFileSystem (dir); // See 136445
             if (!dir.mkdirs()) {
                 throw new IOException ("Can not create project folder."); // NOI18N
             }
-            refreshFileSystem (dir);
+            // refreshFileSystem (dir); // See 136445
         }        
         dirFO = FileUtil.toFileObject(dir);
         assert dirFO != null : "No such dir on disk: " + dir; // NOI18N
@@ -313,15 +313,11 @@ public class MakeProjectGenerator {
     }
 
 
-    private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
-        File rootF = dir;
-        while (rootF.getParentFile() != null) {
-            rootF = rootF.getParentFile();
-        }
-        FileObject dirFO = FileUtil.toFileObject(rootF);
-        assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
-        dirFO.getFileSystem().refresh(false);
-    }
+//    private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
+//        File rootF = dir;
+//        while (rootF.getParentFile() != null /*UNC*/&& rootF.getParentFile().exists()) {
+//            rootF = rootF.getParentFile();
+//    }
 }
 
 

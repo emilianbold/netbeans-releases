@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -761,8 +761,8 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
     
     private void deleteFile(String name) throws IOException {
         OutputStream os = null;
+        this.info.lock(name);
         try {
-            this.info.lock(name);
             //added because of mutual exclusion of streams (waits a while until stream is closed)
             os = this.info.outputStream(name);
             os.close(); os = null;
@@ -804,6 +804,7 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
 
         /** Remove itself from the cache if finalized.
         */
+        @Override
         protected void finalize() {
             //      System.out.println ("Finalizing table for: " + name); // NOI18N
             attrs.removeTable(name);
@@ -905,15 +906,18 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
                     private final String[] ELM_KEYS = { "ATTRIBUTES" }; // NOI18N
                     private final String[] MANDAT_ATTR_KEYS = { "VERSION" }; // NOI18N
 
+                    @Override
                     public void internalStartElement(String elemName, HashMap mapMandatory, HashMap mapAllowed)
                     throws SAXException {
                         // later can check version
                     }
 
+                    @Override
                     protected String[] getKeys() {
                         return ELM_KEYS;
                     }
 
+                    @Override
                     protected String[] getMandatoryAttrs() {
                         return MANDAT_ATTR_KEYS;
                     }
@@ -932,6 +936,7 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
                     private final String[] ELM_KEYS = { "FILEOBJECT" }; // NOI18N
                     private final String[] MANDAT_ATTR_KEYS = { "NAME" }; // NOI18N
 
+                    @Override
                     public void internalStartElement(String elemName, HashMap mapMandatory, HashMap mapAllowed)
                     throws SAXException {
                         String temp;
@@ -947,14 +952,17 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
                         }
                     }
 
+                    @Override
                     public void endElement(String elementName)
                     throws SAXException {
                     }
 
+                    @Override
                     protected String[] getKeys() {
                         return ELM_KEYS;
                     }
 
+                    @Override
                     protected String[] getMandatoryAttrs() {
                         return MANDAT_ATTR_KEYS;
                     }
@@ -973,6 +981,7 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
                     private final String[] ELM_KEYS = { "ATTR" }; // NOI18N
                     private final String[] MANDAT_ATTR_KEYS = { "NAME" }; // NOI18N
 
+                    @Override
                     public void internalStartElement(String elemName, HashMap mapMandatory, HashMap mapAllowed)
                     throws SAXException {
                         String attrName;
@@ -1005,14 +1014,17 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
                         }
                     }
 
+                    @Override
                     protected String[] getKeys() {
                         return ELM_KEYS;
                     }
 
+                    @Override
                     protected String[] getMandatoryAttrs() {
                         return MANDAT_ATTR_KEYS;
                     }
 
+                    @Override
                     protected String[] getAllowedAttrs() {
                         return XMLMapAttr.Attr.getAttrTypes();
                     }
@@ -1328,21 +1340,25 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
             return parser;
         }
 
-        public void error(SAXParseException exception)
+        @Override
+         public void error(SAXParseException exception)
         throws SAXException {
             throw exception;
         }
 
+        @Override
         public void warning(SAXParseException exception)
         throws SAXException {
             throw exception;
         }
 
+        @Override
         public void fatalError(SAXParseException exception)
         throws SAXException {
             throw exception;
         }
 
+        @Override
         public void startElement(String uri, String lname, String name, Attributes attrs)
         throws SAXException {
             tagInProcess = name = name.trim();
@@ -1358,6 +1374,7 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
             throw new SAXException(NbBundle.getMessage(DefaultAttributes.class, "XML_UnknownElement") + " " + name); // NOI18N
         }
 
+        @Override
         public void endElement(String uri, String lname, String name) throws SAXException {
             for (int i = 0; i < elmKeyService.length; i++) {
                 if (elmKeyService[i].isMyTag(name.trim()) != -1) {
@@ -1370,6 +1387,7 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
             throw new SAXException(NbBundle.getMessage(DefaultAttributes.class, "XML_UnknownElement") + " " + name); // NOI18N
         }
 
+        @Override
         public void characters(char[] ch, int start, int length)
         throws SAXException {
             for (int i = 0; i < elmKeyService.length; i++) {
@@ -1385,6 +1403,7 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
             ); // NOI18N
         }
 
+        @Override
         public InputSource resolveEntity(java.lang.String pid, java.lang.String sid)
         throws SAXException {
             if ((pid != null) && pid.equals(publicId)) {

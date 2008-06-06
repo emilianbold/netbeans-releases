@@ -37,7 +37,7 @@
           'type' :
            { 'id' : 'dojo', 
              'libs' : [
-                   '/resources/dojo/resources/libs/dojo/v0.4.3/djd43.js',
+                   '../../resources/libs/dojo/v0.4.3/djd43.js',
 //Do not Remove -- Begin
 //__LIBS_JS_SCRIPTS__
 //Do not Remove -- End
@@ -47,7 +47,6 @@
                'resources' : [
                    '../../resources/libs/dojo/LICENSE',
                    '../../resources/libs/dojo/v0.4.3/src',
-                   '../../resources/libs/dojo/v0.4.3/djd43.js',
 //Do not Remove -- Begin
 //__RESOURCES_DOJO_SCRIPTS__
 //Do not Remove -- End
@@ -55,7 +54,7 @@
                    '../rdj/Support.js',
                    '../rdj/TestResourcesTable.html',
                    '../TestResourcesTable.jsp',
-                   '../Readme.html',
+                   '../Readme.txt',
                    '../rjs/TestStubs.html'
                ]
          }      

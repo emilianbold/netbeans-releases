@@ -127,7 +127,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
     @Override
     public Text getThirdPartyLicense() {
-        final String text = parseString("$R{" + THIRDPARTYLICENSE_RESOURCE + "}");
+        final String text = parseString("$R{" + THIRDPARTYLICENSE_RESOURCE + ";utf-8}");
         return new Text(text, Text.ContentType.PLAIN_TEXT);
     }
 }

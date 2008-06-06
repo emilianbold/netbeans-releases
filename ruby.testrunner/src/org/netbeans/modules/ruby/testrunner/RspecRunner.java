@@ -86,7 +86,13 @@ public class RspecRunner implements TestRunner {
     }
 
     public void runSingleTest(FileObject testFile, String testMethod) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // the testMethod param here actually presents the line number 
+        // of the rspec specification in the test file. 
+        List<String> additionalArgs = new ArrayList<String>();
+        additionalArgs.add("--line");
+        additionalArgs.add(testMethod);
+        additionalArgs.add(FileUtil.toFile(testFile).getAbsolutePath());
+        run(FileOwnerQuery.getOwner(testFile), additionalArgs, testFile.getName());
     }
 
     public void runAllTests(Project project) {

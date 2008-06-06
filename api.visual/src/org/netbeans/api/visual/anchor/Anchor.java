@@ -227,6 +227,14 @@ public abstract class Anchor implements Widget.Dependency {
         return oppositeAnchor != null ? oppositeAnchor.getRelatedSceneLocation () : null;
     }
 
+    public boolean allowsArbitraryConnectionPlacement() {
+        return false ;
+    }
+
+    public List<Point> compute(List<Point> bestPoints) {
+        return bestPoints ;
+    }
+    
     /**
      * Computes a result (position and direction) for a specific entry.
      * @param entry the entry

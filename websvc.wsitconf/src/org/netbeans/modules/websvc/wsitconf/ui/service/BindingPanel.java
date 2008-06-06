@@ -257,7 +257,7 @@ public class BindingPanel extends SectionInnerPanel {
 
         ConfigVersion userExpectedCfgVersion = getUserExpectedConfigVersion();
         if (source.equals(cfgVersionCombo)) {
-            PolicyModelHelper.setConfigVersion(binding, userExpectedCfgVersion);
+            PolicyModelHelper.setConfigVersion(binding, userExpectedCfgVersion, project);
         }
         
         RMModelHelper rmh = RMModelHelper.getInstance(userExpectedCfgVersion);
@@ -268,7 +268,7 @@ public class BindingPanel extends SectionInnerPanel {
                 rmh.enableRM(binding, rmChBox.isSelected());
                 if (securityChBox.isSelected()) {
                     if (!ProfilesModelHelper.isSCEnabled(binding)) {
-                        ProfilesModelHelper.getInstance(userExpectedCfgVersion).enableSecureConversation(binding, true);
+                        ProfilesModelHelper.getInstance(userExpectedCfgVersion).setSecureConversation(binding, true);
                     }
                     if (ConfigVersion.CONFIG_1_2.equals(userExpectedCfgVersion) && rmChBox.isSelected()) {
                         String profile = ProfilesModelHelper.getSecurityProfile(binding);
@@ -455,7 +455,7 @@ public class BindingPanel extends SectionInnerPanel {
             
             boolean defaults = devDefaultsChBox.isSelected();
 
-            profConfigButton.setEnabled(secSelected && !defaults);
+            profConfigButton.setEnabled(secSelected);
             
             if (secSelected) {                
 

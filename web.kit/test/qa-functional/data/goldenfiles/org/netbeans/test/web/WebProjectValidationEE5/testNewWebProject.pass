@@ -1,6 +1,6 @@
 + WebJ2EE5Project [Main] 
 .+ Web Pages 
-..+ WEB-INF
+..+ WEB-INF 
 ...+ sun-web.xml
 ...+ web.xml
 ..+ index.jsp

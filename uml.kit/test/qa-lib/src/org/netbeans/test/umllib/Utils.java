@@ -51,11 +51,14 @@
 package org.netbeans.test.umllib;
 
 
+import java.awt.Component;
+import java.awt.Container;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.EventDispatcher;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -320,5 +323,90 @@ public class Utils {
             this.lastDiagramNode=lastDiagramNode;
             this.dOp=dOp;
         }
-    }     
+    }  
+    
+     
+    public static void log(String msg) {
+          org.netbeans.jemmy.JemmyProperties.getCurrentOutput().print("------- "+msg+"\n");
+          System.out.println(msg+"\n");
+    }
+    
+     static String log = "LOG: ";
+
+
+    public static void printComponentList(Container container, int tabCount) {
+        Component[] components = container.getComponents();
+        for (int i = 0; i < components.length; i++) {
+            Component component = components[i];
+
+            printLineToJemmyLog(log + "~~~PrintComponentList~~~~");
+            System.out.println("~~~PrintComponentList~~~~");
+            for (int j = 0; j < tabCount; j++) {
+                printToJemmyLog("\t");
+                System.out.print("\t");
+            }
+            printLineToJemmyLog(log + "+++ COMPONENT = " + component);
+            System.out.println("+++ COMPONENT = " + component);
+            // print next level
+            if (component instanceof Container) {
+                printComponentList((Container) component, tabCount + 1);
+            }
+        }
+    }
+
+    public static void printXmlDump(String loc) {
+        try {
+            Thread.sleep(5000);
+        } catch (Exception e) {
+        }
+        try {
+            org.netbeans.jemmy.util.Dumper.dumpAll(loc);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static void printXmlDumpComponent(Component c, String loc) {
+        try {
+            Thread.sleep(5000);
+        } catch (Exception e) {
+        }
+        try {
+            org.netbeans.jemmy.util.Dumper.dumpComponent(c, loc);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Send output with line return to jemmy log
+     * @param out
+     */
+    public static void printLineToJemmyLog(String out) {
+        org.netbeans.jemmy.JemmyProperties.getCurrentOutput().printLine(out);
+    }
+
+    /**
+     * Send output to jemmy log
+     * @param out
+     */
+    public static void printToJemmyLog(String out) {
+        org.netbeans.jemmy.JemmyProperties.getCurrentOutput().print(out);
+    }
+
+    /**
+     * Wait for specified time.
+     * @param millisec Amount of milliseconds.
+     */
+    public static void wait(int millisec) {
+        System.out.println("Sleep to " + millisec / 1000 + " seconds");
+        printLineToJemmyLog(log + "Sleep to " + millisec / 1000 + " seconds");
+        EventDispatcher.waitQueueEmpty();
+        try {
+            Thread.sleep(millisec);
+        } catch (Exception e) {
+        }
+        EventDispatcher.waitQueueEmpty();
+    }
 }
+ 

@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.ruby;
 
-import org.netbeans.modules.gsf.api.Indexer;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedField;
@@ -56,11 +55,6 @@ public class RubyIndexerTest extends RubyTestBase {
         super(testName);
     }
 
-    @Override
-    public Indexer getIndexer() {
-        return new RubyIndexer();
-    }
-    
     @Override
     protected String prettyPrintValue(String key, String value) {
         if (value == null) {

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<palette_item version="1.0">
+  <element name="DerivationClassifier" />
+
+  <icon16 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/derivation-classifier.png" />
+  <icon32 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/derivation-classifier-32.png" />
+
+  <description localizing-bundle="org.netbeans.modules.uml.diagrams.resources.palette.Bundle"
+               display-name-key="NAME_DerivationClassifier"
+               tooltip-key="HINT_DerivationClassifier" />
+</palette_item>

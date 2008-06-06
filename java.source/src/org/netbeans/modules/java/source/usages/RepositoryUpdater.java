@@ -2069,7 +2069,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     final String message = NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompile",rootFile.getAbsolutePath());
                     handle.setDisplayName(message);
                 }
-                System.err.println("toCompile=" + toCompile);
+                //System.err.println("toCompile=" + toCompile);
                 errorBadgesToRefresh.addAll(batchCompile(toCompile, rootFo, cpInfo, sa, dirtyCrossFiles,
                         compiledFiles, allowCancel ? canceled : null, added,
                         isInitialCompilation ? RepositoryUpdater.this.closed:null, toRecompile, misplacedSource2FQNs));

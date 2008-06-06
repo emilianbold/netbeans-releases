@@ -46,7 +46,6 @@ import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import javax.swing.SwingUtilities;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
@@ -56,15 +55,13 @@ import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jellytools.actions.RedeployProjectAction;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
-import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbTestSuite;
@@ -84,13 +81,10 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
 
     static {
         PROJECT_NAME = "WebJ2EE5Project"; // NOI18N
-        PROJECT_FOLDER = PROJECT_LOCATION + File.separator + PROJECT_NAME;
+//        PROJECT_FOLDER = PROJECT_LOCATION + File.separator + PROJECT_NAME;
     }
-
     protected TestURLDisplayer urlDisplayer;
-    private static final String BUILD_SUCCESSFUL = "BUILD SUCCESSFUL";
     private ServerInstance server;
-    protected static int logIdx = 0;
 
     /** Need to be defined because of JUnit */
     public WebProjectValidationEE5(String name) {
@@ -101,6 +95,7 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new WebProjectValidationEE5("testPreconditions"));
         suite.addTest(new WebProjectValidationEE5("testNewWebProject"));
+        suite.addTest(new WebProjectValidationEE5("testRedeployProject"));
         suite.addTest(new WebProjectValidationEE5("testNewJSP"));
         suite.addTest(new WebProjectValidationEE5("testNewJSP2"));
 //        suite.addTest(new WebProjectValidationEE5("testJSPNavigator"));
@@ -204,9 +199,9 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
 //        ProjectSupport.waitScanFinished();
 //        // XXX HACK
         WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
-        new Node(webPages,"index.jsp");//NOI18N
-        new Node(webPages,"WEB-INF|web.xml");//NOI18N
-        new Node(webPages,"WEB-INF|sun-web.xml");//NOI18N
+        new Node(webPages, "index.jsp");//NOI18N
+        new Node(webPages, "WEB-INF|web.xml");//NOI18N
+        new Node(webPages, "WEB-INF|sun-web.xml");//NOI18N
 //        new Node(webPages,"META-INF|context.xml");//NOI18N
         ref(Util.dumpProjectView(PROJECT_NAME));
         compareReferenceFiles();
@@ -230,6 +225,16 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
     //compareReferenceFiles();
     //compareDD();
     }
+
+    public void testRedeployProject() throws IOException {
+        Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
+        Util.cleanStatusBar();
+        new RedeployProjectAction().perform(rootNode);
+        waitBuildSuccessful();
+        logAndCloseOutputs();
+    //MainWindowOperator.getDefault().waitStatusText("Finished building");
+    }
+
     public void testStopServer() throws Exception {
         server.stop();
         //try { Thread.currentThread().sleep(5000); } catch (InterruptedException e) {}
@@ -237,11 +242,13 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
         URLConnection connection = url.openConnection();
         try {
             connection.connect();
-            fail("Connection to: "+url+" established, but the server" +
+            fail("Connection to: " + url + " established, but the server" +
                     " should not be running.");
-        } catch (ConnectException e) {  }
+        } catch (ConnectException e) {
+            System.out.println("Exception in testStopServer occured!");
+        }
     }
-    
+
     public void testStartServer() throws Exception {
         server.start();
         URL url = server.getServerURL();
@@ -258,74 +265,9 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
         }
     }
 
-    private void logAndCloseOutputs() {
-        OutputTabOperator outputTab;
-        long timeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        try {
-            do {
-                try {
-                    outputTab = new OutputTabOperator("");
-                } catch (TimeoutExpiredException e) {
-                    // probably no more tabs so ignore it and continue
-                    break;
-                }
-                String logName = "Output" + logIdx++ + ".log";
-                log(logName, outputTab.getName() + "\n-------------\n\n" + outputTab.getText());
-                outputTab.close();
-            } while (true);
-        } finally {
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", timeout);
-        }
-    }
-
-    private void waitBuildSuccessful() {
-        OutputTabOperator console = new OutputTabOperator(PROJECT_NAME);
-        console.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 180000);
-        console.waitText(BUILD_SUCCESSFUL);
-    }
-
-    private void initDisplayer() {
-        if (urlDisplayer == null) {
-            urlDisplayer = TestURLDisplayer.getInstance();
-        }
-        urlDisplayer.invalidateURL();
-    }
-
-    private void assertDisplayerContent(String substr) {
-        try {
-            urlDisplayer.waitURL();
-        } catch (InterruptedException ex) {
-            throw new JemmyException("Waiting interrupted.", ex);
-        }
-        String page = urlDisplayer.readURL();
-        boolean contains = page.indexOf(substr) > -1;
-        if (!contains) {
-            log("DUMP OF: " + urlDisplayer.getURL() + "\n");
-            log(page);
-        }
-        assertTrue("The '" + urlDisplayer.getURL() + "' page does not contain '" + substr + "'", contains);
-    }
-
-    private void assertContains(String text, String value) {
-        assertTrue("Assertation failed, cannot find:\n" + value + "\nin the following text:\n" + text, text.contains(value));
-    }
-
     public String getProjectFolder(String project) {
-        return PROJECT_LOCATION + File.separator + project;
-    }
-
-    protected void installJemmyQueue() {
-        try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-
-                public void run() {
-                    QueueTool.installQueue();
-                }
-            });
-        } catch (Exception ex) {
-            throw new JemmyException("Cannot install Jemmy Queue.", ex);
-        }
+        String strLocation = PROJECT_LOCATION + File.separator + project;
+        return strLocation;
     }
 
     private static class ServerInstance {

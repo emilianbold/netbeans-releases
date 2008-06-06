@@ -52,25 +52,19 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.CharBuffer;
-import java.util.prefs.Preferences;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.groovy.editor.Formatter;
 import org.netbeans.modules.groovy.editor.GroovyIndex;
 import org.netbeans.modules.groovy.editor.GroovyLanguage;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
-import org.netbeans.modules.groovy.editor.options.CodeStyle;
-import org.netbeans.modules.groovy.editor.options.FmtOptions;
 import org.netbeans.modules.gsf.GsfTestBase;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
-import org.netbeans.modules.gsf.api.GsfLanguage;
-import org.netbeans.modules.gsf.api.Indexer;
-import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
 /**
@@ -95,7 +89,7 @@ public class GroovyTestBase extends GsfTestBase {
     }
 
     @Override
-    protected GsfLanguage getPreferredLanguage() {
+    protected DefaultLanguageConfig getPreferredLanguage() {
         return new GroovyLanguage();
     }
     
@@ -321,16 +315,4 @@ public class GroovyTestBase extends GsfTestBase {
             return cb.toString();
         }
     }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Indexing Tests
-    ////////////////////////////////////////////////////////////////////////////
-    public Indexer getIndexer() {
-        return null;
-    }
-
-    protected String prettyPrintValue(String key, String value) {
-        return value;
-    }
-
 }

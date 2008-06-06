@@ -110,15 +110,13 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-ruby">
                 <file name="hints.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.HintsProvider"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.hints.infrastructure.RubyHintsProvider"/>
+                   <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.hints.infrastructure.RubyHintsProvider"/>
                 </file>
             </folder>
         </folder>
         <folder name="application">
             <folder name="x-httpd-eruby">
                 <file name="hints.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.HintsProvider"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.hints.infrastructure.RubyHintsProvider"/>
                 </file>
             </folder>

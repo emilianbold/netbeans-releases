@@ -56,9 +56,6 @@ import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.ui.products.ad.projecttreedefaultengine.FilteredItemManager;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeDiagram;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeFolder;
-import org.netbeans.modules.uml.ui.swing.drawingarea.DrawingAreaEventsAdapter;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.scm.ISCMDiagramItem;
@@ -88,7 +85,8 @@ import org.netbeans.modules.uml.project.UMLProjectHelper;
 import org.netbeans.modules.uml.project.ui.nodes.UMLDiagramNode;
 import org.netbeans.modules.uml.project.ui.nodes.NBNodeFactory;
 import java.util.Enumeration;
-import java.util.logging.Logger;
+import org.netbeans.modules.uml.ui.support.diagramsupport.DrawingAreaEventsAdapter;
+import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
 
 /**
  *
@@ -97,8 +95,6 @@ import java.util.logging.Logger;
 public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
 	implements ISCMEventsSink
 {
-        private static final Logger LOG = 
-                Logger.getLogger("org.netbeans.modules.uml.project.ui.NetBeansUMLProjectTreeModel");
 	private ITreeItemExpandContext mContext = null;
 	private DispatchHelper m_DispatcherHelper = new DispatchHelper();
 	private ProjectTreeNodeFactory mFactory = new NBNodeFactory();
@@ -121,9 +117,8 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
 		new WeakHashMap<String, UMLDiagramsRootNode>();
 	
 	private FilteredItemManager diagramOnlyFilter = new FilteredItemManager();
-	private DrawingAreaSink mDrawingAreaSink = new DrawingAreaSink();
-	private IProject mProject = null;
-	private Object lock = new Object();
+//	private DrawingAreaSink mDrawingAreaSink = new DrawingAreaSink();
+	
 	
 	/**
 	 *
@@ -141,10 +136,11 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
 		return mFactory;
 	}
 	
-	public IDrawingAreaEventsSink getDrawingAreaListener()
-	{
-		return mDrawingAreaSink;
-	}
+        // TODO: meteora
+//	public IDrawingAreaEventsSink getDrawingAreaListener()
+//	{
+//		return mDrawingAreaSink;
+//	}
 	
 	public void fireDiagramsExpanding(UMLDiagramsRootNode node, IProject project)
 	{
@@ -263,7 +259,7 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
                     parent.addChild(node);
 
                     if (!(node instanceof ITreeFolder))
-                        addNode(node);
+                    addNode(node);
             }
 	}
 	
@@ -487,14 +483,16 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
 		return getModelRootNode(parent);
 	}
 	
-        public UMLDiagramsRootNode getDiagramsRootNode(IProject project)
-	{
-            return (project != null ?  mDiagramsNodeMap.get(project.getXMIID()) : null);
-	}
-        
-        public boolean isDiagramsRootNode(ITreeItem node) 
+        public UMLDiagramsRootNode getDiagramsRootNode(IProject project) 
         {
-            return (node instanceof UMLDiagramsRootNode);
+            
+            UMLDiagramsRootNode diagramsRootNode = null;
+            if ( project != null)
+            {
+                diagramsRootNode = mDiagramsNodeMap.get(project.getXMIID());
+            }
+            
+            return diagramsRootNode;
         }
 	
 	/**
@@ -661,9 +659,9 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
 						nodeList.remove(index);
 				}
 				
-				if (nodeList.size() == 0) 
+				if (nodeList.size() == 0)
 					mNodeMap.remove(key);
-                        }
+			}
 		} // if node !null
 	}
 	
@@ -825,6 +823,10 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
                         String filename = diagram.getFilename();
                         mDiagramNodeMap.put(filename, key);
                         
+                        // cvc - 6294480 (start)
+                        // if Diagrams node is expanded before Model node, things
+                        // get out of whack and diagram nodes don't get removed
+                        // when deleted.
 //                        UMLModelRootNode modelRootNode = getModelRootNode(node);
 //                        
 //                        if (modelRootNode != null && mDiagramsNodeMap != null)
@@ -835,20 +837,14 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
 //                            
 //                            if (diagramsNode != null)
 //                            {
-//                                if ( !alreadyHasChild(diagramsNode, node)) 
-//                                {
-//                                    ITreeItem nodeCopy = 
-//                                            mFactory.createDiagramNode(diagram);
-//
-//                                    String diagramName = diagram.getNameWithAlias();
-//                                    LOG.info("*** addNode: diagramNameWithAlias = "+
-//                                            diagramName);
-//                                    nodeCopy.setDisplayedName(diagramName, false);
-//                                    nodeCopy.setName(diagramName);
-//                                    diagramsNode.addChild(nodeCopy);
-//                                }
+//                                ITreeItem nodeCopy =
+//                                        mFactory.createDiagramNode(diagram);
+//                                
+//                                diagramsNode.removeChild(node);
+//                                diagramsNode.addChild(nodeCopy);
 //                            }
 //                        }
+                        // cvc - 6294480 (end)
                     }
                 }
                 
@@ -867,14 +863,14 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
             }
         }
 	
-	public class DrawingAreaSink extends DrawingAreaEventsAdapter
-        {
-            public void onDrawingAreaPostCreated(
-                    IDrawingAreaControl pDiagramControl,
-                    IResultCell cell)
-            {
-                // Moved the logic to create a diagram node under 
-                // Diagrams root node to ADProjectTreeEngine.addDiagramNode()
+//	public class DrawingAreaSink extends DrawingAreaEventsAdapter
+//        {
+            // Moved the logic to create a diagram node under 
+            // Diagrams root node to ADProjectTreeEngine.addDiagramNode()
+//            public void onDrawingAreaPostCreated(
+//                    IDrawingAreaControl pDiagramControl,
+//                    IResultCell cell)
+//            {
 //                if (pDiagramControl != null)
 //                {
 //                    final IDrawingAreaControl control = pDiagramControl;
@@ -897,18 +893,15 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
 //                                
 //                                ITreeDiagram node =
 //                                        factory.createDiagramNode(proxy);
-//                                String diagramName = proxy.getNameWithAlias();
-//                                LOG.info("*** DrawingAreaSink.onDrawingAreaPostCreated: diagramNameWithAlias = "+ diagramName);
-//                                node.setDisplayedName(diagramName, false);
-//                                node.setName(diagramName);
-//                                addItem(diagramsNode, node);
+//                                
+//                                diagramsNode.addChild(node);
 //                            }
 //                        }
 //                    }
 //                }
-            }
-        }
-        
+//            }
+//        }
+                    
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.core.scm.ISCMEventsSink#onPreFeatureExecuted(int, org.netbeans.modules.uml.core.scm.ISCMItemGroup, org.netbeans.modules.uml.core.scm.ISCMOptions, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
     */

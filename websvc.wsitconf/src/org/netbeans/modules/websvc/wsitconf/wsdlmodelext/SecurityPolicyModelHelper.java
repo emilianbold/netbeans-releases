@@ -95,6 +95,7 @@ import java.util.List;
 import java.util.Vector;
 import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.rm.RMQName;
+import org.netbeans.modules.websvc.wsitmodelext.security.Attachments;
 import org.netbeans.modules.websvc.wsitmodelext.security.Trust13;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.RequireIssuerSerialReference;
 
@@ -472,12 +473,14 @@ public class SecurityPolicyModelHelper {
 
         // ENCRYPTED PARTS FIRST
         List<Body> bodies = Collections.emptyList();
+        List<Attachments> attchs = Collections.emptyList();
         List<Header> headers = Collections.emptyList();
         List<XPath> xpaths = Collections.emptyList();
         EncryptedParts encryptedParts = (EncryptedParts)PolicyModelHelper.getTopLevelElement(p, EncryptedParts.class,false);
         EncryptedElements encryptedElements = (EncryptedElements)PolicyModelHelper.getTopLevelElement(p, EncryptedElements.class,false);
         if (encryptedParts != null) {
             bodies = encryptedParts.getExtensibilityElements(Body.class);
+            attchs = encryptedParts.getExtensibilityElements(Attachments.class);
             headers = encryptedParts.getExtensibilityElements(Header.class);
         }
         if (encryptedElements != null) {
@@ -487,6 +490,15 @@ public class SecurityPolicyModelHelper {
         if ((bodies != null) && (!bodies.isEmpty())) {
             Vector<Object> columns = new Vector<Object>();
             columns.add(TargetElement.DATA, new MessageBody());
+            columns.add(TargetElement.SIGN, Boolean.FALSE);
+            columns.add(TargetElement.ENCRYPT, Boolean.TRUE);
+            columns.add(TargetElement.REQUIRE, Boolean.FALSE);
+            rows.add(columns);
+        }
+        // ATTACHMENTS
+        if ((attchs != null) && (!attchs.isEmpty())) {
+            Vector<Object> columns = new Vector<Object>();
+            columns.add(TargetElement.DATA, new MessageAttachments());
             columns.add(TargetElement.SIGN, Boolean.FALSE);
             columns.add(TargetElement.ENCRYPT, Boolean.TRUE);
             columns.add(TargetElement.REQUIRE, Boolean.FALSE);
@@ -521,6 +533,7 @@ public class SecurityPolicyModelHelper {
         SignedElements signedElements = (SignedElements)PolicyModelHelper.getTopLevelElement(p, SignedElements.class,false);
         if (signedParts != null) {
             bodies = signedParts.getExtensibilityElements(Body.class);
+            attchs = signedParts.getExtensibilityElements(Attachments.class);
             headers = signedParts.getExtensibilityElements(Header.class);
         }
         if (signedElements != null) {
@@ -535,6 +548,20 @@ public class SecurityPolicyModelHelper {
             } else {
                 Vector<Object> columns = new Vector<Object>();
                 columns.add(TargetElement.DATA, body);
+                columns.add(TargetElement.SIGN, Boolean.TRUE);
+                columns.add(TargetElement.ENCRYPT, Boolean.FALSE);
+                columns.add(TargetElement.REQUIRE, Boolean.FALSE);
+                rows.add(columns);
+            }
+        }
+        if ((attchs != null) && (!attchs.isEmpty())) {
+            MessageAttachments att = new MessageAttachments();
+            Vector existing = targetExists(rows, att);
+            if (existing != null) {
+                existing.set(TargetElement.SIGN, Boolean.TRUE);
+            } else {
+                Vector<Object> columns = new Vector<Object>();
+                columns.add(TargetElement.DATA, att);
                 columns.add(TargetElement.SIGN, Boolean.TRUE);
                 columns.add(TargetElement.ENCRYPT, Boolean.FALSE);
                 columns.add(TargetElement.REQUIRE, Boolean.FALSE);
@@ -724,6 +751,19 @@ public class SecurityPolicyModelHelper {
                         }
                         addBody(signedParts, wcf);
                     }
+                } else if (te instanceof MessageAttachments) {
+                    if (encrypt) {
+                        if (encryptedParts == null) {
+                            encryptedParts = pmh.createElement(topLevel, SecurityPolicyQName.ENCRYPTEDPARTS.getQName(configVersion), EncryptedParts.class, false);
+                        }
+                        addAttachments(encryptedParts, wcf);
+                    }
+                    if (sign) {
+                        if (signedParts == null) {
+                            signedParts = pmh.createElement(topLevel, SecurityPolicyQName.SIGNEDPARTS.getQName(configVersion), SignedParts.class, false);
+                        }
+                        addAttachments(signedParts, wcf);
+                    }
                 }
             }
             if ((comp instanceof BindingInput) || (comp instanceof BindingOutput) || (comp instanceof BindingFault)) {
@@ -749,6 +789,7 @@ public class SecurityPolicyModelHelper {
         if ("AckRequested".equals(name)) return new MessageHeader(MessageHeader.RM_ACKREQUESTED);   //NOI18N
         if ("SequenceAcknowledgement".equals(name)) return new MessageHeader(MessageHeader.RM_SEQUENCEACK);   //NOI18N
         if ("Sequence".equals(name)) return new MessageHeader(MessageHeader.RM_SEQUENCE);           //NOI18N
+        if ("CreateSequence".equals(name)) return new MessageHeader(MessageHeader.RM_CREATESEQUENCE);           //NOI18N
         return null;
     }
 
@@ -801,6 +842,10 @@ public class SecurityPolicyModelHelper {
             h.setName("Sequence");  //NOI18N
             h.setNamespace(rmNspace);
         }
+        if (MessageHeader.RM_CREATESEQUENCE.equals(item)) {
+            h.setName("CreateSequence");  //NOI18N
+            h.setNamespace(rmNspace);
+        }
         if (h != null) {
             c.addExtensibilityElement(h);
         }
@@ -824,6 +869,13 @@ public class SecurityPolicyModelHelper {
         return b;
     }
 
+    private ExtensibilityElement addAttachments(WSDLComponent c, WSDLComponentFactory wcf) {
+        Attachments a = null;
+        a = (Attachments)wcf.create(c, SecurityPolicyQName.ATTACHMENTS.getQName(configVersion));
+        c.addExtensibilityElement(a);
+        return a;
+    }
+    
     /**************************** SECURITY BINDING TYPE *********************/
 
     /**

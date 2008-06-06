@@ -52,7 +52,7 @@ import org.netbeans.jellytools.nodes.Node;
 public class DocumentsAction extends ActionNoBlock {
 
     /** Window main menu item. */
-    private static final String windowItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle",
+    private static final String windowItem = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle",
                                                                      "Menu/Window");
 
     /** "Documents..." main menu item. */

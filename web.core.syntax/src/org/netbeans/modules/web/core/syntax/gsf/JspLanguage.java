@@ -42,6 +42,8 @@ package org.netbeans.modules.web.core.syntax.gsf;
 
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 
 public class JspLanguage extends DefaultLanguageConfig {
@@ -75,5 +77,28 @@ public class JspLanguage extends DefaultLanguageConfig {
     @Override
     public String getPreferredExtension() {
         return "jsp"; // NOI18N
+    }
+
+    @Override
+    public boolean isUsingCustomEditorKit() {
+        return true;
+    }
+
+    // Service Registrations
+    
+    @Override
+    public Parser getParser() {
+        // we need the parser and the StructureScanner to enable navigator of embedded languages
+        return new JspGSFParser();
+    }
+
+    @Override
+    public boolean hasStructureScanner() {
+        return true;
+    }
+
+    @Override
+    public StructureScanner getStructureScanner() {
+        return new JspStructureScanner();
     }
 }

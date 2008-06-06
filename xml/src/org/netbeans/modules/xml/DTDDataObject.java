@@ -78,11 +78,6 @@ public final class DTDDataObject extends MultiDataObject implements XMLDataObjec
     /** Cookie Manager */
     private final DataObjectCookieManager cookieManager;
 
-    
-    //
-    // init
-    //
-
     public DTDDataObject (final FileObject obj, final UniFileLoader loader) throws DataObjectExistsException {
         super (obj, loader);
                 
@@ -100,20 +95,10 @@ public final class DTDDataObject extends MultiDataObject implements XMLDataObjec
         new CookieManager (this, set, DTDCookieFactoryCreator.class);
     }
 
-//     // from XMLDataObjectLook
-//     public void updateTextDocument () {
-//         EditorCookie es = (EditorCookie)getCookie (EditorCookie.class);
-//         if (es != null) {
-//             es.close();
-//         }
-//     }
+    @Override
     public final Lookup getLookup() {
-        return Lookups.fixed(new Object[]{
-            super.getLookup(),
-            this,
-            XmlFileEncodingQueryImpl.singleton()});
+        return getCookieSet().getLookup();
     }
-
 
     /**
      */

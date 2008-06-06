@@ -40,9 +40,15 @@ package org.netbeans.test.j2ee;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.ConnectException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.BuildProjectAction;
+import org.netbeans.jellytools.actions.RedeployProjectAction;
+import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
@@ -52,13 +58,14 @@ import org.netbeans.junit.NbTestSuite;
 
 /**
  *
- * @author dk198696
+ * @author Dan.Kolar@sun.com
  */
 public class VisualJSFSamples extends JellyTestCase {
 
     protected static int logIdx = 0;
     protected static final String PROJECT_LOCATION = System.getProperty("xtest.userdir");
     private static final String BUILD_SUCCESSFUL = "BUILD SUCCESSFUL";
+    private ServerInstance server;
 
     /** Need to be defined because of JUnit */
     public VisualJSFSamples(String name) {
@@ -70,27 +77,28 @@ public class VisualJSFSamples extends JellyTestCase {
         suite.addTest(new VisualJSFSamples("testNewCorporateTravelCenterSample"));
         suite.addTest(new VisualJSFSamples("testBuildCorporateTravelCenterSample"));
         suite.addTest(new VisualJSFSamples("testCleanCorporateTravelCenterSample"));
-//        suite.addTest(new EnterpriseSamples("testRunCustomerCMPSample"));
+        suite.addTest(new VisualJSFSamples("testRedeployCorporateTravelCenterSample"));
         suite.addTest(new VisualJSFSamples("testNewSinglePageCrudWithTableSample"));
         suite.addTest(new VisualJSFSamples("testBuildSinglePageCrudWithTableSample"));
         suite.addTest(new VisualJSFSamples("testCleanSinglePageCrudWithTableSample"));
-//        suite.addTest(new EnterpriseSamples("testRunAnnotationOverrideInterceptorSample"));
+        suite.addTest(new VisualJSFSamples("testRedeploySinglePageCrudWithTableSample"));
         suite.addTest(new VisualJSFSamples("testNewSinglePageCrudWithFormSample"));
         suite.addTest(new VisualJSFSamples("testBuildSinglePageCrudWithFormSample"));
         suite.addTest(new VisualJSFSamples("testCleanSinglePageCrudWithFormSample"));
-//        suite.addTest(new EnterpriseSamples("testRunSinglePageCrudFormSample"));
+        suite.addTest(new VisualJSFSamples("testRedeploySinglePageCrudWithFormSample"));
         suite.addTest(new VisualJSFSamples("testNewTwoPageCrudWithTableSample"));
         suite.addTest(new VisualJSFSamples("testBuildTwoPageCrudWithTableSample"));
         suite.addTest(new VisualJSFSamples("testCleanTwoPageCrudWithTableSample"));
-//        suite.addTest(new EnterpriseSamples("testRunJSFJPASample"));
+        suite.addTest(new VisualJSFSamples("testRedeployTwoPageCrudWithTableSample"));
         suite.addTest(new VisualJSFSamples("testNewMovieAdministrationSample"));
         suite.addTest(new VisualJSFSamples("testBuildMovieAdministrationSample"));
         suite.addTest(new VisualJSFSamples("testCleanMovieAdministrationSample"));
-//        suite.addTest(new EnterpriseSamples("testRunJSFJPACrudSample"));
+        suite.addTest(new VisualJSFSamples("testRedeployMovieAdministrationSample"));
         suite.addTest(new VisualJSFSamples("testNewVIRASample"));
         suite.addTest(new VisualJSFSamples("testBuildVIRASample"));
         suite.addTest(new VisualJSFSamples("testCleanVIRASample"));
-//        suite.addTest(new EnterpriseSamples("testRunLotteryAnnotationSample"));
+        suite.addTest(new VisualJSFSamples("testRedeployVIRASample"));
+        suite.addTest(new VisualJSFSamples("testStopServer"));
         return suite;
     }
 
@@ -114,12 +122,7 @@ public class VisualJSFSamples extends JellyTestCase {
                 "FrameWaiter.WaitFrameTimeout", 180000);
         JemmyProperties.setCurrentTimeout(
                 "DialogWaiter.WaitDialogTimeout", 180000);
-//        server = ServerInstance.getDefault();
-
-    // extend Tomcat running check timeout
-    //        TomcatManager tomcatManager = getTomcatManager();
-    //        tomcatManager.getInstanceProperties().setProperty(
-    //                TomcatProperties.PROP_RUNNING_CHECK_TIMEOUT, "8000");
+        server = ServerInstance.getDefault();
     }
 
     @Override
@@ -208,8 +211,8 @@ public class VisualJSFSamples extends JellyTestCase {
         testCleanProject("TravelCenter");
     }
 
-    public void testRunCustomerCMPSample() throws IOException {
-        testRunProject("TravelCenter");
+    public void testRedeployCorporateTravelCenterSample() throws IOException {
+        testRedeployProject("TravelCenter");
     }
 
     public void testBuildSinglePageCrudWithTableSample() throws IOException {
@@ -220,8 +223,8 @@ public class VisualJSFSamples extends JellyTestCase {
         testCleanProject("SinglePageCrudTable");
     }
 
-    public void testRunAnnotationOverrideInterceptorSample() throws IOException {
-        testRunProject("SinglePageCrudTable");
+    public void testRedeploySinglePageCrudWithTableSample() throws IOException {
+        testRedeployProject("SinglePageCrudTable");
     }
 
     public void testBuildSinglePageCrudWithFormSample() throws IOException {
@@ -232,8 +235,8 @@ public class VisualJSFSamples extends JellyTestCase {
         testCleanProject("SinglePageCrudForm");
     }
 
-    public void testRunSinglePageCrudFormSample() throws IOException {
-        testRunProject("SinglePageCrudForm");
+    public void testRedeploySinglePageCrudWithFormSample() throws IOException {
+        testRedeployProject("SinglePageCrudForm");
     }
 
     public void testBuildTwoPageCrudWithTableSample() throws IOException {
@@ -244,8 +247,8 @@ public class VisualJSFSamples extends JellyTestCase {
         testCleanProject("TwoPageCrudTable");
     }
 
-    public void testRunJSFJPASample() throws IOException {
-        testRunProject("TwoPageCrudTable");
+    public void testRedeployTwoPageCrudWithTableSample() throws IOException {
+        testRedeployProject("TwoPageCrudTable");
     }
 
     public void testBuildMovieAdministrationSample() throws IOException {
@@ -256,8 +259,8 @@ public class VisualJSFSamples extends JellyTestCase {
         testCleanProject("MovieAdmin");
     }
 
-    public void testRunMovieAdminSample() throws IOException {
-        testRunProject("MovieAdmin");
+    public void testRedeployMovieAdministrationSample() throws IOException {
+        testRedeployProject("MovieAdmin");
     }
 
     public void testBuildVIRASample() throws IOException {
@@ -268,8 +271,8 @@ public class VisualJSFSamples extends JellyTestCase {
         testCleanProject("VehicleIncidentReportApplication");
     }
 
-    public void testRunVIRASample() throws IOException {
-        testRunProject("VehicleIncidentReportApplication");
+    public void testRedeployVIRASample() throws IOException {
+        testRedeployProject("VehicleIncidentReportApplication");
     }
 
     protected void sleep(int milis) {
@@ -338,6 +341,29 @@ public class VisualJSFSamples extends JellyTestCase {
 //        editor.closeDiscardAll();
     }
 
+    public void testRedeployProject(String PROJECT_NAME) throws IOException {
+        Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
+        Util.cleanStatusBar();
+        new RedeployProjectAction().perform(rootNode);
+        waitBuildSuccessful(PROJECT_NAME);
+        logAndCloseOutputs();
+    //MainWindowOperator.getDefault().waitStatusText("Finished building");
+    }
+
+    public void testStopServer() throws Exception {
+        server.stop();
+        //try { Thread.currentThread().sleep(5000); } catch (InterruptedException e) {}
+        URL url = server.getServerURL();
+        URLConnection connection = url.openConnection();
+        try {
+            connection.connect();
+            fail("Connection to: " + url + " established, but the server" +
+                    " should not be running.");
+        } catch (ConnectException e) {
+            System.out.println("Exception in testStopServer occured!");
+        }
+    }
+    
     public String getProjectFolder(String PROJECT_NAME) {
         return PROJECT_LOCATION + File.separator + PROJECT_NAME;
     }
@@ -371,5 +397,54 @@ public class VisualJSFSamples extends JellyTestCase {
 //    }
     private void assertContains(String text, String value) {
         assertTrue("Assertation failed, cannot find:\n" + value + "\nin the following text:\n" + text, text.contains(value));
+    }
+
+    private static class ServerInstance {
+
+        private String host;
+        private int serverPort;
+        private String nodeName;
+        private String userName;
+        private String password;
+        private URL serverURL;
+        private static ServerInstance instance;
+
+        private ServerInstance() {
+        }
+
+        public static ServerInstance getDefault() {
+            if (instance == null) {
+                instance = new ServerInstance();
+                instance.host = "localhost";
+                instance.serverPort = 8080;
+                instance.nodeName = "GlassFish V2";
+                instance.userName = "admin";
+                instance.password = "adminadmin";
+            }
+            return instance;
+        }
+
+        public URL getServerURL() {
+            if (serverURL == null) {
+                try {
+                    serverURL = new URL("http", host, serverPort, "");
+                } catch (MalformedURLException mue) {
+                    throw new JemmyException("Cannot create server URL.", mue);
+                }
+            }
+            return serverURL;
+        }
+
+        public J2eeServerNode getServerNode() {
+            return J2eeServerNode.invoke(nodeName);
+        }
+
+        public void stop() {
+            getServerNode().stop();
+        }
+
+        public void start() {
+            getServerNode().start();
+        }
     }
 }

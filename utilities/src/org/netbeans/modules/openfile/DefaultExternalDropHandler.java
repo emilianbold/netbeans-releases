@@ -101,23 +101,17 @@ public class DefaultExternalDropHandler extends ExternalDropHandler {
             return false;
         }
 
-        //TODO - remove the code below once issue #46813 is resolved
-        //#46813 - NetBeans does not support UNC paths
         Object errMsg = null;
         if (fileList.size() == 1) {
             errMsg = openFile(fileList.get(0));
         } else {
             boolean hasSomeSuccess = false;
-            boolean failureNonUNC = false;
             List<String> fileErrs = null;
             for (File file : fileList) {
                 String fileErr = openFile(file);
                 if (fileErr == null) {
                     hasSomeSuccess = true;
                 } else {
-                    if (!OpenFile.isSpecifiedByUNCPath(file)) {
-                        failureNonUNC = true;
-                    }
                     if (fileErrs == null) {
                         fileErrs = new ArrayList<String>(fileList.size());
                     }
@@ -126,11 +120,7 @@ public class DefaultExternalDropHandler extends ExternalDropHandler {
             }
             if (fileErrs != null) {         //some file could not be opened
                 String mainMsgKey;
-                if (!hasSomeSuccess && !failureNonUNC) {
-                    /* all of the files were specified by UNC paths */
-                    mainMsgKey = "MSG_could_not_open_any_file_all_UNC"; //NOI18N
-                    fileErrs = null;
-                } else if (hasSomeSuccess) {
+                if (hasSomeSuccess) {
                     mainMsgKey = "MSG_could_not_open_some_files";       //NOI18N
                 } else {
                     mainMsgKey = "MSG_could_not_open_any_file";         //NOI18N
@@ -188,15 +178,7 @@ public class DefaultExternalDropHandler extends ExternalDropHandler {
     String openFile( File file ) {
         FileObject fo = FileUtil.toFileObject( FileUtil.normalizeFile( file ) );
         if (fo == null) {
-            //TODO - remove once issue #46813 is resolved
-            //#46813 - NetBeans does not support UNC paths
-            String msgKey;
-            if (OpenFile.isSpecifiedByUNCPath(file)) {
-                msgKey = "MSG_UncNotSupported";                         //NOI18N
-            } else {
-                msgKey = "MSG_FilePathTypeNotSupported";                //NOI18N
-            }
-            return NbBundle.getMessage(OpenFile.class, msgKey, file.toString());
+            return NbBundle.getMessage(OpenFile.class, "MSG_FilePathTypeNotSupported", file.toString()); //NOI18N
         }
         return OpenFile.open(fo, -1);
     }

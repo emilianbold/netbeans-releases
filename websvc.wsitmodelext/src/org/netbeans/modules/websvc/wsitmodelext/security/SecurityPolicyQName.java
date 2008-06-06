@@ -78,6 +78,7 @@ public enum SecurityPolicyQName {
     REQUIREDELEMENTS(createSecurityPolicyQName("RequiredElements")),  //NOI18N
     XPATH(createSecurityPolicyQName("XPath")),  //NOI18N
     BODY(createSecurityPolicyQName("Body")),  //NOI18N
+    ATTACHMENTS(createSecurityPolicyQName("Attachments")),  //NOI18N
     HEADER(createSecurityPolicyQName("Header")),  //NOI18N
 
     TRANSPORTBINDING(createSecurityPolicyQName("TransportBinding")),  //NOI18N
@@ -135,6 +136,8 @@ public enum SecurityPolicyQName {
     WSSRELV10TOKEN11(createSecurityPolicyQName("WssRelV10Token11")),  //NOI18N
     WSSRELV20TOKEN11(createSecurityPolicyQName("WssRelV20Token11")),  //NOI18N
 
+    HASHPASSWORD(createSecurityPolicyQName("HashPassword")),  //NOI18N
+    
     INCLUDETOKENATTRIBUTE(createSecurityPolicyQName("IncludeToken")),  //NOI18N
     
     USERNAMETOKEN(createSecurityPolicyQName("UsernameToken")),  //NOI18N

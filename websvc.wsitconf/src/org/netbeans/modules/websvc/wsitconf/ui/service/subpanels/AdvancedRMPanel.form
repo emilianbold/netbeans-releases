@@ -26,9 +26,9 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="deliveryAssuranceCombo" alignment="0" pref="141" max="32767" attributes="0"/>
-                          <Component id="inactivityTimeoutTextfield" pref="141" max="32767" attributes="0"/>
-                          <Component id="maxBufTextField" alignment="0" pref="141" max="32767" attributes="0"/>
+                          <Component id="deliveryAssuranceCombo" alignment="0" pref="135" max="32767" attributes="0"/>
+                          <Component id="inactivityTimeoutTextfield" pref="135" max="32767" attributes="0"/>
+                          <Component id="maxBufTextField" alignment="0" pref="135" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -73,7 +73,7 @@
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/websvc/wsitconf/ui/service/Bundle.properties" key="LBL_AdvancedRM_FlowControl_ACSD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/websvc/wsitconf/ui/service/subpanels/Bundle.properties" key="LBL_AdvancedRM_FlowControl_ACSD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <Events>

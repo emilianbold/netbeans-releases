@@ -144,6 +144,12 @@ made subject to such option by the copyright holder.
         <file name="D-R.shadow">
             <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-RenameAction.instance"/>
         </file>
+        <file name="D-M.shadow">
+            <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-MoveAction.instance"/>
+        </file>
+        <file name="O-DELETE.shadow">
+            <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-SafeDeleteAction.instance"/>
+        </file>
       
     </folder>
 

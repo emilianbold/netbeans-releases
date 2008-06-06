@@ -141,7 +141,7 @@ public final class OpenProjectList {
 
     /** List which holds the open projects */
     private List<Project> openProjects;
-    private HashMap<ModuleInfo, List<Project>> openProjectsModuleInfos;
+    private final HashMap<ModuleInfo, List<Project>> openProjectsModuleInfos;
     
     /** Main project */
     private Project mainProject;
@@ -149,8 +149,6 @@ public final class OpenProjectList {
     /** List of recently closed projects */
     private final RecentProjectList recentProjects;
 
-    /** lock to prevent modifications of the recentTemplates variable from multiple threads */
-    private static Object RECENT_TEMPLATES_LOCK = new Object();
     /** LRU List of recently used templates */
     private final List<String> recentTemplates;
     
@@ -183,9 +181,6 @@ public final class OpenProjectList {
     // Implementation of the class ---------------------------------------------
     
     public static OpenProjectList getDefault() {
-        boolean needNotify = false;
-        
-        Project[] inital = null;
         synchronized ( OpenProjectList.class ) {
             if ( INSTANCE == null ) {
                 INSTANCE = new OpenProjectList();
@@ -239,7 +234,7 @@ public final class OpenProjectList {
         final RequestProcessor RP = new RequestProcessor("Load Open Projects"); // NOI18N
         final RequestProcessor.Task TASK = RP.create(this);
         private int action;
-        private LinkedList<Project> toOpenProjects = new LinkedList<Project>();
+        private final LinkedList<Project> toOpenProjects = new LinkedList<Project>();
         private List<Project> lazilyOpenedProjects;
         private List<String> recentTemplates;
         private Project lazyMainProject;
@@ -771,8 +766,8 @@ public final class OpenProjectList {
     }
     
     public List<Project> getRecentProjects() {
-        return ProjectManager.mutex().readAccess(new Mutex.Action<List>() {
-            public List run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<List<Project>>() {
+            public List<Project> run() {
                 synchronized (OpenProjectList.class) {
                     return recentProjects.getProjects();
                 }
@@ -791,8 +786,8 @@ public final class OpenProjectList {
     }
     
     public List<UnloadedProjectInformation> getRecentProjectsInformation() {
-        return ProjectManager.mutex().readAccess(new Mutex.Action<List>() {
-            public List run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<List<UnloadedProjectInformation>>() {
+            public List<UnloadedProjectInformation> run() {
                 synchronized (OpenProjectList.class) {
                     return recentProjects.getRecentProjectsInfo();
                 }

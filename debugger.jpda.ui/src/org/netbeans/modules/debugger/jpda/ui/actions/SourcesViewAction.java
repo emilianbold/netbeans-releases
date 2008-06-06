@@ -59,7 +59,7 @@ import org.openide.windows.WindowManager;
 
 
 /**
- * Opens Call Stack TopComponent.
+ * Opens Sources TopComponent.
  *
  * @author Jan Jancura
  */

@@ -132,12 +132,7 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
             return;
         }
 
-        try {
-            document = (BaseDocument) info.getDocument();
-        } catch (IOException ioe) {
-            LOG.log(Level.FINEST, "Could not get BaseDocument: {0}", ioe); //NOI18N
-            return;
-        }
+        document = (BaseDocument) info.getDocument();
 
         if (document == null) {
             LOG.log(Level.FINEST, "Could not get BaseDocument. It's null"); //NOI18N

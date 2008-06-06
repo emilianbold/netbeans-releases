@@ -156,10 +156,12 @@ public class DuplicateDetector {
             }
         //}
         }
-        @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
 
-        for ( Node child : list) {
+        for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             visit(child, target);
         }
     }

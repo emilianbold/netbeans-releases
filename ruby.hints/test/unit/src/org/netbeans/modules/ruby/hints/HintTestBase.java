@@ -45,7 +45,6 @@ import org.netbeans.modules.gsf.api.Rule;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyHintsProvider;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -117,6 +116,7 @@ public abstract class HintTestBase extends RubyTestBase {
                 }
                 AstUtilities.addNodesByType(root, nodeIds, nodes);
                 BaseDocument doc = (BaseDocument) info.getDocument();
+                assertNotNull(doc);
                 for (Node n : nodes) {
                     int start = AstUtilities.getRange(n).getStart();
                     int lineStart = Utilities.getRowFirstNonWhite(doc, start);

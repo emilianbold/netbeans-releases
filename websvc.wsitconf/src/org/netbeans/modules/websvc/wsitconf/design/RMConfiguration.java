@@ -181,21 +181,9 @@ public class RMConfiguration implements WSConfiguration {
     }
 
     private void switchIt(final boolean enable) {
-        final ProgressPanel progressPanel = new ProgressPanel(
-                NbBundle.getMessage(RMConfiguration.class, "LBL_Wait")); //NOI18N
-        
-        final ProgressHandle progressHandle = ProgressHandleFactory.createHandle(null);
-        final JComponent progressComponent = ProgressHandleFactory.createProgressComponent(progressHandle);
-                
-        SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    progressHandle.start();
-                    progressHandle.switchToIndeterminate();
-                    progressPanel.open(progressComponent);
-                }
-        });
-
-        RequestProcessor.getDefault().post(new Runnable() {
+       final ConfigRunnable r = new ConfigRunnable();        
+       SwingUtilities.invokeLater(r);
+       RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     try {
                         binding = WSITModelSupport.getBinding(service, implementationFile.getPrimaryFile(), project, true, createdFiles);
@@ -209,8 +197,7 @@ public class RMConfiguration implements WSConfiguration {
                             WSITModelSupport.save(binding);            
                         }
                     } finally {
-                        progressHandle.finish();
-                        progressPanel.close();
+                        r.stop();
                     }
                 }
         });

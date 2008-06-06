@@ -47,6 +47,8 @@
 
 package org.netbeans.modules.uml.designpattern;
 
+import javax.swing.SwingUtilities;
+
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.ICollaboration;
 import org.netbeans.modules.uml.project.UMLProject;
@@ -156,14 +158,32 @@ public class ApplyPatternAction extends CookieAction
                 // user has hit okay on the gui and the gui information
                 // has been validated, so begin the process of applying it
                 manager.setDialog(wiz);
-                manager.applyPattern(pDetails);
+                applyPattern(manager, pDetails);
              }
           }
           else
           {
-             // gui does not need to be displayed, so begin the process of applying
-             manager.applyPattern(pDetails);
+              // gui does not need to be displayed, so begin the process of applying
+              applyPattern(manager, pDetails);
           }
        }
     }
+
+    private void applyPattern(final IDesignPatternManager manager,
+                              final IDesignPatternDetails pDetails)
+    {
+        Runnable runnable = new Runnable() 
+            {
+                public void run() 
+                {
+                    manager.applyPattern(pDetails);
+                }
+            };
+        try {
+            SwingUtilities.invokeAndWait(runnable);
+        } catch (Exception iex) {
+            iex.printStackTrace();
+        }          
+    }
+
 }
