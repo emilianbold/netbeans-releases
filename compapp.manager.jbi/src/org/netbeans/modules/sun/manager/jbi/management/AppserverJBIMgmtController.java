@@ -285,13 +285,6 @@ public class AppserverJBIMgmtController {
             instanceHost = getHostName();
             isLocalHost = true;
         }
-        
-        try {
-            InetAddress.getByName(instanceHost);
-        } catch (UnknownHostException e) {
-            // invalid host name parsing, tomcat for example
-            return false;
-        }
 
         try {
             ObjectName objectName = new ObjectName(HOST_MBEAN_NAME);
@@ -325,18 +318,16 @@ public class AppserverJBIMgmtController {
 
                 // For local domains, use instance LOCATION instead of url location  (#90749)
                 String localInstanceLocation = instance.getLocation();
-                // assert localInstanceLocation != null;
-                if (localInstanceLocation != null) {
-                    localInstanceLocation = localInstanceLocation.replace('\\', '/'); // NOI18N
-                }
-
+                assert localInstanceLocation != null;
+                
+                localInstanceLocation = localInstanceLocation.replace('\\', '/'); // NOI18N
+                
                 if (isLocalHost) {
                     logger.fine("    localInstanceLocation=" + localInstanceLocation);
                     logger.fine("                  appBase=" + appBase);
                 }
 
                 if (!isLocalHost || 
-                        localInstanceLocation != null &&
                         appBase.toLowerCase().startsWith(localInstanceLocation.toLowerCase()) &&
                         new File(localInstanceLocation).exists()) {
                     objectName = new ObjectName(HTTP_PORT_MBEAN_NAME);
