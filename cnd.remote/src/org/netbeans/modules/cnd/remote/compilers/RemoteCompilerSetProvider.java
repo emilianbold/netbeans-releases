@@ -42,7 +42,7 @@ package org.netbeans.modules.cnd.remote.compilers;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetProvider;
 import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
-import org.netbeans.modules.cnd.remote.support.manager.CompilerSetScriptManager.CompilerSetScriptManager;
+import org.netbeans.modules.cnd.remote.support.manager.CompilerSetScriptManager;
 
 /**
  *
