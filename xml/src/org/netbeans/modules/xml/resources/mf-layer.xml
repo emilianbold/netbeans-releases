@@ -54,17 +54,17 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-xml-services-XMLMIMEResolver.xml" url="xml-mime-resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/resources/xmlObject.gif"/>
-                <attr name="position" intvalue="420"/>
+                <attr name="position" intvalue="415"/>
             </file>
             <file name="org-netbeans-modules-xml-services-DTDMIMEResolver.xml" url="dtd-mime-resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/resources/dtdObject.gif"/>
-                <attr name="position" intvalue="430"/>
+                <attr name="position" intvalue="416"/>
             </file>
             <file name="org-netbeans-modules-xml-services-ENTMIMEResolver.xml" url="ent-mime-resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/resources/entObject.gif"/>
-                <attr name="position" intvalue="440"/>
+                <attr name="position" intvalue="417"/>
             </file>
         </folder>
         
