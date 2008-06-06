@@ -42,6 +42,8 @@ package org.netbeans.test.editor.suites.abbrevs;
 
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import javax.swing.ListModel;
 import javax.swing.table.TableModel;
 import junit.framework.Test;
@@ -58,7 +60,7 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.spi.editor.hints.Fix;
+//import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.test.editor.LineDiff;
 
 /**
@@ -72,6 +74,26 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
     public static final String SRC_PACKAGES_PATH =
             Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle",
             "NAME_src.dir");
+
+    private static String getText(Object elementAt)  {
+        try {
+            Method method = elementAt.getClass().getMethod("getText", null);
+            method.setAccessible(true);
+            String desc = (String) method.invoke(elementAt, null);
+            return desc;
+        } catch (IllegalAccessException ex) {
+            ex.printStackTrace();
+        } catch (IllegalArgumentException ex) {
+            ex.printStackTrace();
+        } catch (InvocationTargetException ex) {
+            ex.printStackTrace();
+        } catch (NoSuchMethodException ex) {
+            ex.printStackTrace();
+        } catch (SecurityException ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
     private boolean isInFramework;
 
     /** Creates a new instance of AbbreviationsAddRemove */
@@ -282,8 +304,9 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
         JListOperator jlo = new JListOperator(MainWindowOperator.getDefault());
         int index = -1;
         ListModel model = jlo.getModel();
-        for (int i = 0; i < model.getSize(); i++) {            
-            String desc = ((Fix) model.getElementAt(i)).getText();
+        for (int i = 0; i < model.getSize(); i++) {
+            Object element = model.getElementAt(i);
+            String desc = getText(element);
             if (desc.startsWith(hintPrefix)) {
                 index = i;
             }

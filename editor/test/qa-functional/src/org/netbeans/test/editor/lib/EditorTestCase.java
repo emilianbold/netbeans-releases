@@ -204,7 +204,7 @@ public class EditorTestCase extends JellyTestCase {
      * Close the default project.
      */
     protected void closeDefaultProject() {
-        closeProject(getDefaultProjectName());
+        //closeProject(getDefaultProjectName());
     }
     
     protected void closeProject(String projectName) {
