@@ -34,7 +34,7 @@
             <file name="libdescriptemplate.xml" url="templates/libdescriptemplate.xml"/>
             <file name="CustomComponentCD.java" url="templates/CustomComponentCD.template"/>
             <file name="CustomComponentProducer.java" url="templates/CustomComponentProducer.template"/>
-            
+            <file name="layer.xml" url="templates/layer.xml"/>
         </folder>
     </folder>
 </filesystem>
