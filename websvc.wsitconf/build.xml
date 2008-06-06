@@ -45,14 +45,17 @@ made subject to such option by the copyright holder.
     
     <target name="build61modules">
 
+        <delete dir="61src" failonerror="false"/>
+        <delete file="nb61src.zip" failonerror="false"/>
+
         <condition property="61srcdownloaded">
           <available file="nb61src.zip"/>
         </condition>
         <antcall target="download61src"/>
 
-<!--        <condition property="61srcexpanded">
+        <condition property="61srcexpanded">
           <available file="61src"/>
-        </condition>-->
+        </condition>
         <antcall target="expand61src"/>
 
         <delete dir="61src/websvc.wsitmodelext"/>
@@ -61,7 +64,7 @@ made subject to such option by the copyright holder.
         <mkdir dir="61src/websvc.wsitmodelext"/>   
         <copy todir="61src/websvc.wsitmodelext">
             <fileset dir="../websvc.wsitmodelext"/>
-        </copy>
+        </copy> 
         <mkdir dir="61src/websvc.wsitconf"/>
         <copy todir="61src/websvc.wsitconf">
             <fileset dir="../websvc.wsitconf">
@@ -80,7 +83,7 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="download61src" unless="61srcdownloaded">
-        <get src="http://smetiste.czech.sun.com/builds/netbeans/6.1/fcs/2008-04-21_18-33-08/zip/netbeans-6.1-200804211638-src.zip" dest="nb61src.zip"/>
+        <get src="http://smetiste.czech.sun.com/builds/netbeans/6.1/fixes/latest/zip/netbeans-6.1_fixes-200806060101-src.zip" dest="nb61src.zip"/>
     </target>
 
     <target name="expand61src" unless="61srcexpanded">
