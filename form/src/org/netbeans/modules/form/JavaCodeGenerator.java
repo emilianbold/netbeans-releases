@@ -4382,7 +4382,7 @@ class JavaCodeGenerator extends CodeGenerator {
         
         @Override
         public PropertyEditor getPropertyEditor() {
-            return new FormLoaderSettingsBeanInfo.ListenerGenerationStyleEditor();
+            return new ListenerGenerationStyleEditor();
         }
         
     }
@@ -4437,8 +4437,57 @@ class JavaCodeGenerator extends CodeGenerator {
 
         @Override
         public PropertyEditor getPropertyEditor() {
-            return new FormLoaderSettingsBeanInfo.LayoutCodeTargetEditor(true);
+            return new LayoutCodeTargetEditor(true);
         }
 
+    }
+    
+    public final static class LayoutCodeTargetEditor
+                      extends org.netbeans.modules.form.editors.EnumEditor
+    {
+        public LayoutCodeTargetEditor() {
+            this(false);
+        }
+        public LayoutCodeTargetEditor(boolean specific) {
+            super(specific ?
+                new Object[] {
+                    FormUtils.getBundleString("CTL_LAYOUT_CODE_JDK6"), // NOI18N
+                    new Integer(JavaCodeGenerator.LAYOUT_CODE_JDK6),
+                    "", // NOI18N
+                    FormUtils.getBundleString("CTL_LAYOUT_CODE_LIBRARY"), // NOI18N
+                    new Integer(JavaCodeGenerator.LAYOUT_CODE_LIBRARY),
+                    "" // NOI18N
+                }
+                :
+                new Object[] {
+                    FormUtils.getBundleString("CTL_LAYOUT_CODE_AUTO"), // NOI18N
+                    new Integer(JavaCodeGenerator.LAYOUT_CODE_AUTO),
+                    "", // NOI18N
+                    FormUtils.getBundleString("CTL_LAYOUT_CODE_JDK6"), // NOI18N
+                    new Integer(JavaCodeGenerator.LAYOUT_CODE_JDK6),
+                    "", // NOI18N
+                    FormUtils.getBundleString("CTL_LAYOUT_CODE_LIBRARY"), // NOI18N
+                    new Integer(JavaCodeGenerator.LAYOUT_CODE_LIBRARY),
+                    "" // NOI18N
+                });
+        }
+    }
+    
+    public final static class ListenerGenerationStyleEditor
+                      extends org.netbeans.modules.form.editors.EnumEditor
+    {
+        public ListenerGenerationStyleEditor() {
+            super(new Object[] {
+                FormUtils.getBundleString("CTL_LISTENER_ANONYMOUS_CLASSES"), // NOI18N
+                new Integer(JavaCodeGenerator.ANONYMOUS_INNERCLASSES),
+                "", // NOI18N
+                FormUtils.getBundleString("CTL_LISTENER_CEDL_INNERCLASS"), // NOI18N
+                new Integer(JavaCodeGenerator.CEDL_INNERCLASS),
+                "", // NOI18N
+                FormUtils.getBundleString("CTL_LISTENER_CEDL_MAINCLASS"), // NOI18N
+                new Integer(JavaCodeGenerator.CEDL_MAINCLASS),
+                "" // NOI18N
+            });
+        }
     }
 }
