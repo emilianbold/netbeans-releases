@@ -550,7 +550,7 @@ public final class CsmProjectContentResolver {
                         CsmDeclaration.Kind.VARIABLE_DEFINITION};
         }
         CsmFilter filter = CsmContextUtilities.createFilter(kinds,
-                           strPrefix, match, caseSensitive, fromUnnamedNamespace||needDeclFromUnnamedNS);
+                           strPrefix, match, caseSensitive, true);
         Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(file, filter);
         fillFileLocalVariables(strPrefix, match, it, needDeclFromUnnamedNS, fromUnnamedNamespace, out);
     }
@@ -570,7 +570,7 @@ public final class CsmProjectContentResolver {
                         CsmDeclaration.Kind.VARIABLE_DEFINITION};
         }
         CsmFilter filter = CsmContextUtilities.createFilter(kinds,
-                           strPrefix, match, caseSensitive, fromUnnamedNamespace||needDeclFromUnnamedNS);
+                           strPrefix, match, caseSensitive, true);
         Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(ns, filter);
         fillFileLocalVariables(strPrefix, match, it, needDeclFromUnnamedNS, fromUnnamedNamespace, out);
     }
@@ -707,6 +707,14 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.TYPEDEF
         };
         List res = getNamespaceMembers(ns, classKinds, strPrefix, match, searchNested, false);
+        if (!ns.getProject().isArtificial() && !ns.isGlobal()){
+            for(CsmProject lib : ns.getProject().getLibraries()){
+                CsmNamespace n = lib.findNamespace(ns.getQualifiedName());
+                if (n != null) {
+                    res.addAll(getNamespaceMembers(n, classKinds, strPrefix, match, searchNested, false));
+                }
+            }
+        }
         if (isSortNeeded() && res != null) {
             CsmSortUtilities.sortClasses(res, isCaseSensitive());
         }
