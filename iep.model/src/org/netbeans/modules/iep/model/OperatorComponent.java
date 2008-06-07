@@ -25,6 +25,8 @@ public interface OperatorComponent extends Component {
 
     public static final String PROP_INPUTTYPE = "inputType";
     
+    public static final String PROP_IS_RELATION_INPUT_STATIC = "isRelationInputStatic";
+    
     public static final String PROP_INPUT_ID_LIST = "inputIdList";
 
     public static final String PROP_STATIC_INPUT_ID_LIST = "staticInputIdList";
@@ -94,6 +96,8 @@ public interface OperatorComponent extends Component {
     String getTopoScore();
     
     OperatorType getInputType();
+    
+    boolean isRelationInputStatic();
     
     OperatorType getOutputType();
     

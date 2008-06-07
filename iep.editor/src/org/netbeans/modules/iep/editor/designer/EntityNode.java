@@ -400,19 +400,13 @@ public class EntityNode extends SimpleNode
             JGoPort inputPort = getInputPort();
             if (inputPort != null) {
                 try {
-                    //List inputIdList = new ArrayList();
-                    //List inputSchemaIdList = new ArrayList();
-                    //List staticInputIdList = new ArrayList();
-                    StringBuffer inputIdList = new StringBuffer();
-                    StringBuffer inputSchemaIdList = new StringBuffer();
-                    StringBuffer staticInputIdList = new StringBuffer();
+                    List<String> inputIdList = new ArrayList<String>();
+                    List<String> inputSchemaIdList = new ArrayList<String>();
+                    List<String> staticInputIdList = new ArrayList<String>();
                     boolean isSchemaOwner = false;
-                    
                     isSchemaOwner = (Boolean) mComp.getComponentType().getPropertyType(IS_SCHEMA_OWNER_KEY).getDefaultValue();
                     
-                    
-                    int counter = 0;
-                    String resultantOutputSchemaId = "";
+                    boolean isRelationInputStatic = isRelationInputStatic();
                     
                     int maxTopoScore = 0;
                     for (JGoListPosition pos = inputPort.getFirstLinkPos(); pos != null; pos = inputPort.getNextLinkPos(pos)) {
@@ -427,26 +421,19 @@ public class EntityNode extends SimpleNode
                         String outputType = fromComp.getOutputType().getType();
                         String id = fromComp.getProperty(ID_KEY).getValue();
                         if (outputType.equals(IO_TYPE_TABLE)) {
-                            if(counter != 0) {
-                                staticInputIdList.append("\\");
-                            }
-                            staticInputIdList.append(id);
+                            staticInputIdList.add(id);
+                        } else if (outputType.equals(IO_TYPE_RELATION) && isRelationInputStatic) { 
+                            staticInputIdList.add(id);
                         } else {
-                            if(counter != 0) {
-                                inputIdList.append("\\");
-                            }
-                            inputIdList.append(id);
+                            inputIdList.add(id);
                         }
                         
                         
                         String outputSchemaId = fromComp.getProperty(OUTPUT_SCHEMA_ID_KEY).getValue().trim();
-                        if (outputSchemaId != null && !outputSchemaId.equals("") && !outputType.equals(IO_TYPE_TABLE)) {
-                            if(counter != 0) {
-                                inputSchemaIdList.append("\\");
-                            } else {
-                                resultantOutputSchemaId = outputSchemaId;
-                            }
-                            inputSchemaIdList.append(outputSchemaId);
+                        if (outputSchemaId != null && !outputSchemaId.equals("") && 
+                             (outputType.equals(IO_TYPE_STREAM) || (outputType.equals(IO_TYPE_RELATION) && !isRelationInputStatic)))
+                        {
+                            inputSchemaIdList.add(outputSchemaId);
                         }
                         
                         int topoScore = 0;
@@ -459,42 +446,61 @@ public class EntityNode extends SimpleNode
                             }
                         }
                         maxTopoScore = Math.max(maxTopoScore, topoScore);
-                        
-                        counter++;
                     }
                     mComp.getModel().startTransaction();
+
+                    StringBuffer newInputIdListSb = new StringBuffer();
+                    for (int i = 0; i < inputIdList.size(); i++) {
+                        if (i > 0) {
+                            newInputIdListSb.append("\\");
+                        }
+                        newInputIdListSb.append(inputIdList.get(i));
+                    }
+                    StringBuffer newInputSchemaIdListSb = new StringBuffer();
+                    for (int i = 0; i < inputSchemaIdList.size(); i++) {
+                        if (i > 0) {
+                            newInputSchemaIdListSb.append("\\");
+                        }
+                        newInputSchemaIdListSb.append(inputSchemaIdList.get(i));
+                    }
+                    StringBuffer newStaticInputIdListSb = new StringBuffer();
+                    for (int i = 0; i < staticInputIdList.size(); i++) {
+                        if (i > 0) {
+                            newStaticInputIdListSb.append("\\");
+                        }
+                        newStaticInputIdListSb.append(staticInputIdList.get(i));
+                    }
                     
                     //there is a loop when we set inputIdList etc
                     //which triggers call to this method again 
                     //see PlanCanvas where this method is invoked when
                     //Property value is updated.
                     //to avoid loop we set property only if we have a new value
-                    
                     String inputIdListStr = mComp.getProperty(INPUT_ID_LIST_KEY).getValue();
                     String inputSchemaIdListStr = mComp.getProperty(INPUT_SCHEMA_ID_LIST_KEY).getValue();
                     String staticInputListStr = mComp.getProperty(STATIC_INPUT_ID_LIST_KEY).getValue();
-                    String resultantOutputSchemaIdStr = mComp.getProperty(OUTPUT_SCHEMA_ID_KEY).getValue();
+                    String outputSchemaIdStr = mComp.getProperty(OUTPUT_SCHEMA_ID_KEY).getValue();
                     
-                    if(!inputIdList.toString().equals(inputIdListStr)) {
-                        mComp.getProperty(INPUT_ID_LIST_KEY).setValue(inputIdList.toString());
+                    if(!newInputIdListSb.toString().equals(inputIdListStr)) {
+                        mComp.getProperty(INPUT_ID_LIST_KEY).setValue(newInputIdListSb.toString());
                     }
                     
-                    if(!inputSchemaIdList.toString().equals(inputSchemaIdListStr)) {
-                        mComp.getProperty(INPUT_SCHEMA_ID_LIST_KEY).setValue(inputSchemaIdList.toString());
+                    if(!newInputSchemaIdListSb.toString().equals(inputSchemaIdListStr)) {
+                        mComp.getProperty(INPUT_SCHEMA_ID_LIST_KEY).setValue(newInputSchemaIdListSb.toString());
                     }
                     
-                    if(!staticInputIdList.toString().equals(staticInputListStr)) {
-                        mComp.getProperty(STATIC_INPUT_ID_LIST_KEY).setValue(staticInputIdList.toString());
+                    if(!newStaticInputIdListSb.toString().equals(staticInputListStr)) {
+                        mComp.getProperty(STATIC_INPUT_ID_LIST_KEY).setValue(newStaticInputIdListSb.toString());
                     }
                     
                     mComp.getProperty(TOPO_SCORE_KEY).setValue(""+new Integer(maxTopoScore + 1));
                     if (!isSchemaOwner) {
-                        if (inputSchemaIdList.length() > 0) {
-                            if(!resultantOutputSchemaId.equals(resultantOutputSchemaIdStr)) {
-                                mComp.getProperty(OUTPUT_SCHEMA_ID_KEY).setValue(resultantOutputSchemaId);
+                        if (inputSchemaIdList.size() > 0) {
+                            if(!inputSchemaIdList.get(0).equals(outputSchemaIdStr)) {
+                                mComp.getProperty(OUTPUT_SCHEMA_ID_KEY).setValue(inputSchemaIdList.get(0));
                             }
                         } else {
-                            if(!resultantOutputSchemaIdStr.equals("")) {
+                            if(!outputSchemaIdStr.equals("")) {
                                 mComp.getProperty(OUTPUT_SCHEMA_ID_KEY).setValue("");
                             }
                         }
@@ -770,6 +776,10 @@ public class EntityNode extends SimpleNode
         }
         return IO_TYPE_NONE;
     }*/
+    
+    public boolean isRelationInputStatic() {
+        return mComp.isRelationInputStatic();
+    }
     
     public String getOutputType() {
         try {

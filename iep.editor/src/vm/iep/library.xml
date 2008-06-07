@@ -92,6 +92,7 @@ type CDATA #REQUIRED
             <property transient="false" category="IEP.Category.entity" name="description" title="IEP.Model.Entity.description.title" description="IEP.Model.Entity.description.description" required="false" type="string" editor="default" default="" renderer="string" access="" multiple="false"/>
             <property transient="false" category="IEP.Category.entity" name="topoScore" title="IEP.Model.Entity.topoScore.title" description="IEP.Model.Entity.topoScore.description" required="false" type="integer" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="0" renderer="string" access="" multiple="false"/>
             <property transient="true" category="IEP.Category.entity" name="inputType" title="IEP.Model.Entity.inputType.title" description="IEP.Model.Entity.inputType.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="i18n.IEP.IOType.none" renderer="string" access="&R;" multiple="false"/>
+            <property transient="true" category="IEP.Category.entity" name="isRelationInputStatic" title="IEP.Model.Entity.isRelationInputStatic.title" description="IEP.Model.Entity.isRelationInputStatic.description" required="false" type="boolean" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="false" renderer="string" access="" multiple="false"/>
             <property transient="true" category="IEP.Category.entity" name="outputType" title="IEP.Model.Entity.outputType.title" description="IEP.Model.Entity.outputType.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="i18n.IEP.IOType.none" renderer="string" access="&R;" multiple="false"/>
             <property transient="true" category="IEP.Category.entity" name="inputMaxCount" title="IEP.Model.Entity.inputMaxCount.title" description="IEP.Model.Entity.inputMaxCount.description" required="false" type="integer" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="1" renderer="string" access="&R;" multiple="false"/>
             <property transient="false" category="IEP.Category.main" name="inputIdList" title="IEP.Model.Entity.inputIdList.title" description="IEP.Model.Entity.inputIdList.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.InputIdListNoEditEditor" default="" renderer="string" access="&R;" multiple="true"/>
@@ -275,6 +276,7 @@ type CDATA #REQUIRED
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
                 <property name="type" default="i18n.IEP.Operator.StreamProjectionAndFilter.title"/>
                 <property name="inputType" default="i18n.IEP.IOType.stream"/>
+                <property name="isRelationInputStatic"  default="true"/>
                 <property name="staticInputMaxCount" default="1000000"  access="&R;" />
                 <property name="staticInputIdList" access="&R;" />
                 <property name="outputType" default="i18n.IEP.IOType.stream"/>

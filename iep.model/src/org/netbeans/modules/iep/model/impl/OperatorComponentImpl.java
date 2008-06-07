@@ -153,6 +153,10 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
         }
         return OperatorType.OPERATOR_NONE;
     }
+    
+    public boolean isRelationInputStatic() {
+        return (Boolean)getComponentType().getPropertyType(PROP_IS_RELATION_INPUT_STATIC).getDefaultValue();
+    }
 
     public SchemaComponent getOutputSchemaId() {
         SchemaComponent outputSchema = null;
