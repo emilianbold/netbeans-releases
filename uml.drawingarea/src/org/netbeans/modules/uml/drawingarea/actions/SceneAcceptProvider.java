@@ -89,7 +89,7 @@ public class SceneAcceptProvider implements AcceptProvider
     {
         sceneNamespace = space;
     }
-
+    
     public ConnectorState isAcceptable(Widget widget, Point point, Transferable transferable)
     {
 //        if (!(widget instanceof Scene))

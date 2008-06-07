@@ -518,25 +518,6 @@ public class ContainerWidget extends Widget
             {
                 firePropertyChange(CHILDREN_CHANGED, null, null);
             }
-            if(reselect && finalselected!=null)
-            {
-                //workaround for issue 136552, automatic reselection, may need a better solution later.
-                new AfterValidationExecutor(new ActionProvider() {
-                    public void perfomeAction() {
-                        final DesignerScene scene=(DesignerScene) getScene();
-                        scene.setSelectedObjects(new TreeSet());//workaround for issue
-                        new AfterValidationExecutor(new ActionProvider() {
-                            public void perfomeAction() {
-                                scene.setSelectedObjects(finalselected);
-                                revalidate();
-                                scene.validate();
-                            }
-                        }, scene);
-                        revalidate();
-                        scene.validate();
-                    }
-                }, scene);
-            }
             revalidate();
             scene.validate();
         }
@@ -546,7 +527,7 @@ public class ContainerWidget extends Widget
         {
             return getContainerNamespace();
         }
-        
+
         protected boolean isWidgetMove(Transferable transferable)
         {
             return transferable.isDataFlavorSupported(MoveWidgetTransferable.FLAVOR);
