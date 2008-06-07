@@ -176,7 +176,7 @@ public final class Validator extends BpelValidator {
   }
 
   private void checkUsages(BpelEntity entity, List<VariableInfo> infos) {
-    if (entity instanceof From || entity instanceof Reply/* || entity instanceof OnMessage*/) { // todo r
+    if (entity instanceof From || entity instanceof Reply) {
       checkUsagesVariableReference((VariableReference) entity, infos);
     }
     if (entity instanceof ContentElement && !(entity instanceof To)) {
