@@ -86,6 +86,7 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
+import org.netbeans.junit.NbTestCase;
 
 
 /**
@@ -138,6 +139,33 @@ public class CommonUtilities {
     
     public static String getTempDir() {
         return tempDir;
+    }
+    
+    public static void cleanTempDir() throws IOException {
+        File dir = new File(tempDir);
+        deleteFile(dir);
+        dir.mkdirs();
+    }
+
+    // private method for deleting a file/directory (and all its subdirectories/files)
+    public static void deleteFile(File file) throws IOException {
+        if (!file.exists()) {
+            return;
+        }
+        if (file.isDirectory()) {
+            // file is a directory - delete sub files first
+            File files[] = file.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                deleteFile(files[i]);
+            }
+            
+        }
+        // file is a File :-)
+        boolean result = file.delete();
+        if (result == false ) {
+            // a problem has appeared
+            throw new IOException("Cannot delete file, file = " + file.getPath());
+        }
     }
     
     /** Creates a new instance of Utilities */
