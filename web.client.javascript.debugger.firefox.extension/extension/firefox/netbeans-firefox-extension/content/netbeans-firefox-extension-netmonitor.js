@@ -182,7 +182,7 @@
     function isRelevantWindow(aRequest) {
         var webProgress = getRequestWebProgress(aRequest)
         var win = webProgress ? safeGetWindow(webProgress) : null;
-        return (topWindow == win);
+        return (topWindow == win || topWindow == win.parent);
     }
 
     function NetProgressListener(context)
@@ -206,7 +206,7 @@
         onProgressChange : function(progress, request, current, max, total, maxTotal)
         {
             if ( requests.indexOf(request) != -1){
-                NetBeans.Logger.log("On ProgressChange: " + Object.prototype.toString.apply(progress.wrappedJSObject) + " Request: " + Object.prototype.toString.apply(request) + " max: " + max + " total: " + total + " maxTotal: " + maxTotal);
+                sendProgressUpdate(progress, request, current, max, total, maxTotal);
             }
         },
         //void onLocationChange ( nsIWebProgress webProgress , nsIRequest request , nsIURI location )  
@@ -427,24 +427,6 @@
      * @param {NetActivity} aActivity;
      */
     function sendExamineNetResponse ( aActivity ){
-        //        var href = aRequest.name;
-        //        var referrer = aRequest.referrer;
-        //        var status = aRequest.responseStatus;
-        //        var statusText = aRequest.responseStatusText;
-        //        
-        //        var method = null;
-        //        var params = null;
-        //        if( aRequest.requestMethod  ){
-        //            method = aRequest.requestMethod;
-        //            if( method != "POST"){
-        //                params = parseURLParmas(href);
-        //            }
-        //        }
-        //        
-        //        var loadFlags = null;
-        //        if( aRequest.loadFlags){
-        //            loadFlags = aRequest.loadFlags;
-        //        }
         if (DEBUG){
             for( var key in aActivity ){
                 if ( key == "responseHeaders"){
@@ -460,24 +442,9 @@
         }
     }
     
-    /*
-     * On State Change when State is STATE_STOP
-     */
-    function sendNetStopRequest() {
-        if (DEBUG){
-            NetBeans.Logger.log("   <-- net.netprogress.sendNetStopResponse");
-        }
-    }
-    
-    function sendNetMainWindowResponded() {
-        if (DEBUG){
-            NetBeans.Logger.log("net.netprogress.sendNetMainWindowResponded");
-        }
-    }
-    
-    function sendProgressUpdate() {
+    function sendProgressUpdate(progress, request, current, max, total, maxTotal) {
         if( DEBUG ){
-            NetBeans.Logger.log("net.netprogress.sendProgressUpdate")
+            NetBeans.Logger.log("On ProgressChange: " + Object.prototype.toString.apply(progress.wrappedJSObject) + " Request: " + Object.prototype.toString.apply(request) + " current: " + current +" max: " + max + " total: " + total + " maxTotal: " + maxTotal);
         }
     }
     
