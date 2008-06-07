@@ -13,9 +13,12 @@ public class OperatorLinkValidator {
         }
         
         //if from is table
+        Integer maxTableInputAllowed = (Integer) to.getComponentType().getPropertyType(OperatorComponent.PROP_NON_PERSIST_STATIC_INPUT_MAX_COUNT_KEY).getDefaultValue();
         if (from.getOutputType().equals(OperatorType.OPERATOR_TABLE)) {
-            Integer maxTableInputAllowed = (Integer) to.getComponentType().getPropertyType(OperatorComponent.PROP_NON_PERSIST_STATIC_INPUT_MAX_COUNT_KEY).getDefaultValue();
-            
+            if (to.getStaticInputTableList().size() >= maxTableInputAllowed) {
+                return false;
+            }
+        } else if (from.getOutputType().equals(OperatorType.OPERATOR_RELATION) && to.isRelationInputStatic()) {
             if (to.getStaticInputTableList().size() >= maxTableInputAllowed) {
                 return false;
             }
