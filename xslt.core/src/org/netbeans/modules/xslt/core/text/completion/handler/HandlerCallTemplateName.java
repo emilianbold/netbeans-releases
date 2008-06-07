@@ -42,11 +42,10 @@ package org.netbeans.modules.xslt.core.text.completion.handler;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.xslt.core.text.completion.XSLTCompletionResultItem;
 import org.netbeans.modules.xslt.core.text.completion.XSLTCompletionUtil;
 import org.netbeans.modules.xslt.core.text.completion.XSLTEditorComponentHolder;
-import org.netbeans.modules.xslt.model.Attribute;
-import org.netbeans.modules.xslt.model.AttributeValueTemplate;
 import org.netbeans.modules.xslt.model.Stylesheet;
 import org.netbeans.modules.xslt.model.Template;
 
@@ -85,17 +84,14 @@ public class HandlerCallTemplateName extends BaseCompletionHandler {
         List<XSLTCompletionResultItem> resultItemList = 
             new ArrayList<XSLTCompletionResultItem>();
         for (Template template : templateList) {
-            List<Attribute> attributeList = template.getChildren(Attribute.class);
-            for (Attribute attribute : attributeList) {
-                AttributeValueTemplate valueofAttributeName = attribute.getName();
-                if (valueofAttributeName != null) {
-                    String templateName = valueofAttributeName.toString();
-                    if ((templateName != null) && (templateName.length() > 0)) {
-                        resultItemList.add(new XSLTCompletionResultItem(
-                            templateName, document, caretOffset));
-                    }
-                }   
-            }
+            QName valueofAttributeName = template.getName();
+            if (valueofAttributeName != null) {
+                String templateName = valueofAttributeName.toString();
+                if ((templateName != null) && (templateName.length() > 0)) {
+                    resultItemList.add(new XSLTCompletionResultItem(
+                        templateName, document, caretOffset));
+                }
+            }   
         }
         return resultItemList;
     }

@@ -64,11 +64,13 @@ public class HandlerAttributeEnumValues extends BaseCompletionHandler {
     }
     
     private List<XSLTCompletionResultItem> getAttributeEnumValueList() {
-        if (schemaModel == null) return Collections.EMPTY_LIST;
+        if ((schemaModel == null) || (activeXslComponent == null)) 
+            return Collections.EMPTY_LIST;
         
         NamedReferenceable refSchemaComponent = schemaModel.findByNameAndType(
             activeXslComponent.getPeer().getLocalName(), GlobalElement.class);
-
+        if (refSchemaComponent == null) return Collections.EMPTY_LIST;    
+        
         List children = refSchemaComponent.getChildren();
         List attributes = XSLTCompletionUtil.collectChildrenOfType(
             children, Attribute.class);
