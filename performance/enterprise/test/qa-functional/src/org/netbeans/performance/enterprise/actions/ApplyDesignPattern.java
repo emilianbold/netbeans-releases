@@ -81,7 +81,7 @@ public class ApplyDesignPattern  extends PerformanceTestCase {
         log(":: initialize");
         System.gc();
         new EventTool().waitNoEvent(3000);
-        processNode = EPUtilities.getProcessFilesNode("SOATestProject");
+        processNode = new EPUtilities().getProcessFilesNode("SOATestProject");
         
         schemaName = "fields.xsd";
         schemaNode = new Node(processNode, schemaName);

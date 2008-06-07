@@ -54,6 +54,7 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.enterprise.EPUtilities;
 import org.openide.cookies.EditorCookie;
@@ -74,7 +75,7 @@ public class OpenSchemaView extends PerformanceTestCase {
     private boolean testGC = false;
     private List<WeakReference> refObj = new ArrayList<WeakReference>();
     private List<WeakReference> refDoc = new ArrayList<WeakReference>();
-    private String filename = System.getProperty("xtest.tmpdir") + File.separator 
+    private String filename = CommonUtilities.getProjectsDir() 
             + "SOATestProject" + File.separator + "src";
     
     /** Creates a new instance of OpenSchemaView */
@@ -127,7 +128,7 @@ public class OpenSchemaView extends PerformanceTestCase {
     
     public ComponentOperator open() {
         log("::open");
-        Node schemaNode = new Node(EPUtilities.getProcessFilesNode(projectName),schemaName+".xsd");
+        Node schemaNode = new Node(new EPUtilities().getProcessFilesNode(projectName),schemaName+".xsd");
         schemaNode.callPopup().pushMenuNoBlock("Open");
         //new OpenAction().performPopup(schemaNode);
         return XMLSchemaComponentOperator.findXMLSchemaComponentOperator(schemaName+".xsd");

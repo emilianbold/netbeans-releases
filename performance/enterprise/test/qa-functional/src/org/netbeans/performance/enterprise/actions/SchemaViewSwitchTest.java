@@ -56,6 +56,7 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
@@ -90,7 +91,7 @@ public class SchemaViewSwitchTest extends PerformanceTestCase  {
     @Override
     public void initialize(){
         log(":: initialize");
-        String ParentPath = System.getProperty("xtest.tmpdir")+java.io.File.separator+"createdProjects";
+        String ParentPath = CommonUtilities.getTempDir() + "createdProjects";
 
         createProject(ParentPath,testProjectName);
         addSchemaDoc(testProjectName,testSchemaName);

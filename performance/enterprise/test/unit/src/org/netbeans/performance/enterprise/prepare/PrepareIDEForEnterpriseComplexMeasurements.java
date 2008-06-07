@@ -72,7 +72,9 @@ import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.netbeans.modules.performance.utilities.MeasureStartupTimeTestCase;
 
@@ -106,15 +108,35 @@ public class PrepareIDEForEnterpriseComplexMeasurements extends JellyTestCase {
      * @return testuite
      */
     public static Test suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new PrepareIDEForEnterpriseComplexMeasurements("closeWelcome"));
-        suite.addTest(new PrepareIDEForEnterpriseComplexMeasurements("closeAllDocuments"));
-        suite.addTest(new PrepareIDEForEnterpriseComplexMeasurements("closeMemoryToolbar"));
-        //FIXME: Remove manual addition of Application Server
-        suite.addTest(new PrepareIDEForEnterpriseComplexMeasurements("addApplicationServer"));
-        suite.addTest(new PrepareIDEForEnterpriseComplexMeasurements("openProjects"));
-        suite.addTest(new PrepareIDEForEnterpriseComplexMeasurements("openFiles"));
-        suite.addTest(new PrepareIDEForEnterpriseComplexMeasurements("saveStatus"));
+//        NbTestSuite suite = new NbTestSuite();
+//        suite.addTest(new PrepareIDEForEnterpriseComplexMeasurements("closeWelcome"));
+//        suite.addTest(new PrepareIDEForEnterpriseComplexMeasurements("closeAllDocuments"));
+//        suite.addTest(new PrepareIDEForEnterpriseComplexMeasurements("closeMemoryToolbar"));
+//        //FIXME: Remove manual addition of Application Server
+//        suite.addTest(new PrepareIDEForEnterpriseComplexMeasurements("addApplicationServer"));
+//        suite.addTest(new PrepareIDEForEnterpriseComplexMeasurements("openProjects"));
+//        suite.addTest(new PrepareIDEForEnterpriseComplexMeasurements("openFiles"));
+//        suite.addTest(new PrepareIDEForEnterpriseComplexMeasurements("saveStatus"));
+//        return suite;
+                
+        NbTestSuite suite = new NbTestSuite("Prepare IDE For Enterprise Complex Measurements suite");
+
+        suite.addTest(NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(PrepareIDEForEnterpriseComplexMeasurements.class)
+            .addTest("closeWelcome")
+            .addTest("closeAllDocuments")
+            .addTest("closeMemoryToolbar")
+
+            // FIXME: Remove this workaround of manual App Server addition
+            .addTest("addApplicationServer")
+
+            .addTest("openProjects")
+            .addTest("openFiles")
+            .addTest("saveStatus")
+            .enableModules(".*")
+            .clusters(".*")
+        ));    
+        
         return suite;
     }
     
@@ -222,7 +244,7 @@ public class PrepareIDEForEnterpriseComplexMeasurements extends JellyTestCase {
      */
     public void openProjects() {
         try {
-            String projectsLocation = System.getProperty("xtest.tmpdir") + File.separator + "TravelReservationService" + File.separator;
+            String projectsLocation = CommonUtilities.getProjectsDir() + "TravelReservationService" + File.separator;
             ProjectSupport.openProject(projectsLocation + "ReservationPartnerServices");
             // TODO
 //            ProjectSupport.waitScanFinished();

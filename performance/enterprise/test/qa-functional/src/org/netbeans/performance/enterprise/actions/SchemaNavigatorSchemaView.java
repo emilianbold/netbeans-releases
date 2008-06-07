@@ -80,7 +80,7 @@ public class SchemaNavigatorSchemaView  extends PerformanceTestCase {
         log(":: initialize");
         System.gc();
         new EventTool().waitNoEvent(3000);
-        processNode = EPUtilities.getProcessFilesNode("SOATestProject");
+        processNode = new EPUtilities().getProcessFilesNode("SOATestProject");
         processNode.select();
         
         schemaNode = new Node(processNode, "fields.xsd");

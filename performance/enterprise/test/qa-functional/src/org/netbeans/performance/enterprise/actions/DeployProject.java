@@ -86,7 +86,7 @@ public class DeployProject extends PerformanceTestCase {
     @Override
     public void initialize(){
         log(":: initialize");
-        Node asNode = EPUtilities.startApplicationServer();
+        Node asNode = new EPUtilities().startApplicationServer();
         
         OutputOperator oot = new OutputOperator();
         timeout = JemmyProperties.getCurrentTimeout(TIMEOUT_NAME);

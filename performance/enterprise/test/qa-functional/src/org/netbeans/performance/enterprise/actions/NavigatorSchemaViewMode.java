@@ -78,7 +78,7 @@ public class NavigatorSchemaViewMode  extends PerformanceTestCase {
         log(":: initialize");
 //        new CloseAllDocumentsAction().performAPI();
         
-        processNode = EPUtilities.getProcessFilesNode("SOATestProject");
+        processNode = new EPUtilities().getProcessFilesNode("SOATestProject");
         Node doc1 = new Node(processNode,"batch.xsd");
         doc1.select();
         

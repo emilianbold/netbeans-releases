@@ -91,7 +91,7 @@ public class AddNewXMLSchema extends PerformanceTestCase {
     }
     
     public void prepare(){
-        EPUtilities.getProcessFilesNode("BPELTestProject").select();
+        new EPUtilities().getProcessFilesNode("BPELTestProject").select();
         
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
         wizard.selectCategory("XML"); //NOI18N

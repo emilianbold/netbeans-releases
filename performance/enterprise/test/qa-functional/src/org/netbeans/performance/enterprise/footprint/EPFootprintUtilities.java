@@ -50,6 +50,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.enterprise.EPUtilities;
 
 
@@ -76,7 +77,7 @@ public class EPFootprintUtilities extends EPUtilities {
 
         NewProjectNameLocationStepOperator wizard_location = new NewProjectNameLocationStepOperator();
         wizard_location.txtProjectLocation().clearText();
-        wizard_location.txtProjectLocation().typeText(System.getProperty("xtest.tmpdir"));
+        wizard_location.txtProjectLocation().typeText(CommonUtilities.getTempDir());
         String pname = wizard_location.txtProjectName().getText();
         
         pname = pname + "_" + System.currentTimeMillis();

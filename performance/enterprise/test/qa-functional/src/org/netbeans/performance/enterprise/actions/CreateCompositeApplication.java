@@ -51,6 +51,7 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
 
@@ -67,6 +68,10 @@ public class CreateCompositeApplication extends PerformanceTestCase {
     private String category, project, project_name;
     
     private int index;
+    
+    public void testCreateCompositeApplication() {
+        measureTime();
+    }
     
     /**
      * Creates a new instance of CreateCompositeApplication
@@ -119,7 +124,7 @@ public class CreateCompositeApplication extends PerformanceTestCase {
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
         
-        String directory = System.getProperty("xtest.tmpdir")+java.io.File.separator+"createdProjects";
+        String directory = CommonUtilities.getTempDir() + "createdProjects";
         log("================= Destination directory={"+directory+"}");
       //  wizard_location.txtProjectLocation().setText("");
         new EventTool().waitNoEvent(1000);

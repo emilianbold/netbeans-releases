@@ -52,7 +52,7 @@ import org.netbeans.modules.performance.utilities.CommonUtilities;
  */
 public class EPUtilities extends CommonUtilities {
 
-    public static Node getProcessFilesNode(String project){
+    public Node getProcessFilesNode(String project){
         String processNode = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.bpel.project.ui.Bundle", "LBL_Node_Sources");
         return new Node(new ProjectsTabOperator().getProjectRootNode(project),processNode);
     }

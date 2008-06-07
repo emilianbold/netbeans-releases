@@ -41,6 +41,7 @@
 package org.netbeans.performance.enterprise.setup;
 
 import java.io.File;
+import java.io.IOException;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
@@ -63,39 +64,51 @@ public class EnterpriseSetup extends JellyTestCase {
         EPUtilities.addApplicationServer();
     }
     
-    public void openReservationPartnerServicesProject() {
-        String tmpdir = System.getProperty("nbjunit.workdir") + File.separator + "tmpdir";
-        String projectsDir = tmpdir + File.separator + "TravelReservationService" + File.separator + "ReservationPartnerServices";
-        ProjectSupport.openProject(projectsDir);
+    public void openProject(String projectPath) {
+        String projectsDir = CommonUtilities.getProjectsDir() + projectPath;
+        Object prj = ProjectSupport.openProject(projectsDir);
+        assertNotNull(prj);
         CommonUtilities.waitProjectTasksFinished();
+    }
+    
+    public void openReservationPartnerServicesProject() {
+        openProject("TravelReservationService" + File.separator + "ReservationPartnerServices");
     }
     
     public void openTravelReservationServiceProject() {
-        String tmpdir = System.getProperty("nbjunit.workdir") + File.separator + "tmpdir";
-        String projectsDir = tmpdir + File.separator + "TravelReservationService" + File.separator + "TravelReservationService";
-        ProjectSupport.openProject(projectsDir);
-        CommonUtilities.waitProjectTasksFinished();
+        openProject("TravelReservationService" + File.separator + "TravelReservationService");
     }
     
     public void openTravelReservationServiceApplicationProject() {
-        String tmpdir = System.getProperty("nbjunit.workdir") + File.separator + "tmpdir";
-        String projectsDir = tmpdir + File.separator + "TravelReservationService" + File.separator + "TravelReservationServiceApplication";
-        ProjectSupport.openProject(projectsDir);
-        CommonUtilities.waitProjectTasksFinished();
+        openProject("TravelReservationService" + File.separator + "TravelReservationServiceApplication");
     }
     
     public void openSoaTestProject() {
-        String tmpdir = System.getProperty("nbjunit.workdir") + File.separator + "tmpdir";
-        String projectsDir = tmpdir + File.separator + "SOATestProject";
-        ProjectSupport.openProject(projectsDir);
-        CommonUtilities.waitProjectTasksFinished();
+        openProject("SOATestProject");
     }
     
     public void openBPELTestProject() {
-        String tmpdir = System.getProperty("nbjunit.workdir") + File.separator + "tmpdir";
-        String projectsDir = tmpdir + File.separator + "BPELTestProject";
-        ProjectSupport.openProject(projectsDir);
-        CommonUtilities.waitProjectTasksFinished();
+        openProject("BPELTestProject");
     }
     
+    public void openWebProject() {
+        openProject("PerformanceTestWebApplication");
+    }
+    
+    public void closeMemoryToolbar() {
+        CommonUtilities.closeMemoryToolbar();
+    }
+    
+    public void closeWelcome() {
+        CommonUtilities.closeWelcome();
+    }
+    
+    public void closeAllDocuments() {
+        CommonUtilities.closeAllDocuments();
+    }
+    
+    public void cleanTempDir() throws IOException {
+        CommonUtilities.cleanTempDir();
+    }
+
 }

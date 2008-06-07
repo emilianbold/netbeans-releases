@@ -80,7 +80,7 @@ public class SwitchToDesignView  extends PerformanceTestCase {
         log(":: initialize");
         System.gc();
         new EventTool().waitNoEvent(5000);
-        Node doc = new Node(EPUtilities.getProcessFilesNode("SOATestProject"), testSchemaFileName);
+        Node doc = new Node(new EPUtilities().getProcessFilesNode("SOATestProject"), testSchemaFileName);
         doc.select();
         new OpenAction().perform(doc);
         schemaComponentOperator = XMLSchemaComponentOperator.findXMLSchemaComponentOperator(testSchemaFileName);

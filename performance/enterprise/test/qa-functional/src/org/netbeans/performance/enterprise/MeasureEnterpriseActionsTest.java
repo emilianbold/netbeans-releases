@@ -44,23 +44,8 @@ package org.netbeans.performance.enterprise;
 
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.performance.enterprise.actions.AddNewBpelProcess;
-import org.netbeans.performance.enterprise.actions.AddNewWSDLDocument;
-import org.netbeans.performance.enterprise.actions.AddNewXMLDocument;
-import org.netbeans.performance.enterprise.actions.AddNewXMLSchema;
-import org.netbeans.performance.enterprise.actions.ApplyDesignPattern;
-import org.netbeans.performance.enterprise.actions.BuildComplexProject;
-import org.netbeans.performance.enterprise.actions.CreateBPELmodule;
-import org.netbeans.performance.enterprise.actions.CreateCompositeApplication;
-import org.netbeans.performance.enterprise.actions.NavigatorSchemaViewMode;
-import org.netbeans.performance.enterprise.actions.OpenBPELproject;
-import org.netbeans.performance.enterprise.actions.OpenComplexDiagram;
-import org.netbeans.performance.enterprise.actions.SchemaNavigatorDesignView;
-import org.netbeans.performance.enterprise.actions.SchemaNavigatorSchemaView;
-import org.netbeans.performance.enterprise.actions.StartAppserver;
-import org.netbeans.performance.enterprise.actions.SwitchToDesignView;
-import org.netbeans.performance.enterprise.actions.SwitchToSchemaView;
-import org.netbeans.performance.enterprise.actions.ValidateSchema;
+import org.netbeans.performance.enterprise.actions.*;
+import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -72,133 +57,52 @@ public class MeasureEnterpriseActionsTest {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Enterprise Actions suite");
         
+        MeasureEnterpriseSetupTest.suite(suite);
+        
         // EPMeasureActions1
-        suite.addTest(NbModuleSuite.create(CreateBPELmodule.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(CreateCompositeApplication.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(AddNewWSDLDocument.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(AddNewXMLSchema.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(AddNewXMLDocument.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(AddNewBpelProcess.class, ".*", ".*")); 
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(EnterpriseSetup.class)
+                .addTest(EnterpriseSetup.class, "cleanTempDir")
+                .addTest(CreateBPELmodule.class, "measureTime")
+                .addTest(CreateCompositeApplication.class, "measureTime")
+                .addTest(AddNewWSDLDocument.class, "measureTime")
+                .addTest(AddNewXMLSchema.class, "measureTime")
+                .addTest(AddNewXMLDocument.class, "measureTime")
+                .addTest(AddNewBpelProcess.class, "measureTime")
+                .enableModules(".*").clusters(".*").reuseUserDir(true)));    
 
         // EPMeasureActions2
-        suite.addTest(NbModuleSuite.create(ValidateSchema.class, ".*", ".*"));
-//Memory Leak issue 129434, moved OpenSchemaView to 4th testbag
-//        suite.addTest(NbModuleSuite.create(OpenSchemaView("testOpenSchemaView", "Open Schema View")); 
-
-//TODO it's the same as SwitchSchemaView, isn't it ?                                     suite.addTest(NbModuleSuite.create(SchemaViewSwitchTest.class, ".*", ".*"));
-        
-        suite.addTest(NbModuleSuite.create(BuildComplexProject.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(SwitchToDesignView.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(SwitchToSchemaView.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(SchemaNavigatorDesignView.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(ApplyDesignPattern.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateSchema.class)
+                .addTest(ValidateSchema.class, "measureTime")
+//TODO it's the same as SwitchSchemaView, isn't it ?        .addTest(SchemaViewSwitchTest.class, "measureTime")
+                .addTest(BuildComplexProject.class, "measureTime")
+                .addTest(SwitchToDesignView.class, "measureTime")
+                .addTest(SwitchToSchemaView.class, "measureTime")
+                .addTest(SchemaNavigatorDesignView.class, "measureTime")
+                .addTest(ApplyDesignPattern.class, "measureTime")
+                .enableModules(".*").clusters(".*").reuseUserDir(true)));    
         
         // EPMeasureActions3
-        // Disabled testGCProjects check to shorten run time        
-//        suite.addTest(NbModuleSuite.create(WatchProjects("testInitGCProjects"));
-        suite.addTest(NbModuleSuite.create(SchemaNavigatorSchemaView.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(NavigatorSchemaViewMode.class, ".*", ".*"));
-        
-
-//TODO there is an password dialog solve before enable to run again        suite.addTest(NbModuleSuite.create(DeployProject("measureTime","Deploy Project"));
-        suite.addTest(NbModuleSuite.create(OpenComplexDiagram.class, ".*", ".*"));     
-//        suite.addTest(NbModuleSuite.create(OpenComplexDiagram("testGC","Open Complex Diagram - Test GC"));         
-        suite.addTest(NbModuleSuite.create(OpenBPELproject.class, ".*", ".*"));
-
-// Disabled testGCProjects check to shorten run time        
-//        suite.addTest(NbModuleSuite.create(WatchProjects("testGCProjects"));
-        
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(SchemaNavigatorSchemaView.class)
+                .addTest(SchemaNavigatorSchemaView.class, "measureTime")
+                .addTest(NavigatorSchemaViewMode.class, "measureTime")
+//TODO there is an password dialog solve before enable to run again                .addTest(DeployProject.class, "measureTime")
+                .addTest(OpenComplexDiagram.class, "measureTime")
+                .addTest(OpenBPELproject.class, "measureTime")
+                .enableModules(".*").clusters(".*").reuseUserDir(true)));    
         
         // EPMeasureActions4
-        // Disabled testGCProjects check to shorten run time        
-//        suite.addTest(NbModuleSuite.create(WatchProjects("testInitGCProjects"));
-//        suite.addTest(NbModuleSuite.create(OpenSchemaView("testOpenSchemaView", "Open Schema View")); 
-//        suite.addTest(NbModuleSuite.create(OpenSchemaView("testOpenComplexSchemaView", "Open Complex Schema View"));
-        suite.addTest(NbModuleSuite.create(StartAppserver.class, ".*", ".*"));
-// Disabled testGCProjects check to shorten run time        
-//        suite.addTest(NbModuleSuite.create(WatchProjects("testGCProjects"));
-
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(OpenSchemaView.class)
+                .addTest("testOpenSchemaView").enableModules(".*").clusters(".*").reuseUserDir(true)));    
         
-//        // Disabled testGCProjects check to shorten run time        
-////        suite.addTest(new WatchProjects("testInitGCProjects"));
-//        suite.addTest(new CreateBPELmodule("measureTime", "Create BPEL module"));
-//        suite.addTest(new CreateCompositeApplication("measureTime", "Create Composite Application"));
-//        suite.addTest(new AddNewWSDLDocument("measureTime", "Add New WSDL Document"));
-//        suite.addTest(new AddNewXMLSchema("measureTime", "Add New XML Schema"));
-//        suite.addTest(new AddNewXMLDocument("measureTime", "Add New XML Document"));
-//        suite.addTest(new AddNewBpelProcess("measureTime", "Add New Bpel Process")); 
-//// Disabled testGCProjects check to shorten run time        
-////        suite.addTest(new WatchProjects("testGCProjects"));
-//
-//        
-//        //        suite.addTest(new WatchProjects("testInitGCProjects"));
-//        suite.addTest(new ValidateSchema("measureTime","Validate Schema"));
-////Memory Leak issue 129434, moved OpenSchemaView to 4th testbag
-////        suite.addTest(new OpenSchemaView("testOpenSchemaView", "Open Schema View")); 
-//
-////TODO it's the same as SwitchSchemaView, isn't it ?                                     suite.addTest(new SchemaViewSwitchTest("measureTime", "Schema View Switch"));
-//        
-//        suite.addTest(new BuildComplexProject("measureTime", "Build Complex Project"));
-//        
-//        suite.addTest(new SwitchToDesignView("measureTime", "Schema | Switch to Design View"));
-//        suite.addTest(new SwitchToSchemaView("measureTime", "Schema | Switch to Schema View"));
-//        suite.addTest(new SchemaNavigatorDesignView("measureTime", "Schema Navigator Design View"));
-//        suite.addTest(new ApplyDesignPattern("measureTime", "Apply Design Pattern"));
-//// No objects to track reported when OpenSchemaView is disabled
-////        suite.addTest(new WatchProjects("testGCProjects"));
-//        
-//        
-//        // Disabled testGCProjects check to shorten run time        
-////        suite.addTest(new WatchProjects("testInitGCProjects"));
-//        suite.addTest(new SchemaNavigatorSchemaView("measureTime", "Schema Navigator Schema View"));
-//        suite.addTest(new NavigatorSchemaViewMode("measureTime","Schema Navigator Schema View mode"));
-//        
-//
-////TODO there is an password dialog solve before enable to run again        suite.addTest(new DeployProject("measureTime","Deploy Project"));
-//        suite.addTest(new OpenComplexDiagram("measureTime","Open Complex Diagram"));         
-////        suite.addTest(new OpenComplexDiagram("testGC","Open Complex Diagram - Test GC"));         
-//        suite.addTest(new OpenBPELproject("measureTime","Open BPEL Project"));
-//
-//// Disabled testGCProjects check to shorten run time        
-////        suite.addTest(new WatchProjects("testGCProjects"));
-//        
-//        
-//        // Disabled testGCProjects check to shorten run time        
-////        suite.addTest(new WatchProjects("testInitGCProjects"));
-//        suite.addTest(new OpenSchemaView("testOpenSchemaView", "Open Schema View")); 
-//        suite.addTest(new OpenSchemaView("testOpenComplexSchemaView", "Open Complex Schema View"));
-//        suite.addTest(new StartAppserver("measureTime","Start Appserver"));
-//// Disabled testGCProjects check to shorten run time        
-////        suite.addTest(new WatchProjects("testGCProjects"));
-//        /* TBD
-//        suite.addTest(NbModuleSuite.create(AddToFavorites.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(CloseAllEditors.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(CloseEditor.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(CloseEditorModified.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(CloseEditorTab.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(CreateNBProject.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(CreateProject.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(DeleteFolder.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(ExpandNodesInComponentInspector.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(ExpandNodesProjectsView.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(JavaCompletionInEditor.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(OpenFiles.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(OpenFilesNoCloneableEditor.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(OpenFilesNoCloneableEditorWithOpenedEditor.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(OpenFilesWithOpenedEditor.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(OpenFormFile.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(OpenFormFileWithOpenedEditor.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(OpenJspFile.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(OpenJspFileWithOpenedEditor.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(PageUpPageDownInEditor.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(PasteInEditor.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(RefactorFindUsages.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(SaveModifiedFile.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(SelectCategoriesInNewFile.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(SwitchToFile.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(SwitchView.class, ".*", ".*"));
-//        suite.addTest(NbModuleSuite.create(TypingInEditor.class, ".*", ".*"));
-//*/       
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(OpenSchemaView.class)
+                .addTest("testOpenComplexSchemaView").enableModules(".*").clusters(".*").reuseUserDir(true)));    
+        
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(StartAppserver.class)
+                .addTest("measureTime").enableModules(".*").clusters(".*").reuseUserDir(true)));    
+        
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(OpenBPELproject.class)
+                .addTest("measureTime").enableModules(".*").clusters(".*").reuseUserDir(true))); 
+        
         return suite;
     }
     

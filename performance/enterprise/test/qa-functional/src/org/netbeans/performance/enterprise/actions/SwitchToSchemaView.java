@@ -77,7 +77,7 @@ public class SwitchToSchemaView  extends PerformanceTestCase {
     @Override
     protected void initialize() {
         log(":: initialize");
-        Node doc = new Node(EPUtilities.getProcessFilesNode("SOATestProject"), testSchemaFileName);
+        Node doc = new Node(new EPUtilities().getProcessFilesNode("SOATestProject"), testSchemaFileName);
         doc.select();
         new OpenAction().perform(doc);
         schemaComponentOperator = XMLSchemaComponentOperator.findXMLSchemaComponentOperator(testSchemaFileName);

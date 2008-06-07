@@ -51,6 +51,7 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
@@ -95,7 +96,7 @@ public class OpenBPELproject extends PerformanceTestCase {
         WizardOperator opd = new WizardOperator("Open Project"); //NOI18N
         JTextComponentOperator path = new JTextComponentOperator(opd,1);
         openButton = new JButtonOperator(opd,"Open Project"); //NOI18N
-        String paths= (System.getProperty("xtest.tmpdir") + java.io.File.separator + projectName + java.io.File.separator + projectName);
+        String paths = CommonUtilities.getProjectsDir() + projectName + java.io.File.separator + projectName;
         path.setText(paths);
     }
     

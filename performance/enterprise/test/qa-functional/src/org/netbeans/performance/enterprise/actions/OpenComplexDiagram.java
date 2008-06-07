@@ -107,7 +107,7 @@ public class OpenComplexDiagram extends PerformanceTestCase {
 
     public ComponentOperator open() {
         log("::open");
-        Node processFilesNode = EPUtilities.getProcessFilesNode("TravelReservationService");
+        Node processFilesNode = new EPUtilities().getProcessFilesNode("TravelReservationService");
         Node doc = new Node(processFilesNode,"TravelReservationService.bpel");
 
         // Use double click instead of Open because Open opens Source view

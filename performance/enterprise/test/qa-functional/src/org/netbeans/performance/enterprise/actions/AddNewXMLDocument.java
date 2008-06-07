@@ -93,7 +93,7 @@ public class AddNewXMLDocument extends PerformanceTestCase {
     
     public void prepare(){
         new EventTool().waitNoEvent(2500);
-        EPUtilities.getProcessFilesNode("BPELTestProject").select();
+        new EPUtilities().getProcessFilesNode("BPELTestProject").select();
         
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
         wizard.selectCategory("XML"); //NOI18N

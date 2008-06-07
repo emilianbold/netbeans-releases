@@ -44,6 +44,11 @@ import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.performance.enterprise.actions.AddNewBpelProcess;
+import org.netbeans.performance.enterprise.actions.CreateBPELmodule;
+import org.netbeans.performance.enterprise.actions.CreateCompositeApplication;
+import org.netbeans.performance.enterprise.actions.OpenSchemaView;
+import org.netbeans.performance.enterprise.actions.WatchProjects;
 
 public class MeasureEnterpriseGCTest extends NbTestCase {
 
@@ -52,19 +57,21 @@ public class MeasureEnterpriseGCTest extends NbTestCase {
     }
 
     public static Test suite() {
+        NbTestSuite suite = new NbTestSuite("Enterprise Performance GC suite");
 
-        NbTestSuite s = new NbTestSuite("Enterprise Performance GC suite");
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WatchProjects.class)
+                .addTest("testInitGCProjects").enableModules(".*").clusters(".*")));    
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(AddNewBpelProcess.class)
+                .addTest("measureTime").enableModules(".*").clusters(".*")));    
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateBPELmodule.class)
+                .addTest("measureTime").enableModules(".*").clusters(".*")));    
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateCompositeApplication.class)
+                .addTest("measureTime").enableModules(".*").clusters(".*")));    
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WatchProjects.class)
+                .addTest("testGCProjects").enableModules(".*").clusters(".*")));    
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(OpenSchemaView.class)
+                .addTest("testGCwithOpenComplexSchemaView").enableModules(".*").clusters(".*")));    
 
-//         suite.addTest(new WatchProjects("testInitGCProjects"));
-//        suite.addTest(new AddNewBpelProcess("measureTime", "Add New Bpel Process")); 
-//        suite.addTest(new CreateBPELmodule("measureTime", "Create BPEL module"));
-//        suite.addTest(new CreateCompositeApplication("measureTime", "Create Composite Application"));
-//        suite.addTest(new WatchProjects("testGCProjects"));
-//        suite.addTest(new OpenSchemaView("testGCwithOpenComplexSchemaView", "Test GC of Schema View"));
-//       s.addTest(NbModuleSuite.create(MainMenu.class, ".*", ".*"));
-//        s.addTest(NbModuleSuite.create(MainSubMenus.class, ".*", ".*"));
-
-
-        return s;
+        return suite;
     }
 }

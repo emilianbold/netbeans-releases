@@ -42,7 +42,6 @@
 package org.netbeans.performance.enterprise.actions;
 
 import junit.framework.Test;
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
@@ -53,6 +52,7 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
 
@@ -138,7 +138,7 @@ public class AddNewEnterprise extends PerformanceTestCase {
         wizardP.next();
         projectName_wizardLocation = new NewProjectNameLocationStepOperator();
         
-        String directory = System.getProperty("xtest.tmpdir")+java.io.File.separator+"createdProjects";
+        String directory = CommonUtilities.getTempDir() + "createdProjects";
         log("================= Destination directory={"+directory+"}");
         
         new EventTool().waitNoEvent(1000);

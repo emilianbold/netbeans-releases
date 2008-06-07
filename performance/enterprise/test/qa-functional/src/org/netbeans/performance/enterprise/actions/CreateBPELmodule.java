@@ -54,8 +54,11 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 
 import org.netbeans.jemmy.util.Dumper;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
+import org.netbeans.performance.enterprise.MeasureEnterpriseSetupTest;
 
 
 /**
@@ -138,7 +141,7 @@ public class CreateBPELmodule extends PerformanceTestCase {
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
         
-        String directory = System.getProperty("xtest.tmpdir")+java.io.File.separator+"createdProjects";
+        String directory = CommonUtilities.getTempDir() + "createdProjects";
         log("================= Destination directory={"+directory+"}");
       //  wizard_location.txtProjectLocation().setText("");
         new EventTool().waitNoEvent(1000);
@@ -164,11 +167,14 @@ public class CreateBPELmodule extends PerformanceTestCase {
     }
     
     public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(CreateBPELmodule.class)
+        NbTestSuite suite = new NbTestSuite("Create BPEL module testcase");
+        
+        MeasureEnterpriseSetupTest.suite(suite);
+        
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateBPELmodule.class)
             .addTest("measureTime")
-            .enableModules(".*")
-            .clusters(".*")
-        );    
+            .enableModules(".*").clusters(".*").reuseUserDir(true)
+        ));    
+        return suite;
     }
 }

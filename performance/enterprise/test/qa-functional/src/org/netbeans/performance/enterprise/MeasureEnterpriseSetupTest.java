@@ -61,6 +61,7 @@ public class MeasureEnterpriseSetupTest extends NbTestCase {
     public static Test suite(NbTestSuite suite) {
         suite.addTest(NbModuleSuite.create(
             NbModuleSuite.createConfiguration(EnterpriseSetup.class)
+            .addTest("cleanTempDir")
             .addTest("closeMemoryToolbar")
             .addTest("closeWelcome")
             .addTest("openWebProject")

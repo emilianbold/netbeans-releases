@@ -84,7 +84,7 @@ public class ValidateSchema extends PerformanceTestCase {
     @Override
     public void initialize(){
         log(":: initialize");
-        schemaNode = new Node(EPUtilities.getProcessFilesNode("SOATestProject"),"fields.xsd");
+        schemaNode = new Node(new EPUtilities().getProcessFilesNode("SOATestProject"),"fields.xsd");
         schemaNode.select();
         new OpenAction().perform(schemaNode);
     }
