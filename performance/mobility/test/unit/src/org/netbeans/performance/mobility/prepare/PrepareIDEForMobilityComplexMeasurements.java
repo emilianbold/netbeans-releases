@@ -174,7 +174,7 @@ public class PrepareIDEForMobilityComplexMeasurements extends JellyTestCase {
      */
     public void openProjects() {
         try {
-            String projectsLocation = System.getProperty("xtest.tmpdir") + File.separator;
+            String projectsLocation = CommonUtilities.getProjectsDir();
             Object prj = ProjectSupport.openProject(projectsLocation + "MobileApplicationSwitchConfiguration");
             assertNotNull(prj);
             CommonUtilities.waitProjectTasksFinished();

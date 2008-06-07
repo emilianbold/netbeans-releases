@@ -45,7 +45,6 @@ import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import java.io.File;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 
@@ -53,6 +52,7 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
 
@@ -96,7 +96,7 @@ public class CloseProjectProperty extends PerformanceTestCase {
     @Override
     public void initialize(){
                 
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
+        ProjectSupport.openProject(CommonUtilities.getProjectsDir() + testProjectName);
         new CloseAllDocumentsAction().performAPI();
        new EventTool().waitNoEvent(1000);
 

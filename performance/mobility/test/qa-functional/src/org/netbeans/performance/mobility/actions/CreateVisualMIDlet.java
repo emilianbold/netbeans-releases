@@ -53,6 +53,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
 
@@ -90,7 +91,7 @@ public class CreateVisualMIDlet extends PerformanceTestCase {
 
     @Override
     public void initialize() {
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir") + File.separator + testProjectName);
+        ProjectSupport.openProject(CommonUtilities.getProjectsDir() + testProjectName);
         new CloseAllDocumentsAction().performAPI();
     }
 

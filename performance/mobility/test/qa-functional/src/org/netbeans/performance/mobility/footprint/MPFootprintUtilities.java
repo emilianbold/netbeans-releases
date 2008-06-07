@@ -41,33 +41,13 @@
 
 package org.netbeans.performance.mobility.footprint;
 
-import org.netbeans.jellytools.RuntimeTabOperator;
-import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.performance.mobility.MPUtilities;
 
 /**
  * Utilities for Memory footprint tests
  *
  * @author  mmirilovic@netbeans.org
  */
-public class MPFootprintUtilities extends org.netbeans.performance.mobility.MPUtilities{
+public class MPFootprintUtilities extends MPUtilities {
     
-        // TODO some utilities
-    
-    static void killRunOnProject(String project) {
-        killProcessOnProject(project, "run");
-    }
-    
-    static void killDebugOnProject(String project) {
-        killProcessOnProject(project, "debug");
-    }
-    
-    private static void killProcessOnProject(String project, String process) {
-        // prepare Runtime tab
-        RuntimeTabOperator runtime = RuntimeTabOperator.invoke();
-        
-        // kill the execution
-        Node node = new Node(runtime.getRootNode(), "Processes|"+project+ " (" + process + ")");
-        node.select();
-        node.performPopupAction("Terminate Process");
-    }
 }

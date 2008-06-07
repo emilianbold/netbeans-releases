@@ -42,6 +42,7 @@
 package org.netbeans.performance.mobility.setup;
 
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.mobility.MPUtilities;
 
 /**
@@ -57,10 +58,10 @@ public class MobilitySetup extends JellyTestCase {
     }
     
     public void openMobilityMIDletProject() {
-        MPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + java.io.File.separator + "MobileApplicationVisualMIDlet");
+        MPUtilities.waitProjectOpenedScanFinished(CommonUtilities.getProjectsDir() + "MobileApplicationVisualMIDlet");
     }
 
     public void openMobilitySwitchProject() {
-        MPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + java.io.File.separator + "MobileApplicationSwitchConfiguration");
+        MPUtilities.waitProjectOpenedScanFinished(CommonUtilities.getProjectsDir() + "MobileApplicationSwitchConfiguration");
     }
 }

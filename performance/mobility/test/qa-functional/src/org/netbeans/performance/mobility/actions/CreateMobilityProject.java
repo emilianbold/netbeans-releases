@@ -46,6 +46,7 @@ import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
 
@@ -108,7 +109,7 @@ public class CreateMobilityProject extends PerformanceTestCase {
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
 
-        String directory = System.getProperty("xtest.tmpdir") + java.io.File.separator + "createdProjects";
+        String directory = CommonUtilities.getTempDir() + "createdProjects";
         log("================= Destination directory={" + directory + "}");
         new EventTool().waitNoEvent(1000);
         wizard_location.txtProjectLocation().setText(directory);
