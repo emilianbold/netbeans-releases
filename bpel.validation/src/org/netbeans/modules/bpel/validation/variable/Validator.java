@@ -176,7 +176,7 @@ public final class Validator extends BpelValidator {
   }
 
   private void checkUsages(BpelEntity entity, List<VariableInfo> infos) {
-    if (entity instanceof From || entity instanceof Reply || entity instanceof OnMessage) {
+    if (entity instanceof From || entity instanceof Reply/* || entity instanceof OnMessage*/) { // todo r
       checkUsagesVariableReference((VariableReference) entity, infos);
     }
     if (entity instanceof ContentElement && !(entity instanceof To)) {
@@ -184,7 +184,6 @@ public final class Validator extends BpelValidator {
     }
     if (entity instanceof Invoke) {
       checkInfoVariableDeclaration(((Invoke) entity).getInputVariable(), infos, true);
-      checkInfoVariableDeclaration(((Invoke) entity).getOutputVariable(), infos, true);// !
     }
     if (entity instanceof Throw) {
       checkInfoVariableDeclaration(((Throw) entity).getFaultVariable(), infos, true);
