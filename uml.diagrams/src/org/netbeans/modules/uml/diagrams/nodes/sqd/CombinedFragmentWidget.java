@@ -102,7 +102,7 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
     private InteractionOperatorWidget operator;
     private Widget body;
     private Widget operandsContainer;
-    protected CombinedFragmentContainerWidget childContainer;
+    protected ContainerWidget childContainer;
     //
     private HashMap<IInteractionOperand, InteractionOperandWidget> operands = new HashMap<IInteractionOperand, InteractionOperandWidget>();
     private boolean isShowWidget;
@@ -134,7 +134,7 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
         setMinimumSize(new Dimension(120, 100));
 
         body.setPreferredLocation(new Point(0, 0));
-        childContainer=new CombinedFragmentContainerWidget(getScene());
+        childContainer=new ContainerWidget(getScene());
         childContainer.setPreferredLocation(new Point(0, 0));
         body.addChild(childContainer);
 
@@ -210,8 +210,13 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
     
     @Override
     public String toString() {
-        ICombinedFragment cf=(ICombinedFragment) getObject().getFirstSubject();
-        return "CombinedFragmentWidget: operator: "+ cf.getOperator()+"; name: "+cf.getName()+"; num operands: "+cf.getOperands().size()+"; bounds: "+getBounds()+"; ////" + super.toString();
+        ICombinedFragment cf= null;
+        if(getObject()!=null)
+        {
+            cf=(ICombinedFragment) getObject().getFirstSubject();
+            return "CombinedFragmentWidget: operator: "+ cf.getOperator()+"; name: "+cf.getName()+"; num operands: "+cf.getOperands().size()+"; bounds: "+getBounds()+"; ////" + super.toString();
+        }
+        else return super.toString();
     }
 
     public String getKind() {
@@ -799,47 +804,6 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
     public void setCombinedFragmentAfter(ICombinedFragment cf, Widget cfW) {
         this.cfAfter=cf;
         this.cfAfterW=(CombinedFragmentWidget) cfW;
-    }
-    @Override
-    protected void notifyAdded () 
-    {
-        // this is invoked when this widget or its parent gets added, only need to
-        // process the case when this widget is changed, same for notifyRemoved to 
-        // avoid concurrent modification to children list
-        for(InteractionOperandWidget ioW:operands.values())
-        {
-            MovableLabelWidget labelWidget=ioW.getLabel();
-            if (labelWidget == null || getParentWidget() == labelWidget.getParentWidget())
-            {
-                return;
-            }
-            labelWidget.removeFromParent();
-            int index = getParentWidget().getChildren().indexOf(this);
-            getParentWidget().addChild(index + 1, labelWidget);
-            new AfterValidationExecutor(new ActionProvider() {
-                public void perfomeAction() {
-                    for(InteractionOperandWidget ioW:operands.values())
-                    {
-                        ioW.revalidate();
-                    }
-                    getScene().validate();
-                }
-            }, getScene());
-            getScene().validate();
-        }
-    }
-    
-    @Override
-    protected void notifyRemoved()
-    {
-         for(InteractionOperandWidget ioW:operands.values())
-        {
-            MovableLabelWidget labelWidget=ioW.getLabel();
-            if (labelWidget != null && getParentWidget() == null)
-            {           
-                labelWidget.removeFromParent();
-            }
-         }
     }
 
     @Override
