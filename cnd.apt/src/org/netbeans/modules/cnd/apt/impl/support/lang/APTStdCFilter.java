@@ -91,8 +91,6 @@ public class APTStdCFilter extends APTBaseLanguageFilter {
         filter("__declspec", APTTokenTypes.LITERAL___declspec); // NOI18N   
         filter("struct", APTTokenTypes.LITERAL_struct); // NOI18N
         filter("union", APTTokenTypes.LITERAL_union); // NOI18N   
-        filter("true", APTTokenTypes.LITERAL_true); // NOI18N
-        filter("false", APTTokenTypes.LITERAL_false); // NOI18N        
         filter("case", APTTokenTypes.LITERAL_case); // NOI18N
         filter("default", APTTokenTypes.LITERAL_default); // NOI18N
         filter("if", APTTokenTypes.LITERAL_if); // NOI18N
