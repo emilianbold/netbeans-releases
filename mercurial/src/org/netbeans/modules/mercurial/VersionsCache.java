@@ -79,6 +79,7 @@ public class VersionsCache {
         if (Setup.REVISION_BASE.equals(revision)) {
             try {
                 File tempFile = File.createTempFile("tmp", "-" + base.getName()); //NOI18N
+                tempFile.deleteOnExit();
                 HgCommand.doCat(repository, base, tempFile, null);
                 if (tempFile.length() == 0) return null;
                 return tempFile;
@@ -92,6 +93,7 @@ public class VersionsCache {
         } else {
             try {
                 File tempFile = File.createTempFile("tmp", "-" + base.getName()); //NOI18N
+                tempFile.deleteOnExit();
                 HgCommand.doCat(repository, base, tempFile, revision, null);
                 if (tempFile.length() == 0) return null;
                 return tempFile;

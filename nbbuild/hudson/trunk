@@ -83,14 +83,16 @@ for report in `pwd`/nbbuild/build/sigtest/check-snapshot/*; do
     if [ -z "$sigtest_email" ]; then
       sigtest_email="api-changes@netbeans.org"
     fi
+    content=`cat $report`
     (
         echo "Code changes:";
         echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; 
         echo "API changes:";
         echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/nbbuild/build/sigtest/check-snapshot/html/index.html"; 
-        echo "Failure output is available as StdErr output of sigtest test in appropriate package.";
+        echo "Failure output is available as StdErr output of sigtest test for appropriate module.";
 #                echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$sigtest_out/`basename $report`"; 
-        echo; tail -n 200 $report
+        echo; 
+        expr "$content" : ".*CDATA\[\(.*\)\]\].*"
     ) | mail -s "`basename $report` - sigchanges in $JOB_NAME build #$BUILD_NUMBER" $sigtest_email
   fi
 done

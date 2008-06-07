@@ -62,28 +62,15 @@
             importType="http://www.w3.org/2001/XMLSchema"></import>
     
     <partnerLinks>
-        <partnerLink name="reservationPLink"
-                     partnerLinkType="ns0:reservationPLinkType"
-                     myRole="reservationServicing"/>
-        <partnerLink name="airlineReservation"
-                     partnerLinkType="ns1:AirlineReservationPLinkType"
-                     partnerRole="reservingRole"/>
-        <partnerLink name="airlineStatus"
-                     partnerLinkType="ns1:AirLineReservStatusPLinkType"
-                     myRole="statusReceivingRole"/>
-        <partnerLink name="carReservationPLink"
-                     partnerLinkType="ns2:CarReservationPLinkType"
-                     partnerRole="reservingRole"/>
-        <partnerLink name="carReservationStatusPLink"
-                     partnerLinkType="ns2:CarReservStatusPLinkType"
-                     myRole="statusReceivingRole"/>
-        <partnerLink name="hoteReservationPLink"
-                     partnerLinkType="ns3:HotelReservationPLinkType"
-                     partnerRole="reservingRole"/>
-        <partnerLink name="hotelReservationStatusPLink"
-                     partnerLinkType="ns3:HotelReservStatusPLinkType"
-                     myRole="statusReceivingRole"/>
+        <partnerLink name="reservationPLink" partnerLinkType="ns0:reservationPLinkType" myRole="reservationServicing"/>
+        <partnerLink name="airlineReservation" partnerLinkType="ns1:AirlineReservationPLinkType" partnerRole="reservingRole"/>
+        <partnerLink name="airlineStatus" partnerLinkType="ns1:AirLineReservStatusPLinkType" myRole="statusReceivingRole"/>
+        <partnerLink name="carReservationPLink" partnerLinkType="ns2:CarReservationPLinkType" partnerRole="reservingRole"/>
+        <partnerLink name="carReservationStatusPLink" partnerLinkType="ns2:CarReservStatusPLinkType" myRole="statusReceivingRole"/>
+        <partnerLink name="hoteReservationPLink" partnerLinkType="ns3:HotelReservationPLinkType" partnerRole="reservingRole"/>
+        <partnerLink name="hotelReservationStatusPLink" partnerLinkType="ns3:HotelReservStatusPLinkType" myRole="statusReceivingRole"/>
     </partnerLinks>
+
     <variables>
         <variable name="reserve" messageType="ns0:reserveMesg"></variable>
         <variable name="reservationStatus" messageType="ns0:reservationStatus"></variable>

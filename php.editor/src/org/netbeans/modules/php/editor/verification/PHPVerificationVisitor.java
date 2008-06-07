@@ -266,7 +266,7 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
     public static class VariableStack{
         static final Collection<String> SUPERGLOBALS = new TreeSet<String>(Arrays.asList(
             "GLOBALS", "_SERVER", "_GET", "_POST", "_FILES", //NOI18N
-            "_COOKIE", "_SESSION", "_REQUEST", "_ENV")); //NOI18N
+            "_COOKIE", "_SESSION", "_REQUEST", "_ENV", "this")); //NOI18N
         
         private enum BlockType {BLOCK, FUNCTION};
         private LinkedList<LinkedHashMap<VariableWrapper, String>> vars = new LinkedList<LinkedHashMap<VariableWrapper, String>>();

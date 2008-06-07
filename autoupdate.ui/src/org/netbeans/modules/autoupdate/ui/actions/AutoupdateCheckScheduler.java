@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.autoupdate.ui.actions;
 
-import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -55,7 +57,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -492,20 +493,20 @@ public class AutoupdateCheckScheduler {
     }
     
     private static JComponent createBalloonContent( int updateCount ) {
-        JPanel panel = new JPanel( new BorderLayout() );
-        panel.setBorder( BorderFactory.createEmptyBorder(0,4,4,4) );
+        JPanel panel = new JPanel( new GridBagLayout() );
         panel.setOpaque( false );
         JLabel top = new JLabel( updateCount == 1 ?
                     NbBundle.getMessage(AutoupdateCheckScheduler.class,
                         "AutoupdateCheckScheduler_UpdateFound_ToolTip", updateCount) : // NOI18N
                     NbBundle.getMessage(AutoupdateCheckScheduler.class,
                         "AutoupdateCheckScheduler_UpdatesFound_ToolTip", updateCount)); // NOI18N
-        top.setIcon( new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/autoupdate/ui/resources/info_icon.png")) );
+        top.setIcon( new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/autoupdate/ui/resources/info_icon.png")) ); //NOI18N
         top.setIconTextGap(10);
-        panel.add( top, BorderLayout.CENTER );
+        panel.add( top, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.NORTHWEST,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
         
         panel.add( new JLabel(NbBundle.getMessage(AutoupdateCheckScheduler.class,
-                        "AutoupdateCheckScheduler_UpdateFound_Hint") ), BorderLayout.SOUTH ); //NOI18N
+                        "AutoupdateCheckScheduler_UpdateFound_Hint") ),  //NOI18N
+                        new GridBagConstraints(0,1,1,1,0.0,0.0,GridBagConstraints.NORTHWEST,GridBagConstraints.NONE,new Insets(2,0,0,0),0,0) );
         return panel;
     }
 }

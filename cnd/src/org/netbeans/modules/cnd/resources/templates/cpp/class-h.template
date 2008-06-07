@@ -11,10 +11,8 @@
 class %<%CLASSNAME%>% {
 public:
 	%<%CLASSNAME%>%();
+	%<%CLASSNAME%>%(const %<%CLASSNAME%>%& orig);
 	virtual ~%<%CLASSNAME%>%();
-
-protected:
-
 private:
 
 };

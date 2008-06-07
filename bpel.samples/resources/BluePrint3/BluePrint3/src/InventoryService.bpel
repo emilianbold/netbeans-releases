@@ -56,14 +56,13 @@
                      partnerLinkType="invs:inventoryRequestingLT"
                      myRole="inventoryService"/>
     </partnerLinks>
+
     <variables>
-        <variable name="purchaseOrder"
-                  messageType="invs:POMessage"></variable>
-        <variable name="inventoryStatus"
-                  messageType="invs:InventoryMessage"></variable>
-        <variable name="inventoryService_Fault"
-                  messageType="invs:inventoryFault"></variable>
+        <variable name="purchaseOrder" messageType="invs:POMessage"></variable>
+        <variable name="inventoryStatus" messageType="invs:InventoryMessage"></variable>
+        <variable name="inventoryService_Fault" messageType="invs:inventoryFault"></variable>
     </variables>
+
     <sequence>
         <receive name="inventoryService"
                  partnerLink="inventorySevicePLink"

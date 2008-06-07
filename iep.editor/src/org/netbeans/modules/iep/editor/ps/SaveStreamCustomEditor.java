@@ -169,7 +169,7 @@ public class SaveStreamCustomEditor extends DefaultCustomEditor {
             // database jndi name
             Property sizeProp = mComponent.getProperty(SaveStreamOperatorComponent.PROP_DATABASE_JNDI_NAME);
             String sizeStr = NbBundle.getMessage(SaveStreamCustomEditor.class, "SaveStreamCustomEditor.DATABASE_JNDI_NAME");
-            mSizePanel = PropertyPanel.createSingleLineTextPanel(sizeStr, sizeProp, false);
+            mSizePanel = PropertyPanel.createSingleLineTextPanelWithoutFilter(sizeStr, sizeProp, false);
             
             gbc.gridx = 3;
             gbc.gridy = 1;

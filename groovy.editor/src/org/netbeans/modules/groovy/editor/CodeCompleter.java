@@ -52,6 +52,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -86,6 +87,8 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.Variable;
+import org.codehaus.groovy.ast.VariableScope;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
@@ -259,6 +262,28 @@ public class CodeCompleter implements CodeCompletionHandler {
         return closest;
     }
 
+       private MethodNode getSurroundingMethodNode (CompletionRequest request) {
+           AstPath path = getPathFromRequest(request);
+
+           if (path == null) {
+               LOG.log(Level.FINEST, "path == null"); // NOI18N
+               return null;
+           }
+           
+           for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
+            ASTNode current = it.next();
+                if(current instanceof MethodNode){
+                    MethodNode mn = (MethodNode)current;
+                    LOG.log(Level.FINEST, "Found Method: {0}", mn.getName()); // NOI18N
+                    return mn;
+                }
+            }
+           
+           return null;
+       }
+    
+    
+    
     /**
      * Calculate an AstPath from a given request or null if we can not get a
      * AST root-node from the request.
@@ -275,6 +300,11 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         if (root == null) {
             LOG.log(Level.FINEST, "root == null"); // NOI18N
+            LOG.log(Level.FINEST, "request.info   = {0}", request.info); // NOI18N
+            LOG.log(Level.FINEST, "request.path   = {0}", request.path); // NOI18N
+            LOG.log(Level.FINEST, "request.prefix = {0}", request.prefix); // NOI18N
+            LOG.log(Level.FINEST, "request.node   = {0}", request.node); // NOI18N
+            
             return null;
         }
 
@@ -311,7 +341,7 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
 
     private boolean completeFields(List<CompletionProposal> proposals, CompletionRequest request) {
-        LOG.log(Level.FINEST, "completeFields(...)"); // NOI18N
+        LOG.log(Level.FINEST, "-> completeFields"); // NOI18N
 
         ASTNode closest = getClosestNode(request);
         ClassNode declClass = getDeclaringClass(closest);
@@ -332,6 +362,41 @@ public class CodeCompleter implements CodeCompletionHandler {
         return false;
     }
 
+    private boolean completeLocalVars(List<CompletionProposal> proposals, CompletionRequest request) {
+        LOG.log(Level.FINEST, "-> completeLocalVars"); // NOI18N
+
+        MethodNode scope = getSurroundingMethodNode(request);
+
+        if(scope == null){
+            LOG.log(Level.FINEST, "scope == null"); // NOI18N
+            return false;
+        }
+
+        List<ASTNode> result = new ArrayList<ASTNode>();
+        getLocalVars(scope, result);
+        
+        if(!result.isEmpty()){
+            for (ASTNode node : result) {
+                LOG.log(Level.FINEST, "Node found: {0}", ((Variable)node).getName()); // NOI18N
+                proposals.add(new LocalVarItem((Variable )node, anchor, request));
+            }
+        }
+        
+        return true;
+    }
+    
+    private void getLocalVars(ASTNode node, List<ASTNode> result) {
+        if (node instanceof Variable) {
+            result.add(node);
+        }
+
+        List<ASTNode> list = AstUtilities.children(node);
+        for (ASTNode child : list) {
+            getLocalVars(child, result);
+        }
+    }
+    
+
     /**
      * Complete potential import statements if we're invoced from a suitable
      * position (outside method or class, right behind an import statement)
@@ -342,7 +407,7 @@ public class CodeCompleter implements CodeCompletionHandler {
      */
     private boolean completeImports(final List<CompletionProposal> proposals, final CompletionRequest request) {
 
-        LOG.log(Level.FINEST, "completeImports(...)"); // NOI18N
+        LOG.log(Level.FINEST, "-> completeImports"); // NOI18N
 
         ASTNode closest = getClosestNode(request);
 
@@ -525,7 +590,7 @@ public class CodeCompleter implements CodeCompletionHandler {
      */
     private boolean completeMethods(List<CompletionProposal> proposals, CompletionRequest request) {
 
-        LOG.log(Level.FINEST, "completeMethods(...)"); // NOI18N
+        LOG.log(Level.FINEST, "-> completeMethods"); // NOI18N
 
         ASTNode closest = getClosestNode(request);
 
@@ -631,6 +696,9 @@ public class CodeCompleter implements CodeCompletionHandler {
 
             // complete fields
             completeFields(proposals, request);
+            
+            // complete local variables
+            completeLocalVars(proposals, request);
 
 
             return new DefaultCompletionResult(proposals, false);
@@ -1326,6 +1394,50 @@ public class CodeCompleter implements CodeCompletionHandler {
         public ElementHandle getElement() {
             // For completion documentation
             return GroovyParser.createHandle(request.info, new KeywordElement(name));
+        }
+    }
+
+    /**
+     * 
+     */
+    private class LocalVarItem extends GroovyCompletionItem {
+
+        private final Variable var;
+
+        LocalVarItem(Variable var, int anchorOffset, CompletionRequest request) {
+            super(null, anchorOffset, request);
+            this.var = var;
+        }
+
+        @Override
+        public String getName() {
+            return var.getName();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.VARIABLE;
+        }
+
+        @Override
+        public String getRhsHtml() {
+            return var.getType().getNameWithoutPackage();
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            // todo: what happens, if i get a CCE here?
+            return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.LOCAL_VARIABLE, null);
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public ElementHandle getElement() {
+            return null;
         }
     }
 }

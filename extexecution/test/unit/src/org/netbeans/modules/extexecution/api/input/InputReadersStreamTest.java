@@ -60,15 +60,15 @@ public class InputReadersStreamTest extends NbTestCase {
         super(name);
     }
 
-    public void testReadOutput() throws IOException {
-        InputReader outputReader = InputReaders.forStream(TestInputUtils.prepareInputStream(
+    public void testReadInput() throws IOException {
+        InputReader reader = InputReaders.forStream(TestInputUtils.prepareInputStream(
                 TEST_CHARS, TEST_CHARSET), TEST_CHARSET);
         TestInputProcessor processor = new TestInputProcessor(false);
 
         int read = 0;
         int retries = 0;
         while (read < TEST_CHARS.length && retries < MAX_RETRIES) {
-            read += outputReader.readOutput(processor);
+            read += reader.readInput(processor);
             retries++;
         }
 
@@ -93,7 +93,7 @@ public class InputReadersStreamTest extends NbTestCase {
         reader.close();
 
         try {
-            reader.readOutput(null);
+            reader.readInput(null);
             fail("Reader not throw exception on read after closing it"); // NOI18N
         } catch (IllegalStateException ex) {
             // expected

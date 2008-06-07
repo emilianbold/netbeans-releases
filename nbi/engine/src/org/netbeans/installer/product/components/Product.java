@@ -36,8 +36,8 @@
 
 package org.netbeans.installer.product.components;
 
-import org.netbeans.installer.utils.cli.commands.ForceUninstallCommand;
-import org.netbeans.installer.utils.cli.commands.TargetCommand;
+import org.netbeans.installer.utils.cli.options.ForceUninstallOption;
+import org.netbeans.installer.utils.cli.options.TargetOption;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -1033,10 +1033,10 @@ public final class Product extends RegistryNode implements StatusInterface {
         }
         
         final String[] modifyCommand = new String[] {
-            TargetCommand.TARGET_ARG, uid, version.toString()};
+            TargetOption.TARGET_ARG, uid, version.toString()};
         
         final String[] uninstallCommand = new String[] {
-            TargetCommand.TARGET_ARG, uid, version.toString(), ForceUninstallCommand.FORCE_UNINSTALL_ARG};
+            TargetOption.TARGET_ARG, uid, version.toString(), ForceUninstallOption.FORCE_UNINSTALL_ARG};
         
         if (configurationLogic.allowModifyMode()) {
             return new ApplicationDescriptor(

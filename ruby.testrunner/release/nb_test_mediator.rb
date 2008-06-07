@@ -38,6 +38,7 @@
  
 require 'test/unit'
 require 'test/unit/testcase'
+require 'test/unit/testsuite'
 require 'test/unit/ui/testrunnermediator'
 require 'getoptlong'
 require 'rubygems'
@@ -78,7 +79,13 @@ class NbTestMediator
           Rake::FileList["#{arg}/test/**/*.rb"].each { |file| add_to_suites(file) }
         when "-m"
           if "-m" != ""
-            @testmethod = arg
+            @suites.each do |s| 
+              s.tests.each do |t|
+                unless t.method_name == arg 
+                  s.delete(t)
+                end
+              end
+            end
           end
         end
       end
@@ -135,7 +142,6 @@ class NbTestMediator
   end
   
   def run_mediator
-    #    @suite.tests.each { |i| puts "test #{i}" }
     
     @suites.each do |suite| 
       @mediator = Test::Unit::UI::TestRunnerMediator.new(suite)

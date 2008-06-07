@@ -286,6 +286,9 @@ public class BrokenReferencesModel extends AbstractListModel {
      * like "${MAVEN_REPO}/struts/struts.jar".
      */
     private static boolean canResolveEvaluatedUri(PropertyEvaluator eval, URL libBase, URI libUri) {
+        if (libUri.isAbsolute()) {
+            return false;
+        }
         String path = LibrariesSupport.convertURIToFilePath(libUri);
         String newPath = eval.evaluate(path);
         if (newPath.equals(path)) {
