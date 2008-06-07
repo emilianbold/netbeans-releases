@@ -58,7 +58,7 @@ import org.openide.windows.TopComponent;
  * @author Alex Petrov (30.04.2008)
  */
 public class XSLTCompletionUtil {
-    private static final String 
+    public static final String 
         PATTERN_ATTRIB_VALUE_PREFIX = "=\"",
         ATTRIB_NAME = "name",
         ATTRIB_TYPE = "type";

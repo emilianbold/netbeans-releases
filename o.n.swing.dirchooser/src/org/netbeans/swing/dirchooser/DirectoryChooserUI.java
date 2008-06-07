@@ -673,14 +673,32 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 dirHandler.preprocessMouseEvent(e);
                 super.processMouseEvent(e);
             }
-            
+
+            // For speed (#127170):
             @Override
-            /* #106223: Always compute row height from cell renderer, don't allow fixed
-             * row height */
-            public int getRowHeight() {
-                return 0;
+            public boolean isLargeModel() {
+                return true;
             }
-            
+
+            // To work with different font sizes (#106223); see: http://www.javalobby.org/java/forums/t19562.html
+            private boolean firstPaint = true;
+            @Override
+            public void setFont(Font f) {
+                firstPaint = true;
+                super.setFont(f);
+            }
+            @Override
+            public void paint(Graphics g) {
+                if (firstPaint) {
+                    g.setFont(getFont());
+                    setRowHeight(Math.max(/* icon height plus insets? */17, g.getFontMetrics().getHeight()));
+                    firstPaint = false;
+                    // Setting the fixed height will generate another paint request, no need to complete this one
+                    return;
+                }
+                super.paint(g);
+            }
+
         };
         // #105642: start with right content in tree 
         File curDir = fileChooser.getCurrentDirectory();

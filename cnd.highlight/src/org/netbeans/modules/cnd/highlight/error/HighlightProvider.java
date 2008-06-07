@@ -66,8 +66,8 @@ import org.openide.util.Exceptions;
  */
 public class HighlightProvider  {
     
-    /** package-local interface - for test purposes only! */
-    interface Hook {
+    /** for test purposes only! */
+    public interface Hook {
         void highlightingDone(String absoluteFileName);
     }
     
@@ -77,8 +77,8 @@ public class HighlightProvider  {
     
     private static final HighlightProvider instance = new HighlightProvider();
     
-    /** package-local - for test purposes only! */
-    synchronized  void setHook(Hook hook) {
+    /** for test purposes only! */
+    public synchronized  void setHook(Hook hook) {
         this.hook = hook;
     }
     

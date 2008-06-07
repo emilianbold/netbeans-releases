@@ -156,5 +156,10 @@ public class TableProviderImpl implements TableProvider {
         public Set<Table> getJoinTables() {
             return joinTables;
         }
+
+        @Override
+        public Set<String[]> getUniqueConstraints() {
+            return null;
+        }
     }
 }

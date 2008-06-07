@@ -69,10 +69,12 @@ import org.openide.util.Utilities;
  *
  * Based on the equivalent RerunAction in the ant support.
  *
- * @author Tor Norbye
+ * @author Tor Norbye, Petr Hejl
  */
 public final class RerunAction extends AbstractAction implements FileChangeListener {
-    private ExecutionService prototype;
+
+    private transient ExecutionService prototype;
+
     private FileObject fileObject;
 
     public RerunAction(ExecutionService prototype, FileObject fileObject) {
@@ -112,8 +114,9 @@ public final class RerunAction extends AbstractAction implements FileChangeListe
             }
         }
 
-        Accessor.DEFAULT.rerun(prototype);
-        //prototype.rerun();
+        if (prototype != null) {
+            Accessor.getDefault().rerun(prototype);
+        }
     }
 
     public void fileDeleted(FileEvent fe) {
@@ -139,17 +142,26 @@ public final class RerunAction extends AbstractAction implements FileChangeListe
         // #84874: should be disabled in case the original Ant script is now gone.
         return super.isEnabled() && ((fileObject == null) || fileObject.isValid());
     }
-    
+
     /**
      * The accessor pattern class.
      */
     public abstract static class Accessor {
 
-        /** The default accessor. */
-        public static Accessor DEFAULT;
+        private static volatile Accessor accessor;
 
-        static {
-            // invokes static initializer of GrailsRuntime.class
+        public static void setDefault(Accessor accessor) {
+            assert Accessor.accessor == null : "Already initialized accessor";
+
+            Accessor.accessor = accessor;
+        }
+
+        public static Accessor getDefault() {
+            if (accessor != null) {
+                return accessor;
+            }
+
+            // invokes static initializer of ExecutionService.class
             // that will assign value to the DEFAULT field above
             Class c = ExecutionService.class;
             try {
@@ -157,9 +169,12 @@ public final class RerunAction extends AbstractAction implements FileChangeListe
             } catch (ClassNotFoundException ex) {
                 assert false : ex;
             }
+
+            assert accessor != null : "The DEFAULT field must be initialized";
+            return accessor;
         }
 
         public abstract Task rerun(ExecutionService service);
 
-    }    
+    }
 }
