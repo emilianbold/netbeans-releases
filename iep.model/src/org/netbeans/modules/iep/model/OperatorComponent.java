@@ -2,7 +2,6 @@ package org.netbeans.modules.iep.model;
 
 import java.util.List;
 
-import org.netbeans.modules.iep.model.lib.TcgComponentType;
 
 public interface OperatorComponent extends Component {
 

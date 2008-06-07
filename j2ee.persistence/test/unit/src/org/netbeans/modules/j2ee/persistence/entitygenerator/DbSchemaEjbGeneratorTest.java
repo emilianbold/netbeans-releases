@@ -142,5 +142,9 @@ public class DbSchemaEjbGeneratorTest extends NbTestCase {
         public boolean isRegenSchemaAttrs() {
              return false;
         }
+
+        public Set<String[]> getUniqueConstraints(String tableName) {
+            return null;
+        }
     }
 }

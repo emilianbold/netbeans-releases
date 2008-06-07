@@ -101,7 +101,7 @@ public class JPAGenTest extends SourceTestSupport{
         EntityClass user = getUserEntity();
         
         EntityClass product = new EntityClass(false, "testGeneratTwoUnrelated_schema", null ,"PRODUCT", 
-                getWorkDirFO(), packageName, "Product", FetchType.DEFAULT, false);
+                getWorkDirFO(), packageName, "Product", FetchType.DEFAULT, false, null);
         product.usePkField(true);
         
         EntityMemberImpl description = new EntityMemberImpl();
@@ -194,7 +194,7 @@ public class JPAGenTest extends SourceTestSupport{
     
     
     private EntityClass getUserEntity() throws IOException{
-        EntityClass user = new EntityClass(false, "TestUserEntity_schema", null, "USER", getWorkDirFO(), packageName, "User", FetchType.DEFAULT, false);
+        EntityClass user = new EntityClass(false, "TestUserEntity_schema", null, "USER", getWorkDirFO(), packageName, "User", FetchType.DEFAULT, false, null);
         user.usePkField(true);
         
         EntityMemberImpl name = new EntityMemberImpl();
@@ -356,6 +356,10 @@ public class JPAGenTest extends SourceTestSupport{
 
         public boolean isRegenSchemaAttrs() {
             return false;
+        }
+
+        public Set<String[]> getUniqueConstraints(String tableName) {
+            return null;
         }
     }
     

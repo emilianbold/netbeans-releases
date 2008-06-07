@@ -41,6 +41,7 @@ package org.netbeans.modules.hibernate.wizards;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -76,6 +77,7 @@ import org.hibernate.tool.hbm2x.POJOExporter;
 import org.hibernate.util.XMLHelper;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
+import org.netbeans.modules.hibernate.service.CustomClassLoader;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.openide.filesystems.FileUtil;
@@ -306,9 +308,13 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
         File outputDir = FileUtil.toFile(helper.getLocation().getRootFolder());
 
         try {
+            // Setup classloader.
+            HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
+            CustomClassLoader ccl = new CustomClassLoader(env.getProjectClassPath(revengFile).toArray(new URL[]{}), 
+                    getClass().getClassLoader());
             oldClassLoader = Thread.currentThread().getContextClassLoader();
-            Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
-
+            Thread.currentThread().setContextClassLoader(ccl);
+            
             // Configuring the reverse engineering strategy
             try {
 
