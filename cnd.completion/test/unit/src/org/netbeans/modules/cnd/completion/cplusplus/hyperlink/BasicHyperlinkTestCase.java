@@ -132,6 +132,12 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("kr.c", 15, 6, "kr.c", 17, 1); // int boo(); -> int boo(int i)
         performTest("kr.c", 17, 6, "kr.c", 15, 1); // int boo(int i) -> int boo();
     }
+
+    public void testStaticVariable() throws Exception {
+        // See IZ136481
+        performTest("static_variable.c", 4, 16, "static_variable.h", 2, 1);
+        performTest("static_variable.c", 5, 15, "static_variable.h", 1, 1);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 
