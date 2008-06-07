@@ -159,7 +159,6 @@ public class SwingPaletteManager implements ContextPaletteManager
                         // The palette is going to follow the cursor vertical position.
                         // We may want to change where the horizontal position is located.
                         Point newPt = new Point(paletteWidget.getX(), viewPt.y);
-                        System.out.println("SET FOLLOW POINT0: "+newPt);
                         paletteWidget.setLocation(newPt);
                     }
                 }
@@ -382,7 +381,6 @@ public class SwingPaletteManager implements ContextPaletteManager
                 // The palette is going to follow the cursor vertical position.
                 // We may want to change where the horizontal position is located.
                 Point newPt = new Point(paletteWidget.getX(), viewPt.y-6);
-                System.out.println("SET FOLLOW POINT: "+newPt);
                 paletteWidget.setLocation(newPt);
             }
             
@@ -410,7 +408,6 @@ public class SwingPaletteManager implements ContextPaletteManager
                 Point newPt = getPaletteLocationLR(widget, paletteWidget,left);
                 newPt.y=viewPt.y-6;
                 //Point newPt = new Point(paletteWidget.getX(), viewPt.y);
-                System.out.println("SET FOLLOW LR POINT: "+newPt);
                 if(!paletteWidget.getBounds().contains(viewPt))paletteWidget.setLocation(newPt);
             }
             
