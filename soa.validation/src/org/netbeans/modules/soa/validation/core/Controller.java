@@ -138,23 +138,25 @@ public final class Controller implements ComponentListener {
   }
 
   public boolean cliValidate(File file) {
-    return validate(file, false);
-  }
-
-  public boolean ideValidate(File file) {
     return validate(file, true);
   }
 
-  private boolean validate(File file, boolean isIDE) {
-    PrintStream stream;
+  public boolean ideValidate(File file) {
+    return validate(file, false);
+  }
 
-    if (isIDE) {
-      stream = System.err;
+  private boolean validate(File file, boolean isCommandLine) {
+    PrintStream stream;
+    List<ResultItem> result;
+
+    if (isCommandLine) {
+      stream = System.out;
+      result = validate(ValidationType.PARTIAL);
     }
     else {
-      stream = System.out;
+      stream = System.err;
+      result = validate(ValidationType.COMPLETE);
     }
-    List<ResultItem> result = validate(ValidationType.COMPLETE);
     boolean isError = false;
 
     for (ResultItem item : result) {
@@ -162,7 +164,7 @@ public final class Controller implements ComponentListener {
         isError = true;
       }
       else {
-        if ( !isIDE) {
+        if (isCommandLine) {
           continue;
         }
       }
