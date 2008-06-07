@@ -968,7 +968,21 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         return decls;
     }
-    
+
+    public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFilter filter) {
+        if (!SKIP_UNNECESSARY_FAKE_FIXES) {
+            fixFakeRegistrations();
+        }
+        Iterator<CsmOffsetableDeclaration> out;
+        try {
+            declarationsLock.readLock().lock();
+            out = UIDCsmConverter.UIDsToDeclarationsFiltered(declarations.values(), filter);
+         } finally {
+            declarationsLock.readLock().unlock();
+         }
+         return out;
+    }
+
     public void addMacro(CsmMacro macro) {
         CsmUID<CsmMacro> macroUID = RepositoryUtils.put(macro);
         assert macroUID != null;
