@@ -235,17 +235,17 @@ public final class Controller implements ComponentListener {
     Validation.stop();
   }
 
-  private Preferences getPreferences() {
-    return NbPreferences.forModule(Controller.class);
-  } 
+  private boolean isAllowBackgroundValidation() {
+    return get(ALLOW_BACKGROUND_VALIDATION, true);
+  }
 
   private boolean get(String name, boolean defaultValue) {
     return getPreferences().getBoolean(name, defaultValue);
   }
 
-  private boolean isAllowBackgroundValidation() {
-    return get(ALLOW_BACKGROUND_VALIDATION, true);
-  }
+  private Preferences getPreferences() {
+    return NbPreferences.forModule(org.netbeans.modules.xml.schema.model.SchemaModel.class);
+  } 
 
   private void notifyListeners(List<ResultItem> items) {
     if (items == null) {
