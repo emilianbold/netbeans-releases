@@ -153,6 +153,11 @@ public abstract class Table implements Comparable<Table> {
      * Returns the tables which this table joins.
      */
     public abstract Set<Table> getJoinTables();
+    
+    /**
+     * Returns the unique constaints defined on this table
+     */
+    public abstract Set<String[]> getUniqueConstraints();
 
     /**
      * A generic reason for a table to be disabled. If there is no need

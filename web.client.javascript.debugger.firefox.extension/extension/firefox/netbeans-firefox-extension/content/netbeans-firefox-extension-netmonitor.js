@@ -103,7 +103,10 @@
     };
     var socket;
     
+    var requests = [];
+    var topWindow;
     this.initMonitor = function  (context, browser, _socket) {
+        topWindow = context.window;
         if( !netFeatures.disableNetMonitor ){
             monitorContext(context, browser);
             if( !_socket ) 
@@ -116,12 +119,10 @@
         if (context.networkListener) {
             unmonitorContext(context, browser);
             socket = null;
+            topWindow = null;
         }
             
     }
-    
-    
-
     
     var NetObserver = 
     {
@@ -155,23 +156,33 @@
          */
         onModifyRequest: function (aNsISupport) {
             var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
-            
-            var activity = getHttpRequestHeaders(request);
-            activity.time = nowTime();
-            activity.webProgress = getRequestWebProgress(request, this);
-            activity.category = getRequestCategory(request);
-            //activity.win = webProgress ? safeGetWindow(webProgress) : null;
 
-            sendNetActivity(activity);
+            if ( isRelevantWindow(request) ){
+                requests.push(request);
+                var activity = getHttpRequestHeaders(request);
+                activity.time = nowTime();
+                activity.category = getRequestCategory(request);
+                sendNetActivity(activity);
+            }
         },
         
-        onExamineResponse: function( request ){
-            var activity = getHttpResponseHeaders(request);
-            activity.time = nowTime();
-            sendExamineNetResponse(activity);
+        onExamineResponse: function( aNsISupport ){
+            
+            var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
+            if( isRelevantWindow(request) ){
+                var activity = getHttpResponseHeaders(request);
+                activity.time = nowTime();
+                sendExamineNetResponse(activity);
+            }
         }
         
         
+    }
+    
+    function isRelevantWindow(aRequest) {
+        var webProgress = getRequestWebProgress(aRequest)
+        var win = webProgress ? safeGetWindow(webProgress) : null;
+        return (topWindow == win || topWindow == win.parent);
     }
 
     function NetProgressListener(context)
@@ -194,7 +205,9 @@
         //void onProgressChange ( nsIWebProgress webProgress , nsIRequest request , PRInt32 curSelfProgress , PRInt32 maxSelfProgress , PRInt32 curTotalProgress , PRInt32 maxTotalProgress )   
         onProgressChange : function(progress, request, current, max, total, maxTotal)
         {
-        //NetBeans.Logger.log("On ProgressChange: " + Object.prototype.toString.apply(progress.wrappedJSObject) + " Request: " + Object.prototype.toString.apply(request));
+            if ( requests.indexOf(request) != -1){
+                sendProgressUpdate(progress, request, current, max, total, maxTotal);
+            }
         },
         //void onLocationChange ( nsIWebProgress webProgress , nsIRequest request , nsIURI location )  
         onLocationChange: function() {
@@ -333,7 +346,7 @@
             activity.urlParams = parseURLParams(activity.href);
 
             //if (!activity.mimeType && aRequest.contentType )
-           //     activity.mimeType = getMimeType(aRequest.contentType, aRequest.name);
+            //     activity.mimeType = getMimeType(aRequest.contentType, aRequest.name);
 
             var requestHeaders = [];
 
@@ -397,7 +410,15 @@
     function sendNetActivity ( aActivity ){
         if (DEBUG){
             for( var key in aActivity ){
-                NetBeans.Logger.log("Item: " + key + "Value: " + aActivity[key]);
+                if ( key == "requestHeaders"){
+                    var headers = aActivity[key];
+                    NetBeans.Logger.log("   > Request Headers");
+                    for( var header in headers ){
+                        NetBeans.Logger.log("       " + headers[header].name + " : " + headers[header].value);
+                    }
+                } else {
+                    NetBeans.Logger.log("   >" + key + " : " + aActivity[key]);
+                }
             }
         }
     }
@@ -406,65 +427,33 @@
      * @param {NetActivity} aActivity;
      */
     function sendExamineNetResponse ( aActivity ){
-//        var href = aRequest.name;
-//        var referrer = aRequest.referrer;
-//        var status = aRequest.responseStatus;
-//        var statusText = aRequest.responseStatusText;
-//        
-//        var method = null;
-//        var params = null;
-//        if( aRequest.requestMethod  ){
-//            method = aRequest.requestMethod;
-//            if( method != "POST"){
-//                params = parseURLParmas(href);
-//            }
-//        }
-//        
-//        var loadFlags = null;
-//        if( aRequest.loadFlags){
-//            loadFlags = aRequest.loadFlags;
-//        }
         if (DEBUG){
             for( var key in aActivity ){
-                NetBeans.Logger.log("Item: " + key + "Value: " + aActivity[key]);
+                if ( key == "responseHeaders"){
+                    var headers = aActivity[key];
+                    NetBeans.Logger.log("   < Response Headers");
+                    for( var header in headers ){
+                        NetBeans.Logger.log("       " + headers[header].name + " : " + headers[header].value);
+                    }
+                } else {
+                    NetBeans.Logger.log("   <" + key + " : " + aActivity[key]);
+                }
             }
-//            NetBeans.Logger.log("   <-- net.netprogress.sendNetResponse");
-//            NetBeans.Logger.log("   < Request: " + aRequest);
-//            NetBeans.Logger.log("   < Time " + aTime);
-//            NetBeans.Logger.log("   < Win " + aWin);
-//            NetBeans.Logger.log("   < Category " + aCategory);
-//            NetBeans.Logger.log("   < Method " + method);
-//            NetBeans.Logger.log("   < LoadFlags " + loadFlags);
-//            NetBeans.Logger.log("   < Href " + href);
-//            NetBeans.Logger.log("   < Referrer " + referrer);
-//            NetBeans.Logger.log("   < Params " + params);
-//            NetBeans.Logger.log("   < Status " + status);
-//            NetBeans.Logger.log("   < StatusText " + statusText);
         }
     }
+    
+    function sendProgressUpdate(progress, request, current, max, total, maxTotal) {
+        if( DEBUG ){
+            NetBeans.Logger.log("On ProgressChange: " + Object.prototype.toString.apply(progress.wrappedJSObject) + " Request: " + Object.prototype.toString.apply(request) + " current: " + current +" max: " + max + " total: " + total + " maxTotal: " + maxTotal);
+        }
+    }
+    
     
     /*
-     * On State Change when State is STATE_STOP
+     * getRequestWebProgress
+     * @param request
+     * @return {nsIWebProgress}
      */
-    function sendNetStopRequest() {
-        if (DEBUG){
-            NetBeans.Logger.log("   <-- net.netprogress.sendNetStopResponse");
-        }
-    }
-    
-    function sendNetMainWindowResponded() {
-        if (DEBUG){
-            NetBeans.Logger.log("net.netprogress.sendNetMainWindowResponded");
-        }
-    }
-    
-    function sendProgressUpdate() {
-        if( DEBUG ){
-            NetBeans.Logger.log("net.netprogress.sendProgressUpdate")
-        }
-    }
-    
-    
     function getRequestWebProgress(request)
     {
         try
@@ -493,6 +482,20 @@
         catch (exc) {}
     }
     
+    /*
+     * @param {nsIWebProgress} webProgress
+     */
+    function safeGetWindow(webProgress)
+    {
+        try
+        {
+            return webProgress.DOMWindow;
+        }
+        catch (exc)
+        {
+            return null;
+        }
+    }
     function getRequestCategory(request)
     {
         try
@@ -506,17 +509,6 @@
     }
     
     
-    function safeGetWindow(webProgress)
-    {
-        try
-        {
-            return webProgress.DOMWindow;
-        }
-        catch (exc)
-        {
-            return null;
-        }
-    }
     
 
     

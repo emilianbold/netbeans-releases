@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -98,8 +97,8 @@ public class RemoteOutputOnlyCommandSupport extends RemoteConnectionSupport {
         echannel.setCommand(cmd);
         echannel.setInputStream(null);
         echannel.setErrStream(System.err);
+        echannel.connect();
         return echannel;
-
     }
 
 }
