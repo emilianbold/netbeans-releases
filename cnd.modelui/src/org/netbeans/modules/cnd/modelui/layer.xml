@@ -53,15 +53,15 @@ Contributor(s):
                 <attr name="position" intvalue="100"/>
             </file>
             <file name="TestProjectAllReferencesAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.switcher.TestProjectReferencesAction.getAllReferencesAction"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getAllReferencesAction"/>
                 <attr name="position" intvalue="1300"/>
             </file>
             <file name="TestProjectDirectUsageReferencesAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.switcher.TestProjectReferencesAction.getDirectUsageReferencesAction"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getDirectUsageReferencesAction"/>
                 <attr name="position" intvalue="1400"/>
             </file>
             <file name="TestProjectSmartCompletionAnalyzerAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.switcher.TestProjectReferencesAction.getSmartCompletionAnalyzerAction"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getSmartCompletionAnalyzerAction"/>
                 <attr name="position" intvalue="1500"/>
             </file>
         </folder>
