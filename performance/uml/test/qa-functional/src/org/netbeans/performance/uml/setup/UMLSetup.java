@@ -44,8 +44,8 @@ package org.netbeans.performance.uml.setup;
 
 import org.netbeans.performance.uml.UMLUtilities;
 
-import java.io.File;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 
 /**
  * Test suite that actually does not perform any test but sets up user directory
@@ -60,7 +60,7 @@ public class UMLSetup extends JellyTestCase {
     }
     
     public void openJeditModelProject() {
-        UMLUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + File.separator + "jEdit-Model");
+        UMLUtilities.waitProjectOpenedScanFinished(CommonUtilities.getProjectsDir() + "jEdit-Model");
     }
     
 }

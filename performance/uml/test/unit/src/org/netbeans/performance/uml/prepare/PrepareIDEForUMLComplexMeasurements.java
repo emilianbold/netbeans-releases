@@ -42,7 +42,6 @@
 
 package org.netbeans.performance.uml.prepare;
 
-import java.io.File;
 import java.util.ArrayList;
 
 import org.netbeans.jellytools.Bundle;
@@ -175,7 +174,7 @@ public class PrepareIDEForUMLComplexMeasurements extends JellyTestCase {
      */
     public void openProjects() {
         try {
-            Object prj = ProjectSupport.openProject(System.getProperty("xtest.tmpdir") + File.separator + "jEdit-Model");
+            Object prj = ProjectSupport.openProject(CommonUtilities.getProjectsDir() + "jEdit-Model");
             assertNotNull(prj);
             CommonUtilities.waitProjectTasksFinished();
         }catch(Exception exc){

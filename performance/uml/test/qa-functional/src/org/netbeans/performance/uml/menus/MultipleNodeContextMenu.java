@@ -42,7 +42,6 @@
 
 package org.netbeans.performance.uml.menus;
 
-import java.io.File;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.nodes.Node;
@@ -51,6 +50,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.netbeans.performance.uml.UMLUtilities;
@@ -86,7 +86,7 @@ public class MultipleNodeContextMenu extends PerformanceTestCase {
     public void initialize() {
         log(":: initialize");
 
-        UMLUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + File.separator + testProjectName);
+        UMLUtilities.waitProjectOpenedScanFinished(CommonUtilities.getProjectsDir() + testProjectName);
         new CloseAllDocumentsAction().performAPI();
     }
 

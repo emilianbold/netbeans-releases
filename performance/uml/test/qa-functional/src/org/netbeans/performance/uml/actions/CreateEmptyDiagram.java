@@ -40,7 +40,6 @@
  */
 package org.netbeans.performance.uml.actions;
 
-import java.io.File;
 
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
@@ -51,6 +50,7 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
 
@@ -83,7 +83,7 @@ public class CreateEmptyDiagram extends PerformanceTestCase {
     @Override
     public void initialize() {
         log(":: initialize");
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir") + File.separator + testProjectName);
+        ProjectSupport.openProject(CommonUtilities.getProjectsDir() + testProjectName);
     }
 
     public void prepare() {

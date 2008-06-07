@@ -41,7 +41,6 @@
 package org.netbeans.performance.uml.actions;
 
 import java.awt.event.InputEvent;
-import java.io.File;
 
 import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -53,6 +52,7 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 
 
 import org.netbeans.modules.performance.guitracker.ActionTracker;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
 
@@ -89,7 +89,7 @@ public class SelectingMultipleNodes extends PerformanceTestCase {
 
         track_mouse_event = ActionTracker.TRACK_MOUSE_PRESS;
 
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir") + File.separator + testProjectName);
+        ProjectSupport.openProject(CommonUtilities.getProjectsDir() + testProjectName);
     }
 
     public void prepare() {

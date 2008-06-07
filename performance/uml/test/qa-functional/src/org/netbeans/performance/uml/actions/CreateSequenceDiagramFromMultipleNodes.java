@@ -41,7 +41,6 @@
 package org.netbeans.performance.uml.actions;
 
 import java.awt.event.InputEvent;
-import java.io.File;
 
 import javax.swing.tree.TreePath;
 
@@ -59,6 +58,7 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
 
@@ -89,7 +89,7 @@ public class CreateSequenceDiagramFromMultipleNodes extends PerformanceTestCase 
     @Override
     public void initialize() {
         log(":: initialize");
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir") + File.separator + testProjectName);
+        ProjectSupport.openProject(CommonUtilities.getProjectsDir() + testProjectName);
         MainWindowOperator.getDefault().maximize();        
         new EventTool().waitNoEvent(500);
     }
