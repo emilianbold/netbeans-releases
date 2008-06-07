@@ -382,9 +382,7 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
                             {
                                 details.getOwner().removeChild(w);
                             }
-                            System.out.println("ADD TO INTERACTIOn LAYER: "+w);
                             interactionLayer.addChild(w);
-                            System.out.println("ADD COMPLETED: "+w);
                         }
                     }
                 }

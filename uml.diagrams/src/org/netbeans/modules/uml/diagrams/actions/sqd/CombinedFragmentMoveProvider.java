@@ -86,16 +86,7 @@ public class CombinedFragmentMoveProvider  implements MoveProvider {
                     //
                     CombinedFragmentWidget cfW=(CombinedFragmentWidget) widget;
                     final ContainerWidget finalcontainer=cfW.getContainer();
-                    if(finalcontainer!=null)
-                        new AfterValidationExecutor(new ActionProvider(){
-
-                            public void perfomeAction() {
-                                verifyCFContentLifelines(widget);
-                                verifyCFContentPins(widget);
-                                verifyCreatedLifelines(widget);
-                                finalcontainer.calculateChildren(true);
-                            }
-                        },widget.getScene());
+                    processAllVerifications(widget,finalcontainer);
                     widget.getScene().validate();
                     tb=null;
                     if (widget.getScene() instanceof DesignerScene) 
@@ -114,14 +105,7 @@ public class CombinedFragmentMoveProvider  implements MoveProvider {
 
                 public void setNewLocation(final Widget widget, Point location) {
                     provider.setNewLocation(widget, location);
-                    new AfterValidationExecutor(new ActionProvider() {
-                    public void perfomeAction() {
-                            verifyCFContentLifelines(widget);
-                            verifyCFContentPins(widget);
-                            verifyCreatedLifelines(widget);
-                    }
-                    }, widget.getScene());
-                    
+                    processAllVerifications(widget,null);
                     widget.getScene().validate();
                  }
                 
@@ -254,4 +238,37 @@ public class CombinedFragmentMoveProvider  implements MoveProvider {
                     //
                     scene.validate();
                 }
+
+                private void processAllVerifications(final Widget widget,final ContainerWidget finalcontainer)
+                {
+                        new AfterValidationExecutor(new ActionProvider(){
+                            public void perfomeAction() {
+                                verifyCFContentLifelines(widget);
+                                widget.revalidate();
+                                new AfterValidationExecutor(new ActionProvider(){
+                                    public void perfomeAction() {
+                                        verifyCFContentPins(widget);
+                                        widget.revalidate();
+                                        new AfterValidationExecutor(new ActionProvider(){
+                                            public void perfomeAction() {
+                                                verifyCreatedLifelines(widget);
+                                                widget.revalidate();
+                                                if(finalcontainer!=null)new AfterValidationExecutor(new ActionProvider(){
+                                                    public void perfomeAction() {
+                                                        finalcontainer.calculateChildren(true);
+                                                        widget.getScene().validate();
+                                                    }
+                                                },widget.getScene());
+                                                widget.getScene().validate();
+                                           }
+                                        },widget.getScene());
+                                        widget.getScene().validate();
+                                    }
+                                },widget.getScene());
+                                widget.getScene().validate();
+                            }
+                        },widget.getScene());
+                        widget.getScene().validate();
+                }
+
 }
