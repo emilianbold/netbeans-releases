@@ -142,7 +142,7 @@ public final class LineConvertors {
 
         public FilePatternConvertor(LineConvertor chain, FileLocator locator,
                 Pattern linePattern, Pattern extPattern) {
-            this(chain, locator, linePattern, extPattern, -1, -1);
+            this(chain, locator, linePattern, extPattern, 1, 2);
         }
 
         public FilePatternConvertor(LineConvertor chain, FileLocator locator,
