@@ -51,23 +51,26 @@ public abstract class CodeCompletionContext {
 
     /** 
      * The caret offset where we want completion 
+     * @return The caret offset where we want cmpletion
      */
     public abstract int getCaretOffset();
 
     /** 
      * The compilation info for this file 
+     * @return The compilation info for this file
      */
     @NonNull
     public abstract CompilationInfo getInfo();
 
     /** 
      * The prefix computed for this caret offset (as determined by your own {@link #getPrefix()} method 
+     * @return The prefix computed for this caret offset
      */
     @NonNull
     public abstract String getPrefix();
 
     /** 
-     * The kind of  
+     * XXX document me
      */
     @NonNull
     public abstract NameKind getNameKind();
@@ -75,17 +78,20 @@ public abstract class CodeCompletionContext {
     /**
      * The type of query to perform -- normal code completion for a popup list, or documentation
      * completion for a single item, or tooltip computation, etc.
+     * @return The type of query to perform
      */
     @NonNull
     public abstract QueryType getQueryType();
 
     /** Whether the search should be case sensitive.
+     * @return Whether the search should be case sensitive
      * @todo This should be merged with the NameKind which already passes this information
      */
     public abstract boolean isCaseSensitive();
 
     /**
      * The formatter to use to format results for completion item formatting
+     * @return The formatter to use to format HTML output
      */
     @NonNull
     public abstract HtmlFormatter getFormatter();
