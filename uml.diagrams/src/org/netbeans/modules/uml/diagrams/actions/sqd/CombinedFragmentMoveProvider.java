@@ -63,10 +63,10 @@ import org.openide.windows.TopComponent;
  */
 public class CombinedFragmentMoveProvider  implements MoveProvider {
 
-                private MoveProvider provider;
+                private AlignWithMoveStrategyProvider provider;
                 private JTrackBar tb;
                 
-                public CombinedFragmentMoveProvider(MoveProvider baseProvider)
+                public CombinedFragmentMoveProvider(AlignWithMoveStrategyProvider baseProvider)
                 {
                     provider=baseProvider;
                 }
@@ -105,7 +105,7 @@ public class CombinedFragmentMoveProvider  implements MoveProvider {
 
                 public void setNewLocation(final Widget widget, Point location) {
                     provider.setNewLocation(widget, location);
-                    processAllVerifications(widget,null);
+                    if(provider.isMovementInitialized())processAllVerifications(widget,null);
                     widget.getScene().validate();
                  }
                 
