@@ -80,7 +80,7 @@ public final class LineConvertors {
      * <p>
      * Convertor is trying to mach each line against the given
      * <code>linePattern</code>. If the line matches the regexp group number
-     * <code>fileGroup</code> supposed to be filename. This filename is then
+     * <code>fileGroup</code> is supposed to be filename. This filename is then
      * checked whether it matches <code>extPattern</code> (if any). In next
      * step converter tries to determine the line in file. The line is parsed
      * as <code>lineGroup</code> regexp group.
