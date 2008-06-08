@@ -55,6 +55,7 @@ import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
 /**
+ * Factory methods for {@link LineConvertor} classes.
  *
  * @author Petr Hejl
  */
@@ -78,12 +79,42 @@ public final class LineConvertors {
         return new FilePatternConvertor(chain, fileLocator, linePattern, extPattern, fileGroup, lineGroup);
     }
 
+    /**
+     * Returns the convertor parsing the line and searching for
+     * <code>http</code> or <code>https</code> URL.
+     * <p>
+     * Converted line returned from the processor consist from the original
+     * line and listener opening browser with recognized url on click.
+     * <p>
+     * If line is not recognized as <code>http</code> or <code>https</code>
+     * URL it is passed to the given chaining convertor. If chaining convertor
+     * does not exist only the line containing the original text is returned.
+     *
+     * @param chain the converter to which the line will be passed when it is
+     *             not recognized as URL; may be <code>null</code>
+     * @return the convertor parsing the line and searching for
+     *             <code>http</code> or <code>https</code> URL
+     */
     public static LineConvertor httpUrl(LineConvertor chain) {
         return new HttpUrlConvertor(chain);
     }
 
+    /**
+     * Locates the file for the given path, file or part of the path.
+     *
+     * @see LineConvertors#filePattern(org.netbeans.modules.extexecution.api.print.LineConvertor, org.netbeans.modules.extexecution.api.print.LineConvertors.FileLocator, java.util.regex.Pattern, java.util.regex.Pattern)
+     * @see LineConvertors#filePattern(org.netbeans.modules.extexecution.api.print.LineConvertor, org.netbeans.modules.extexecution.api.print.LineConvertors.FileLocator, java.util.regex.Pattern, java.util.regex.Pattern, int, int)
+     */
     public interface FileLocator {
 
+        /**
+         * Returns the file corresponding to the filename (or path) or
+         * <code>null</code> if locater can't find the file.
+         *
+         * @param filename name of the file
+         * @return the file corresponding to the filename (or path) or
+         *             <code>null</code> if locater can't find the file
+         */
         FileObject find(String filename);
 
     }
@@ -177,7 +208,7 @@ public final class LineConvertors {
         private final LineConvertor chain;
 
         private final Pattern pattern = Pattern.compile(".*(((http)|(https))://\\S+)(\\s.*|$)"); // NOI18N
-        
+
         public HttpUrlConvertor(LineConvertor chain) {
             this.chain = chain;
         }
@@ -200,10 +231,10 @@ public final class LineConvertors {
 
                         public void outputLineCleared(OutputEvent ev) {
                         }
-                    }));  
+                    }));
                 } catch (MalformedURLException ex) {
                     // retur chain
-                }                
+                }
             }
 
             return chain(chain, line);
