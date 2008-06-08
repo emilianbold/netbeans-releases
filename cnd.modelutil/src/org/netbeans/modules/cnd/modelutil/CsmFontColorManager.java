@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,65 +31,87 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.highlight.semantic;
+package org.netbeans.modules.cnd.modelutil;
 
 import java.lang.ref.WeakReference;
-import javax.swing.text.Document;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
+import javax.swing.event.ChangeListener;
+import javax.swing.text.AttributeSet;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner;
-import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Sergey Grinev
  */
-public abstract class HighlighterBase implements PhaseRunner, LookupListener {
-
-    /*package*/ static final boolean MINIMAL = Boolean.getBoolean("cnd.highlighting.minimal");
+public class CsmFontColorManager implements LookupListener {
     
-    //private final String mime;
-    private final OffsetsBag bag;
-    private final WeakReference<BaseDocument> weakDoc;
-
-    //private final FontColorSettings savedFCS;
-    
-    public HighlighterBase(Document doc) {
-        bag = new OffsetsBag(doc);
-
-        if (doc instanceof BaseDocument) {
-            weakDoc = new WeakReference<BaseDocument>((BaseDocument) doc);
-        } else {
-            weakDoc = null;
-        }
-
-        updateFontColors();
+    public AttributeSet getColors(String cheat) {
+        return fcs.getTokenFontColors(cheat);
     }
     
-    protected BaseDocument getDocument() {
-        return weakDoc != null ? weakDoc.get() : null;
+    private final List<WeakReference<ChangeListener>> listeners = new ArrayList<WeakReference<ChangeListener>>();
+    
+    public void addListener(ChangeListener cl) {
+        listeners.add(new WeakReference<ChangeListener>(cl));
     }
-
-    public OffsetsBag getHighlightsBag() {
-        return bag;
-    }
-
-    // LookupListener
+    
+//    public enum Colored {
+//
+//        MACRO("macro"),
+//        TYPEDEF("typedef");
+//     
+//        private final String resourceName;
+//
+//        Colored(String resourceName) {
+//            this.resourceName = resourceName;
+//        }
+//
+//        public String getResourceName() {
+//            return resourceName;
+//        }
+//    }
+    
     public void resultChanged(LookupEvent ev) {
-        updateFontColors();
-        run(PhaseRunner.Phase.INIT);
+        for (ListIterator<WeakReference<ChangeListener>> it = listeners.listIterator(); it.hasNext();) {
+            WeakReference<ChangeListener> wrcl = it.next();
+            ChangeListener cl = wrcl.get();
+            if (cl!=null) {
+                cl.stateChanged(null);
+            } else {
+                it.remove();
+            }
+        }
     }
-    
-    protected abstract void updateFontColors();
 
-    protected boolean isCancelled() {
-        return Thread.interrupted();
+    public static CsmFontColorManager instance() {
+        return Instantiator.instance;
+    }
+
+    private static class Instantiator {
+
+        public final static CsmFontColorManager instance = new CsmFontColorManager();
+    }
+
+    private final FontColorSettings fcs;
+    private final String mime = "text/x-c++"; //TODO
+    
+    private CsmFontColorManager() {
+        Lookup lookup = MimeLookup.getLookup(MimePath.get(mime));
+        Lookup.Result<FontColorSettings> result =
+                lookup.lookup(new Lookup.Template<FontColorSettings>(FontColorSettings.class));
+        result.addLookupListener(this);
+        fcs = result.allInstances().iterator().next();
     }
 }

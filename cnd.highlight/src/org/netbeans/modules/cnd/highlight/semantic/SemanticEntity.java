@@ -52,6 +52,6 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 public interface SemanticEntity {
     String getName();
     List<? extends CsmOffsetable> getBlocks(CsmFile csmFile);
-    void initFontColors(FontColorSettings fcs);
+    void updateFontColors();
     public AttributeSet getColor(CsmOffsetable obj);
 }

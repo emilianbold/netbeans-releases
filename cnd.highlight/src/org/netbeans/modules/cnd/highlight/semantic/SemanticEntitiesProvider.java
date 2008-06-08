@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
+import org.netbeans.modules.cnd.modelutil.CsmFontColorManager;
 
 /**
  *
@@ -107,7 +108,7 @@ public class SemanticEntitiesProvider {
                 }
 
                 @Override
-                public void initFontColors(FontColorSettings fcs) {
+                public void updateFontColors() {
                     color = AttributesUtilities.createImmutable(StyleConstants.Bold, Boolean.TRUE);
                 }
             });
@@ -137,10 +138,9 @@ public class SemanticEntitiesProvider {
                 protected AttributeSet sysMacroColors;
 
                 @Override
-                public void initFontColors(FontColorSettings fcs) {
-                    super.initFontColors(fcs);
-                    sysMacroColors = getFontColor(fcs, "macros-system"); // NOI18N
-
+                public void updateFontColors() {
+                    super.updateFontColors();
+                    sysMacroColors = getFontColor("macros-system"); // NOI18N
                 }
             });
 
@@ -172,12 +172,12 @@ public class SemanticEntitiesProvider {
                 StyleConstants.Background, null,
                 EditorStyleConstants.WaveUnderlineColor, null);
 
-        public void initFontColors(FontColorSettings fcs) {
-            color = getFontColor(fcs, getName());
+        public void updateFontColors() {
+            color = getFontColor(getName());
         }
 
-        protected AttributeSet getFontColor(FontColorSettings fcs, String name) {
-            return AttributesUtilities.createComposite(fcs.getTokenFontColors(prefix + name), cleanUp);
+        protected AttributeSet getFontColor(String name) {
+            return AttributesUtilities.createComposite(CsmFontColorManager.instance().getColors(prefix + name), cleanUp);
         }
 
         public AttributeSet getColor(CsmOffsetable obj) {

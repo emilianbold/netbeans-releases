@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
+import org.netbeans.modules.cnd.modelutil.CsmFontColorManager;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
@@ -204,7 +205,7 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
     }
     
     @Override
-    protected void initFontColors(FontColorSettings fcs) {
-        defaultColors = fcs.getTokenFontColors(COLORS);
+    protected void updateFontColors() {
+        defaultColors = CsmFontColorManager.instance().getColors(COLORS);
     }
 }

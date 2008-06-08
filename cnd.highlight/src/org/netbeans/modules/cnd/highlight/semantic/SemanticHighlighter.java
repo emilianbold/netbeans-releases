@@ -62,9 +62,9 @@ public class SemanticHighlighter extends HighlighterBase {
         super(doc);
     }
 
-    protected void initFontColors(FontColorSettings fcs) {
+    protected void updateFontColors() {
         for (SemanticEntity semanticEntity : SemanticEntitiesProvider.instance().get()) {
-            semanticEntity.initFontColors(fcs);
+            semanticEntity.updateFontColors();
         }
     }
 
@@ -95,7 +95,6 @@ public class SemanticHighlighter extends HighlighterBase {
             if (csmFile != null && csmFile.isParsed()) {
                 for (SemanticEntity se : SemanticEntitiesProvider.instance().get()) {
                     long start2 = System.currentTimeMillis();
-                    if (SHOW_TIMES) System.err.println("#@# Highlighter '" + se.getName() + "' have started [" + (start2 - start) + " ms].");
                     if (SemanticHighlightingOptions.instance().isEnabled(se.getName())) {
                         for (CsmOffsetable block : se.getBlocks(csmFile)) {
                             newBag.addHighlight(block.getStartOffset(), block.getEndOffset(), se.getColor(block));
