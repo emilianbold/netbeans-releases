@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.modelutil;
 
+import java.awt.Color;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.EventListener;
@@ -47,6 +48,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
@@ -66,8 +68,12 @@ public class CsmFontColorManager {
         getCreateProvider(mimeType).addListener(listener);
     }
     
-    public AttributeSet getColor(String mimeType, String iAmEnumEnumEnumAndNotAStringAtAll) {
-        return getCreateProvider(mimeType).getColor(iAmEnumEnumEnumAndNotAStringAtAll);
+    private final String DEFAULT_MIME_TYPE = "text/x-c++"; //NOI18N
+    
+    /* package */ Color getColor(FontColorProvider.Entity color) {
+        // completion is not aware of document type
+        AttributeSet as = getCreateProvider(DEFAULT_MIME_TYPE).getColor(color);
+        return (Color)as.getAttribute(StyleConstants.ColorConstants.Foreground);
     }
     
     private FontColorProviderImpl getCreateProvider(String mimeType) {
@@ -79,22 +85,7 @@ public class CsmFontColorManager {
             return fcp;
         }
     }
-//    public enum Colored {
-//
-//        MACRO("macro"),
-//        TYPEDEF("typedef");
-//     
-//        private final String resourceName;
-//
-//        Colored(String resourceName) {
-//            this.resourceName = resourceName;
-//        }
-//
-//        public String getResourceName() {
-//            return resourceName;
-//        }
-//    }
-    
+
     public static CsmFontColorManager instance() {
         return Instantiator.instance;
     }
@@ -134,8 +125,8 @@ public class CsmFontColorManager {
             listener.stateChanged(this);
         }
 
-        public AttributeSet getColor(String iAmEnumEnumEnumAndNotAStringAtAll) {
-            return fcs.getTokenFontColors(iAmEnumEnumEnumAndNotAStringAtAll);
+        public AttributeSet getColor(Entity color) {
+            return fcs.getTokenFontColors(color.getResourceName());
         }
 
         public void resultChanged(LookupEvent ev) {

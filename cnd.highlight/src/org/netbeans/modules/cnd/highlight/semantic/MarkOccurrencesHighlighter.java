@@ -206,6 +206,6 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
     
     @Override
     protected void updateFontColors(FontColorProvider provider) {
-        defaultColors = provider.getColor(COLORS);
+        defaultColors = provider.getColor(FontColorProvider.Entity.MARK_OCCURENCES);
     }
 }

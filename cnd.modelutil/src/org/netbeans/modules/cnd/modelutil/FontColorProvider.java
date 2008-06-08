@@ -46,5 +46,26 @@ import javax.swing.text.AttributeSet;
  * @author Sergey Grinev
  */
 public interface FontColorProvider {
-    AttributeSet getColor(String iAmEnumEnumEnumAndNotAStringAtAll);
+    AttributeSet getColor(Entity color);
+
+    public enum Entity {
+
+        INACTIVE_CODE("cc-highlighting-inactive"),
+        USER_MACRO("cc-highlighting-macros"),
+        SYSTEM_MACRO("cc-highlighting-macros-system"),
+        CLASS_FIELD("cc-highlighting-class-fields"),
+        MARK_OCCURENCES("cc-highlighting-mark-occurrences"),
+        TYPEDEF("cc-highlighting-typedefs");
+        
+        private final String resourceName;
+
+        Entity(String resourceName) {
+            this.resourceName = resourceName;
+        }
+
+        public String getResourceName() {
+            return resourceName;
+        }
+    }
+    
 }
