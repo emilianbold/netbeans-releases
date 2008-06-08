@@ -42,31 +42,23 @@ package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.lang.ref.WeakReference;
 import javax.swing.text.Document;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner;
+import org.netbeans.modules.cnd.modelutil.CsmFontColorManager;
+import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Sergey Grinev
  */
-public abstract class HighlighterBase implements PhaseRunner, LookupListener {
+public abstract class HighlighterBase implements PhaseRunner, CsmFontColorManager.FontColorChangeListener {
 
     /*package*/ static final boolean MINIMAL = Boolean.getBoolean("cnd.highlighting.minimal");
     
-    //private final String mime;
     private final OffsetsBag bag;
     private final WeakReference<BaseDocument> weakDoc;
 
-    //private final FontColorSettings savedFCS;
-    
     public HighlighterBase(Document doc) {
         bag = new OffsetsBag(doc);
 
@@ -76,7 +68,8 @@ public abstract class HighlighterBase implements PhaseRunner, LookupListener {
             weakDoc = null;
         }
 
-        updateFontColors();
+        String mimeType = (String) doc.getProperty("mimeType"); //NOI18N
+        CsmFontColorManager.instance().addListener(mimeType, this);
     }
     
     protected BaseDocument getDocument() {
@@ -87,13 +80,13 @@ public abstract class HighlighterBase implements PhaseRunner, LookupListener {
         return bag;
     }
 
-    // LookupListener
-    public void resultChanged(LookupEvent ev) {
-        updateFontColors();
+    // ChangeListener
+    public void stateChanged(FontColorProvider provider) {
+        updateFontColors(provider);
         run(PhaseRunner.Phase.INIT);
     }
     
-    protected abstract void updateFontColors();
+    protected abstract void updateFontColors(FontColorProvider provider);
 
     protected boolean isCancelled() {
         return Thread.interrupted();

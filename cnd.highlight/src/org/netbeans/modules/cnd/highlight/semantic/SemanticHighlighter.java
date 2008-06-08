@@ -41,12 +41,12 @@
 package org.netbeans.modules.cnd.highlight.semantic;
 
 import javax.swing.text.Document;
-import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 
 /**
@@ -62,9 +62,9 @@ public class SemanticHighlighter extends HighlighterBase {
         super(doc);
     }
 
-    protected void updateFontColors() {
+    protected void updateFontColors(FontColorProvider provider) {
         for (SemanticEntity semanticEntity : SemanticEntitiesProvider.instance().get()) {
-            semanticEntity.updateFontColors();
+            semanticEntity.updateFontColors(provider);
         }
     }
 

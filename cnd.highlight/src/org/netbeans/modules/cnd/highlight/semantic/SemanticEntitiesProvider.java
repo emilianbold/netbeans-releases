@@ -44,13 +44,13 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
-import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
 import org.netbeans.modules.cnd.modelutil.CsmFontColorManager;
+import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 
 /**
  *
@@ -108,7 +108,7 @@ public class SemanticEntitiesProvider {
                 }
 
                 @Override
-                public void updateFontColors() {
+                public void updateFontColors(FontColorProvider provider) {
                     color = AttributesUtilities.createImmutable(StyleConstants.Bold, Boolean.TRUE);
                 }
             });
@@ -138,9 +138,9 @@ public class SemanticEntitiesProvider {
                 protected AttributeSet sysMacroColors;
 
                 @Override
-                public void updateFontColors() {
-                    super.updateFontColors();
-                    sysMacroColors = getFontColor("macros-system"); // NOI18N
+                public void updateFontColors(FontColorProvider provider) {
+                    super.updateFontColors(provider);
+                    sysMacroColors = getFontColor(provider, "macros-system"); // NOI18N
                 }
             });
 
@@ -172,12 +172,12 @@ public class SemanticEntitiesProvider {
                 StyleConstants.Background, null,
                 EditorStyleConstants.WaveUnderlineColor, null);
 
-        public void updateFontColors() {
-            color = getFontColor(getName());
+        public void updateFontColors(FontColorProvider provider) {
+            color = getFontColor(provider, getName());
         }
 
-        protected AttributeSet getFontColor(String name) {
-            return AttributesUtilities.createComposite(CsmFontColorManager.instance().getColors(prefix + name), cleanUp);
+        protected static AttributeSet getFontColor(FontColorProvider provider, String name) {
+            return AttributesUtilities.createComposite(provider.getColor(prefix + name), cleanUp);
         }
 
         public AttributeSet getColor(CsmOffsetable obj) {

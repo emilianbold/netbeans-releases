@@ -48,7 +48,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
-import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.model.tasks.CaretAwareCsmFileTaskFactory;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -58,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
 import org.netbeans.modules.cnd.modelutil.CsmFontColorManager;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
@@ -205,7 +205,7 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
     }
     
     @Override
-    protected void updateFontColors() {
-        defaultColors = CsmFontColorManager.instance().getColors(COLORS);
+    protected void updateFontColors(FontColorProvider provider) {
+        defaultColors = provider.getColor(COLORS);
     }
 }

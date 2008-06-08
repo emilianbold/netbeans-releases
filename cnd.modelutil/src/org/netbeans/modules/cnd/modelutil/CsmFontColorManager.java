@@ -40,9 +40,12 @@ package org.netbeans.modules.cnd.modelutil;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.EventListener;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import javax.swing.event.ChangeListener;
+import java.util.Map;
 import javax.swing.text.AttributeSet;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -55,18 +58,27 @@ import org.openide.util.LookupListener;
  *
  * @author Sergey Grinev
  */
-public class CsmFontColorManager implements LookupListener {
-    
-    public AttributeSet getColors(String cheat) {
-        return fcs.getTokenFontColors(cheat);
+public class CsmFontColorManager {
+
+    private final Map<String, FontColorProviderImpl> providers = new HashMap<String, FontColorProviderImpl>();
+
+    public void addListener(String mimeType, FontColorChangeListener listener) {
+        getCreateProvider(mimeType).addListener(listener);
     }
     
-    private final List<WeakReference<ChangeListener>> listeners = new ArrayList<WeakReference<ChangeListener>>();
-    
-    public void addListener(ChangeListener cl) {
-        listeners.add(new WeakReference<ChangeListener>(cl));
+    public AttributeSet getColor(String mimeType, String iAmEnumEnumEnumAndNotAStringAtAll) {
+        return getCreateProvider(mimeType).getColor(iAmEnumEnumEnumAndNotAStringAtAll);
     }
     
+    private FontColorProviderImpl getCreateProvider(String mimeType) {
+        synchronized (providers) {
+            FontColorProviderImpl fcp = providers.get(mimeType);
+            if (fcp == null) {
+                fcp = new FontColorProviderImpl(mimeType);
+            }
+            return fcp;
+        }
+    }
 //    public enum Colored {
 //
 //        MACRO("macro"),
@@ -83,18 +95,6 @@ public class CsmFontColorManager implements LookupListener {
 //        }
 //    }
     
-    public void resultChanged(LookupEvent ev) {
-        for (ListIterator<WeakReference<ChangeListener>> it = listeners.listIterator(); it.hasNext();) {
-            WeakReference<ChangeListener> wrcl = it.next();
-            ChangeListener cl = wrcl.get();
-            if (cl!=null) {
-                cl.stateChanged(null);
-            } else {
-                it.remove();
-            }
-        }
-    }
-
     public static CsmFontColorManager instance() {
         return Instantiator.instance;
     }
@@ -104,14 +104,52 @@ public class CsmFontColorManager implements LookupListener {
         public final static CsmFontColorManager instance = new CsmFontColorManager();
     }
 
-    private final FontColorSettings fcs;
-    private final String mime = "text/x-c++"; //TODO
-    
     private CsmFontColorManager() {
-        Lookup lookup = MimeLookup.getLookup(MimePath.get(mime));
-        Lookup.Result<FontColorSettings> result =
-                lookup.lookup(new Lookup.Template<FontColorSettings>(FontColorSettings.class));
-        result.addLookupListener(this);
-        fcs = result.allInstances().iterator().next();
+        // welcome to doNothing world
+    }
+
+    public interface FontColorChangeListener extends EventListener {
+
+        void stateChanged(FontColorProvider fcp);
+    }
+
+    private static class FontColorProviderImpl implements FontColorProvider, LookupListener {
+
+        private final String mimeType;
+        private final List<WeakReference<FontColorChangeListener>> listeners = new ArrayList<WeakReference<FontColorChangeListener>>();
+        FontColorSettings fcs;
+
+        public FontColorProviderImpl(String mimeType) {
+            this.mimeType = mimeType;
+            Lookup lookup = MimeLookup.getLookup(MimePath.get(mimeType));
+            Lookup.Result<FontColorSettings> result =
+                    lookup.lookup(new Lookup.Template<FontColorSettings>(FontColorSettings.class));
+            Iterator it = result.allInstances().iterator(); 
+            fcs = result.allInstances().iterator().next();
+            result.addLookupListener(this);
+        }
+
+        public void addListener(FontColorChangeListener listener) {
+            listeners.add(new WeakReference<FontColorChangeListener>(listener));
+            listener.stateChanged(this);
+        }
+
+        public AttributeSet getColor(String iAmEnumEnumEnumAndNotAStringAtAll) {
+            return fcs.getTokenFontColors(iAmEnumEnumEnumAndNotAStringAtAll);
+        }
+
+        public void resultChanged(LookupEvent ev) {
+            Lookup lookup = MimeLookup.getLookup(MimePath.get(mimeType));
+            fcs = lookup.lookup(FontColorSettings.class);
+            for (ListIterator<WeakReference<FontColorChangeListener>> it = listeners.listIterator(); it.hasNext();) {
+                WeakReference<FontColorChangeListener> wrcl = it.next();
+                FontColorChangeListener cl = wrcl.get();
+                if (cl != null) {
+                    cl.stateChanged(this);
+                } else {
+                    it.remove();
+                }
+            }
+        }
     }
 }
