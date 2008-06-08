@@ -51,6 +51,7 @@ import java.util.regex.Pattern;
 import org.netbeans.modules.extexecution.print.FindFileListener;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
@@ -73,8 +74,49 @@ public final class LineConvertors {
         return new FilePatternConvertor(chain, fileLocator, linePattern, extPattern);
     }
 
+    /**
+     * Returns the convertor searching for lines matching the patterns,
+     * considering matched lines as being files.
+     * <p>
+     * Convertor is trying to mach each line against the given
+     * <code>linePattern</code>. If the line matches the regexp group number
+     * <code>fileGroup</code> supposed to be filename. This filename is then
+     * checked whether it matches <code>extPattern</code> (if any). In next
+     * step converter tries to determine the line in file. The line is parsed
+     * as <code>lineGroup</code> regexp group.
+     * <p>
+     * When the line does not match the <code>linePattern</code> or
+     * received filename does not match <code>extPattern</code> the work is
+     * delegated to <code>chain</code> convertor. If this convertor is
+     * <code>null</code> the line containing just the original text is returned.
+     * <p>
+     * Resulting converted line contains the original text and a listener
+     * that consults the <code>fileLocator</code> (if any) when clicked
+     * and displays the received file in the editor.
+     * <p>
+     * Returned convertor is <i>not thread safe</i>.
+     *
+     * @param chain the converter to which the line will be passed when it is
+     *             not recognized as file; may be <code>null</code>
+     * @param fileLocator locator that is consulted for real file; used in
+     *             listener for the converted line; may be <code>null</code>
+     * @param linePattern pattern for matching the line
+     * @param extPattern pattern for matching once received filenames;
+     *             may be <code>null</code>
+     * @param fileGroup regexp group supposed to be the filename;
+     *             only nonnegative numbers allowed
+     * @param lineGroup regexp group supposed to be the line number;
+     *             when negative line number is not parsed
+     * @return the convertor searching for lines matching the patterns,
+     *             considering matched lines as being files (names or paths)
+     */
     public static LineConvertor filePattern(LineConvertor chain, FileLocator fileLocator,
             Pattern linePattern, Pattern extPattern, int fileGroup, int lineGroup) {
+
+        Parameters.notNull("linePattern", linePattern);
+        if (fileGroup < 0) {
+            throw new IllegalArgumentException("File goup must be non negative: " + fileGroup); // NOI18N
+        }
 
         return new FilePatternConvertor(chain, fileLocator, linePattern, extPattern, fileGroup, lineGroup);
     }
@@ -89,6 +131,8 @@ public final class LineConvertors {
      * If line is not recognized as <code>http</code> or <code>https</code>
      * URL it is passed to the given chaining convertor. If chaining convertor
      * does not exist only the line containing the original text is returned.
+     * <p>
+     * Returned convertor is <i>not thread safe</i>.
      *
      * @param chain the converter to which the line will be passed when it is
      *             not recognized as URL; may be <code>null</code>
@@ -179,6 +223,7 @@ public final class LineConvertors {
                     if (file.startsWith("./")) { // NOI18N
                         file = file.substring(2);
                     }
+                    // FIXME fix this condition
                     if (extPattern != null && !(extPattern.matcher(file).matches() || new File(file).isFile())) {
                         return chain(chain, line);
                     }
