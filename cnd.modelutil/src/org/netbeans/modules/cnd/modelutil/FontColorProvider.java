@@ -37,21 +37,35 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.highlight.semantic;
+package org.netbeans.modules.cnd.modelutil;
 
-import java.util.List;
 import javax.swing.text.AttributeSet;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 
 /**
  *
  * @author Sergey Grinev
  */
-public interface SemanticEntity {
-    String getName();
-    List<? extends CsmOffsetable> getBlocks(CsmFile csmFile);
-    void updateFontColors(FontColorProvider provider);
-    public AttributeSet getColor(CsmOffsetable obj);
+public interface FontColorProvider {
+    AttributeSet getColor(Entity color);
+
+    public enum Entity {
+
+        INACTIVE_CODE("cc-highlighting-inactive"),
+        USER_MACRO("cc-highlighting-macros"),
+        SYSTEM_MACRO("cc-highlighting-macros-system"),
+        CLASS_FIELD("cc-highlighting-class-fields"),
+        MARK_OCCURENCES("cc-highlighting-mark-occurrences"),
+        TYPEDEF("cc-highlighting-typedefs");
+        
+        private final String resourceName;
+
+        Entity(String resourceName) {
+            this.resourceName = resourceName;
+        }
+
+        public String getResourceName() {
+            return resourceName;
+        }
+    }
+    
 }
