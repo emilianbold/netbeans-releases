@@ -768,7 +768,13 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
         {
             revalidate();
         }
-        //scene.validate();
+        new AfterValidationExecutor(new ActionProvider() {
+            public void perfomeAction() {
+                getContainer().calculateChildren(true);;
+            }
+        }
+        , scene);
+        scene.validate();
         //if size changed especially but anyway also need to recalculate graphically contained children
         //getContainer().calculateChildren(true);
         //need to do it after all sizes determination if set of containers are positioned, so call outside

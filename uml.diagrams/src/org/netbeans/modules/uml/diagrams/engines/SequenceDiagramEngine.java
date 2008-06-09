@@ -346,7 +346,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
         if(type0==null)type0=elementToDrop.getElementType();
         INamedElement ret=elementToDrop;
         INamespace ns=getScene().getDiagram().getNamespace();
-        if(ret.getNamespace()==null)ns.addOwnedElement(ret);//need to add here as a fix for combined fragment initialization problem below caused by not set of namespace in accept on containers before call to processing, set default ns to diagram ns
+        if(ret.getNamespace()==null && ret.getOwner()==null)ns.addOwnedElement(ret);//need to add here as a fix for combined fragment initialization problem below caused by not set of namespace in accept on containers before call to processing, set default ns to diagram ns
         if(type0.equals("Lifeline") || type0.equals("Comment"))
         {
             //accept as is (TBD may be need to check if exists in "current" interaction
