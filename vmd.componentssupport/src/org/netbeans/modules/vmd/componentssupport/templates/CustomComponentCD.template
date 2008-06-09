@@ -15,6 +15,9 @@ import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
+<#if superDescriptorClassFQN?? && superDescriptorClassFQN != "">
+import ${superDescriptorClassFQN};
+</#if>
 
 /**
  *

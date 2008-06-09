@@ -40,14 +40,12 @@
 package org.netbeans.modules.hibernate.util;
 
 
-import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.StringTokenizer;
+import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.db.explorer.ConnectionManager;
@@ -81,17 +79,18 @@ import org.openide.util.Mutex;
  */
 public class HibernateUtil {
 
+    private static Logger logger = Logger.getLogger(HibernateUtil.class.getName());
     /**
      * This methods gets all database tables from the supplied Hibernate Configurations.
      * Note : This class uses a deprecated method, that will be replaced in future.
      *
      * @param configurations hibernate configrations used to connect to the DB.
-     * @return arraylist of strings of table names.
+     * @return list of strings of table names.
      * @throws java.sql.SQLException
      */
-    public static ArrayList<String> getAllDatabaseTables(HibernateConfiguration... configurations)
+    public static List<String> getAllDatabaseTables(HibernateConfiguration... configurations)
     throws java.sql.SQLException{
-        ArrayList<String> allTables = new ArrayList<String>();
+        List<String> allTables = new ArrayList<String>();
         for(HibernateConfiguration configuration : configurations) {
             try {
                 DatabaseConnection dbConnection = getDBConnection(configuration);
@@ -138,8 +137,8 @@ public class HibernateUtil {
      * @param project the project for which HibernateConfigurations need to be constructed.
      * @return list of HibernateConfiguration objects or an empty list of none found.
      */
-    public static ArrayList<HibernateConfiguration> getAllHibernateConfigurations(Project project) {
-        ArrayList<HibernateConfiguration> configFiles = new ArrayList<HibernateConfiguration>();
+    public static List<HibernateConfiguration> getAllHibernateConfigurations(Project project) {
+        List<HibernateConfiguration> configFiles = new ArrayList<HibernateConfiguration>();
         for(FileObject fo : getAllHibernateConfigFileObjects(project)) {
             try {
                 configFiles.add(((HibernateCfgDataObject) DataObject.find(fo)).getHibernateConfiguration());
@@ -156,8 +155,8 @@ public class HibernateUtil {
      * @param project the project for which HIbernate configuration files need to be searched.
      * @return list of HibernateConfiguration FileObjects or an empty list of none found.
      */
-    public static ArrayList<FileObject> getAllHibernateConfigFileObjects(Project project) {
-        ArrayList<FileObject> configFiles = new ArrayList<FileObject>();
+    public static List<FileObject> getAllHibernateConfigFileObjects(Project project) {
+        List<FileObject> configFiles = new ArrayList<FileObject>();
         SourceGroup[] javaSourceGroup = getSourceGroups(project);
         
         for(SourceGroup sourceGroup : javaSourceGroup) {
@@ -180,8 +179,8 @@ public class HibernateUtil {
      * @param project the project for whcih the mapping files are to be found.
      * @return list of FileObjects of actual mapping files.
      */
-    public static ArrayList<FileObject> getAllHibernateMappingFileObjects(Project project) {
-        ArrayList<FileObject> mappingFiles = new ArrayList<FileObject>();
+    public static List<FileObject> getAllHibernateMappingFileObjects(Project project) {
+        List<FileObject> mappingFiles = new ArrayList<FileObject>();
         SourceGroup[] javaSourceGroup = getSourceGroups(project);
         for(SourceGroup sourceGroup : javaSourceGroup) {
             FileObject root = sourceGroup.getRootFolder();
@@ -214,20 +213,13 @@ public class HibernateUtil {
      * @param projectFile file in current project.
      * @return List of java.net.URL objects representing each entry on the classpath.
      */
-    public static ArrayList<URL> getProjectClassPathEntries(FileObject projectFile) {
-        ArrayList<URL> projectClassPathEntries = new ArrayList<URL>();
+    public static List<URL> getProjectClassPathEntries(FileObject projectFile) {
+        List<URL> projectClassPathEntries = new ArrayList<URL>();
         ClassPath cp = ClassPath.getClassPath(projectFile, ClassPath.EXECUTE);
 
-        StringTokenizer classPathTokens = new StringTokenizer(cp.toString(), ":");
-        while (classPathTokens.hasMoreTokens()) {
-            File f = new File(classPathTokens.nextToken());
-            try {
-                projectClassPathEntries.add(f.toURL());
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+        for(ClassPath.Entry cpEntry : cp.entries()) {
+            projectClassPathEntries.add(cpEntry.getURL());
         }
-
         return projectClassPathEntries;
     }
     
@@ -240,8 +232,8 @@ public class HibernateUtil {
      * @param project the project for whcih the mapping files are to be found.
      * @return list of relative paths of actual mapping files.
      */
-    public static ArrayList<String> getAllHibernateMappingsRelativeToSourcePath(Project project) {
-        ArrayList<String> mappingFiles = new ArrayList<String>();
+    public static List<String> getAllHibernateMappingsRelativeToSourcePath(Project project) {
+        List<String> mappingFiles = new ArrayList<String>();
         SourceGroup[] javaSourceGroup = getSourceGroups(project);
         
         for(SourceGroup sourceGroup : javaSourceGroup) {
@@ -259,8 +251,8 @@ public class HibernateUtil {
         return mappingFiles;
     }
 
-    public static ArrayList<FileObject> getAllHibernateReverseEnggFileObjects(Project project) {
-        ArrayList<FileObject> reverseEnggFiles = new ArrayList<FileObject>();
+    public static List<FileObject> getAllHibernateReverseEnggFileObjects(Project project) {
+        List<FileObject> reverseEnggFiles = new ArrayList<FileObject>();
         Sources projectSources = ProjectUtils.getSources(project);
         SourceGroup[] javaSourceGroup = projectSources.getSourceGroups(
                 JavaProjectConstants.SOURCES_TYPE_JAVA
@@ -285,10 +277,10 @@ public class HibernateUtil {
      * 
      * @param tableName the tablename.
      * @param hibernateConfiguration the database configuration to be used.
-     * @return
+     * @return list of TableColumn objects.
      */
-    public static ArrayList<TableColumn> getColumnsForTable(String tableName, HibernateConfiguration hibernateConfiguration) {
-        ArrayList<TableColumn> columnNames = new ArrayList<TableColumn>();
+    public static List<TableColumn> getColumnsForTable(String tableName, HibernateConfiguration hibernateConfiguration) {
+        List<TableColumn> columnNames = new ArrayList<TableColumn>();
         
         try {
             java.sql.Connection connection = getJDBCConnection(hibernateConfiguration);
@@ -298,7 +290,7 @@ public class HibernateUtil {
                 java.sql.ResultSetMetaData rsMetadata = rs.getMetaData();
                 java.sql.DatabaseMetaData dbMetadata = connection.getMetaData();
                 java.sql.ResultSet rsDBMetadata = dbMetadata.getPrimaryKeys(null, null, tableName);
-                ArrayList<String> primaryColumns = new ArrayList<String>();
+                List<String> primaryColumns = new ArrayList<String>();
                 while(rsDBMetadata.next()) {
                    primaryColumns.add(rsDBMetadata.getString("COLUMN_NAME")); //NOI18N
                 }
@@ -366,7 +358,7 @@ public class HibernateUtil {
             for(DatabaseConnection dbConn : dbConnections) {
                 if(dbConn.getDatabaseURL().equals(driverURL) &&
                         dbConn.getUser().equals(username)) {
-                    Logger.getLogger(HibernateUtil.class.getName()).info("Found pre-existing database connection.");
+                    logger.info("Found pre-existing database connection.");
                     return checkAndConnect(dbConn);
                 }
             }
@@ -389,7 +381,7 @@ public class HibernateUtil {
      
     private static DatabaseConnection checkAndConnect(final DatabaseConnection dbConnection) {
         if (dbConnection.getJDBCConnection() == null) {
-            Logger.getLogger(HibernateUtil.class.getName()).info("Database Connection not established, connecting..");
+            logger.info("Database Connection not established, connecting..");
             return Mutex.EVENT.readAccess(new Mutex.Action<DatabaseConnection>() {
 
                 public DatabaseConnection run() {
@@ -399,7 +391,7 @@ public class HibernateUtil {
             });
 
         } else {
-            Logger.getLogger(HibernateUtil.class.getName()).info("Database Connection is pre-established. Returning the conneciton.");
+            logger.info("Database Connection is pre-established. Returning the conneciton.");
             return dbConnection;
         }
     }
@@ -412,7 +404,8 @@ public class HibernateUtil {
             int index = absolutePath.indexOf(sourceRootPath);
             relativePath = absolutePath.substring(index + sourceRootPath.length() + 1);
         } catch(Exception e) {
-          System.out.println("exception while parsing relative path " + e);  
+            logger.info("exception while parsing relative path");
+          Exceptions.printStackTrace(e);  
         }
         return relativePath;
     }

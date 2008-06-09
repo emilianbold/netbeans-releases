@@ -470,8 +470,8 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
         return wsdlFolder;
     }
     
-    public List/*ClientStubDescriptor*/ getStubDescriptors() {
-        ArrayList stubs = new ArrayList(2);
+    public List<ClientStubDescriptor> getStubDescriptors() {
+        List<ClientStubDescriptor> stubs = new ArrayList<ClientStubDescriptor>(2);
         stubs.add(jaxrpcClientStub);
         return stubs;
     }

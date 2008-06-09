@@ -47,7 +47,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
 import org.netbeans.modules.hibernate.refactoring.HibernateRefactoringUtil.OccurrenceItem;
-import org.netbeans.modules.hibernate.service.HibernateEnvironment;
+import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
