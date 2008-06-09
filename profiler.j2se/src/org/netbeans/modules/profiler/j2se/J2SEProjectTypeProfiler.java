@@ -201,13 +201,7 @@ public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
 
     // --- ProjectTypeProfiler implementation ------------------------------------------------------------------------------
     public boolean isProfilingSupported(final Project project) {
-        final AuxiliaryConfiguration aux = (AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class);
-
-        if (aux == null) {
-            ProfilerLogger.severe("Auxiliary Configuration is null for Project: " + project); // NOI18N
-
-            return false;
-        }
+        final AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
 
         Element e = aux.getConfigurationFragment("data", J2SE_PROJECT_NAMESPACE_40, true); // NOI18N
 
@@ -329,8 +323,7 @@ public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         final Element profilerFragment = XMLUtil.createDocument("ignore", null, null, null)
                                                 .createElementNS(ProjectUtilities.PROFILER_NAME_SPACE, "data"); // NOI18N
         profilerFragment.setAttribute(PROFILE_VERSION_ATTRIBUTE, VERSION_NUMBER);
-        ((AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class)).putConfigurationFragment(profilerFragment,
-                                                                                                                     false);
+        ProjectUtils.getAuxiliaryConfiguration(project).putConfigurationFragment(profilerFragment, false);
 
         try {
             ProjectManager.getDefault().saveProject(project);
