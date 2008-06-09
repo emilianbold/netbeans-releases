@@ -105,6 +105,22 @@ is the proper place.
 
     <changes>
 
+        <change id="AntProjectHelper-createAuxiliaryProperties">
+            <api name="general"/>
+            <summary>Added AntProjectHelper.createAuxiliaryProperties()</summary>
+            <version major="1" minor="21"/>
+            <date day="9" month="6" year="2008"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    A new API method <code>AntProjectHelper.createAuxiliaryProperties</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.support.ant" name="AntProjectHelper"/>
+            <issue number="134580"/>
+        </change>
+        
         <change id="ant-project-libraries">
             <api name="general"/>
             <summary>Support for project-specific libraries</summary>
