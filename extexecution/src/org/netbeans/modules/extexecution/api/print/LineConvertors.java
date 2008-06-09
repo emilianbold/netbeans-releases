@@ -68,12 +68,6 @@ public final class LineConvertors {
         super();
     }
 
-    public static LineConvertor filePattern(LineConvertor chain, FileLocator fileLocator,
-            Pattern linePattern, Pattern extPattern) {
-
-        return new FilePatternConvertor(chain, fileLocator, linePattern, extPattern);
-    }
-
     /**
      * Returns the convertor searching for lines matching the patterns,
      * considering matched lines as being files.
@@ -101,7 +95,7 @@ public final class LineConvertors {
      * @param fileLocator locator that is consulted for real file; used in
      *             listener for the converted line; may be <code>null</code>
      * @param linePattern pattern for matching the line
-     * @param extPattern pattern for matching once received filenames;
+     * @param filePattern pattern for matching once received filenames;
      *             may be <code>null</code>
      * @param fileGroup regexp group supposed to be the filename;
      *             only nonnegative numbers allowed
@@ -111,14 +105,14 @@ public final class LineConvertors {
      *             considering matched lines as being files (names or paths)
      */
     public static LineConvertor filePattern(LineConvertor chain, FileLocator fileLocator,
-            Pattern linePattern, Pattern extPattern, int fileGroup, int lineGroup) {
+            Pattern linePattern, Pattern filePattern, int fileGroup, int lineGroup) {
 
         Parameters.notNull("linePattern", linePattern);
         if (fileGroup < 0) {
             throw new IllegalArgumentException("File goup must be non negative: " + fileGroup); // NOI18N
         }
 
-        return new FilePatternConvertor(chain, fileLocator, linePattern, extPattern, fileGroup, lineGroup);
+        return new FilePatternConvertor(chain, fileLocator, linePattern, filePattern, fileGroup, lineGroup);
     }
 
     /**
@@ -178,26 +172,26 @@ public final class LineConvertors {
 
         private final Pattern linePattern;
 
-        private final Pattern extPattern;
+        private final Pattern filePattern;
 
         private final int fileGroup;
 
         private final int lineGroup;
 
         public FilePatternConvertor(LineConvertor chain, FileLocator locator,
-                Pattern linePattern, Pattern extPattern) {
-            this(chain, locator, linePattern, extPattern, 1, 2);
+                Pattern linePattern, Pattern filePattern) {
+            this(chain, locator, linePattern, filePattern, 1, 2);
         }
 
         public FilePatternConvertor(LineConvertor chain, FileLocator locator,
-                Pattern linePattern, Pattern extPattern, int fileGroup, int lineGroup) {
+                Pattern linePattern, Pattern filePattern, int fileGroup, int lineGroup) {
 
             this.chain = chain;
             this.locator = locator;
             this.linePattern = linePattern;
             this.fileGroup = fileGroup;
             this.lineGroup = lineGroup;
-            this.extPattern = extPattern;
+            this.filePattern = filePattern;
         }
 
         public List<ConvertedLine> convert(final String line) {
@@ -224,7 +218,7 @@ public final class LineConvertors {
                         file = file.substring(2);
                     }
                     // FIXME fix this condition
-                    if (extPattern != null && !(extPattern.matcher(file).matches() || new File(file).isFile())) {
+                    if (filePattern != null && !(filePattern.matcher(file).matches() || new File(file).isFile())) {
                         return chain(chain, line);
                     }
                 }
