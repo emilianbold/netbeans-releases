@@ -108,6 +108,9 @@ public class BlacklistedClassesHandler extends Handler {
     private BlacklistedClassesHandler(String blacklistFileName, String whitelistFileName, String whitelistStorageDir, boolean generateWhitelist) {
         this.generatingWhitelist = generateWhitelist;
         this.whitelistFileName = whitelistFileName;
+        
+        new BlacklistedClassesViolationException("Dummy");
+        
         if (whitelistStorageDir != null) {
             this.whitelistStorageDir = new File(whitelistStorageDir);
             this.whitelistStorageDir.mkdirs();

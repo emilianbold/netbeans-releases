@@ -495,13 +495,17 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         String varName = extractVariableName(var);
         
-        if (varName != null && (varName.startsWith(namePrefix) || nameKind == NameKind.CASE_INSENSITIVE_PREFIX && varName.toLowerCase().startsWith(namePrefix.toLowerCase()))) {
-
+        if (isPrefix(varName, namePrefix)) {
             IndexedConstant ic = new IndexedConstant(varName, null,
                     null, localFileURL, -1, 0, type);
 
             localVars.put(varName, ic);
         }
+    }
+    
+    private boolean isPrefix(String name, String prefix){
+        return name != null && (name.startsWith(prefix) 
+                || nameKind == NameKind.CASE_INSENSITIVE_PREFIX && name.toLowerCase().startsWith(prefix.toLowerCase()));
     }
     
     private void getLocalVariables_indexVariableInAssignment(Expression expr,
@@ -613,10 +617,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     if (param.getParameterName() instanceof Variable) {
                         String varName = extractVariableName((Variable) param.getParameterName());
                         String type = param.getParameterType() != null ? param.getParameterType().getName() : null;
-                        IndexedConstant ic = new IndexedConstant(varName, null,
-                                null, localFileURL, -1, 0, type);
                         
-                        localVars.put(varName, ic);
+                        if (isPrefix(varName, namePrefix)) {
+                            IndexedConstant ic = new IndexedConstant(varName, null,
+                                    null, localFileURL, -1, 0, type);
+
+                            localVars.put(varName, ic);
+                        }
                     }
                 }
                 

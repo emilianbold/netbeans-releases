@@ -66,7 +66,7 @@ public final class JAXWSClientSupport {
     
     private JAXWSClientSupportImpl impl;
     private static final Lookup.Result implementations =
-        Lookup.getDefault().lookup(new Lookup.Template(WebServicesClientSupportProvider.class));
+        Lookup.getDefault().lookupResult(WebServicesClientSupportProvider.class);
 
     static  {
         JAXWSClientSupportAccessor.DEFAULT = new JAXWSClientSupportAccessor() {

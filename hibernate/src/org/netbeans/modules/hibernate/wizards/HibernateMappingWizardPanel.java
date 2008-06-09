@@ -64,6 +64,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
+import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
@@ -76,13 +77,13 @@ public class HibernateMappingWizardPanel extends javax.swing.JPanel {
     private Project project;
     List<FileObject> configFileObjects;
     List<String> databaseTables;
-    org.netbeans.modules.hibernate.service.HibernateEnvironment env;
+    private HibernateEnvironment env;
 
     /** Creates new form HibernateMappingWizardPanel */
     public HibernateMappingWizardPanel(Project project) {
         this.project = project;
         initComponents();
-        env = project.getLookup().lookup(org.netbeans.modules.hibernate.service.HibernateEnvironment.class);
+        env = project.getLookup().lookup(HibernateEnvironment.class);
         String[] configFiles = getConfigFilesFromProject(project);
         this.cmbResource.setModel(new DefaultComboBoxModel(configFiles));
         fillDatabaseTable();

@@ -36,8 +36,10 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.hibernate.service;
+package org.netbeans.modules.hibernate.service.spi;
 
+import org.netbeans.modules.hibernate.service.*;
+import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
@@ -51,20 +53,19 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
-import org.netbeans.modules.hibernate.spi.hibernate.HibernateFileLocationProvider;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.netbeans.modules.hibernate.wizards.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
- * This class provides the service for NetBeans projects.
+ * This class provides the Hibernate service for NetBeans projects.
  * This class abstracts the services provided by Hibernate and
  * wrapps them around to provide a more meaningful and high level services.
  *
  * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
-public class HibernateEnvironment implements HibernateFileLocationProvider {
+public class HibernateEnvironmentImpl implements HibernateEnvironment {
 
     /** Handle to the current project to which this HibernateEnvironment is bound*/
     private Project project;
@@ -74,7 +75,7 @@ public class HibernateEnvironment implements HibernateFileLocationProvider {
      *
      * @param project NB project.
      */
-    public HibernateEnvironment(Project project) {
+    public HibernateEnvironmentImpl(Project project) {
         this.project = project;
     }
 
