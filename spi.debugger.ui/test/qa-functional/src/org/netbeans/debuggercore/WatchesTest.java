@@ -90,7 +90,7 @@ public class WatchesTest extends JellyTestCase {
      * @return
      */
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(ViewsTest.class).addTest(
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(WatchesTest.class).addTest(
             "testWatchesPublicVariables",
             "testWatchesProtectedVariables",
             "testWatchesPrivateVariables",
