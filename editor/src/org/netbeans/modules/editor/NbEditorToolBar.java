@@ -59,6 +59,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -178,6 +180,16 @@ import org.openide.util.lookup.ProxyLookup;
         }
     };
     
+    private final Preferences preferences;
+    private final PreferenceChangeListener prefsTracker = new PreferenceChangeListener() {
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            String settingName = evt == null ? null : evt.getKey();
+            if (settingName == null || SimpleValueNames.TOOLBAR_VISIBLE_PROP.equals(settingName)) {
+                refreshToolbarButtons();
+            }
+        }
+    };
+    
     public NbEditorToolBar(JTextComponent component) {
         this.componentRef = new WeakReference(component);
         
@@ -193,6 +205,11 @@ import org.openide.util.lookup.ProxyLookup;
         
         lookupResult = MimeLookup.getLookup(DocumentUtilities.getMimeType(component)).lookupResult(KeyBindingSettings.class);
         lookupResult.addLookupListener(WeakListeners.create(LookupListener.class, keybindingsTracker, lookupResult));
+        
+        String mimeType = DocumentUtilities.getMimeType(component);
+        preferences = MimeLookup.getLookup(mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType)).lookup(Preferences.class);
+        preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefsTracker, preferences));
+        
         refreshToolbarButtons();
     }
 
@@ -284,10 +301,7 @@ import org.openide.util.lookup.ProxyLookup;
     }
     
     private boolean isToolbarVisible() {
-        JTextComponent c = getComponent();
-        String mimeType = c == null ? null : DocumentUtilities.getMimeType(c);
-        Preferences prefs = MimeLookup.getLookup(mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType)).lookup(Preferences.class);
-        return prefs.getBoolean(SimpleValueNames.TOOLBAR_VISIBLE_PROP, EditorPreferencesDefaults.defaultToolbarVisible);
+        return preferences.getBoolean(SimpleValueNames.TOOLBAR_VISIBLE_PROP, EditorPreferencesDefaults.defaultToolbarVisible);
     }
     
     private void refreshToolbarButtons() {
