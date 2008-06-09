@@ -39,12 +39,9 @@
 
 package org.netbeans.modules.extexecution.api;
 
-import java.io.Writer;
 import org.netbeans.modules.extexecution.api.input.InputProcessor;
-import org.netbeans.modules.extexecution.api.input.InputProcessors;
 import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
 
 /**
  *
@@ -159,28 +156,20 @@ public final class ExecutionDescriptorBuilder {
             return descriptorData.suspend;
         }
 
-        public InputProcessor getOutProcessor(OutputWriter writer) {
-            InputProcessor outProcessor = InputProcessors.ansiStripping(
-                    InputProcessors.printing(writer, descriptorData.outConvertor, true));
-            if (descriptorData.outProcessor != null) {
-                outProcessor = InputProcessors.proxy(outProcessor, descriptorData.outProcessor);
-            }
-
-            return outProcessor;
+        public LineConvertor getErrConvertor() {
+            return descriptorData.errConvertor;
         }
 
-        public InputProcessor getErrProcessor(OutputWriter writer) {
-            InputProcessor errProcessor = InputProcessors.ansiStripping(
-                    InputProcessors.printing(writer, descriptorData.errConvertor, false));
-            if (descriptorData.errProcessor != null) {
-                errProcessor = InputProcessors.proxy(errProcessor, descriptorData.errProcessor);
-            }
-
-            return errProcessor;
+        public InputProcessor getErrProcessor() {
+            return descriptorData.errProcessor;
         }
 
-        public InputProcessor getInProcessor(Writer writer) {
-            return InputProcessors.copying(writer);
+        public LineConvertor getOutConvertor() {
+            return descriptorData.outConvertor;
+        }
+
+        public InputProcessor getOutProcessor() {
+            return descriptorData.outProcessor;
         }
 
         public Runnable getPreExecution() {

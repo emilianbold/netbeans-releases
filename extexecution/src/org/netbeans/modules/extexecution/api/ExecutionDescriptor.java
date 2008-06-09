@@ -39,11 +39,10 @@
 
 package org.netbeans.modules.extexecution.api;
 
-import java.io.Writer;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.extexecution.api.input.InputProcessor;
+import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
 
 /**
  * Descriptor for the execution environment. To build the most common kind
@@ -108,35 +107,38 @@ public interface ExecutionDescriptor {
     boolean showSuspended();
 
     /**
-     * Returns the processor processing the data available on standard output.
+     * Returns the additional processor to use for standard output.
+     * {@link ExecutionService} automatically uses the printing one.
      *
-     * @param writer io writer used by {@link ExecutionService} for standard output
-     * @return the processor processing the data available on standard output
-     * @see org.netbeans.modules.extexecution.api.input.InputProcessors
+     * @return the additional processor to use for standard output
      */
-    InputProcessor getOutProcessor(OutputWriter writer);
+    InputProcessor getOutProcessor();
 
     /**
-     * Returns the processor processing the data available on standard error output.
+     * Returns the additional processor to use for standard error output.
+     * {@link ExecutionService} automatically uses the printing one.
      *
-     * @param writer io writer used by {@link ExecutionService} for standard error output
-     * @return the processor processing the data available on standard error output
-     * @see org.netbeans.modules.extexecution.api.input.InputProcessors
+     * @return the additional processor to use for standard error output
      */
-    InputProcessor getErrProcessor(OutputWriter writer);
+    InputProcessor getErrProcessor();
 
     /**
-     * Returns the processor processing the data available from user (io) as
-     * input to the process.
-     * <p>
-     * Typically the processor should forward data to the writer (process).
+     * Returns the convertor to use with processor printing the standard
+     * output (that used by {@link ExecutionService} automatically.
      *
-     * @param writer writer for standard input of the process
-     * @return the processor processing the data available from user (io) as
-     *             input to the process
-     * @see org.netbeans.modules.extexecution.api.input.InputProcessors
+     * @return the convertor to use with processor printing the standard
+     *             output
      */
-    InputProcessor getInProcessor(Writer writer);
+    LineConvertor getOutConvertor();
+
+    /**
+     * Returns the convertor to use with processor printing the standard
+     * error output (that used by {@link ExecutionService} automatically.
+     *
+     * @return the convertor to use with processor printing the standard
+     *             error output
+     */
+    LineConvertor getErrConvertor();
 
     /**
      * Returns the runnable to execute <i>before</i> the external execution itself;
