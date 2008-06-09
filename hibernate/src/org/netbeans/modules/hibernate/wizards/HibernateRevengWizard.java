@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -104,6 +105,8 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
     private final String resourceAttr = "resource";
     private XMLHelper xmlHelper;
     private EntityResolver entityResolver;
+    
+    private Logger logger = Logger.getLogger(HibernateRevengWizard.class.getName());
 
     public static HibernateRevengWizard create() {
         return new HibernateRevengWizard();
@@ -308,7 +311,9 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
         File outputDir = FileUtil.toFile(helper.getLocation().getRootFolder());
 
         try {
+            
             // Setup classloader.
+            logger.info("Setting up classloader");
             HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
             CustomClassLoader ccl = new CustomClassLoader(env.getProjectClassPath(revengFile).toArray(new URL[]{}), 
                     getClass().getClassLoader());

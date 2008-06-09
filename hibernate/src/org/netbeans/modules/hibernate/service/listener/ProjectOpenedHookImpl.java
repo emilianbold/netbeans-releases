@@ -40,6 +40,7 @@
 package org.netbeans.modules.hibernate.service.listener;
 
 import java.util.ArrayList;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.service.HibernateEnvironment;
@@ -57,6 +58,8 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook{
     private Project project;
     private HibernateEnvironment hibernateEnvironment;
     
+    private Logger logger = Logger.getLogger(ProjectOpenedHookImpl.class.getName());
+    
     public ProjectOpenedHookImpl(Project project, HibernateEnvironment hibernateEnvironment) {
         this.project = project;
         this.hibernateEnvironment = hibernateEnvironment;
@@ -69,47 +72,11 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook{
         ArrayList<HibernateConfiguration> hibernateConfigurations = HibernateUtil.getAllHibernateConfigurations(project);
         if(hibernateConfigurations.size() != 0) {
             hibernateEnvironment = new HibernateEnvironment(project);
-//            hibernateEnvironment.setProject(project);
-            
         }
-        System.out.println("project opened .. " + project);
-        System.out.println("config : " + project.getLookup().lookup(HibernateEnvironment.class).getAllHibernateConfigurationsFromProject());
+        logger.info("project opened .. " + project);
+        logger.info("config : " + project.getLookup().lookup(HibernateEnvironment.class).getAllHibernateConfigurationsFromProject());
         
-//        System.out.println(" project opened ..");
-//        System.out.println("project : " + project);
-//        
-//        System.out.println("start : " + java.util.Calendar.getInstance().getTimeInMillis());
-//        Enumeration<? extends FileObject> childrens = project.getProjectDirectory().getChildren(true);
-//        while (childrens.hasMoreElements()) {
-//            System.out.println(" child : " + childrens.nextElement());
-//        }
-//        System.out.println("end : " + java.util.Calendar.getInstance().getTimeInMillis());
-//                ArrayList<FileObject> files = new ArrayList<FileObject>();        
-//        System.out.println("start2 : " + java.util.Calendar.getInstance().getTimeInMillis());
-//        List<FileObject> cLists = ProjectOperations.getDataFiles(project);
-//        for(FileObject c : cLists) {
-//            if(c.isFolder() && c.getName().equals("src")) {
-//
-//                FileObject[] foc = c.getChildren();
-//                for(FileObject foc2 : foc) {
-//                    if(foc2.isFolder() && foc2.getName().equals("java")) {
-//                        FileObject[] foc3 = foc2.getChildren();
-//                        for(FileObject foc4 : foc3) {
-//                            if(!foc4.isFolder() && foc4.getNameExt().endsWith("cfg.xml")) {
-//                                files.add(foc4);
-//                            }
-//                        }
-//                    }
-//                    if(!foc2.isFolder() && foc2.getNameExt().endsWith("cfg.xml")) {
-//                        files.add(foc2);
-//                    }
-//                }
-//            }
-//            System.out.println("c " + c);
-//        }
-//        System.out.println("end2 : " + java.util.Calendar.getInstance().getTimeInMillis());
-//        System.out.println(" Files " + files);
-//        
+
 //        // Three cases exists..
 //        //1. This web project do not have hibernate files. fine.. NOP
 //        //2. This web project already has hibernate files.. search and find them.
@@ -120,8 +87,6 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook{
 
     @Override
     protected void projectClosed() {
-//        System.out.println(" project closed ..");
-//        System.out.println("project : " + project);
         //TODO clean up here.
     }
 

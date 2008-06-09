@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -60,6 +61,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -80,6 +82,8 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
     private final String userName = "hibernate.connection.username";
     private final String password = "hibernate.connection.password";
     private final String DEFAULT_CONFIGURATION_FILENAME = "hibernate.cfg";
+    
+    private Logger logger = Logger.getLogger(HibernateConfigurationWizard.class.getName());
 
     public static HibernateConfigurationWizard create() {
         return new HibernateConfigurationWizard();
@@ -268,12 +272,12 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
             hdo.save();
             // Register Hibernate Library in the project if its not already registered.
             HibernateEnvironment hibernateEnvironment = project.getLookup().lookup(HibernateEnvironment.class);
-            System.out.println("Library registered : " + hibernateEnvironment.addHibernateLibraryToProject(hdo.getPrimaryFile()));
+            logger.info("Library registered : " + hibernateEnvironment.addHibernateLibraryToProject(hdo.getPrimaryFile()));
 
             return Collections.singleton(hdo.getPrimaryFile());
 
         } catch (Exception e) {
-            System.err.println("Error**************************" + e);
+            Exceptions.printStackTrace(e);
             return Collections.EMPTY_SET;
         }
 

@@ -81,6 +81,7 @@ import org.openide.util.Mutex;
  */
 public class HibernateUtil {
 
+    private static Logger logger = Logger.getLogger(HibernateUtil.class.getName());
     /**
      * This methods gets all database tables from the supplied Hibernate Configurations.
      * Note : This class uses a deprecated method, that will be replaced in future.
@@ -366,7 +367,7 @@ public class HibernateUtil {
             for(DatabaseConnection dbConn : dbConnections) {
                 if(dbConn.getDatabaseURL().equals(driverURL) &&
                         dbConn.getUser().equals(username)) {
-                    Logger.getLogger(HibernateUtil.class.getName()).info("Found pre-existing database connection.");
+                    logger.info("Found pre-existing database connection.");
                     return checkAndConnect(dbConn);
                 }
             }
@@ -389,7 +390,7 @@ public class HibernateUtil {
      
     private static DatabaseConnection checkAndConnect(final DatabaseConnection dbConnection) {
         if (dbConnection.getJDBCConnection() == null) {
-            Logger.getLogger(HibernateUtil.class.getName()).info("Database Connection not established, connecting..");
+            logger.info("Database Connection not established, connecting..");
             return Mutex.EVENT.readAccess(new Mutex.Action<DatabaseConnection>() {
 
                 public DatabaseConnection run() {
@@ -399,7 +400,7 @@ public class HibernateUtil {
             });
 
         } else {
-            Logger.getLogger(HibernateUtil.class.getName()).info("Database Connection is pre-established. Returning the conneciton.");
+            logger.info("Database Connection is pre-established. Returning the conneciton.");
             return dbConnection;
         }
     }
@@ -412,7 +413,8 @@ public class HibernateUtil {
             int index = absolutePath.indexOf(sourceRootPath);
             relativePath = absolutePath.substring(index + sourceRootPath.length() + 1);
         } catch(Exception e) {
-          System.out.println("exception while parsing relative path " + e);  
+            logger.info("exception while parsing relative path");
+          Exceptions.printStackTrace(e);  
         }
         return relativePath;
     }
