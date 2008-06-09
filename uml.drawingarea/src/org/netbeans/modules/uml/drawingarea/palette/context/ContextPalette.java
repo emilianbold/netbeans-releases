@@ -407,7 +407,6 @@ public class ContextPalette extends JPanel
         {
             Widget widget = model.getContext();
             Scene scene = widget.getScene();
-
             Point location = widget.getPreferredLocation();
             location = widget.getParentWidget().convertLocalToScene(location);
             Point viewLocaton = scene.convertSceneToView(location);
@@ -422,6 +421,7 @@ public class ContextPalette extends JPanel
             
 //            int expandBuffer = (expanded == true ? 2: -2);
 //            setLocation(xPos - expandBuffer, getY());
+            System.out.println("WIDGET: "+widget+"; XPOS:"+xPos);
             setLocation(xPos, getY());
         }
     }

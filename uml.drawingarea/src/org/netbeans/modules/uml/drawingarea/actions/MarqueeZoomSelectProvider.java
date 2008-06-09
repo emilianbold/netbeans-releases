@@ -81,7 +81,7 @@ public class MarqueeZoomSelectProvider implements RectangularSelectProvider
         rect = scene.convertSceneToView(rect);
         
         Rectangle visible = scene.getView().getVisibleRect();
-        double scale = Math.min(visible.width / rect.width, visible.height / rect.height);
+        double scale = Math.min((double)visible.width / (double)rect.width, (double)visible.height / (double)rect.height);
         
         JComponent view = scene.getView();
         if (view != null)

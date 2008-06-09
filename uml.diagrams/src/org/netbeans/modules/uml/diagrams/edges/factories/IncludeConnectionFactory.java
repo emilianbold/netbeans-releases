@@ -36,51 +36,22 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.uml.diagrams.edges.factories;
 
-package org.netbeans.modules.uml.diagrams.actions.state;
-
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import org.netbeans.modules.uml.drawingarea.LabelManager;
-import org.netbeans.modules.uml.drawingarea.LabelManager.LabelType;
-import org.netbeans.modules.uml.resources.images.ImageUtil;
+import org.netbeans.api.visual.widget.ConnectionWidget;
+import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.modules.uml.diagrams.edges.IncludeConnector;
+import org.netbeans.modules.uml.drawingarea.ConnectionWidgetFactory;
 
 /**
  *
- * @author Sheryl Su
+ * @author treyspiva
  */
-public class ToggleConditionLabelAction extends AbstractAction
+public class IncludeConnectionFactory implements ConnectionWidgetFactory
 {
-    private LabelManager manager;
-    private String name;
-    private LabelType type;
-        
-    public ToggleConditionLabelAction(LabelManager manager, 
-                           String labelName,
-                           LabelType type,
-                           String displayName)
+
+    public ConnectionWidget createConnection(Scene scene)
     {
-        this.manager = manager;
-        name = labelName;
-        this.type = type;
-        
-        putValue(Action.NAME, displayName);
-        if (manager.isVisible(name, type))
-            
-            putValue(Action.SMALL_ICON, ImageUtil.instance().getIcon("bold.png"));
-        else
-            putValue(Action.SMALL_ICON, null);
-    }
-    
-    
-    public void actionPerformed(ActionEvent evt)
-    {
-       if (manager.isVisible(name, type))
-       {
-           manager.hideLabel(name, type);
-       }
-       else
-           manager.showLabel(name, type);
+        return new IncludeConnector(scene);
     }
 }

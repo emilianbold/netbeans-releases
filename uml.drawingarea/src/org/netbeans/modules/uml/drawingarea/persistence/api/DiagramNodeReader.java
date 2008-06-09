@@ -52,4 +52,7 @@ public interface DiagramNodeReader {
     public void addContainedChild(Widget widget);
 
     public void load(NodeInfo nodeReader);
+    
+    public void loadDependencies(NodeInfo nodeReader);
+    
 }

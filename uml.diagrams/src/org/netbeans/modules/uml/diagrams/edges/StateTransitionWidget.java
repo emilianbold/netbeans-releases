@@ -55,7 +55,7 @@ public class StateTransitionWidget extends AbstractUMLConnectionWidget
     public StateTransitionWidget(Scene scene)
     {
         super(scene);
-        setTargetAnchorShape(AnchorShapeFactory.createArrowAnchorShape(60, 14));
+        setTargetAnchorShape(AnchorShapeFactory.createArrowAnchorShape(60, 8));
         setControlPointShape(PointShape.SQUARE_FILLED_BIG);
         setEndPointShape(PointShape.SQUARE_FILLED_BIG);
     }

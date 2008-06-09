@@ -50,6 +50,7 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.util.Hashtable;
+import java.util.List;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
@@ -60,8 +61,11 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.ICreationFactory;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IInteractionOperand;
+import org.netbeans.modules.uml.diagrams.Util;
 import org.netbeans.modules.uml.diagrams.nodes.LabeledWidget;
 import org.netbeans.modules.uml.diagrams.nodes.MovableLabelWidget;
+import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
+import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeReader;
@@ -255,10 +259,31 @@ public class InteractionOperandWidget extends Widget implements DiagramNodeWrite
         nodeWriter.beginGraphNodeWithModelBridge();
         nodeWriter.beginContained();
         //write contained
+        saveChildren(this, nodeWriter);
         nodeWriter.endContained();     
+        //write dependencies for this node
+        if(this.getDependencies().size() > 0) 
+        {
+            PersistenceUtil.saveDependencies(this, nodeWriter);
+        }
         nodeWriter.endGraphNode();
     }
 
+    public void saveChildren(Widget widget, NodeWriter nodeWriter) {
+        //we are not interested in its children.. we just want dependencies (movablelabelwidgets)
+//        if (widget == null || nodeWriter == null)
+//            return;
+//        
+//        List<Widget> widList = widget.getChildren();
+//        for (Widget child : widList) {
+//            if (child instanceof DiagramNodeWriter) {
+//                ((DiagramNodeWriter) child).save(nodeWriter);
+//            } else {
+//                saveChildren(child, nodeWriter);
+//            }
+//        }
+    }
+    
     public void addContainedChild(Widget widget) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -269,9 +294,67 @@ public class InteractionOperandWidget extends Widget implements DiagramNodeWrite
         //
         if(nodeReader.getPosition()!=null)setPreferredLocation(nodeReader.getPosition());
     }
+
+    public void loadDependencies(NodeInfo nodeReader)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+            
     protected void setNodeWriterValues(NodeWriter nodeWriter, Widget widget) {
         nodeWriter = PersistenceUtil.populateNodeWriter(nodeWriter, widget);
         nodeWriter.setHasPositionSize(true);
         PersistenceUtil.populateProperties(nodeWriter, widget);
+    }
+    
+    @Override
+    protected void notifyAdded () 
+    {
+        // this is invoked when this widget or its parent gets added, only need to
+        // process the case when this widget is changed, same for notifyRemoved to 
+        // avoid concurrent modification to children list
+        new AfterValidationExecutor(new ActionProvider() {
+            public void perfomeAction() {
+                MovableLabelWidget labelWidget=getLabel();
+                if (labelWidget == null || getParentWidget() == null)
+                {
+                    return;
+                }
+               Widget cf=Util.getParentByClass(InteractionOperandWidget.this, CombinedFragmentWidget.class);
+               if(cf.getParentWidget()==labelWidget.getParentWidget())return;
+
+               labelWidget.removeFromParent();
+                int index = cf.getParentWidget().getChildren().indexOf(cf);
+                cf.getParentWidget().addChild(index + 1, labelWidget);
+                new AfterValidationExecutor(new ActionProvider() {
+                    public void perfomeAction() {
+                        revalidate();
+                        getScene().validate();
+                    }
+                }, getScene());
+                getScene().validate();
+            }
+        }, getScene());
+        getScene().validate();
+    }
+    
+    @Override
+    protected void notifyRemoved()
+    {
+        MovableLabelWidget labelWidget=getLabel();
+        if (labelWidget != null)
+        {
+            if(getParentWidget() == null)
+            {           
+                labelWidget.removeFromParent();
+            }
+            else
+            {
+                Widget cf=Util.getParentByClass(this, CombinedFragmentWidget.class);
+                if(cf==null || cf.getParentWidget()==null)
+                {
+                    labelWidget.removeFromParent();
+                }
+            }
+        }
     }
 }

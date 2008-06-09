@@ -41,12 +41,14 @@
 package org.netbeans.modules.uml.diagrams.nodes;
 
 import java.awt.Color;
+import java.util.List;
 import javax.swing.UIManager;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.model.ObjectState;
+import org.netbeans.api.visual.widget.LabelWidget.Alignment;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
@@ -56,6 +58,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElem
 import org.netbeans.modules.uml.core.support.umlutils.DataFormatter;
 import org.netbeans.modules.uml.diagrams.engines.DefaultDiagramEngine;
 import org.netbeans.modules.uml.drawingarea.persistence.EdgeWriter;
+import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
@@ -73,6 +76,7 @@ public abstract class FeatureWidget extends CustomizableWidget
 {
     private EditableCompartmentWidget label = null;
     public static final String ID = "feature";
+    private Alignment alignment = Alignment.LEFT;
     
     public FeatureWidget(Scene scene)
     {
@@ -93,6 +97,16 @@ public abstract class FeatureWidget extends CustomizableWidget
             chain.addAction(objScene.createSelectAction());
             chain.addAction(DefaultDiagramEngine.POPUP_ACTION);
         }
+    }
+    
+    public void setAlignment(Alignment alignment)
+    {
+        if(alignment == Alignment.CENTER)
+        {
+            setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 0));
+        }
+        
+        this.alignment = alignment;
     }
     
     @Override
@@ -146,10 +160,17 @@ public abstract class FeatureWidget extends CustomizableWidget
         removeChildren();
 
         label = new EditableCompartmentWidget(getScene(), this, ID);
+        label.setAlignment(alignment);
         label.setLabel(formatElement());
         addChild(label);
         
+        if(alignment == Alignment.CENTER)
+        {
+            setChildConstraint(label, 100);
+        }
+        
         setBorder(BorderFactory.createEmptyBorder(1));
+        
     }
     
     protected void setText(String value)
@@ -270,6 +291,36 @@ public abstract class FeatureWidget extends CustomizableWidget
         edgeWriter.setHasPositionSize(true);
         edgeWriter.beginGraphNode();
         edgeWriter.endGraphNode();
+    }
+
+    public void save(NodeWriter nodeWriter) {
+        setNodeWriterValues(nodeWriter, this);
+        nodeWriter.beginGraphNodeWithModelBridge();
+        nodeWriter.beginContained();
+        //write contained
+        saveChildren(this, nodeWriter);
+        nodeWriter.endContained();     
+        nodeWriter.endGraphNode();
+    }
+
+    public void saveChildren(Widget widget, NodeWriter nodeWriter) {
+        if (widget == null || nodeWriter == null)
+            return;
+        
+        List<Widget> widList = widget.getChildren();
+        for (Widget child : widList) {
+            if (child instanceof DiagramNodeWriter) {
+                ((DiagramNodeWriter) child).save(nodeWriter);
+            } else {
+                saveChildren(child, nodeWriter);
+            }
+        }
+    }
+    
+    protected void setNodeWriterValues(NodeWriter nodeWriter, Widget widget) {
+        nodeWriter = PersistenceUtil.populateNodeWriter(nodeWriter, widget);
+        nodeWriter.setHasPositionSize(true);
+        PersistenceUtil.populateProperties(nodeWriter, widget);
     }
     
     protected String formatElement()

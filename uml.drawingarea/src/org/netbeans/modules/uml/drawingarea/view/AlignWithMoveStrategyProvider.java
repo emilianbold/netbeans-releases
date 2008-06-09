@@ -82,6 +82,7 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
     private LayerWidget mainLayer = null;
     private ArrayList < MovingWidgetDetails > movingWidgets = null;
     private Point original;
+    private boolean moveWidgetInitialized;
     
     public AlignWithMoveStrategyProvider (AlignWithWidgetCollector collector, 
                                           LayerWidget interractionLayer, 
@@ -92,6 +93,7 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
         this.outerBounds = outerBounds;
         this.interactionLayer = interractionLayer;
         this.mainLayer = widgetLayer;
+        moveWidgetInitialized=false;
     }
 
     public Point locationSuggested (Widget widget, Point originalLocation, Point suggestedLocation) {
@@ -139,7 +141,7 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
         {
             manager.cancelPalette();
         }
-        
+        moveWidgetInitialized=false;
 //        initializeMovingWidgets(scene, widget);
     }
 
@@ -401,6 +403,12 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
                 movingWidgets.add(details);
             }
         }
+        moveWidgetInitialized=true;
+    }
+    
+    public boolean isMovementInitialized()
+    {
+        return moveWidgetInitialized;
     }
     
     private boolean processLocationOperator(Widget widget,

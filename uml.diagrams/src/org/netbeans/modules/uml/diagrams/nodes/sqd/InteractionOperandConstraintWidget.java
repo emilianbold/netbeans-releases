@@ -46,6 +46,7 @@ import org.netbeans.modules.uml.core.metamodel.dynamics.IInteractionConstraint;
 import org.netbeans.modules.uml.diagrams.nodes.FeatureWidget;
 import org.netbeans.modules.uml.diagrams.nodes.MovableLabelWidget;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
+import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 
 /**
  *
@@ -76,9 +77,15 @@ public class InteractionOperandConstraintWidget extends FeatureWidget implements
     
     
     
-    public void save(NodeWriter nodeWriter) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-    }
+//    @Override
+//    public void save(NodeWriter nodeWriter) {
+//        nodeWriter = PersistenceUtil.populateNodeWriter(nodeWriter, this);
+//        nodeWriter.setTypeInfo("InteractionOperandConstraintWidget");
+//        nodeWriter.setHasPositionSize(true);        
+//        PersistenceUtil.populateProperties(nodeWriter, this);
+//        nodeWriter.beginGraphNode();
+//        nodeWriter.endGraphNode();
+//    }
 
     public void propertyChange(PropertyChangeEvent evt) {
         updateUI();

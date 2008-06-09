@@ -234,14 +234,33 @@ public class UMLDiagramNode extends UMLElementNode
     }
     
     
+    public Action getPreferredAction()
+    {
+        // disable double click open action for those unsupported diagram types for 6.5 M1
+        int kind = getDiagram().getDiagramKind();
+        if (kind != IDiagramKind.DK_COLLABORATION_DIAGRAM &&
+            kind != IDiagramKind.DK_COMPONENT_DIAGRAM &&
+            kind != IDiagramKind.DK_DEPLOYMENT_DIAGRAM )
+            return super.getPreferredAction();
+        else
+            return null;
+    }
+    
     
     public Action[] getActions(boolean context)
     {
         ArrayList<Action> actions = new ArrayList <Action>();
         
-        actions.add(SystemAction.get(OpenAction.class));
-        actions.add(null);
         int kind = getDiagram().getDiagramKind();
+        // temporarily take out open action from those three diagram types for 6.5 M1
+        if (kind != IDiagramKind.DK_COLLABORATION_DIAGRAM &&
+            kind != IDiagramKind.DK_COMPONENT_DIAGRAM &&
+            kind != IDiagramKind.DK_DEPLOYMENT_DIAGRAM )
+        {
+            actions.add(SystemAction.get(OpenAction.class));
+            actions.add(null);
+        }
+        
         // see #102294
         if ( kind != IDiagramKind.DK_SEQUENCE_DIAGRAM &&
                 kind != IDiagramKind.DK_COLLABORATION_DIAGRAM )
@@ -259,7 +278,7 @@ public class UMLDiagramNode extends UMLElementNode
         actions.toArray(retVal);
         return retVal;
     }
-    
+      
     //**************************************************
     // Helper Methods
     //**************************************************
