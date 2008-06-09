@@ -611,6 +611,20 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     };
     
+    
+    /** For text purposes only */
+    public interface ErrorListener {
+        void error(String text, int line, int column);
+    }
+    
+    /** For text purposes only */
+    public void getErrors(ErrorListener errorListener) {
+        Collection<RecognitionException> errors = getErrors();
+        for (RecognitionException e : errors) {
+            errorListener.error(e.getMessage(), e.getLine(), e.getColumn());
+        }
+    }
+    
     public Collection<RecognitionException> getErrors() {
         final Collection<RecognitionException> result = new ArrayList<RecognitionException>();
         CPPParserEx.ErrorDelegate delegate = new CPPParserEx.ErrorDelegate() {
