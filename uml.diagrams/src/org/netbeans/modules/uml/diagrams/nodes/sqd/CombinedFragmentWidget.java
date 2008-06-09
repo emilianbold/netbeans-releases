@@ -690,7 +690,7 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
             int x=40;//???
             if(messageBeforeW!=null)
             {
-                y=messageBeforeW.getSourceAnchor().getRelatedSceneLocation().y;
+                y=messageBeforeW.getSourceAnchor().getRelatedSceneLocation().y+10;
             }
             if(cfBeforeW!=null)
             {
@@ -700,7 +700,7 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
             y+=20;
             if(y<100)y=100;
             int width=150;
-            int height=operandsContainer.getChildren().size()*50;
+            int height=operandsContainer.getChildren().size()*40;
             if(height<50)height=50;
             bounds=new Rectangle(x,y,width,height);
             int ioHeight=height/operandInCf.size();
