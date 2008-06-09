@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import org.hibernate.HibernateException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -86,15 +87,15 @@ public class HibernateEnvironment implements HibernateFileLocationProvider {
      * 
      * @return list of table names.
      */
-    public ArrayList<String> getAllDatabaseTablesForProject() {
+    public List<String> getAllDatabaseTablesForProject() {
         return getAllDatabaseTables(
                 (HibernateUtil.getAllHibernateConfigurations(project)).toArray(new HibernateConfiguration[]{}));
     }
 
-    public ArrayList<String> getDatabaseTables(FileObject mappingFile) {
-        ArrayList<String> databaseTables = new ArrayList<String>();
+    public List<String> getDatabaseTables(FileObject mappingFile) {
+        List<String> databaseTables = new ArrayList<String>();
         try {
-            ArrayList<HibernateConfiguration> configurations = getHibernateConfigurationForMappingFile(mappingFile);
+            List<HibernateConfiguration> configurations = getHibernateConfigurationForMappingFile(mappingFile);
             if (configurations.size() == 0) {
                 //This mapping file does not belong to any configuration file.
                 return databaseTables;
@@ -114,7 +115,7 @@ public class HibernateEnvironment implements HibernateFileLocationProvider {
      * 
      * @return list of HibernateConfiguration(s).
      */
-    public ArrayList<HibernateConfiguration> getAllHibernateConfigurationsFromProject() {
+    public List<HibernateConfiguration> getAllHibernateConfigurationsFromProject() {
         return HibernateUtil.getAllHibernateConfigurations(project);
     }
 
@@ -122,7 +123,7 @@ public class HibernateEnvironment implements HibernateFileLocationProvider {
      * Returns configuration fileobjects if any contained in this project.
      * @return list of FileObjects for configuration files if found in this project, otherwise empty list.
      */
-    public ArrayList<FileObject> getAllHibernateConfigFileObjects() {
+    public List<FileObject> getAllHibernateConfigFileObjects() {
         return HibernateUtil.getAllHibernateConfigFileObjects(project);
     }
 
@@ -131,7 +132,7 @@ public class HibernateEnvironment implements HibernateFileLocationProvider {
      * 
      * @return List of FileObjects for mapping files.
      */
-    public ArrayList<FileObject> getAllHibernateMappingFileObjects() {
+    public List<FileObject> getAllHibernateMappingFileObjects() {
         return HibernateUtil.getAllHibernateMappingFileObjects(project);
     }
 
@@ -140,7 +141,7 @@ public class HibernateEnvironment implements HibernateFileLocationProvider {
      * 
      * @return List of FileObjects for mapping files.
      */
-    public ArrayList<String> getAllHibernateMappings() {
+    public List<String> getAllHibernateMappings() {
         return HibernateUtil.getAllHibernateMappingsRelativeToSourcePath(project);
     }
 
@@ -149,7 +150,7 @@ public class HibernateEnvironment implements HibernateFileLocationProvider {
      * 
      * @return List of FileObjects for reverse engg. files.
      */
-    public ArrayList<FileObject> getAllHibernateReverseEnggFileObjects() {
+    public List<FileObject> getAllHibernateReverseEnggFileObjects() {
         return HibernateUtil.getAllHibernateReverseEnggFileObjects(project);
     }
     
@@ -160,7 +161,7 @@ public class HibernateEnvironment implements HibernateFileLocationProvider {
      * @param configurations vararg of Hibernate Configurations.
      * @return array list of strings of table names.
      */
-    public ArrayList<String> getAllDatabaseTables(HibernateConfiguration... configurations) {
+    public List<String> getAllDatabaseTables(HibernateConfiguration... configurations) {
         try {
             return HibernateUtil.getAllDatabaseTables(configurations);
         } catch (SQLException ex) {
@@ -177,9 +178,9 @@ public class HibernateEnvironment implements HibernateFileLocationProvider {
      * @param tableName the table whose column names are needed.
      * @return the list of column names.
      */
-    public ArrayList<TableColumn> getColumnsForTable(String tableName, FileObject mappingFileObject) {
-        ArrayList<TableColumn> columnNames = new ArrayList<TableColumn>();
-        ArrayList<HibernateConfiguration> hibernateConfigurations =
+    public List<TableColumn> getColumnsForTable(String tableName, FileObject mappingFileObject) {
+        List<TableColumn> columnNames = new ArrayList<TableColumn>();
+        List<HibernateConfiguration> hibernateConfigurations =
                 getHibernateConfigurationForMappingFile(mappingFileObject);
         if (hibernateConfigurations.size() == 0) {
             // This mapping fileis not (yet) mapped to any config file.
@@ -225,8 +226,8 @@ public class HibernateEnvironment implements HibernateFileLocationProvider {
      * @param hibernateConfiguration hibernate configuration.
      * @return list of mapping files.
      */
-    public ArrayList<String> getAllHibernateMappingsFromConfiguration(HibernateConfiguration hibernateConfiguration) {
-        ArrayList<String> mappingsFromConfiguration = new ArrayList<String>();
+    public List<String> getAllHibernateMappingsFromConfiguration(HibernateConfiguration hibernateConfiguration) {
+        List<String> mappingsFromConfiguration = new ArrayList<String>();
         SessionFactory fact = hibernateConfiguration.getSessionFactory();
         int count = 0;
         for (boolean val : fact.getMapping()) {
@@ -237,8 +238,8 @@ public class HibernateEnvironment implements HibernateFileLocationProvider {
         return mappingsFromConfiguration;
     }
 
-    private ArrayList<HibernateConfiguration> getHibernateConfigurationForMappingFile(FileObject mappingFileObject) {
-        ArrayList<HibernateConfiguration> hibernateConfigurations = new ArrayList<HibernateConfiguration>();
+    private List<HibernateConfiguration> getHibernateConfigurationForMappingFile(FileObject mappingFileObject) {
+        List<HibernateConfiguration> hibernateConfigurations = new ArrayList<HibernateConfiguration>();
         for (HibernateConfiguration config : getAllHibernateConfigurationsFromProject()) {
             for (String mappingFile : getAllHibernateMappingsFromConfiguration(config)) {
                 if (!mappingFile.trim().equals("") && mappingFileObject.getPath().contains(mappingFile)) {
@@ -256,7 +257,7 @@ public class HibernateEnvironment implements HibernateFileLocationProvider {
      * @param projectFile file in current project.
      * @return List of java.io.File objects representing each entry on the classpath.
      */
-    public ArrayList<URL> getProjectClassPath(FileObject projectFile) {
+    public List<URL> getProjectClassPath(FileObject projectFile) {
         return HibernateUtil.getProjectClassPathEntries(projectFile);
     }
 

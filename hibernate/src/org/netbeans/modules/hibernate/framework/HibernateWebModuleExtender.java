@@ -39,12 +39,13 @@
 package org.netbeans.modules.hibernate.framework;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -85,6 +86,8 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
     private final String url = "hibernate.connection.url";
     private final String userName = "hibernate.connection.username";
     private final String password = "hibernate.connection.password";
+    
+    private Logger logger = Logger.getLogger(HibernateWebModuleExtender.class.getName());
 
     public HibernateWebModuleExtender(boolean forNewProjectWizard,
             WebModule webModule, ExtenderController controller) {
@@ -167,7 +170,7 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
 
     private void showConfigPanelForCustomizer(WebModule webModule) {
         Project enclosingProject = Util.getEnclosingProjectFromWebModule(webModule);
-        ArrayList<FileObject> configFileObjects = HibernateUtil.getAllHibernateConfigFileObjects(enclosingProject);
+        List<FileObject> configFileObjects = HibernateUtil.getAllHibernateConfigFileObjects(enclosingProject);
         for (FileObject configFile : configFileObjects) {
             if (configFile.getName().equals(DEFAULT_CONFIG_FILENAME)) {
                 try {
@@ -255,7 +258,7 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
             hdo.save();
             // Register Hibernate Library in the project if its not already registered.
             HibernateEnvironment hibernateEnvironment = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
-            System.out.println("Library registered : " + hibernateEnvironment.addHibernateLibraryToProject(hdo.getPrimaryFile()));
+            logger.info("Library registered : " + hibernateEnvironment.addHibernateLibraryToProject(hdo.getPrimaryFile()));
             createdFilesSet.add(hdo.getPrimaryFile());
 
         }

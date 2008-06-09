@@ -104,8 +104,8 @@ made subject to such option by the copyright holder.
                     and NetBeans' internal representation.
                 </p>
             </description>
-            <class package="org.netbeans.api.java.classpath" name="ClassPath"/>
-            <class package="org.netbeans.spi.java.classpath.support" name="ClassPathSupport"/>
+            <!-- <class package="org.netbeans.api.java.classpath" name="ClassPath"/>
+            <class package="org.netbeans.spi.java.classpath.support" name="ClassPathSupport"/> -->
             <issue number="59311"/>
         </change>
         <change id="queries-spi-support">
@@ -160,8 +160,8 @@ made subject to such option by the copyright holder.
                     currently only excludes on <code>SOURCE</code> paths are honored by Java language features.)
                 </p>
             </description>
-            <class package="org.netbeans.api.java.classpath" name="ClassPath"/>
-            <class package="org.netbeans.spi.java.classpath" name="FilteringPathResourceImplementation"/>
+            <!-- <class package="org.netbeans.api.java.classpath" name="ClassPath"/>
+            <class package="org.netbeans.spi.java.classpath" name="FilteringPathResourceImplementation"/> -->
             <issue number="49026"/>
         </change>
 
@@ -261,14 +261,14 @@ made subject to such option by the copyright holder.
                     instances.
                 </p>
             </description>
-            <class package="org.netbeans.api.java.classpath" name="ClassPath"/>
+            <!-- <class package="org.netbeans.api.java.classpath" name="ClassPath"/>
             <class package="org.netbeans.spi.java.classpath" name="ClassPathProvider"/>
             <class package="org.netbeans.spi.java.classpath" name="ClassPathFactory"/>
             <class package="org.netbeans.spi.java.classpath" name="ClassPathImplementation"/>
             <class package="org.netbeans.spi.java.classpath" name="PathResourceImplementation"/>
             <class package="org.netbeans.spi.java.classpath.support" name="ClassPathSupport"/>
             <class package="org.netbeans.spi.java.classpath.support" name="CompositePathResourceBase"/>
-            <class package="org.netbeans.spi.java.classpath.support" name="PathResourceBase"/>
+            <class package="org.netbeans.spi.java.classpath.support" name="PathResourceBase"/> -->
         </change>
 
         <change id="GlobalPathRegistry">
@@ -288,7 +288,7 @@ made subject to such option by the copyright holder.
                 Added a new class <code>GlobalPathRegistry</code> to represent
                 classpaths of current interest, typically from open projects.
             </description>
-            <class package="org.netbeans.api.java.classpath" name="GlobalPathRegistry"/>
+            <!-- <class package="org.netbeans.api.java.classpath" name="GlobalPathRegistry"/> -->
         </change>
 
         <change id="new-queries">
