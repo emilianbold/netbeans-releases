@@ -106,7 +106,7 @@ Microsystems, Inc. All Rights Reserved.
         <p>
             Language plugins register their services via the default file system layer.
             This is described in more detail in the
-            <a href="registration.html">Registration Document</a>.
+            <a href="@TOP@/registration.html">Registration Document</a>.
             NOTE - many details of registration are still TBD. There
             are some significant implementation problems with the current approach
             and I'd really like to find a better way to do it.
@@ -141,7 +141,7 @@ Microsystems, Inc. All Rights Reserved.
     feature handler, golden file generation and diffing, etc.
 </p>
 <p>
-    This is call described in more detail in the <a href="unit-testing.html">unit testing document</a>.
+    This is call described in more detail in the <a href="@TOP@/unit-testing.html">unit testing document</a>.
 </p>
 <p>
     However, GSF <b>itself</b> needs more testing. GSF is all about infrastructure,
@@ -230,6 +230,10 @@ delegation) your own lexer, parser, indexer, and then implement thin feature API
 like a keystroke handler, a code completion handler, a declaration finder, and so on,
 based on your own lexing, parser, and indexed data.
         </p>
+        <p>
+There is a lot of additional documentation for GSF in its
+<a href="@TOP@/overview-summary.html">overview document</a>.
+            </p>
     </answer>
 
 
