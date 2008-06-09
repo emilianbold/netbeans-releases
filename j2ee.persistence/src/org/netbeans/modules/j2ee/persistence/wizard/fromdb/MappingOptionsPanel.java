@@ -179,6 +179,7 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
         add(descLabel, gridBagConstraints);
 
+        collectionTypeLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/fromdb/Bundle").getString("LBL_COLLECTOIN_TYPE_Mnemonics").charAt(0));
         collectionTypeLabel.setText(org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "LBL_COLLECTOIN_TYPE")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
