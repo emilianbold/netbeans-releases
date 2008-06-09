@@ -43,6 +43,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
@@ -50,24 +51,26 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.NbBundle;
 
 /**
- * @author  Radek Matous
+ * @author  Radek Matous, Tomas Mysik
  */
 public class RunAsScript extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = -5593489817914071L;
     private final JLabel[] labels;
     private final JTextField[] textFields;
     private final String[] propertyNames;
-    private String displayName;
+    private final String displayName;
+    final Category category;
 
     public RunAsScript(ConfigManager manager, Category category) {
         this(manager, category, NbBundle.getMessage(RunAsScript.class, "LBL_ConfigScript"));
     }
 
-    /** Creates new form LocalWebPanel */
     private RunAsScript(ConfigManager manager, Category category, String displayName) {
-        super(manager, category);
-        initComponents();
+        super(manager);
+        this.category = category;
         this.displayName = displayName;
+
+        initComponents();
         this.labels = new JLabel[] {
             indexFileLabel,
             argsLabel
@@ -79,9 +82,6 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         this.propertyNames = new String[] {
             PhpProjectProperties.INDEX_FILE,
             PhpProjectProperties.ARGS
-
-
-
         };
         assert labels.length == textFields.length && labels.length == propertyNames.length;
         for (int i = 0; i < textFields.length; i++) {
@@ -123,8 +123,8 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         if (!Utils.isValidFileName(indexFile)) {
             err = NbBundle.getMessage(RunAsScript.class, "MSG_IllegalIndexName");
         }
-        getCategory().setErrorMessage(err);
-        getCategory().setValid(err == null);
+        category.setErrorMessage(err);
+        category.setValid(err == null);
     }
 
     String composeHint() {
@@ -140,7 +140,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
             super(propName, label, field);
         }
 
-        final String getDefaultValue() {
+        protected final String getDefaultValue() {
             return RunAsScript.this.getDefaultValue(getPropName());
         }
 
@@ -162,6 +162,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
 
         interpreterLabel = new javax.swing.JLabel();
         interpreterTextField = new javax.swing.JTextField();
+        configureButton = new javax.swing.JButton();
         argsLabel = new javax.swing.JLabel();
         argsTextField = new javax.swing.JTextField();
         runAsLabel = new javax.swing.JLabel();
@@ -174,6 +175,13 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         org.openide.awt.Mnemonics.setLocalizedText(interpreterLabel, org.openide.util.NbBundle.getMessage(RunAsScript.class, "LBL_PhpInterpreter")); // NOI18N
 
         interpreterTextField.setEditable(false);
+
+        org.openide.awt.Mnemonics.setLocalizedText(configureButton, org.openide.util.NbBundle.getMessage(RunAsScript.class, "LBL_Configure")); // NOI18N
+        configureButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configureButtonActionPerformed(evt);
+            }
+        });
 
         argsLabel.setLabelFor(argsTextField);
         org.openide.awt.Mnemonics.setLocalizedText(argsLabel, org.openide.util.NbBundle.getMessage(RunAsScript.class, "LBL_Arguments")); // NOI18N
@@ -209,7 +217,10 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, argsTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, indexFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, runAsCombo, 0, 222, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, interpreterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(interpreterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(configureButton)))
                         .add(0, 0, 0))))
         );
         layout.setVerticalGroup(
@@ -221,7 +232,8 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(interpreterLabel)
-                    .add(interpreterTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(interpreterTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(configureButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(indexFileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -235,9 +247,15 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void configureButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureButtonActionPerformed
+        OptionsDisplayer.getDefault().open("Advanced/PHP");
+    }//GEN-LAST:event_configureButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel argsLabel;
     private javax.swing.JTextField argsTextField;
+    private javax.swing.JButton configureButton;
     private javax.swing.JLabel hintLabel;
     private javax.swing.JLabel indexFileLabel;
     private javax.swing.JTextField indexFileTextField;

@@ -90,7 +90,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
     private boolean sourceSchemaUpdateEnabled;
     private Project project;
     org.netbeans.modules.hibernate.service.HibernateEnvironment env;
-    ArrayList<FileObject> configFileObjects;
+    List<FileObject> configFileObjects;
     List<String> databaseTables;
     private TableClosure tableClosure;
     private SchemaElement sourceSchemaElement;
@@ -130,7 +130,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
 
     // Gets the list of Config files from HibernateEnvironment.
     public String[] getConfigFilesFromProject(Project project) {
-        ArrayList<String> configFiles = new ArrayList<String>();
+        List<String> configFiles = new ArrayList<String>();
         configFileObjects = env.getAllHibernateConfigFileObjects();
         for (FileObject fo : configFileObjects) {
             configFiles.add(fo.getNameExt());

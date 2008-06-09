@@ -46,7 +46,7 @@ import java.util.Collections;
 
 import javax.swing.JComponent;
 import java.awt.Component;
-import java.util.ArrayList;
+import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Sources;
 
@@ -143,7 +143,7 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
         // and not like : hibernate.hbm<i>.xml
         if (wizard instanceof TemplateWizard) {
             HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
-            ArrayList<FileObject> mappingFiles = hibernateEnv.getAllHibernateMappingFileObjects();
+            List<FileObject> mappingFiles = hibernateEnv.getAllHibernateMappingFileObjects();
             String targetName = DEFAULT_MAPPING_FILENAME;
             if (!mappingFiles.isEmpty() && foundMappingFileInProject(mappingFiles, DEFAULT_MAPPING_FILENAME)) {
                 int mappingFilesCount = mappingFiles.size();
@@ -156,7 +156,7 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
         }
     }
 
-    private boolean foundMappingFileInProject(ArrayList<FileObject> mappingFiles, String mappingFileName) {
+    private boolean foundMappingFileInProject(List<FileObject> mappingFiles, String mappingFileName) {
         for (FileObject fo : mappingFiles) {
             if (fo.getName().equals(mappingFileName)) {
                 return true;
