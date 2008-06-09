@@ -1,8 +1,6 @@
 <?xml version="1.0"?>
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="#TARGET_NAMESPACE"
-            xmlns:tns="#TARGET_NAMESPACE"
-            elementFormDefault="qualified">
+    elementFormDefault="qualified">
 
 </xsd:schema>

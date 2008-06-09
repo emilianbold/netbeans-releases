@@ -49,6 +49,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -98,7 +99,15 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         }
         return decls;
     }
-    
+
+    public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFilter filter) {
+        Iterator<CsmOffsetableDeclaration> out;
+        synchronized (declarations) {
+            out = UIDCsmConverter.UIDsToDeclarationsFiltered(declarations, filter);
+         }
+         return out;
+    }
+
     public void addDeclaration(CsmOffsetableDeclaration decl) {
         CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
         assert uid != null;

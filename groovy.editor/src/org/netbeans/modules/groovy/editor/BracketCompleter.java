@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.groovy.editor;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -1564,6 +1563,9 @@ public class BracketCompleter implements KeystrokeHandler {
         // leaf "node" which contains the comment line and then comment block
         try {
             BaseDocument doc = (BaseDocument) info.getDocument();
+            if (doc == null) {
+                return ranges;
+            }
             AstPath path = new AstPath(root, astOffset, doc);
             length = doc.getLength();
 
@@ -1659,7 +1661,7 @@ public class BracketCompleter implements KeystrokeHandler {
     //                continue;
     //            }
 
-                OffsetRange range = AstUtilities.getRange(node, (BaseDocument)info.getDocument());
+                OffsetRange range = AstUtilities.getRange(node, doc);
 
                 // The contains check should be unnecessary, but I end up getting
                 // some weird positions for some Rhino AST nodes
@@ -1678,9 +1680,6 @@ public class BracketCompleter implements KeystrokeHandler {
             }
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
-            return ranges;
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
             return ranges;
         }
 

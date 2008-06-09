@@ -48,11 +48,11 @@ import org.openide.util.Lookup;
  */
 public abstract class KnownProject {
     /** well known project name */
-    public static final String PROJECT = "Project"; // NOI18N
+    public static final String PROJECT = "project"; // NOI18N
     /** path to well known project sources */
-    public static final String ROOT = "Root"; // NOI18N
+    public static final String ROOT = "root"; // NOI18N
     /** path to created netbeans projects */
-    public static final String NB_ROOT = "NBProject"; // NOI18N
+    public static final String NB_ROOT = "netbeans-project"; // NOI18N
 
     private static KnownProject DEFAULT = new Default();
 

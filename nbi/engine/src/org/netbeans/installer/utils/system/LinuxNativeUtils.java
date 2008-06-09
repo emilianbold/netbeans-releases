@@ -43,6 +43,7 @@ import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.helper.Platform;
 
 /**
  *
@@ -119,5 +120,19 @@ public class LinuxNativeUtils extends UnixNativeUtils {
         }
         return roots;
     }
-    
+    @Override
+    protected Platform getPlatform() {        
+        final String osArch = System.getProperty("os.arch");
+        if (osArch.contains("ppc")) {
+            return SystemUtils.isCurrentJava64Bit() ? 
+                Platform.LINUX_PPC64 : 
+                Platform.LINUX_PPC;
+        } else if (osArch.contains("sparc")) {
+            return  Platform.LINUX_SPARC;
+        } else {
+            return SystemUtils.isCurrentJava64Bit() ? 
+                Platform.LINUX_X64 : 
+                Platform.LINUX_X86;
+        }        
+    }
 }

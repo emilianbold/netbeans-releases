@@ -69,6 +69,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -102,6 +103,7 @@ import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -515,6 +517,13 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                         AppClientProjectProperties.J2EE_PLATFORM,
                         helper.getAntProjectHelper(),
                         AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                if (j2eeSpec == null) {
+                    j2eeSpec = ProjectProperties.JAVA_EE_5; // NOI18N
+                    Logger.getLogger(AppClientLogicalViewProvider.class.getName()).warning(
+                            "project ["+project.getProjectDirectory()+"] is missing "+AppClientProjectProperties.J2EE_PLATFORM+". " + // NOI18N
+                            "default value will be used instead: "+j2eeSpec); // NOI18N
+                    updateJ2EESpec(project, project.getAntProjectHelper(), j2eeSpec);
+                }
                 String instance = BrokenServerSupport.selectServer(j2eeSpec, J2eeModule.CLIENT);
                 if (instance != null) {
                     AppClientProjectProperties.setServerInstance(
@@ -523,6 +532,21 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                 checkMissingServer();
             }
 
+            private void updateJ2EESpec(final Project project, final AntProjectHelper helper, final String j2eeSpec) {
+                ProjectManager.mutex().postWriteRequest(new Runnable() {
+                    public void run() {
+                        try {
+                            EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            projectProps.put(AppClientProjectProperties.J2EE_PLATFORM, j2eeSpec);
+                            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
+                            ProjectManager.getDefault().saveProject(project);
+                        } catch (IOException e) {
+                            Exceptions.printStackTrace(e);
+                        }
+                    }
+                });
+            }
+            
             public void propertyChange(PropertyChangeEvent evt) {
                 if (AppClientProjectProperties.J2EE_SERVER_INSTANCE.equals(evt.getPropertyName())) {
                     checkMissingServer();

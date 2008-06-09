@@ -649,10 +649,12 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                 }
             }
 
-            @SuppressWarnings("unchecked")
             List<Node> list = node.childNodes();
 
             for (Node child : list) {
+                if (child.isInvisible()) {
+                    continue;
+                }
                 path.descend(child);
                 find(path, searchCtx, fileCtx, child, name, upperCase);
                 path.ascend();
@@ -706,10 +708,12 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                 break;
             }
 
-            @SuppressWarnings("unchecked")
             List<Node> list = node.childNodes();
 
             for (Node child : list) {
+                if (child.isInvisible()) {
+                    continue;
+                }
                 findLocal(searchCtx, fileCtx, child, name);
             }
         }

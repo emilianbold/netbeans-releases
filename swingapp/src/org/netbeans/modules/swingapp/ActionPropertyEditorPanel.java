@@ -200,18 +200,6 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         } else {
             this.setMode(Mode.Form);
         }
-        
-        enabledCombo.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                enabledTextfield.setText((String)enabledCombo.getSelectedItem());
-            }
-        });
-        selectedCombo.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                selectedTextfield.setText((String)selectedCombo.getSelectedItem());
-            }
-        });
-        
         updatePropertyCombos(null);
         
         ActionListener modifierListener = new ActionListener() {
@@ -238,10 +226,12 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         } else if(sourceFile != null) {
             strings = ActionManager.findBooleanProperties(sourceFile);
         }
+        
+        // first none action combobox item
+        strings.add(0, ""); // NOI18N
+        
         enabledCombo.setModel(new DefaultComboBoxModel(strings.toArray()));
         selectedCombo.setModel(new DefaultComboBoxModel(strings.toArray()));
-        enabledCombo.setEnabled(!strings.isEmpty());
-        selectedCombo.setEnabled(!strings.isEmpty());
         if (act != null) {
             if (strings.contains(act.getEnabledName())) {
                 enabledCombo.setSelectedItem(act.getEnabledName());
@@ -330,8 +320,8 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
             setIconButtonLarge.setEnabled(true);
             iconButtonSmall.setEnabled(true);
             setIconButtonSmall.setEnabled(true);
-            selectedTextfield.setEnabled(true);
-            enabledTextfield.setEnabled(true);
+            selectedCombo.setEnabled(true);
+            enabledCombo.setEnabled(true);
             backgroundTaskCheckbox.setEnabled(true);
             updatePropertyCombos(act);
         }
@@ -391,8 +381,9 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         
         setFromActionProperty(blockingDialogText,act,"BlockingDialog.message"); //NOI18N
         setFromActionProperty(blockingDialogTitle,act,"BlockingDialog.title"); //NOI18N
-        selectedTextfield.setText(act.getSelectedName());
-        enabledTextfield.setText(act.getEnabledName());
+        selectedCombo.setSelectedItem(act.getSelectedName());
+        enabledCombo.setSelectedItem(act.getEnabledName());
+        
     }
     
     private void setFromActionProperty(JTextField textField, ProxyAction act, String key) {
@@ -438,8 +429,6 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         jLabel1 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
-        enabledTextfield = new javax.swing.JTextField();
-        selectedTextfield = new javax.swing.JTextField();
         blockingType = new javax.swing.JComboBox();
         blockingDialogTitle = new javax.swing.JTextField();
         blockingDialogText = new javax.swing.JTextField();
@@ -574,8 +563,8 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(tooltipField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 248, Short.MAX_VALUE)
-                    .add(textField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 248, Short.MAX_VALUE)
+                    .add(tooltipField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+                    .add(textField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
                     .add(jPanel2Layout.createSequentialGroup()
                         .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                             .add(iconButtonSmall, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -645,6 +634,10 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
 
         blockingDialogText.setEnabled(false);
 
+        enabledCombo.setEditable(true);
+
+        selectedCombo.setEditable(true);
+
         org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -659,13 +652,11 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
                     .add(jLabel1))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(enabledTextfield, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE)
-                    .add(selectedTextfield, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE)
-                    .add(blockingDialogTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE)
-                    .add(blockingDialogText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE)
-                    .add(enabledCombo, 0, 188, Short.MAX_VALUE)
-                    .add(selectedCombo, 0, 188, Short.MAX_VALUE)
-                    .add(blockingType, 0, 188, Short.MAX_VALUE))
+                    .add(blockingDialogTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE)
+                    .add(blockingDialogText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE)
+                    .add(enabledCombo, 0, 163, Short.MAX_VALUE)
+                    .add(selectedCombo, 0, 163, Short.MAX_VALUE)
+                    .add(blockingType, 0, 163, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -676,13 +667,9 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
                     .add(jLabel8)
                     .add(enabledCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(enabledTextfield, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel11)
                     .add(selectedCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(selectedTextfield, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(18, 18, 18)
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
@@ -695,13 +682,9 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel6)
                     .add(blockingDialogText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(53, Short.MAX_VALUE))
+                .addContainerGap(107, Short.MAX_VALUE))
         );
 
-        enabledTextfield.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel8.text")); // NOI18N
-        enabledTextfield.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel8.ACSD")); // NOI18N
-        selectedTextfield.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel11.text")); // NOI18N
-        selectedTextfield.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel11.ACSD")); // NOI18N
         blockingType.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel1.ACSD")); // NOI18N
         blockingDialogTitle.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel3.ACSD")); // NOI18N
         blockingDialogText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel6.ACSD")); // NOI18N
@@ -788,10 +771,10 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
                     .add(layout.createSequentialGroup()
                         .add(actionsCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 200, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(0, 0, 0)
-                        .add(actionsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 136, Short.MAX_VALUE))
+                        .add(actionsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE))
                     .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
-                    .add(methodField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE))
+                    .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
+                    .add(methodField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -901,12 +884,9 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
             setFromTextField(blockingDialogText,act,"BlockingDialog.message"); // NOI18N
             setFromTextField(blockingDialogTitle,act,"BlockingDialog.title"); // NOI18N
         }
-        if(selectedTextfield.getText() != null) {
-            act.setSelectedName(selectedTextfield.getText());
-        }
-        if(enabledTextfield.getText() != null) {
-            act.setEnabledName(enabledTextfield.getText());
-        }
+        act.setSelectedName((String) selectedCombo.getSelectedItem());
+        act.setEnabledName((String) enabledCombo.getSelectedItem());
+        
         act.putValue(Action.SMALL_ICON+".IconName",  smallIconName); // NOI18N
         act.putValue(LARGE_ICON_KEY+".IconName",  largeIconName); // NOTI18N
         return act;
@@ -955,12 +935,8 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         }
         
         act.putValue(Action.ACCELERATOR_KEY, acceleratorListener.getCurrentKeyStroke());
-        if(selectedTextfield.getText() != null) {
-            act.setSelectedName(selectedTextfield.getText());
-        }
-        if(enabledTextfield.getText() != null) {
-            act.setEnabledName(enabledTextfield.getText());
-        }
+        act.setSelectedName((String) selectedCombo.getSelectedItem());
+        act.setEnabledName((String) enabledCombo.getSelectedItem());
         return act;
     }
     
@@ -1039,7 +1015,6 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
     private javax.swing.JButton clearAccelButton;
     public javax.swing.JCheckBox controlCheckbox;
     private javax.swing.JComboBox enabledCombo;
-    private javax.swing.JTextField enabledTextfield;
     private javax.swing.JButton iconButtonLarge;
     private javax.swing.JButton iconButtonSmall;
     private javax.swing.JLabel jLabel1;
@@ -1064,7 +1039,6 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
     private javax.swing.JTextField methodField;
     private javax.swing.JComboBox scopeCombo;
     private javax.swing.JComboBox selectedCombo;
-    private javax.swing.JTextField selectedTextfield;
     private javax.swing.JButton setIconButtonLarge;
     private javax.swing.JButton setIconButtonSmall;
     public javax.swing.JCheckBox shiftCheckbox;
@@ -1097,10 +1071,8 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         iconButtonSmall.setEnabled(false);
         iconButtonSmall.setIcon(null);
         setIconButtonSmall.setEnabled(false);
-        selectedTextfield.setEnabled(false);
-        selectedTextfield.setText(""); // NOI18N
-        enabledTextfield.setText(""); // NOI18N
-        enabledTextfield.setEnabled(false);
+        selectedCombo.setEnabled(false);
+        enabledCombo.setEnabled(false);
         
         blockingDialogText.setEnabled(false);
         blockingDialogText.setText(""); // NOI18N
@@ -1121,10 +1093,8 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         setIconButtonLarge.setEnabled(true);
         iconButtonSmall.setEnabled(true);
         setIconButtonSmall.setEnabled(true);
-        selectedTextfield.setEnabled(true);
-        selectedTextfield.setText(""); // NOI18N
-        enabledTextfield.setEnabled(true);
-        enabledTextfield.setText(""); // NOI18N
+        selectedCombo.setEnabled(true);
+        enabledCombo.setEnabled(true);
         actionsCombo.setEnabled(false);
         textField.setText(""); // NOI18N
         acceleratorListener.clearFields();
@@ -1365,4 +1335,3 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
     }
             
 }
-

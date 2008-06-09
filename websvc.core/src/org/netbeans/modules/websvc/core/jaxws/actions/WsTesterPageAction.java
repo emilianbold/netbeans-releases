@@ -45,14 +45,18 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.text.MessageFormat;
-import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.websvc.core.JaxWsStackProvider;
 import org.netbeans.modules.websvc.jaxws.api.JaxWsTesterCookie;
+import org.netbeans.modules.websvc.serverapi.api.WSStackFeature;
+import org.netbeans.modules.websvc.serverapi.api.WSStack;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -149,14 +153,16 @@ public class WsTesterPageAction extends CookieAction {
     }
     
     private boolean isTesterPageSupported(Project project) {
-        JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-        if (wss != null) {
-            Map properties = wss.getAntProjectHelper().getStandardPropertyEvaluator().getProperties();
-            String serverInstance = (String)properties.get("j2ee.server.instance"); //NOI18N
-            if (serverInstance != null) {
-                J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
-                if (j2eePlatform != null) {
-                    return j2eePlatform.isToolSupported("jaxws-tester"); //NOI18N
+        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
+            String serverInstanceId = provider.getServerInstanceID();
+            if (serverInstanceId != null) {
+                try {
+                    J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstanceId).getJ2eePlatform();
+                    WSStack wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
+                    return wsStack != null && wsStack.getServiceFeatures().contains(WSStackFeature.TESTER_PAGE);
+                } catch (InstanceRemovedException ex) {
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, "Failed to find J2eePlatform", ex);
                 }
             }
         }

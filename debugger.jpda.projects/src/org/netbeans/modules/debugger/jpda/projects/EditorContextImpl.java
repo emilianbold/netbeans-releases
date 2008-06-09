@@ -96,6 +96,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 
 import org.netbeans.api.java.classpath.ClassPath;
@@ -284,6 +285,15 @@ public class EditorContextImpl extends EditorContext {
         String annotationType,
         Object timeStamp
     ) {
+        return annotate(url, lineNumber, annotationType, timeStamp, null);
+    }
+    public Object annotate (
+        String url, 
+        int lineNumber, 
+        String annotationType,
+        Object timeStamp,
+        JPDAThread thread
+    ) {
         Line l =  LineTranslations.getTranslations().getLine (
             url, 
             lineNumber, 
@@ -294,7 +304,7 @@ public class EditorContextImpl extends EditorContext {
         if (timeStamp instanceof JPDABreakpoint) {
             annotation = new DebuggerBreakpointAnnotation(annotationType, l, (JPDABreakpoint) timeStamp);
         } else {
-            annotation = new DebuggerAnnotation (annotationType, l);
+            annotation = new DebuggerAnnotation (annotationType, l, thread);
         }
         annotationToURL.put (annotation, url);
         

@@ -73,6 +73,7 @@ org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyFactories$Encryp
 org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyFactories$RequiredElementsFactory
 org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyFactories$HeaderFactory
 org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyFactories$BodyFactory
+org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyFactories$AttachmentsFactory
 org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyFactories$XPathFactory
 org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyFactories$TransportBindingFactory
 org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyFactories$SymmetricBindingFactory
@@ -134,6 +135,7 @@ org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokenFactories$RequireE
 org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokenFactories$RequireThumbprintReferenceFactory
 org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokenFactories$SC10SecurityContextTokenFactory
 org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokenFactories$IssuerFactory
+org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokenFactories$HashPasswordFactory
 org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokenFactories$WssUsernameToken10Factory
 org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokenFactories$WssUsernameToken11Factory
 org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokenFactories$WssX509V1Token10Factory

@@ -46,7 +46,7 @@ import java.util.Map;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hibernate.refactoring.HibernateRefactoringUtil.OccurrenceItem;
-import org.netbeans.modules.hibernate.service.HibernateEnvironment;
+import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -119,7 +119,7 @@ public class HibernateMovePlugin implements RefactoringPlugin {
             }
 
             // Find the mapping files in this project
-            HibernateEnvironment env = new HibernateEnvironment(project);
+            HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
             List<FileObject> mappingFileObjs = env.getAllHibernateMappingFileObjects();
             if (mappingFileObjs == null || mappingFileObjs.size() == 0) {
                 // OK, no mapping files at all. 

@@ -40,14 +40,15 @@ package org.netbeans.modules.hibernate.wizards;
 
 import java.awt.Component;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -57,7 +58,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.hibernate.loaders.reveng.HibernateRevengDataObject;
 import org.netbeans.modules.hibernate.reveng.model.HibernateReverseEngineering;
-import org.netbeans.modules.hibernate.service.HibernateEnvironment;
 import org.netbeans.modules.hibernate.spi.hibernate.HibernateFileLocationProvider;
 import org.netbeans.modules.hibernate.wizards.support.Table;
 import org.openide.WizardDescriptor;
@@ -67,13 +67,19 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
 import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
-import org.dom4j.io.SAXReader;
+import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
+import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.JDBCMetaDataConfiguration;
 import org.hibernate.cfg.reveng.DefaultReverseEngineeringStrategy;
 import org.hibernate.cfg.reveng.OverrideRepository;
+import org.hibernate.cfg.reveng.ReverseEngineeringSettings;
+import org.hibernate.tool.hbm2x.HibernateMappingExporter;
 import org.hibernate.tool.hbm2x.POJOExporter;
 import org.hibernate.util.XMLHelper;
+import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
+import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
+import org.netbeans.modules.hibernate.service.CustomClassLoader;
+import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.openide.filesystems.FileUtil;
@@ -97,8 +103,11 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
     private final String DEFAULT_REVENG_FILENAME = "hibernate.reveng";
     private final String ATTRIBUTE_NAME = "match-schema";
     private final String MATCH_NAME = "match-name";
+    private final String resourceAttr = "resource";
     private XMLHelper xmlHelper;
     private EntityResolver entityResolver;
+    
+    private Logger logger = Logger.getLogger(HibernateRevengWizard.class.getName());
 
     public static HibernateRevengWizard create() {
         return new HibernateRevengWizard();
@@ -215,7 +224,7 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
         return res;
     }
 
-    private boolean foundRevengFileInProject(ArrayList<FileObject> revengFiles, String revengFileName) {
+    private boolean foundRevengFileInProject(List<FileObject> revengFiles, String revengFileName) {
         for (FileObject fo : revengFiles) {
             if (fo.getName().equals(revengFileName)) {
                 return true;
@@ -239,13 +248,14 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
             ArrayList<Table> list = (ArrayList<Table>) helper.getSelectedTables().getTables();
             for (int i = 0; i < list.size(); i++) {
                 int index = hre.addTableFilter(true);
-                //hre.setAttributeValue(hre.TABLE_FILTER, index, ATTRIBUTE_NAME, ".*");
+                hre.setAttributeValue(hre.TABLE_FILTER, index, ATTRIBUTE_NAME, helper.getSchemaName());
                 hre.setAttributeValue(hre.TABLE_FILTER, index, MATCH_NAME, list.get(i).getName());
 
             }
             hro.addReveng();
             hro.save();
-           // generateClasses(hro.getPrimaryFile());
+            generateClasses(hro.getPrimaryFile());
+            updateConfiguration();
             return Collections.singleton(hro.getPrimaryFile());
         } catch (Exception e) {
             return Collections.EMPTY_SET;
@@ -274,7 +284,7 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
         // and not like : hibernate.reveng<i>.xml.
         if (wiz instanceof TemplateWizard) {
             HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
-            ArrayList<FileObject> revengFiles = hibernateEnv.getAllHibernateReverseEnggFileObjects();
+            List<FileObject> revengFiles = hibernateEnv.getAllHibernateReverseEnggFileObjects();
             String targetName = DEFAULT_REVENG_FILENAME;
             if (!revengFiles.isEmpty() && foundRevengFileInProject(revengFiles, DEFAULT_REVENG_FILENAME)) {
                 int revengFilesCount = revengFiles.size();
@@ -292,48 +302,89 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
 
     }
 
+    // Generates POJOs and hibernate mapping files based on a .reveng.xml file
     public void generateClasses(FileObject revengFile) throws IOException {
-        HibernateEnvironment env = null;
         JDBCMetaDataConfiguration cfg = null;
-        File f = null;        
-        DataObject revengDataObject = DataObject.find(revengFile);
+        ReverseEngineeringSettings settings = null;
+        ClassLoader oldClassLoader = null;
 
-        // String fileName = FileUtil.toFile(revengFile).getAbsolutePath();
-        String fileName = HibernateUtil.getRelativeSourcePath(revengDataObject.getPrimaryFile(), Util.getSourceRoot(project));
-        File confFile  = FileUtil.toFile(helper.getConfigurationFile());      
+        File confFile = FileUtil.toFile(helper.getConfigurationFile());
+        File outputDir = FileUtil.toFile(helper.getLocation().getRootFolder());
 
-        try {       
-
-            cfg = new JDBCMetaDataConfiguration();            
-            OverrideRepository or = new OverrideRepository();
-            InputStream xmlInputStream = new FileInputStream(FileUtil.toFile(revengFile));
-            xmlHelper = new XMLHelper();
-            entityResolver = XMLHelper.DEFAULT_DTD_RESOLVER;
-            List errors = new ArrayList();
-            
-            SAXReader saxReader = xmlHelper.createSAXReader("XML InputStream", errors, entityResolver);
-            
-            org.dom4j.Document doc = saxReader.read(new InputSource(xmlInputStream));
-            
-            cfg.configure(confFile);        
-            
-            cfg.setReverseEngineeringStrategy(or.getReverseEngineeringStrategy(new DefaultReverseEngineeringStrategy()));
-            
-            cfg.readFromJDBC();
-            
-        } catch (Exception e) {
-            e.printStackTrace();      
-        }
-
-        // Generating POJOs
-        FileObject pkg;
         try {
-            pkg = SourceGroups.getFolderForPackage(helper.getLocation(), helper.getPackageName());            
-            File outputDir = FileUtil.toFile(pkg);            
-            POJOExporter exporter = new POJOExporter(cfg, outputDir);            
-            exporter.getProperties().setProperty("ejb3", "true");            
-            exporter.start();            
-        } catch (IOException ex) {
+            
+            // Setup classloader.
+            logger.info("Setting up classloader");
+            HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
+            CustomClassLoader ccl = new CustomClassLoader(env.getProjectClassPath(revengFile).toArray(new URL[]{}), 
+                    getClass().getClassLoader());
+            oldClassLoader = Thread.currentThread().getContextClassLoader();
+            Thread.currentThread().setContextClassLoader(ccl);
+            
+            // Configuring the reverse engineering strategy
+            try {
+
+                cfg = new JDBCMetaDataConfiguration();
+                OverrideRepository or = new OverrideRepository();
+                Configuration c = cfg.configure(confFile);
+                or.addFile(FileUtil.toFile(revengFile));
+                DefaultReverseEngineeringStrategy strategy = new DefaultReverseEngineeringStrategy();
+                settings = new ReverseEngineeringSettings(strategy);
+                settings.setDefaultPackageName(helper.getPackageName());
+                strategy.setSettings(settings);
+                cfg.setReverseEngineeringStrategy(or.getReverseEngineeringStrategy(strategy));
+                cfg.readFromJDBC();
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
+            }
+
+            // Generating POJOs            
+            try {
+                if (helper.getDomainGen()) {
+                    POJOExporter exporter = new POJOExporter(cfg, outputDir);
+                    exporter.getProperties().setProperty("jdk", new Boolean(helper.getJavaSyntax()).toString());
+                    exporter.getProperties().setProperty("ejb3", new Boolean(helper.getEjbAnnotation()).toString());
+                    exporter.start();
+                }
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            // Generating Mappings
+            try {
+                if (helper.getHbmGen()) {
+                    HibernateMappingExporter exporter = new HibernateMappingExporter(cfg, outputDir);
+                    exporter.start();
+                }
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+        } finally {
+            Thread.currentThread().setContextClassLoader(oldClassLoader);
+        }
+    }
+
+    // Update mapping entries in the selected configuration file 
+    public void updateConfiguration() {        
+        try {
+            DataObject confDataObject = DataObject.find(helper.getConfigurationFile());
+            HibernateCfgDataObject hco = (HibernateCfgDataObject) confDataObject;
+            SessionFactory sf = hco.getHibernateConfiguration().getSessionFactory();
+            FileObject pkg = SourceGroups.getFolderForPackage(helper.getLocation(), helper.getPackageName(), false);
+            if (pkg != null && pkg.isFolder()) {
+                Enumeration<? extends FileObject> enumeration = pkg.getChildren(true);            
+                while (enumeration.hasMoreElements()) {
+                    FileObject fo = enumeration.nextElement();                    
+                    if (fo.getNameExt() != null && fo.getMIMEType().equals(HibernateMappingDataLoader.REQUIRED_MIME)) {
+                        int mappingIndex = sf.addMapping(true);
+                        sf.setAttributeValue(SessionFactory.MAPPING, mappingIndex, resourceAttr, HibernateUtil.getRelativeSourcePath(fo, Util.getSourceRoot(project)));
+                        hco.modelUpdatedFromUI();
+                        hco.save();
+                    }
+                }
+            }            
+        } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
     }

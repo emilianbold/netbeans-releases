@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.ruby.hints;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -112,8 +111,8 @@ public class ConvertIfToUnless extends RubyAstRule {
                 condition.childNodes().size() == 1 &&
                 ((Node)condition.childNodes().get(0)).nodeId == NodeType.NOTNODE)) {
             try {
-                BaseDocument doc = (BaseDocument) info.getDocument();
-                int keywordOffset = findKeywordOffset(info, ifNode);
+                BaseDocument doc = context.doc;
+                int keywordOffset = findKeywordOffset(context, ifNode);
                 if (keywordOffset == -1 || keywordOffset > doc.getLength() - 1) {
                     return;
                 }
@@ -146,7 +145,7 @@ public class ConvertIfToUnless extends RubyAstRule {
                     }
                 }
 
-                ConvertToUnlessFix fix = new ConvertToUnlessFix(info, ifNode);
+                ConvertToUnlessFix fix = new ConvertToUnlessFix(context, ifNode);
                 
                 // Make sure we can actually perform the edit
                 if (fix.getEditList() == null) {
@@ -161,8 +160,6 @@ public class ConvertIfToUnless extends RubyAstRule {
                         fixes, 500);
                 result.add(desc);
             } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
@@ -200,8 +197,9 @@ public class ConvertIfToUnless extends RubyAstRule {
         return HintSeverity.CURRENT_LINE_WARNING;
     }
     
-    static int findKeywordOffset(CompilationInfo info, IfNode ifNode) throws IOException, BadLocationException {
-        BaseDocument doc = (BaseDocument) info.getDocument();
+    static int findKeywordOffset(RubyRuleContext context, IfNode ifNode) throws BadLocationException {
+        BaseDocument doc = context.doc;
+        CompilationInfo info = context.compilationInfo;
 
         int astIfOffset = ifNode.getPosition().getStartOffset();
         int lexIfOffset = LexUtilities.getLexerOffset(info, astIfOffset);
@@ -243,11 +241,11 @@ public class ConvertIfToUnless extends RubyAstRule {
     }
     
     private class ConvertToUnlessFix implements PreviewableFix {
-        private CompilationInfo info;
-        private IfNode ifNode;
+        private final RubyRuleContext context;
+        private final IfNode ifNode;
 
-        public ConvertToUnlessFix(CompilationInfo info, IfNode ifNode) {
-            this.info = info;
+        public ConvertToUnlessFix(RubyRuleContext context, IfNode ifNode) {
+            this.context = context;
             this.ifNode = ifNode;
         }
 
@@ -274,9 +272,9 @@ public class ConvertIfToUnless extends RubyAstRule {
         }
 
         public EditList getEditList() {
-            try {
-                BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = context.doc;
 
+            try {
                 Node notNode = ifNode.getCondition();
                 if (notNode.nodeId != NodeType.NOTNODE) {
                     assert notNode.nodeId == NodeType.NEWLINENODE;
@@ -291,9 +289,10 @@ public class ConvertIfToUnless extends RubyAstRule {
                     }
 
                 }
-                
+
                 int deleteSize = 1;
 
+                CompilationInfo info = context.compilationInfo;
                 int astNotOffset = AstUtilities.getRange(notNode).getStart();
                 int lexNotOffset = LexUtilities.getLexerOffset(info, astNotOffset);
                 if (lexNotOffset == -1 || lexNotOffset > doc.getLength()-1) {
@@ -344,7 +343,7 @@ public class ConvertIfToUnless extends RubyAstRule {
                     }
                 }
 
-                int keywordOffset = findKeywordOffset(info, ifNode);
+                int keywordOffset = findKeywordOffset(context, ifNode);
                 if (keywordOffset == -1 || keywordOffset > doc.getLength()-1) {
                     return null;
                 }
@@ -368,10 +367,10 @@ public class ConvertIfToUnless extends RubyAstRule {
                 } else {
                     edits.replace(keywordOffset, 6, "if", false, 1);
                 }
-                
+
                 return edits;
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
+            } catch (BadLocationException ble) {
+                Exceptions.printStackTrace(ble);
                 return null;
             }
         }

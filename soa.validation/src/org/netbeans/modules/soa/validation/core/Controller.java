@@ -41,6 +41,7 @@
 package org.netbeans.modules.soa.validation.core;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -48,8 +49,10 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.WeakHashMap;
+import java.util.prefs.Preferences;
 
 import org.openide.text.Line;
+import org.openide.util.NbPreferences;
 import org.netbeans.modules.xml.validation.ValidateAction;
 import org.netbeans.modules.xml.validation.ValidateAction.RunAction;
 import org.netbeans.modules.xml.validation.ValidationOutputWindowController;
@@ -123,6 +126,13 @@ public final class Controller implements ComponentListener {
   public void triggerValidation() {
 //stackTrace();
     log();
+    log("ALLOW Background Validation: " + isAllowBackgroundValidation()); // NOI18N
+    log();
+
+    if ( !isAllowBackgroundValidation()) {
+      return;
+    }
+    log();
     log("TIMER-TRIGGER"); // NOI18N
     log();
 
@@ -136,35 +146,39 @@ public final class Controller implements ComponentListener {
     DELAY);
   }
 
-  public boolean cliValidate(File file, boolean allowBuildWithError) {
-    boolean isError = false;
-    List<ResultItem> result = validate(ValidationType.COMPLETE);
-      
-    for (ResultItem item : result) {
-      if ( !allowBuildWithError) {
-        if (item.getType() == Validator.ResultType.ERROR) {
-          System.out.println(LineUtil.getValidationError(file, item));
-          System.out.println();
-        }
-      }
-      if (item.getType() == Validator.ResultType.ERROR) {
-        isError = true;
-      }
-    }
-    return isError;
+  public boolean cliValidate(File file) {
+    return validate(file, true);
   }
 
   public boolean ideValidate(File file) {
+    return validate(file, false);
+  }
+
+  private boolean validate(File file, boolean isCommandLine) {
+    PrintStream stream;
+    List<ResultItem> result;
+
+    if (isCommandLine) {
+      stream = System.out;
+      result = validate(ValidationType.PARTIAL);
+    }
+    else {
+      stream = System.err;
+      result = validate(ValidationType.COMPLETE);
+    }
     boolean isError = false;
-    List<ResultItem> result = validate(ValidationType.COMPLETE);
 
     for (ResultItem item : result) {
-      System.err.println(LineUtil.getValidationError(file, item));
-      System.err.println();
-
       if (item.getType() == Validator.ResultType.ERROR) {
         isError = true;
       }
+      else {
+        if (isCommandLine) {
+          continue;
+        }
+      }
+      stream.println(LineUtil.getValidationError(file, item));
+      stream.println();
     }
     return isError;
   }
@@ -220,6 +234,18 @@ public final class Controller implements ComponentListener {
     myTimer = new Timer();
     Validation.stop();
   }
+
+  private boolean isAllowBackgroundValidation() {
+    return get(ALLOW_BACKGROUND_VALIDATION, true);
+  }
+
+  private boolean get(String name, boolean defaultValue) {
+    return getPreferences().getBoolean(name, defaultValue);
+  }
+
+  private Preferences getPreferences() {
+    return NbPreferences.forModule(org.netbeans.modules.xml.schema.model.SchemaModel.class);
+  } 
 
   private void notifyListeners(List<ResultItem> items) {
     if (items == null) {
@@ -303,4 +329,5 @@ public final class Controller implements ComponentListener {
   private Map<Listener, Object> myListeners;
 
   private static final long DELAY = 5432L;
+  private static final String ALLOW_BACKGROUND_VALIDATION = "allow.background.validation"; // NOI18N
 }

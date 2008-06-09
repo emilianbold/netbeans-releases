@@ -106,8 +106,8 @@ public class BaseHelper {
     private static final String TPL_TOKEN_ENCODING  = "encoding";               //NOI18N
 
     public static String getDefaultCodeNameBase(String projectName){
-            String dotName = EXAMPLE_BASE_NAME + normalizeCNB(projectName);
-            return normalizeCNB(dotName);
+            //return normalizeCNB(EXAMPLE_BASE_NAME + projectName);
+            return EXAMPLE_BASE_NAME + normalizeCNB(projectName);
     }
     
     /**

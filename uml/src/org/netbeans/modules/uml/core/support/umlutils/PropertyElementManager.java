@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.uml.core.support.umlutils;
 
-import java.io.IOException;
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -50,13 +49,12 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.HashMap;
 
+//import org.apache.xpath.XPathAPI;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Node;
 import java.util.List;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.Element;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
@@ -67,10 +65,9 @@ import org.netbeans.modules.uml.core.generativeframework.ITemplateManager;
 import org.netbeans.modules.uml.core.generativeframework.IVariableExpander;
 import org.netbeans.modules.uml.core.generativeframework.IVariableFactory;
 import org.netbeans.modules.uml.core.generativeframework.VariableExpander;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * <p>Title: </p>
@@ -83,7 +80,7 @@ import org.openide.filesystems.FileUtil;
 
 public class PropertyElementManager implements IPropertyElementManager
 {
-   private static final Logger logger = Logger.getLogger("org.netbeans.modules.uml.core");
+   
    private Object m_PresentationElement = null;
    private Object m_ModelElement = null;
    private IPropertyDefinitionFactory m_PDFactory = null;
@@ -1931,25 +1928,38 @@ public class PropertyElementManager implements IPropertyElementManager
     * @return HRESULT
     *
     */
-    private Document getDOMDocumentForFile(String fileName, String dtdFile) {
-        Document doc = null;
-
-        File file = new File(fileName);
-        FileObject fo = FileUtil.toFileObject(file);
-
-        if (fo != null && fo.canWrite()) {
-            doc = XMLManip.getDOMDocument(fileName);//db.parse(file);
-        } else {
-            try {
-                fo = FileUtil.createData(file);
-                doc = XMLManip.getDOMDocument(); //db.newDocument();
-            } catch (IOException ex) {
-                String mesg = ex.getMessage();
-                logger.log(Level.WARNING, mesg != null ? mesg : "", ex);
+   private Document getDOMDocumentForFile(String fileName, String dtdFile)
+   {
+      Document doc = null;
+      try
+      {
+         File file = new File(fileName);
+         if (file.canWrite())
+         {
+            //DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            //DocumentBuilder db = dbf.newDocumentBuilder();
+            if (file.exists())
+            {
+               doc = XMLManip.getDOMDocument(fileName);//db.parse(file);
             }
-        }
-        return doc;
-    }
+            else
+            {
+               boolean created = file.createNewFile();
+               if (created )
+               {
+                  doc = XMLManip.getDOMDocument();//db.newDocument();
+                  //put processing to create the doc with DTD declaration, propertyElem node etc.
+                  //and save it.
+                  
+               }
+            }
+         }
+      } catch (Exception e)
+      {
+         
+      }
+      return doc;
+   }
    
    /**
     * Process any sub elements based on sub property definitions

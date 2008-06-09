@@ -41,19 +41,9 @@
 package org.netbeans.modules.cnd.editor.filecreation;
 
 import java.awt.Component;
-import java.io.File;
-import java.io.IOException;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.ChangeSupport;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -84,25 +74,32 @@ public class NewCndFileChooserPanel extends CndPanel {
 
     @Override
     public boolean isValid() {
-        boolean ok = super.isValid() && getTargetExtension().length() > 0;
+        boolean ok = super.isValid();
         
         if (!ok) {
             setErrorMessage (""); // NOI18N
 
             return false;
         }
-
-        // check if the file name can be created
-        String errorMessage = canUseFileName(gui.getTargetGroup().getRootFolder(), gui.getTargetFolder(), gui.getTargetName(), false);
-        setErrorMessage(errorMessage); // NOI18N
+        
+        String documentName = gui.getTargetName();
+        
+        if (getTargetExtension().length() == 0 || documentName.charAt(0) == '.') {
+            // ignore invalid filenames
+            setErrorMessage(NbBundle.getMessage(NewCndFileChooserPanel.class, "MSG_Invalid_File_Name"));
+            return false;
+        }
 
         if (!es.isKnownExtension(getTargetExtension())) {
             //MSG_new_extension_introduced
             String msg = NbBundle.getMessage(NewCndFileChooserPanel.class, "MSG_new_extension_introduced", getTargetExtension()); // NOI18N
 
             setErrorMessage(msg); // NOI18N
-
         }
+
+        // check if the file name can be created
+        String errorMessage = canUseFileName(gui.getTargetGroup().getRootFolder(), gui.getTargetFolder(), documentName, false);
+        setErrorMessage(errorMessage); // NOI18N
 
         return errorMessage == null;
     }

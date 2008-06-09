@@ -46,7 +46,9 @@
  */
 
 package org.netbeans.test.umllib;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETEdge;
+
+import org.netbeans.api.visual.widget.Widget;
+
 
 /**
  *
@@ -59,7 +61,7 @@ public interface LinkChooser {
      * @param link 
      * @return 
      */
-    public boolean checkLink(IETEdge link);
+    public boolean checkLink(Widget link);
     
     /**
      * 

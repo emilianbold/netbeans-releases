@@ -50,7 +50,7 @@ import org.netbeans.modules.visualweb.gravy.*;
  * @author <a href="mailto:alexey.butenko@sun.com">Alexey Butenko</a> */
 public class ShowProjectsAction extends Action{
     private static final String popup = null;
-    private static final String menuString = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Window")+"|"+Bundle.getStringTrimmed("org.netbeans.core.Bundle","Projects");
+    private static final String menuString = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle","Menu/Window")+"|"+Bundle.getStringTrimmed("org.netbeans.modules.compapp.projects.wizard.Bundle","LBL_projectTabLogical_tc");
     private static final Action.Shortcut shortcut = new Action.Shortcut(java.awt.event.KeyEvent.VK_1, java.awt.event.KeyEvent.CTRL_MASK);
 
     /** creates new CopyAction instance */

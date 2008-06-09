@@ -243,6 +243,11 @@ public class EventFunctor
 						objInstance.getClass().getName()
 						+ " with parameters: " + sayParams(parms));
                 Log.stackTrace(e);
+                System.out.println(e.getMessage() + " when invoking "
+						+ meth.getName() + "(" + sayParams(meth) + ") on " +
+						objInstance.getClass().getName()
+						+ " with parameters: " + sayParams(parms));
+                e.printStackTrace();
             }
 		}
 		return retObj;

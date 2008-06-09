@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="projectimport.eclipse.kit">
+    <description>Builds, tests, and runs the project org.netbeans.modules.projectimport.eclipse.kit</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
+    <target name="debug" description="Build related modules and debug them.">
+        <ant dir="../projectimport.eclipse.core" target="netbeans"/>
+        <ant dir="../projectimport.eclipse.j2se" target="netbeans"/>
+        <ant dir="../projectimport.eclipse.web" target="netbeans"/>
+        <antcall target="projectized.debug">
+            <param name="tryme.args" value="-J-Dnetbeans.exception.report.min.level=999999 -J-Dorg.netbeans.modules.projectimport.eclipse.level=0"/>
+        </antcall>
+    </target>
+</project>

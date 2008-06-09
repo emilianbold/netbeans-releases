@@ -43,11 +43,13 @@
 /*
  * LabelChooser.java
  *
- * Created on 16 Май 2005 г., 16:12
+ * Created on 16 пїЅпїЅпїЅ 2005 пїЅ., 16:12
  */
 
 package org.netbeans.test.umllib;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETLabel;
+
+import org.netbeans.api.visual.widget.Widget;
+
 
 
 public interface LabelChooser{
@@ -57,7 +59,7 @@ public interface LabelChooser{
      * @param label 
      * @return 
      */
-    public boolean checkLabel(IETLabel label);
+    public boolean checkLabel(Widget label);
     
     /**
      * 

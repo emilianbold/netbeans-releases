@@ -59,6 +59,10 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.hibernate.service.TableColumn;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -356,10 +360,12 @@ public abstract class Completor {
         private List<String> getDatabaseTableNamesForThisMappingFile(CompletionContext context) {
             List<String> tableNames = new ArrayList<String>();
             FileObject mappingFile = org.netbeans.modules.editor.NbEditorUtilities.getFileObject(context.getDocument());
-            org.netbeans.api.project.Project enclosingProject = org.netbeans.api.project.FileOwnerQuery.getOwner(
+            Project enclosingProject = FileOwnerQuery.getOwner(
                     mappingFile);
-            org.netbeans.modules.hibernate.service.HibernateEnvironment env = enclosingProject.getLookup().lookup(org.netbeans.modules.hibernate.service.HibernateEnvironment.class);
-            tableNames = env.getDatabaseTables(mappingFile);
+            HibernateEnvironment env = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
+            if(env != null) {
+                tableNames = env.getDatabaseTables(mappingFile);
+            } 
             return tableNames;
         }
     }
@@ -401,10 +407,12 @@ public abstract class Completor {
         private List<TableColumn> getColumnsForTable(CompletionContext context, String tableName) {
             List<TableColumn> tableColumns = new ArrayList<TableColumn>();
             FileObject currentFileObject = org.netbeans.modules.editor.NbEditorUtilities.getFileObject(context.getDocument());
-            org.netbeans.api.project.Project enclosingProject = org.netbeans.api.project.FileOwnerQuery.getOwner(
+            Project enclosingProject = FileOwnerQuery.getOwner(
                     currentFileObject);
-            org.netbeans.modules.hibernate.service.HibernateEnvironment env = enclosingProject.getLookup().lookup(org.netbeans.modules.hibernate.service.HibernateEnvironment.class);
-            tableColumns = env.getColumnsForTable(tableName, currentFileObject);
+            HibernateEnvironment env = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
+            if(env != null) {
+                tableColumns = env.getColumnsForTable(tableName, currentFileObject);
+            }
             return tableColumns;
         }
     }
@@ -470,11 +478,16 @@ public abstract class Completor {
         
         // Gets the list of mapping files from HibernateEnvironment.
         private String[] getMappingFilesFromProject(CompletionContext context) {
-            org.netbeans.api.project.Project enclosingProject = org.netbeans.api.project.FileOwnerQuery.getOwner(
-                    org.netbeans.modules.editor.NbEditorUtilities.getFileObject(context.getDocument())
+            Project enclosingProject = FileOwnerQuery.getOwner(
+                    NbEditorUtilities.getFileObject(context.getDocument())
                     );
-            org.netbeans.modules.hibernate.service.HibernateEnvironment env = enclosingProject.getLookup().lookup(org.netbeans.modules.hibernate.service.HibernateEnvironment.class);
-            return env.getAllHibernateMappings().toArray(new String[]{});
+            HibernateEnvironment env = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
+            if(env != null) {
+                return env.getAllHibernateMappings().toArray(new String[]{});
+            } else {
+                return new String[0];
+            }
+                
         }
     }
 }

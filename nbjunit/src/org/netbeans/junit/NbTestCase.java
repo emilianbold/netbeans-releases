@@ -1285,9 +1285,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             }
             return sum;
         } catch (Exception e) {
-            fail("Could not traverse reference graph");
+            throw new AssertionFailedErrorException("Could not traverse reference graph", e);
         }
-        return -1; // fail throws for sure
     }
 
     /**

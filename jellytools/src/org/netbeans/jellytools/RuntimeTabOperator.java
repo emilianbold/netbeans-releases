@@ -67,7 +67,7 @@ import org.netbeans.jemmy.operators.JTreeOperator;
  */
 public class RuntimeTabOperator extends TopComponentOperator {
 
-    static final String RUNTIME_CAPTION = Bundle.getString("org.netbeans.core.Bundle", "UI/Runtime");
+    static final String RUNTIME_CAPTION = Bundle.getString("org.netbeans.core.ide.resources.Bundle", "UI/Runtime");
     private static final RuntimeViewAction viewAction = new RuntimeViewAction();
     
     private JTreeOperator _tree;

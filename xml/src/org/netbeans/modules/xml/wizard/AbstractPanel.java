@@ -184,8 +184,10 @@ public abstract class AbstractPanel extends JPanel implements Customizer {
         }
 
         public boolean isValid() {
+            if(peer instanceof XMLContentPanel)
+              return ((XMLContentPanel)peer).isPanelValid();
             if(peer instanceof SchemaPanel){
-              return ((SchemaPanel)peer).isPanelValid();
+              return ((SchemaPanel)peer).isPanelValid();              
                 //if(num > 0 && ((SchemaPanel)peer).isPrimarySchemaSelected())
                 //    return true;
                //0 e//lse 

@@ -160,7 +160,7 @@ public class JavaEEWSSupportLookupProvider implements LookupProvider {
                             PortComponent[] ports = wsDesc.getPortComponent();
                             for (PortComponent port : ports) {
                                 if (JaxWsUtils.isInSourceGroup(prj, port.getServiceEndpointInterface())) {
-                                    result.put(port.getDisplayName(), wsDesc.getDisplayName());
+                                    result.put(port.getDisplayName(), port.getPortComponentName());
                                 }
                             }
 

@@ -459,7 +459,7 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
                             IDiagram diag = diagram.getDiagram();
                             if (diag != null)
                             {
-                                diag.setIsDirty(false);
+                                diag.setDirty(false);
                                 product.getDiagramManager().closeDiagram2(diag);
                             }
                         }

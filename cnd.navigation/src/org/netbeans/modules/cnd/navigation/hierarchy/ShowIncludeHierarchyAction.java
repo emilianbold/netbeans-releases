@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.navigation.hierarchy;
 
-import org.netbeans.modules.cnd.navigation.includeview.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -50,6 +49,8 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
+import org.openide.windows.Mode;
+import org.openide.windows.WindowManager;
 
 public final class ShowIncludeHierarchyAction extends CookieAction {
     
@@ -57,12 +58,30 @@ public final class ShowIncludeHierarchyAction extends CookieAction {
         CsmFile file = ContextUtils.findFile(activatedNodes);
         if (file != null){
             HierarchyTopComponent view = HierarchyTopComponent.findInstance();
-            view.setFile(file);
-            view.open();
-            view.requestActive();
+            if (!view.isOpened()) {
+                if (HierarchyTopComponent.USE_VIEW_AS_DIALOG) {
+                    if (!view.isUserOpenView()) {
+                        if (!view.isUserOpenDialog()) {
+                            Mode preferedMode = WindowManager.getDefault().findMode("rightSlidingSide");
+                            if (preferedMode != null) {
+                                preferedMode.dockInto(view);
+                            }
+                            view.setUserOpenDialog();
+                        }
+                    }
+                    view.open();
+                    view.setFile(file, true);
+                    view.requestActive();
+                } else {
+                    HierarchyDialog.show(file);
+                }
+            } else {
+                view.setFile(file, false);
+                view.requestActive();
+            }
         }
     }
-
+    
     @Override
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length > 0) {

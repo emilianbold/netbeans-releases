@@ -105,6 +105,10 @@ public class CompilerSetManager {
         initCompilerSets(Path.getPath());
     }
     
+    public CompilerSetManager(String host, String user) {
+        initRemoteCompilerSets();
+    }
+    
     public CompilerSetManager(ArrayList<CompilerSet> sets) {
         this.sets = sets;
     }
@@ -180,6 +184,10 @@ public class CompilerSetManager {
         HashSet flavors = new HashSet();
         
         for (String path : dirlist) {
+            if (path.equals("/usr/ucb")) { // NOI18N
+                // Don't look here.
+                continue;
+            }
             if (!IpeUtils.isPathAbsolute(path)) {
                 path = FileUtil.normalizeFile(new File(path)).getAbsolutePath();
             }
@@ -211,6 +219,18 @@ public class CompilerSetManager {
             }
         }
         completeCompilerSets();
+    }
+    
+    /** Initialize remote CompilerSets */
+    private void initRemoteCompilerSets() {
+        CompilerSetProvider provider = (CompilerSetProvider) Lookup.getDefault().lookup(CompilerSetProvider.class);
+        if (provider != null) {
+            while (provider.hasMoreCompilerSets()) {
+                add(provider.getNextCompilerSet());
+            }
+        } else {
+            throw new IllegalStateException();
+        }
     }
     
     public void initCompilerSet(CompilerSet cs) {

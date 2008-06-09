@@ -1343,7 +1343,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             boolean pairCompletion = Utilities.pairCharactersCompletion();
             if (inImport || params.isEmpty()) {
                 String add = inImport ? ";" : CodeStyle.getDefault(null).spaceBeforeMethodCallParen() ? " (" : "("; //NOI18N
-                if (pairCompletion)
+                if (pairCompletion && !inImport)
                     add += ")"; //NOI18N
                 if (toAdd != null && !add.startsWith(toAdd))
                     add += toAdd;

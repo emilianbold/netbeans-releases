@@ -355,14 +355,14 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         }
         final DummyNode[] dummyNodes = new DummyNode[1];
         dummyNodes[0] = new DummyNode(sheet, "Sheet"); // NOI18N
-	// It seems the IDE tem cannot fix IZ#129743
-	// So do work around...
-        //holder.setNodes(dummyNodes);
-	SwingUtilities.invokeLater(new Runnable() {
-	    public void run() {
-	        holder.setNodes(dummyNodes);
-	    }
-	});
+        holder.setNodes(dummyNodes);
+	// It seems the IDE team fixed IZ#129743
+	// So remove work around...
+	//SwingUtilities.invokeLater(new Runnable() {
+	//    public void run() {
+	//        holder.setNodes(dummyNodes);
+	//    }
+	//});
     
         preferences.addPreferenceChangeListener(this);
         lastSheetPreferences = preferences;

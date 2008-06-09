@@ -343,20 +343,17 @@ public final class ElementUtilities {
         Document doc = null;
         BaseDocument baseDoc = null;
 
-        try {
-            if (element instanceof IndexedFunction) {
-                doc = ((IndexedFunction)element).getDocument();
-                info = null;
-            } else if (info != null) {
-                doc = info.getDocument();
-            }
-
-            if (doc instanceof BaseDocument) {
-                baseDoc = (BaseDocument)doc;
-            }
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+        if (element instanceof IndexedFunction) {
+            doc = ((IndexedFunction)element).getDocument();
+            info = null;
+        } else if (info != null) {
+            doc = info.getDocument();
         }
+
+        if (doc instanceof BaseDocument) {
+            baseDoc = (BaseDocument)doc;
+        }
+
         return baseDoc;
     }
     

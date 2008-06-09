@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.callgraph.impl;
 
 import java.awt.event.ActionEvent;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -85,8 +84,7 @@ public class CallGraphAction extends CallableSystemAction {
     
     @Override
     public boolean isEnabled() {
-        //return true;
-        return CsmUtilities.isAnyNativeProjectOpened();
+        return true;
     }
     
     @Override

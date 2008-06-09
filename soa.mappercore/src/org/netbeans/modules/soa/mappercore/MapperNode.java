@@ -201,7 +201,9 @@ class MapperNode implements GraphListener {
         if (this.graphCollapsed != graphCollapsed) {
             this.graphCollapsed = graphCollapsed;
             invalidate();
-            repaint();
+            //repaint();
+            // If link go from LeftTree to RightTree It can change color
+            getMapper().repaint();
         }
     }
     

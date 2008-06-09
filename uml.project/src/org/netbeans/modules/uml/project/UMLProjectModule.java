@@ -115,7 +115,8 @@ public class UMLProjectModule extends ModuleInstall
 			{
                 
 			    DispatchHelper helper = new DispatchHelper();
-			    helper.registerDrawingAreaEvents(mModel.getDrawingAreaListener());
+                            // TODO: meteora
+//			    helper.registerDrawingAreaEvents(mModel.getDrawingAreaListener());
 			}
 //         });
             
@@ -130,7 +131,8 @@ public class UMLProjectModule extends ModuleInstall
 		    else
 		    {
 			DispatchHelper helper = new DispatchHelper();
-			helper.registerDrawingAreaEvents(mModel.getDrawingAreaListener());
+                        // TODO: meteora
+//			helper.registerDrawingAreaEvents(mModel.getDrawingAreaListener());
 		    }      
 		    lightInitialized = true;
 		}
