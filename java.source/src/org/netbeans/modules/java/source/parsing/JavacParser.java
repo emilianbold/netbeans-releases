@@ -95,7 +95,6 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenChange;
@@ -149,7 +148,7 @@ public class JavacParser extends Parser {
     //Timer logger
     private static final Logger TIME_LOGGER = Logger.getLogger("TIMER");        //NOI18N    
     //Debug logger    
-    private static final Logger LOGGER = Logger.getLogger(JavaSource.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(JavacParser.class.getName());
     //Java Mime Type
     public static final String MIME_TYPE = "text/x-java";
     //JavaFileObjectProvider used by the JavacParser - may be overriden by unit test
@@ -264,6 +263,7 @@ public class JavacParser extends Parser {
         assert task != null;
         assert Utilities.holdsParserLock();
         try {            
+            LOGGER.fine("parse: task: " + task.toString() +"\n" + snapshot.getText());      //NOI18N
             if (isSingleSource) {
                 init (snapshot, task, true);
                 boolean needsFullReparse = true;
@@ -274,11 +274,13 @@ public class JavacParser extends Parser {
                         this.changedMethod = null;
                     }
                     if (_changedMethod != null && ciImpl != null) {
+                        LOGGER.fine("\t:trying partial reparse");                           //NOI18N
                         needsFullReparse = !reparseMethod(ciImpl, snapshot, _changedMethod.second, _changedMethod.first.getText());
                     }
                 }
                 if (needsFullReparse) {
                     ciImpl = createCurrentInfo (this, file, root,snapshot, null);
+                    LOGGER.fine("\t:created new javac");                                    //NOI18N
                 }
             } 
             else {
@@ -296,12 +298,14 @@ public class JavacParser extends Parser {
     public JavacParserResult getResult (final Task task, SchedulerEvent event) throws ParseException {
         assert ciImpl != null;
         assert Utilities.holdsParserLock();
+        LOGGER.fine ("getResult: task:" + task.toString());                     //NOI18N
         //Assumes that caller is synchronized by the Parsing API lock
-        if (invalid) {                        
+        if (invalid) {
+            LOGGER.fine ("\t:invalid, reaprse");                                //NOI18N
             invalid = false;
             if (cachedSnapShot != null) {
                 parse (cachedSnapShot, task, event);
-            }
+            }            
         }
         final boolean isParserResultTask = task instanceof JavaParserResultTask;
         final boolean isUserTask = task instanceof MultiLanguageUserTask || task instanceof UserTask;
@@ -323,7 +327,7 @@ public class JavacParser extends Parser {
             result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationController(ciImpl));
         }
         else {
-            LOGGER.warning("Ignoring unknown task: " + task);
+            LOGGER.warning("Ignoring unknown task: " + task);                   //NOI18N
         }
         return result;
     }

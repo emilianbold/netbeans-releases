@@ -441,6 +441,11 @@ public final class JavaSource {
                             }
                         }
                         
+                        @Override 
+                        public String toString () {
+                            return this.getClass().getName()+"["+task.getClass().getName()+"]";     //NOI18N
+                        }
+                        
                         private Parser.Result findEmbeddedJava (final ResultIterator theMess) throws ParseException {
                             final Collection<Embedding> todo = new LinkedList<Embedding>();
                             //BFS should perform better than DFS in this dark.
@@ -551,6 +556,11 @@ public final class JavaSource {
                                 result.diffs.put(copy.getFileObject(), diffs);
                             }
                         }
+                    }
+                    
+                    @Override 
+                    public String toString () {
+                        return this.getClass().getName()+"["+task.getClass().getName()+"]";     //NOI18N
                     }
                 };                
                 ParserManager.parse(sources, _task);
