@@ -52,9 +52,9 @@
                 is handed one of its own parse trees, and it needs to answer two
                 questions:
                 <ol>
-                    <li>Is the given caret offset renamable? (And if not, provide
+                    <li>Is the given caret offset renameable? (And if not, provide
                         some error message to explain why, or an indication that refactoring
-                    needs to be involved.</li>
+                    needs to be involved.</li>)
                     <li>Produce a set of offset ranges (begin to end) for all the 
                         instances of this symbol that should be renamed together.
                     </li>
@@ -67,7 +67,7 @@
             <br/>
             <br/>
             One important thing to notice here is that on the GSF side, there
-            is <b>NO</b> interpretation fo the parser result in any way. GSF asks
+            is <b>NO</b> interpretation of the parser result in any way. GSF asks
             you to parse your code, and hands the parser result back to you
             as part of the implementation of many features.
         </p>
@@ -155,7 +155,7 @@
             that is not language specific.  Take mark occurrences for example.
             The only language specific thing there is determining, for a given offset,
             what the other corresponding occurrences are in terms of editor offsets.
-            Everyting else: ensuring that the parse information is up to date,
+            Everything else: ensuring that the parse information is up to date,
             listening on caret changes, painting highlights for the occurrences,
             defining and implementing "goto previous occurrence" and "goto next occurrence",
             and so on, should all be implemented in just one shared place.
@@ -197,7 +197,7 @@
                     from using it).
                     <br/><br/>
                     This facility is typically used to implement specific features.
-                    And the GSF Way is to implement the feature INSIDE Gsf, and expose
+                    And the GSF Way is to implement the feature INSIDE GSF, and expose
                     a lean feature API to other language clients. If it's a feature
                     needed for language A, chances are it's needed for language B
                     as well, and putting user <b>feature</b> code in language plugins
@@ -287,7 +287,7 @@
         <p>
             GSF uses the Lexer API in NetBeans directly. All GSF languages must provide
             a Lexer language. It must also be registered in the Editors mime folder.
-            See the <a href="#Registration">Registration</a> section for more details.
+            See the <a href="registration.html">Registration</a> section for more details.
         </p>
         
         <h3>Parsing</h3>
@@ -359,7 +359,7 @@
             Mark Occurrences is very similar to this. You implement the 
             <a href="org/netbeans/modules/gsf/api/OccurrencesFinder.html">OccurrencesFinder</a> interface,
             where you return a Set&lt;OffsetRange&gt; for the symbols that should be
-            highlighted as other occurences of the symbol at the given offset.
+            highlighted as other occurrences of the symbol at the given offset.
         </p>
         
         <h3>Other Features</h3>
