@@ -310,6 +310,16 @@ final class NewLoaderIterator extends BasicWizardIterator {
             fileChanges.add(
                 fileChanges.createLayerEntry(path, null, null, null, attrs)
             );
+            
+            // 7a. create test
+            String testName = model.getDefaultPackagePath(namePrefix + "DataObjectTest.java", false, true); // NOI18N
+            FileObject t = CreatedModifiedFiles.getTemplate("templateDataObjectInLayerTest.java");//NOI18N
+            
+            Map<String, String> testTokens = new HashMap<String, String>(replaceTokens);
+            testTokens.put("EXTENSION", getFirstExtension(model.getExtension()));//NOI18N
+            
+            fileChanges.add(fileChanges.createFileWithSubstitutions(testName, t, testTokens));
+            
         } else {
             // 7. register manifest entry
             boolean isXml = Pattern.matches("(application/([a-zA-Z0-9_.-])*\\+xml|text/([a-zA-Z0-9_.-])*\\+xml)", //NOI18N
