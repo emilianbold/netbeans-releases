@@ -42,6 +42,10 @@ package org.netbeans.modules.php.project.ui;
 /**
  * @author Tomas Mysik
  */
-public interface WebFolderNameProvider {
-    String getWebFolderName();
+public interface SourcesFolderNameProvider {
+    /**
+     * Get the name of the folder for sources.
+     * @return the name of the folder for sources.
+     */
+    String getSourcesFolderName();
 }

@@ -36,58 +36,75 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.ui.customizer;
+package org.netbeans.modules.php.project.ui.wizards;
 
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.MutableComboBoxModel;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.php.project.ui.CopyFilesVisual;
+import org.netbeans.modules.php.project.ui.LocalServer;
+import org.netbeans.modules.php.project.ui.SourcesFolderNameProvider;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
-import org.netbeans.modules.php.project.ui.customizer.RunAsValidator.InvalidUrlException;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
  * @author  Radek Matous, Tomas Mysik
  */
 public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
-    private static final long serialVersionUID = -5348981723432471L;
+    private static final long serialVersionUID = -53487456454387871L;
+    final ChangeSupport changeSupport = new ChangeSupport(this);
     private final JLabel[] labels;
     private final JTextField[] textFields;
     private final String[] propertyNames;
     private final String displayName;
-    final Category category;
+    private final CopyFilesVisual copyFilesVisual;
 
-    public RunAsLocalWeb(ConfigManager manager, Category category) {
-        this(manager, category, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ConfigLocalWeb"));
+    public RunAsLocalWeb(ConfigManager manager, SourcesFolderNameProvider sourcesFolderNameProvider) {
+        this(manager, sourcesFolderNameProvider, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ConfigLocalWeb"));
     }
 
-    private RunAsLocalWeb(ConfigManager manager, Category category, String displayName) {
+    private RunAsLocalWeb(ConfigManager manager, SourcesFolderNameProvider sourcesFolderNameProvider, String displayName) {
         super(manager);
-        this.category = category;
         this.displayName = displayName;
         initComponents();
+        copyFilesVisual = new CopyFilesVisual(sourcesFolderNameProvider);
+        copyFilesPanel.add(BorderLayout.NORTH, copyFilesVisual);
+
         this.labels = new JLabel[] {
             urlLabel,
-            indexFileLabel,
-            argsLabel
         };
         this.textFields = new JTextField[] {
             urlTextField,
-            indexFileTextField,
-            argsTextField
         };
         this.propertyNames = new String[] {
-            PhpProjectProperties.URL,
-            PhpProjectProperties.INDEX_FILE,
-            PhpProjectProperties.ARGS
+            RunConfigurationPanel.URL,
         };
         assert labels.length == textFields.length && labels.length == propertyNames.length;
         for (int i = 0; i < textFields.length; i++) {
             DocumentListener dl = new FieldUpdater(propertyNames[i], labels[i], textFields[i]);
             textFields[i].getDocument().addDocumentListener(dl);
         }
+        copyFilesVisual.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                changeSupport.fireChange();
+            }
+        });
+        runAsCombo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                changeSupport.fireChange();
+            }
+        });
     }
 
     @Override
@@ -122,13 +139,16 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     }
 
     protected void validateFields() {
-        String url = urlTextField.getText();
-        String indexFile = indexFileTextField.getText();
-        String args = argsTextField.getText();
+        // validation is done in RunConfigurationPanel
+        changeSupport.fireChange();
+    }
 
-        String err = RunAsValidator.validateWebFields(url, indexFile, args);
-        category.setErrorMessage(err);
-        category.setValid(err == null);
+    public void addRunAsLocalWebListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeRunAsLocalWebListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
 
     private class FieldUpdater extends TextFieldUpdater {
@@ -140,19 +160,38 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         protected final String getDefaultValue() {
             return RunAsLocalWeb.this.getDefaultValue(getPropName());
         }
+    }
 
-        @Override
-        protected void processUpdate() {
-            super.processUpdate();
-            String hint = ""; // NOI18N
-            try {
-                hint = RunAsValidator.composeUrlHint(urlTextField.getText(), indexFileTextField.getText(), argsTextField.getText());
-            } catch (InvalidUrlException ex) {
-                category.setErrorMessage(ex.getMessage());
-                category.setValid(false);
-            }
-            hintLabel.setText(hint);
-        }
+    public String getUrl() {
+        return urlTextField.getText().trim();
+    }
+
+    public void setUrl(String url) {
+        urlTextField.setText(url);
+    }
+
+    public boolean isCopyFiles() {
+        return copyFilesVisual.isCopyFiles();
+    }
+
+    public void setCopyFiles(boolean copyFiles) {
+        copyFilesVisual.setCopyFiles(copyFiles);
+    }
+
+    public LocalServer getLocalServer() {
+        return copyFilesVisual.getLocalServer();
+    }
+
+    public MutableComboBoxModel getLocalServerModel() {
+        return copyFilesVisual.getLocalServerModel();
+    }
+
+    public void setLocalServerModel(MutableComboBoxModel localServers) {
+        copyFilesVisual.setLocalServerModel(localServers);
+    }
+
+    public void selectLocalServer(LocalServer localServer) {
+        copyFilesVisual.selectLocalServer(localServer);
     }
 
     /** This method is called from within the constructor to
@@ -166,33 +205,17 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
 
         urlLabel = new javax.swing.JLabel();
         urlTextField = new javax.swing.JTextField();
-        indexFileLabel = new javax.swing.JLabel();
-        indexFileTextField = new javax.swing.JTextField();
-        argsLabel = new javax.swing.JLabel();
-        argsTextField = new javax.swing.JTextField();
-        hintLabel = new javax.swing.JTextArea();
         runAsLabel = new javax.swing.JLabel();
         runAsCombo = new javax.swing.JComboBox();
+        copyFilesPanel = new javax.swing.JPanel();
 
         urlLabel.setLabelFor(urlTextField);
         org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ProjectUrl")); // NOI18N
 
-        indexFileLabel.setLabelFor(indexFileTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(indexFileLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_IndexFile")); // NOI18N
-
-        argsLabel.setLabelFor(argsTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(argsLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_Arguments")); // NOI18N
-
-        hintLabel.setEditable(false);
-        hintLabel.setLineWrap(true);
-        hintLabel.setRows(2);
-        hintLabel.setWrapStyleWord(true);
-        hintLabel.setBorder(null);
-        hintLabel.setEnabled(false);
-        hintLabel.setOpaque(false);
-
         runAsLabel.setLabelFor(runAsCombo);
         org.openide.awt.Mnemonics.setLocalizedText(runAsLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_RunAs")); // NOI18N
+
+        copyFilesPanel.setLayout(new java.awt.BorderLayout());
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -202,17 +225,14 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
                 .add(runAsLabel)
                 .addContainerGap())
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(argsLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 72, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(indexFileLabel)
-                    .add(urlLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, hintLabel, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, argsTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, indexFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, runAsCombo, 0, 220, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(urlLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, runAsCombo, 0, 220, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE))))
                 .add(0, 0, 0))
         );
         layout.setVerticalGroup(
@@ -225,25 +245,12 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(urlLabel)
                     .add(urlTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
-                    .add(indexFileLabel)
-                    .add(indexFileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
-                    .add(argsLabel)
-                    .add(argsTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(hintLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .add(18, 18, 18)
+                .add(copyFilesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel argsLabel;
-    private javax.swing.JTextField argsTextField;
-    private javax.swing.JTextArea hintLabel;
-    private javax.swing.JLabel indexFileLabel;
-    private javax.swing.JTextField indexFileTextField;
+    private javax.swing.JPanel copyFilesPanel;
     private javax.swing.JComboBox runAsCombo;
     private javax.swing.JLabel runAsLabel;
     private javax.swing.JLabel urlLabel;
