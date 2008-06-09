@@ -59,6 +59,8 @@ import org.openide.util.WeakListeners;
  */
 public abstract class HighlighterBase implements PhaseRunner, LookupListener {
 
+    /*package*/ static final boolean MINIMAL = Boolean.getBoolean("cnd.highlighting.minimal");
+    
     private final String mime;
     private final OffsetsBag bag;
     private final WeakReference<BaseDocument> weakDoc;

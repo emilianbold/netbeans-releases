@@ -59,6 +59,7 @@ import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
+// XXX should have an API for this
 class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener {
     
     private Set files;

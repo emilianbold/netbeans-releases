@@ -14,6 +14,8 @@ public class TestSourceModelFactory extends SourceModelFactory {
     public SourceModel getModel(FileObject fo) {
         return new TestSourceModel(fo);
     }
+    
+    public static RubyTestBase currentTest;
 
     private class TestSourceModel implements SourceModel {
 
@@ -27,10 +29,14 @@ public class TestSourceModelFactory extends SourceModelFactory {
             try {
                 String text = RubyTestBase.read(fo);
                 BaseDocument doc = RubyTestBase.createDocument(text);
-                TestCompilationInfo testInfo = new TestCompilationInfo(null, fo, doc, text);
+                if (currentTest == null) {
+                    throw new RuntimeException("You must set TestSourceModelFactory.currentTest before running this test!");
+                }
+                TestCompilationInfo testInfo = new TestCompilationInfo(currentTest, fo, doc, text);
 
                 task.run(testInfo);
             } catch (Exception ex) {
+                ex.printStackTrace();
                 IOException ioe = new IOException();
                 ioe.initCause(ex);
                 

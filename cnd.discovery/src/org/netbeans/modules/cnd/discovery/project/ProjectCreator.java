@@ -179,7 +179,8 @@ public class ProjectCreator {
      * @return the helper object permitting it to be further customized
      * @throws java.io.IOException see createProject(File, String, String, Configuration[], Iterator, Iterator)
      */
-    public AntProjectHelper createProject(String name, String displayName, Set<String> folders) throws IOException {
+    public AntProjectHelper createProject(String name, String displayName, 
+            Set<String> folders, Set<String> libs) throws IOException {
         File dirF = new File(projectFolder);
         if (dirF != null) {
             dirF = FileUtil.normalizeFile(dirF);
@@ -241,7 +242,7 @@ public class ProjectCreator {
         AntProjectHelper h1 = null;
         makefileName = name + "-" + makefileName + ".mk"; // NOI18N
         h1 = createProject(dirF, displayName, makefileName, new MakeConfiguration[]{extConf},
-                it, importantItemsIterator, folders);
+                it, importantItemsIterator, folders, libs);
         return h1;
     }
 
@@ -253,11 +254,12 @@ public class ProjectCreator {
      * @throws IOException in case something went wrong
      */
     public AntProjectHelper createProject(File dir, String displayName, String makefileName, Configuration[] confs,
-                                          Iterator sourceFiles, Iterator importantItems, Set<String> folders) throws IOException {
+                            Iterator sourceFiles, Iterator importantItems,
+                            Set<String> folders, Set<String> libs) throws IOException {
         FileObject dirFO = createProjectDir(dir);
         AntProjectHelper h = createProject(dirFO, displayName, makefileName, confs, sourceFiles, importantItems);
         Project p = ProjectManager.getDefault().findProject(dirFO);
-        boolean successful = applyDiscovery(p, displayName, folders);
+        boolean successful = applyDiscovery(p, displayName, folders, libs);
         ProjectManager.getDefault().saveProject(p);
         if (!successful) {
             removeProjectDir(dir);
@@ -305,10 +307,11 @@ public class ProjectCreator {
         return h;
     }
 
-    private boolean applyDiscovery(Project project, String displayName, Set<String> folders) throws IOException{
+    private boolean applyDiscovery(Project project, String displayName, 
+            Set<String> folders, Set<String> libs) throws IOException{
         discovery.setProject(project);
         new DiscoveryProjectGenerator(discovery).process();
-        createAdditionalRequiredProjects(project, displayName, folders);
+        createAdditionalRequiredProjects(project, displayName, folders, libs);
         return true;
     }
     
@@ -426,83 +429,63 @@ public class ProjectCreator {
         }
         return paths;
     }
-    
-    private void createAdditionalRequiredProjects(Project project, String displayName, Set<String> folders){
+
+
+    private void createAdditionalRequiredProjects(Project project, String displayName, 
+            Set<String> folders, Set<String> libraries){
+        if (displayName.indexOf(".sources")>0 ||
+            displayName.indexOf(".libraries")>0 ||
+            displayName.indexOf(".uts")>0 ||
+            displayName.indexOf(".commands")>0) {
+            return;
+        }
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
         MakeConfiguration conf = (MakeConfiguration) makeConfigurationDescriptor.getConfs().getActive();
-        Set<String> paths = getIncludePaths(makeConfigurationDescriptor, conf);
-        Set<String> libs = new HashSet<String>();
         String name = displayName;
         if (displayName.indexOf('.')>0){
             name = displayName.substring(displayName.lastIndexOf('.')+1);
         }
-        for(String lib : paths){
-            String sub = null;
-            if (lib.indexOf("/usr/src/lib/") > 0){ // NOI18N
-               int s = lib.indexOf("/usr/src/lib/"); // NOI18N
-               sub = lib.substring(s+13);
-               if (sub.indexOf('/')>0){
-                   if (sub.startsWith("gss_mechs/")){ // NOI18N
-                       if(sub.indexOf('/',11) > 0) { // NOI18N
-                            sub = sub.substring(0,sub.indexOf('/',11)); // NOI18N
-                       }
-                   } else {
-                        sub = sub.substring(0,sub.indexOf('/')); // NOI18N
-                   }
+        Set<String> libs = new HashSet<String>();
+        if (name.equals("libc")){
+            libraries.remove("c");
+        } else {
+            libraries.add("c");
+        }
+        for(String lib : libraries){
+           lib = "lib"+lib;
+           String folder = null;
+           for(String f: folders){
+               if (f.endsWith("/"+lib)) { // NOI18N
+                   folder = f;
+                   break;
                }
-               if (name.equals(sub)) {
-                   continue;
+           }
+           if (folder == null) {
+               //System.out.println("Not found "+lib+" for "+displayName); // NOI18N
+               continue;
+           }
+           String[] prj = workingDir.substring(workingDir.indexOf("/usr/src/")+9).split("/");
+           String[] lbr = folder.split("/");
+           int start = 0;
+           for(int i = 0; i < prj.length; i++){
+               if(!prj[i].equals(lbr[i])){
+                   break;
                }
-               if (displayName.indexOf(".cmd.")>0) { // NOI18N
-                    sub = "../../lib/"+sub; // NOI18N
-               } else if (displayName.indexOf(".lib.")>0) { // NOI18Nelse {
-                    sub = "../"+sub; // NOI18N
-                    if (displayName.indexOf(".gss_mechs.")>0) {
-                        sub = "../"+sub; // NOI18N
-                    }
+               start++;
+           }
+           String res = "";
+           for(int i = start; i < prj.length; i++){
+                res += "../";
+           }
+           for(int i = start; i < lbr.length; i++){
+               if (res.length()>0 && res.charAt(res.length()-1)=='/'){
+                   res += lbr[i];
+               } else {
+                   res += "/"+lbr[i];
                }
-            } else if (lib.indexOf("/usr/src/cmd/") > 0){ // NOI18N
-               int s = lib.indexOf("/usr/src/cmd/"); // NOI18N
-               sub = lib.substring(s+13);
-               if (sub.indexOf('/')>0){ // NOI18N
-                   if (sub.startsWith("gss_mechs/")){ // NOI18N
-                       if(sub.indexOf('/',11) > 0) {
-                            sub =  sub.substring(0,sub.indexOf('/',11)); // NOI18N
-                       }
-                   } else {
-                        sub = sub.substring(0,sub.indexOf('/')); // NOI18N
-                   }
-               }
-               if (name.equals(sub)) {
-                   continue;
-               }
-               if (displayName.indexOf(".lib.")>0) { // NOI18N
-                    sub = "../../cmd/"+sub; // NOI18N
-               } else if (displayName.indexOf(".cmd.")>0) { // NOI18N
-                    sub = "../"+sub; // NOI18N
-               }
-            }
-            if (sub != null && sub.lastIndexOf("../") >=0 ){// NOI18N
-                int i = sub.lastIndexOf("../"); // NOI18N
-                String f = sub.substring(i+3);
-                if (f.startsWith("cmd") || f.startsWith("lib")) { // NOI18N
-                    if (!folders.contains(f)){
-                        continue;
-                    }
-                } else {
-                   if (displayName.indexOf(".cmd.")>0) { // NOI18N
-                        if (!folders.contains("cmd/"+f)){ // NOI18N
-                            continue;
-                        }
-                   } else {
-                        if (!folders.contains("lib/"+f)){ // NOI18N
-                            continue;
-                        }
-                   }
-                }
-                libs.add(sub);
-            }
+           }
+           libs.add(res);
         }
         for (String sub:libs){
             //System.out.println("Add Required Project "+sub+" in "+displayName); // NOI18N

@@ -70,6 +70,7 @@ import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.ui.status.SyncFileNode;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.versioning.util.Utils;
 
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
@@ -350,9 +351,12 @@ public class HgUtils {
         Set<Pattern> patterns = ignorePatterns.get(key);
         if (patterns == null) {
             patterns = new HashSet<Pattern>(5);
+        }
+        if (patterns.size() == 0) {
             addIgnorePatterns(patterns, file);
             ignorePatterns.put(key, patterns);
         }
+	
         return patterns;
     }
 
@@ -385,11 +389,11 @@ public class HgUtils {
                 return true;
             }
         }
+
         // If a parent of the file matches a pattern ignore the file
         File parentFile = file.getParentFile();
-        while (!parentFile.equals(topFile)) {
+        if (!parentFile.equals(topFile)) {
             if (isIgnored(parentFile, false)) return true;
-            parentFile = parentFile.getParentFile();
         }
 
         if (FILENAME_HGIGNORE.equals(file.getName())) return false;
@@ -1123,6 +1127,26 @@ itor tabs #66700).
         } else {
             return host.substring(idx + 1);
         }
+    }
+
+    /**
+     * Uses content analysis for unversioned files.
+     *
+     * @param file file to examine
+     * @return String mime type of the file (or best guess)
+     */
+    public static String getMimeType(File file) {
+        FileObject fo = FileUtil.toFileObject(file);
+        String foMime;
+        if (fo == null) {
+            foMime = "content/unknown";
+        } else {
+            foMime = fo.getMIMEType();
+        }
+        if(foMime.startsWith("text")) {
+            return foMime;
+        }
+        return Utils.isFileContentText(file) ? "text/plain" : "application/octet-stream";
     }
 
     /**

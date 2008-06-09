@@ -1559,6 +1559,8 @@ public class UnitTab extends javax.swing.JPanel {
     private class AddLocallyDownloadedAction extends TabAction {
         public AddLocallyDownloadedAction () {
             super ("UnitTab_bAddLocallyDownloads_Name", null);
+            topButton.getAccessibleContext ().setAccessibleName (NbBundle.getMessage(UnitTab.class, "UnitTab_bAddLocallyDownloads_ACN")); // NOI18N
+            topButton.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(UnitTab.class, "UnitTab_bAddLocallyDownloads_ACD")); // NOI18N
             String tooltip = NbBundle.getMessage (UnitTab.class, "UnitTab_Tooltip_AddAction_LOCAL");//NOI18N
             putValue (TOOL_TIP_TEXT_KEY, tooltip);
         }

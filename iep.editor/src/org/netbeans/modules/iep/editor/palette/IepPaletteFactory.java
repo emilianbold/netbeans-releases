@@ -40,11 +40,11 @@ public class IepPaletteFactory {
     private static PaletteController palette = null;
     
     public static PaletteController getPalette() {
-    	try {
+        try {
         if (palette == null)
             palette = PaletteFactory.createPalette(IEP_PALETTE_FOLDER, new TcgPaletteActions());//, null, new IepDragAndDropHandler());
             
-    	} catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         

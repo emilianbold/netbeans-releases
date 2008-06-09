@@ -275,9 +275,12 @@ public class DocumentationScrollPane extends JScrollPane {
     }
 
     private void openInExternalBrowser(){
-        URL url = currentDocumentation.getURL();
-        if (url != null)
-            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+        if (currentDocumentation != null) {
+            URL url = currentDocumentation.getURL();
+            if (url != null) {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+            }
+        }
     }
     
     private void goToSource() {

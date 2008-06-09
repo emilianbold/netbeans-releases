@@ -48,17 +48,21 @@ import org.w3c.dom.Element;
 
 import javax.xml.namespace.QName;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyQName;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
 public class AlgorithmSuiteFactories {
 
     public static class AlgorithmSuiteFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(AlgorithmSuiteQName.ALGORITHMSUITE.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new AlgorithmSuiteImpl(context.getModel()));
+            HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.ALGORITHMSUITE.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -69,10 +73,11 @@ public class AlgorithmSuiteFactories {
     public static class Basic128Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(AlgorithmSuiteQName.BASIC128.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new Basic128Impl(context.getModel()));
+            HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.BASIC128.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -83,10 +88,11 @@ public class AlgorithmSuiteFactories {
     public static class Basic192Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(AlgorithmSuiteQName.BASIC192.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new Basic192Impl(context.getModel()));
+            HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.BASIC192.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -97,10 +103,11 @@ public class AlgorithmSuiteFactories {
     public static class Basic256Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(AlgorithmSuiteQName.BASIC256.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new Basic256Impl(context.getModel()));
+            HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.BASIC256.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -111,10 +118,11 @@ public class AlgorithmSuiteFactories {
     public static class TripleDesFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(AlgorithmSuiteQName.TRIPLEDES.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new TripleDesImpl(context.getModel()));
+            HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.TRIPLEDES.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -126,10 +134,11 @@ public class AlgorithmSuiteFactories {
     public static class Basic128Rsa15Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(AlgorithmSuiteQName.BASIC128RSA15.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new Basic128Rsa15Impl(context.getModel()));
+            HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.BASIC128RSA15.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -140,10 +149,11 @@ public class AlgorithmSuiteFactories {
     public static class Basic192Rsa15Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(AlgorithmSuiteQName.BASIC192RSA15.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new Basic192Rsa15Impl(context.getModel()));
+            HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.BASIC192RSA15.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -154,10 +164,11 @@ public class AlgorithmSuiteFactories {
     public static class Basic256Rsa15Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(AlgorithmSuiteQName.BASIC256RSA15.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new Basic256Rsa15Impl(context.getModel()));
+            HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.BASIC256RSA15.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -168,10 +179,11 @@ public class AlgorithmSuiteFactories {
     public static class TripleDesRsa15Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(AlgorithmSuiteQName.TRIPLEDESRSA15.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new TripleDesRsa15Impl(context.getModel()));
+            HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.TRIPLEDESRSA15.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -183,10 +195,11 @@ public class AlgorithmSuiteFactories {
     public static class Basic128Sha256Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(AlgorithmSuiteQName.BASIC128SHA256.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new Basic128Sha256Impl(context.getModel()));
+            HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.BASIC128SHA256.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -197,10 +210,11 @@ public class AlgorithmSuiteFactories {
     public static class Basic192Sha256Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(AlgorithmSuiteQName.BASIC192SHA256.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new Basic192Sha256Impl(context.getModel()));
+            HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.BASIC192SHA256.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -211,10 +225,11 @@ public class AlgorithmSuiteFactories {
     public static class Basic256Sha256Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(AlgorithmSuiteQName.BASIC256SHA256.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new Basic256Sha256Impl(context.getModel()));
+            HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.BASIC256SHA256.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -225,10 +240,11 @@ public class AlgorithmSuiteFactories {
     public static class TripleDesSha256Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(AlgorithmSuiteQName.TRIPLEDESSHA256.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new TripleDesSha256Impl(context.getModel()));
+            HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.TRIPLEDESSHA256.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -240,10 +256,11 @@ public class AlgorithmSuiteFactories {
     public static class Basic128Sha256Rsa15Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(AlgorithmSuiteQName.BASIC128SHA256RSA15.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new Basic128Sha256Rsa15Impl(context.getModel()));
+            HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.BASIC128SHA256RSA15.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -254,10 +271,11 @@ public class AlgorithmSuiteFactories {
     public static class Basic192Sha256Rsa15Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(AlgorithmSuiteQName.BASIC192SHA256RSA15.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new Basic192Sha256Rsa15Impl(context.getModel()));
+            HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.BASIC192SHA256RSA15.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -268,10 +286,11 @@ public class AlgorithmSuiteFactories {
     public static class Basic256Sha256Rsa15Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(AlgorithmSuiteQName.BASIC256SHA256RSA15.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new Basic256Sha256Rsa15Impl(context.getModel()));
+            HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.BASIC256SHA256RSA15.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -282,10 +301,11 @@ public class AlgorithmSuiteFactories {
     public static class TripleDesSha256Rsa15Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(AlgorithmSuiteQName.TRIPLEDESSHA256RSA15.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new TripleDesSha256Rsa15Impl(context.getModel()));
+            HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.TRIPLEDESSHA256RSA15.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {

@@ -45,10 +45,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNPromptUserPassword;
 import org.tigris.subversion.svnclientadapter.SVNClientAdapterFactory;
@@ -57,6 +55,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 import org.tigris.subversion.svnclientadapter.commandline.CmdLineClientAdapterFactory;
 import org.tigris.subversion.svnclientadapter.javahl.JhlClientAdapterFactory;
 import org.tigris.subversion.svnclientadapter.javahl.JhlClientAdapter;
+import org.netbeans.modules.subversion.client.cli.CommandlineClient;
 
 /**
  * A SvnClient factory
@@ -94,8 +93,8 @@ public class SvnClientFactory {
     public synchronized static void init() {                        
         if(instance == null) {
             instance = new SvnClientFactory();
-            instance.setup();
         }
+        instance.setup();        
     }    
     
     /**
@@ -213,10 +212,16 @@ public class SvnClientFactory {
     
     public void setupCommandline () throws SVNClientException {
         exception = null;
-        setupComandlineFatory();
+        CommandlineClient cc = new CommandlineClient();
+        try {
+            cc.checkSupportedVersion();
+        } catch (SVNClientException ex) {
+            exception = ex;
+            return;
+        }
         factory = new ClientAdapterFactory() {
             protected ISVNClientAdapter createAdapter() {
-                return SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
+                return new CommandlineClient(); //SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
             }        
             protected SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
                 return new SvnCmdLineClientInvocationHandler(adapter, desc, support, handledExceptions);
@@ -227,33 +232,6 @@ public class SvnClientFactory {
         };       
         Subversion.LOG.fine("svnClientAdapter running on commandline client");        
     }                 
-    
-    private void setupComandlineFatory() throws SVNClientException {
-        String subversionPath = SvnModuleConfig.getDefault().getExecutableBinaryPath();
-        String usedSubversionPath = setupComandlineFatory(subversionPath);                
-        if(!usedSubversionPath.equals(instance)) {
-            SvnModuleConfig.getDefault().setExecutableBinaryPath(usedSubversionPath);
-        }        
-    }
-    
-    private String setupComandlineFatory(String subversionPath) throws SVNClientException {
-        try {
-            CmdLineClientAdapterFactory.setup13(subversionPath);
-            return subversionPath;
-        } catch(SVNClientException e) {
-            if(Utilities.isMac() || Utilities.isUnix()) {
-                for(String location : CMDLINE_LOCATIONS) {
-                    try {
-                        CmdLineClientAdapterFactory.setup13(location);
-                        return location;
-                    } catch(SVNClientException ex) {                        
-                        continue;
-                    }
-                }
-            }
-            throw e;
-        }
-    }
     
     private abstract class ClientAdapterFactory {
                 

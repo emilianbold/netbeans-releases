@@ -83,6 +83,7 @@ public enum CSSTokenId implements TokenId {
     
     EOF("default"),
     S("whitespace_comment"),
+    MSE("ms_expression"),
     LBRACE("brace"),
     RBRACE("brace"),
     COMMA("separator"),
@@ -162,6 +163,8 @@ public enum CSSTokenId implements TokenId {
     
     private final String primaryCategory;
 
+    private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
+    
     CSSTokenId(String primaryCategory) {
         this.primaryCategory = primaryCategory;
     }
@@ -190,6 +193,21 @@ public enum CSSTokenId implements TokenId {
         @Override
         protected LanguageEmbedding embedding(
                 Token<CSSTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+            if(token.text() == null) {
+                return null;
+            }
+            if (token.id() == MSE) {
+                Language lang = Language.find(JAVASCRIPT_MIMETYPE);
+                if (lang == null) {
+                    return null; //no language found
+                } else {
+                    //expression(
+                    //01234567890
+                    String tokenImage = token.text().toString();
+                    int lastParenthesisIndex = tokenImage.lastIndexOf(')');
+                    return LanguageEmbedding.create(lang, 11, token.length() - lastParenthesisIndex, false);
+                }
+            }
             return null;
         }
 

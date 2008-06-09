@@ -49,7 +49,6 @@ import java.util.*;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.util.regex.Pattern;
 import javax.lang.model.element.*;
 import static javax.lang.model.element.ElementKind.*;
 import static javax.lang.model.element.Modifier.*;
@@ -917,7 +916,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                         Elements elements = controller.getElements();
                         for (TypeMirror ex : exs)
-                            if (ex.getKind() == TypeKind.DECLARED && Utilities.startsWith(((DeclaredType)ex).asElement().getSimpleName().toString(), prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType)ex).asElement())))
+                            if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType)ex).asElement().getSimpleName().toString(), prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType)ex).asElement())))
                                 results.add(JavaCompletionItem.createTypeItem((TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, true, elements.isDeprecated(((DeclaredType)ex).asElement()), false, true));
                     }
                     addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable")), null, false); //NOI18N
@@ -936,7 +935,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             Set<TypeMirror> exs = controller.getTreeUtilities().getUncaughtExceptions(new TreePath(path, mth.getBody()));
                             Elements elements = controller.getElements();
                             for (TypeMirror ex : exs)
-                                if (ex.getKind() == TypeKind.DECLARED && Utilities.startsWith(((DeclaredType)ex).asElement().getSimpleName().toString(), prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType)ex).asElement())))
+                                if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType)ex).asElement().getSimpleName().toString(), prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType)ex).asElement())))
                                     results.add(JavaCompletionItem.createTypeItem((TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, true, elements.isDeprecated(((DeclaredType)ex).asElement()), false, true));
                         }
                         addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable")), null, false); //NOI18N
@@ -1086,7 +1085,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         String name = e.getSimpleName().toString();
                         if (hasOnlyValue < 2)
                             hasOnlyValue += "value".equals(name) ? 1 : 2; //NOI18N
-                        if (!names.contains(name) && Utilities.startsWith(name, prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)))
+                        if (!names.contains(name) && startsWith(env, name, prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)))
                             results.add(JavaCompletionItem.createAttributeItem((ExecutableElement)e, (ExecutableType)e.asType(), anchorOffset, elements.isDeprecated(e)));
                     }
                 }
@@ -1398,7 +1397,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 for (TypeMirror ex : exs)
                                     if (ex.getKind() == TypeKind.DECLARED) {
                                         Element e = ((DeclaredType)ex).asElement();
-                                        if (e.getEnclosingElement() == el && Utilities.startsWith(e.getSimpleName().toString(), prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)))
+                                        if (e.getEnclosingElement() == el && startsWith(env, e.getSimpleName().toString(), prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)))
                                             results.add(JavaCompletionItem.createTypeItem((TypeElement)e, (DeclaredType)ex, anchorOffset, true, elements.isDeprecated(e), insideNew, true));
                                     }
                             } else {
@@ -1424,7 +1423,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     for (TypeMirror ex : exs)
                                         if (ex.getKind() == TypeKind.DECLARED) {
                                             Element e = ((DeclaredType)ex).asElement();
-                                            if (e.getEnclosingElement() == el && Utilities.startsWith(e.getSimpleName().toString(), prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)))
+                                            if (e.getEnclosingElement() == el && startsWith(env, e.getSimpleName().toString(), prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)))
                                                 results.add(JavaCompletionItem.createTypeItem((TypeElement)e, (DeclaredType)ex, anchorOffset, true, elements.isDeprecated(e), false, true));
                                         }
                                 }
@@ -1561,7 +1560,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     Set<TypeMirror> exs = controller.getTreeUtilities().getUncaughtExceptions(path.getParentPath());
                     Elements elements = controller.getElements();
                     for (TypeMirror ex : exs)
-                        if (ex.getKind() == TypeKind.DECLARED && Utilities.startsWith(((DeclaredType)ex).asElement().getSimpleName().toString(), prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType)ex).asElement())))
+                        if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType)ex).asElement().getSimpleName().toString(), prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType)ex).asElement())))
                             results.add(JavaCompletionItem.createTypeItem((TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, true, elements.isDeprecated(((DeclaredType)ex).asElement()), false, true));
                 }
                 addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable")), null, false); //NOI18N
@@ -2277,7 +2276,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (illegalForwardRefs.contains(e) || ((VariableElement)e).getConstantValue() == null)
                                 return false;
                         case ENUM_CONSTANT:
-                            return Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
+                            return startsWith(env, e.getSimpleName().toString(), prefix) &&
                                     (!isStatic || e.getModifiers().contains(STATIC)) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     tu.isAccessible(scope, e, t);
@@ -2319,7 +2318,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                                 public boolean accept(Element e, TypeMirror t) {
                                     return (!isStatic || e.getModifiers().contains(STATIC)) &&
-                                            Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
+                                            startsWith(env, e.getSimpleName().toString(), prefix) &&
                                             tu.isAccessible(scope, e, t) &&
                                             (e.getKind().isField() && isOfSmartType(env, ((VariableElement)e).asType(), finalSmartTypes) || e.getKind() == METHOD && isOfSmartType(env, ((ExecutableElement)e).getReturnType(), finalSmartTypes));
                                 }
@@ -2345,7 +2344,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         case LOCAL_VARIABLE:
                         case EXCEPTION_PARAMETER:
                         case PARAMETER:
-                            return Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
+                            return startsWith(env, e.getSimpleName().toString(), prefix) &&
                                     (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL) ||
                                     (method == null && (e.getEnclosingElement().getKind() == INSTANCE_INIT ||
                                     e.getEnclosingElement().getKind() == STATIC_INIT))) &&
@@ -2354,13 +2353,13 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (e.getSimpleName().contentEquals(THIS_KEYWORD) || e.getSimpleName().contentEquals(SUPER_KEYWORD))
                                 return Utilities.startsWith(e.getSimpleName().toString(), prefix) && !isStatic;
                         case ENUM_CONSTANT:
-                            return Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
+                            return startsWith(env, e.getSimpleName().toString(), prefix) &&
                                     !illegalForwardRefs.contains(e) &&
                                     (!isStatic || e.getModifiers().contains(STATIC)) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     tu.isAccessible(scope, e, t);
                         case METHOD:
-                            return Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
+                            return startsWith(env, e.getSimpleName().toString(), prefix) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     (!isStatic || e.getModifiers().contains(STATIC)) &&
                                     tu.isAccessible(scope, e, t);
@@ -2412,14 +2411,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                         case LOCAL_VARIABLE:
                         case EXCEPTION_PARAMETER:
                         case PARAMETER:
-                            return Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
+                            return startsWith(env, e.getSimpleName().toString(), prefix) &&
                                     (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL) ||
                                     (method == null && (e.getEnclosingElement().getKind() == INSTANCE_INIT ||
                                     e.getEnclosingElement().getKind() == STATIC_INIT))) &&
                                     !illegalForwardRefs.contains(e);
                         case FIELD:
                             return !e.getSimpleName().contentEquals(THIS_KEYWORD) && !e.getSimpleName().contentEquals(SUPER_KEYWORD) &&
-                                    !isStatic && Utilities.startsWith(e.getSimpleName().toString(), prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e));
+                                    !isStatic && startsWith(env, e.getSimpleName().toString(), prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e));
                     }
                     return false;
                 }
@@ -2455,7 +2454,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             final TypeMirror enclType = enclClass != null ? enclClass.asType() : null;
             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
-                    if (!Utilities.startsWith(e.getSimpleName().toString(), prefix) ||
+                    if (!startsWith(env, e.getSimpleName().toString(), prefix) ||
                             (isStatic && !e.getModifiers().contains(STATIC)))
                         return false;
                     switch (e.getKind()) {
@@ -2513,7 +2512,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 public boolean accept(Element e, TypeMirror t) {
                     switch (e.getKind()) {
                         case FIELD:
-                            if (!Utilities.startsWith(e.getSimpleName().toString(), prefix))
+                            if (!startsWith(env, e.getSimpleName().toString(), prefix))
                                 return false;
                             if (e.getSimpleName().contentEquals(THIS_KEYWORD) || e.getSimpleName().contentEquals(SUPER_KEYWORD)) {
                                 boolean b = false;
@@ -2535,12 +2534,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                         case EXCEPTION_PARAMETER:
                         case LOCAL_VARIABLE:
                         case PARAMETER:
-                            return Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
+                            return startsWith(env, e.getSimpleName().toString(), prefix) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(asMemberOf(e, t, types), e, kinds, baseType, scope, trees, types) &&
                                     tu.isAccessible(scope, e, t);
                         case METHOD:
-                            return Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
+                            return startsWith(env, e.getSimpleName().toString(), prefix) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(((ExecutableType)asMemberOf(e, t, types)).getReturnType(), e, kinds, baseType, scope, trees, types) &&
                                     (isSuperCall && e.getModifiers().contains(PROTECTED) || tu.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t)) &&
@@ -2549,7 +2548,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         case ENUM:
                         case INTERFACE:
                         case ANNOTATION_TYPE:
-                            return Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
+                            return startsWith(env, e.getSimpleName().toString(), prefix) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types) &&
                                     tu.isAccessible(scope, e, t) && isStatic;
@@ -2632,7 +2631,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             for(Element e : elem.getEnclosedElements()) {
                 if (e.getKind() == ENUM_CONSTANT) {
                     String name = e.getSimpleName().toString();
-                    if (Utilities.startsWith(name, prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)))
+                    if (startsWith(env, name, prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)))
                         results.add(JavaCompletionItem.createVariableItem((VariableElement)e, e.asType(), anchorOffset, false, elements.isDeprecated(e), false));
                 }
             }
@@ -2649,7 +2648,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             for(Element e : pe.getEnclosedElements()) {
                 if (e.getKind().isClass() || e.getKind().isInterface()) {
                     String name = e.getSimpleName().toString();
-                        if (Utilities.startsWith(name, prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && trees.isAccessible(scope, (TypeElement)e) && isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types)) {
+                        if (startsWith(env, name, prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && trees.isAccessible(scope, (TypeElement)e) && isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types)) {
                             results.add(JavaCompletionItem.createTypeItem((TypeElement)e, (DeclaredType)e.asType(), anchorOffset, false, elements.isDeprecated(e), insideNew, isOfSmartType(env, e.asType(), smartTypes)));
                     }
                 }
@@ -2863,6 +2862,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 for (Tree t : argTypes)
                     types[j++] = controller.getTrees().getTypeMirror(new TreePath(path, t));
                 List<Pair<ExecutableElement, ExecutableType>> methods = null;
+                String name = null;
                 Tree mid = mit.getMethodSelect();
                 path = new TreePath(path, mid);
                 switch (mid.getKind()) {
@@ -2911,7 +2911,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 }
                             }
                         };
-                        String name = ((IdentifierTree)mid).getName().toString();
+                        name = ((IdentifierTree)mid).getName().toString();
                         if (SUPER_KEYWORD.equals(name) && enclClass != null) {
                             TypeMirror superclass = enclClass.getSuperclass();
                             methods = getMatchingExecutables(superclass, controller.getElementUtilities().getMembers(superclass, acceptor), INIT, types, controller.getTypes());
@@ -2920,6 +2920,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             methods = getMatchingExecutables(thisclass, controller.getElementUtilities().getMembers(thisclass, acceptor), INIT, types, controller.getTypes());
                         } else {
                             methods = getMatchingExecutables(enclClass != null ? enclClass.asType() : null, controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), name, types, controller.getTypes());
+                            name = null;
                         }
                         break;
                     }
@@ -2928,7 +2929,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     Elements elements = controller.getElements();
                     for (Pair<ExecutableElement, ExecutableType> method : methods)
                         if (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(method.a))
-                            results.add(JavaCompletionItem.createParametersItem(method.a, method.b, anchorOffset, elements.isDeprecated(method.a), types.length));
+                            results.add(JavaCompletionItem.createParametersItem(method.a, method.b, anchorOffset, elements.isDeprecated(method.a), types.length, name));
                 }
             }
         }
@@ -2961,7 +2962,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 Elements elements = controller.getElements();
                 for (Pair<ExecutableElement, ExecutableType> ctor : ctors)
                     if (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(ctor.a))
-                        results.add(JavaCompletionItem.createParametersItem(ctor.a, ctor.b, anchorOffset, elements.isDeprecated(ctor.a), types.length));
+                        results.add(JavaCompletionItem.createParametersItem(ctor.a, ctor.b, anchorOffset, elements.isDeprecated(ctor.a), types.length, null));
             }
         }
 
@@ -3257,13 +3258,13 @@ public class JavaCompletionProvider implements CompletionProvider {
             Types types = controller.getTypes();
             DeclaredType clsType = (DeclaredType)te.asType();            
             for (ExecutableElement ee : GeneratorUtils.findUndefs(controller, te)) {
-                if (Utilities.startsWith(ee.getSimpleName().toString(), prefix)) {
+                if (startsWith(env, ee.getSimpleName().toString(), prefix)) {
                     ExecutableType type = (ExecutableType)types.asMemberOf(clsType, ee);                    
                     results.add(JavaCompletionItem.createOverrideMethodItem(ee, type, anchorOffset, true));
                 }
             }            
             for (ExecutableElement ee : GeneratorUtils.findOverridable(controller, te)) {
-                if (Utilities.startsWith(ee.getSimpleName().toString(), prefix)) {
+                if (startsWith(env, ee.getSimpleName().toString(), prefix)) {
                     ExecutableType type = (ExecutableType)types.asMemberOf(clsType, ee);                    
                     results.add(JavaCompletionItem.createOverrideMethodItem(ee, type, anchorOffset, false));
                 }
@@ -3295,7 +3296,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     }
                 }
             }
-            if (Utilities.startsWith(te.getSimpleName().toString(), prefix)) {
+            if (startsWith(env, te.getSimpleName().toString(), prefix)) {
                 final Set<VariableElement> initializedFields = new LinkedHashSet<VariableElement>();
                 final Set<VariableElement> uninitializedFields = new LinkedHashSet<VariableElement>();
                 final List<ExecutableElement> constructors = new ArrayList<ExecutableElement>();
@@ -3444,11 +3445,11 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (prefix.length() == 0)
                 return data;
             List ret = new ArrayList();
-            boolean camelCase = prefix.length() > 1 && camelCasePattern.matcher(prefix).matches();
+            boolean camelCase = isCamelCasePrefix(prefix);
             for (Iterator<JavaCompletionItem> it = data.iterator(); it.hasNext();) {
                 CompletionItem itm = it.next();
                 if (Utilities.startsWith(itm.getInsertPrefix().toString(), prefix)
-                        || (camelCase && (itm instanceof JavaCompletionItem.ClassItem || itm instanceof LazyTypeCompletionItem) && Utilities.startsWithCamelCase(itm.getInsertPrefix().toString(), prefix)))
+                        || (camelCase && Utilities.startsWithCamelCase(itm.getInsertPrefix().toString(), prefix)))
                     ret.add(itm);
             }
             return ret;
@@ -3891,11 +3892,6 @@ public class JavaCompletionProvider implements CompletionProvider {
             return null;
         }
         
-        private TokenSequence<JavaTokenId> findFirstNonWhitespaceToken(Env env, Tree tree, int position) {
-            int startPos = (int)env.getSourcePositions().getStartPosition(env.getRoot(), tree);
-            return findFirstNonWhitespaceToken(env, startPos, position);
-        }
-        
         private TokenSequence<JavaTokenId> findFirstNonWhitespaceToken(Env env, int startPos, int endPos) {
             TokenSequence<JavaTokenId> ts = env.getController().getTokenHierarchy().tokenSequence(JavaTokenId.language());
             ts.move(startPos);
@@ -4335,7 +4331,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
 
             public long getEndPosition(CompilationUnitTree compilationUnitTree, Tree tree) {
-                if (endOffset >= 0 && (tree == root))
+                if (tree == root)
                     return endOffset;
                 found = false;
                 scan(root, tree);
@@ -4351,7 +4347,15 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
                 
-        private static Pattern camelCasePattern = Pattern.compile("(?:\\p{javaUpperCase}(?:\\p{javaLowerCase}|\\p{Digit}|\\.|\\$)*){2,}"); // NOI18N
+        private static boolean isCamelCasePrefix(String prefix) {
+            if (prefix == null || prefix.length() < 2)
+                return false;
+            for (int i = 1; i < prefix.length(); i++) {
+                if (Character.isUpperCase(prefix.charAt(i)))
+                        return true;                
+            }
+            return false;
+        }
         
         private class Env {
             private int offset;
@@ -4370,7 +4374,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             private Env(int offset, String prefix, CompilationController controller, TreePath path, SourcePositions sourcePositions, Scope scope) {
                 this.offset = offset;
                 this.prefix = prefix;
-                this.isCamelCasePrefix = prefix != null && prefix.length() > 1 && camelCasePattern.matcher(prefix).matches();
+                this.isCamelCasePrefix = JavaCompletionQuery.isCamelCasePrefix(prefix);
                 this.controller = controller;
                 this.path = path;
                 this.sourcePositions = sourcePositions;

@@ -366,7 +366,7 @@ public class PlanEditorSupport extends DataEditorSupport
     }
     
     @Override
-	public Task reloadDocument() {
+    public Task reloadDocument() {
         Task task = super.reloadDocument();
         task.addTaskListener(new TaskListener() {
             public void taskFinished(Task task) {
@@ -402,7 +402,7 @@ public class PlanEditorSupport extends DataEditorSupport
             }
             IEPModel model = getModel();
             if (model != null) {
-            	model.removeUndoableEditListener(undo);
+                model.removeUndoableEditListener(undo);
             }
             // Must unset the model when no longer listening to it.
             undo.setModel(null);
@@ -424,12 +424,12 @@ public class PlanEditorSupport extends DataEditorSupport
         QuietUndoManager undo = getUndoManager();
         StyledDocument doc = getDocument();
         synchronized (undo) {
-        	IEPModel model = getModel();
-        	if (model != null) {
-        		model.removeUndoableEditListener(undo);
-        	}
-        	// Must unset the model when no longer listening to it.
-        	undo.setModel(null);
+            IEPModel model = getModel();
+            if (model != null) {
+                model.removeUndoableEditListener(undo);
+            }
+            // Must unset the model when no longer listening to it.
+            undo.setModel(null);
             // Document may be null if the cloned views are not behaving correctly.
             if (doc != null) {
                 // Ensure the listener is not added twice.
@@ -491,7 +491,7 @@ public class PlanEditorSupport extends DataEditorSupport
 
     public void save() {
         try {
-        	PlanDataObject dataObj = (PlanDataObject) getDataObject();
+            PlanDataObject dataObj = (PlanDataObject) getDataObject();
             Date planLastModified = dataObj.getPrimaryFile().lastModified();
             
             File wsdlFile = getModel().getWsdlFile();
@@ -506,7 +506,7 @@ public class PlanEditorSupport extends DataEditorSupport
                     getModel().saveWsdl();
                 }         
            } else {
-        	   getModel().saveWsdl();
+               getModel().saveWsdl();
            }                  
            
            //mStatusBar.setDirty(false);

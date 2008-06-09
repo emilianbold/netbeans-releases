@@ -42,15 +42,16 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.EditRegions;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.EditList;
+import org.netbeans.modules.gsf.api.HintFix;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.PreviewableFix;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.hints.spi.AstRule;
-import org.netbeans.modules.ruby.hints.spi.Description;
-import org.netbeans.modules.ruby.hints.spi.EditList;
-import org.netbeans.modules.ruby.hints.spi.Fix;
-import org.netbeans.modules.ruby.hints.spi.HintSeverity;
-import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
-import org.netbeans.modules.ruby.hints.spi.RuleContext;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.NbBundle;
 
@@ -67,12 +68,12 @@ import org.openide.util.NbBundle;
  *
  * @author Tor Norbye
  */
-public class BlockVarReuse implements AstRule {
+public class BlockVarReuse extends RubyAstRule {
 
     public BlockVarReuse() {
     }
 
-    public boolean appliesTo(CompilationInfo info) {
+    public boolean appliesTo(RuleContext context) {
         return true;
     }
 
@@ -96,29 +97,28 @@ public class BlockVarReuse implements AstRule {
         return NbBundle.getMessage(BlockVarReuse.class, "UnintentionalSideEffectDesc");
     }
 
-    public void run(RuleContext context, List<Description> result) {
+    public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
         CompilationInfo info = context.compilationInfo;
 
         if (node.nodeId == NodeType.ITERNODE) {
             // Check the children and see if we have a LocalAsgnNode; these are going
             // to be local variable reuses
-            @SuppressWarnings(value = "unchecked")
             List<Node> list = node.childNodes();
 
             for (Node child : list) {
                 if (child.nodeId == NodeType.LOCALASGNNODE) {
 
                     OffsetRange range = AstUtilities.getNameRange(child);
-                    List<Fix> fixList = new ArrayList<Fix>(2);
+                    List<HintFix> fixList = new ArrayList<HintFix>(2);
                     Node root = AstUtilities.getRoot(info);
                     AstPath childPath = new AstPath(root, child);
-                    fixList.add(new RenameVarFix(info, childPath, false));
-                    fixList.add(new RenameVarFix(info, childPath, true));
+                    fixList.add(new RenameVarFix(context, childPath, false));
+                    fixList.add(new RenameVarFix(context, childPath, true));
 
                     range = LexUtilities.getLexerOffsets(info, range);
                     if (range != OffsetRange.NONE) {
-                        Description desc = new Description(this, getDisplayName(), info.getFileObject(), range, fixList, 100);
+                        Hint desc = new Hint(this, getDisplayName(), info.getFileObject(), range, fixList, 100);
                         result.add(desc);
                     }
                 }
@@ -128,14 +128,12 @@ public class BlockVarReuse implements AstRule {
 
     private static class RenameVarFix implements PreviewableFix {
 
-        private CompilationInfo info;
+        private final RubyRuleContext context;
+        private final AstPath path;
+        private final boolean renameLocal;
 
-        private AstPath path;
-
-        private boolean renameLocal;
-
-        RenameVarFix(CompilationInfo info, AstPath path, boolean renameLocal) {
-            this.info = info;
+        RenameVarFix(RubyRuleContext context, AstPath path, boolean renameLocal) {
+            this.context = context;
             this.path = path;
             this.renameLocal = renameLocal;
         }
@@ -163,22 +161,24 @@ public class BlockVarReuse implements AstRule {
             }
 
             // Initiate synchronous editing:
-            EditRegions.getInstance().edit(info.getFileObject(), ranges, caretOffset);
+            EditRegions.getInstance().edit(context.compilationInfo.getFileObject(), ranges, caretOffset);
         }
 
         private void addNonBlockRefs(Node node, String name, Set<OffsetRange> ranges) {
             if ((node.nodeId == NodeType.LOCALASGNNODE || node.nodeId == NodeType.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
                 OffsetRange range = AstUtilities.getNameRange(node);
-                range = LexUtilities.getLexerOffsets(info, range);
+                range = LexUtilities.getLexerOffsets(context.compilationInfo, range);
                 if (range != OffsetRange.NONE) {
                     ranges.add(range);
                 }
             }
 
-            @SuppressWarnings(value = "unchecked")
             List<Node> list = node.childNodes();
 
             for (Node child : list) {
+                if (child.isInvisible()) {
+                    continue;
+                }
 
                 // Skip inline method defs
                 if (child.nodeId == NodeType.DEFNNODE || child.nodeId == NodeType.DEFSNODE) {
@@ -227,7 +227,7 @@ public class BlockVarReuse implements AstRule {
         }
 
         public EditList getEditList() throws Exception {
-            BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = context.doc;
             EditList edits = new EditList(doc);
             Set<OffsetRange> ranges = findRegionsToEdit();
             String oldName = ((INameNode)path.leaf()).getName();

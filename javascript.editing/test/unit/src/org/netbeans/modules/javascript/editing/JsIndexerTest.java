@@ -44,7 +44,6 @@ package org.netbeans.modules.javascript.editing;
 import java.util.List;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.IndexDocument;
-import org.netbeans.modules.gsf.api.Indexer;
 
 /**
  * @author Tor Norbye
@@ -55,11 +54,6 @@ public class JsIndexerTest extends JsTestBase {
         super(testName);
     }
 
-    @Override
-    public Indexer getIndexer() {
-        return new JsIndexer();
-    }
-    
     @Override
     public String prettyPrintValue(String key, String value) {
         if (value == null) {
@@ -379,5 +373,9 @@ public class JsIndexerTest extends JsTestBase {
 
     public void testWebui() throws Exception {
         checkIndexer("testfiles/bubble.js");
+    }
+
+    public void testXHR() throws Exception {
+        checkIndexer("testfiles/stub_dom_XMLHttpRequest.js");
     }
 }

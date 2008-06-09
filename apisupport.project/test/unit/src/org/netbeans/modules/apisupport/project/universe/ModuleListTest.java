@@ -190,10 +190,6 @@ public class ModuleListTest extends TestBase {
         assertNotNull(e.getProvidedTokens());
         assertTrue("There are some provided tokens", e.getProvidedTokens().length > 0);
         // XXX test that getAllEntries() also includes nonstandard modules, and so does getKnownEntries() if necessary
-        // Test a nonstandard module:
-        e = ml.getEntry("org.netbeans.modules.looks");
-        assertNotNull(e);
-        assertEquals("right path", "contrib/looks", e.getNetBeansOrgPath());
     }
     
     public void testExternalEntries() throws Exception {

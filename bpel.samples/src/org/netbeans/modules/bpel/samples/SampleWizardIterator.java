@@ -44,22 +44,18 @@ import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 
-import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.filesystems.Repository;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 
 public abstract class SampleWizardIterator implements WizardDescriptor.InstantiatingIterator {
     
@@ -69,7 +65,7 @@ public abstract class SampleWizardIterator implements WizardDescriptor.Instantia
     public static final String NAME = "name"; // NOI18N
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
-    public transient WizardDescriptor wiz;
+    private transient WizardDescriptor wiz;
     private FileObject dir;
  
     protected WizardDescriptor.Panel[] createPanels() {
@@ -77,7 +73,7 @@ public abstract class SampleWizardIterator implements WizardDescriptor.Instantia
     }
     
     protected String[] createSteps() {
-      return new String[] { NbBundle.getMessage(SampleWizardIterator.class, "MSG_SampleProject") };
+      return new String[] { NbBundle.getMessage(SampleWizardIterator.class, "MSG_SampleProject")}; // NOI18N
     }
 
     protected FileObject getProjectDir() {
@@ -103,15 +99,15 @@ public abstract class SampleWizardIterator implements WizardDescriptor.Instantia
           resultSet.add(dir);
           FileObject dirParent = dir.getParent();
 
-          resultSet.addAll(createCompositeApplicationProject(dirParent, name + "Application"));
+          resultSet.addAll(createCompositeApplicationProject(dirParent, name + "Application")); // NOI18N
         }});
         return resultSet;
     }
     
     protected abstract Set<FileObject> createCompositeApplicationProject(FileObject projectDir, String name) throws IOException;
 
-    public void initialize(WizardDescriptor wiz) {
-        this.wiz = wiz;
+    public void initialize(WizardDescriptor aWiz) {
+        this.wiz = aWiz;
         index = 0;
         panels = createPanels();
         // Make sure list of steps is accurate.
@@ -135,7 +131,7 @@ public abstract class SampleWizardIterator implements WizardDescriptor.Instantia
         }
     }
 
-    public void uninitialize(WizardDescriptor wiz) {
+    public void uninitialize(WizardDescriptor aWiz) {
         this.wiz.putProperty(PROJECT_DIR, null);
         this.wiz.putProperty(NAME,null);
         this.wiz = null;
@@ -143,7 +139,7 @@ public abstract class SampleWizardIterator implements WizardDescriptor.Instantia
     }
     
     public String name() {
-      return MessageFormat.format("{0} of {1}", new Object[] {new Integer (index + 1), new Integer (panels.length)});
+      return MessageFormat.format("{0} of {1}", new Object[] {new Integer (index + 1), new Integer (panels.length)}); // NOI18N
     }
     
     public boolean hasNext() {

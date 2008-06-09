@@ -127,14 +127,14 @@ public class RetoucheUtils {
     }
     
     public static BaseDocument getDocument(CompilationInfo info, FileObject fo) {
-        try {
-            BaseDocument doc = null;
+        BaseDocument doc = null;
 
-            if (info != null) {
-                doc = (BaseDocument)info.getDocument();
-            }
+        if (info != null) {
+            doc = (BaseDocument)info.getDocument();
+        }
 
-            if (doc == null) {
+        if (doc == null) {
+            try {
                 // Gotta open it first
                 DataObject od = DataObject.find(fo);
                 EditorCookie ec = od.getCookie(EditorCookie.class);
@@ -142,14 +142,12 @@ public class RetoucheUtils {
                 if (ec != null) {
                     doc = (BaseDocument)ec.openDocument();
                 }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
-
-            return doc;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-
-            return null;
         }
+
+        return doc;
     }
     
     

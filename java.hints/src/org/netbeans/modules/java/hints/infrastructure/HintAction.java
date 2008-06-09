@@ -34,6 +34,7 @@ import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.TextAction;
 import org.netbeans.api.java.source.JavaSource;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -45,9 +46,10 @@ import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 
-public abstract class HintAction extends AbstractAction implements PropertyChangeListener {
+public abstract class HintAction extends TextAction implements PropertyChangeListener {
     
     protected HintAction() {
+        super(null);
         putValue("noIconInMenu", Boolean.TRUE); //NOI18N
         
         TopComponent.getRegistry().addPropertyChangeListener(WeakListeners.propertyChange(this, TopComponent.getRegistry()));

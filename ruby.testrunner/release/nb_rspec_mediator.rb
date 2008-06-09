@@ -50,19 +50,35 @@ class NbRspecMediator < Spec::Runner::ExampleGroupRunner
   def run
     prepare
     success = true
+    if @options.line_number != nil
+      @spec_parser = NbSpecParser.new
+      @spec_parser.spec_name_for(@options.files[0], @options.line_number)
+    end
+
+    overall_start_time = Time.now
     example_groups.each do |example_group|
+      if (@spec_parser != nil && example_group.description != @spec_parser.example_group_description)
+        next
+      end
+      example_group_start_time = Time.now
       puts "%SUITE_STARTING% #{example_group.description}"
       success = success & example_group.run
-      puts "%SUITE_FINISHED% #{example_group.description}"
+      elapsed_time = Time.now - example_group_start_time
+      puts "%SUITE_FINISHED% #{example_group.description} time=#{elapsed_time}"
     end
+    @duration = Time.now - overall_start_time
     return success
   ensure
+    reporter.duration = @duration
     finish
   end
 
   protected
   def reporter
-    Reporter.new(@options)
+    if @reporter.nil?
+      @reporter = Reporter.new(@options)
+    end
+    @reporter
   end
 
 end
@@ -70,26 +86,69 @@ end
 # TODO: probably would be better to use a formatter instead
 class Reporter < Spec::Runner::Reporter
 
+  attr_accessor :duration
+  def duration
+    @duration
+  end
+  
   def example_started(example)
+    start_timer
     puts "%TEST_STARTED% #{example.description}"
     super
   end
       
   def failure(example, error)
-    puts "%TEST_FAILED% #{example.description}"
+    backtrace_tweaker.tweak_backtrace(error)
+    puts "%TEST_FAILED% #{example.description} time=#{elapsed_time} message=#{error.message} location=#{error.backtrace[0]}"
     super
   end
   alias_method :example_failed, :failure
 
   private
   def example_passed(example)
-    puts "%TEST_FINISHED% #{example.description}"
+    puts "%TEST_FINISHED% #{example.description} time=#{elapsed_time}"
     super
   end
       
   def example_pending(example_group, example, message="Not Yet Implemented")
-    puts "%TEST_PENDING% #{example.description}"
+    puts "%TEST_PENDING% #{example.description} time=#{elapsed_time} #{message}"
     super
   end
+  
+  def start_timer
+    @start_time = Time.now
+  end
+  
+  def elapsed_time
+    Time.now - @start_time
+  end
 
+end
+
+class NbSpecParser < Spec::Runner::SpecParser
+  
+  attr_reader :example_group_description, :example_description
+  
+  def spec_name_for(file, line_number)
+    best_match.clear
+    file = File.expand_path(file)
+    rspec_options.example_groups.each do |example_group|
+      consider_example_groups_for_best_match example_group, file, line_number
+      example_group.examples.each do |example|
+        consider_example_for_best_match example, example_group, file, line_number
+      end
+    end
+    if best_match[:example_group]
+      @example_group_description = best_match[:example_group].description
+      if best_match[:example]
+        @example_description = best_match[:example].description
+        "#{best_match[:example_group].description}  #{best_match[:example].description}"
+      else
+        best_match[:example_group].description
+      end
+    else
+      nil
+    end
+  end
+  
 end

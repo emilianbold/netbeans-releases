@@ -330,6 +330,14 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         performTest("package test;\npublic class Test extends java.util.ArrayList<String> {\n}\n", new ALConstructorTask(30), null);
     }
     
+    public void testConstructor134673a() throws Exception {
+        performTest("package test;\npublic class Test extends java.io.RandomAccessFile {\n}\n", new ConstructorTask(30, 2, 0), null);
+    }
+    
+    public void testConstructor134673b() throws Exception {
+        performTest("package test;\npublic class Test extends G<java.io.IOException> {\n} class G<T extends Throwable> {public G() throws T {}}\n", new ConstructorTask(30), null);
+    }
+    
     public void testGetter() throws Exception {
         performTest("package test;\npublic class Test {\nprivate int test;\npublic Test(){\n}\n }\n", new GetterSetterTask(34, true), new GetterSetterValidator(true));
     }
@@ -670,10 +678,18 @@ public class GeneratorUtilitiesTest extends NbTestCase {
 
     private static class ConstructorTask implements CancellableTask<WorkingCopy> {        
     
-        private int offset;
+        private final int numCtors;
+        private final int ctorToUse;
+        private final int offset;
         
         public ConstructorTask(int offset) {
+            this(offset, 1, 0);
+        }
+
+        public ConstructorTask(int offset, int numCtors, int ctorToUse) {
             this.offset = offset;
+            this.numCtors = numCtors;
+            this.ctorToUse = ctorToUse;
         }
         
         public void cancel() {
@@ -692,10 +708,10 @@ public class GeneratorUtilitiesTest extends NbTestCase {
             List<? extends ExecutableElement> ctors = sup.getQualifiedName().contentEquals("java.lang.Object")
                     ? null : ElementFilter.constructorsIn(sup.getEnclosedElements());
             if (ctors != null)
-                assertEquals(1, ctors.size());
+                assertEquals(numCtors, ctors.size());
             GeneratorUtilities utilities = GeneratorUtilities.get(copy);
             assertNotNull(utilities);
-            ClassTree newCt = utilities.insertClassMember(ct, utilities.createConstructor(te, vars, ctors != null ? ctors.get(0) : null));
+            ClassTree newCt = utilities.insertClassMember(ct, utilities.createConstructor(te, vars, ctors != null ? ctors.get(ctorToUse) : null));
             copy.rewrite(ct, newCt);
         }
     }

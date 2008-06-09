@@ -44,6 +44,10 @@ import org.netbeans.api.visual.border.Border;
 
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import org.netbeans.api.visual.widget.ResourceTable;
+import org.netbeans.api.visual.widget.Widget;
 
 /**
  * @author David Kaspar
@@ -56,6 +60,8 @@ public final class RoundedBorder implements Border {
     private int insetHeight;
     private Color fillColor;
     private Color drawColor;
+    private DrawResourceTableListener drawListener = null;
+    private FillResourceTableListener fillListener = null;
 
     public RoundedBorder (int arcWidth, int arcHeight, int insetWidth, int insetHeight, Color fillColor, Color drawColor) {
         this.arcWidth = arcWidth;
@@ -65,7 +71,41 @@ public final class RoundedBorder implements Border {
         this.fillColor = fillColor;
         this.drawColor = drawColor;
     }
-
+    
+    public RoundedBorder (int arcWidth, int arcHeight, int insetWidth, int insetHeight, 
+                          String fillProperty,  String drawProperty,  
+                          Widget assocaited) {
+        this(arcWidth, arcHeight, insetWidth, insetHeight, 
+             fillProperty, drawProperty, assocaited.getResourceTable());
+    }
+    
+    public RoundedBorder (int arcWidth, int arcHeight, int insetWidth, int insetHeight, 
+                          String fillProperty,  String drawProperty,  
+                          ResourceTable table) {
+        this.arcWidth = arcWidth;
+        this.arcHeight = arcHeight;
+        this.insetWidth = insetWidth;
+        this.insetHeight = insetHeight;
+        
+        
+        Object value = table.getProperty(fillProperty);
+        if(value instanceof Color)
+        {
+            this.fillColor = (Color)value;
+        }
+        
+        value = table.getProperty(drawProperty);
+        if(value instanceof Color)
+        {
+            this.drawColor = (Color)value;
+        }
+        
+        drawListener = new DrawResourceTableListener();
+        fillListener = new FillResourceTableListener();
+        table.addPropertyChangeListener(fillProperty, fillListener);
+        table.addPropertyChangeListener(drawProperty, drawListener);
+    }
+  
     public Insets getInsets () {
         return new Insets (insetHeight, insetWidth, insetHeight, insetWidth);
     }
@@ -84,5 +124,21 @@ public final class RoundedBorder implements Border {
     public boolean isOpaque () {
         return false;
     }
-
+    
+    public class DrawResourceTableListener implements PropertyChangeListener
+    {
+        public void propertyChange(PropertyChangeEvent event)
+        {
+            drawColor = (Color)event.getNewValue();
+        }
+    }
+    
+    public class FillResourceTableListener implements PropertyChangeListener
+    {
+        public void propertyChange(PropertyChangeEvent event)
+        {
+            fillColor = (Color)event.getNewValue();
+        }
+    }
+    
 }

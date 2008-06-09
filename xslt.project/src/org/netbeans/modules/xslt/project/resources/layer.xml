@@ -22,9 +22,6 @@
     <folder name="Templates">
         <folder name="Project">
             <folder name="SOA">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.project.wizard.Bundle"/>
-                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xslt/project/resources/ejbjar.html"/>
-
                 <file name="emptyXsltpro.xml">
                     <attr name="template" boolvalue="true"/>
                     <attr name="position" intvalue="500"/>

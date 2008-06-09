@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
 import org.netbeans.modules.subversion.client.cli.SvnCommand.Arguments;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -80,8 +81,17 @@ public class ListPropertiesCommand extends SvnCommand {
     }
     
     @Override
+    protected boolean notifyOutput() {
+        return false;
+    }    
+    
+    @Override
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.PROPLIST;
+    }
+    
+    @Override
     public void prepareCommand(Arguments arguments) throws IOException {
-        // XXX what if empty url list?
         arguments.add("proplist");
         if (rec) {
             arguments.add("-R");

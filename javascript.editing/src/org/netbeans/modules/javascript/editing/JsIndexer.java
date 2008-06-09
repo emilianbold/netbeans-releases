@@ -130,7 +130,7 @@ public class JsIndexer implements Indexer {
     private boolean cachedIndexable;
     
     public String getIndexVersion() {
-        return "6.114"; // NOI18N
+        return "6.115"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -938,22 +938,23 @@ public class JsIndexer implements Indexer {
         return null;
     }
     
-    private static FileObject preindexedDb;
-
-    /** For testing only */
-    public static void setPreindexedDb(FileObject preindexedDb) {
-        JsIndexer.preindexedDb = preindexedDb;
-    }
+//    private static FileObject preindexedDb;
+//
+//    /** For testing only */
+//    public static void setPreindexedDb(FileObject preindexedDb) {
+//        JsIndexer.preindexedDb = preindexedDb;
+//    }
     
     public FileObject getPreindexedDb() {
-        if (preindexedDb == null) {
-            File preindexed = InstalledFileLocator.getDefault().locate(
-                    "preindexed-javascript", "org.netbeans.modules.javascript.editing", false); // NOI18N
-            if (preindexed == null || !preindexed.isDirectory()) {
-                throw new RuntimeException("Can't locate preindexed directory. Installation might be damaged"); // NOI18N
-            }
-            preindexedDb = FileUtil.toFileObject(preindexed);
-        }
-        return preindexedDb;
+//        if (preindexedDb == null) {
+//            File preindexed = InstalledFileLocator.getDefault().locate(
+//                    "preindexed-javascript", "org.netbeans.modules.javascript.editing", false); // NOI18N
+//            if (preindexed == null || !preindexed.isDirectory()) {
+//                throw new RuntimeException("Can't locate preindexed directory. Installation might be damaged"); // NOI18N
+//            }
+//            preindexedDb = FileUtil.toFileObject(preindexed);
+//        }
+//        return preindexedDb;
+        return null;
     }
 }

@@ -49,12 +49,14 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.db.core.SQLOptions;
+import org.netbeans.modules.db.sql.history.SQLHistoryManager;
 
 /**
  * Support class for executing SQL statements.
@@ -122,6 +124,9 @@ public final class SQLExecuteHelper {
                 }
                 long executionTime = System.currentTimeMillis() - startTime;
                 totalExecutionTime += executionTime;
+
+                // Save SQL statements executed for the SQLHistoryManager
+                SQLHistoryManager.getInstance().saveSQL(new SQLHistory(sql, conn.getMetaData().getURL(), new Date(startTime)));
 
                 if (isResultSet) {
                     result = new SQLExecutionResult(info, stmt, stmt.getResultSet(), executionTime);

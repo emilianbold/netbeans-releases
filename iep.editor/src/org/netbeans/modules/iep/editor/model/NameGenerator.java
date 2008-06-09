@@ -13,9 +13,9 @@ import org.netbeans.modules.iep.model.lib.TcgComponentType;
 
 public class NameGenerator {
 
-	private static final int MAX_COUNT = 1000000000;
-	
-	public static String generateNewName(Component parent, TcgComponentType ct) {
+    private static final int MAX_COUNT = 1000000000;
+    
+    public static String generateNewName(Component parent, TcgComponentType ct) {
         String tn = ct.getName();
         List<Component> list = parent.getChildComponents();
         
@@ -23,7 +23,7 @@ public class NameGenerator {
                 String name = tn + i;
                 boolean exist = false;
                 for (int j = 0, J = list.size(); j < J; j++) {
-                	Component c = list.get(j);
+                    Component c = list.get(j);
                     if (c.getName().equalsIgnoreCase(name)) {
                         exist = true;
                         break;
@@ -36,8 +36,8 @@ public class NameGenerator {
         
         return null;
     }
-	
-	public static String generateNewName(OperatorComponentContainer parent, TcgComponentType ct) {
+    
+    public static String generateNewName(OperatorComponentContainer parent, TcgComponentType ct) {
         String tn = ct.getName();
         List<OperatorComponent> list = parent.getAllOperatorComponent();
         
@@ -45,7 +45,7 @@ public class NameGenerator {
                 String name = tn + i;
                 boolean exist = false;
                 for (int j = 0, J = list.size(); j < J; j++) {
-                	OperatorComponent c = list.get(j);
+                    OperatorComponent c = list.get(j);
                     if (c.getDisplayName().equalsIgnoreCase(name)) {
                         exist = true;
                         break;
@@ -58,7 +58,7 @@ public class NameGenerator {
         
         return null;
     }
-	public static String generateId(OperatorComponentContainer parent, String prefix) {
+    public static String generateId(OperatorComponentContainer parent, String prefix) {
         
             for (int i = 0; i < MAX_COUNT; i++) {
                 String id = prefix + i;
@@ -70,18 +70,18 @@ public class NameGenerator {
          
         return null;
     }
-	
-	public static String generateSchemaName(SchemaComponentContainer parent) {
-		String prefix = "schema"; //NOTI18N
-		String schemaName = generateSchemaName(parent, prefix);
-		
-		return schemaName;
-	}
-	
+    
+    public static String generateSchemaName(SchemaComponentContainer parent) {
+        String prefix = "schema"; //NOTI18N
+        String schemaName = generateSchemaName(parent, prefix);
+        
+        return schemaName;
+    }
+    
         public static String generateSchemaName(SchemaComponentContainer parent, List<String> skipTheseSchemaNames) {
-		String prefix = "schema"; //NOTI18N
-		
-		for (int i = 0; i < MAX_COUNT; i++) {
+        String prefix = "schema"; //NOTI18N
+        
+        for (int i = 0; i < MAX_COUNT; i++) {
                     String name = prefix + i;
                     if ((parent.findSchema(name) == null) && !skipTheseSchemaNames.contains(name)) {
                         return name;
@@ -89,9 +89,9 @@ public class NameGenerator {
                 }
             
             return null;
-	}
+    }
         
-	public static String generateSchemaName(SchemaComponentContainer parent, String prefix) {
+    public static String generateSchemaName(SchemaComponentContainer parent, String prefix) {
         for (int i = 0; i < MAX_COUNT; i++) {
             String name = prefix + i;
             if (parent.findSchema(name) == null) {
@@ -100,15 +100,15 @@ public class NameGenerator {
         }
         return null;
     }
-	
-	public static String generateLinkName(LinkComponentContainer parent) {
-		String prefix = "link"; //NOTI18N
-		String schemaName = generateLinkName(parent, prefix);
-		
-		return schemaName;
-	}
-	
-	public static String generateLinkName(LinkComponentContainer parent, String prefix) {
+    
+    public static String generateLinkName(LinkComponentContainer parent) {
+        String prefix = "link"; //NOTI18N
+        String schemaName = generateLinkName(parent, prefix);
+        
+        return schemaName;
+    }
+    
+    public static String generateLinkName(LinkComponentContainer parent, String prefix) {
         for (int i = 0; i < MAX_COUNT; i++) {
             String name = prefix + i;
             if (parent.findLink(name) == null) {

@@ -44,6 +44,8 @@ Contributor(s):
 <bindings>
     <bind actionName="comment" key="DS-T"/>
     <bind actionName="uncomment" key="DS-D"/>  
+    <bind actionName="complete-line" key="D-SEMICOLON"/>
+    <bind actionName="complete-line-newline" key="DS-SEMICOLON"/>
     <!-- 
         the next line is to prevent user from confusing.
         otherwise goto-super-implementation which is disabled for

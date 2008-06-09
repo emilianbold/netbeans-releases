@@ -58,6 +58,7 @@ import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.*;
+import java.util.ArrayList;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
@@ -68,6 +69,7 @@ import org.netbeans.modules.cnd.modelimpl.cache.impl.FileCacheImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
@@ -91,6 +93,9 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.CharSeq;
+import org.openide.util.Utilities;
 
 /**
  * CsmFile implementations
@@ -161,7 +166,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * This is necessary for finding definitions/declarations 
      * since file-level static functions (i.e. c-style static functions) aren't registered in project
      */
-    private Collection<CsmUID<CsmFunction>> staticFunctionDeclarationUIDs;
+    private Collection<CsmUID<CsmFunction>> staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>();
     
     /** For test purposes only */
     public interface Hook {
@@ -608,6 +613,90 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     };
     
+    static class SimpleErrorInfo implements CsmErrorInfo {
+    
+        private int startOffset;
+        private int endOffset;
+        private String text;
+
+        public SimpleErrorInfo(int startOffset, int endOffset, String text) {
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
+            this.text = text;
+        }
+
+        public int getStartOffset() {
+            return startOffset;
+        }
+        
+        public int getEndOffset() {
+            return endOffset;
+        }
+
+        public String getMessage() {
+            return text;
+        }
+
+        public Severity getSeverity() {
+            return Severity.ERROR;
+        }
+    }
+            
+    Collection<CsmErrorInfo> getErrors(final BaseDocument doc) {
+        final Collection<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
+        CPPParserEx.ErrorDelegate delegate = new CPPParserEx.ErrorDelegate() {
+            public void onError(String message, int line, int column) {
+                CharSeq text = doc.getText();
+                int start = 0;
+                int currLine = 1;
+                char LF = Utilities.isMac() ? '\r' : '\n'; // NOI18N
+                while (start < text.length() && currLine < line) {
+                    char c = text.charAt(start++);
+                    if( c == LF ) { 
+                        currLine++;
+                    }
+                }
+                //start += column;
+                int end = start+1;
+                while (end < text.length()) {
+                    if(  text.charAt(end++) == LF ) { // NOI18N
+                        break;
+                    }
+                }
+                end--;
+                result.add(new SimpleErrorInfo(start, end, message));
+            }
+        };
+        // FIXUP (up to the end of the function)
+        // should be changed with setting appropriate flag and using common parsing mechanism
+        // (Now doParse performs too many actions that should NOT be performed if parsing just for getting errors;
+        // making this actions conditional will make doParse code spaghetty-like. That's why I use this fixup)
+        // Another issue to be solved is threading and cancellation
+        if( TraceFlags.TRACE_ERROR_PROVIDER ) System.err.printf("\n\n>>> Start parsing (getting errors) %s \n", getName());
+        long time = TraceFlags.TRACE_ERROR_PROVIDER ? System.currentTimeMillis() : 0;
+        APTPreprocHandler preprocHandler = getPreprocHandler();
+        ProjectBase startProject = ProjectBase.getStartProject(preprocHandler.getState());
+        int flags = CPPParserEx.CPP_CPLUSPLUS;
+        if( ! TraceFlags.TRACE_ERROR_PROVIDER ) {
+            flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
+        }
+        try {
+            APTFile aptFull = APTDriver.getInstance().findAPT(this.getBuffer());
+            APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler);
+            CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter()), flags);
+            parser.setErrorDelegate(delegate);
+            parser.setLazyCompound(false);
+            parser.translation_unit();
+        } catch (IOException ex) {
+            DiagnosticExceptoins.register(ex);
+        } catch (Error ex){
+            System.err.println(ex.getClass().getName()+" at parsing file "+fileBuffer.getFile().getAbsolutePath()); // NOI18N
+            throw ex;
+        }
+        if( TraceFlags.TRACE_ERROR_PROVIDER ) System.err.printf("<<< Done parsing (getting errors) %s %d ms\n\n\n", getName(), System.currentTimeMillis() - time);
+        return result;
+    }
+    
     private AST doParse(APTPreprocHandler preprocHandler) {
 //        if( "cursor.hpp".equals(fileBuffer.getFile().getName()) ) {
 //            System.err.println("cursor.hpp");
@@ -937,9 +1026,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     private void addStaticFunctionDeclaration(FunctionImpl func) {
-        if( staticFunctionDeclarationUIDs == null ) {
-            staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>();
-        }
         staticFunctionDeclarationUIDs.add(func.getUID());
     }
 
@@ -949,11 +1035,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * since file-level static functions (i.e. c-style static functions) aren't registered in project
      */
     public Collection<CsmFunction> getStaticFunctionDeclarations() {
-        if( staticFunctionDeclarationUIDs == null ) {
-            return Collections.<CsmFunction>emptyList();
-        } else {
-            return new LazyCsmCollection<CsmFunction, CsmFunction>(new ArrayList<CsmUID<CsmFunction>>(staticFunctionDeclarationUIDs), true);
-        }
+        return new LazyCsmCollection<CsmFunction, CsmFunction>(new ArrayList<CsmUID<CsmFunction>>(staticFunctionDeclarationUIDs), true);
     }
     
     public static boolean isOfFileScope(VariableImpl v) {
@@ -1050,7 +1132,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                     fixFakes = wait;
                 } else {
                     while( ! isParsed() ) {
-                        ParserQueue.instance().addFirst(this, ppState, false);
+                        ParserQueue.instance().add(this, ppState, ParserQueue.Position.HEAD);
                         //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("  !prs " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
                         if( wait ) {
                             stateLock.wait();
@@ -1063,7 +1145,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 }
             } else {
                 while( ! isParsed() ) {
-                    ParserQueue.instance().addFirst(this, ppState, false);
+                    ParserQueue.instance().add(this, ppState, ParserQueue.Position.HEAD);
                     //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("  !prs " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
                     if( wait ) {
                         stateLock.wait();
@@ -1156,6 +1238,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         guardState.write(output);
 	output.writeLong(lastParsed);
 	output.writeUTF(state.toString());
+        UIDObjectFactory.getDefaultFactory().writeUIDCollection(staticFunctionDeclarationUIDs, output, false);
     }
     
     public FileImpl(DataInput input) throws IOException {
@@ -1179,6 +1262,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         guardState = new GuardBlockState(input);
 	lastParsed = input.readLong();
         state = State.valueOf(input.readUTF());
+        UIDObjectFactory.getDefaultFactory().readUIDCollection(staticFunctionDeclarationUIDs, input);
     }
 
     public @Override int hashCode() {

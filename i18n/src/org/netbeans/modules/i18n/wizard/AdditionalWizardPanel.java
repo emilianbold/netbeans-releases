@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -247,7 +247,7 @@ final class AdditionalWizardPanel extends JPanel {
             //Accessibility
             panel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(AdditionalWizardPanel.class).getString("ACS_AdditionalWizardPanel"));                    
             
-            panel.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(2)); // NOI18N
+            panel.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(2)); // NOI18N
             panel.setName(NbBundle.getBundle(getClass()).getString("TXT_ModifyAdditional"));
             panel.setPreferredSize(I18nWizardDescriptor.PREFERRED_DIMENSION);
 

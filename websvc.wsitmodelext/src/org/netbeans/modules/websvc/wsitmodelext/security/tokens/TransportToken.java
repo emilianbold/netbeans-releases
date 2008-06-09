@@ -41,11 +41,11 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.tokens;
 
-import org.netbeans.modules.websvc.wsitmodelext.policy.NestedPolicyAllowed;
+import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 
 /**
  *
  * @author Martin Grebac
  */
-public interface TransportToken extends NestedPolicyAllowed {
+public interface TransportToken extends ExtensibilityElement  {
 }

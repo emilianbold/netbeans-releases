@@ -523,6 +523,14 @@ public abstract class FileObject extends Object implements Serializable {
         try {
             os = getOutputStream(lock);
             return new FilterOutputStream(os) {
+                @Override
+                public void write(byte b[], int off, int len) throws IOException {
+                    // Delegate to real stream because it is more efficient if it is FileOutputStream.
+                    // Otherwise it is copied byte by byte.
+                    os.write(b, off, len);
+                }
+
+                @Override
                 public void close() throws IOException {
                     try {
                         super.close();
@@ -655,13 +663,17 @@ public abstract class FileObject extends Object implements Serializable {
     * @exception IllegalArgumentException if <code>this</code> is not a folder
     */
     public FileObject getFileObject(String relativePath) {
-        if (relativePath.startsWith("/")) {
+        if (relativePath.startsWith("/") && !relativePath.startsWith("//")) {
             relativePath = relativePath.substring(1);
         }
 
         FileObject myObj = this;
         StringTokenizer st = new StringTokenizer(relativePath, "/");
-
+        
+        if(relativePath.startsWith("//")) {
+            // if it is UNC absolute path, start with //ComputerName/sharedFolder
+            myObj = myObj.getFileObject("//"+st.nextToken()+"/"+st.nextToken(), null);
+        }
         while ((myObj != null) && st.hasMoreTokens()) {
             String nameExt = st.nextToken();
             myObj = myObj.getFileObject(nameExt, null);

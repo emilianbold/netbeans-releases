@@ -238,6 +238,11 @@ public class CssJspModel extends CssModel {
                 CssParserAccess.CssParserResult result = parserAccess.parse(new StringReader(buff.toString()));
                 
                 SimpleNode root = result.root();
+                if(root == null) {
+                    //unrecoverable parsing error
+                    return;
+                }
+                
                 if(LOG) {
                     LOGGER.fine("> SANITIZING LEVEL #" + i + " >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
                     LOGGER.fine(buff.toString());

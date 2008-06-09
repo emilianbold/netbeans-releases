@@ -2947,14 +2947,15 @@ public class JavaCodeGenerator extends CodeGenerator {
 	        if (rblk.returnAction != null)
 	            println(rblk.returnAction + ";");
 	
-                if (!Tool.agressive || !(grammar instanceof LexerGrammar)) {
+                //if (!(grammar instanceof LexerGrammar)) {
                     println(commonLocalVars);
-                } else if (rblk.isConstText()) {
-                    println("int _ttype;");
+                /*} else {
+                }
+                    println("int _ttype; Token _token=null;");
                 } else if (!Boolean.FALSE.equals(lexerGenerateToken)) {
                     println(commonLocalVars);
                 } else {
-                }
+                }*/
 	
 	        if (grammar.traceRules) {
 	            if (grammar instanceof TreeWalkerGrammar) {
@@ -3142,7 +3143,7 @@ public class JavaCodeGenerator extends CodeGenerator {
                         }
                         
                         println("if (" + createTokenStr + checkTokenNullStr + checkSkip + ") {");
-                        if (!Tool.agressive || !rblk.isConstText()) {
+                        if (!rblk.isConstText()) {
                             println("	_token = makeToken(_ttype);");
                             println("	if (_token != null) _token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));");
                             //println("_returnToken = _token;");

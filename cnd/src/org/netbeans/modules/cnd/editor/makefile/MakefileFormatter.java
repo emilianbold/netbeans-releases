@@ -45,8 +45,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
-import org.netbeans.editor.SettingsChangeEvent;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
@@ -67,12 +65,19 @@ public class MakefileFormatter extends ExtFormatter {
         super(kitClass);
     }
     
+    @Override
     protected boolean acceptSyntax(Syntax syntax) {
         return (syntax instanceof MakefileSyntax);
     }
 
+    @Override
     public boolean expandTabs() { 
         return false;
+    }
+
+    @Override
+    public int getSpacesPerTab() {
+        return getTabSize();
     }
 
     /**
@@ -80,6 +85,7 @@ public class MakefileFormatter extends ExtFormatter {
      * that IZ 88167 ignores our indent rules and indents 4 spaces. This forces
      * indent to always be a tab. We're really overriding Formatter.getIndentString().
      */
+    @Override
     public String getIndentString(BaseDocument doc, int indent) {
         JTextComponent tc = Utilities.getFocusedComponent();
         int dot = tc.getCaret().getDot();
@@ -92,7 +98,8 @@ public class MakefileFormatter extends ExtFormatter {
         }
         return super.getIndentString(doc, indent);
     }
-    
+
+    @Override
     protected void initFormatLayers() {
         addFormatLayer(new MakefileLayer());
     }
@@ -107,6 +114,7 @@ public class MakefileFormatter extends ExtFormatter {
             super("Makefile-layer"); // NOI18N
         }
     
+        @Override
         public FormatSupport createFormatSupport(FormatWriter fw) {
             return new MakefileFormatSupport(fw);
         }

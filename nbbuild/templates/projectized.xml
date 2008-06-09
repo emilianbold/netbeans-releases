@@ -627,7 +627,6 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <javac srcdir="${test.qa-functional.src.dir}" destdir="${build.test.qa-functional.classes.dir}"
                debug="true" deprecation="${build.compiler.deprecation}" encoding="UTF-8"
                source="${javac.source}" target="${javac.target}" optimize="${build.compiler.optimize}" includeantruntime="false">
-               <exclude name="**/jars/**"/><!-- XXX for core only; fix in core, not here -->
                <exclude name="**/data/**"/><!-- XXX for openide/util and co. -->
             <classpath refid="test.qa-functional.cp"/>
             <compilerarg line="${javac.compilerargs}"/>
@@ -728,7 +727,6 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <javac srcdir="${test.qa-performance.src.dir}" destdir="${build.test.qa-performance.classes.dir}"
                debug="true" deprecation="${build.compiler.deprecation}" encoding="UTF-8"
                source="${javac.source}" target="${javac.target}" optimize="${build.compiler.optimize}" includeantruntime="false">
-               <exclude name="**/jars/**"/><!-- XXX for core only; fix in core, not here -->
                <exclude name="**/data/**"/><!-- XXX for openide/util and co. -->
             <classpath refid="test.qa-performance.cp"/>
             <compilerarg line="${javac.compilerargs}"/>
@@ -887,7 +885,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <property name="sigtest.public.packages" value="${public.packages}"/>
         <property name="sigtest.fail.on.error" value="true"/>
         <taskdef name="sigtest" classname="org.netbeans.nbbuild.Sigtest" classpath="${nb_all}/nbbuild/nbantext.jar"/>
-        <property name="sigtest.jar" location="${nb_all}/nbbuild/external/apitest-29.jar"/> 
+        <property name="sigtest.jar" location="${nb_all}/nbbuild/external/apitest.jar"/> 
         <property file="${manifest.mf}" prefix="mf."/>
         <condition property="mf.OpenIDE-Module-Specification-Version" value="${spec.version.base}"> <!-- fallback -->
             <isset property="spec.version.base"/>
@@ -941,6 +939,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
                  version="${mf.OpenIDE-Module-Specification-Version}"
                  action="${sigtest.check.type}"
                  packages="${sigtest.public.packages}"
+                 report="${sigtest.output.dir}/${code.name.base.dashes}.xml"
                  failonerror="${sigtest.fail.on.error}"
         />
     </target>

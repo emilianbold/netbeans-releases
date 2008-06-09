@@ -68,7 +68,7 @@ public class SimpleNode extends JGoNode implements HelpCtx.Provider  {
     public void initialize(Point loc, Dimension size, JGoImage icon,
             String labeltext, boolean hasinport, boolean hasoutport) 
     {
-    	init();
+        init();
         setInitializing(true);
         // the area as a whole is not directly selectable using a mouse,
         // but the area can be selected by trying to select any of its
@@ -83,9 +83,9 @@ public class SimpleNode extends JGoNode implements HelpCtx.Provider  {
         set4ResizeHandles(true);
         
         if (mDocumentationNode != null) {
-        	mDocumentationNode.setSelectable(true);
-        	mDocumentationNode.setResizable(false);
-        	mDocumentationNode.setVisible(false);
+            mDocumentationNode.setSelectable(true);
+            mDocumentationNode.setResizable(false);
+            mDocumentationNode.setVisible(false);
             addObjectAtHead(mDocumentationNode);
         }
         
@@ -162,11 +162,11 @@ public class SimpleNode extends JGoNode implements HelpCtx.Provider  {
         JGoObject outport = getOutputPort();
         
         if(docArea != null) {
-        	if(icon != null) {
-        		docArea.setSpotLocation(TopCenter, icon,  TopCenter);
-        	} else {
-        		docArea.setSpotLocation(TopCenter, this,  TopCenter);
-        	}
+            if(icon != null) {
+                docArea.setSpotLocation(TopCenter, icon,  TopCenter);
+            } else {
+                docArea.setSpotLocation(TopCenter, this,  TopCenter);
+            }
         }
         
         if (label != null) {
@@ -301,7 +301,7 @@ public class SimpleNode extends JGoNode implements HelpCtx.Provider  {
         return false;
     }
      public HelpCtx getHelpCtx() {
-	return new HelpCtx("org.netbeans.modules.iep.editor.designer.SimpleNode");
+    return new HelpCtx("org.netbeans.modules.iep.editor.designer.SimpleNode");
     }
     
     public JGoText getLabel() { return mLabel; }
@@ -317,48 +317,48 @@ public class SimpleNode extends JGoNode implements HelpCtx.Provider  {
     }
     
     private void init() {
-    	if(mDocumentationNode == null) {
-    		mDocumentationNode = new DocumentationNode();
-    		mDocumentationNode.setSelectable(true);
-    		mDocumentationNode.setResizable(false);
-    		mDocumentationNode.setVisible(false);
-    		this.addObjectAtTail(mDocumentationNode);
-    	}
+        if(mDocumentationNode == null) {
+            mDocumentationNode = new DocumentationNode();
+            mDocumentationNode.setSelectable(true);
+            mDocumentationNode.setResizable(false);
+            mDocumentationNode.setVisible(false);
+            this.addObjectAtTail(mDocumentationNode);
+        }
     }
     
     public void setOperatorDisplayName(String operatorDisplayName) {
-    	if(operatorDisplayName != null) {
-    		mLabel.setText(operatorDisplayName);
-    	}
+        if(operatorDisplayName != null) {
+            mLabel.setText(operatorDisplayName);
+        }
     }
     
     public void showInvalidPorts(boolean show) {
-    	if(show) {
-    		if(mInputPort != null) {
-    			mInputPort.setStyle(JGoPort.StyleHidden);
-    			mInvalidInputPort.setStyle(JGoPort.StyleObject);
-    		}
-    		
-    		
-    		if(mOutputPort != null) {
-    			mOutputPort.setStyle(JGoPort.StyleHidden);
-    			mInvalidOutputPort.setStyle(JGoPort.StyleObject);
-    		}
-    		
-    		
-    	} else {
-    		if(mInputPort != null) {
-    			mInputPort.setStyle(JGoPort.StyleTriangle);
-    			mInvalidInputPort.setStyle(JGoPort.StyleHidden);
-    		}
-    		
-    		if(mOutputPort != null) {
-    			
-    			mOutputPort.setStyle(JGoPort.StyleTriangle);
-        		mInvalidOutputPort.setStyle(JGoPort.StyleHidden);
-    		}
-    		
-    	}
+        if(show) {
+            if(mInputPort != null) {
+                mInputPort.setStyle(JGoPort.StyleHidden);
+                mInvalidInputPort.setStyle(JGoPort.StyleObject);
+            }
+            
+            
+            if(mOutputPort != null) {
+                mOutputPort.setStyle(JGoPort.StyleHidden);
+                mInvalidOutputPort.setStyle(JGoPort.StyleObject);
+            }
+            
+            
+        } else {
+            if(mInputPort != null) {
+                mInputPort.setStyle(JGoPort.StyleTriangle);
+                mInvalidInputPort.setStyle(JGoPort.StyleHidden);
+            }
+            
+            if(mOutputPort != null) {
+                
+                mOutputPort.setStyle(JGoPort.StyleTriangle);
+                mInvalidOutputPort.setStyle(JGoPort.StyleHidden);
+            }
+            
+        }
     }
     
     // State

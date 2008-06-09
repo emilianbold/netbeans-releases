@@ -97,10 +97,6 @@ final class PanelProxy<T> extends Panel<T> {
     }
     FileObject file = getFolder().getFileObject(name);
 
-    if (file != null) {
-      return i18n("ERR_File_Already_Exists", name); // NOI18N
-    }
-
     name = addExtension(myRequestFile.getText().trim());
     if (myReplyBox.isSelected() && !PanelUtil.isValidFileName(name)) {
         return i18n("ERR_WrongFileName", name); // NOI18N
@@ -108,9 +104,6 @@ final class PanelProxy<T> extends Panel<T> {
     
     file = getFolder().getFileObject(name);
 
-    if (file != null) {
-      return i18n("ERR_File_Already_Exists", name); // NOI18N
-    }
     return getError(myOperationImplement.getError(), myOperationCall.getError());
   }
 

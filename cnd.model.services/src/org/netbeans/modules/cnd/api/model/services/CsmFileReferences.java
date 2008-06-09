@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.api.model.services;
 
-import java.util.EnumSet;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -62,7 +62,7 @@ public abstract class CsmFileReferences {
      * Provides visiting of the identifiers of the CsmFile and point prefered 
      * kinds of references
      */
-    public abstract void accept(CsmScope csmScope, Visitor visitor, EnumSet<CsmReferenceKind> preferedKinds);
+    public abstract void accept(CsmScope csmScope, Visitor visitor, Set<CsmReferenceKind> preferedKinds);
     
     /**
      * A dummy resolver that do nothing.
@@ -99,7 +99,7 @@ public abstract class CsmFileReferences {
         }
         
         @Override
-        public void accept(CsmScope csmScope, Visitor visitor, EnumSet<CsmReferenceKind> kinds) {
+        public void accept(CsmScope csmScope, Visitor visitor, Set<CsmReferenceKind> kinds) {
             // do nothing
         }        
     }

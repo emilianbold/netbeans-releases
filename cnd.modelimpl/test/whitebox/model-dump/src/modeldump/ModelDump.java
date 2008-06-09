@@ -41,31 +41,34 @@
 
 package modeldump;
 
-import java.io.IOException;
 import modelutils.FileCodeModel;
 import java.io.File;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import modelutils.Config;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.apt.impl.support.APTFileMacroMap;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.impl.support.APTIncludeHandlerImpl;
+import org.netbeans.modules.cnd.apt.impl.support.APTPreprocHandlerImpl;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.makeproject.api.compilers.GNUCCCompiler;
 import org.netbeans.modules.cnd.makeproject.api.compilers.GNUCCompiler;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
-import org.netbeans.modules.cnd.modelimpl.parser.apt.APTPreprocStateImpl;
-import org.netbeans.modules.cnd.modelimpl.parser.apt.APTSystemStorage;
+//import org.netbeans.modules.cnd.modelimpl.parser.apt.APTPreprocStateImpl;
+//import org.netbeans.modules.cnd.modelimpl.parser.apt.APTSystemStorage;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
-import org.netbeans.modules.cnd.apt.support.APTPreprocState;
-import org.netbeans.modules.cnd.apt.utils.APTMacroUtils;
+//import org.netbeans.modules.cnd.apt.support.APTPreprocState;
+import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
+import org.netbeans.modules.cnd.apt.support.StartEntry;
+//import org.netbeans.modules.cnd.apt.utils.APTMacroUtils;
+import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
@@ -106,19 +109,19 @@ public class ModelDump {
     private static void getSystemPredefines(String lang, ArrayList<String> includes, ArrayList<String> defines) {
 	BasicCompiler compiler;
 	if( "c".equals(lang) ) { // NOI18N
-	    compiler = new GNUCCompiler();
+	    compiler = new GNUCCompiler(CompilerFlavor.GNU, 0, "gcc", "gcc", "");
 	}
 	else if( "c++".equals(lang) ) { // NOI18N
-	    compiler = new GNUCCCompiler();
+	    compiler = new GNUCCCompiler(CompilerFlavor.GNU, 1, "gcc", "gcc", "");
 	}
 	else {
 	    return;
 	}
 	Platform platform = Platforms.getPlatform(Platform.getDefaultPlatform());
-	for( Object o : compiler.getSystemIncludeDirectories(platform) ) {
+	for( Object o : compiler.getSystemIncludeDirectories() ) {
 	    includes.add((String) o);
 	}
-	for( Object o : compiler.getSystemPreprocessorSymbols(platform) ) {
+	for( Object o : compiler.getSystemPreprocessorSymbols() ) {
 	    defines.add((String) o);
 	}
     }
@@ -172,11 +175,13 @@ public class ModelDump {
 //        }
 //    }
     
-    public void startModel() {
+    public void startModel(NativeProject p) {
         if (!modelStarted) {
             log.println("Starting model..."); // NOI18N
             model.startup();
-            project = model.addProject("DummyProjectID", "Dummy Project"); // NOI18N
+            //project = model.addProject("DummyProjectID", "Dummy Project"); // NOI18N
+            
+            project = model.addProject(p, "Dummy Project", true); // NOI18N
             modelStarted = true;
         }
     }
@@ -232,10 +237,6 @@ public class ModelDump {
     public FileImpl process(String fileName, List<String> includes, List<String> defines) {
         log.println("\nGetting model data for " + fileName + " ..."); // NOI18N
         
-        if (!modelStarted) {
-            startModel();
-        }
-        
         ArrayList<String> sysIncludes = null;
         if (fileName.endsWith(".c")) { // NOI18N
             sysIncludes = sys_c_includes;
@@ -244,15 +245,24 @@ public class ModelDump {
             sysIncludes = sys_cpp_includes;
             defines.addAll(sys_cpp_defines);
         }
+
+        File file = new File(fileName);
+        ArrayList<File> files = new  ArrayList<File>();
+        files.add(file);
+        NativeProject p = NativeProjectProvider.createProject("DummyProjectID", files, sysIncludes, includes, new ArrayList<String>(), defines, true);
+       
+        if (!modelStarted) {
+            startModel(p);
+        }
         
-        FileImpl fileImpl = parseFile(fileName, sysIncludes, includes, defines);
+        FileImpl fileImpl = parseFile(p, fileName, sysIncludes, includes, defines);
         
         log.println("\t... done.\n"); // NOI18N
         
         return fileImpl;
     }
     
-    private FileImpl parseFile(String fileName, List<String> sysIncludes, List<String> quoteIncludes, List<String> defines) {
+    private FileImpl parseFile(NativeProject p, String fileName, List<String> sysIncludes, List<String> quoteIncludes, List<String> defines) {
         File file = new File(fileName);
         FileImpl fileImpl = null;
         
@@ -261,19 +271,24 @@ public class ModelDump {
         log.println("Quote includes: " + quoteIncludes); // NOI18N
         log.println("Definitions: " + defines); // NOI18N
         
-        APTSystemStorage aptSystemStorage = new APTSystemStorage();
-        APTMacroMap map = new APTFileMacroMap();
-        APTMacroUtils.fillMacroMap(map, defines);
+        APTMacroMap map = APTSystemStorage.getDefault().getMacroMap(defines);
         
-        List checkedSysIncludes = aptSystemStorage.getIncludes("TraceModelSysIncludes", sysIncludes); // NOI18N
-        APTIncludeHandler aptIncludeHandler = new APTIncludeHandlerImpl(file.getAbsolutePath(), quoteIncludes, checkedSysIncludes);
+        List checkedSysIncludes = APTSystemStorage.getDefault().getIncludes(sysIncludes);
+        APTIncludeHandler aptIncludeHandler = new APTIncludeHandlerImpl(new StartEntry(file.getAbsolutePath(), null), quoteIncludes, checkedSysIncludes);
         
-        APTPreprocState preprocState = new APTPreprocStateImpl(map, aptIncludeHandler, true);
-        APTPreprocState.State state = preprocState.getState();
-        fileImpl = (FileImpl) project.testAPTParseFile(file.getAbsolutePath(), preprocState);
+        APTPreprocHandlerImpl ph = new APTPreprocHandlerImpl(map, aptIncludeHandler, true);
+        
+        //APTPreprocState preprocState = new APTPreprocStateImpl(map, aptIncludeHandler, true);
+        //APTPreprocState.State state = preprocState.getState();
+        //fileImpl = (FileImpl) project.testAPTParseFile(file.getAbsolutePath(), preprocState);
+        
+        ArrayList<File> files = new  ArrayList<File>();
+        files.add(file);
+        //NativeProject p = NativeProjectProvider.createProject("DummyProjectID", files, null, null, null, null, true);
+        fileImpl = (FileImpl) project.testAPTParseFile(p.findFileItem(file));
         
         try {
-            fileImpl.scheduleParsing(true, state);
+            fileImpl.scheduleParsing(true, ph.getState());
         } catch (InterruptedException e) {
             e.printStackTrace(log);
         }

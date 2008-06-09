@@ -77,11 +77,10 @@ public class TransportModelHelper {
     /**
      * Creates a new instance of TransportModelHelper
      */
-    public TransportModelHelper() {
-    }
+    private TransportModelHelper() { }
     
-    public static OptimizedMimeSerialization getOptimizedMimeSerialization(Policy p) {
-        return PolicyModelHelper.getTopLevelElement(p, OptimizedMimeSerialization.class);        
+    private static OptimizedMimeSerialization getOptimizedMimeSerialization(Policy p) {
+        return PolicyModelHelper.getTopLevelElement(p, OptimizedMimeSerialization.class,false);        
     }
     
     // checks if Mtom is enabled in the config wsdl on specified binding
@@ -95,23 +94,23 @@ public class TransportModelHelper {
     }
     
     // enables Mtom in the config wsdl on specified binding
-    public static void enableMtom(Binding b) {
-        All a = PolicyModelHelper.createPolicy(b, false);
-        PolicyModelHelper.createElement(a, MtomQName.OPTIMIZEDMIMESERIALIZATION.getQName(), OptimizedMimeSerialization.class, false);
-    }
-
-    // disables Mtom in the config wsdl on specified binding
-    public static void disableMtom(Binding b) {
-        Policy p = PolicyModelHelper.getPolicyForElement(b);
-        OptimizedMimeSerialization mtom = getOptimizedMimeSerialization(p);
-        if (mtom != null) {
-            PolicyModelHelper.removeElement(mtom);
+    public static void enableMtom(Binding b, boolean enable) {
+        if (enable) {
+            PolicyModelHelper pmh = PolicyModelHelper.getInstance(PolicyModelHelper.getConfigVersion(b));
+            All a = pmh.createPolicy(b, false);
+            pmh.createElement(a, MtomQName.OPTIMIZEDMIMESERIALIZATION.getQName(), OptimizedMimeSerialization.class, false);
+        } else {
+            Policy p = PolicyModelHelper.getPolicyForElement(b);
+            OptimizedMimeSerialization mtom = getOptimizedMimeSerialization(p);
+            if (mtom != null) {
+                PolicyModelHelper.removeElement(mtom);
+            }
+            PolicyModelHelper.cleanPolicies(b);        
         }
-        PolicyModelHelper.cleanPolicies(b);        
     }
 
-    public static OptimizedTCPTransport getOptimizedTCPTransport(Policy p) {
-        return PolicyModelHelper.getTopLevelElement(p, OptimizedTCPTransport.class);
+    private static OptimizedTCPTransport getOptimizedTCPTransport(Policy p) {
+        return PolicyModelHelper.getTopLevelElement(p, OptimizedTCPTransport.class,false);
     }
     
     // checks if TCP is enabled in the config wsdl on specified binding
@@ -125,12 +124,19 @@ public class TransportModelHelper {
         }
         return false;
     }
+
+    /* doesn't set anything in the DD; is used when changing namespaces for policies
+     */
+    static void enableTCP(Binding b, boolean enable) {
+        enableTCP(null, false, b, null, enable, false);
+    }
     
     // enables/disables TCP in the config wsdl on specified binding
     public static void enableTCP(Service s, boolean isFromJava, Binding b, Project p, boolean enable, boolean jsr109) {
-        All a = PolicyModelHelper.createPolicy(b, false);
+        PolicyModelHelper pmh = PolicyModelHelper.getInstance(PolicyModelHelper.getConfigVersion(b));
+        All a = pmh.createPolicy(b, false);
         OptimizedTCPTransport tcp = 
-                PolicyModelHelper.createElement(a, TCPQName.OPTIMIZEDTCPTRANSPORT.getQName(), 
+                pmh.createElement(a, TCPQName.OPTIMIZEDTCPTRANSPORT.getQName(), 
                 OptimizedTCPTransport.class, false);
         
         // make sure the listener is there (in Web project and jsr109 deployment
@@ -142,7 +148,10 @@ public class TransportModelHelper {
                 model.startTransaction();
             }
 
-            WebModule wm = WebModule.getWebModule(p.getProjectDirectory());
+            WebModule wm = null;
+            if (p != null) {
+                wm = WebModule.getWebModule(p.getProjectDirectory());
+            }
             if (wm != null) {
                 try {
                     WebApp wApp = DDProvider.getDefault ().getDDRoot(wm.getDeploymentDescriptor());                    
@@ -210,7 +219,7 @@ public class TransportModelHelper {
         return false;
     }
 
-   public static void removeTCP(Binding b) {
+   private static void removeTCP(Binding b) {
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         OptimizedTCPTransport tcp = getOptimizedTCPTransport(p);
         if (tcp != null) {
@@ -218,8 +227,8 @@ public class TransportModelHelper {
         }
     }
        
-    public static OptimizedFastInfosetSerialization getOptimizedFastInfosetSerialization(Policy p) {
-        return PolicyModelHelper.getTopLevelElement(p, OptimizedFastInfosetSerialization.class);
+    private static OptimizedFastInfosetSerialization getOptimizedFastInfosetSerialization(Policy p) {
+        return PolicyModelHelper.getTopLevelElement(p, OptimizedFastInfosetSerialization.class,false);
     }
     
     // checks if FI is enabled in the config wsdl on specified binding
@@ -236,9 +245,10 @@ public class TransportModelHelper {
     
     // enables/disables FI in the config wsdl on specified binding
     public static void enableFI(Binding b, boolean enable) {
-        All a = PolicyModelHelper.createPolicy(b, false);
+        PolicyModelHelper pmh = PolicyModelHelper.getInstance(PolicyModelHelper.getConfigVersion(b));
+        All a = pmh.createPolicy(b, false);
         OptimizedFastInfosetSerialization fi = 
-                PolicyModelHelper.createElement(a, FIQName.OPTIMIZEDFASTINFOSETSERIALIZATION.getQName(), 
+                pmh.createElement(a, FIQName.OPTIMIZEDFASTINFOSETSERIALIZATION.getQName(), 
                 OptimizedFastInfosetSerialization.class, false);
         Model model = b.getModel();
         boolean isTransaction = model.isIntransaction();
@@ -262,7 +272,7 @@ public class TransportModelHelper {
         }
     }
     
-    public static void removeFI(Binding b) {
+    private static void removeFI(Binding b) {
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         OptimizedFastInfosetSerialization fi = getOptimizedFastInfosetSerialization(p);
         if (fi != null) {
@@ -270,8 +280,8 @@ public class TransportModelHelper {
         }
     }
     
-    public static AutomaticallySelectFastInfoset getAutoEncoding(Policy p) {
-        return (AutomaticallySelectFastInfoset) PolicyModelHelper.getTopLevelElement(p, AutomaticallySelectFastInfoset.class);
+    private static AutomaticallySelectFastInfoset getAutoEncoding(Policy p) {
+        return (AutomaticallySelectFastInfoset) PolicyModelHelper.getTopLevelElement(p, AutomaticallySelectFastInfoset.class,false);
     }
     
     public static boolean isAutoEncodingEnabled(Binding b) {
@@ -285,8 +295,9 @@ public class TransportModelHelper {
     
     public static void setAutoEncoding(Binding b, boolean enable) {
         if (enable) {
-            All a = PolicyModelHelper.createPolicy(b, false);
-            PolicyModelHelper.createElement(a, FIQName.AUTOMATICALLYSELECTFASTINFOSET.getQName(), AutomaticallySelectFastInfoset.class, false);
+            PolicyModelHelper pmh = PolicyModelHelper.getInstance(PolicyModelHelper.getConfigVersion(b));
+            All a = pmh.createPolicy(b, false);
+            pmh.createElement(a, FIQName.AUTOMATICALLYSELECTFASTINFOSET.getQName(), AutomaticallySelectFastInfoset.class, false);
         } else {
             Policy p = PolicyModelHelper.getPolicyForElement(b);
             AutomaticallySelectFastInfoset ae = getAutoEncoding(p);
@@ -296,11 +307,11 @@ public class TransportModelHelper {
         }
     }
     
-    public static AutomaticallySelectOptimalTransport getAutoTransport(Policy p) {
-        return (AutomaticallySelectOptimalTransport) PolicyModelHelper.getTopLevelElement(p, AutomaticallySelectOptimalTransport.class);
+    private static AutomaticallySelectOptimalTransport getAutoTransport(Policy p) {
+        return (AutomaticallySelectOptimalTransport) PolicyModelHelper.getTopLevelElement(p, AutomaticallySelectOptimalTransport.class,false);
     }
     
-    public static boolean isAutoTransportEnabled(Binding b) {
+    public static  boolean isAutoTransportEnabled(Binding b) {
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         if (p != null) {
             AutomaticallySelectOptimalTransport at = getAutoTransport(p);
@@ -309,10 +320,11 @@ public class TransportModelHelper {
         return false;
     }
     
-    public static void setAutoTransport(Binding b, boolean enable) {
+    public static void enableAutoTransport(Binding b, boolean enable) {
         if (enable) {
-            All a = PolicyModelHelper.createPolicy(b, false);
-            PolicyModelHelper.createElement(a, 
+            PolicyModelHelper pmh = PolicyModelHelper.getInstance(PolicyModelHelper.getConfigVersion(b));
+            All a = pmh.createPolicy(b, false);
+            pmh.createElement(a, 
                     TCPQName.AUTOMATICALLYSELECTOPTIMALTRANSPORT.getQName(), 
                     AutomaticallySelectOptimalTransport.class, false);
         } else {

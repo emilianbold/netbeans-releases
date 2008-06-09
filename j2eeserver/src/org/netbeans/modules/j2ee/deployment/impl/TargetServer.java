@@ -163,25 +163,25 @@ public class TargetServer {
         }
     }
     
-    private boolean canFileDeploy(Target[] targetz, J2eeModule deployable) {
+    private boolean canFileDeploy(Target[] targetz, J2eeModule deployable) throws IOException {
         if (targetz == null || targetz.length != 1) {
             Logger.getLogger("global").log(Level.INFO, NbBundle.getMessage(TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
             return false;
         }
         
-        if (deployable == null || !instance.getIncrementalDeployment().canFileDeploy(targetz[0], deployable))
+        if (deployable == null || null == deployable.getContentDirectory() || !instance.getIncrementalDeployment().canFileDeploy(targetz[0], deployable))
             return false;
         
         return true;
     }
     
-    private boolean canFileDeploy(TargetModule[] targetModules, J2eeModule deployable) {
+    private boolean canFileDeploy(TargetModule[] targetModules, J2eeModule deployable) throws IOException {
         if (targetModules == null || targetModules.length != 1) {
             Logger.getLogger("global").log(Level.INFO, NbBundle.getMessage(TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
             return false;
         }
         
-        if (deployable == null || !instance.getIncrementalDeployment().canFileDeploy(targetModules[0].getTarget(), deployable))
+        if (deployable == null || null == deployable.getContentDirectory() || !instance.getIncrementalDeployment().canFileDeploy(targetModules[0].getTarget(), deployable))
             return false;
         
         return true;
@@ -362,6 +362,24 @@ public class TargetServer {
         }
         return availablesMap;
     }
+
+    private IncrementalDeployment isModuleImplComplete(J2eeModule deployable) throws IOException {
+        // defend against incomplete J2eeModule objects.
+        IncrementalDeployment retVal = incremental;
+        if (null != retVal && null == deployable.getContentDirectory()) {
+            retVal = null;
+        }
+        if (null != retVal && deployable instanceof J2eeApplication) {
+            // make sure all the sub modules will support directory deployment, too
+            J2eeModule[] childModules = ((J2eeApplication) deployable).getModules();
+            for (int i = 0; i < childModules.length; i++) {
+                if (null == childModules[i].getContentDirectory()) {
+                    retVal = null;
+                }
+            }
+        }
+        return retVal;
+    }
     
     /**
      * Process last deployment TargetModuleID's for undeploy, redistribute, redeploy and oldest timestamp
@@ -532,11 +550,11 @@ public class TargetServer {
         if (distributeTargets.size() > 0) {
             hasActivities = true;
             Target[] targetz = (Target[]) distributeTargets.toArray(new Target[distributeTargets.size()]);
-
-            if (incremental != null && hasDirectory && canFileDeploy(targetz, deployable)) {
+            IncrementalDeployment lincremental = isModuleImplComplete(deployable);
+            if (lincremental != null && hasDirectory && canFileDeploy(targetz, deployable)) {
                 ModuleConfiguration cfg = dtarget.getModuleConfigurationProvider().getModuleConfiguration();
                 File dir = initialDistribute(targetz[0], ui);
-                po = incremental.initialDeploy(targetz[0], deployable, cfg, dir);
+                po = lincremental.initialDeploy(targetz[0], deployable, cfg, dir);
                 trackDeployProgressObject(ui, po, false);
             } else {  // standard DM.distribute
                 if (getApplication() == null) {
@@ -553,11 +571,13 @@ public class TargetServer {
         // handle increment or standard redeploy
         if (redeployTargetModules != null && redeployTargetModules.length > 0) {
             hasActivities = true;
-            if (incremental != null && hasDirectory && canFileDeploy(redeployTargetModules, deployable)) {
+            // defend against incomplete J2eeModule objects.
+            IncrementalDeployment lincremental = isModuleImplComplete(deployable);
+            if (lincremental != null && hasDirectory && canFileDeploy(redeployTargetModules, deployable)) {
                 AppChangeDescriptor acd = distributeChanges(redeployTargetModules[0], ui);
                 if (anyChanged(acd)) {
                     ui.progress(NbBundle.getMessage(TargetServer.class, "MSG_IncrementalDeploying", redeployTargetModules[0]));
-                    po = incremental.incrementalDeploy(redeployTargetModules[0].delegate(), acd);
+                    po = lincremental.incrementalDeploy(redeployTargetModules[0].delegate(), acd);
                     trackDeployProgressObject(ui, po, true);
                     
                 } else { // return original target modules

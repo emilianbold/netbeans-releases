@@ -164,65 +164,65 @@ public class PreprocessorFormatter {
     }
 
     private void noIndent(Token<CppTokenId> previous, TokenSequence<CppTokenId> prep, Token<CppTokenId> next) {
-        indentBefore(previous, 0); // NOI18N
+        indentBefore(previous, 0, false); // NOI18N
         indentAfter(prep, next, 0); // NOI18N
     }
 
-    private void indentBefore(Token<CppTokenId> previous, int spaces) {
+    private void indentBefore(Token<CppTokenId> previous, int spaces, boolean isIndent) {
         DiffResult diff = diffs.getDiffs(ts, -1);
         if (diff != null) {
             if (diff.after != null) {
-                diff.after.replaceSpaces(spaces); // NOI18N
+                diff.after.replaceSpaces(spaces, isIndent); // NOI18N
                 if (diff.replace != null && !diff.after.hasNewLine()){
-                    diff.replace.replaceSpaces(0); // NOI18N
+                    diff.replace.replaceSpaces(0, false); // NOI18N
                 }
                 return;
             } else if (diff.replace != null) {
-                diff.replace.replaceSpaces(spaces); // NOI18N
+                diff.replace.replaceSpaces(spaces, isIndent); // NOI18N
                 return;
             }
         }
         if (previous != null && previous.id() == WHITESPACE) {
-            if (!Diff.equals(previous.text().toString(),0,spaces)){
-                ts.replacePrevious(previous, 0, spaces);
+            if (!Diff.equals(previous.text().toString(), 0, spaces, isIndent)){
+                ts.replacePrevious(previous, 0, spaces, isIndent);
             }
         } else {
             if (spaces > 0){
-                ts.addBeforeCurrent(0, spaces);
+                ts.addBeforeCurrent(0, spaces, isIndent);
             }
         }
     }
 
     private void indentAfter(TokenSequence<CppTokenId> prep, Token<CppTokenId> next, int spaces) {
         if (next.id() == WHITESPACE) {
-            if (!Diff.equals(next.text().toString(),0,spaces)){
+            if (!Diff.equals(next.text().toString(), 0, spaces, false)){
                 diffs.addFirst(prep.offset() + prep.token().length(),
-                               prep.offset() + prep.token().length() + next.length(), 0, spaces);
+                               prep.offset() + prep.token().length() + next.length(), 0, spaces, false);
             }
         } else {
             if (spaces > 0) {
                 diffs.addFirst(prep.offset()+ prep.token().length(),
-                               prep.offset()+ prep.token().length(), 0, spaces);
+                               prep.offset()+ prep.token().length(), 0, spaces, false);
             }
         }
     }
 
     private void indentByCode(Token<CppTokenId> previous, TokenSequence<CppTokenId> prep, Token<CppTokenId> next) {
         if (codeStyle.sharpAtStartLine()) {
-            indentBefore(previous, 0); // NOI18N
+            indentBefore(previous, 0, false); // NOI18N
             indentAfter(prep, next, context.getIndent());
         } else {
-            indentBefore(previous, context.getIndent());
+            indentBefore(previous, context.getIndent(), true);
             indentAfter(prep, next, 0); // NOI18N
         }
     }
 
     private void indentByPreprocessor(Token<CppTokenId> previous, TokenSequence<CppTokenId> prep, Token<CppTokenId> next) {
         if (codeStyle.sharpAtStartLine()) {
-            indentBefore(previous, 0); // NOI18N
+            indentBefore(previous, 0, false); // NOI18N
             indentAfter(prep, next, getPreprocessorIndent(prepocessorDepth));
         } else {
-            indentBefore(previous, getPreprocessorIndent(prepocessorDepth));
+            indentBefore(previous, getPreprocessorIndent(prepocessorDepth), true);
             indentAfter(prep, next, 0);
         }
     }

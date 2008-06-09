@@ -44,7 +44,6 @@ package org.netbeans.modules.websvc.wsitmodelext.transport.impl;
 import org.netbeans.modules.websvc.wsitmodelext.transport.FIQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -61,20 +60,7 @@ public abstract class FiComponentImpl extends GenericExtensibilityElement {
     }
 
     @Override
-    public abstract void accept(WSDLVisitor visitor);
-    
-     @Override
-     protected String getNamespaceURI() {
+    protected String getNamespaceURI() {
         return FIQName.FI_NS_URI;
     }
-
-    @Override
-    public String getAttribute(String attribute) {
-        throw new UnsupportedOperationException();
-    }
-    
-    @Override
-    public void setAttribute(String attribute, String value) {
-        throw new UnsupportedOperationException();
-    }    
 }

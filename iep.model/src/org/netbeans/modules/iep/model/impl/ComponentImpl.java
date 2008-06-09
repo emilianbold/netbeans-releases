@@ -37,10 +37,10 @@ import org.w3c.dom.Element;
  */
 public class ComponentImpl extends IEPComponentBase implements Component {
 
-	private TcgComponentType mType;
-	
+    private TcgComponentType mType;
+    
     public ComponentImpl(IEPModel model,  Element e) {
-    	super(model, e);
+        super(model, e);
     }
 
     public ComponentImpl(IEPModel model) {
@@ -48,7 +48,7 @@ public class ComponentImpl extends IEPComponentBase implements Component {
     }
 
     public void accept(IEPVisitor visitor) {
-    	visitor.visitComponent(this);
+        visitor.visitComponent(this);
     }
 
     public IEPComponent createChild(Element childEl) {
@@ -66,7 +66,7 @@ public class ComponentImpl extends IEPComponentBase implements Component {
             } else if (localName.equals(IMPORT_CHILD)) {
                     child = new ImportImpl(getModel(), childEl);
             } else if(localName.equals(DOCUMENTATION_CHILD)) {
-            	child = new DocumentationImpl(getModel(), childEl);
+                child = new DocumentationImpl(getModel(), childEl);
             }
         }
         
@@ -122,54 +122,54 @@ public class ComponentImpl extends IEPComponentBase implements Component {
     }
 
     public Property getProperty(String name) {
-    	Property prop = null;
-    	
-    	List<Property> properties = getProperties();
-    	Iterator<Property> it = properties.iterator(); 
-    	while(it.hasNext()) {
-    		Property p = it.next();
-    		String propName = p.getName();
-    		if(propName.equals(name)) {
-    			prop = p;
-    			break;
-    		}
-    	}
-    	
-    	return prop;
+        Property prop = null;
+        
+        List<Property> properties = getProperties();
+        Iterator<Property> it = properties.iterator(); 
+        while(it.hasNext()) {
+            Property p = it.next();
+            String propName = p.getName();
+            if(propName.equals(name)) {
+                prop = p;
+                break;
+            }
+        }
+        
+        return prop;
     }
     
     public TcgComponentType getComponentType() {
-    	if(mType == null) {
+        if(mType == null) {
             this.mType = TcgModelManager.getInstance().getTcgComponentType(getType());
-    	}
-    	
-    	
+        }
+        
+        
 
         return mType;
     }
     
     public void setDocumentation(Documentation doc) {
-    	if(doc != null) {
-    		Documentation oldDoc = getDocumentation();
-    		if(oldDoc != null) {
-    			oldDoc.setTextContent(doc.getTextContent());
-    		}  else {
-    			addAfter(COMPONENT_CHILD, doc, TypeCollection.FOR_COMPONENT.types());
-    		}
-    	} else {
-    		Documentation oldDoc = getDocumentation();
-    		if(oldDoc != null) {
-    			removeChild(oldDoc);
-    		}
-    	}
+        if(doc != null) {
+            Documentation oldDoc = getDocumentation();
+            if(oldDoc != null) {
+                oldDoc.setTextContent(doc.getTextContent());
+            }  else {
+                addAfter(COMPONENT_CHILD, doc, TypeCollection.FOR_COMPONENT.types());
+            }
+        } else {
+            Documentation oldDoc = getDocumentation();
+            if(oldDoc != null) {
+                removeChild(oldDoc);
+            }
+        }
     }
     
     public Documentation getDocumentation() {
-    	List<Documentation> children = getChildren(Documentation.class);
-    	if(children.size() != 0) {
-    		return children.get(0);
-    	}
-    	
-    	return null;
+        List<Documentation> children = getChildren(Documentation.class);
+        if(children.size() != 0) {
+            return children.get(0);
+        }
+        
+        return null;
     }
 }

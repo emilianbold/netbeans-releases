@@ -44,7 +44,6 @@ package org.netbeans.modules.gsfret.hints;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.Document;
@@ -66,9 +65,13 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
+import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.api.HintsProvider;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.gsfret.hints.infrastructure.GsfHintsManager;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -315,14 +318,35 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
         List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
         
         for (String mimeType : mimeTypes) {
+            Language language = registry.getLanguageByMimeType(mimeType);
+            HintsProvider provider = language.getHintsProvider();
+            GsfHintsManager manager = null;
+            RuleContext ruleContext = null;
+            if (provider != null) {
+                manager = language.getHintsManager();
+                ruleContext = manager.createRuleContext(info, language, -1, -1, -1);
+                if (ruleContext == null) {
+                    continue;
+                }
+            }
+
             for (ParserResult result : info.getEmbeddedResults(mimeType)) {
                 assert result != null;
-
-                HintsProvider provider = registry.getLanguageByMimeType(mimeType).getHintsProvider();
+                
                 List<Error> errors = result.getDiagnostics();
                 List<ErrorDescription> desc = new ArrayList<ErrorDescription>();
                 if (provider != null) {
-                    errors = provider.computeErrors(info, desc);
+                    assert ruleContext != null;
+                    ruleContext.parserResult = result;
+                    List<Error> unhandled = new ArrayList<Error>();
+                    List<Hint> hints = new ArrayList<Hint>();
+                    provider.computeErrors(manager, ruleContext, hints, unhandled);
+                    errors = unhandled;
+                    boolean allowDisableEmpty = true;
+                    for (Hint hint : hints) {
+                        ErrorDescription errorDesc = manager.createDescription(hint, ruleContext, allowDisableEmpty);
+                        descriptions.add(errorDesc);
+                    }
                 }
                 // Process errors without codes
                 desc = computeErrors(info, doc, result, errors, desc);

@@ -42,6 +42,7 @@ package org.netbeans.modules.subversion.client.cli.commands;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -64,6 +65,11 @@ public class SwitchToCommand extends SvnCommand {
     }
        
     @Override
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.SWITCH;
+    }
+    
+    @Override
     public void prepareCommand(Arguments arguments) throws IOException {                     
         arguments.add("switch");
         arguments.add(url);
@@ -71,7 +77,8 @@ public class SwitchToCommand extends SvnCommand {
         if (!rec) {
             arguments.add("-N");               
         }
-        arguments.add(rev);            
+        arguments.add(rev);       
+        setCommandWorkingDirectory(file);
     }
         
 }

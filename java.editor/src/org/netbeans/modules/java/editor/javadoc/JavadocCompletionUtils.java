@@ -67,8 +67,7 @@ import org.netbeans.api.lexer.TokenSequence;
  */
 final class JavadocCompletionUtils {
     
-    static final Pattern JAVADOC_LINE_BREAK = Pattern.compile("\\n[ \\t]*\\*?[ \\t]*\\z"); // NOI18N
-    static final Pattern JAVADOC_LINE_INDENT = Pattern.compile("\\A[ \\t]*\\*.*"); // NOI18N
+    static final Pattern JAVADOC_LINE_BREAK = Pattern.compile("\\n[ \\t]*\\**[ \\t]*\\z"); // NOI18N
     static final Pattern JAVADOC_WHITE_SPACE = Pattern.compile("[^ \\t]"); // NOI18N
     static final Pattern JAVADOC_FIRST_WHITE_SPACE = Pattern.compile("[ \\t]*\\**[ \\t]*"); // NOI18N
     private static Set<JavaTokenId> IGNORE_TOKES = EnumSet.of(
@@ -261,7 +260,7 @@ final class JavadocCompletionUtils {
         CharSequence text = token.text();
         boolean result = pos > 0
                 && JAVADOC_LINE_BREAK.matcher(text.subSequence(0, pos)).find()
-                && (pos == token.length() || !JAVADOC_LINE_INDENT.matcher(text.subSequence(pos, text.length())).find());
+                && (pos == token.length() || !isInsideIndent(token, pos));
         return result;
     }
     

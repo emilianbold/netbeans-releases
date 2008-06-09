@@ -58,19 +58,19 @@ public class SchemaArtifactTreeCellRenderer implements TreeCellRenderer  {
     
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         
-    	
-    	
-    	TreeNodeInterface nodeValue = null;
-    	Icon icon = null;
-    	
-    	if(value instanceof TreeNodeInterface) {
-    		nodeValue = (TreeNodeInterface) value;
-    		icon = nodeValue.getIcon();
-    	}
-    	
+        
+        
+        TreeNodeInterface nodeValue = null;
+        Icon icon = null;
+        
+        if(value instanceof TreeNodeInterface) {
+            nodeValue = (TreeNodeInterface) value;
+            icon = nodeValue.getIcon();
+        }
+        
         
         String  stringValue = tree.convertValueToText(value, false,
-					    expanded, leaf, row, false);
+                        expanded, leaf, row, false);
         
         
         Component comp = null;
@@ -80,7 +80,7 @@ public class SchemaArtifactTreeCellRenderer implements TreeCellRenderer  {
             
             checkBoxRenderer.setSelected(node.isSelected());
             if(icon != null) {
-            	checkBoxRenderer.setIcon(icon);
+                checkBoxRenderer.setIcon(icon);
             }
             checkBoxRenderer.setText(stringValue);
             checkBoxRenderer.setEnabled(tree.isEnabled());
@@ -98,10 +98,10 @@ public class SchemaArtifactTreeCellRenderer implements TreeCellRenderer  {
             comp = checkBoxRenderer;
           
         } else {
-        	if(icon != null) {
-        		mDefaultRenderer.setOpenIcon(icon);
-        		mDefaultRenderer.setClosedIcon(icon);
-        	}
+            if(icon != null) {
+                mDefaultRenderer.setOpenIcon(icon);
+                mDefaultRenderer.setClosedIcon(icon);
+            }
             comp = mDefaultRenderer.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
         }
         

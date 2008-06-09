@@ -143,7 +143,7 @@ public class XsltproProjectGenerator {
 
     private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
         File rootF = dir;
-        while (rootF.getParentFile() != null) {
+        while (rootF.getParentFile() != null /*UNC*/&& rootF.getParentFile().exists()) {
             rootF = rootF.getParentFile();
         }
         FileObject dirFO = FileUtil.toFileObject(rootF);
@@ -156,7 +156,7 @@ public class XsltproProjectGenerator {
         dir.mkdirs();
         // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
         File rootF = dir;
-        while (rootF.getParentFile() != null) {
+        while (rootF.getParentFile() != null /*UNC*/&& rootF.getParentFile().exists()) {
             rootF = rootF.getParentFile();
         }
         // XXX add code to set meta inf directory  (meta-inf and java src)

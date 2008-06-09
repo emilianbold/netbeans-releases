@@ -44,8 +44,6 @@ package org.netbeans.modules.properties;
 
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -69,6 +67,7 @@ import org.openide.windows.TopComponent;
  * Panel which shows bundle of .properties files encapsulated by <code>PropertiesDataObject</code> in one table view.
  *
  * @author  Petr Jiricka
+ * @author  Marian Petras
  */
 public class BundleEditPanel extends JPanel implements PropertyChangeListener {
     
@@ -528,121 +527,98 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
     private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         stopEditing();
         
-        final Dialog[] dialog = new Dialog[1];
-        final Element.ItemElem item = new Element.ItemElem(
-        null,
-        new Element.KeyElem(null, ""), // NOI18N
-        new Element.ValueElem(null, ""), // NOI18N
-        new Element.CommentElem(null, "") // NOI18N
-        );
-        final JPanel panel = new PropertyPanel(item);
+        final PropertyPanel panel = new PropertyPanel();
         
-        DialogDescriptor dd = new DialogDescriptor(
-        panel,
-        NbBundle.getBundle(BundleEditPanel.class).getString("CTL_NewPropertyTitle"),
-        true,
-        DialogDescriptor.OK_CANCEL_OPTION,
-        DialogDescriptor.OK_OPTION,
-        new ActionListener() {
-            public void actionPerformed(ActionEvent evt2) {
-                // OK pressed
-                if(evt2.getSource() == DialogDescriptor.OK_OPTION) {
-                    dialog[0].setVisible(false);
-                    dialog[0].dispose();
-                    
-                    final String key = item.getKey();
-                    String value = item.getValue();
-                    String comment = item.getComment();
-                    
-                    boolean keyAdded = false;
-                    
-                    try {
-                        selectionUpdateDisabled = true;
+        Object selectedOption = DialogDisplayer.getDefault().notify(
+                new DialogDescriptor(
+                        panel,
+                        NbBundle.getMessage(BundleEditPanel.class,
+                                            "CTL_NewPropertyTitle")));  //NOI18N
+        if (selectedOption != NotifyDescriptor.OK_OPTION) {
+            return;
+        }
 
-                        // Starts "atomic" acion for special undo redo manager of open support.
-                        obj.getOpenSupport().atomicUndoRedoFlag = new Object();
-                        
-                        // add key to all entries
-                        for (int i=0; i < obj.getBundleStructure().getEntryCount(); i++) {
-                            PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(i);
-                            
-                            if (entry != null && !entry.getHandler().getStructure().addItem(key, value, comment)) {
-                                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-                                MessageFormat.format(
-                                NbBundle.getBundle(BundleEditPanel.class).getString("MSG_KeyExists"),
-                                new Object[] {
-                                    item.getKey(),
-                                    Util.getLocaleLabel(entry)
-                                }
-                                ),
-                                NotifyDescriptor.ERROR_MESSAGE);
-                                DialogDisplayer.getDefault().notify(msg);
-                            } else {
-                                keyAdded = true;
-                            }
-                        }
-                    } finally {
-                        // Finishes "atomic" undo redo action for special undo redo manager of open support.
-                        obj.getOpenSupport().atomicUndoRedoFlag = null;
+        final String key = panel.getKey();
+        String value = panel.getValue();
+        String comment = panel.getComment();
+        
+        boolean keyAdded = false;
+        
+        try {
+            selectionUpdateDisabled = true;
 
-                        selectionUpdateDisabled = false;
+            // Starts "atomic" acion for special undo redo manager of open support.
+            obj.getOpenSupport().atomicUndoRedoFlag = new Object();
+            
+            // add key to all entries
+            for (int i=0; i < obj.getBundleStructure().getEntryCount(); i++) {
+                PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(i);
+                
+                if (entry != null && !entry.getHandler().getStructure().addItem(key, value, comment)) {
+                    NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
+                    MessageFormat.format(
+                    NbBundle.getBundle(BundleEditPanel.class).getString("MSG_KeyExists"),
+                    new Object[] {
+                        key,
+                        Util.getLocaleLabel(entry)
                     }
-                    
-                    if(keyAdded) {
-                        // Item was added succesfully, go to edit it.
-                        // PENDING: this is in request processor queue only
-                        // due to reason that properties structure has just after
-                        // adding new item inconsistence gap until it's reparsed anew.
-                        // This should be removed when the parsing will be redsigned.
-                        PropertiesRequestProcessor.getInstance().post(new Runnable() {
-                            public void run() {
-                                // Find indexes.
-                                int rowIndex = obj.getBundleStructure().getKeyIndexByName(key);
-                                
-                                if((rowIndex != -1)) {
-                                    final int row = rowIndex;
-                                    final int column = 1; // Default locale.
-                                    
-                                    SwingUtilities.invokeLater(new Runnable() {
-                                        public void run() {
-                                            try {
-                                                selectionUpdateDisabled = true;
+                    ),
+                    NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(msg);
+                } else {
+                    keyAdded = true;
+                }
+            }
+        } finally {
+            // Finishes "atomic" undo redo action for special undo redo manager of open support.
+            obj.getOpenSupport().atomicUndoRedoFlag = null;
 
-                                                // Autoscroll to cell if possible and necessary.
-                                                if(table.getAutoscrolls()) {
-                                                    Rectangle cellRect = table.getCellRect(row, column, false);
-                                                    if (cellRect != null) {
-                                                        table.scrollRectToVisible(cellRect);
-                                                    }
-                                                }
-                                                
-                                                // Update selection & edit.
-                                                table.getColumnModel().getSelectionModel().setSelectionInterval(column, column);
-                                                table.getSelectionModel().setSelectionInterval(row, row);
-                                                
-                                                table.requestFocusInWindow();
-                                                table.editCellAt(row, column);
-                                            } finally {
-                                                selectionUpdateDisabled = false;
-                                            }
+            selectionUpdateDisabled = false;
+        }
+        
+        if(keyAdded) {
+            // Item was added succesfully, go to edit it.
+            // PENDING: this is in request processor queue only
+            // due to reason that properties structure has just after
+            // adding new item inconsistence gap until it's reparsed anew.
+            // This should be removed when the parsing will be redsigned.
+            PropertiesRequestProcessor.getInstance().post(new Runnable() {
+                public void run() {
+                    // Find indexes.
+                    int rowIndex = obj.getBundleStructure().getKeyIndexByName(key);
+                    
+                    if((rowIndex != -1)) {
+                        final int row = rowIndex;
+                        final int column = 1; // Default locale.
+                        
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                try {
+                                    selectionUpdateDisabled = true;
+
+                                    // Autoscroll to cell if possible and necessary.
+                                    if(table.getAutoscrolls()) {
+                                        Rectangle cellRect = table.getCellRect(row, column, false);
+                                        if (cellRect != null) {
+                                            table.scrollRectToVisible(cellRect);
                                         }
-                                    });
+                                    }
+                                    
+                                    // Update selection & edit.
+                                    table.getColumnModel().getSelectionModel().setSelectionInterval(column, column);
+                                    table.getSelectionModel().setSelectionInterval(row, row);
+                                    
+                                    table.requestFocusInWindow();
+                                    table.editCellAt(row, column);
+                                } finally {
+                                    selectionUpdateDisabled = false;
                                 }
                             }
                         });
                     }
-                    
-                    // Cancel pressed
-                } else if (evt2.getSource() == DialogDescriptor.CANCEL_OPTION) {
-                    dialog[0].setVisible(false);
-                    dialog[0].dispose();
                 }
-            }
+            });
         }
-        );
-        
-        dialog[0] = DialogDisplayer.getDefault().createDialog(dd);
-        dialog[0].setVisible(true);
     }//GEN-LAST:event_addButtonActionPerformed
     
     

@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.ProjectBridge;
@@ -216,7 +217,8 @@ public class DiscoveryUtils {
     /**
      * parse compilee line
      */
-    public static String gatherComlilerLine(String line, boolean isScriptOutput, List<String> userIncludes, Map<String, String> userMacros){
+    public static String gatherComlilerLine(String line, boolean isScriptOutput,
+            List<String> userIncludes, Map<String, String> userMacros, Set<String> libraries){
         boolean TRACE = false;
         List<String> list = DiscoveryUtils.scanCommandLine(line);
         boolean hasQuotes = false;
@@ -330,10 +332,14 @@ public class DiscoveryUtils {
                 if (st.hasNext()){
                     st.next();
                 }
-            } else if (option.equals("-l")){ // NOI18N
-                // Skip link with library
-                if (st.hasNext()){
-                    st.next();
+            } else if (option.startsWith("-l")){ // NOI18N
+                String lib = option.substring(2);
+                if (lib.length() == 0 && st.hasNext()){
+                    lib = st.next();
+                }
+                // library
+                if (lib.length()>0 && libraries != null){
+                    libraries.add(lib);
                 }
             } else if (option.equals("-L")){ // NOI18N
                 // Skip library search path

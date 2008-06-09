@@ -199,7 +199,9 @@ public class CCKit extends NbEditorKit {
             new CCDeleteCharAction(deletePrevCharAction, false),
             getToggleCommentAction(),
             getCommentAction(),
-            getUncommentAction()
+            getUncommentAction(),
+            new InsertSemicolonAction(true),
+            new InsertSemicolonAction(false),            
 	};
         ccActions = TextAction.augmentList(super.createActions(), ccActions);
         Action[] extra = CndEditorActionsProvider.getDefault().getActions(getContentType());

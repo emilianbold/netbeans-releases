@@ -292,9 +292,9 @@ public class TableOutputCustomEditor extends TcgComponentNodePropertyEditor {
         
         public void validateContent(PropertyChangeEvent evt) throws PropertyVetoException {
             try {
-            	OperatorComponentContainer ocContainer = mModel.getPlanComponent().getOperatorComponentContainer();
-            	
-            	// name
+                OperatorComponentContainer ocContainer = mModel.getPlanComponent().getOperatorComponentContainer();
+                
+                // name
                 mNamePanel.validateContent(evt);
                 String newName = mNamePanel.getStringValue();
                 String name = mComponent.getDisplayName();

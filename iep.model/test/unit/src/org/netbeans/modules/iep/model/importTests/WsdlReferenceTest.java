@@ -80,11 +80,11 @@ public class WsdlReferenceTest extends TestCase {
     
     public void testImportWSDL()  throws Exception{
         URL url = ImportWSDLTest.class.getResource("data/PurchaseOrderEventProcess.iep");
-    	URI wfFile = url.toURI();
-    	IEPModelProvider provider = new IEPModelProviderInsideIde ();
-    	IEPModel model = provider.getWLMModel(wfFile);
-       	model.sync();
-    	assertNotNull(model);
+        URI wfFile = url.toURI();
+        IEPModelProvider provider = new IEPModelProviderInsideIde ();
+        IEPModel model = provider.getWLMModel(wfFile);
+           model.sync();
+        assertNotNull(model);
 
         //test for import element
         assertEquals(1, model.getPlanComponent().getImports().size());
@@ -195,11 +195,11 @@ public class WsdlReferenceTest extends TestCase {
     
     public void testExistingOperatorImplementingWSDL()  throws Exception{
         URL url = ImportWSDLTest.class.getResource("data/PurchaseOrderEventProcessImplementWsdl.iep");
-    	URI wfFile = url.toURI();
-    	IEPModelProvider provider = new IEPModelProviderInsideIde ();
-    	IEPModel model = provider.getWLMModel(wfFile);
-       	model.sync();
-    	assertNotNull(model);
+        URI wfFile = url.toURI();
+        IEPModelProvider provider = new IEPModelProviderInsideIde ();
+        IEPModel model = provider.getWLMModel(wfFile);
+           model.sync();
+        assertNotNull(model);
 
         //test for import element
         assertEquals(1, model.getPlanComponent().getImports().size());

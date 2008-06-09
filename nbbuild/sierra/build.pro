@@ -123,7 +123,6 @@
         ${test.cvs.path}/PartnerLinks/PLTLocalNamespace
         ${test.cvs.path}/PartnerLinks/TwoBPDuplicateImpl
         ${test.cvs.path}/PartnerLinks/TwoBPs
-        ${test.cvs.path}/PfizerEAP/prjPfizerSupplyChainEAP_BPEL_JMS_2
         ${test.cvs.path}/pick/PickBpel
         ${test.cvs.path}/repeatuntil/RepeatUntilBpel
         ${test.cvs.path}/rethrow/Rethrow

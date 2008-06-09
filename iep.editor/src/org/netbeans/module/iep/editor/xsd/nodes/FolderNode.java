@@ -40,7 +40,7 @@ public class FolderNode extends AbstractSchemaArtifactNode {
             if(image != null) {
                 mIcon = new ImageIcon(image);
             }
-	
+    
         }
         return mIcon;
     }

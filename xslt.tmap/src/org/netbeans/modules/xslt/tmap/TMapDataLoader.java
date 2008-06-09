@@ -36,7 +36,6 @@ import org.openide.util.NbBundle;
 public class TMapDataLoader extends UniFileLoader {
     
     public static final String MIME_TYPE = "text/x-tmap+xml";// NOI18N
-    public static final String TRANSFORMMAP_XML = "transformmap.xml";// NOI18N
     public static final String LOADER_NAME = "LBL_loader_name"; // NOI18N
     public static final String ACTION_CONTEXT = "Loaders/" + 
             MIME_TYPE + "/Actions"; // NOI18N
@@ -67,7 +66,7 @@ public class TMapDataLoader extends UniFileLoader {
     protected FileObject findPrimaryFile( FileObject fo ) {
         FileObject primaryFo = null;
         String extension = fo.getNameExt();
-        if (extension != null && extension.equals(TRANSFORMMAP_XML)) 
+        if (extension != null && extension.equals(TMapConstants.TRANSFORMMAP_XML)) 
         {
             // recognize tmap file only in context of XSLT project
             primaryFo = isXsltProjectContext(fo) ? fo : null;

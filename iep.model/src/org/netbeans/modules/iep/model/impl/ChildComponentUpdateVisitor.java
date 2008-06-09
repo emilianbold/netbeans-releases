@@ -44,66 +44,66 @@ import org.netbeans.modules.xml.xam.dom.DocumentComponent;
  * @author Nam Nguyen
  */
 public class ChildComponentUpdateVisitor<T extends IEPComponent> implements
-		IEPVisitor, ComponentUpdater<T> {
+        IEPVisitor, ComponentUpdater<T> {
 
-	private Operation operation;
+    private Operation operation;
 
-	private IEPComponent parent;
+    private IEPComponent parent;
 
-	private int index;
+    private int index;
 
-	private boolean canAdd = false;
+    private boolean canAdd = false;
 
-	/**
-	 * Creates a new instance of ChildComponentUpdateVisitor
-	 */
-	public ChildComponentUpdateVisitor() {
-	}
+    /**
+     * Creates a new instance of ChildComponentUpdateVisitor
+     */
+    public ChildComponentUpdateVisitor() {
+    }
 
-	public boolean canAdd(IEPComponent target, Component child) {
-		if (!(child instanceof IEPComponent))
-			return false;
-		update(target, (IEPComponent) child, null);
-		return canAdd;
-	}
+    public boolean canAdd(IEPComponent target, Component child) {
+        if (!(child instanceof IEPComponent))
+            return false;
+        update(target, (IEPComponent) child, null);
+        return canAdd;
+    }
 
-	public void update(IEPComponent target, IEPComponent child,
-			Operation operation) {
-		update(target, child, -1, operation);
-	}
+    public void update(IEPComponent target, IEPComponent child,
+            Operation operation) {
+        update(target, child, -1, operation);
+    }
 
-	public void update(IEPComponent target, IEPComponent child, int index,
-			Operation operation) {
-		assert target != null;
-		assert child != null;
+    public void update(IEPComponent target, IEPComponent child, int index,
+            Operation operation) {
+        assert target != null;
+        assert child != null;
 
-		this.parent = target;
-		this.operation = operation;
-		this.index = index;
-		child.accept(this);
-	}
+        this.parent = target;
+        this.operation = operation;
+        this.index = index;
+        child.accept(this);
+    }
 
-	@SuppressWarnings("unchecked")
-	private void addChild(String eventName, DocumentComponent child) {
-		((AbstractComponent) parent).insertAtIndex(eventName, child, index);
-	}
+    @SuppressWarnings("unchecked")
+    private void addChild(String eventName, DocumentComponent child) {
+        ((AbstractComponent) parent).insertAtIndex(eventName, child, index);
+    }
 
-	@SuppressWarnings("unchecked")
-	private void removeChild(String eventName, DocumentComponent child) {
-		((AbstractComponent) parent).removeChild(eventName, child);
-	}
+    @SuppressWarnings("unchecked")
+    private void removeChild(String eventName, DocumentComponent child) {
+        ((AbstractComponent) parent).removeChild(eventName, child);
+    }
 
-	private void checkOperationOnUnmatchedParent() {
-		if (operation != null) {
-			// note this unmatch should be caught by validation,
-			// we don't want the UI view to go blank on invalid but still
-			// well-formed document
-			// throw new IllegalArgumentException("Unmatched parent-child
-			// components"); //NO18N
-		} else {
-			canAdd = false;
-		}
-	}
+    private void checkOperationOnUnmatchedParent() {
+        if (operation != null) {
+            // note this unmatch should be caught by validation,
+            // we don't want the UI view to go blank on invalid but still
+            // well-formed document
+            // throw new IllegalArgumentException("Unmatched parent-child
+            // components"); //NO18N
+        } else {
+            canAdd = false;
+        }
+    }
 
     public void visitComponent(org.netbeans.modules.iep.model.Component component) {
         if (parent instanceof Component) {
@@ -143,7 +143,7 @@ public class ChildComponentUpdateVisitor<T extends IEPComponent> implements
     
     
     public void visitDocumentation(Documentation doc) {
-    	if (parent instanceof Component) {
+        if (parent instanceof Component) {
             if (operation == Operation.ADD) {
                     addChild(org.netbeans.modules.iep.model.Component.COMPONENT_CHILD, doc);
             } else if (operation == Operation.REMOVE) {
@@ -152,38 +152,38 @@ public class ChildComponentUpdateVisitor<T extends IEPComponent> implements
                     canAdd = true;
             }
         }
-    	
+        
     }
     
     public void visitLinkComponentContainer(LinkComponentContainer component) {
-    	visitComponent(component);
+        visitComponent(component);
     }
     
     public void visitLinkComponent(LinkComponent component) {
-    	visitComponent(component);
+        visitComponent(component);
     }
     
     public void visitOperatorComponent(OperatorComponent component) {
-    	visitComponent(component);
+        visitComponent(component);
     }
     
     public void visitOperatorComponentContainer(OperatorComponentContainer component) {
-    	visitComponent(component);
+        visitComponent(component);
     }
     
     public void visitPlanComponent(PlanComponent component) {
-    	visitComponent(component);
+        visitComponent(component);
     }
     
     public void visitSchemaComponent(SchemaComponent component) {
-    	visitComponent(component);    	
+        visitComponent(component);        
     }
     
     public void visitSchemaComponentContainer(SchemaComponentContainer component) {
-    	visitComponent(component);    	
+        visitComponent(component);        
     }
     
     public void visitSchemaAttribute(SchemaAttribute component) {
-    	visitComponent(component);
+        visitComponent(component);
     }
 }

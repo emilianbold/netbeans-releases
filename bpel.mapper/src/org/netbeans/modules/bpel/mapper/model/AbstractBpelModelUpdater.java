@@ -521,18 +521,16 @@ public class AbstractBpelModelUpdater {
                     Integer literalValue = Integer.valueOf(textValue);
                     result = xPathModel.getFactory().
                             newXPathNumericLiteral(literalValue);
-                } catch (NumberFormatException nfEx){
-                     // do nothing
+                } catch (NumberFormatException nfEx) {
+                    // do nothing
                 }
                 //
-                if (result == null) {
-                    try {
-                        Double literalValue = Double.valueOf(textValue);
-                        result = xPathModel.getFactory().
-                                newXPathNumericLiteral(literalValue);
-                    } catch (NumberFormatException nfEx){
-                        // do nothing
-                    }
+                try {
+                    Long literalValue = Long.valueOf(textValue);
+                    result = xPathModel.getFactory().
+                            newXPathNumericLiteral(literalValue);
+                } catch (NumberFormatException nfEx) {
+                    // do nothing
                 }
                 //
                 if (result == null) {
@@ -540,7 +538,17 @@ public class AbstractBpelModelUpdater {
                         Float literalValue = Float.valueOf(textValue);
                         result = xPathModel.getFactory().
                                 newXPathNumericLiteral(literalValue);
-                    } catch (NumberFormatException nfEx){
+                    } catch (NumberFormatException nfEx) {
+                        // do nothing
+                    }
+                }
+                //
+                if (result == null) {
+                    try {
+                        Double literalValue = Double.valueOf(textValue);
+                        result = xPathModel.getFactory().
+                                newXPathNumericLiteral(literalValue);
+                    } catch (NumberFormatException nfEx) {
                         // do nothing
                     }
                 }

@@ -234,9 +234,16 @@ public abstract class EntityMember {
      */
     public abstract boolean supportsFinder();
     
+    public abstract Integer getLength();
+    
+    public abstract Integer getPrecision();
+    
+    public abstract Integer getScale();
+    
     /**
      * override java.lang.Object#equals based on member name.
      */
+    @Override
     public boolean equals(Object other) {
         if (other == null || !(other.getClass().isInstance(getClass()))) {
             return false;
@@ -247,6 +254,7 @@ public abstract class EntityMember {
     /**
      * override java.lang.Object#hashCode
      */
+    @Override
     public int hashCode() {
         return getMemberName().hashCode();
     }

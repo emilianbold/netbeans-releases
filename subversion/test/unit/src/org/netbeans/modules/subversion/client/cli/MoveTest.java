@@ -82,7 +82,7 @@ public class MoveTest extends AbstractCLITest {
         assertNotNull(info);
         assertEquals(getFileUrl(filemove), info.getUrl());
         
-        // XXX notify
+        assertNotifiedFiles(new File[] {});        
     }        
     
     public void testMoveURL2URLPrevRevision() throws Exception {                                        
@@ -104,7 +104,7 @@ public class MoveTest extends AbstractCLITest {
 
         InputStream is = getContent(getFileUrl(filemove));
         assertContents(is, 1);
-        
+        assertNotifiedFiles(new File[] {});        
     }           
     
     public void testMoveFile2File() throws Exception {                                        
@@ -119,7 +119,7 @@ public class MoveTest extends AbstractCLITest {
 
         assertTrue(filemove.exists());
         assertStatus(SVNStatusKind.ADDED, filemove);
-                
+        assertNotifiedFiles(new File[] {file, filemove});                
     }        
     
 }

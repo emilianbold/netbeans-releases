@@ -50,12 +50,13 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Socket;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
@@ -86,8 +87,13 @@ import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
+import org.netbeans.modules.web.client.javascript.debugger.api.IdentityURLMapper;
+import org.netbeans.modules.web.client.javascript.debugger.api.NbJSDebugger;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Support for the builtin Ruby on Rails web server: WEBrick, Mongrel, Lighttpd
@@ -133,6 +139,7 @@ public final class RailsServerManager {
     private RubyExecution execution;
     private File dir;
     private boolean debug;
+    private boolean clientDebug;
     private boolean switchToDebugMode;
     private Semaphore debugSemaphore;
     
@@ -146,6 +153,10 @@ public final class RailsServerManager {
             switchToDebugMode = true;
         }
         this.debug = debug;
+    }
+    
+    public void setClientDebug(boolean clientDebug) {
+        this.clientDebug = clientDebug;
     }
     
     private void ensureRunning() {
@@ -325,7 +336,7 @@ public final class RailsServerManager {
     public void showUrl(final String relativeUrl) {
         synchronized (RailsServerManager.this) {
             if (!switchToDebugMode && status == ServerStatus.RUNNING && isPortInUse(port)) {
-                RailsServerManager.showURL(relativeUrl, port);
+                RailsServerManager.showURL(relativeUrl, port, clientDebug, project);
                 return;
             }
         }
@@ -347,6 +358,7 @@ public final class RailsServerManager {
         handle.start();
         handle.switchToIndeterminate();
 
+        final boolean runClientDebug = clientDebug;
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
@@ -363,7 +375,7 @@ public final class RailsServerManager {
                         synchronized (RailsServerManager.this) {
                             if (status == ServerStatus.RUNNING) {
                                 LOGGER.fine("Server " + server + " started in " + i + " seconds.");
-                                RailsServerManager.showURL(relativeUrl, port);
+                                RailsServerManager.showURL(relativeUrl, port, runClientDebug, project);
                                 return;
                             }
 
@@ -427,16 +439,42 @@ public final class RailsServerManager {
         }
     }
 
-    private static void showURL(String relativeUrl, int port) {
+    private static void showURL(String relativeUrl, int port, boolean runClientDebugger, RailsProject project) {
         LOGGER.fine("Opening URL: " + "http://localhost:" + port + "/" + relativeUrl);
         try {
             URL url = new URL("http://localhost:" + port + "/" + relativeUrl); // NOI18N
-            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+            
+            if (!runClientDebugger) {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+            } else {
+                // launch browser with clientside debugger
+                FileObject projectDocBase = project.getRakeProjectHelper().resolveFileObject("public"); // NOI18N
+                String hostPrefix = "http://localhost:" + port + "/"; // NOI18N
+                                  
+                // TODO provide 'welcome file' mapping
+                IdentityURLMapper mapper = new IdentityURLMapper(hostPrefix, projectDocBase, null);
+                Lookup debugLookup = Lookups.fixed(mapper, project);
+                
+                NbJSDebugger.startDebugging(url.toURI(), getHtmlBrowserFactory(), debugLookup);
+            }
         } catch (MalformedURLException ex) {
+            ErrorManager.getDefault().notify(ex);
+        } catch (URISyntaxException ex) {
             ErrorManager.getDefault().notify(ex);
         }
     }
 
+    private static HtmlBrowser.Factory getHtmlBrowserFactory() {
+        Collection<? extends HtmlBrowser.Factory> htmlBrowserFactories = Lookup.getDefault().lookupAll(HtmlBrowser.Factory.class);
+        for (HtmlBrowser.Factory factory : htmlBrowserFactories) {
+            // Hardcode Firefox
+            if (factory.getClass().getName().equals("org.netbeans.modules.extbrowser.FirefoxBrowser")) { // NOI18N
+                return factory;
+            }
+        }
+        return htmlBrowserFactories.iterator().next();
+    }
+    
     /**
      * @param outputLine the output line to check.
      * @return true if the given <code>outputLine</code> represented 'address in use'

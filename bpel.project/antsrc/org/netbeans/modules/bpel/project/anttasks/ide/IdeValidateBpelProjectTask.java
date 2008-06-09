@@ -258,7 +258,7 @@ public class IdeValidateBpelProjectTask extends Task {
       }
     }
 
-    // ----------------------------
+    // --------------------------
     private static class MyFile {
 
         public MyFile(File file, File project, String qName) {
@@ -280,10 +280,12 @@ public class IdeValidateBpelProjectTask extends Task {
             }
             return file;
         }
+
         private File myFile;
         private File myProject;
         private String myQName;
     }
+
     private String mSourceDirectory;
     private String mProjectClassPath;
     private String mBuildDirectory;

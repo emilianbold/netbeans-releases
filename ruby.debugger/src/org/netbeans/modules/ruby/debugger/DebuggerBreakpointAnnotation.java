@@ -42,10 +42,8 @@
 package org.netbeans.modules.ruby.debugger;
 
 import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
 import org.netbeans.spi.debugger.ui.BreakpointAnnotation;
 import org.openide.text.Annotatable;
-import org.openide.text.Annotation;
 import org.openide.util.NbBundle;
 
 /**

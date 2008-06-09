@@ -104,22 +104,22 @@ public class Utility {
     
     
     public static String generateTargetNamespace(PlanDataObject dataObject) {
-    	Project project = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
-    	StringBuffer tns = new StringBuffer(IEP_TARGETNAMESPACE_PREFIX);
-    	
-    	if(project != null) {
+        Project project = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
+        StringBuffer tns = new StringBuffer(IEP_TARGETNAMESPACE_PREFIX);
+        
+        if(project != null) {
             ProjectInformation pi = ProjectUtils.getInformation(project);
-    		tns.append("/");
-    		tns.append(pi.getName());
-    		tns.append("/");
-    		tns.append(dataObject.getName());
-    	} else {
-    		tns.append("/");
-    		tns.append(dataObject.getName());
-    	}
+            tns.append("/");
+            tns.append(pi.getName());
+            tns.append("/");
+            tns.append(dataObject.getName());
+        } else {
+            tns.append("/");
+            tns.append(dataObject.getName());
+        }
         
         
-    	return tns.toString();
+        return tns.toString();
     }
     
     

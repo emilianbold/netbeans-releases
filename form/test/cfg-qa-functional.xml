@@ -58,7 +58,7 @@ made subject to such option by the copyright holder.
                 <include name="org/netbeans/qa/form/beans/*.*"/>
                 <include name="org/netbeans/qa/form/OpenTempl_defaultPack.*"/>
                 <include name="org/netbeans/qa/form/undoredo/BaseTest.class"/>
-                <include name="org/netbeans/qa/form/options/*.*"/>
+                <include name="org/netbeans/qa/form/options/AutomaticInternationalizationTest.class"/>
                 <include name="org/netbeans/qa/form/binding/SimpleBeansBinding.class"/>
             </patternset>
         </testset>
@@ -130,7 +130,7 @@ made subject to such option by the copyright holder.
     <testbag testattribs="options" executor="ide" name="testbag_options">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="org/netbeans/qa/form/options/*.*"/>
+                <include name="org/netbeans/qa/form/options/AutomaticInternationalizationTest.class"/>
             </patternset>
         </testset>
     </testbag>

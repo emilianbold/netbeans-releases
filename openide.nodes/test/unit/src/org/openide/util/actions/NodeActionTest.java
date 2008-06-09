@@ -63,6 +63,10 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class NodeActionTest extends NbTestCase {
     
+    static {
+        NodeActionsInfraHid.install();
+    }
+
     public NodeActionTest(String name) {
         super(name);
     }
@@ -92,31 +96,31 @@ public class NodeActionTest extends NbTestCase {
     
     public void testBasicUsage() throws Exception {
         SimpleNodeAction a1 = SystemAction.get(SimpleNodeAction.class);
-        ActionsInfraHid.WaitPCL l = new ActionsInfraHid.WaitPCL(NodeAction.PROP_ENABLED);
+        NodeActionsInfraHid.WaitPCL l = new NodeActionsInfraHid.WaitPCL(NodeAction.PROP_ENABLED);
         try {
             // Check enablement logic.
             a1.addPropertyChangeListener(l);
             assertFalse(a1.isEnabled());
             // Note that changes to enabled are made asynch, so it is necessary to listen
             // for that (will not generally take effect immediately).
-            ActionsInfraHid.setCurrentNodes(new Node[] {n1});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n1});
             assertTrue(l.changed());
             l.gotit = 0;
             assertTrue(a1.isEnabled());
-            ActionsInfraHid.setCurrentNodes(new Node[] {n1, n2});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n1, n2});
             assertTrue(l.changed());
             l.gotit = 0;
             assertFalse(a1.isEnabled());
-            ActionsInfraHid.setCurrentNodes(new Node[] {n2});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n2});
             assertTrue(l.changed());
             l.gotit = 0;
             assertTrue(a1.isEnabled());
-            ActionsInfraHid.setCurrentNodes(new Node[] {n3});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n3});
             assertTrue(l.changed());
             l.gotit = 0;
             assertFalse(a1.isEnabled());
             // Check that the action is performed correctly.
-            ActionsInfraHid.setCurrentNodes(new Node[] {n1});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n1});
             assertTrue(l.changed());
             l.gotit = 0;
             assertTrue(a1.isEnabled());
@@ -127,7 +131,7 @@ public class NodeActionTest extends NbTestCase {
                 Collections.singletonList(n1),
             }), a1.runOn);
             // Also that idempotent node list changes do not harm anything, at least.
-            ActionsInfraHid.setCurrentNodes(new Node[] {n1});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n1});
             // It need not fire a change event; if not, just wait a moment for it to recalc.
             if (!l.changed()) {
                 //System.err.println("waiting a moment...");
@@ -135,11 +139,11 @@ public class NodeActionTest extends NbTestCase {
             }
             l.gotit = 0;
             assertTrue(a1.isEnabled());
-            ActionsInfraHid.setCurrentNodes(new Node[] {n3});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n3});
             assertTrue(l.changed());
             l.gotit = 0;
             assertFalse(a1.isEnabled());
-            ActionsInfraHid.setCurrentNodes(new Node[] {n3});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n3});
             if (!l.changed()) {
                 //System.err.println("waiting a moment...");
                 Thread.sleep(1000);
@@ -148,8 +152,8 @@ public class NodeActionTest extends NbTestCase {
             assertFalse(a1.isEnabled());
         } finally {
             a1.removePropertyChangeListener(l);
-            ActionsInfraHid.setCurrentNodes(new Node[0]);
-            ActionsInfraHid.setCurrentNodes(null);
+            NodeActionsInfraHid.setCurrentNodes(new Node[0]);
+            NodeActionsInfraHid.setCurrentNodes(null);
             a1.runOn.clear();
         }
     }
@@ -169,8 +173,8 @@ public class NodeActionTest extends NbTestCase {
             // first check that the action is in fact enabled on those nodes, else
             // throw an IllegalArgumentException; in which case add a test to that effect here
         } finally {
-            ActionsInfraHid.setCurrentNodes(new Node[0]);
-            ActionsInfraHid.setCurrentNodes(null);
+            NodeActionsInfraHid.setCurrentNodes(new Node[0]);
+            NodeActionsInfraHid.setCurrentNodes(null);
             a1.runOn.clear();
         }
     }
@@ -184,7 +188,7 @@ public class NodeActionTest extends NbTestCase {
         // Profiler shows that the references are held only from WeakReference's,
         // one of which is in the finalizer queue. ???
         /*
-        ActionsInfraHid.doGC();
+        NodeActionsInfraHid.doGC();
         assertEquals("Garbage collection removed all SimpleNodeAction's", 0, SimpleNodeAction.INSTANCES);
         helpTestFocusChange();
          */
@@ -192,25 +196,25 @@ public class NodeActionTest extends NbTestCase {
     private void helpTestFocusChange() throws Exception {
         SimpleNodeAction a1 = SystemAction.get(SimpleNodeAction.class);
         DoesNotSurviveFocusChgAction a2 = SystemAction.get(DoesNotSurviveFocusChgAction.class);
-        ActionsInfraHid.WaitPCL l1 = new ActionsInfraHid.WaitPCL(NodeAction.PROP_ENABLED);
-        ActionsInfraHid.WaitPCL l2 = new ActionsInfraHid.WaitPCL(NodeAction.PROP_ENABLED);
+        NodeActionsInfraHid.WaitPCL l1 = new NodeActionsInfraHid.WaitPCL(NodeAction.PROP_ENABLED);
+        NodeActionsInfraHid.WaitPCL l2 = new NodeActionsInfraHid.WaitPCL(NodeAction.PROP_ENABLED);
         try {
             /*
-            assertEquals(null, ActionsInfraHid.getCurrentNodes());
-            assertEquals(Collections.EMPTY_LIST, Arrays.asList(ActionsInfraHid.getActivatedNodes()));
+            assertEquals(null, NodeActionsInfraHid.getCurrentNodes());
+            assertEquals(Collections.EMPTY_LIST, Arrays.asList(NodeActionsInfraHid.getActivatedNodes()));
              */
             a1.addPropertyChangeListener(l1);
             a2.addPropertyChangeListener(l2);
             assertFalse(a1.isEnabled());
             assertFalse(a2.isEnabled());
-            ActionsInfraHid.setCurrentNodes(new Node[] {n1});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n1});
             assertTrue(l1.changed());
             l1.gotit = 0;
             assertTrue(a1.isEnabled());
             assertTrue(l2.changed());
             l2.gotit = 0;
             assertTrue(a2.isEnabled());
-            ActionsInfraHid.setCurrentNodes(null);
+            NodeActionsInfraHid.setCurrentNodes(null);
             assertTrue(l2.changed());
             l2.gotit = 0;
             assertFalse(a2.isEnabled());
@@ -219,7 +223,7 @@ public class NodeActionTest extends NbTestCase {
             }
             l1.gotit = 0;
             assertTrue(a1.isEnabled());
-            ActionsInfraHid.setCurrentNodes(new Node[] {n2});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n2});
             assertTrue(l2.changed());
             l2.gotit = 0;
             assertTrue(a2.isEnabled());
@@ -231,14 +235,14 @@ public class NodeActionTest extends NbTestCase {
             
             // another trick, sets n1 to enable everything and then
             // switches to Node[0] to disable everything
-            ActionsInfraHid.setCurrentNodes(new Node[] {n1});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n1});
             assertTrue(l1.changed());
             l1.gotit = 0;
             assertTrue(a1.isEnabled());
             assertTrue(l2.changed());
             l2.gotit = 0;
             assertTrue(a2.isEnabled());
-            ActionsInfraHid.setCurrentNodes(new Node[0]);
+            NodeActionsInfraHid.setCurrentNodes(new Node[0]);
             assertTrue(l2.changed());
             l2.gotit = 0;
             assertFalse(a2.isEnabled());
@@ -247,8 +251,8 @@ public class NodeActionTest extends NbTestCase {
         } finally {
             a1.removePropertyChangeListener(l1);
             a2.removePropertyChangeListener(l2);
-            ActionsInfraHid.setCurrentNodes(new Node[0]);
-            ActionsInfraHid.setCurrentNodes(null);
+            NodeActionsInfraHid.setCurrentNodes(new Node[0]);
+            NodeActionsInfraHid.setCurrentNodes(null);
         }
         a1 = null;
         a2 = null;
@@ -264,7 +268,7 @@ public class NodeActionTest extends NbTestCase {
      */
     public void testNoRedundantEnablementChecks() throws Exception {
         LazyNodeAction a = SystemAction.get(LazyNodeAction.class);
-        ActionsInfraHid.WaitPCL l = new ActionsInfraHid.WaitPCL(NodeAction.PROP_ENABLED);
+        NodeActionsInfraHid.WaitPCL l = new NodeActionsInfraHid.WaitPCL(NodeAction.PROP_ENABLED);
         try {
             assertEquals(0, a.count);
             assertFalse(a.listeners);
@@ -272,7 +276,7 @@ public class NodeActionTest extends NbTestCase {
             a.addPropertyChangeListener(l);
             assertTrue(a.listeners);
             assertFalse(a.isEnabled());
-            ActionsInfraHid.setCurrentNodes(new Node[] {n1});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n1});
             assertTrue(l.changed());
             l.gotit = 0;
             assertTrue(a.isEnabled());
@@ -282,7 +286,7 @@ public class NodeActionTest extends NbTestCase {
             assertEquals("Adjacent calls to isEnabled() do not recheck the same node selection", 0, a.count);
             /* This is pretty irrelevant, it probably never happens anyway:
             // Make sure equivalent node arrays are not considered significant.
-            ActionsInfraHid.setCurrentNodes(new Node[] {n1});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n1});
             if (!l.changed()) {
                 Thread.sleep(1000);
             }
@@ -291,7 +295,7 @@ public class NodeActionTest extends NbTestCase {
             assertEquals("Adjacent calls to isEnabled() do not recheck equivalent node selections", 0, a.count);
              */
             // But a real change is significant and enable(Node[]) is checked.
-            ActionsInfraHid.setCurrentNodes(new Node[] {n2});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n2});
             if (!l.changed()) {
                 Thread.sleep(1000);
             }
@@ -300,30 +304,30 @@ public class NodeActionTest extends NbTestCase {
             assertEquals("A real change to selection calls enable(Node[]) again", 1, a.count);
             // No checks made just because there was a selection change, but no request.
             a.count = 0;
-            ActionsInfraHid.setCurrentNodes(new Node[] {n1, n3});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n1, n3});
             assertTrue(l.changed());
             l.gotit = 0;
             assertEquals("Do not make extra checks until someone asks", 0, a.count);
-            ActionsInfraHid.setCurrentNodes(new Node[] {n2, n3});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n2, n3});
             assertTrue("Do not keep firing changes when nobody is paying attention", !l.changed());
             // After detaching all listeners, selection changes are not tracked more than once.
             a.removePropertyChangeListener(l);
             assertFalse(a.listeners);
-            ActionsInfraHid.setCurrentNodes(new Node[] {});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {});
             Thread.sleep(1000);
             assertFalse(a.isEnabled());
             a.count = 0;
             assertFalse(a.isEnabled());
             assertEquals("Even with no listeners, adjacent isEnabled()s are clean", 0, a.count);
-            ActionsInfraHid.setCurrentNodes(new Node[] {n3});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n3});
             Thread.sleep(1000);
             assertEquals("With no listeners, node selection changes are ignored", 0, a.count);
             assertTrue(a.isEnabled());
             assertEquals("With no listeners, isEnabled() works on demand", 1, a.count);
         } finally {
             a.removePropertyChangeListener(l);
-            ActionsInfraHid.setCurrentNodes(new Node[0]);
-            ActionsInfraHid.setCurrentNodes(null);
+            NodeActionsInfraHid.setCurrentNodes(new Node[0]);
+            NodeActionsInfraHid.setCurrentNodes(null);
             a.count = 0;
         }
     }
@@ -338,16 +342,16 @@ public class NodeActionTest extends NbTestCase {
      */
     public void testCallSetEnabledDirectly() throws Exception {
         SimpleNodeAction a1 = SystemAction.get(SimpleNodeAction.class);
-        ActionsInfraHid.WaitPCL l = new ActionsInfraHid.WaitPCL(NodeAction.PROP_ENABLED);
+        NodeActionsInfraHid.WaitPCL l = new NodeActionsInfraHid.WaitPCL(NodeAction.PROP_ENABLED);
         try {
             assertFalse(a1.isEnabled());
-            ActionsInfraHid.setCurrentNodes(new Node[] {n1});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n1});
             assertTrue(a1.isEnabled());
             n1.setDisplayName("foo");
             a1.setEnabled(false);
             assertFalse(a1.isEnabled());
             n1.setDisplayName("text");
-            ActionsInfraHid.setCurrentNodes(new Node[] {n2});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n2});
             assertTrue(a1.isEnabled());
             // Now try it with listeners.
             a1.addPropertyChangeListener(l);
@@ -358,7 +362,7 @@ public class NodeActionTest extends NbTestCase {
             l.gotit = 0;
             assertFalse(a1.isEnabled());
             n2.setDisplayName("text");
-            ActionsInfraHid.setCurrentNodes(new Node[] {n1});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n1});
             assertTrue(l.changed());
             l.gotit = 0;
             assertTrue(a1.isEnabled());
@@ -368,15 +372,15 @@ public class NodeActionTest extends NbTestCase {
             l.gotit = 0;
             assertFalse(a1.isEnabled());
             n1.setDisplayName("text");
-            ActionsInfraHid.setCurrentNodes(new Node[] {n2});
+            NodeActionsInfraHid.setCurrentNodes(new Node[] {n2});
             assertTrue(l.changed());
             l.gotit = 0;
             assertTrue(a1.isEnabled());
         } finally {
             a1.removePropertyChangeListener(l);
             n1.setDisplayName("text");
-            ActionsInfraHid.setCurrentNodes(new Node[0]);
-            ActionsInfraHid.setCurrentNodes(null);
+            NodeActionsInfraHid.setCurrentNodes(new Node[0]);
+            NodeActionsInfraHid.setCurrentNodes(null);
         }
     }
     

@@ -87,29 +87,28 @@ public class DBSchemaTableProvider implements TableProvider {
         // need to create all the tables first
         TableElement[] tableElements = schemaElement.getTables();
         for (TableElement tableElement : tableElements) {
-            if (tableElement.isTable()) {
-                boolean join = DbSchemaEjbGenerator.isJoinTable(tableElement);
+            
+            boolean join = DbSchemaEjbGenerator.isJoinTable(tableElement);
 
-                List<DisabledReason> disabledReasons = getDisabledReasons(tableElement, persistenceGen);
-                DisabledReason disabledReason = null;
-                // only take the first disabled reason
-                for (DisabledReason reason : disabledReasons) {
-                    // issue 76202: join tables are not required to have a primary key
-                    // so try the other disabled reasons, if any
-                    if (!(join && reason instanceof NoPrimaryKeyDisabledReason)) {
-                        disabledReason = reason;
-                        break;
-                    }
+            List<DisabledReason> disabledReasons = getDisabledReasons(tableElement, persistenceGen);
+            DisabledReason disabledReason = null;
+            // only take the first disabled reason
+            for (DisabledReason reason : disabledReasons) {
+                // issue 76202: join tables are not required to have a primary key
+                // so try the other disabled reasons, if any
+                if (!(join && reason instanceof NoPrimaryKeyDisabledReason)) {
+                    disabledReason = reason;
+                    break;
                 }
-
-                String tableName = tableElement.getName().getName();
-                DBSchemaTable table = new DBSchemaTable(tableName, join, disabledReason, persistenceGen);
-
-                name2Table.put(tableName, table);
-                name2Referenced.put(tableName, new HashSet<Table>());
-                name2ReferencedBy.put(tableName, new HashSet<Table>());
-                name2Join.put(tableName, new HashSet<Table>());
             }
+
+            String tableName = tableElement.getName().getName();
+            DBSchemaTable table = new DBSchemaTable(tableName, join, disabledReason, persistenceGen, tableElement.isTable());
+
+            name2Table.put(tableName, table);
+            name2Referenced.put(tableName, new HashSet<Table>());
+            name2ReferencedBy.put(tableName, new HashSet<Table>());
+            name2Join.put(tableName, new HashSet<Table>());
         }
 
         // referenced, referenced by and join tables
@@ -155,7 +154,7 @@ public class DBSchemaTableProvider implements TableProvider {
     private static List<DisabledReason> getDisabledReasons(TableElement tableElement, PersistenceGenerator persistenceGen) {
         List<DisabledReason> result = new ArrayList<DisabledReason>();
 
-        if (hasNoPrimaryKey(tableElement)) {
+        if (tableElement.isTable() && hasNoPrimaryKey(tableElement)) {
             result.add(new NoPrimaryKeyDisabledReason());
         }
 
@@ -181,6 +180,11 @@ public class DBSchemaTableProvider implements TableProvider {
 
         public DBSchemaTable(String name, boolean join, DisabledReason disabledReason, PersistenceGenerator persistenceGen) {
             super(name, join, disabledReason);
+            this.persistenceGen = persistenceGen;
+        }
+        
+        public DBSchemaTable(String name, boolean join, DisabledReason disabledReason, PersistenceGenerator persistenceGen, boolean isTable) {
+            super(name, join, disabledReason, isTable);
             this.persistenceGen = persistenceGen;
         }
 

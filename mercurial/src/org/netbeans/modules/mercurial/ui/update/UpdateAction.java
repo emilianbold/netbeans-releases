@@ -110,6 +110,24 @@ public class UpdateAction extends ContextAction {
                     logger.output(
                                 NbBundle.getMessage(UpdateAction.class,
                                 "MSG_UPDATE_INFO_SEP", revStr, root.getAbsolutePath())); // NOI18N
+                    if (doForcedUpdate) {
+                        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(UpdateAction.class, "MSG_UPDATE_CONFIRM_QUERY")); // NOI18N
+                        descriptor.setTitle(NbBundle.getMessage(UpdateAction.class, "MSG_UPDATE_CONFIRM")); // NOI18N
+                        descriptor.setMessageType(JOptionPane.WARNING_MESSAGE);
+                        descriptor.setOptionType(NotifyDescriptor.YES_NO_OPTION);
+
+                        Object res = DialogDisplayer.getDefault().notify(descriptor);
+                        if (res == NotifyDescriptor.NO_OPTION) {
+                            logger.outputInRed(
+                                    NbBundle.getMessage(UpdateAction.class,
+                                    "MSG_UPDATE_CANCELED", root.getAbsolutePath())); // NOI18N
+                            logger.output(""); // NOI18N
+                            return;
+                        }
+                        logger.output(
+                                NbBundle.getMessage(UpdateAction.class,
+                                "MSG_UPDATE_FORCED", root.getAbsolutePath())); // NOI18N  
+                    }
                     List<String> list = HgCommand.doUpdateAll(root, doForcedUpdate, revStr);
                     
                     if (list != null && !list.isEmpty()){

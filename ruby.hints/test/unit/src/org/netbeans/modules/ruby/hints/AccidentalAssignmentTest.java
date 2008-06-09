@@ -53,11 +53,11 @@ public class AccidentalAssignmentTest extends HintTestBase {
     }            
 
     public void testHint1() throws Exception {
-        findHints(this, new AccidentalAssignment(), "testfiles/accidental_assignments.rb", null);
+        checkHints(this, new AccidentalAssignment(), "testfiles/accidental_assignments.rb", null);
     }
     
     public void testHint2() throws Exception {
-        findHints(this, new AccidentalAssignment(), "testfiles/accidental_assignments2.rb", null);
+        checkHints(this, new AccidentalAssignment(), "testfiles/accidental_assignments2.rb", null);
     }
     
     public void testAccidentalAssignments() throws Exception {

@@ -22,6 +22,15 @@ public class DatabaseTableSelectionWizardPanel2 implements WizardDescriptor.Pane
      */
     private DatabaseTableSelectionVisualPanel2 component;
 
+    private boolean mAddWhereClausePanel = true;
+    
+    public DatabaseTableSelectionWizardPanel2() {
+    }
+    
+    public DatabaseTableSelectionWizardPanel2(boolean addWhereClausePanel) {
+        this.mAddWhereClausePanel = addWhereClausePanel;
+    }
+    
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
     // but never displayed, or not all panels are displayed, it is better to

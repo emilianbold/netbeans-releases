@@ -101,7 +101,23 @@ made subject to such option by the copyright holder.
         </patternset>
     </target>
 
-    <target name="compile" depends="init">
+    <target name="up-to-date" depends="init">
+        <uptodate targetfile="${cluster}/${module.jar}" property="is.jar.uptodate">
+            <srcfiles dir="${src.dir}"/>
+            <srcfiles dir="nbproject">
+                <include name="project.xml"/>
+                <include name="project.properties"/>
+            </srcfiles>
+            <srcfiles dir=".">
+                <include name="manifest.mf"/>
+            </srcfiles>
+            <srcresources>
+                <path refid="cp"/>
+            </srcresources>
+        </uptodate>
+    </target>
+
+    <target name="compile" depends="init,up-to-date" unless="is.jar.uptodate">
         <mkdir dir="${build.classes.dir}"/>
         <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="build/depcache">
             <classpath refid="cp"/>
@@ -168,7 +184,7 @@ made subject to such option by the copyright holder.
         </tstamp>
     </target>
     
-    <target name="jar" depends="init,compile,jar-prep">
+    <target name="jar" depends="init,compile,jar-prep" unless="is.jar.uptodate">
         <!-- XXX it seems that using <manifest> forces the JAR to be recreated each time -->
         <!-- (presumably due to the variable OIDE-M-I-V) -->
         <!-- so might have to use e.g. <manifest> task (created in build/ somewhere)? -->

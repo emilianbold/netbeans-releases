@@ -218,8 +218,8 @@
     <target name="clean-soa"><antcall target="do-soa"><param name="action" value="clean"/></antcall></target>
     <target name="do-soa">
         <subant target="${action}" inheritAll="false">
-            <buildpath location="${home}/soa.validation/build.xml"/>
             <buildpath location="${home}/soa.ui/build.xml"/>
+            <buildpath location="${home}/soa.validation/build.xml"/>
             <buildpath location="${home}/soa.mappercore/build.xml"/>
             <buildpath location="${home}/soa.mapper/build.xml"/>
             <buildpath location="${home}/soa.reportgenerator/build.xml"/>

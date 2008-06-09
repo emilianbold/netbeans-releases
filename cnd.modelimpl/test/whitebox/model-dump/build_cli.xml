@@ -51,14 +51,15 @@ Contributor(s):
     <property name="test.dir" value="."/>
     <property name="main.class" value="modeldump.ModelDump"/>
 
-    <property name="nbdist.path" value="/opt/netbeans/5.5"/>
-    <property name="platform" value="platform6"/>
-    <property name="ide" value="ide7"/>
+    <property name="nbdist.path" value="../../../../nbbuild/netbeans"/>
+    <property name="platform" value="platform8"/>
+    <property name="ide" value="ide9"/>
     
-    <property name="cnddist.path" value="../../../../suite/build/cluster"/>
+    <property name="cnddist.path" value="../../../../nbbuild/netbeans/cnd2"/>
     
     <path id="cnd.modules">
         <fileset dir="${cnddist.path}/modules">
+            <include name="org-netbeans-modules-cnd-dwarfdump.jar"/>
             <include name="org-netbeans-modules-cnd-api-model.jar"/>
             <include name="org-netbeans-modules-cnd-modelimpl.jar"/>
             <include name="org-netbeans-modules-cnd-antlr.jar"/>
@@ -66,6 +67,28 @@ Contributor(s):
             <include name="org-netbeans-modules-cnd.jar"/>
             <include name="org-netbeans-modules-cnd-apt.jar"/>
 	    <include name="org-netbeans-modules-cnd-repository.jar"/>
+            <include name="org-netbeans-modules-cnd-repository-api.jar"/>
+            <include name="org-netbeans-modules-cnd-api-project.jar"/>
+            <include name="org-netbeans-modules-cnd-utils.jar"/>
+        </fileset>
+        <fileset dir="${nbdist.path}/${platform}/modules">
+            <include name="org-openide-nodes.jar"/>            
+            <include name="org-openide-loaders.jar"/>
+            <include name="org-netbeans-api-progress.jar"/>
+            <include name="org-netbeans-modules-queries.jar"/>
+        </fileset>
+        <fileset dir="${nbdist.path}/${platform}/core">
+            <include name="core.jar"/>            
+            <include name="org-openide-filesystems.jar"/>
+        </fileset>
+        <fileset dir="${nbdist.path}/${platform}/lib">
+            <include name="org-openide-util.jar"/>            
+            <include name="org-openide-modules.jar"/>
+            <include name="boot.jar"/>
+        </fileset>
+        <fileset dir="${nbdist.path}/${ide}/modules">
+            <include name="org-netbeans-modules-projectuiapi.jar"/>            
+            <include name="org-netbeans-modules-projectapi.jar"/>
         </fileset>
     </path>
 

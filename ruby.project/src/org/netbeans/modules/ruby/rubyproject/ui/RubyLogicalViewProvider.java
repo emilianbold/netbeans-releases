@@ -42,19 +42,11 @@
 package org.netbeans.modules.ruby.rubyproject.ui;
 
 import java.awt.Image;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JSeparator;
 import javax.swing.event.ChangeEvent;
@@ -63,10 +55,9 @@ import org.netbeans.modules.ruby.rubyproject.RubyActionProvider;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.rubyproject.AutoTestSupport;
+import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunnerAction;
@@ -78,22 +69,15 @@ import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
-import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileStatusEvent;
-import org.openide.filesystems.FileStatusListener;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
@@ -250,20 +234,13 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
     
     /** Filter node containin additional features for the Ruby physical
      */
-    private final class RubyLogicalViewRootNode extends AbstractNode implements Runnable, FileStatusListener, ChangeListener, PropertyChangeListener {
+    private final class RubyLogicalViewRootNode extends AbstractNode {
         
         //private Action brokenLinksAction;
         private boolean broken;         //Represents a state where project has a broken reference repairable by broken reference support
         private boolean illegalState;   //Represents a state where project is not in legal state, eg invalid source/target level
         
-        private Set<FileObject> files;
-        private Map<FileSystem, FileStatusListener> fileSystemListeners;
-        private RequestProcessor.Task task;
-        private final Object privateLock = new Object();
-        private boolean iconChange;
-        private boolean nameChange;
-        private ChangeListener sourcesListener;
-        private Map<SourceGroup, PropertyChangeListener> groupsListeners;
+        private final RSpecSupport rspecSupport;
         
         public RubyLogicalViewRootNode() {
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-ruby-rubyproject/Nodes"), 
@@ -277,7 +254,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
                 illegalState = true;
             }
             //brokenLinksAction = new BrokenLinksAction();
-            setProjectFiles(project);
+            this.rspecSupport = new RSpecSupport(project);
         }
 
         public @Override String getShortDescription() {
@@ -287,74 +264,6 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             }
             String dirName = FileUtil.getFileDisplayName(project.getProjectDirectory());
             return NbBundle.getMessage(RubyLogicalViewProvider.class, "RubyLogicalViewProvider.ProjectTooltipDescription", dirName, platformDesc);
-        }
-        
-        protected void setProjectFiles(Project project) {
-            Sources sources = ProjectUtils.getSources(project);  // returns singleton
-            if (sourcesListener == null) {
-                sourcesListener = WeakListeners.change(this, sources);
-                sources.addChangeListener(sourcesListener);
-            }
-            setGroups(Arrays.asList(sources.getSourceGroups(Sources.TYPE_GENERIC)));
-        }
-        
-        
-        private void setGroups(Collection groups) {
-            if (groupsListeners != null) {
-                for (SourceGroup group : groupsListeners.keySet()) {
-                    PropertyChangeListener pcl = groupsListeners.get(group);
-                    group.removePropertyChangeListener(pcl);
-                }
-            }
-            groupsListeners = new HashMap<SourceGroup, PropertyChangeListener>();
-            Set<FileObject> roots = new HashSet<FileObject>();
-            Iterator it = groups.iterator();
-            while (it.hasNext()) {
-                SourceGroup group = (SourceGroup) it.next();
-                PropertyChangeListener pcl = WeakListeners.propertyChange(this, group);
-                groupsListeners.put(group, pcl);
-                group.addPropertyChangeListener(pcl);
-                FileObject fo = group.getRootFolder();
-                roots.add(fo);
-            }
-            setFiles(roots);
-        }
-        
-        protected void setFiles(Set<FileObject> files) {
-            if (fileSystemListeners != null) {
-                Iterator it = fileSystemListeners.keySet().iterator();
-                while (it.hasNext()) {
-                    FileSystem fs = (FileSystem) it.next();
-                    FileStatusListener fsl = fileSystemListeners.get(fs);
-                    fs.removeFileStatusListener(fsl);
-                }
-            }
-            
-            fileSystemListeners = new HashMap<FileSystem, FileStatusListener>();
-            this.files = files;
-            if (files == null) {
-                return;
-            }
-            
-            Iterator it = files.iterator();
-            Set<FileSystem> hookedFileSystems = new HashSet<FileSystem>();
-            while (it.hasNext()) {
-                FileObject fo = (FileObject) it.next();
-                try {
-                    FileSystem fs = fo.getFileSystem();
-                    if (hookedFileSystems.contains(fs)) {
-                        continue;
-                    }
-                    hookedFileSystems.add(fs);
-                    FileStatusListener fsl = FileUtil.weakFileStatusListener(this, fs);
-                    fs.addFileStatusListener(fsl);
-                    fileSystemListeners.put(fs, fsl);
-                } catch (FileStateInvalidException e) {
-                    ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e, ErrorManager.UNKNOWN, "Cannot get " + fo + " filesystem, ignoring...", null, null, null); // NOI18N
-                    err.notify(ErrorManager.INFORMATIONAL, e);
-                }
-            }
         }
         
         public @Override String getHtmlDisplayName() {
@@ -369,93 +278,13 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
         }
         
         public @Override Image getIcon(int type) {
-            Image img = getMyIcon(type);
-            
-            if (files != null && files.iterator().hasNext()) {
-                try {
-                    FileObject fo = files.iterator().next();
-                    img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
-                } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                }
-            }
-            
-            return img;
-        }
-        
-        private Image getMyIcon(int type) {
             Image original = super.getIcon(type);
             return broken || illegalState ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
         }
         
         public @Override Image getOpenedIcon(int type) {
-            Image img = getMyOpenedIcon(type);
-            
-            if (files != null && files.iterator().hasNext()) {
-                try {
-                    FileObject fo = files.iterator().next();
-                    img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
-                } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                }
-            }
-            
-            return img;
-        }
-        
-        private Image getMyOpenedIcon(int type) {
             Image original = super.getOpenedIcon(type);
             return broken || illegalState ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
-        }
-        
-        public void run() {
-            boolean fireIcon;
-            boolean fireName;
-            synchronized (privateLock) {
-                fireIcon = iconChange;
-                fireName = nameChange;
-                iconChange = false;
-                nameChange = false;
-            }
-            if (fireIcon) {
-                fireIconChange();
-                fireOpenedIconChange();
-            }
-            if (fireName) {
-                fireDisplayNameChange(null, null);
-            }
-        }
-        
-        public void annotationChanged(FileStatusEvent event) {
-            if (task == null) {
-                task = RequestProcessor.getDefault().create(this);
-            }
-            
-            synchronized (privateLock) {
-                if ((iconChange && event.isIconChange()) || (nameChange && event.isNameChange())) {
-                    Iterator it = files.iterator();
-                    while (it.hasNext()) {
-                        FileObject fo = (FileObject) it.next();
-                        if (event.hasChanged(fo)) {
-                            iconChange |= event.isIconChange();
-                            nameChange |= event.isNameChange();
-                        }
-                    }
-                }
-            }
-            
-            task.schedule(50); // batch by 50 ms
-        }
-        
-        // sources change
-        public void stateChanged(ChangeEvent e) {
-            setProjectFiles(project);
-            fireShortDescriptionChange(null, null);
-        }
-        
-        // group change
-        public void propertyChange(PropertyChangeEvent evt) {
-            setProjectFiles(project);
         }
         
         public @Override Action[] getActions( boolean context ) {
@@ -473,18 +302,6 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
         public @Override HelpCtx getHelpCtx() {
             return new HelpCtx(RubyLogicalViewRootNode.class);
         }
-        
-        /*
-        public boolean canDestroy() {
-            return true;
-        }
-         
-        public void destroy() throws IOException {
-            System.out.println("Destroy " + project.getProjectDirectory());
-            LogicalViews.closeProjectAction().actionPerformed(new ActionEvent(this, 0, ""));
-            project.getProjectDirectory().delete();
-        }
-         */
         
         // Private methods -------------------------------------------------------------
         
@@ -512,6 +329,9 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"), null)); // NOI18N
             if (AutoTestSupport.isInstalled(project)) {
                 actions.add(ProjectSensitiveActions.projectCommandAction(RubyActionProvider.COMMAND_AUTOTEST, bundle.getString("LBL_AutoTest"), null)); // NOI18N
+            }
+            if (rspecSupport.isRSpecInstalled()) {
+                actions.add(ProjectSensitiveActions.projectCommandAction(RubyActionProvider.COMMAND_RSPEC, bundle.getString("LBL_RSpec"), null)); // NOI18N
             }
             actions.add(CommonProjectActions.setProjectConfigurationAction());
             actions.add(null);
@@ -549,10 +369,6 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             return actions.toArray(new Action[actions.size()]);
         }
         
-//        private boolean isBroken() {
-//            return this.broken;
-//        }
-//        
 //        private void setBroken(boolean broken) {
 //            this.broken = broken;
 //            //brokenLinksAction.setEnabled(broken);

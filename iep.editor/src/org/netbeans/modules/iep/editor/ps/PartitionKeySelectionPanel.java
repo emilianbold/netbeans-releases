@@ -65,7 +65,7 @@ public class PartitionKeySelectionPanel extends JPanel implements SharedConstant
     /** Creates a new instance of PartitionKeySelectionPanel */
     public PartitionKeySelectionPanel(IEPModel model, OperatorComponent component) {
         try {
-        	mModel = model;
+            mModel = model;
             mComponent = component;
             String msg = NbBundle.getMessage(InputSchemaSelectionPanel.class, "PartitionKeySelectionPanel.SELECTED_PARTITION_KEY");
             setBorder(new TitledBorder(LineBorder.createGrayLineBorder(), msg, TitledBorder.LEFT, TitledBorder.TOP));
@@ -112,9 +112,9 @@ public class PartitionKeySelectionPanel extends JPanel implements SharedConstant
             List<SchemaAttribute> attrs = outputSchema.getSchemaAttributes();
             Iterator<SchemaAttribute> attrsIt = attrs.iterator();
             while(attrsIt.hasNext()) {
-            	SchemaAttribute sa = attrsIt.next();
-            	mAttributeList.add(sa);
-            	String attributeName = sa.getName();
+                SchemaAttribute sa = attrsIt.next();
+                mAttributeList.add(sa);
+                String attributeName = sa.getName();
                 JCheckBox cb = new JCheckBox(attributeName);
                 mCheckBoxList.add(cb);
                 if (attributeList.contains(attributeName)) {
@@ -187,7 +187,7 @@ public class PartitionKeySelectionPanel extends JPanel implements SharedConstant
     public List getAttributeNameList(Set types) throws Exception {
         List attributeNameList = new ArrayList();
         for (int i = 0, I = mAttributeList.size(); i < I; i++) {
-        	SchemaAttribute cm = (SchemaAttribute)mAttributeList.get(i);
+            SchemaAttribute cm = (SchemaAttribute)mAttributeList.get(i);
             String name = cm.getAttributeName();
             String type = cm.getAttributeType();
             if ( type != null && types.contains(type)) {
@@ -215,11 +215,11 @@ public class PartitionKeySelectionPanel extends JPanel implements SharedConstant
             }
             Property prop = mComponent.getProperty(ATTRIBUTE_LIST_KEY);
             if (!sb.toString().equals(prop.getValue())) {
-            	prop.getModel().startTransaction();
+                prop.getModel().startTransaction();
                 //ritprop.setValue(partitionKey);
-            	prop.setValue(sb.toString());
-            	prop.getModel().endTransaction();
-            	
+                prop.setValue(sb.toString());
+                prop.getModel().endTransaction();
+                
             }
         } catch (Exception e) {
             mLog.log(Level.SEVERE, e.getMessage(), e);

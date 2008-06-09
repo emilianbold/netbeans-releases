@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.Map;
 import org.mozilla.javascript.Node;
 import org.mozilla.javascript.Token;
@@ -65,9 +66,9 @@ import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 public class JsSemanticAnalyzer implements SemanticAnalyzer {
 
     private boolean cancelled;
-    private Map<OffsetRange, ColoringAttributes> semanticHighlights;
+    private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
 
-    public Map<OffsetRange, ColoringAttributes> getHighlights() {
+    public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
         return semanticHighlights;
     }
 
@@ -101,12 +102,12 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
         }
 
         VariableVisitor visitor = rpr.getVariableVisitor();
-        Map<OffsetRange, ColoringAttributes> highlights =
-                new HashMap<OffsetRange, ColoringAttributes>(100);
+        Map<OffsetRange, Set<ColoringAttributes>> highlights =
+                new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
         Collection<Node> unusedVars = visitor.getUnusedVars();
         for (Node node : unusedVars) {
             OffsetRange range = AstUtilities.getNameRange(node);
-            highlights.put(range, ColoringAttributes.UNUSED);
+            highlights.put(range, ColoringAttributes.UNUSED_SET);
         }
 
         Collection<Node> globalVars = visitor.getGlobalVars(false);
@@ -124,9 +125,9 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
             }
             if (Character.isUpperCase(s.charAt(0))) {
                 // A property which mimics a class
-                highlights.put(range, ColoringAttributes.CLASS);
+                highlights.put(range, ColoringAttributes.CLASS_SET);
             } else {
-                highlights.put(range, ColoringAttributes.GLOBAL);
+                highlights.put(range, ColoringAttributes.GLOBAL_SET);
             }
         }
         
@@ -134,19 +135,19 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
         AstUtilities.addNodesByType(root, new int[] { Token.REGEXP, Token.FUNCNAME, Token.OBJLITNAME }, regexps);
         for (Node node : regexps) {
             OffsetRange range = AstUtilities.getNameRange(node);
-            if(JsModel.isGeneratedIdentifier(node.getString())) {
+            if(node.isStringNode() && JsModel.isGeneratedIdentifier(node.getString())) {
                 continue;
             }
             final int type = node.getType();
             if (type == Token.REGEXP) {
-                highlights.put(range, ColoringAttributes.REGEXP);
+                highlights.put(range, ColoringAttributes.REGEXP_SET);
             } else if (type == Token.OBJLITNAME) {
                  if (AstUtilities.isLabelledFunction(node)) {
-                    highlights.put(range, ColoringAttributes.METHOD);
+                    highlights.put(range, ColoringAttributes.METHOD_SET);
                  }
             } else {
                 assert type == Token.FUNCNAME;
-                highlights.put(range, ColoringAttributes.METHOD);
+                highlights.put(range, ColoringAttributes.METHOD_SET);
             }
         }
         
@@ -156,8 +157,8 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
 
         if (highlights.size() > 0) {
             if (rpr.getTranslatedSource() != null) {
-                Map<OffsetRange, ColoringAttributes> translated = new HashMap<OffsetRange, ColoringAttributes>(2 * highlights.size());
-                for (Map.Entry<OffsetRange, ColoringAttributes> entry : highlights.entrySet()) {
+                Map<OffsetRange, Set<ColoringAttributes>> translated = new HashMap<OffsetRange, Set<ColoringAttributes>>(2 * highlights.size());
+                for (Map.Entry<OffsetRange, Set<ColoringAttributes>> entry : highlights.entrySet()) {
                     OffsetRange range = LexUtilities.getLexerOffsets(info, entry.getKey());
                     if (range != OffsetRange.NONE) {
                         translated.put(range, entry.getValue());

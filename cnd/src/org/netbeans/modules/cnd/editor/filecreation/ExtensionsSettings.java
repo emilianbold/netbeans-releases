@@ -113,7 +113,9 @@ public class ExtensionsSettings {
     
     private void setDefaultExtension(String value, boolean addIfMissed) {
         if (addIfMissed && !isKnownExtension(value)) {
-            getExtensionList().addExtension(value);
+            CndExtensionList el = getExtensionList();
+            el.addExtension(value);
+            setExtensionList(el);
         }
         preferences.put(DEFAULT_EXTENSION_PREFIX + name, value);
     }

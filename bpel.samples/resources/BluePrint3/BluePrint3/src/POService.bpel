@@ -84,10 +84,8 @@
             <sequence>
                 <assign name="Assign1_1">
                     <copy>
-                        <from variable="inventoryServiceFault"
-                              part="faultInfo"/>
-                        <to variable="purchaseOrderFault"
-                            part="faultInfo"/>
+                        <from variable="inventoryServiceFault" part="faultInfo"/>
+                        <to variable="purchaseOrderFault" part="faultInfo"/>
                     </copy>
                 </assign>
                 <reply name="sendPurchaseOrder.Fault"
@@ -113,10 +111,8 @@
                 <to>$purchaseOrderRequest.purchaseOrder/po:price</to>
             </copy>
             <copy>
-                <from variable="purchaseOrderRequest"
-                      part="purchaseOrder"/>
-                <to variable="inventoryServiceRequest"
-                    part="purchaseOrder"/>
+                <from variable="purchaseOrderRequest" part="purchaseOrder"/>
+                <to variable="inventoryServiceRequest" part="purchaseOrder"/>
             </copy>
         </assign>
         <if name="Decision">
@@ -141,10 +137,8 @@
                 outputVariable="inventoryServiceReply"/>
         <assign name="Assign">
             <copy>
-                <from variable="purchaseOrderRequest"
-                      part="purchaseOrder"/>
-                <to variable="purchaseOrderReply"
-                    part="purchaseOrder"/>
+                <from variable="purchaseOrderRequest" part="purchaseOrder"/>
+                <to variable="purchaseOrderReply" part="purchaseOrder"/>
             </copy>
         </assign>
         <reply name="sendPurchaseOrder.Reply"

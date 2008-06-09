@@ -55,35 +55,34 @@ public class ClassFieldsTest extends SemanticHighlightingTestBase {
         super(testName);
     }
 
-    public void testNoMore() {}
+    public void testClassFieldsInItsMethodsBody() throws Exception {
+        String source = "welcome.cc"; // NOI18N
+        performTest(source, source + ".dat", null); // NOI18N
+    }
     
     protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
-        List<? extends CsmOffsetable> list = SemanticHighlighter.getFieldsBlocks(testFile);
+        List<? extends CsmOffsetable> list = ModelUtils.getFieldsBlocks(testFile);
         assert list != null && list.size() > 0;
         return list;
     }
 
-    /////////////////////////////////////////////////////////////////////
-    // FAILS
-    public static class Failed extends SemanticHighlightingTestBase {
-
-        public void testClassFieldsInItsMethodsBody() throws Exception {
-            String source = "welcome.cc"; // NOI18N
-            performTest(source, source + ".dat", null); // NOI18N
-        }
-
-        public Failed(String testName) {
-            super(testName);
-        }
-
-        public void testOK() {
-
-        }
-
-        protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
-            List<? extends CsmOffsetable> list = SemanticHighlighter.getFieldsBlocks(testFile);
-            assert list != null && list.size() > 0;
-            return list;
-        }
-    }
+//    /////////////////////////////////////////////////////////////////////
+//    // FAILS
+//    public static class Failed extends SemanticHighlightingTestBase {
+//
+//
+//        public Failed(String testName) {
+//            super(testName);
+//        }
+//
+//        public void testOK() {
+//
+//        }
+//
+//        protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
+//            List<? extends CsmOffsetable> list = SemanticHighlighter.getFieldsBlocks(testFile);
+//            assert list != null && list.size() > 0;
+//            return list;
+//        }
+//    }
 }

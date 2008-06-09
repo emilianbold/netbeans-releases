@@ -56,6 +56,8 @@ import org.netbeans.modules.bpel.model.ext.editor.api.Editor;
 import org.netbeans.modules.bpel.model.ext.editor.api.Casts;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 import org.netbeans.modules.bpel.model.ext.editor.xam.EditorElements;
+import org.netbeans.modules.bpel.model.ext.logging.api.Alert;
+import org.netbeans.modules.bpel.model.ext.logging.api.Log;
 import org.netbeans.modules.bpel.model.spi.EntityFactory;
 import org.w3c.dom.Element;
 
@@ -119,6 +121,8 @@ public class EditorEntityFactory implements EntityFactory {
                     Copy.class,
                     ForEach.class,
                     RepeatUntil.class,
-                    While.class)
+                    While.class,
+                    Log.class,
+                    Alert.class)
                     );
 }

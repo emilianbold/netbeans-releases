@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+<fontscolors>
+    <fontcolor default="identifier" name="makefile-identifier"/>
+    <fontcolor default="error" name="makefile-errors"/>
+    <fontcolor default="number" name="makefile-global-special-characters">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="string" name="makefile-string-literal"/>
+    <fontcolor default="operator" name="makefile-rules"/>
+    <fontcolor default="whitespace" name="makefile-whitespace"/>
+    <fontcolor default="operator" name="makefile-macro-operators"/>
+    <fontcolor default="operator" name="makefile-targets">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="field" name="makefile-macros">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="comment" name="makefile-line-comment"/>
+</fontscolors>

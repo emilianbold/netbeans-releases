@@ -97,7 +97,7 @@ public class TextAreaEditor extends SingleTcgComponentNodePropertyEditor {
         }
         
         protected void initialize() {
-        	getContentPane().setLayout(new BorderLayout());
+            getContentPane().setLayout(new BorderLayout());
             String msg = NbBundle.getMessage(TextAreaEditor.class,
                     "TextAreaEditor.PLEASE_KEEP_ONE_ITEM_PER_LINE");
             setBorder(new TitledBorder(LineBorder.createGrayLineBorder(), msg, TitledBorder.LEFT, TitledBorder.TOP));

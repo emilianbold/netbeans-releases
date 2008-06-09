@@ -46,7 +46,7 @@ public class AccidentalAssignmentTest extends HintTestBase {
     }            
 
     public void testHint1() throws Exception {
-        findHints(this, new AccidentalAssignment(), "testfiles/prototype.js", null);
+        checkHints(this, new AccidentalAssignment(), "testfiles/prototype.js", null);
     }
 
     public void testFix1() throws Exception {

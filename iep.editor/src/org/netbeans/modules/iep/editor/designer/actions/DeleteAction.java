@@ -28,21 +28,21 @@ import com.nwoods.jgo.JGoSelection;
 
 public class DeleteAction extends AbstractAction {
 
-	public final static String DELETE_NAME = "delete";
+    public final static String DELETE_NAME = "delete";
     
-	private PlanCanvas mCanvas;
-	
-	private IEPModel mModel;
-	
-	
-	public DeleteAction(PlanCanvas canvas, IEPModel model) {
-	   super(DELETE_NAME);
-	   this.mCanvas = canvas;
-	   this.mModel = model;
-	}
-	
-	public void actionPerformed(ActionEvent e) {
-		Set<OperatorComponent> nodeSet = new HashSet<OperatorComponent>();
+    private PlanCanvas mCanvas;
+    
+    private IEPModel mModel;
+    
+    
+    public DeleteAction(PlanCanvas canvas, IEPModel model) {
+       super(DELETE_NAME);
+       this.mCanvas = canvas;
+       this.mModel = model;
+    }
+    
+    public void actionPerformed(ActionEvent e) {
+        Set<OperatorComponent> nodeSet = new HashSet<OperatorComponent>();
         Set<LinkComponent> linkSet = new HashSet<LinkComponent>();
         Set<SchemaComponent> schemaSet =  new HashSet<SchemaComponent>();
         
@@ -57,7 +57,7 @@ public class DeleteAction extends AbstractAction {
             }
             obj = obj.getDraggingObject();
             if (obj instanceof EntityNode) {
-            	OperatorComponent oc = (OperatorComponent) ((EntityNode)obj).getModelComponent(); 
+                OperatorComponent oc = (OperatorComponent) ((EntityNode)obj).getModelComponent(); 
                 nodeSet.add(oc);
                 
                 addInputLinksOfAnOperator(oc, linkSet);
@@ -65,10 +65,10 @@ public class DeleteAction extends AbstractAction {
                 addOutputLinksOfAnOperator(oc, linkSet);
             
                 if(oc.isSchemaOwner()) {
-                	SchemaComponent schema = oc.getOutputSchemaId();
-                	if(schema != null) {
-                		schemaSet.add(schema);
-                	}
+                    SchemaComponent schema = oc.getOutputSchemaId();
+                    if(schema != null) {
+                        schemaSet.add(schema);
+                    }
                 }
                 
                 continue;
@@ -92,57 +92,57 @@ public class DeleteAction extends AbstractAction {
         
         Iterator<OperatorComponent> itComp = nodeSet.iterator();
         while(itComp.hasNext()) {
-        	OperatorComponent opComp = itComp.next();
+            OperatorComponent opComp = itComp.next();
             opContainer.removeOperatorComponent(opComp);
         }
         
         Iterator<LinkComponent> itLink = linkSet.iterator();
         while(itLink.hasNext()) {
-        	LinkComponent lc = itLink.next();
-        	linkContainer.removeLinkComponent(lc);
+            LinkComponent lc = itLink.next();
+            linkContainer.removeLinkComponent(lc);
         }
         
         Iterator<SchemaComponent> itSchema = schemaSet.iterator();
         while(itSchema.hasNext()) {
-        	SchemaComponent sc = itSchema.next();
+            SchemaComponent sc = itSchema.next();
             schemaContainer.removeSchemaComponent(sc);
         }
         
         
         mModel.endTransaction();
-	}
-	
-	private void addInputLinksOfAnOperator(OperatorComponent opComp, Set linkList) {
-		List<OperatorComponent> inputOps = opComp.getInputOperatorList();
-		Iterator<OperatorComponent> it = inputOps.iterator();
-		
-		PlanComponent planComp = opComp.getModel().getPlanComponent();
-		LinkComponentContainer lcContainer = planComp.getLinkComponentContainer();
-		
-		while(it.hasNext()) {
-			OperatorComponent oc = it.next();
-			LinkComponent lcComp = lcContainer.findLink(oc, opComp);
-			if(lcComp != null) {
-				linkList.add(lcComp);
-			}
-		}
-		
-	}
-	
-	private void addOutputLinksOfAnOperator(OperatorComponent opComp, Set linkList) {
-		PlanComponent planComp = opComp.getModel().getPlanComponent();
-		LinkComponentContainer lcContainer = planComp.getLinkComponentContainer();
-		OperatorComponentContainer ocContainer = planComp.getOperatorComponentContainer();
-		List<OperatorComponent> outputOps = ocContainer.findOutputOperator(opComp);
-		Iterator<OperatorComponent> it = outputOps.iterator();
-		
-		while(it.hasNext()) {
-			OperatorComponent oc = it.next();
-			LinkComponent lcComp = lcContainer.findLink(opComp, oc);
-			if(lcComp != null) {
-				linkList.add(lcComp);
-			}
-		}
-		
-	}
+    }
+    
+    private void addInputLinksOfAnOperator(OperatorComponent opComp, Set linkList) {
+        List<OperatorComponent> inputOps = opComp.getInputOperatorList();
+        Iterator<OperatorComponent> it = inputOps.iterator();
+        
+        PlanComponent planComp = opComp.getModel().getPlanComponent();
+        LinkComponentContainer lcContainer = planComp.getLinkComponentContainer();
+        
+        while(it.hasNext()) {
+            OperatorComponent oc = it.next();
+            LinkComponent lcComp = lcContainer.findLink(oc, opComp);
+            if(lcComp != null) {
+                linkList.add(lcComp);
+            }
+        }
+        
+    }
+    
+    private void addOutputLinksOfAnOperator(OperatorComponent opComp, Set linkList) {
+        PlanComponent planComp = opComp.getModel().getPlanComponent();
+        LinkComponentContainer lcContainer = planComp.getLinkComponentContainer();
+        OperatorComponentContainer ocContainer = planComp.getOperatorComponentContainer();
+        List<OperatorComponent> outputOps = ocContainer.findOutputOperator(opComp);
+        Iterator<OperatorComponent> it = outputOps.iterator();
+        
+        while(it.hasNext()) {
+            OperatorComponent oc = it.next();
+            LinkComponent lcComp = lcContainer.findLink(opComp, oc);
+            if(lcComp != null) {
+                linkList.add(lcComp);
+            }
+        }
+        
+    }
 }

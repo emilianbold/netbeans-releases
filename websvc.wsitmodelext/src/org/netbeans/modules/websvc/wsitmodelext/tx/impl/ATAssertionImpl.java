@@ -38,14 +38,12 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.wsitmodelext.tx.impl;
 
 import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.tx.ATAssertion;
-import org.netbeans.modules.websvc.wsitmodelext.tx.TxQName;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -53,29 +51,19 @@ import org.w3c.dom.Element;
  * @author Martin Grebac
  */
 public class ATAssertionImpl extends TxComponentImpl implements ATAssertion {
-    
+
     /**
      * Creates a new instance of ATAssertionImpl
      */
     public ATAssertionImpl(WSDLModel model, Element e) {
         super(model, e);
     }
-    
-    public ATAssertionImpl(WSDLModel model){
-        this(model, createPrefixedElement(TxQName.ATASSERTION.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
 
     public void setOptional(boolean optional) {
-        setAnyAttribute(PolicyQName.OPTIONAL.getQName(), Boolean.toString(optional));
+        setAnyAttribute(PolicyQName.OPTIONAL.getQName(ConfigVersion.CONFIG_1_0), Boolean.toString(optional));
     }
 
     public boolean isOptional() {
-        return Boolean.parseBoolean(getAnyAttribute(PolicyQName.OPTIONAL.getQName()));
+        return Boolean.parseBoolean(getAnyAttribute(PolicyQName.OPTIONAL.getQName(ConfigVersion.CONFIG_1_0)));
     }
-
 }

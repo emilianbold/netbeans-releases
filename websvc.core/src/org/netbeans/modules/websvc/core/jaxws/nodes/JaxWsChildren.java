@@ -111,7 +111,7 @@ import org.xml.sax.SAXException;
  *  Children of the web service node, namely,
  *  the operations of the webservice
  */
-public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener  */{
+public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeListener  */{
     private java.awt.Image cachedIcon;   
     private static final String OPERATION_ICON = "org/netbeans/modules/websvc/core/webservices/ui/resources/wsoperation.png"; //NOI18N
     
@@ -226,7 +226,7 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
             implClass.removeFileChangeListener(fcl);
             fcl = null;
         }
-        setKeys(Collections.EMPTY_SET);
+        setKeys(Collections.<Object>emptySet());
     }
     
     private void updateKeys() {
@@ -244,7 +244,7 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
         } else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    final List<WebOperationInfo>[] keys = new List[]{new ArrayList<WebOperationInfo>()};
+                    final List<?>[] keys = new List<?>[1];
                     if (implClass != null) {
                         JavaSource javaSource = JavaSource.forFileObject(implClass);
                         if (javaSource!=null) {

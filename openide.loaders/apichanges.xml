@@ -106,6 +106,24 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+     <change id="layer.registration">
+        <api name="loaders"/>
+        <summary>Loaders are registered in layer files</summary>
+        <version major="7" minor="0"/>
+        <date day="26" month="5" year="2008"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" />
+        <description>
+        <p>
+            There is new 
+            <a href="@TOP@/org/openide/loaders/doc-files/api.html#register">registration
+            scheme</a> for <code>DataLoader</code>s.
+        </p>
+        </description>
+        <class package="org.openide.loaders" name="DataObject" />
+        <class package="org.openide.loaders" name="DataLoader" />
+        <issue number="91665"/>
+    </change>
      <change id="xml.mimetypes">
         <api name="loaders"/>
         <summary>XMLDataObject no longer enforces text/xml as document mimetype</summary>

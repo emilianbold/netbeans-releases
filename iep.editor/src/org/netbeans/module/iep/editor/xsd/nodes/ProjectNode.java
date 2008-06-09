@@ -85,7 +85,7 @@ public class ProjectNode extends AbstractSchemaArtifactNode {
     }
     
     public List<AbstractSchemaArtifactNode> getNodesToBeExpanded() {
-    	return this.mNodesToBeExpanded;
+        return this.mNodesToBeExpanded;
     }
     
     private File[] recursiveListFiles(File file, FileFilter filter) {

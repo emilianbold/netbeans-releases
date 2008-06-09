@@ -42,6 +42,7 @@ package org.netbeans.modules.subversion.client.cli.commands;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 
 /**
  *
@@ -57,6 +58,11 @@ public class PropertyDelCommand extends SvnCommand {
         this.file = file;
         this.propName = propName;
         this.recursivelly = recursivelly;
+    }
+    
+    @Override
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.PROPDEL;
     }
     
     @Override

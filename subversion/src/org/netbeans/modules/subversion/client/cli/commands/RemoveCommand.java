@@ -42,6 +42,7 @@ package org.netbeans.modules.subversion.client.cli.commands;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 
 /**
  *
@@ -57,6 +58,11 @@ public class RemoveCommand extends SvnCommand {
         this.files = files;
         this.msg = msg;
         this.force = force;
+    }
+
+    @Override
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.REMOVE;
     }
     
     @Override

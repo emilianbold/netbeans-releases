@@ -534,7 +534,7 @@ final class Analyzer {
             boolean exists = tagNames.remove(param.getName().toString()) != null;
             if (!exists && (jdoc.isConstructor() ||
                     jdoc.isMethod() &&
-                    JavadocUtilities.findParamTag(javac, (MethodDoc) jdoc, param.getName().toString(), true) == null)) {
+                    JavadocUtilities.findParamTag(javac, (MethodDoc) jdoc, param.getName().toString(), false, true) == null)) {
                 // missing @param
                 try {
                     Position[] poss = createPositions(param);
@@ -573,14 +573,14 @@ final class Analyzer {
     }
 
     private void processTypeParameters(TypeElement elm, ClassTree node, ClassDoc jdoc, List<ErrorDescription> errors) {
-        processTypeParameters(elm, node.getTypeParameters(), jdoc.typeParamTags(), errors);
+        processTypeParameters(elm, node.getTypeParameters(), jdoc.typeParamTags(), jdoc, errors);
     }
 
     private void processTypeParameters(ExecutableElement elm, MethodTree node, ExecutableMemberDoc jdoc, List<ErrorDescription> errors) {
-        processTypeParameters(elm, node.getTypeParameters(), jdoc.typeParamTags(), errors);
+        processTypeParameters(elm, node.getTypeParameters(), jdoc.typeParamTags(), jdoc, errors);
     }
     
-    private void processTypeParameters(Element elm, List<? extends TypeParameterTree> params, ParamTag[] tags, List<ErrorDescription> errors) {
+    private void processTypeParameters(Element elm, List<? extends TypeParameterTree> params, ParamTag[] tags, Doc jdoc, List<ErrorDescription> errors) {
         Map<String, ParamTag> tagNames = new HashMap<String, ParamTag>();
         // create param tag names set and reveal duplicates
         for (ParamTag paramTag : tags) {
@@ -598,8 +598,8 @@ final class Analyzer {
         // resolve existing and missing tags
         for (TypeParameterTree param : params) {
             boolean exists = tagNames.remove(param.getName().toString()) != null;
-            if (!exists /*&& doc.isMethod() &&
-                    JavadocUtilities.findParamTag((MethodDoc) doc, param.getName().toString(), true) == null*/) {
+            if (!exists && (!jdoc.isMethod() || jdoc.isMethod() &&
+                    JavadocUtilities.findParamTag(javac, (MethodDoc) jdoc, param.getName().toString(), true, true) == null)) {
                 // missing @param
                 try {
                     Position[] poss = createPositions(param);

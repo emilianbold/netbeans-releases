@@ -52,11 +52,11 @@ import org.openide.util.Exceptions;
 /** Simplified, heavily based on Java Debugger code. */
 final class BreakpointLineUpdater implements PropertyChangeListener {
 
-    private final RubyBreakpoint breakpoint;
+    private final RubyLineBreakpoint breakpoint;
     private DataObject dataObject;
     private Line line;
 
-    public BreakpointLineUpdater(RubyBreakpoint breakpoint) {
+    public BreakpointLineUpdater(RubyLineBreakpoint breakpoint) {
         this.breakpoint = breakpoint;
         try {
             this.dataObject = DataObject.find(breakpoint.getFileObject());

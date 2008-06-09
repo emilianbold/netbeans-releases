@@ -68,6 +68,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -332,20 +333,27 @@ public final class GeneratorUtilities {
         List<VariableTree> parameters = new ArrayList<VariableTree>();
         List<StatementTree> statements = new ArrayList<StatementTree>();
         ModifiersTree parameterModifiers = make.Modifiers(EnumSet.noneOf(Modifier.class));        
-        if (constructor != null && !constructor.getParameters().isEmpty()) {
+        List<ExpressionTree> throwsList = new LinkedList<ExpressionTree>();
+        if (constructor != null) {
             ExecutableType constructorType = clazz.getSuperclass().getKind() == TypeKind.DECLARED ? (ExecutableType) copy.getTypes().asMemberOf((DeclaredType) clazz.getSuperclass(), constructor) : null;
-            List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();
-            Iterator<? extends VariableElement> parameterElements = constructor.getParameters().iterator();
-            Iterator<? extends TypeMirror> parameterTypes = constructorType != null ? constructorType.getParameterTypes().iterator() : null;
-            while (parameterElements.hasNext()) {
-                VariableElement ve = parameterElements.next();
-                Name simpleName = ve.getSimpleName();
-                TypeMirror type = parameterTypes != null ? parameterTypes.next() : ve.asType();
-                
-                parameters.add(make.Variable(parameterModifiers, simpleName, make.Type(type), null));
-                arguments.add(make.Identifier(simpleName));
+            if (!constructor.getParameters().isEmpty()) {
+                List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();
+                Iterator<? extends VariableElement> parameterElements = constructor.getParameters().iterator();
+                Iterator<? extends TypeMirror> parameterTypes = constructorType != null ? constructorType.getParameterTypes().iterator() : null;
+                while (parameterElements.hasNext()) {
+                    VariableElement ve = parameterElements.next();
+                    Name simpleName = ve.getSimpleName();
+                    TypeMirror type = parameterTypes != null ? parameterTypes.next() : ve.asType();
+
+                    parameters.add(make.Variable(parameterModifiers, simpleName, make.Type(type), null));
+                    arguments.add(make.Identifier(simpleName));
+                }
+                statements.add(make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier("super"), arguments))); //NOI18N
             }
-            statements.add(make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier("super"), arguments))); //NOI18N
+            constructorType = constructorType != null ? constructorType : (ExecutableType) constructor.asType();
+            for (TypeMirror th : constructorType.getThrownTypes()) {
+                throwsList.add((ExpressionTree) make.Type(th));
+            }
         }
         for (VariableElement ve : fields) {
             TypeMirror type = copy.getTypes().asMemberOf((DeclaredType)clazz.asType(), ve);
@@ -353,7 +361,7 @@ public final class GeneratorUtilities {
             statements.add(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier(ve.getSimpleName())))); //NOI18N
         }
         BlockTree body = make.Block(statements, false);
-        return make.Method(make.Modifiers(mods), "<init>", null, Collections.<TypeParameterTree> emptyList(), parameters, Collections.<ExpressionTree>emptyList(), body, null); //NOI18N
+        return make.Method(make.Modifiers(mods), "<init>", null, Collections.<TypeParameterTree> emptyList(), parameters, throwsList, body, null); //NOI18N
     }
     
     /**

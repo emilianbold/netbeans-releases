@@ -41,9 +41,9 @@
     
     <types>
         <xsd:schema xmlns="http://enterprise.netbeans.org/bpel/AsynchronousSampleSchemaNamespace" 
-                    targetNamespace="http://enterprise.netbeans.org/bpel/AsynchronousSample"  >
-            <xsd:import namespace="http://enterprise.netbeans.org/bpel/AsynchronousSampleSchemaNamespace"
-                        schemaLocation="AsynchronousSample.xsd"/>
+                    targetNamespace="http://enterprise.netbeans.org/bpel/AsynchronousSample">
+        <xsd:import namespace="http://enterprise.netbeans.org/bpel/AsynchronousSampleSchemaNamespace"
+                    schemaLocation="AsynchronousSample.xsd"/>
         </xsd:schema>
     </types>
     

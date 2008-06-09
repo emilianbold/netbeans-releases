@@ -92,7 +92,7 @@ public class ActionNoBlockTest extends JellyTestCase {
      */
     public void testPerformMenu() {
         /** File|New Project..." main menu path. */
-        String menuPath = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/File")
+        String menuPath = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/File")
                           + "|"
                           + Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_NewProjectAction_Name");
 

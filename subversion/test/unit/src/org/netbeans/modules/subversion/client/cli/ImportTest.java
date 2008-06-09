@@ -61,7 +61,7 @@ public class ImportTest extends AbstractCLITest {
                 
         assertTrue(file.exists());
         
-        ISVNClientAdapter c = getReferenceClient();
+        ISVNClientAdapter c = getNbClient();
         SVNUrl url = getRepoUrl().appendPath(getName()).appendPath(file.getName());
         c.doImport(file, url, "imprd", false);
 
@@ -71,6 +71,7 @@ public class ImportTest extends AbstractCLITest {
         ISVNInfo info = getInfo(url);
         assertNotNull(info);        
         assertEquals(url.toString(), info.getUrl().toString());
+        assertNotifiedFiles(new File[] {file});    // XXX empty also in svnCA - why?! - no output from cli    
     }            
     
     public void testImportFolder() throws Exception {                                        
@@ -91,6 +92,7 @@ public class ImportTest extends AbstractCLITest {
         ISVNInfo info = getInfo(url);
         assertNotNull(info);        
         assertEquals(url.toString(), info.getUrl().toString());
+        assertNotifiedFiles(new File[] {});        // XXX empty also in svnCA - why?! - no output from cli
     }
     
     public void testImportFolderNonRecursivelly() throws Exception {                                        
@@ -127,6 +129,7 @@ public class ImportTest extends AbstractCLITest {
             ex = e;
         }
         assertNotNull(ex);
+        assertNotifiedFiles(new File[] {});        // XXX empty also in svnCA - why?! - no output from cli
     }
     
     public void testImportFolderRecursivelly() throws Exception {                                        
@@ -164,6 +167,7 @@ public class ImportTest extends AbstractCLITest {
         info = getInfo(url);        
         assertNotNull(info);        
         assertEquals(url.toString(), info.getUrl().toString());
+        assertNotifiedFiles(new File[] {folder1, file}); 
     }
     
 }

@@ -34,6 +34,14 @@ catch ( Throwable t ) {
 log();
 }
 } while ( this->number < 2 && number != 3 );
+switch(number) {
+case 1:
+    return method("text", 22);
+case 2:
+    return 20;
+default:
+    return -1;
+}
 }
 enum Where {
 NORTH, EAST, SOUTH, WEST;

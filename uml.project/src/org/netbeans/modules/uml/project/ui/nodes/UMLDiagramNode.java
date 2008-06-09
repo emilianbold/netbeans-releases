@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.uml.project.ui.nodes;
 
-import org.netbeans.modules.uml.common.ui.SaveNotifier;
 import org.netbeans.modules.uml.ui.support.ADTransferable;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
@@ -52,27 +51,19 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProductDiagramManager;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
-import org.netbeans.modules.uml.core.support.umlsupport.FileExtensions;
-import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeDiagram;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink;
 import org.netbeans.modules.uml.ui.support.DispatchHelper;
-import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IToolTipData;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaPropertyKind;
 import org.netbeans.modules.uml.propertysupport.DefinitionPropertyBuilder;
 import javax.swing.Action;
 import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.common.ui.SaveNotifierOkCancel;
+import org.netbeans.modules.uml.common.ui.SaveNotifierYesNo;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
 import org.netbeans.modules.uml.project.ui.nodes.actions.CopyDiagramAction;
 import org.netbeans.modules.uml.ui.controls.newdialog.AddPackageVisualPanel1;
@@ -83,14 +74,16 @@ import org.openide.actions.DeleteAction;
 import org.openide.actions.OpenAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.actions.RenameAction;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Trey Spiva
- */
+  */ //TODO
+@SuppressWarnings("unchecked")
 public class UMLDiagramNode extends UMLElementNode
-        implements ITreeDiagram, IDrawingAreaEventsSink
+        implements ITreeDiagram    //, IDrawingAreaEventsSink
 {
     private IProxyDiagram mDiagram = null;
     private String mDiagramType = ELEMENT_TYPE_DIAGRAM;
@@ -136,13 +129,13 @@ public class UMLDiagramNode extends UMLElementNode
         if (isListenersRegistered())
             return;
         
-        getDispatchHelper().registerDrawingAreaEvents(this);
+//        getDispatchHelper().registerDrawingAreaEvents(this);
         setListenersRegistered(true);
     }
     
     public void unregisterListeners()
     {
-        getDispatchHelper().revokeDrawingAreaSink(this);
+//        getDispatchHelper().revokeDrawingAreaSink(this);
         setListenersRegistered(false);
     }
     
@@ -280,13 +273,14 @@ public class UMLDiagramNode extends UMLElementNode
         
         if (data != null)
         {
-            String filename = StringUtilities
-                    .ensureExtension(value, FileExtensions.DIAGRAM_LAYOUT_EXT);
-            
-            if (filename.length() > 0)
-            {
-                data.setDescription(filename);
-            }
+//            String filename = StringUtilities
+//                    .ensureExtension(value, FileExtensions.DIAGRAM_LAYOUT_EXT);
+//            
+//            if (filename.length() > 0)
+//            {
+//                data.setDescription(filename);
+//            }
+            data.setDescription(value);
         }
     }
     
@@ -312,16 +306,16 @@ public class UMLDiagramNode extends UMLElementNode
             String myDescription   = getData().getDescription();
             retVal = myDescription.equals((String)obj);
         }
-        
-        else if (obj instanceof IDrawingAreaControl)
-        {
-            IDrawingAreaControl control = (IDrawingAreaControl)obj;
-            
-            String testDescription = control.getFilename();
-            String myDescription   = getData().getDescription();
-            
-            retVal = myDescription.equals(testDescription);
-        }
+        // TODO: meteora
+//        else if (obj instanceof IDrawingAreaControl)
+//        {
+//            IDrawingAreaControl control = (IDrawingAreaControl)obj;
+//            
+//            String testDescription = control.getFilename();
+//            String myDescription   = getData().getDescription();
+//            
+//            retVal = myDescription.equals(testDescription);
+//        }
         
         else if (obj instanceof IProxyDiagram)
         {
@@ -358,115 +352,176 @@ public class UMLDiagramNode extends UMLElementNode
     
     
     
-    public void setName(String val)
-    throws IllegalArgumentException
+    public void setName(String newName)
     {
-        
-        if (!Util.isDiagramNameValid(val))
+        if (!Util.isDiagramNameValid(newName))
         {
-            NotifyDescriptor.Message msg = new NotifyDescriptor.Message(NbBundle.getMessage(
-                    AddPackageVisualPanel1.class,
-                    "MSG_Invalid_Diagram_Name", val)); // NOI18N
+            NotifyDescriptor.Message msg =
+                    new NotifyDescriptor.Message(NbBundle.getMessage(
+                                                 AddPackageVisualPanel1.class,
+                                                 "MSG_Invalid_Diagram_Name", newName)); // NOI18N
             DialogDisplayer.getDefault().notify(msg);
             return;
         }
         
-        
-        // cvc - 6288598
-        // the name can be "" (empty string) when it is enclosed inside a
-        // parent node that is expanding (Activity Diagram) and it is getting
-        // its name assigned to it as it is initialized. This appears to be
-        // a rename scenario, but it's not, so don't do the "save before rename"
+        int yesToSave = UMLDiagramNode.RESULT_CANCEL;
         String nodeName = getName();
         IProxyDiagram pDiagram = getDiagram();
         IDiagram diagram = null;
-        boolean isNoNulls = false;
+        String oldName = null;
         
-        if (pDiagram != null && pDiagram.getDiagram() != null)
+        if (pDiagram != null )
         {
-            isNoNulls = true;
-            diagram = pDiagram.getDiagram();
-        }
-        
-        if (isNoNulls && // no NPEs to worry about
-                pDiagram.isOpen() && // diagram is currently open
-                diagram.getIsDirty() && // diagram is modified
-                !pDiagram.getName().equals(val) && // diagram name not new name
-                !nodeName.equals("") && // diagram's node name not empty string
-                !nodeName.equals(val)) // diagram's node name not new name
-        {
-            // cvc - CR 6275795
-            // the diagram is open and modifed, so we must prompt the user
-            //  to save the diagram before the rename, because after it is
-            //  renamed, we will autosave it for them so that the name change
-            //  will persist properly, otherwise the user will be prompted to
-            //  save when closing the diagram after a name change. If they
-            //  don't save, then the display name (getDisplayName) of the node
-            //  will be out of sync with the system name (getName)
-            
-            String msg = NbBundle.getMessage(
-                    UMLDiagramNode.class,
-                    "LBL_DIALOG_MSG_RenamePreSaveDiagram", diagram.getName()); // NOI18N
-            
-            if (!save(diagram, true, msg)) // NOI18N
-            {
-                // open/modified diagram not save by user
-                
-                // when the user clicked "No" on the Save dialog, this
-                //  results in the diagram being set to not dirty, but in
-                //  this case we just want to leave it dirty and prevent
-                //  the rename from happening
-                diagram.setIsDirty(true);
-                
-                // prevent rename from happening
+            oldName = pDiagram.getName();
+            if (nodeName.equals(""))  // Set the node name the very first time
+            {   
+                setNodeName (oldName, newName);
                 return;
             }
+            
+            if ( pDiagram.isOpen())
+            {
+                diagram = pDiagram.getDiagram();
+                if (!newName.equals(oldName) && // diagram name not equals new name
+                    !nodeName.equals(newName))  // diagram's node name not new name
+                {
+                    // if diagram is modified, ask users if they want to save the diagram, 
+                    // else if diagram is not modified, go ahead to update diagram 
+                    // with new diagram name.
+                    yesToSave = diagram.isDirty() ? 
+                        askToSaveDiagram(oldName) :
+                        UMLDiagramNode.RESULT_YES;
+                }
+
+                // Base on the value of yesToSave flag, the following actions are 
+                // executed:
+                // - if (yesToSave == yes), we change the diagram name, update the 
+                // diagram tab name, save the diagram and change the diagram node 
+                // name on project tree.
+                // - else (yesToSave == no), we do NOT change diagram name, diagram 
+                // node name nor save the diagram. 
+
+                if (yesToSave == UMLDiagramNode.RESULT_YES)
+                {       
+                    try
+                    {   // change diagram name and diagram tab name
+                        pDiagram.setName(newName);
+                        if (ProductHelper.getShowAliasedNames())
+                        {
+                            pDiagram.setAlias(newName);
+                        }
+                        diagram.save(); // autosave diagram after rename
+                    }
+                    catch (IOException ex)
+                    {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    setNodeName (oldName, newName);
+                } 
+            }
+            else // Diagram is not open
+            {
+                // TODO: update the diagram name from diagram file using file IO.
+                // Since the diagram is not open, no need to check for diagram dirty state.
+                pDiagram.setName(newName);
+                setNodeName (oldName, newName);
+            }
         }
-        
-        // diagram was saved or wasn't open/modified, continue with rename
-        // setDisplayedName(val);
-        setDiagramName(val);
-        super.setName(val);
-        
+    }
+    
+    
+    private void setNodeName (String oldName, String newName)
+    {
+        // change diagram node name
+        super.setName(newName); 
+        super.setDisplayName(newName);
+        getData().setItemText(newName);
+        fireNameChange(oldName, newName);
+        fireDisplayNameChange(oldName, newName);
         firePropertySetsChange(null, retreiveProperties());
     }
     
-    private void setDiagramName(String val)
-    {
-        IProjectTreeItem item = getData();
-        if (item != null)
-        {
-            IProxyDiagram dia = item.getDiagram();
-            if (dia != null)
-            {
-                //its an unopen diagram
-                String curName = dia.getName();
-                
-                if (!curName.equals(val))
-                {
-                    dia.setName(val);
-                    if(ProductHelper.getShowAliasedNames())
-                    {
-			dia.setAlias(val);
-                    }
-                    //dia.setNameWithAlias(val);
-                    item.setItemText(val);
-                    fireNameChange(curName, val);
-                    fireDisplayNameChange(curName, val);
-                    
-                    // cvc - CR 6275795
-                    // autosave the diagram after the rename
-                    if (getDiagram() != null &&
-                            getDiagram().getDiagram() != null &&
-                            getDiagram().getDiagram().getIsDirty())
-                    {
-                        getDiagram().getDiagram().save();
-                    }
-                }
-            }
-        }
-    }
     
+//    public void setDisplayName(String val)
+//    {
+//        setName(val);
+        
+//        IProjectTreeItem item = getData(); 
+//        if (item != null)
+//        {
+//            IProxyDiagram dia = item.getDiagram();
+//            if (dia != null)
+//            {
+//                //its an unopen diagram
+//                String curName = dia.getName();
+//                
+//                if (!curName.equals(val))
+//                {
+//                    // dia.setname() will send UMLDiagramTopComponent events
+//                    // to let it takes care of prompting user to save the diagram 
+//                    // and to reset the diagram tab name as needed.
+//                    dia.setName(val);
+//                    
+//                    // if the diagram edtor name has been renamed, that is thing
+//                    // went smoothly, go ahead conitnue with the name change process.
+//                    if (val.equals(dia.getName()) ) 
+//                    {
+//                        if(ProductHelper.getShowAliasedNames())
+//                        {
+//                            dia.setAlias(val);
+//                        }
+//                        //dia.setNameWithAlias(val);
+//
+//                        // cvc - CR 6275795
+//                        // autosave the diagram after the rename
+//                        IDiagram diagram = dia.getDiagram();
+//                        if (diagram != null)
+//                        {
+//                            try
+//                            {
+//                                diagram.save();  // save diagram
+//
+//                            } 
+//                            catch (IOException e)
+//                            {
+//                                Exceptions.printStackTrace(e);
+//                            }
+//                        }
+//                    }
+//                }
+//            } 
+//        }
+//    }
+    
+    private static final int RESULT_CANCEL = 0;
+    private static final int RESULT_YES = 1;
+    
+    private int askToSaveDiagram(String diagramName)
+    {
+        String title = NbBundle.getMessage(UMLDiagramNode.class,
+                "LBL_DIALOG_TITLE_SaveDiagram"); // NOI18N
+        
+        String message = NbBundle.getMessage(
+                UMLDiagramNode.class,
+                "LBL_DIALOG_MSG_RenamePreSaveDiagram", // NOI18N
+                diagramName); 
+        
+        int result = RESULT_CANCEL;
+        
+        Object response = SaveNotifierYesNo.getDefault().displayNotifier(
+                title, message, SaveNotifierYesNo.SAVE_CANCEL);
+        
+        if (response == NotifyDescriptor.YES_OPTION)
+        {
+            result = RESULT_YES;
+        }
+        else // cancel or closed (x button)
+        {
+            result = RESULT_CANCEL;
+        }
+        
+        return result;
+    }
     
 //    public String getDisplayName()
 //    {
@@ -562,103 +617,105 @@ public class UMLDiagramNode extends UMLElementNode
         return retVal;
     }
     
-    public void onDrawingAreaTooltipPreDisplay(
-            IDiagram pParentDiagram,
-            IPresentationElement pPE,
-            IToolTipData pTooltip,
-            IResultCell cell)
-    {
-    }
-    
-    public void onDrawingAreaPreSave(
-            IProxyDiagram pParentDiagram, IResultCell cell)
-    {}
-    
-    public void onDrawingAreaPrePropertyChange(
-            IProxyDiagram pProxyDiagram,
-            int nPropertyKindChanged,
-            IResultCell cell)
-    {}
-    
-    public void onDrawingAreaPreFileRemoved(String sFilename, IResultCell cell)
-    {}
-    
-    public void onDrawingAreaPreDrop(
-            IDiagram pParentDiagram,
-            IDrawingAreaDropContext pContext,
-            IResultCell cell)
-    {}
-    
-    public void onDrawingAreaPreCreated(
-            IDrawingAreaControl pDiagramControl, IResultCell cell)
-    {}
-    
-    public void onDrawingAreaPostSave(
-            IProxyDiagram pParentDiagram, IResultCell cell)
-    {
-    }
-    
-    public void onDrawingAreaPostPropertyChange(
-            IProxyDiagram pProxyDiagram,
-            int nPropertyKindChanged,
-            IResultCell cell)
-    {
-        if (nPropertyKindChanged == IDrawingAreaPropertyKind.DAPK_NAME &&
-                pProxyDiagram.getXMIID().equals(getDiagram().getXMIID()))
-        {
-            String name = pProxyDiagram.getNameWithAlias();
-            fireNameChange("", name);
-            fireDisplayNameChange("", name);
-        }
-    }
-    
-    public void onDrawingAreaPostDrop(
-            IDiagram pParentDiagram,
-            IDrawingAreaDropContext pContext,
-            IResultCell cell)
-    {
-    }
-    
-    public void onDrawingAreaPostCreated(
-            IDrawingAreaControl pDiagramControl, IResultCell cell)
-    {
-        registerListeners();
-    }
-    
-    public void onDrawingAreaOpened(IDiagram parentDiagram, IResultCell cell)
-    {
-        registerListeners();
-        if (getCookieSet().getCookie(DiagramPrintCookie.class) == null)
-            getCookieSet().add(getPrintCookie());
-    }
-    
-    public void onDrawingAreaKeyDown(
-            IDiagram pParentDiagram,
-            int nKeyCode,
-            boolean bControlIsDown,
-            boolean bShiftIsDown,
-            boolean bAltIsDown,
-            IResultCell cell)
-    {}
-    
-    public void onDrawingAreaFileRemoved(String sFilename, IResultCell cell)
-    {}
-    
-    public void onDrawingAreaClosed(
-            IDiagram parentDiagram, boolean isDirty, IResultCell cell)
-    {
-        if (parentDiagram.getFilename()
-        .equals(mDiagram.getDiagram().getFilename()))
-        {
-            getCookieSet().remove(getPrintCookie());
-            
-            unregisterListeners();
-        }
-    }
-    
-    public void onDrawingAreaActivated(
-            IDiagram pParentDiagram, IResultCell cell)
-    {}
+    // The node should not be listening to drawing area events.  It is up to the
+    // project tree engine to respond to the events.
+//    public void onDrawingAreaTooltipPreDisplay(
+//            IDiagram pParentDiagram,
+//            IPresentationElement pPE,
+//            IToolTipData pTooltip,
+//            IResultCell cell)
+//    {
+//    }
+//    
+//    public void onDrawingAreaPreSave(
+//            IProxyDiagram pParentDiagram, IResultCell cell)
+//    {}
+//    
+//    public void onDrawingAreaPrePropertyChange(
+//            IProxyDiagram pProxyDiagram,
+//            int nPropertyKindChanged,
+//            IResultCell cell)
+//    {}
+//    
+//    public void onDrawingAreaPreFileRemoved(String sFilename, IResultCell cell)
+//    {}
+//    
+//    public void onDrawingAreaPreDrop(
+//            IDiagram pParentDiagram,
+//            IDrawingAreaDropContext pContext,
+//            IResultCell cell)
+//    {}
+//    
+//    public void onDrawingAreaPreCreated(
+//            IDrawingAreaControl pDiagramControl, IResultCell cell)
+//    {}
+//    
+//    public void onDrawingAreaPostSave(
+//            IProxyDiagram pParentDiagram, IResultCell cell)
+//    {
+//    }
+//    
+//    public void onDrawingAreaPostPropertyChange(
+//            IProxyDiagram pProxyDiagram,
+//            int nPropertyKindChanged,
+//            IResultCell cell)
+//    {
+//        if (nPropertyKindChanged == IDrawingAreaPropertyKind.DAPK_NAME &&
+//                pProxyDiagram.getXMIID().equals(getDiagram().getXMIID()))
+//        {
+//            String name = pProxyDiagram.getNameWithAlias();
+//            fireNameChange("", name);
+//            fireDisplayNameChange("", name);
+//        }
+//    }
+//    
+//    public void onDrawingAreaPostDrop(
+//            IDiagram pParentDiagram,
+//            IDrawingAreaDropContext pContext,
+//            IResultCell cell)
+//    {
+//    }
+//    
+//    public void onDrawingAreaPostCreated(
+//            IDrawingAreaControl pDiagramControl, IResultCell cell)
+//    {
+//        registerListeners();
+//    }
+//    
+//    public void onDrawingAreaOpened(IDiagram parentDiagram, IResultCell cell)
+//    {
+//        registerListeners();
+//        if (getCookieSet().getCookie(DiagramPrintCookie.class) == null)
+//            getCookieSet().add(getPrintCookie());
+//    }
+//    
+//    public void onDrawingAreaKeyDown(
+//            IDiagram pParentDiagram,
+//            int nKeyCode,
+//            boolean bControlIsDown,
+//            boolean bShiftIsDown,
+//            boolean bAltIsDown,
+//            IResultCell cell)
+//    {}
+//    
+//    public void onDrawingAreaFileRemoved(String sFilename, IResultCell cell)
+//    {}
+//    
+//    public void onDrawingAreaClosed(
+//            IDiagram parentDiagram, boolean isDirty, IResultCell cell)
+//    {
+//        if (parentDiagram.getFilename()
+//        .equals(mDiagram.getDiagram().getFilename()))
+//        {
+//            getCookieSet().remove(getPrintCookie());
+//            
+//            unregisterListeners();
+//        }
+//    }
+//    
+//    public void onDrawingAreaActivated(
+//            IDiagram pParentDiagram, IResultCell cell)
+//    {}
     
     
     protected boolean save(IDiagram diag, boolean confirm)
@@ -667,31 +724,65 @@ public class UMLDiagramNode extends UMLElementNode
     }
     
     
+    // Thuy rewrites the mehod
+//    protected boolean save(IDiagram diag, boolean confirm, String dialogMsg)
+//    {
+//        //prompt to save..
+//        String name = getDiagram().getName();
+//            boolean confirmSaveFromDialog = userConfirmedSave(name, dialogMsg);
+//        
+//        if (getDiagram() != null && getDiagram().getDiagram().isDirty() &&
+//                (!confirm || confirmSaveFromDialog))
+//            {
+//                try
+//                {
+//                    diag.save();
+//            } catch (IOException e)
+//                {
+//                    Exceptions.printStackTrace(e);
+//                }
+//                return true;
+//            }
+//        
+//            // cvc - 6263501
+//            // if user canceled/escaped/closed out of Save dialog (didn't click Yes),
+//            //  then we want to keep the diagram dirty so that when they close
+//            //  again, they will be prompted again.
+//            else if (!confirmSaveFromDialog && !bCancelSaveDialog)
+//            {
+//                // do NOT save the diagram
+//                getDiagram().getDiagram().setDirty(false);
+//                return false;
+//            }
+//        
+//        return false;
+//    }
+        
     protected boolean save(IDiagram diag, boolean confirm, String dialogMsg)
     {
         //prompt to save..
-        String name = getDiagram().getName();
-        boolean confirmSaveFromDialog = userConfirmedSave(name, dialogMsg);
-        
-        if (getDiagram() != null && getDiagram().getDiagram().getIsDirty() &&
-                (!confirm || confirmSaveFromDialog))
+        boolean isSaved = false;
+        //IProxyDiagram pDiagram = getDiagram(); 
+        if ( diag != null && diag.isDirty() && 
+                dialogMsg != null && dialogMsg.trim().length() > 0 ) 
         {
-            diag.save();
-            return true;
-        }
+            //String name = pDiagram.getName();
+            boolean confirmSaveFromDialog = userConfirmedSave("", dialogMsg);
         
-        // cvc - 6263501
-        // if user canceled/escaped/closed out of Save dialog (didn't click Yes),
-        //  then we want to keep the diagram dirty so that when they close
-        //  again, they will be prompted again.
-        else if (!confirmSaveFromDialog && !bCancelSaveDialog)
-        {
-            // do NOT save the diagram
-            getDiagram().getDiagram().setIsDirty(false);
-            return false;
+            if (!confirm || confirmSaveFromDialog)
+            {
+                try
+                {
+                    diag.save();
+                    isSaved = true;
+                } 
+                catch (IOException e)
+                {
+                    Exceptions.printStackTrace(e);
+                }
+            }
         }
-        
-        return false;
+        return isSaved;
     }
     
     
@@ -759,7 +850,8 @@ public class UMLDiagramNode extends UMLElementNode
                     IDiagram diagram = proxyDia.getDiagram();
                     if (diagram != null)
                     {
-                        diagram.printGraph(true);
+                        //TODO: Does the diagram need to really know about printgraph? It should be handled by TopComp?
+//                        diagram.printGraph(true);
                     }
                 }
             }

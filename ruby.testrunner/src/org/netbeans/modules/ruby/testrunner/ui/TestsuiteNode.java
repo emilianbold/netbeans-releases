@@ -48,7 +48,7 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Marian Petras
+ * @author Marian Petras, Erno Mononen
  */
 final class TestsuiteNode extends AbstractNode {
 
@@ -163,15 +163,11 @@ final class TestsuiteNode extends AbstractNode {
             buf.append("&nbsp;");
         }
         if (report != null) {
-            final boolean containsFailed = containsFailed();
+            Status status = report.getStatus();
 
             buf.append("<font color='#");                               //NOI18N
-            buf.append(containsFailed ? "FF0000'>" : "00CC00'>");       //NOI18N
-            buf.append(NbBundle.getMessage(
-                                    getClass(),
-                                    containsFailed
-                                    ? "MSG_TestsuiteFailed_HTML"        //NOI18N
-                                    : "MSG_TestsuitePassed_HTML"));     //NOI18N
+            buf.append(status.getHtmlDisplayColor() + "'>");       //NOI18N
+            buf.append(suiteStatusToMsg(status, true));
             buf.append("</font>");                                      //NOI18N
         } else {
             buf.append(NbBundle.getMessage(
@@ -179,6 +175,19 @@ final class TestsuiteNode extends AbstractNode {
                                     "MSG_TestsuiteRunning_HTML"));      //NOI18N
         }
         return buf.toString();
+    }
+    
+    static String suiteStatusToMsg(Status status, boolean html) {
+        String result = null;
+        if (Status.ERROR == status || Status.FAILED == status) {
+            result = "MSG_TestsuiteFailed"; //NOI18N
+        } else if (Status.PENDING == status) {
+            result = "MSG_TestsuitePending"; //NOI18N
+        } else {
+            result = "MSG_TestsuitePassed"; //NOI18N
+        }
+        result = html ? result + "_HTML" : result; //NOI18N
+        return NbBundle.getMessage(TestsuiteNode.class, result);
     }
     
     /**

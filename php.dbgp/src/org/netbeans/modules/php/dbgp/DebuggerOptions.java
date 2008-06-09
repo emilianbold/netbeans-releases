@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.php.dbgp;
 
-import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.php.project.api.PhpOptions;
 
 /**

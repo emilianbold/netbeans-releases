@@ -156,6 +156,11 @@ public class ModelEvent extends EventObject {
          * @since 1.6
          */
         public static final int CHILDREN_MASK = 8;
+        /**
+         * The mask for expansion change.
+         * @since 1.15
+         */
+        public static final int EXPANSION_MASK = 16;
         
         private Object node;
         private int change;

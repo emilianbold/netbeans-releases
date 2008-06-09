@@ -127,10 +127,8 @@ made subject to such option by the copyright holder.
  <answer id="arch-usecases">
   <p>
    The API is widely used by all sorts of IDE modules which need to work with
-   Java sources. They can obtain the classpath or boot classpath for a file (if
-   there is one), find out where its source root is, find sources corresponding
-   to bytecode class files, find all sources or classpaths corresponding to open
-   projects, find Javadoc, etc. The SPI is intended mainly for Java platform and
+   Java sources. They can find Javadoc, unit tests, source level, etc.
+   The SPI is intended mainly for Java platform and
    library providers, and project type providers, to declare all of this
    information.
   </p>
@@ -150,8 +148,8 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-what">
   <p>
-   Models basic aspects of the metadata surrounding Java source files, such as
-   the classpath. More information in the Javadoc.
+   Provides java specific queries (javadc, source level) used by other modules like java language infrastructure.
+   More information in the Javadoc.
   </p>
  </answer>
 
@@ -259,15 +257,7 @@ made subject to such option by the copyright holder.
       For many purposes.
      </p>
     </api>
-   </li>
-   <li>
-    <api group="java" name="Execution" type="import" category="official">
-     <p>
-      <code>NbClassLoader</code> is used by
-      <code>ClassPath.getClassLoader(...)</code>.
-     </p>
-    </api>
-   </li>
+   </li>  
   </ul>
  </answer>
 
@@ -409,9 +399,7 @@ Nothing.
 -->
  <answer id="exec-classloader">
   <p>
-   There is support for getting a class loader corresponding to a given
-   classpath, useful e.g. for loading user JavaBeans to introspect. This is not
-   used within the module itself.
+      No.
   </p>
  </answer>
 
@@ -783,14 +771,7 @@ Nothing.
    Queries perform linearly in number of implementations, but as usual there will
    typically be only one or two implementations, e.g. delegating to owner
    projects.
-  </p>
-  <p>
-   Currently <code>ClassPath</code>s keep global file change listeners to permit
-   roots to be invalidated, and this makes file change events linear in the
-   number of <code>ClassPath</code> objects. This area is being studied and will
-   hopefully be optimized, perhaps reducing overhead to a small constant.
-   May require explicit support from the Filesystems API to fully optimize.
-  </p>
+  </p>  
  </answer>
 
 
@@ -935,9 +916,7 @@ Nothing.
         </question>
 -->
  <answer id="security-grant">
-  <p>
-   <code>ClassPath.getClassLoader(...)</code> is granted all permissions.
-  </p>
+  No.
  </answer>
 
 

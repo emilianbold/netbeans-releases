@@ -68,52 +68,52 @@ public class SourceCookieProxyLookup extends ProxyLookup
      */
     public SourceCookieProxyLookup(Lookup[] lookups, Node delegate) {
         super();
-		this.lookups = lookups;
+        this.lookups = lookups;
         this.delegate = delegate;
-		setLookups(new Lookup[] {
-			new ProxyLookup(lookups), 
-			delegate.getLookup(),
-			Lookups.singleton(delegate),
-		});
+        setLookups(new Lookup[] {
+            new ProxyLookup(lookups), 
+            delegate.getLookup(),
+            Lookups.singleton(delegate),
+        });
     }
 
     public synchronized void propertyChange(PropertyChangeEvent event) {
-		if (propertyChanging)
-		{
-			// Avoid an infinite loop whereby changing the lookup contents
-			// causes the activated nodes to change, which calls us again.
-			return;
-		}
-		propertyChanging = true;
-		try
-		{
-			Node[] newNodes = (Node[]) event.getNewValue();
-			if(newNodes==null || newNodes.length==0)
-			{
-				setLookups(new Lookup[] {
-					new ProxyLookup(lookups),
-					new NoNodeLookup(delegate.getLookup()),
-					Lookups.singleton(delegate),
-				});
-			}
-			else
-			{
-				Lookup[] newNodeLookups = new Lookup[newNodes.length];
-				for (int i=0;i<newNodes.length;i++)
-				{
-					newNodeLookups[i]=new NoNodeLookup(newNodes[i].getLookup());
-				}
-				setLookups(new Lookup[] {
-					new ProxyLookup(lookups),
-					new ProxyLookup(newNodeLookups),
-					Lookups.fixed(newNodes),
-				});
-			}
-		}
-		finally
-		{
-			propertyChanging = false;
-		}
+        if (propertyChanging)
+        {
+            // Avoid an infinite loop whereby changing the lookup contents
+            // causes the activated nodes to change, which calls us again.
+            return;
+        }
+        propertyChanging = true;
+        try
+        {
+            Node[] newNodes = (Node[]) event.getNewValue();
+            if(newNodes==null || newNodes.length==0)
+            {
+                setLookups(new Lookup[] {
+                    new ProxyLookup(lookups),
+                    new NoNodeLookup(delegate.getLookup()),
+                    Lookups.singleton(delegate),
+                });
+            }
+            else
+            {
+                Lookup[] newNodeLookups = new Lookup[newNodes.length];
+                for (int i=0;i<newNodes.length;i++)
+                {
+                    newNodeLookups[i]=new NoNodeLookup(newNodes[i].getLookup());
+                }
+                setLookups(new Lookup[] {
+                    new ProxyLookup(lookups),
+                    new ProxyLookup(newNodeLookups),
+                    Lookups.fixed(newNodes),
+                });
+            }
+        }
+        finally
+        {
+            propertyChanging = false;
+        }
    }
 
     /*
@@ -128,12 +128,12 @@ public class SourceCookieProxyLookup extends ProxyLookup
         }
 
         @Override
-	public <T> T lookup(Class<T> clazz) {
+    public <T> T lookup(Class<T> clazz) {
             return (clazz == Node.class) ? null : delegate.lookup(clazz);
         }
 
         @Override
-	public <T> Result<T> lookup(Template<T> template) {
+    public <T> Result<T> lookup(Template<T> template) {
             if (template.getType() == Node.class) {
                 return Lookup.EMPTY.lookup(template);
             }

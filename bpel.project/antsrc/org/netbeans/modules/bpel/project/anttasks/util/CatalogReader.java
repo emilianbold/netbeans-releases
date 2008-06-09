@@ -53,7 +53,9 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * This class helps Bpel project to Read the Catalog XML file
+ * 
  * @author Sreenivasan Genipudi
+ * @author Kirill Sorokin
  */
 public class CatalogReader {
     
@@ -83,7 +85,9 @@ public class CatalogReader {
         
         do {
             currentCatalog = nextCatalogs.pop();
-            saxParser.parse(new InputSource(new FileReader(currentCatalog)));
+            if (currentCatalog.exists() && (currentCatalog.length() > 0)) {
+                saxParser.parse(new InputSource(new FileReader(currentCatalog)));
+            }
         } while (nextCatalogs.size() > 0);
     }
     

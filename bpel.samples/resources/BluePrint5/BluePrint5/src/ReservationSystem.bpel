@@ -87,7 +87,6 @@
     <variables>
         <variable name="reserve" messageType="ns0:reserveMesg"></variable>
         <variable name="reservationStatus" messageType="ns0:reservationStatus"></variable>
-        <variable name="reservationFault" messageType="ns0:reservationFailed"></variable>
         <variable name="reserveAirlineVar" messageType="ns1:AirlineReservation"></variable>
         <variable name="airlineStatusVar" messageType="ns1:AirlineReservationStatus"></variable>
         <variable name="reserveCarVar" messageType="ns2:CarReservation"></variable>

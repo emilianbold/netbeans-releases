@@ -234,6 +234,9 @@ public class JPAGenTest extends SourceTestSupport{
         private boolean nullable;
         private String columnName;
         private String tableName;
+        private Integer length;
+        private Integer precision;
+        private Integer scale;
         
         public void setLob(boolean lob) {
             this.lob = lob;
@@ -273,6 +276,18 @@ public class JPAGenTest extends SourceTestSupport{
         
         public boolean supportsFinder() {
             return supportsFinder;
+        }
+        
+        public Integer getLength() {
+            return length;
+        }
+
+        public Integer getPrecision(){
+            return precision;
+        }
+
+        public Integer getScale(){
+            return scale;
         }
         
         public boolean isNullable() {

@@ -41,7 +41,9 @@
 package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.awt.EventQueue;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
@@ -73,6 +75,7 @@ final class RootNode extends AbstractNode {
     private volatile int totalTests = 0;
     private volatile int failures = 0;
     private volatile int errors = 0;
+    private volatile int pending = 0;
     private volatile int elapsedTimeMillis = 0;
     private volatile int detectedPassedTests = 0;
     private boolean sessionFinished;
@@ -161,6 +164,7 @@ final class RootNode extends AbstractNode {
         totalTests += report.totalTests;
         failures += report.failures;
         errors += report.errors;
+        pending += report.pending;
         detectedPassedTests += report.detectedPassedTests;
         elapsedTimeMillis += report.elapsedTimeMillis;
     }
@@ -199,15 +203,24 @@ final class RootNode extends AbstractNode {
             } else {
                 msg = null;
             }
-        } else if ((failures == 0) && (errors == 0)) {
+        } else if (failures == 0 && errors == 0 && pending == 0) {
             msg = NbBundle.getMessage(bundleRefClass,
                     "MSG_TestsInfoAllOK", //NOI18N
                     new Integer(totalTests));
         } else {
+            
             String passedTestsInfo = NbBundle.getMessage(
                     bundleRefClass,
                     "MSG_PassedTestsInfo", //NOI18N
-                    new Integer(totalTests - failures - errors));
+                    new Integer(totalTests - failures - errors - pending));
+            
+            String pendingTestsInfo = (pending == 0)
+                    ? null
+                    : NbBundle.getMessage(
+                    bundleRefClass,
+                    "MSG_PendingTestsInfo", //NOI18N
+                    new Integer(errors));
+
             String failedTestsInfo = (failures == 0)
                     ? null
                     : NbBundle.getMessage(
@@ -220,20 +233,31 @@ final class RootNode extends AbstractNode {
                     bundleRefClass,
                     "MSG_ErrorTestsInfo", //NOI18N
                     new Integer(errors));
-            if ((failedTestsInfo == null) || (errorTestsInfo == null)) {
-                msg = NbBundle.getMessage(bundleRefClass,
-                        "MSG_TestsOneIssueType", //NOI18N
-                        passedTestsInfo,
-                        failedTestsInfo != null
-                        ? failedTestsInfo
-                        : errorTestsInfo);
-            } else {
-                msg = NbBundle.getMessage(bundleRefClass,
-                        "MSG_TestsFailErrIssues", //NOI18N
-                        passedTestsInfo,
-                        failedTestsInfo,
-                        errorTestsInfo);
-            }
+            
+            msg = constructMessage(passedTestsInfo, pendingTestsInfo, failedTestsInfo, errorTestsInfo);
+            
+//            if ((failedTestsInfo == null) || (errorTestsInfo == null)) {
+//                msg = NbBundle.getMessage(bundleRefClass,
+//                        "MSG_TestsOneIssueType", //NOI18N
+//                        passedTestsInfo,
+//                        failedTestsInfo != null
+//                        ? failedTestsInfo
+//                        : errorTestsInfo);
+//            } else {
+////            if ((failedTestsInfo == null) || (errorTestsInfo == null)) {
+////                msg = NbBundle.getMessage(bundleRefClass,
+////                        "MSG_TestsOneIssueType", //NOI18N
+////                        passedTestsInfo,
+////                        failedTestsInfo != null
+////                        ? failedTestsInfo
+////                        : errorTestsInfo);
+////            } else {
+//                msg = NbBundle.getMessage(bundleRefClass,
+//                        "MSG_TestsFailErrIssues", //NOI18N
+//                        passedTestsInfo,
+//                        failedTestsInfo,
+//                        errorTestsInfo);
+//            }
         }
 
         if (totalTests != 0) {
@@ -275,6 +299,18 @@ final class RootNode extends AbstractNode {
         }
 
         setDisplayName(msg);
+    }
+    
+    String constructMessage(String... subMessages) {
+        List<String> messageList = new ArrayList<String>();
+        for (String msg : subMessages) {
+            if (msg != null) {
+                messageList.add(msg);
+            }
+        }
+        int size = messageList.size();
+        String key = "MSG_TestResultSummary" + (size - 1);
+        return NbBundle.getMessage(RootNode.class, key, messageList.toArray(new String[size]));
     }
 
     /**

@@ -373,12 +373,12 @@
 	        	        
 	<if property="gf.build.type" value="">
         	<set property="glassfish.build.number" value="20080411"/>
-		<set property="sjsas.build.number" value="20080411"/>
+		<set property="sjsas.build.number" value="20080515"/>
 	</if>
 
 	<if property="gf.build.type" value="ml">
 	        <set property="glassfish.build.number" value="20080412"/>
-	        <set property="sjsas.build.number" value="20080412"/>
+	        <set property="sjsas.build.number" value="20080515"/>
 	</if>
 
         <!--

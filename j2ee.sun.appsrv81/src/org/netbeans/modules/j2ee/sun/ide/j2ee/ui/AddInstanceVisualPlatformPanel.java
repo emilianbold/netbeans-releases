@@ -132,11 +132,11 @@ class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
     void setDomainsList(Object[] domainsList, boolean react) {
         if (domainsList != null) {
             instanceSelector.setModel(new javax.swing.DefaultComboBoxModel(domainsList));
+            boolean hasWritableDomains = (domainsList.length >= 1);
+            registerDefault.setEnabled(hasWritableDomains);
+            instanceSelector.setEnabled(hasWritableDomains);
+            instanceSelectorLabel.setEnabled(hasWritableDomains);
             if (react && !registerLocal.isSelected() && !registerRemote.isSelected()) {
-                boolean hasWritableDomains = (domainsList.length >= 1);
-                registerDefault.setEnabled(hasWritableDomains);
-                instanceSelector.setEnabled(hasWritableDomains);
-                instanceSelectorLabel.setEnabled(hasWritableDomains);
                 if (!hasWritableDomains) {
                     createPersonal.setSelected(true);
                 } else {

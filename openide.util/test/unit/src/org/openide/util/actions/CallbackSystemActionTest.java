@@ -69,8 +69,12 @@ import org.openide.util.test.MockPropertyChangeListener;
  * @author Jesse Glick
  */
 public class CallbackSystemActionTest extends NbTestCase {
+
+    static {
+        ActionsInfraHid.install();
+    }
+
     private Logger LOG;
-    
     
     public CallbackSystemActionTest(String name) {
         super(name);

@@ -66,7 +66,7 @@ import javax.swing.Action;
 import javax.swing.JSeparator;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
-import org.netbeans.modules.ant.freeform.ui.ProjectNodeWrapper;
+import org.netbeans.modules.ant.freeform.ui.TargetMappingPanel;
 import org.netbeans.modules.ant.freeform.ui.UnboundTargetAlert;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -495,7 +495,7 @@ public final class Actions implements ActionProvider {
         actions.add(SystemAction.get(FindAction.class));
         
         // honor #57874 contract, see #58624:
-        actions.add(ProjectNodeWrapper.GENERIC_PROJECTS_ACTIONS_MARKER);
+        addFromLayers(actions, "Projects/Actions");
         
         actions.add(null);
         actions.add(CommonProjectActions.customizeProjectAction());

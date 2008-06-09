@@ -522,7 +522,7 @@ public class JarClassLoader extends ProxyClassLoader {
         }
 
         // JarFile pool tracking
-        private static Set<JarSource> sources = new HashSet<JarSource>();
+        private static final Set<JarSource> sources = new HashSet<JarSource>();
         private static int LIMIT = Integer.getInteger("org.netbeans.JarClassLoader.limit_fd", 300);
 
         static void opened(JarSource source, String forWhat) {

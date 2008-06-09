@@ -73,27 +73,17 @@ import org.openide.util.NbBundle;
  * NewCndFileChooserPanelGUI is SimpleTargetChooserPanelGUI extended with extension selector and logic
  * 
  */
-class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionListener, DocumentListener {
+class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
   
-    /** prefered dimmension of the panels */
-    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension (500, 340);
     
-    private static final String NEW_FILE_PREFIX = 
-        NbBundle.getMessage( NewCndFileChooserPanelGUI.class, "LBL_NewCndFileChooserPanelGUI_NewFilePrefix"  ); // NOI18N
-    
-    private final ListCellRenderer CELL_RENDERER = new GroupCellRenderer();
-        
-    private Project project;
     private String expectedExtension;
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private SourceGroup[] folders;
     private final ExtensionsSettings es;
     
     /** Creates new form NewCndFileChooserPanelGUI */
     NewCndFileChooserPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, ExtensionsSettings es) {
+        super(project, folders);
+        
         this.es = es;
-        this.project = project;
-        this.folders = folders;
         initComponents();
         initMnemonics();
         
@@ -244,7 +234,7 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
     }
         
     
-    private void updateCreatedFile() {
+    protected void updateCreatedFile() {
         
         FileObject root = ((SourceGroup)locationComboBox.getSelectedItem()).getRootFolder();
             
@@ -291,19 +281,6 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         }
     }
 
-    @Override
-    public java.awt.Dimension getPreferredSize() {
-        return PREF_DIM;
-    }
-    
-    public void addChangeListener(ChangeListener l) {
-        changeSupport.addChangeListener(l);
-    }
-    
-    public void removeChangeListener(ChangeListener l) {
-        changeSupport.removeChangeListener(l);
-    }
-    
     private DefaultComboBoxModel getExtensionsCBModel() {
         Enumeration<String> enExt = es.getExtensionList().extensions();
         Vector<String> vExt = new Vector<String>();
@@ -504,34 +481,7 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
     private javax.swing.JSeparator targetSeparator;
     // End of variables declaration//GEN-END:variables
 
-    private SourceGroup getPreselectedGroup( SourceGroup[] groups, FileObject folder ) {        
-        for( int i = 0; folder != null && i < groups.length; i++ ) {
-            if( FileUtil.isParentOf( groups[i].getRootFolder(), folder )
-                || groups[i].getRootFolder().equals(folder)) {
-                return groups[i];
-            }
-        }
-        return groups[0];
-    }
-    
-    private String getRelativeNativeName( FileObject root, FileObject folder ) {
-        if (root == null) {
-            throw new NullPointerException("null root passed to getRelativeNativeName"); // NOI18N
-        }
-        
-        String path;
-        
-        if (folder == null) {
-            path = ""; // NOI18N
-        }
-        else {
-            path = FileUtil.getRelativePath( root, folder );            
-        }
-        
-        return path == null ? "" : path.replace( '/', File.separatorChar ); // NOI18N
-    }
     // ActionListener implementation -------------------------------------------
-    
     public void actionPerformed(java.awt.event.ActionEvent e) {
         if ( browseButton == e.getSource() ) {
             FileObject fo=null;
@@ -556,58 +506,4 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         }
     }    
     
-    // DocumentListener implementation -----------------------------------------
-    
-    public void changedUpdate(javax.swing.event.DocumentEvent e) {
-        updateCreatedFile();
-    }    
-    
-    public void insertUpdate(javax.swing.event.DocumentEvent e) {
-        updateCreatedFile();
-    }
-    
-    public void removeUpdate(javax.swing.event.DocumentEvent e) {
-        updateCreatedFile();
-    }
-    
-    // Rendering of the location combo box -------------------------------------
-    
-    private class GroupCellRenderer extends JLabel implements ListCellRenderer {
-    
-        public GroupCellRenderer() {
-            setOpaque( true );
-        }
-        
-        public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus ) {
-            if (value instanceof SourceGroup) {
-                SourceGroup group = (SourceGroup)value;
-                String projectDisplayName = ProjectUtils.getInformation( project ).getDisplayName();
-                String groupDisplayName = group.getDisplayName();
-                if ( projectDisplayName.equals( groupDisplayName ) ) {
-                    setText( groupDisplayName );
-                }
-                else {
-                    setText( MessageFormat.format( PhysicalView.GroupNode.GROUP_NAME_PATTERN,
-                        new Object[] { groupDisplayName, projectDisplayName, group.getRootFolder().getName() } ) );
-                }
-                
-                setIcon( group.getIcon( false ) );
-            } 
-            else {
-                setText( value.toString () );
-                setIcon( null );
-            }
-            if ( isSelected ) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());             
-            }
-            else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-             
-            }
-            return this;        
-        }
-                
-    }
 }

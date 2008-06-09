@@ -223,7 +223,7 @@ public class PropertyPanel {
 //            gbc.weighty = 0.0D;
 //            gbc.fill = GridBagConstraints.HORIZONTAL;
 //            java.awt.Component glue = Box.createHorizontalGlue();
-//	    panel.panel.add(glue, gbc);
+//        panel.panel.add(glue, gbc);
 //             */
 //            
 //            gbc.gridx = 2;
@@ -267,7 +267,7 @@ public class PropertyPanel {
             public void store() {
                 String value = ((JTextField)input[0]).getText();
                 if (!mProperty.getValue().equals(value)) {
-                	mProperty.getModel().startTransaction();
+                    mProperty.getModel().startTransaction();
                     mProperty.setValue(value);
                     mProperty.getModel().endTransaction();
                 }
@@ -314,7 +314,7 @@ public class PropertyPanel {
             gbc.weighty = 0.0D;
             gbc.fill = GridBagConstraints.HORIZONTAL;
             java.awt.Component glue = Box.createHorizontalGlue();
-	    panel.panel.add(glue, gbc);
+        panel.panel.add(glue, gbc);
              */
             
             gbc.gridx = 2;
@@ -454,7 +454,7 @@ public class PropertyPanel {
                     value = value.replace(',', '\\');
                 }
                 if (!mProperty.getValue().equals(value)) {
-                	mProperty.getModel().startTransaction();
+                    mProperty.getModel().startTransaction();
                     mProperty.setValue(value);
                     mProperty.getModel().endTransaction();
                 }
@@ -598,7 +598,7 @@ public class PropertyPanel {
             public void store() {
                 String value = ((JTextArea)input[0]).getText();
                 if (!mProperty.getValue().equals(value)) {
-                	mProperty.getModel().startTransaction();
+                    mProperty.getModel().startTransaction();
                     mProperty.setValue(value);
                     mProperty.getModel().endTransaction();
                 }
@@ -708,7 +708,7 @@ public class PropertyPanel {
     
 
     public static PropertyPanel createCheckBoxPanel(String label, 
-    												Property prop) {
+                                                    Property prop) {
         PropertyPanel panel = new PropertyPanel(label, prop) {
             public boolean getBooleanValue() {
                 return ((JCheckBox)input[0]).isSelected();
@@ -716,14 +716,14 @@ public class PropertyPanel {
             
             @Override
             public void setStringValue(String value) {
-            	boolean val = Boolean.parseBoolean(value);
-            	((JCheckBox)input[0]).setSelected(val);
+                boolean val = Boolean.parseBoolean(value);
+                ((JCheckBox)input[0]).setSelected(val);
             }
             
             public void store() {
                 boolean value = ((JCheckBox)input[0]).isSelected();
                 if (!mProperty.getValue().equals(Boolean.valueOf(value).toString())) {
-                	mProperty.getModel().startTransaction();
+                    mProperty.getModel().startTransaction();
                     mProperty.setValue(value? Boolean.TRUE.toString() : Boolean.FALSE.toString());
                     mProperty.getModel().endTransaction();
                 }
@@ -931,7 +931,7 @@ public class PropertyPanel {
             public void store() {
                 String value = getStringValue() + mTemp.toString();
                 if (!mProperty.getValue().equals(value)) {
-                	mProperty.getModel().startTransaction();
+                    mProperty.getModel().startTransaction();
                     mProperty.setValue(value);
                     mProperty.getModel().endTransaction();
                 }
@@ -1115,13 +1115,13 @@ public class PropertyPanel {
             public void store() {
                 String size = getStringValue();
                 if (!mProperty.getValue().equals(size)) {
-                	mProperty.getModel().startTransaction();
+                    mProperty.getModel().startTransaction();
                     mProperty.setValue(size);
                     mProperty.getModel().endTransaction();
                 }
                 String unit = (String)((JComboBox)input[1]).getSelectedItem();
                 if (!mProperty2.getValue().equals(unit)) {
-                	mProperty.getModel().startTransaction();
+                    mProperty.getModel().startTransaction();
                     mProperty2.setValue(unit);
                     mProperty.getModel().endTransaction();
                 }
@@ -1321,7 +1321,7 @@ public class PropertyPanel {
             public void store() {
                 String value = getStringValue();
                 if (!mProperty.getValue().equals(value)) {
-                	mProperty.getModel().startTransaction();
+                    mProperty.getModel().startTransaction();
                     mProperty.setValue(value);
                     mProperty.getModel().endTransaction();
                 }

@@ -185,6 +185,7 @@ public interface ComboConstants {
     String ISSUED_KEYTYPE_PUBLIC_POLICYSTR = NbBundle.getMessage(ComboConstants.class, "COMBO_Issued_KeyType_Public_PolicyStr");         //NOI18N
     String ISSUED_KEYTYPE_NOPROOF = NbBundle.getMessage(ComboConstants.class, "COMBO_Issued_KeyType_NoProof");         //NOI18N
     String ISSUED_KEYTYPE_NOPROOF_POLICYSTR = NbBundle.getMessage(ComboConstants.class, "COMBO_Issued_KeyType_NoProof_PolicyStr");         //NOI18N
+    String ISSUED_KEYTYPE_NOPROOF13_POLICYSTR = NbBundle.getMessage(ComboConstants.class, "COMBO_Issued_KeyType_NoProof13_PolicyStr");         //NOI18N
 
     String ISSUED_KEYSIZE_128 = NbBundle.getMessage(ComboConstants.class, "COMBO_Issued_KeySize_128");         //NOI18N
     String ISSUED_KEYSIZE_192 = NbBundle.getMessage(ComboConstants.class, "COMBO_Issued_KeySize_192");         //NOI18N
@@ -197,4 +198,8 @@ public interface ComboConstants {
     String MEX_HTTP = NbBundle.getMessage(ComboConstants.class, "COMBO_MEX_HTTP");      //NOI18N
     String MEX_HTTPS = NbBundle.getMessage(ComboConstants.class, "COMBO_MEX_HTTPS");    //NOI18N
 
+    String TRUST_10 = NbBundle.getMessage(ComboConstants.class, "COMBO_TRUST_10");      //NOI18N
+    String TRUST_10_POLICYSTR = NbBundle.getMessage(ComboConstants.class, "COMBO_TRUST_10_POLICY");      //NOI18N
+    String TRUST_13 = NbBundle.getMessage(ComboConstants.class, "COMBO_TRUST_13");      //NOI18N
+    String TRUST_13_POLICYSTR = NbBundle.getMessage(ComboConstants.class, "COMBO_TRUST_13_POLICY");      //NOI18N
 }

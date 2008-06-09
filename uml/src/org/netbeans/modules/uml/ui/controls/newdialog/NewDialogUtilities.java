@@ -703,7 +703,7 @@ public class NewDialogUtilities
 
             for (IProxyDiagram diagram: diagrams)
             {
-                if (diagram.getDiagramKind() == kind)
+                if ((diagram != null) && (diagram.getDiagramKind() == kind))
                 {
                     String dname = diagram.getName();
                     if (dname.length() > baseLength && dname.startsWith(baseName))

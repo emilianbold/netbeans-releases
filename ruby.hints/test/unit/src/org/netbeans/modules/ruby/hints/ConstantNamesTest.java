@@ -73,7 +73,7 @@ public class ConstantNamesTest extends HintTestBase {
     }
 
     public void testHint1() throws Exception {
-        findHints(this, new ConstantNames(), "testfiles/constantnames.rb", null);
+        checkHints(this, new ConstantNames(), "testfiles/constantnames.rb", null);
     }
     
     public void testConstants() throws Exception {

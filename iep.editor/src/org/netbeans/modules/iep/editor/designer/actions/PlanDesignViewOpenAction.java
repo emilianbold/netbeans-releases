@@ -42,12 +42,12 @@ public class PlanDesignViewOpenAction extends NodeAction{
     private static final long serialVersionUID = 1L;
 
     @Override
-	protected void performAction(Node[] node) {
+    protected void performAction(Node[] node) {
         if (node == null || node[0] == null) {
             return;
         }
         PlanDataObject sdo = node[0].getLookup().lookup(
-        		PlanDataObject.class);
+                PlanDataObject.class);
         if (sdo != null) {
             PlanEditorSupport wes = sdo.getPlanEditorSupport();
             ViewComponentCookie svc = sdo.getCookie(
@@ -57,7 +57,7 @@ public class PlanDesignViewOpenAction extends NodeAction{
                 PlanComponent plan = null;
                 ViewComponentCookie.View view = ViewComponentCookie.View.DESIGN;
                 if (model.getState() ==  Model.State.VALID) {
-                	plan = model.getPlanComponent();
+                    plan = model.getPlanComponent();
                 }
                 if (plan == null) {
                     view = ViewComponentCookie.View.SOURCE;
@@ -69,7 +69,7 @@ public class PlanDesignViewOpenAction extends NodeAction{
                 } else {
                     wes.open();
                 }                
-            	return;
+                return;
             }
         }
         // default to open cookie
@@ -80,23 +80,23 @@ public class PlanDesignViewOpenAction extends NodeAction{
     }
 
     @Override
-	protected boolean enable(Node[] node) {
+    protected boolean enable(Node[] node) {
         return true;
     }
 
     @Override
-	public String getName() {
+    public String getName() {
         return NbBundle.getMessage(PlanDesignViewOpenAction.class,
                 "PlanDesignViewOpenAction_Name");
     }
 
     @Override
-	public HelpCtx getHelpCtx() {
+    public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
     @Override
-	protected boolean asynchronous() {
+    protected boolean asynchronous() {
         return false;
     }
 }

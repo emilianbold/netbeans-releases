@@ -58,6 +58,7 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 import org.openide.xml.XMLUtil;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -83,6 +84,16 @@ public class ListCommand extends SvnCommand {
         this.revision = revision;
         this.recursive = recursive;
         dateFormat.setTimeZone(java.util.TimeZone.getTimeZone("GMT"));        
+    }
+    
+    @Override
+    protected boolean notifyOutput() {
+        return false;
+    }    
+    
+    @Override
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.LS;
     }
     
     @Override

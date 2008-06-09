@@ -55,10 +55,10 @@ public class MoveableRowTable
     implements DragGestureListener, DropTargetListener {
 
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = -9061291731143514732L;
-	private static final java.util.logging.Logger mLog = java.util.logging.Logger.getLogger(MoveableRowTable.class.getName());
+     * 
+     */
+    private static final long serialVersionUID = -9061291731143514732L;
+    private static final java.util.logging.Logger mLog = java.util.logging.Logger.getLogger(MoveableRowTable.class.getName());
 
     /**
      * Construct MoveableRowTable with a default empty MoveableRowTbleModel

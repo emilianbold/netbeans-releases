@@ -67,6 +67,7 @@ public class RevertTest extends AbstractCLITest {
 
         assertStatus(SVNStatusKind.NORMAL, file);
         assertContents(file, 1);
+        assertNotifiedFiles(new File[] {file});        
     }            
     
     public void testRevertFiles() throws Exception {                                                
@@ -104,6 +105,7 @@ public class RevertTest extends AbstractCLITest {
         assertContents(file1, 1);
         assertContents(file2, 1);
         assertContents(file3, 1);
+        assertNotifiedFiles(new File[] {file1, file2, file3});        
     }            
     
     public void testRevertFolderRecursivelly() throws Exception {                                                
@@ -143,6 +145,7 @@ public class RevertTest extends AbstractCLITest {
         assertStatus(SVNStatusKind.NORMAL, folder11);
         assertContents(file11, 1);
         assertContents(file111, 1);        
+        assertNotifiedFiles(new File[] {file11, file111});       // only files were reverted (modified) 
     }        
     
     public void testRevertFolderNonRecursivelly() throws Exception {                                                
@@ -182,6 +185,7 @@ public class RevertTest extends AbstractCLITest {
         assertStatus(SVNStatusKind.NORMAL, folder11);
         assertContents(file11, 1);
         assertContents(file111, 1);        
+        assertNotifiedFiles(new File[] {file11, file111}); // only files were reverted (modified)       
     }            
     
     public void testRevertFolders() throws Exception {                                                
@@ -222,6 +226,7 @@ public class RevertTest extends AbstractCLITest {
         assertStatus(SVNStatusKind.NORMAL, folder2);
         assertContents(file1, 1);
         assertContents(file2, 1);        
+        assertNotifiedFiles(new File[] {file1, file2});  // only files were reverted (modified)      
     }        
     
 }

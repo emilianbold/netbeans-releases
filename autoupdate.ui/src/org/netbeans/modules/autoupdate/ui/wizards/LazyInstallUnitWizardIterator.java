@@ -202,7 +202,7 @@ public final class LazyInstallUnitWizardIterator implements WizardDescriptor.Ite
                     (notification == null ? " " : notification);
         }
         
-        private static String toString (UpdateElement el) {
+        public static String toString (UpdateElement el) {
             return  el.getCodeName () + DELIMETER +
                     (el.getDisplayName () == null ? el.getCodeName () : el.getDisplayName ()) + DELIMETER +
                     (el.getUpdateUnit ().getInstalled () == null ? " " : el.getUpdateUnit ().getInstalled ().getSpecificationVersion ()) + DELIMETER +

@@ -71,6 +71,9 @@ made subject to such option by the copyright holder.
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-wsdl+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-xml-wsdl-ui-netbeans-module-WSDLDataLoader.instance"/>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-EditAction.instance_hidden"/>
                     <file name="org-netbeans-modules-xml-wsdl-ui-actions-WSDLViewOpenAction.instance">

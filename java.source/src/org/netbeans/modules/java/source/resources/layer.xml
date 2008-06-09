@@ -46,6 +46,12 @@ made subject to such option by the copyright holder.
   <folder name="Loaders">
     <folder name="text">
         <folder name="x-java">
+            <folder name="Factories">
+                <file name="org-netbeans-modules-java-JavaDataLoader.instance">
+                    <attr name="position" intvalue="99999"/>
+                </file>
+            </folder>
+            
             <folder name="Actions">
               <file name="OpenAction.instance">
                 <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
@@ -115,6 +121,10 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="application">
         <folder name="x-class-file">
+            <folder name="Factories">
+                <file name="org-netbeans-modules-java-ClassDataLoader.instance"/>
+            </folder>
+            
             <folder name="Actions">
                 <file name="OpenAction.instance">
                     <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>

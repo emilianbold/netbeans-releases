@@ -248,7 +248,6 @@ public class Utils {
                 return "Timeout. Uninstaller extract process destroyed";
             } else if (errorLevel == 0) {
                 data.setUninstallerBundleFile(new File(pathToExtract + java.io.File.separator + "uninstall.jar"));
-                data.getInstallerFile().deleteOnExit();
                 return OK;
             } else {
                 return "ErrorLevel=>" + errorLevel;

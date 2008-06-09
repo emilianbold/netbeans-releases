@@ -40,13 +40,18 @@
  */
 package org.netbeans.modules.refactoring.spi.impl;
 
+import java.awt.Component;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Collection;
+import javax.swing.Action;
+import javax.swing.JPopupMenu;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
@@ -105,10 +110,10 @@ class CheckNodeListener implements MouseListener, KeyListener {
                     if (o instanceof TreeElement) {
                         o = ((TreeElement) o).getUserObject();
                         if (o instanceof RefactoringElement) {
-                            openDiff(node);
+                                openDiff(node);
+                            }
                         }
                     }
-                }
             } else {
                 Rectangle chRect = CheckRenderer.getCheckBoxRectangle();
                 Rectangle rowRect = tree.getPathBounds(path);
@@ -127,9 +132,9 @@ class CheckNodeListener implements MouseListener, KeyListener {
                     if (o instanceof TreeElement) {
                         o = ((TreeElement) o).getUserObject();
                         if (o instanceof RefactoringElement) {
-                            openDiff(node);
+                                openDiff(node);
+                            }
                         }
-                    }
                     ((DefaultTreeModel) tree.getModel()).nodeChanged(node);
                     if (row == 0) {
                         tree.revalidate();
@@ -162,7 +167,7 @@ class CheckNodeListener implements MouseListener, KeyListener {
             }
         }
     }
-
+    
     public void keyTyped(KeyEvent e) {
     }
 
@@ -192,12 +197,50 @@ class CheckNodeListener implements MouseListener, KeyListener {
     public void mouseExited(MouseEvent e) {
     }
 
-    public void mousePressed(MouseEvent e) {
-    }
-
     public void mouseReleased(MouseEvent e) {
     }
 
+    public void mousePressed(MouseEvent event) {
+        JTree tree = (JTree) event.getSource();
+        int x = event.getX();
+        int y = event.getY();
+
+        int row = tree.getRowForLocation(x, y);
+        TreePath path = tree.getPathForRow(row);
+
+        // if path exists and mouse is clicked exactly once
+        if (path == null) {
+            return;
+        }
+        CheckNode node = (CheckNode) path.getLastPathComponent();
+
+        if ( !SwingUtilities.isRightMouseButton(event)) {
+            return;
+        }
+        Object o = node.getUserObject();
+
+        if ( !(o instanceof TreeElement)) {
+            return;
+        }
+        o = ((TreeElement) o).getUserObject();
+
+        if (o instanceof RefactoringElement) {
+            showPopup(((RefactoringElement) o).getLookup().lookupAll(Action.class), tree, x, y);
+        }
+    }
+
+    private void showPopup(Collection<? extends Action> actions, Component c, int x, int y) {
+        if (actions.isEmpty()) {
+            return;
+        }
+        JPopupMenu menu = new JPopupMenu();
+
+        for (Action a:actions) {
+            menu.add(a);
+        }
+        menu.show(c, x, y);
+    }
+    
     public void keyPressed(KeyEvent e) {
         if (e.getKeyChar() == ' ') {
             JTree tree = (JTree) e.getSource();
@@ -263,4 +306,3 @@ class CheckNodeListener implements MouseListener, KeyListener {
         }
     }
 } // end CheckNodeListener
-

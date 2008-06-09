@@ -40,6 +40,23 @@ PARSER_END(CSSParser)
   < "/*" > : COMMENT
 }
 
+<DEFAULT> MORE: 
+{
+  < "expression(" > : MS_EXPRESSION
+}
+
+<MS_EXPRESSION> TOKEN :
+{
+//this is very simple identification of the end of the expression. The closing par. may be
+//in a string or there might be some brackets in expressions inside.
+  < MSE : ")" > : DEFAULT
+}
+
+<MS_EXPRESSION> MORE :
+{
+  < ~[] > : MS_EXPRESSION
+}
+
 <COMMENT> SKIP :
 {
   < "*/" > : DEFAULT
@@ -148,7 +165,7 @@ PARSER_END(CSSParser)
 {
     < UNKNOWN: ~[] >
     {
-        System.err.println("Illegal character : " + image.toString());
+        //System.err.println("Illegal character : " + image.toString());
     }
 }
 
@@ -578,6 +595,7 @@ void term() :
         | <TIME_S>    
         | <FREQ_HZ>   
         | <FREQ_KHZ>  
+        | <MSE>
         | function()
         )
     | <STRING>        

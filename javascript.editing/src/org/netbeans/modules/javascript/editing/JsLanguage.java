@@ -45,8 +45,18 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
+import org.netbeans.modules.gsf.api.DeclarationFinder;
+import org.netbeans.modules.gsf.api.Formatter;
+import org.netbeans.modules.gsf.api.Indexer;
+import org.netbeans.modules.gsf.api.InstantRenamer;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
+import org.netbeans.modules.gsf.api.OccurrencesFinder;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.gsf.api.StructureScanner;
+import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 
 
@@ -59,25 +69,29 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 
-public class JsLanguage implements GsfLanguage {
+public class JsLanguage extends DefaultLanguageConfig {
 
     private FileObject jsStubsFO;
 
     public JsLanguage() {
     }
 
+    @Override
     public String getLineCommentPrefix() {
         return JsUtils.getLineCommentPrefix();
     }
 
+    @Override
     public boolean isIdentifierChar(char c) {
         return JsUtils.isIdentifierChar(c);
     }
 
+    @Override
     public Language getLexerLanguage() {
         return JsTokenId.language();
     }
 
+    @Override
     public Collection<FileObject> getCoreLibraries() {
         return Collections.singletonList(getJsStubs());
     }
@@ -112,14 +126,17 @@ public class JsLanguage implements GsfLanguage {
         return jsStubsFO;
     }
     
+    @Override
     public String getDisplayName() {
         return "JavaScript";
     }
     
+    @Override
     public String getPreferredExtension() {
         return "js"; // NOI18N
     }
     
+    @Override
     public Map<String,String> getSourceGroupNames() {
         Map<String,String> sourceGroups = new HashMap<String,String>();
         sourceGroups.put("RubyProject", "ruby"); // NOI18N
@@ -129,5 +146,72 @@ public class JsLanguage implements GsfLanguage {
         sourceGroups.put("WebProject", "java"); // NOI18N
         
         return sourceGroups;
+    }
+
+    // Service Registrations
+    
+    @Override
+    public KeystrokeHandler getKeystrokeHandler() {
+        return new JsKeystrokeHandler();
+    }
+
+    @Override
+    public boolean hasFormatter() {
+        return true;
+    }
+
+    @Override
+    public Formatter getFormatter() {
+        return new JsFormatter();
+    }
+
+    @Override
+    public Parser getParser() {
+        return new JsParser();
+    }
+    
+    @Override
+    public CodeCompletionHandler getCompletionHandler() {
+        return new JsCodeCompletion();
+    }
+
+    @Override
+    public boolean hasStructureScanner() {
+        return true;
+    }
+
+    @Override
+    public StructureScanner getStructureScanner() {
+        return new JsAnalyzer();
+    }
+
+    @Override
+    public Indexer getIndexer() {
+        return new JsIndexer();
+    }
+
+    @Override
+    public DeclarationFinder getDeclarationFinder() {
+        return new JsDeclarationFinder();
+    }
+
+    @Override
+    public SemanticAnalyzer getSemanticAnalyzer() {
+        return new JsSemanticAnalyzer();
+    }
+
+    @Override
+    public boolean hasOccurrencesFinder() {
+        return true;
+    }
+
+    @Override
+    public OccurrencesFinder getOccurrencesFinder() {
+        return new JsOccurrenceFinder();
+    }
+
+    @Override
+    public InstantRenamer getInstantRenamer() {
+        return new JsRenameHandler();
     }
 }

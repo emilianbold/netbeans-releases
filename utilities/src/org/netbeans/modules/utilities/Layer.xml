@@ -79,6 +79,9 @@ made subject to such option by the copyright holder.
     <folder name="Loaders">
         <folder name="text">
             <folder name="url">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-url-URLDataLoader.instance"/>
+                </folder>
                 <folder name="Actions">
                     <file name="OpenAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
@@ -149,6 +152,9 @@ made subject to such option by the copyright holder.
         </folder> <!-- text -->
         <folder name="application">
             <folder name="pdf">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-pdf-PDFDataLoader.instance"/>
+                </folder>
                 <folder name="Actions">
                     <file name="OpenAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>

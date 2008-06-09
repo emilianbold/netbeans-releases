@@ -329,7 +329,17 @@ public class SearchForJavaAction extends WizardAction {
         final WindowsRegistry registry =
                 nativeUtils.getWindowsRegistry();
         
+        final int currentMode = registry.getMode();
+        List <Boolean> modes = new ArrayList <Boolean> ();
+        modes.add(null); //default mode
+        
+        if(registry.isAlternativeModeSupported()) {
+            LogManager.log("... alternative registry view is also supported");
+            modes.add(new Boolean(true));//alternative mode
+        }        
         try {
+          for (Boolean mode : modes) {
+            registry.setMode(mode);
             for (int section : new int[]{HKLM, HKCU}) {
                 for (String path: JAVA_WINDOWS_REGISTRY_ENTRIES) {
                     // check whether current path exists in this section
@@ -377,8 +387,11 @@ public class SearchForJavaAction extends WizardAction {
                     }
                 }
             }
+          }
         } catch (NativeException e) {
             ErrorManager.notify(ErrorLevel.DEBUG, "Failed to search in the windows registry", e);
+        } finally {
+            registry.setMode(currentMode);
         }
         
         LogManager.logUnindent("... finished");

@@ -36,7 +36,7 @@ import org.openide.windows.TopComponent;
  * @author Jeri Lockhart
  */
 public class PlanDesignViewMultiViewDesc extends Object
-	implements MultiViewDescription, Serializable {
+    implements MultiViewDescription, Serializable {
     
     
     /**
@@ -46,49 +46,49 @@ public class PlanDesignViewMultiViewDesc extends Object
     public static final String PREFERRED_ID = "wsdl-treeview";
     private PlanDataObject wsdlDataObject;
     
-	/**
-	 *
-	 *
-	 */
-	public PlanDesignViewMultiViewDesc() {
-		super();
-	}
+    /**
+     *
+     *
+     */
+    public PlanDesignViewMultiViewDesc() {
+        super();
+    }
 
 
-	/**
-	 *
-	 *
-	 */
-	public PlanDesignViewMultiViewDesc(PlanDataObject wsdlDataObject) {
-		this.wsdlDataObject = wsdlDataObject;
-	}
+    /**
+     *
+     *
+     */
+    public PlanDesignViewMultiViewDesc(PlanDataObject wsdlDataObject) {
+        this.wsdlDataObject = wsdlDataObject;
+    }
 
 
-	/**
-	 *
-	 *
-	 */
-	public String preferredID() {
-		return PREFERRED_ID;
-	}
+    /**
+     *
+     *
+     */
+    public String preferredID() {
+        return PREFERRED_ID;
+    }
 
 
-	/**
-	 *
-	 *
-	 */
-	public int getPersistenceType() {
-		return TopComponent.PERSISTENCE_NEVER;
-	}
+    /**
+     *
+     *
+     */
+    public int getPersistenceType() {
+        return TopComponent.PERSISTENCE_NEVER;
+    }
 
 
-	/**
-	 *
-	 *
-	 */
-	public java.awt.Image getIcon() {
-		return Utilities.loadImage(PlanDataObject.IEP_ICON_BASE_WITH_EXT);
-	}
+    /**
+     *
+     *
+     */
+    public java.awt.Image getIcon() {
+        return Utilities.loadImage(PlanDataObject.IEP_ICON_BASE_WITH_EXT);
+    }
 
 
         public HelpCtx getHelpCtx() {
@@ -96,43 +96,43 @@ public class PlanDesignViewMultiViewDesc extends Object
         }
 
 
-	/**
-	 *
-	 *
-	 */
-	public String getDisplayName() {
-		return NbBundle.getMessage(PlanDesignViewMultiViewDesc.class,	
-			"LBL_designView_name");
-	}
+    /**
+     *
+     *
+     */
+    public String getDisplayName() {
+        return NbBundle.getMessage(PlanDesignViewMultiViewDesc.class,    
+            "LBL_designView_name");
+    }
 
 
-	/**
-	 *
-	 *
-	 */
-	public MultiViewElement createElement() {
+    /**
+     *
+     *
+     */
+    public MultiViewElement createElement() {
             return new PlanDesignViewMultiViewElement(wsdlDataObject);
-	}
+    }
 
 
-	/**
-	 *
-	 *
-	 */
-	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeObject(wsdlDataObject);
-	}
+    /**
+     *
+     *
+     */
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeObject(wsdlDataObject);
+    }
 
 
-	/**
-	 *
-	 *
-	 */
-	public void readExternal(ObjectInput in)
-		throws IOException, ClassNotFoundException
-	{
-		Object firstObject = in.readObject();
-		if (firstObject instanceof PlanDataObject)
-			wsdlDataObject = (PlanDataObject) firstObject;
-	}
+    /**
+     *
+     *
+     */
+    public void readExternal(ObjectInput in)
+        throws IOException, ClassNotFoundException
+    {
+        Object firstObject = in.readObject();
+        if (firstObject instanceof PlanDataObject)
+            wsdlDataObject = (PlanDataObject) firstObject;
+    }
 }

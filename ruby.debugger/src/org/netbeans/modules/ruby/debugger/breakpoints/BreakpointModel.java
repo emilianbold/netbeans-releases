@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -52,39 +52,54 @@ import static org.netbeans.spi.debugger.ui.Constants.BREAKPOINT_ENABLED_COLUMN_I
 
 public final class BreakpointModel implements NodeModel, TableModel {
     
+    public static final String BREAKPOINT =
+        "org/netbeans/modules/debugger/resources/breakpointsView/NonLineBreakpoint"; // NOI18N
+    public static final String DISABLED_BREAKPOINT =
+        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledNonLineBreakpoint"; // NOI18N
     public static final String LINE_BREAKPOINT =
-            "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint";
+        "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint"; // NOI18N
     public static final String DISABLED_LINE_BREAKPOINT =
-            "org/netbeans/modules/debugger/resources/breakpointsView/DisabledBreakpoint";
-    
+        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledBreakpoint"; // NOI18N
+
     private List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
     
     // NodeModel implementation ................................................
     
     public String getDisplayName(Object node) throws UnknownTypeException {
-        if (node instanceof RubyBreakpoint) {
-            RubyBreakpoint breakpoint = (RubyBreakpoint) node;
+        if (node instanceof RubyLineBreakpoint) {
+            RubyLineBreakpoint breakpoint = (RubyLineBreakpoint) node;
             return breakpoint.getFileObject().getNameExt() + ':' +
                     breakpoint.getLineNumber();
+        } else if (node instanceof RubyExceptionBreakpoint) {
+            RubyExceptionBreakpoint breakpoint = (RubyExceptionBreakpoint) node;
+            return breakpoint.getException();
         }
         throw new UnknownTypeException(node);
     }
     
     public String getIconBase(Object node) throws UnknownTypeException {
-        if (node instanceof RubyBreakpoint) {
+        if (node instanceof RubyLineBreakpoint) {
             if (!((RubyBreakpoint) node).isEnabled()) {
                 return DISABLED_LINE_BREAKPOINT;
             }
             return LINE_BREAKPOINT;
+        } else if (node instanceof RubyExceptionBreakpoint) {
+            if (!((RubyBreakpoint) node).isEnabled()) {
+                return DISABLED_BREAKPOINT;
+            }
+            return BREAKPOINT;
         }
         throw new UnknownTypeException(node);
     }
     
     public String getShortDescription(Object node)
             throws UnknownTypeException {
-        if (node instanceof RubyBreakpoint) {
-            RubyBreakpoint breakpoint = (RubyBreakpoint) node;
+        if (node instanceof RubyLineBreakpoint) {
+            RubyLineBreakpoint breakpoint = (RubyLineBreakpoint) node;
             return breakpoint.getLine().getDisplayName();
+        } else if (node instanceof RubyExceptionBreakpoint) {
+            RubyExceptionBreakpoint breakpoint = (RubyExceptionBreakpoint) node;
+            return breakpoint.getException();
         }
         throw new UnknownTypeException(node);
     }

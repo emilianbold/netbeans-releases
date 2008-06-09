@@ -47,7 +47,7 @@ public class NestedLocalTest extends HintTestBase {
 //    }
     
     public void testHint1() throws Exception {
-        findHints(this, new NestedLocal(), "testfiles/nestedlocals.rb", null);
+        checkHints(this, new NestedLocal(), "testfiles/nestedlocals.rb", null);
     }
 
     public void testNestedLocals() throws Exception {

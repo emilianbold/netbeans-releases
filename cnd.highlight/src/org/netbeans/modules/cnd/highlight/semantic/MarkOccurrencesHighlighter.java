@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
 public class MarkOccurrencesHighlighter extends HighlighterBase {
 
     private static AttributeSet defaultColors;
-    private final static String COLORS = "cc-highlighting-mark-occurences"; // NOI18N
+    private final static String COLORS = "cc-highlighting-mark-occurrences"; // NOI18N
 
     public static OffsetsBag getHighlightsBag(Document doc) {
         if (doc == null) {
@@ -123,7 +123,7 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
     private boolean valid = true;
     // PhaseRunner
     public void run(Phase phase) {
-        if (!SemanticHighlightingOptions.getEnableMarkOccurences()) {
+        if (!SemanticHighlightingOptions.instance().getEnableMarkOccurrences()) {
             clean();
             valid = false;
             return;
@@ -156,9 +156,9 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
                 }
             }
             
-            Collection<CsmReference> out = getOccurences(file, lastPosition);
+            Collection<CsmReference> out = getOccurrences(file, lastPosition);
             if (out.isEmpty()) {
-                if (!SemanticHighlightingOptions.getKeepMarks()) {
+                if (!SemanticHighlightingOptions.instance().getKeepMarks()) {
                     clean();
                 }
             } else {
@@ -182,17 +182,17 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
         return valid;
     }
     
-/*    private Collection<CsmReference> getOccurences() {
+/*    private Collection<CsmReference> getOccurrences() {
         Collection<CsmReference> out = null;
         CsmFile file = getCsmFile();
             FileObject fo = CsmUtilities.getFileObject(file);
             assert fo != null;
-            out = getOccurences(file, CaretAwareCsmFileTaskFactory.getLastPosition(fo));
+            out = getOccurrences(file, CaretAwareCsmFileTaskFactory.getLastPosition(fo));
         }
         return out;
     }*/
     
-    /* package-local */ static Collection<CsmReference> getOccurences(CsmFile file, int position) {
+    /* package-local */ static Collection<CsmReference> getOccurrences(CsmFile file, int position) {
         Collection<CsmReference> out = Collections.<CsmReference>emptyList();
         if (file != null && file.isParsed() ) {
             CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, position);
