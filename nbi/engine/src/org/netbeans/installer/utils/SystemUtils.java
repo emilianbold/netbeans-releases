@@ -38,7 +38,6 @@ package org.netbeans.installer.utils;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -47,27 +46,11 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
-import java.security.CodeSigner;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
-import java.security.cert.X509Certificate;
-import java.util.Collections;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.installer.utils.UiUtils.CertificateAcceptanceStatus;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.ApplicationDescriptor;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
@@ -97,11 +80,6 @@ public final class SystemUtils {
             new ProcessBuilder().environment();
     
     private static NativeUtils nativeUtils;
-    
-    private static KeyStore caStore;
-    private static KeyStore permanentTrustedStore;
-    private static KeyStore sessionTrustedStore;
-    private static KeyStore deniedStore;
     
     // string resolution ////////////////////////////////////////////////////////////
     public static String resolveString(String string) {
@@ -756,220 +734,6 @@ public final class SystemUtils {
         return getNativeUtils().getFileSystemRoots();
     }
     
-    public static boolean isJarSignatureVeryfied(
-            final File file,
-            final String description) throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
-        if (caStore == null) {
-            caStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            caStore.load(new FileInputStream(new File(
-                    JAVA_HOME + "/lib/security/cacerts")), null);
-            
-            permanentTrustedStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            permanentTrustedStore.load(null, null);
-            
-            sessionTrustedStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            sessionTrustedStore.load(null, null);
-            
-            deniedStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            deniedStore.load(null, null);
-        }
-        
-        final JarFile jar = new JarFile(file);
-        try {
-            // first we should fetch all certificates that are present in the jar
-            // file skipping duplicates
-            Certificate[] certificates = null;
-            CodeSigner[] codeSigners = null;
-            for (JarEntry entry: Collections.list(jar.entries())) {
-                readFully(jar.getInputStream(entry));
-                
-                certificates = entry.getCertificates();
-                codeSigners = entry.getCodeSigners();
-                
-                if (certificates != null) {
-                    break;
-                }
-            }
-            
-            // if there are no certificates -- we should pop up the dialog warning
-            // that the jar is not signed and ask the user whether he wants to
-            // accept this
-            if (certificates == null) {
-                // todo
-            }
-            
-            // check the permanent and session trusted stores
-            int chainStart = 0;
-            int chainEnd = 0;
-            int	chainNum = 0;
-            
-            // iterate over the certificate chains that are present in the
-            // certificate arrays
-            while (chainEnd < certificates.length) {
-                // determine the start and end of the current certificates chain
-                int i = chainStart;
-                while (i < certificates.length - 1) {
-                    final boolean isIssuer = isIssuerOf(
-                            (X509Certificate) certificates[i],
-                            (X509Certificate) certificates[i+1]);
-                    
-                    if ((certificates[i] instanceof X509Certificate)
-                    && (certificates[i+1] instanceof X509Certificate)
-                    && isIssuer) {
-                        i++;
-                    } else {
-                        break;
-                    }
-                }
-                chainEnd = i + 1;
-                
-                // if the denied certificates store contains the
-                if (containsCertificate(deniedStore, certificates[chainStart])) {
-                    return false;
-                } else if (containsCertificate(permanentTrustedStore, certificates[chainStart]) ||
-                        containsCertificate(sessionTrustedStore, certificates[chainStart])) {
-                    return true;
-                }
-                
-                chainStart = chainEnd;
-                chainNum++;
-            }
-            
-            // If we get here, no cert in chain has been stored in Session or Permanent store.
-            // If they are not in Deny store either, we have to pop up security dialog box
-            // for each signer's certificate one by one.
-            boolean rootCANotValid = false;
-            boolean timeNotValid = false;
-            
-            chainStart = 0;
-            chainEnd = 0;
-            chainNum = 0;
-            while (chainEnd < certificates.length) {
-                int i = chainStart;
-                
-                for (i = chainStart; i < certificates.length; i++) {
-                    X509Certificate currentCert = null;
-                    X509Certificate issuerCert = null;
-                    
-                    if (certificates[i] instanceof X509Certificate)
-                        currentCert = (X509Certificate) certificates[i];
-                    
-                    if ((i < certificates.length - 1) &&
-                            (certificates[i + 1] instanceof X509Certificate)) {
-                        issuerCert = (X509Certificate) certificates[i+1];
-                    } else {
-                        issuerCert = currentCert;
-                    }
-                    
-                    // check if the certificate is valid and has not expired
-                    try {
-                        currentCert.checkValidity();
-                    } catch (CertificateExpiredException e1) {
-                        timeNotValid = true;
-                    } catch (CertificateNotYetValidException e2) {
-                        timeNotValid = true;
-                    }
-                    
-                    if (isIssuerOf(currentCert, issuerCert)) {
-                        // check the current certificate's signature -- verify that
-                        // this issuer did indeed sign the certificate.
-                        try {
-                            currentCert.verify(issuerCert.getPublicKey());
-                        } catch (GeneralSecurityException e) {
-                            return false;
-                        }
-                    } else {
-                        break;
-                    }
-                }
-                chainEnd = (i < certificates.length) ? (i + 1) : i;
-                
-                // we need to verify if the certificate chain is signed by a CA
-                rootCANotValid = !verifyCertificate(caStore, certificates[chainEnd-1]);
-                
-                Date timestamp = null;
-                if (codeSigners[chainNum].getTimestamp() != null) {
-                    timestamp = codeSigners[chainNum].getTimestamp().getTimestamp();
-                }
-                
-                CertificateAcceptanceStatus status = UiUtils.showCertificateAcceptanceDialog(
-                        certificates,
-                        chainStart,
-                        chainEnd,
-                        rootCANotValid,
-                        timeNotValid,
-                        timestamp,
-                        description);
-                
-                
-                // If user Grant permission, just pass all security checks.
-                // If user Deny first signer, pop up security box for second signer certs
-                if (status == CertificateAcceptanceStatus.ACCEPT_PERMANENTLY) {
-                    addCertificate(permanentTrustedStore, certificates[chainStart]);
-                    return true;
-                } else if (status == CertificateAcceptanceStatus.ACCEPT_FOR_THIS_SESSION) {
-                    addCertificate(sessionTrustedStore, certificates[chainStart]);
-                    return true;
-                } else {
-                    addCertificate(deniedStore, certificates[chainStart]);
-                }
-                
-                chainStart = chainEnd;
-                chainNum++;
-            }
-            
-            return false;
-        } finally {
-            jar.close();
-        }
-    }
-    
-    private static void readFully(
-            final InputStream stream) throws IOException {
-        final byte[] buffer = new byte[BUFFER_SIZE];
-        while(stream.read(buffer) != -1) {
-            ; // do this!
-        }
-    }
-    
-    private static boolean isIssuerOf(
-            final X509Certificate certificate1,
-            final X509Certificate certificate2) {
-        return certificate1.getIssuerDN().equals(certificate2.getSubjectDN());
-    }
-    
-    private static boolean containsCertificate(
-            final KeyStore store,
-            final Certificate certificate) throws KeyStoreException {
-        return store.getCertificateAlias(certificate) != null;
-    }
-    
-    private static void addCertificate(
-            final KeyStore store,
-            final Certificate certificate) throws KeyStoreException {
-        if (store.getCertificateAlias(certificate) == null) {
-            store.setCertificateEntry(
-                    "alias" + new Random().nextLong(),
-                    certificate);
-        }
-    }
-    
-    private static boolean verifyCertificate(
-            final KeyStore store,
-            final Certificate certificate) throws KeyStoreException {
-        for (String alias: Collections.list(store.aliases())) {
-            try {
-                certificate.verify(store.getCertificate(alias).getPublicKey());
-                return true;
-            } catch (GeneralSecurityException e) {
-                // we must ignore this exception as it is VERY expected -- will
-                // happen N-1 times at least
-            }
-        }
-        
-        return false;
-    }
-    
     // platforms probes /////////////////////////////////////////////////////////////
     public static boolean isWindows() {
         return getCurrentPlatform().isCompatibleWith(Platform.WINDOWS);
@@ -1052,8 +816,6 @@ public final class SystemUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final long MAX_EXECUTION_TIME = 600000;
-    
-    public static final int BUFFER_SIZE = 4096;
     
     public static final int MAX_DELAY = 50; // NOMAGI
     public static final int INITIAL_DELAY = 5; // NOMAGI
