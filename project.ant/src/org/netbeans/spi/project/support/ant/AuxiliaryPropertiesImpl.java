@@ -37,64 +37,64 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.syntaxerr;
-
-import antlr.RecognitionException;
-import java.util.Collection;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
-import org.openide.util.Lookup;
+package org.netbeans.spi.project.support.ant;
+import java.util.LinkedList;
+import java.util.List;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.spi.project.AuxiliaryProperties;
+import org.openide.util.Mutex;
 
 /**
- * An abstrasct class (a usual NB parttern - 
- * hybrid of an interface and a factory)
- * for filtering ANTLR recognition exceptions.
- * 
- * Implementation can
- * - filter out some particular sort of errors
- * - convert messages / info into human understandable format
- * 
- * @author Vladimir Kvashin
+ *
+ * @author Jan Lahoda
  */
-public abstract class ParserErrorFilter {
+class AuxiliaryPropertiesImpl implements AuxiliaryProperties {
 
-    /** A class that just joins all available filters to a single one */
-    private static class JointFilter extends ParserErrorFilter {
-        
-        private final Lookup.Result<ParserErrorFilter> res;
+    private final AntProjectHelper helper;
+    private final String propertyPrefix = "auxiliary.";
 
-        public JointFilter() {
-            res = Lookup.getDefault().lookupResult(ParserErrorFilter.class);
-        }
+    public AuxiliaryPropertiesImpl(AntProjectHelper helper) {
+        this.helper = helper;
+    }
+    
+    public String get(String key, boolean shared) {
+        String location = shared ? AntProjectHelper.PROJECT_PROPERTIES_PATH : AntProjectHelper.PRIVATE_PROPERTIES_PATH;
+        EditableProperties props = helper.getProperties(location);
         
+        return props.get(propertyPrefix + key);
+    }
+
+    public void put(final String key, final String value, final boolean shared) {
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            public Void run() {
+                String location = shared ? AntProjectHelper.PROJECT_PROPERTIES_PATH : AntProjectHelper.PRIVATE_PROPERTIES_PATH;
+                EditableProperties props = helper.getProperties(location);
+
+                if (value != null) {
+                    props.put(propertyPrefix + key, value);
+                } else {
+                    props.remove(propertyPrefix + key);
+                }
+
+                helper.putProperties(location, props);
+                
+                return null;
+            }
+        });
+    }
+
+    public Iterable<String> listKeys(boolean shared) {
+        List<String> result = new LinkedList<String>();
+        String location = shared ? AntProjectHelper.PROJECT_PROPERTIES_PATH : AntProjectHelper.PRIVATE_PROPERTIES_PATH;
+        EditableProperties props = helper.getProperties(location);
         
-        @Override
-        public void filter(Collection<RecognitionException> parserErrors, Collection<CsmErrorInfo> result,BaseDocument doc) {
-            for( ParserErrorFilter filter : res.allInstances() ) {
-                filter.filter(parserErrors, result, doc);
+        for (String k : props.keySet()) {
+            if (k.startsWith(propertyPrefix)) {
+                result.add(k.substring(propertyPrefix.length()));
             }
         }
-    }
-    
-    private static final ParserErrorFilter DEFAULT = new JointFilter();  
-    
-    public static ParserErrorFilter getDefault() {
-        return DEFAULT;
+        
+        return result;
     }
 
-    /**
-     * Filters the collection of exceptions returned by ANTLR parser,
-     * converts some (or all) of them to CsmErrorInfo
-     * 
-     * 
-     * @param parserErrors the collection of exceptions returned by ANTLR parser. 
-     * Feel free to remove some elements if the filter knows they are induced errors
-     * and you don't want anyone to process them
-     * 
-     * @param result a collection to add resulting CsmErrorInfos to
-     */
-    abstract public void filter(
-            Collection<RecognitionException> parserErrors, 
-            Collection<CsmErrorInfo> result,
-            BaseDocument doc);
 }

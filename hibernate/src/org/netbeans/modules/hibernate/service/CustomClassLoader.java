@@ -56,7 +56,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-//import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -72,10 +73,16 @@ import org.openide.ErrorManager;
 public class CustomClassLoader extends URLClassLoader {
 
     private Map<String, File> package2File = new HashMap<String, File>();
-    //private Logger logger = Logger.getLogger(CustomClassLoader.class.getName());
+    private Logger logger = Logger.getLogger(CustomClassLoader.class.getName());
 
     public CustomClassLoader(URL[] urls, ClassLoader parent) {
         super(urls, parent);
+        if(logger.isLoggable(Level.INFO)) {
+            logger.info("Initializing Custom Classloader with classpath : ");
+            for(URL url : urls) {
+                logger.info(url.toExternalForm());
+            }
+        }
     }
 
     @Override

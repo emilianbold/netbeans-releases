@@ -94,7 +94,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
@@ -337,6 +336,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
             String varName = tokenSequence.token().text().toString();
             String typeName = null;
+            boolean completeDollarPrefix = true;
 
             if (varName.equals("self")) { //NOI18N
                 ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
@@ -362,6 +362,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     typeName = classDecl.getName().getName();
                     staticContext = false;
                     instanceContext = true;
+                    completeDollarPrefix = false;
                     attrMask |= (Modifier.PROTECTED | Modifier.PRIVATE);
                 }
             } else {
@@ -380,7 +381,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     }
                 }
             }
-            
+
             if (typeName != null){
                 Collection<IndexedFunction> methods = includeInherited ?
                     request.index.getAllMethods(request.result, typeName, request.prefix, nameKind, attrMask) :
@@ -400,7 +401,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     if (staticContext && prop.isStatic() || instanceContext && !prop.isStatic()) {
                         PHPCompletionItem.VariableItem item = new PHPCompletionItem.VariableItem(prop, request);
 
-                        if (!staticContext) {
+                        if (!completeDollarPrefix) {
                             item.doNotInsertDollarPrefix();
                         }
 
@@ -495,13 +496,17 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         String varName = extractVariableName(var);
         
-        if (varName != null && (varName.startsWith(namePrefix) || nameKind == NameKind.CASE_INSENSITIVE_PREFIX && varName.toLowerCase().startsWith(namePrefix.toLowerCase()))) {
-
+        if (isPrefix(varName, namePrefix)) {
             IndexedConstant ic = new IndexedConstant(varName, null,
                     null, localFileURL, -1, 0, type);
 
             localVars.put(varName, ic);
         }
+    }
+    
+    private boolean isPrefix(String name, String prefix){
+        return name != null && (name.startsWith(prefix) 
+                || nameKind == NameKind.CASE_INSENSITIVE_PREFIX && name.toLowerCase().startsWith(prefix.toLowerCase()));
     }
     
     private void getLocalVariables_indexVariableInAssignment(Expression expr,
@@ -538,12 +543,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 Expression expr = ((ExpressionStatement)statement).getExpression();
                 getLocalVariables_indexVariableInAssignment(expr, localVars, namePrefix, localFileURL);
                 
-            } else if (statement instanceof GlobalStatement) {
-                GlobalStatement globalStatement = (GlobalStatement) statement;
-                
-                for (Variable var : globalStatement.getVariables()){
-                    getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, null);
-                }
             } else if (!offsetWithinStatement(position, statement)){
                 continue;
             }
@@ -606,17 +605,19 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 getLocalVariables_MergeResults(localVars,
                         getLocalVariables(Collections.singleton(forEachStatement.getStatement()), namePrefix, position, localFileURL));
             } else if (statement instanceof FunctionDeclaration) {
-                localVars.clear();
                 FunctionDeclaration functionDeclaration = (FunctionDeclaration) statement;
 
                 for (FormalParameter param : functionDeclaration.getFormalParameters()) {
                     if (param.getParameterName() instanceof Variable) {
                         String varName = extractVariableName((Variable) param.getParameterName());
                         String type = param.getParameterType() != null ? param.getParameterType().getName() : null;
-                        IndexedConstant ic = new IndexedConstant(varName, null,
-                                null, localFileURL, -1, 0, type);
                         
-                        localVars.put(varName, ic);
+                        if (isPrefix(varName, namePrefix)) {
+                            IndexedConstant ic = new IndexedConstant(varName, null,
+                                    null, localFileURL, -1, 0, type);
+
+                            localVars.put(varName, ic);
+                        }
                     }
                 }
                 

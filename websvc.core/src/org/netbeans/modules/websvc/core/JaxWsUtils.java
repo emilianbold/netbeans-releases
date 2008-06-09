@@ -63,6 +63,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -118,6 +120,7 @@ import javax.swing.SwingUtilities;
 import javax.xml.namespace.QName;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.websvc.serverapi.api.WSStackFeature;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
@@ -512,19 +515,19 @@ public class JaxWsUtils {
     }
 
     private static void initProjectInfo(Project project) {
-        JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-        if (wss != null) {
-            Map properties = wss.getAntProjectHelper().getStandardPropertyEvaluator().getProperties();
-            String serverInstance = (String) properties.get("j2ee.server.instance"); //NOI18N
-            System.out.println("ServerId = "+Deployment.getDefault().getServerID(serverInstance));
+        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
+            String serverInstance = provider.getServerInstanceID();
             if (serverInstance != null) {
-                J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
-                if (j2eePlatform != null) {
+                try {
+                    J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstance).getJ2eePlatform();
                     WSStack wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
                     if (wsStack != null) {
                         jsr109Supported =  isJsr109Supported(wsStack, project);
                         
                     }
+                } catch (InstanceRemovedException ex) {
+                    Logger.getLogger(JaxWsUtils.class.getName()).log(Level.INFO, "Failed to find J2eePlatform", ex);
                 }
             }
         }
@@ -1314,12 +1317,13 @@ public class JaxWsUtils {
             if (serverInstanceId == null) {
                 return false;
             }
-            J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceId);
-            if (platform == null) {
-                return false;
-            }
-            if (platform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
-                return true;
+            try {
+                J2eePlatform platform = Deployment.getDefault().getServerInstance(serverInstanceId).getJ2eePlatform();
+                if (platform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+                    return true;
+                }
+            } catch (InstanceRemovedException ex) {
+                Logger.getLogger(JaxWsUtils.class.getName()).log(Level.INFO, "Failed to find J2eePlatform", ex);
             }
         }
         return false;

@@ -121,7 +121,7 @@ public class GlassfishJaxWsStack implements WSStackSPI {
                 }
             }
 
-            public String getWsdlUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
+            public String getDescriptorUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
                 return getServiceUri(applicationRoot, serviceName, portName, isEjb)+"?wsdl"; //NOI18N
             }
 

@@ -37,62 +37,48 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.extbrowser;
+package org.netbeans.spi.project;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.logging.Level;
-import org.openide.util.Exceptions;
-
-/**
- * Basic support for default browser funcionality on Unix system,
- * currently using "xdg-open".
- * Note this class is not used for JDK 6 and up, for that purpose is used
- * build-in JDK mechanism (java.awt.Desktop#browse).
- *
- * @author Peter Zavadsky
+/**<p>Allow to store arbitrary properties in the project, similarly as {@link AuxiliaryConfiguration}.
+ * Used as backing store for {@link org.netbeans.api.project.ProjectUtils#getPreferences(org.netbeans.api.project.Project, java.lang.Class, boolean)}.
+ * </p>
+ * 
+ * <p>Note to API clients: do not use this interface directly, use
+ * {@link org.netbeans.api.project.ProjectUtils#getPreferences(org.netbeans.api.project.Project, java.lang.Class, boolean)} instead.
+ * </p>
+ * 
+ * @author Jan Lahoda
+ * @since 1.16
  */
-class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
-    
-    private static final String COMMAND = "xdg-open"; // NOI18N
+public interface AuxiliaryProperties {
 
-    private static final boolean AVAILABLE;
+    /**
+     * Get a property value.
+     * 
+     * @param key name of the property
+     * @param shared true to look in a sharable settings area, false to look in a private
+     *               settings area
+     * @return value of the selected property, or null if not set.
+     */
+    public String get(String key, boolean shared);
     
-    static {
-        // XXX Lame check to find out whether the functionality is installed.
-        // TODO Find some better way to ensure it is there.
-        AVAILABLE = new File("/usr/bin/" + COMMAND).exists(); // NOI18N
-    }
+    /**
+     * Put a property value.
+     * 
+     * @param key name of the property
+     * @param value value of the property. <code>null</code> will remove the property.
+     * @param shared true to look in a sharable settings area, false to look in a private
+     *               settings area
+     */
+    public void put(String key, String value, boolean shared);
     
-    static boolean isAvailable() {
-        return AVAILABLE;
-    }
+    /**
+     * List all keys of all known properties.
+     * 
+     * @param shared true to look in a sharable settings area, false to look in a private
+     *               settings area
+     * @return known keys.
+     */
+    public Iterable<String> listKeys(boolean shared);
     
-    
-    NbDefaultUnixBrowserImpl(ExtWebBrowser extBrowser) {
-        super ();
-        this.extBrowserFactory = extBrowser;
-        if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
-            ExtWebBrowser.getEM().log(Level.FINE, "" + System.currentTimeMillis() + "NbDefaultUnixBrowserImpl created with factory: " + extBrowserFactory); // NOI18N
-        }
-    }
-
-    
-    public void setURL(URL url) {
-        if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
-            ExtWebBrowser.getEM().log(Level.FINE, "" + System.currentTimeMillis() + "NbDeaultUnixBrowserImpl.setUrl: " + url); // NOI18N
-        }
-        String urlArgument = url.toExternalForm();
-        ProcessBuilder pb = new ProcessBuilder(new String[] {
-            COMMAND,
-            urlArgument
-        });
-        try {
-            Process p = pb.start();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
 }

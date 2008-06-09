@@ -94,6 +94,11 @@ public class CustomJDBCConnectionProvider implements ConnectionProvider {
                     password = connectionProperties.getProperty("connection.password"); //NOI18N
 
                 }
+                
+                // Some Database (such as HSQLDB) alow empty password.
+                if(password == null) {
+                    password = "";
+                }
 
                 // load the driver
                 ClassLoader classLoader = Thread.currentThread().getContextClassLoader();

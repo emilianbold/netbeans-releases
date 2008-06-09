@@ -104,6 +104,24 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="projectutils-getPreferences">
+            <api name="general"/>
+            <summary>Added ProjectUtils.getPreferences.</summary>
+            <version major="1" minor="16"/>
+            <date day="9" month="6" year="2008"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible">
+            </compatibility>
+            <description>
+	        <p>
+                    Added new API method <code>ProjectUtils.getPreferences</code> and new SPI interface <code>AuxiliaryProperties</code>.
+		</p>
+            </description>
+            <class package="org.netbeans.api.project" name="ProjectUtils"/>
+            <class package="org.netbeans.spi.project" name="AuxiliaryProperties"/>
+            <issue number="134580"/>
+        </change>
+        
         <change id="lookup-provider">
             <api name="general"/>
             <summary>Added support for composing project's lookup from multiple sources.</summary>
