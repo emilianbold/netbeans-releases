@@ -41,9 +41,11 @@
  * Contributor(s): Sun Microsystems, Inc.
  */
 
-package gui.debuggercore;
+package org.netbeans.debuggercore;
 
 import java.io.File;
+import java.io.IOException;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
@@ -53,11 +55,12 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.util.PNGEncoder;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 
-public class StartDebugger extends JellyTestCase {
+public class StartDebuggerTest extends JellyTestCase {
     
-    public StartDebugger(String name) {
+    public StartDebuggerTest(String name) {
         super(name);
     }
     
@@ -65,17 +68,18 @@ public class StartDebugger extends JellyTestCase {
         TestRunner.run(suite());
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new StartDebugger("testDebugMainProject"));
-        suite.addTest(new StartDebugger("testDebugProject"));
-        suite.addTest(new StartDebugger("testDebugFile"));
-        suite.addTest(new StartDebugger("testRunDebuggerStepInto"));
-        suite.addTest(new StartDebugger("testRunDebuggerRunToCursor"));
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(StartDebuggerTest.class).addTest(
+                "testDebugMainProject",
+                "testDebugProject",
+                "testDebugFile",
+                "testRunDebuggerStepInto",
+                "testRunDebuggerRunToCursor"
+                ).enableModules(".*").clusters(".*"));
     }
     
-    public void setUp() {
+    public void setUp() throws IOException {
+        openDataProjects(Utilities.testProjectName);
         System.out.println("########  " + getName() + "  #######");
     }
     
@@ -86,6 +90,7 @@ public class StartDebugger extends JellyTestCase {
     
     public void testDebugMainProject() throws Throwable {
         try {
+            new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
             new Action(Utilities.runMenu+"|"+Utilities.debugMainProjectItem, null).perform();
             Utilities.getDebugToolbar().waitComponentVisible(true);
             Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, 0);

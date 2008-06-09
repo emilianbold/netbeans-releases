@@ -41,7 +41,7 @@
  * Contributor(s): Sun Microsystems, Inc.
  */
 
-package gui.debuggercore;
+package org.netbeans.debuggercore;
 
 import java.awt.Component;
 import java.awt.event.KeyEvent;

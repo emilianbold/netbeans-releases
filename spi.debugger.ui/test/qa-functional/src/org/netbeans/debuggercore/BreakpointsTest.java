@@ -41,8 +41,10 @@
  * Contributor(s): Sun Microsystems, Inc.
  */
 
-package gui.debuggercore;
+package org.netbeans.debuggercore;
 
+import java.io.IOException;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
@@ -65,6 +67,7 @@ import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 
 
@@ -73,14 +76,14 @@ import org.netbeans.junit.NbTestSuite;
  *
  * @author ehucka
  */
-public class Breakpoints extends JellyTestCase {
+public class BreakpointsTest extends JellyTestCase {
 
     //MainWindowOperator.StatusTextTracer stt = null;
     /**
      *
      * @param name
      */
-    public Breakpoints(String name) {
+    public BreakpointsTest(String name) {
         super(name);
     }
 
@@ -96,65 +99,68 @@ public class Breakpoints extends JellyTestCase {
      *
      * @return
      */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new Breakpoints("testLineBreakpointCreation"));
-        suite.addTest(new Breakpoints("testLineBreakpointFunctionality"));
-        suite.addTest(new Breakpoints("testLineBreakpointFunctionalityAfterContinue"));
-        suite.addTest(new Breakpoints("testLineBreakpointFunctionalityInStaticMethod"));
-        suite.addTest(new Breakpoints("testLineBreakpointFunctionalityInInitializer"));
-        suite.addTest(new Breakpoints("testLineBreakpointFunctionalityInConstructor"));
-        suite.addTest(new Breakpoints("testLineBreakpointFunctionalityInInnerClass"));
-        suite.addTest(new Breakpoints("testLineBreakpointFunctionalityInSecondaryClass"));
-        suite.addTest(new Breakpoints("testConditionalLineBreakpointFunctionality"));
-        suite.addTest(new Breakpoints("testLineBreakpointActions"));
-        suite.addTest(new Breakpoints("testLineBreakpointsValidation"));
-        suite.addTest(new Breakpoints("testLineBreakpointsHitCount"));
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(BreakpointsTest.class).addTest(
+                    "testLineBreakpointCreation",
+                    "testLineBreakpointFunctionality",
+                    "testLineBreakpointFunctionalityAfterContinue",
+                    "testLineBreakpointFunctionalityInStaticMethod",
+                    "testLineBreakpointFunctionalityInInitializer",
+                    "testLineBreakpointFunctionalityInConstructor",
+                    "testLineBreakpointFunctionalityInInnerClass",
+                    "testLineBreakpointFunctionalityInSecondaryClass",
+                    "testConditionalLineBreakpointFunctionality",
+                    "testLineBreakpointActions",
+                    "testLineBreakpointsValidation",
+                    "testLineBreakpointsHitCount",
 
-        suite.addTest(new Breakpoints("testMethodBreakpointPrefilledConstructor"));
-        suite.addTest(new Breakpoints("testMethodBreakpointPrefilledMethod"));
-        suite.addTest(new Breakpoints("testMethodBreakpointCreation"));
-        suite.addTest(new Breakpoints("testMethodBreakpointFunctionalityInPrimaryClass"));
-        suite.addTest(new Breakpoints("testMethodBreakpointFunctionalityInSecondClass"));
-        suite.addTest(new Breakpoints("testMethodBreakpointFunctionalityOnAllMethods"));
-        suite.addTest(new Breakpoints("testMethodBreakpointFunctionalityOnExit"));
-        suite.addTest(new Breakpoints("testConditionalMethodBreakpointFunctionality"));
-        suite.addTest(new Breakpoints("testMethodBreakpointsValidation"));
+                    "testMethodBreakpointPrefilledConstructor",
+                    "testMethodBreakpointPrefilledMethod",
+                    "testMethodBreakpointCreation",
+                    "testMethodBreakpointFunctionalityInPrimaryClass",
+                    "testMethodBreakpointFunctionalityInSecondClass",
+                    "testMethodBreakpointFunctionalityOnAllMethods",
+                    "testMethodBreakpointFunctionalityOnExit",
+                    "testConditionalMethodBreakpointFunctionality",
+                    "testMethodBreakpointsValidation",
 
-        suite.addTest(new Breakpoints("testClassBreakpointPrefilledInClass"));
-        suite.addTest(new Breakpoints("testClassBreakpointPrefilledInInitializer"));
-        suite.addTest(new Breakpoints("testClassBreakpointPrefilledInConstructor"));
-        suite.addTest(new Breakpoints("testClassBreakpointPrefilledInMethod"));
-        suite.addTest(new Breakpoints("testClassBreakpointPrefilledInSecondClass"));
-        suite.addTest(new Breakpoints("testClassBreakpointCreation"));
-        suite.addTest(new Breakpoints("testClassBreakpointFunctionalityOnPrimaryClass"));
-        suite.addTest(new Breakpoints("testClassBreakpointFunctionalityOnSecondClass"));
-        suite.addTest(new Breakpoints("testClassBreakpointFunctionalityWithFilter"));
+                    "testClassBreakpointPrefilledInClass",
+                    "testClassBreakpointPrefilledInInitializer",
+                    "testClassBreakpointPrefilledInConstructor",
+                    "testClassBreakpointPrefilledInMethod",
+                    "testClassBreakpointPrefilledInSecondClass",
+                    "testClassBreakpointCreation",
+                    "testClassBreakpointFunctionalityOnPrimaryClass",
+                    "testClassBreakpointFunctionalityOnSecondClass",
+                    "testClassBreakpointFunctionalityWithFilter",
 
-        suite.addTest(new Breakpoints("testFieldBreakpointPrefilledValues"));
-        suite.addTest(new Breakpoints("testFieldBreakpointCreation"));
-        suite.addTest(new Breakpoints("testFieldBreakpointFunctionalityAccess"));
-        suite.addTest(new Breakpoints("testFieldBreakpointFunctionalityModification"));
-        suite.addTest(new Breakpoints("testConditionalFieldBreakpointFunctionality"));
-        suite.addTest(new Breakpoints("testFieldBreakpointsValidation"));
+                    "testFieldBreakpointPrefilledValues",
+                    "testFieldBreakpointCreation",
+                    "testFieldBreakpointFunctionalityAccess",
+                    "testFieldBreakpointFunctionalityModification",
+                    "testConditionalFieldBreakpointFunctionality",
+                    "testFieldBreakpointsValidation",
 
-        suite.addTest(new Breakpoints("testThreadBreakpointCreation"));
-        suite.addTest(new Breakpoints("testThreadBreakpointFunctionality"));
-        suite.addTest(new Breakpoints("testThreadBreakpointFunctionalityHitCount"));
+                    "testThreadBreakpointCreation",
+                    "testThreadBreakpointFunctionality",
+                    "testThreadBreakpointFunctionalityHitCount",
 
-        suite.addTest(new Breakpoints("testExceptionBreakpointCreation"));
-        suite.addTest(new Breakpoints("testExceptionBreakpointFunctionality"));
-        suite.addTest(new Breakpoints("testExceptionBreakpointMatchClasses"));
-        suite.addTest(new Breakpoints("testExceptionBreakpointExcludeClasses"));
-        suite.addTest(new Breakpoints("testExceptionBreakpointHitCount"));
-        suite.addTest(new Breakpoints("testConditionalExceptionBreakpoint"));
-        return suite;
+                    "testExceptionBreakpointCreation",
+                    "testExceptionBreakpointFunctionality",
+                    "testExceptionBreakpointMatchClasses",
+                    "testExceptionBreakpointExcludeClasses",
+                    "testExceptionBreakpointHitCount",
+                    "testConditionalExceptionBreakpoint"
+                )
+            .enableModules(".*").clusters(".*"));
     }
 
     /**
      *
      */
-    public void setUp() {
+    public void setUp() throws IOException {
+        openDataProjects(Utilities.testProjectName);
         System.out.println("########  " + getName() + "  ####### ");
     }
 

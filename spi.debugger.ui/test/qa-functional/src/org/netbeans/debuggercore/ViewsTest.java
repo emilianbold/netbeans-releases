@@ -41,12 +41,15 @@
  * Contributor(s): Sun Microsystems, Inc.
  */
 
-package gui.debuggercore;
+package org.netbeans.debuggercore;
 
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.IOException;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.*;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -56,12 +59,13 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 
 
-public class Views extends JellyTestCase {
+public class ViewsTest extends JellyTestCase {
     
-    public Views(String name) {
+    public ViewsTest(String name) {
         super(name);
     }
     
@@ -69,25 +73,43 @@ public class Views extends JellyTestCase {
         TestRunner.run(suite());
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
+    public static Test suite() {
         String vers = System.getProperty("java.version");
-        
-        suite.addTest(new Views("testViewsDefaultOpen"));
-        suite.addTest(new Views("testViewsCallStack"));
-        if (vers.startsWith("1.6")) {  //heapwalker
-            suite.addTest(new Views("testViewsHeapWalker1"));
-        } else { // old classes view
-            suite.addTest(new Views("testViewsClasses"));
+        if (vers.startsWith("1.6")) {
+            return NbModuleSuite.create(
+               NbModuleSuite.createConfiguration(ViewsTest.class).addTest(
+                    "testViewsDefaultOpen",
+                    "testViewsCallStack",
+                    "testViewsHeapWalker1",
+                    "testViewsThreads",
+                    "testViewsSessions",
+                    "testViewsSources",
+                    "testViewsClose")
+                .enableModules(".*")
+                .clusters(".*")
+            
+            );
+        } else {
+            return NbModuleSuite.create(
+               NbModuleSuite.createConfiguration(ViewsTest.class).addTest(
+                    "testViewsDefaultOpen",
+                    "testViewsCallStack",
+                    "testViewsClasses",
+                    "testViewsThreads",
+                    "testViewsSessions",
+                    "testViewsSources",
+                    "testViewsClose")
+                .enableModules(".*")
+                .clusters(".*")
+            
+            );
         }
-        suite.addTest(new Views("testViewsThreads"));
-        suite.addTest(new Views("testViewsSessions"));
-        suite.addTest(new Views("testViewsSources"));
-        suite.addTest(new Views("testViewsClose"));
-        return suite;
-    }
+                
+    }     
     
-    public void setUp() {
+    public void setUp() throws IOException {
+        openDataProjects(Utilities.testProjectName);
+        new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
         System.out.println("########  " + getName() + "  #######");
         if ("testViewsDefaultOpen".equals(getName())) {
             //open source

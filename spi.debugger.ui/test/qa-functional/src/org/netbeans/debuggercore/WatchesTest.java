@@ -41,11 +41,14 @@
  * Contributor(s): Sun Microsystems, Inc.
  */
 
-package gui.debuggercore;
+package org.netbeans.debuggercore;
 
 import java.io.File;
+import java.io.IOException;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.*;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.actions.RunToCursorAction;
@@ -56,6 +59,7 @@ import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.nodes.Node;
 
@@ -63,13 +67,13 @@ import org.openide.nodes.Node;
  *
  * @author ehucka
  */
-public class Watches extends JellyTestCase {
+public class WatchesTest extends JellyTestCase {
     
     /**
      *
      * @param name
      */
-    public Watches(String name) {
+    public WatchesTest(String name) {
         super(name);
     }
     
@@ -85,33 +89,35 @@ public class Watches extends JellyTestCase {
      *
      * @return
      */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new Watches("testWatchesPublicVariables"));
-        suite.addTest(new Watches("testWatchesProtectedVariables"));
-        suite.addTest(new Watches("testWatchesPrivateVariables"));
-        suite.addTest(new Watches("testWatchesPackagePrivateVariables"));
-        suite.addTest(new Watches("testWatchesFiltersBasic"));
-        suite.addTest(new Watches("testWatchesFiltersLinkedList"));
-        suite.addTest(new Watches("testWatchesFiltersArrayList"));
-        suite.addTest(new Watches("testWatchesFiltersVector"));
-        suite.addTest(new Watches("testWatchesFiltersHashMap"));
-        suite.addTest(new Watches("testWatchesFiltersHashtable"));
-        suite.addTest(new Watches("testWatchesFiltersTreeMap"));
-        suite.addTest(new Watches("testWatchesFiltersTreeSet"));
-        suite.addTest(new Watches("testWatchesFilters1DArray"));
-        suite.addTest(new Watches("testWatchesFilters2DArray"));
-        suite.addTest(new Watches("testWatchesValues"));
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(ViewsTest.class).addTest(
+            "testWatchesPublicVariables",
+            "testWatchesProtectedVariables",
+            "testWatchesPrivateVariables",
+            "testWatchesPackagePrivateVariables",
+            "testWatchesFiltersBasic",
+            "testWatchesFiltersLinkedList",
+            "testWatchesFiltersArrayList",
+            "testWatchesFiltersVector",
+            "testWatchesFiltersHashMap",
+            "testWatchesFiltersHashtable",
+            "testWatchesFiltersTreeMap",
+            "testWatchesFiltersTreeSet",
+            "testWatchesFilters1DArray",
+            "testWatchesFilters2DArray",
+            "testWatchesValues").enableModules(".*").clusters(".*"));
     }
     
     /**
      *
      */
-    public void setUp() {
+    public void setUp() throws IOException {
+        openDataProjects(Utilities.testProjectName);
+        new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
         System.out.println("########  " + getName() + "  #######");
         if ("testWatchesPublicVariables".equals(getName())) {
             //open source
+            
             org.netbeans.jellytools.nodes.Node beanNode = new org.netbeans.jellytools.nodes.Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode); // NOI18N
             EditorOperator op = new EditorOperator("MemoryView.java");

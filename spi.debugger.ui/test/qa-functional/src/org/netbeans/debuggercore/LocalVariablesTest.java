@@ -41,9 +41,11 @@
  * Contributor(s): Sun Microsystems, Inc.
  */
 
-package gui.debuggercore;
+package org.netbeans.debuggercore;
 
 import java.io.File;
+import java.io.IOException;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
@@ -55,13 +57,14 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 
 /**
  *
  * @author ehucka, Jiri Vagner
  */
-public class LocalVariables extends JellyTestCase {
+public class LocalVariablesTest extends JellyTestCase {
     
     static int consoleLineNumber = 0;
     
@@ -73,7 +76,7 @@ public class LocalVariables extends JellyTestCase {
      *
      * @param name
      */
-    public LocalVariables(String name) {
+    public LocalVariablesTest(String name) {
        super(name);
         version  = getJDKVersionCode();
     }
@@ -106,22 +109,27 @@ public class LocalVariables extends JellyTestCase {
      *
      * @return
      */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new LocalVariables("testLocalVariablesThisNode"));
-        suite.addTest(new LocalVariables("testLocalVariablesStaticNode"));
-        suite.addTest(new LocalVariables("testLocalVariablesStaticInherited"));
-        suite.addTest(new LocalVariables("testLocalVariablesInheritedNode"));
-        suite.addTest(new LocalVariables("testLocalVariablesExtended"));
-        suite.addTest(new LocalVariables("testLocalVariablesValues"));
-        suite.addTest(new LocalVariables("testLocalVariablesSubExpressions"));
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(LocalVariablesTest.class).addTest(
+                "testLocalVariablesThisNode",
+                "testLocalVariablesStaticNode",
+                "testLocalVariablesStaticInherited",
+                "testLocalVariablesInheritedNode",
+                "testLocalVariablesExtended",
+                "testLocalVariablesValues",
+                "testLocalVariablesSubExpressions"
+                )
+                .enableModules(".*")
+                .clusters(".*"));
     }
     
     /**
      *
      */
-    public void setUp() {
+    public void setUp() throws IOException {
+        openDataProjects(Utilities.testProjectName);
+        new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
         System.out.println("########  " + getName() + "  #######");
         if (getName().equals("testLocalVariablesThisNode")) {
             //open source

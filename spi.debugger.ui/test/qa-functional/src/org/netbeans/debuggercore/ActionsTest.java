@@ -41,9 +41,11 @@
  * Contributor(s): Sun Microsystems, Inc.
  */
 
-package gui.debuggercore;
+package org.netbeans.debuggercore;
 
 import java.awt.event.KeyEvent;
+import java.io.IOException;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
@@ -64,15 +66,16 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 
 /**
  *
  * @author cincura, ehucka, Jiri Vagner
  */
-public class Actions extends JellyTestCase {
+public class ActionsTest extends JellyTestCase {
 
-    public Actions(String name) {
+    public ActionsTest(String name) {
         super(name);
     }
 
@@ -80,25 +83,42 @@ public class Actions extends JellyTestCase {
         TestRunner.run(suite());
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new Actions("testCheckEnabledActions"));
-        suite.addTest(new Actions("testCheckEnabledActionsDebugging"));
-        suite.addTest(new Actions("testToggleBreakpoints"));
-        suite.addTest(new Actions("testStartDebugging"));
-        suite.addTest(new Actions("testRemoveBreakpoint"));
-        suite.addTest(new Actions("testStepInto"));
-        suite.addTest(new Actions("testStepOver"));
-        suite.addTest(new Actions("testRunToCursor"));
-        suite.addTest(new Actions("testStepOut"));
-        suite.addTest(new Actions("testContinue"));
-        suite.addTest(new Actions("testStepOverExpression"));
-        suite.addTest(new Actions("testPause"));
-        return suite;
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite();
+//        suite.addTest(new ActionsTest("testCheckEnabledActions"));
+//        suite.addTest(new ActionsTest("testCheckEnabledActionsDebugging"));
+//        suite.addTest(new ActionsTest("testToggleBreakpoints"));
+//        suite.addTest(new ActionsTest("testStartDebugging"));
+//        suite.addTest(new ActionsTest("testRemoveBreakpoint"));
+//        suite.addTest(new ActionsTest("testStepInto"));
+//        suite.addTest(new ActionsTest("testStepOver"));
+//        suite.addTest(new ActionsTest("testRunToCursor"));
+//        suite.addTest(new ActionsTest("testStepOut"));
+//        suite.addTest(new ActionsTest("testContinue"));
+//        suite.addTest(new ActionsTest("testStepOverExpression"));
+//        suite.addTest(new ActionsTest("testPause"));
+//        return suite;
+//    }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(ActionsTest.class).addTest("testCheckEnabledActions", 
+            "testCheckEnabledActionsDebugging",
+            "testToggleBreakpoints",
+            "testStartDebugging",
+            "testRemoveBreakpoint",
+            "testStepInto",
+            "testStepOver",
+            "testRunToCursor",
+            "testStepOut",
+            "testContinue",
+            "testStepOverExpression",
+            "testPause").enableModules(".*").clusters(".*"));
     }
 
     /** setUp method  */
-    public void setUp() {
+    public void setUp() throws IOException {
+        openDataProjects(Utilities.testProjectName);
         System.out.println("########  " + getName() + "  #######");
     }
 
