@@ -217,8 +217,7 @@ public final class LineConvertors {
                     if (file.startsWith("./")) { // NOI18N
                         file = file.substring(2);
                     }
-                    // FIXME fix this condition
-                    if (filePattern != null && !(filePattern.matcher(file).matches() || new File(file).isFile())) {
+                    if (filePattern != null && !filePattern.matcher(file).matches()) {
                         return chain(chain, line);
                     }
                 }
