@@ -370,6 +370,9 @@ public abstract class CustomComponentHelper extends BaseHelper {
 
             assert myComponent != null || myComponentWizard != null;
 
+            // add module dependencies at first. they can be used at following steps.
+            configureDependencies();
+            
             FileObject cdFO = configureComponentDescriptor();
             result.add(cdFO);
             
@@ -382,11 +385,8 @@ public abstract class CustomComponentHelper extends BaseHelper {
             
             result.addAll( configureIcons() );
             
-            configureDependencies();
-            
             return result;
         }
-        
         
         @Override
         public String getCDPath() {
@@ -497,8 +497,8 @@ public abstract class CustomComponentHelper extends BaseHelper {
             tokens.put("cdName", getCDClassName());
             tokens.put("typeId", 
                     (String)getProperty(NewComponentDescriptor.CD_TYPE_ID));
-            tokens.put("superDescriptorClass", 
-                    (String)getProperty(NewComponentDescriptor.CD_SUPER_DESCR_CLASS));
+            tokens.put("superDescriptorClass", getSuperDescrClassNameToken());
+            tokens.put("superDescriptorClassFQN", getSuperDescrClassFQNToken());
             tokens.put("prefix", 
                     (String)getProperty(NewComponentDescriptor.CC_PREFIX));
             tokens.put("canInstantiate", 
@@ -513,6 +513,24 @@ public abstract class CustomComponentHelper extends BaseHelper {
             Version version = (Version)getProperty(NewComponentDescriptor.CD_VERSION);
             assert version != null;
             return version.javaCodeValue();
+        }
+        
+        private String getSuperDescrClassFQNToken(){
+            String superString = (String)getProperty(NewComponentDescriptor.CD_SUPER_DESCR_CLASS);
+            assert superString != null;
+            if (superString.indexOf(".") == -1){
+                return "";
+            }
+            return superString;
+        }
+        
+        private String getSuperDescrClassNameToken(){
+            String superString = (String)getProperty(NewComponentDescriptor.CD_SUPER_DESCR_CLASS);
+            assert superString != null;
+            if (superString.indexOf(".") == -1){
+                return superString;
+            }
+            return superString.substring(superString.lastIndexOf(".")+1, superString.length());
         }
         
         private Map<String, String> getProducerTokens(){
