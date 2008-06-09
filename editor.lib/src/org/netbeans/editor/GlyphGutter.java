@@ -177,8 +177,10 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     private Preferences prefs = null;
     private final PreferenceChangeListener prefsListener = new PreferenceChangeListener() {
         public void preferenceChange(PreferenceChangeEvent evt) {
-            Rectangle rect = editorUI.getComponent().getVisibleRect();
-            if (rect!=null && rect.width == 0){
+            EditorUI eui = editorUI == null ? null : editorUI;
+            JTextComponent c = eui == null ? null : eui.getComponent();
+            Rectangle rect = c == null ? null : c.getVisibleRect();
+            if (rect != null && rect.width == 0) {
                 if (SwingUtilities.isEventDispatchThread()) {
                     resize();
                 } else {
