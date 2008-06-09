@@ -219,16 +219,9 @@ public class HibernateUtil {
         ArrayList<URL> projectClassPathEntries = new ArrayList<URL>();
         ClassPath cp = ClassPath.getClassPath(projectFile, ClassPath.EXECUTE);
 
-        StringTokenizer classPathTokens = new StringTokenizer(cp.toString(), ":");
-        while (classPathTokens.hasMoreTokens()) {
-            File f = new File(classPathTokens.nextToken());
-            try {
-                projectClassPathEntries.add(f.toURL());
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+        for(ClassPath.Entry cpEntry : cp.entries()) {
+            projectClassPathEntries.add(cpEntry.getURL());
         }
-
         return projectClassPathEntries;
     }
     
