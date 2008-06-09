@@ -52,16 +52,18 @@ import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
  */
 public class TransparentParserErrorFilter extends BaseParserErrorFilter {
 
+    private static final boolean ENABLE = Boolean.getBoolean("cnd.parser.error.transparent");
     private static final boolean ONLY_WARNINGS = Boolean.getBoolean("cnd.parser.error.transparent.warnings");
-    
+
     @Override
     public void filter(Collection<RecognitionException> parserErrors, Collection<CsmErrorInfo> result, ReadOnlyTokenBuffer tokenBuffer, BaseDocument doc) {
-        result.addAll(toErrorInfo(parserErrors, doc));
+        if (ENABLE) {
+            result.addAll(toErrorInfo(parserErrors, doc));
+        }
     }
     
     @Override
     protected CsmErrorInfo.Severity getDefaultSeverity() {
         return ONLY_WARNINGS ? CsmErrorInfo.Severity.WARNING : CsmErrorInfo.Severity.ERROR;
     }
-
 }
