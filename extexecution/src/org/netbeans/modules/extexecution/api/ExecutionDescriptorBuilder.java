@@ -118,6 +118,11 @@ public final class ExecutionDescriptorBuilder {
         return this;
     }
 
+    public ExecutionDescriptorBuilder rerunCondition(ExecutionDescriptor.RerunCondition rerunCondition) {
+        descriptorData.rerunCondition = rerunCondition;
+        return this;
+    }
+
     public ExecutionDescriptor create() {
         return new Descriptor(descriptorData);
     }
@@ -186,6 +191,10 @@ public final class ExecutionDescriptorBuilder {
             return descriptorData.postExecution;
         }
 
+        public RerunCondition getRerunCondition() {
+            return descriptorData.rerunCondition;
+        }
+
     }
 
     private static class DescriptorData {
@@ -214,6 +223,8 @@ public final class ExecutionDescriptorBuilder {
 
         private InputOutput inputOutput;
 
+        private ExecutionDescriptor.RerunCondition rerunCondition;
+
         public DescriptorData() {
             super();
         }
@@ -231,6 +242,7 @@ public final class ExecutionDescriptorBuilder {
             this.outProcessor = data.outProcessor;
             this.errProcessor = data.errProcessor;
             this.inputOutput = data.inputOutput;
+            this.rerunCondition = rerunCondition;
         }
 
     }
