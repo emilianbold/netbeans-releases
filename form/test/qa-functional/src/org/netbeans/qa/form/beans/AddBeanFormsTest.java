@@ -41,12 +41,12 @@
 
 package org.netbeans.qa.form.beans;
 
+import junit.framework.Test;
 import org.netbeans.jellytools.actions.CompileAction;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.properties.Property;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.qa.form.*;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Tests creating Bean Forms from visual and non-visual JavaBeans superclasses
@@ -54,37 +54,26 @@ import org.netbeans.qa.form.*;
  *
  * @author Jiri Vagner
  */
-public class AddBeanForms extends AddAndRemoveBeansTest {
+public class AddBeanFormsTest extends AddAndRemoveBeansTest {
     
     /**
      * Constructor required by JUnit
      * @param testName
      */
-    public AddBeanForms(String testName) {
+    public AddBeanFormsTest(String testName) {
         super(testName);
         //this.DELETE_FILES = false;
     }
-    
-    /**
-     * Method allowing to execute test directly from IDE.
-     * @param args
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
+   
     /**
      * Creates suite from particular test cases.
      * @return nb test suite
      */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(AddBeanFormsTest.class)
+                .addTest("testCompileBeanClasses", "testAddingBeanFormWithVisualBeanSuperclass", "testAddingBeanFormWithNonVisualBeanSuperclass")
+                .clusters(".*").enableModules(".*").gui(true));
         
-        suite.addTest(new AddBeanForms("testCompileBeanClasses")); // NOI18N
-        suite.addTest(new AddBeanForms("testAddingBeanFormWithVisualBeanSuperclass")); // NOI18N
-        suite.addTest(new AddBeanForms("testAddingBeanFormWithNonVisualBeanSuperclass")); // NOI18N        
-        
-        return suite;
     }
 
     /** Compiling beans components */
