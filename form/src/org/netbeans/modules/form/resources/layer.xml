@@ -77,7 +77,7 @@ made subject to such option by the copyright holder.
    </folder>
     <folder name="Services">
         <folder name="MIMEResolver">
-            <file name="PaletteItemResolver.xml" url="PaletteItemResolver.xml">
+            <file name="SwingPaletteItemResolver.xml" url="PaletteItemResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                 <attr name="position" intvalue="50037"/>
             </file>
