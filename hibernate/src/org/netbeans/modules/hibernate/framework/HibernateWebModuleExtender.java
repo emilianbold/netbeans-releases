@@ -56,7 +56,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
-import org.netbeans.modules.hibernate.service.HibernateEnvironment;
+import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.netbeans.modules.hibernate.wizards.HibernateConfigurationWizardPanel;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
