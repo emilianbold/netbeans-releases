@@ -125,6 +125,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -261,6 +262,7 @@ public class JavacParser extends Parser {
     @Override
     public void parse(final Snapshot snapshot, final Task task, SchedulerEvent event) throws ParseException {
         assert task != null;
+        assert Utilities.holdsParserLock();
         try {            
             if (isSingleSource) {
                 init (snapshot, task, true);
@@ -293,6 +295,7 @@ public class JavacParser extends Parser {
     @Override
     public JavacParserResult getResult (final Task task, SchedulerEvent event) throws ParseException {
         assert ciImpl != null;
+        assert Utilities.holdsParserLock();
         //Assumes that caller is synchronized by the Parsing API lock
         if (invalid) {                        
             invalid = false;
