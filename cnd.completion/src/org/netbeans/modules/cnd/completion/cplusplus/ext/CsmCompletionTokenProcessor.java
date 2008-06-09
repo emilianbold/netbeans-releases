@@ -1721,11 +1721,13 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                     case CCTokenContext.INT_LITERAL_ID:
                     case CCTokenContext.HEX_LITERAL_ID:
                     case CCTokenContext.OCTAL_LITERAL_ID:
+                    case CCTokenContext.UNSIGNED_ID:
                         constExp = createTokenExp(CONSTANT);
                         constExp.setType("int"); // NOI18N
                         break;
 
                     case CCTokenContext.LONG_LITERAL_ID:
+                    case CCTokenContext.UNSIGNED_LONG_LITERAL_ID:
                         constExp = createTokenExp(CONSTANT);
                         constExp.setType("long"); // NOI18N
                         break;

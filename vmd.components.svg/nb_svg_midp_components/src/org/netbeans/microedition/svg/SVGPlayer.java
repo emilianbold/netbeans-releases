@@ -195,6 +195,11 @@ public class SVGPlayer extends Canvas implements CommandListener { // need to us
         return animatorCanvas;
     }
     
+    public Document getDocument() {
+        return doc;
+    }
+    
+    
     /**
      * Gets user's SVGEventListener
      * @return an instance of the user's SVGEventListener or null if there was no user SVGEvenetListener set.

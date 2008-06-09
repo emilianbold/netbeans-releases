@@ -93,6 +93,7 @@ public class CCSyntax extends Syntax {
     private static final int ISI_USR_INCLUDE = ISI_USR_START_INCLUDE + 1; // inside "filename" include directive
     private static final int ISA_COLON = ISI_USR_INCLUDE + 1; // after ':'
     private static final int ISA_ARROW = ISA_COLON + 1; // after '->'
+    private static final int ISA_UNSIGNED = ISA_ARROW + 1; // after u or U in unsigned literal
     
     protected static final String IS_CPLUSPLUS = "C++"; // NOI18N
     protected static final String IS_C = "C"; // NOI18N
@@ -790,6 +791,10 @@ public class CCSyntax extends Syntax {
                     offset++;
                     state = INIT;
                     return CCTokenContext.LONG_LITERAL;
+                case 'u':
+                case 'U':
+                    state = ISA_UNSIGNED;
+                    break;
                 case 'f':
                 case 'F':
                     offset++;
@@ -826,6 +831,10 @@ public class CCSyntax extends Syntax {
                     offset++;
                     state = INIT;
                     return CCTokenContext.LONG_LITERAL;
+                case 'u':
+                case 'U':
+                    state = ISA_UNSIGNED;
+                    break;                    
                 case '.':
                     state = ISI_DOUBLE;
                     break;
@@ -851,6 +860,17 @@ public class CCSyntax extends Syntax {
                 }
                 break;
 
+            case ISA_UNSIGNED:
+                switch (actChar) {
+                    case 'L':
+                    case 'l':
+                        offset++;
+                        state = INIT;
+                        return CCTokenContext.UNSIGNED_LONG_LITERAL;
+                    default:
+                        state = INIT;
+                        return CCTokenContext.UNSIGNED_LITERAL;
+                }
             case ISI_OCTAL:
                 if (!(actChar >= '0' && actChar <= '7')) {
 
