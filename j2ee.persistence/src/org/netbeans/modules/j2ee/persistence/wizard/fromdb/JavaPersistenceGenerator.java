@@ -75,6 +75,7 @@ import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistenc
 import org.netbeans.modules.j2ee.persistence.entitygenerator.CMPMappingModel;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityClass;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityMember;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.FetchType;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.RelationshipRole;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -507,14 +508,25 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
                 String columnName = (String) dbMappings.getCMPFieldMapping().get(memberName);
                 columnAnnArguments.add(genUtils.createAnnotationArgument("name", columnName)); //NOI18N
-                // XXX do not generate nullable=false See issue 129869
-                //if (!m.isNullable()) {
-                //    columnAnnArguments.add(genUtils.createAnnotationArgument("nullable", false)); //NOI18N
-                //}
-                Integer length = m.getLength();
-                if (length != null && isCharacterType(memberType)) {
-                    columnAnnArguments.add(genUtils.createAnnotationArgument("length", length)); // NOI18N
+              
+                if (entityClass.isRegenSchemaAttrs() && !m.isNullable()) {
+                    columnAnnArguments.add(genUtils.createAnnotationArgument("nullable", false)); //NOI18N
                 }
+                Integer length = m.getLength();
+                Integer precision = m.getPrecision();
+                Integer scale = m.getScale();
+                if (entityClass.isRegenSchemaAttrs() ) {
+                    if(length != null) {
+                        columnAnnArguments.add(genUtils.createAnnotationArgument("length", length)); // NOI18N
+                    }
+                    if(precision != null) {
+                        columnAnnArguments.add(genUtils.createAnnotationArgument("precision", precision)); // NOI18N
+                    }
+                    if(scale != null) {
+                        columnAnnArguments.add(genUtils.createAnnotationArgument("scale", scale)); // NOI18N
+                    }
+                }
+                
                 annotations.add(genUtils.createAnnotation("javax.persistence.Column", columnAnnArguments)); //NOI18N
 
                 String temporalType = getMemberTemporalType(m);
@@ -719,8 +731,38 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     newClassTree = genUtils.addImplementsClause(newClassTree, "java.io.Serializable"); // NOI18N
                 }
                 newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Entity")); // NOI18N
-                ExpressionTree tableNameArgument = genUtils.createAnnotationArgument("name", dbMappings.getTableName()); // NOI18N
-                newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Table", Collections.singletonList(tableNameArgument)));
+                List<ExpressionTree> tableAnnArgs = new ArrayList<ExpressionTree>();
+                tableAnnArgs.add(genUtils.createAnnotationArgument("name", dbMappings.getTableName())); // NOI18N
+                if(entityClass.isFullyQualifiedTblNames()) {
+                    String schemaName = entityClass.getSchemaName();
+                    String catalogName = entityClass.getCatalogName();
+                    if(schemaName != null ) {
+                        tableAnnArgs.add(genUtils.createAnnotationArgument("schema", schemaName)); // NOI18N
+                    }
+                    if(catalogName != null) {
+                        tableAnnArgs.add(genUtils.createAnnotationArgument("catalog", catalogName)); // NOI18N
+                    }
+                }
+                
+                // UniqueConstraint annotations for the table
+                if(entityClass.isRegenSchemaAttrs() && entityClass.getUniqueConstraints() != null &&
+                        entityClass.getUniqueConstraints().size() != 0) {
+                    List<ExpressionTree> uniqueConstraintAnnotations = new ArrayList<ExpressionTree>();
+                    for(String[] constraintCols : entityClass.getUniqueConstraints()) {
+
+                        List<ExpressionTree> colArgs = new ArrayList<ExpressionTree>();
+                        for(int colIx = 0; colIx < constraintCols.length; colIx ++ ) {
+                            colArgs.add(genUtils.createAnnotationArgument(null, constraintCols[colIx]));
+                        }
+                        ExpressionTree columnNamesArg = genUtils.createAnnotationArgument("columnNames", colArgs); // NOI18N
+                        uniqueConstraintAnnotations.add(genUtils.createAnnotation("javax.persistence.UniqueConstraint", 
+                                Collections.singletonList(columnNamesArg))); //NOI18N
+                    }
+                    
+                    tableAnnArgs.add(genUtils.createAnnotationArgument("uniqueConstraints", uniqueConstraintAnnotations)); // NOI18N
+                }
+                
+                newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Table", tableAnnArgs));
 
                 if (needsPKClass) {
                     String pkFieldName = createFieldName(pkClassName);
@@ -886,12 +928,22 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     relationAnn = "OneToOne";  //NOI18N
                 }
                 
-                if (!role.isToMany()) { // meaning ManyToOne and OneToOne
-                    // Add optional=false if the relationship is not optional/non-nullable
-                    if(!role.isOptional()) {
+                if (!role.isToMany()) { // meaning ManyToOne or OneToOne
+                    // Add optional=false if the relationship is not optional/non-nullable 
+                    if(!role.isOptional() && (role.isMany() || role.equals(role.getParent().getRoleA())) ) {
                         annArguments.add(genUtils.createAnnotationArgument("optional", false)); // NOI18N
                     }
+                } 
+                
+                //FetchType
+                FetchType fetchType = entityClass.getFetchType();
+                if(fetchType.equals(FetchType.LAZY)) {
+                    annArguments.add(genUtils.createAnnotationArgument("fetch", "javax.persistence.FetchType", "LAZY")); // NOI18N
+                } else if(fetchType.equals(FetchType.EAGER)) {
+                    annArguments.add(genUtils.createAnnotationArgument("fetch", "javax.persistence.FetchType", "EAGER")); // NOI18N
                 }
+                
+                // Create the relationship annotation 
                 annotations.add(genUtils.createAnnotation("javax.persistence." + relationAnn, annArguments)); // NOI18N
 
                 properties.add(new Property(Modifier.PRIVATE, annotations, fieldType, memberName));

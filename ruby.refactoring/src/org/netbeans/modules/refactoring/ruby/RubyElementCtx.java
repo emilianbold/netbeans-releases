@@ -59,7 +59,7 @@ import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.netbeans.modules.ruby.RubyUtils;
-import org.netbeans.modules.ruby.TypeAnalyzer;
+import org.netbeans.modules.ruby.RubyTypeAnalyzer;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.ruby.elements.IndexedElement;
@@ -391,8 +391,8 @@ public class RubyElementCtx {
                     if (method != null) {
                         // TODO - if the lhs is "foo.bar." I need to split this
                         // up and do it a bit more cleverly
-                        TypeAnalyzer analyzer =
-                            new TypeAnalyzer(null, method, node, astOffset, lexOffset, doc, null);
+                        RubyTypeAnalyzer analyzer =
+                            new RubyTypeAnalyzer(null, method, node, astOffset, lexOffset, doc, null);
                         type = analyzer.getType(lhs);
                     }
                 } else if (call == Call.LOCAL) {

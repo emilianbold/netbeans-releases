@@ -186,25 +186,6 @@ public class GemManagerTest extends RubyTestBase {
         assertTrue(gemManager.isGemInstalledForPlatform("ruby-debug-base", "0.10.1", true));
     }
     
-    public void testCompareGemVersions() {
-        assertTrue(Util.compareVersions("1.0.0", "0.9.9") > 0);
-        assertTrue(Util.compareVersions("0.4.0", "0.3.0") > 0);
-        assertTrue(Util.compareVersions("0.4.0", "0.3.9") > 0);
-        assertTrue(Util.compareVersions("0.0.2", "0.0.1") > 0);
-        assertTrue(Util.compareVersions("0.10.0", "0.9.0") > 0);
-        assertTrue(Util.compareVersions("0.9.0", "0.10.0") < 0);
-        assertTrue(Util.compareVersions("1.0.0", "4.9.9") < 0);
-        assertTrue(Util.compareVersions("0.3.0", "0.4.0") < 0);
-        assertTrue(Util.compareVersions("0.3.9", "0.4.0") < 0);
-        assertTrue(Util.compareVersions("0.0.1", "0.0.2") < 0);
-        assertTrue(Util.compareVersions("4.4.4", "4.4.4") == 0);
-        assertTrue(Util.compareVersions("4.4.4-platform", "4.4.4") != 0);
-        assertTrue(Util.compareVersions("0.10.0-ruby", "0.9.0") > 0);
-        assertTrue(Util.compareVersions("0.9.0-ruby", "0.10.0") < 0);
-        assertTrue(Util.compareVersions("0.10.0", "0.9.0-ruby") > 0);
-        assertTrue(Util.compareVersions("0.9.0", "0.10.0-ruby") < 0);
-    }
-
     public void testChooseGems() throws Exception {
         RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
         GemManager gemManager = platform.getGemManager();

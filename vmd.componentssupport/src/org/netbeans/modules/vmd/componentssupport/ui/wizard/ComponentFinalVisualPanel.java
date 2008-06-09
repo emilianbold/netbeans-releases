@@ -47,6 +47,7 @@ import java.util.List;
 import javax.swing.JPanel;
 import org.netbeans.modules.vmd.componentssupport.ui.UIUtils;
 import org.netbeans.modules.vmd.componentssupport.ui.helpers.BaseHelper;
+import org.netbeans.modules.vmd.componentssupport.ui.helpers.CustomComponentHelper;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -73,19 +74,26 @@ final class ComponentFinalVisualPanel extends JPanel {
     void readData( WizardDescriptor descriptor) {
         mySettings = descriptor;
         
-        projectNameValue.setText( (String)descriptor.getProperty( 
-                CustomComponentWizardIterator.PROJECT_NAME));
+        projectNameValue.setText( getProjectName() );
         
         setFilesInfoIntoTextAreas();
     }
 
+    private String getProjectName(){
+        return getHelper().getProjectName();
+    }
+    
+    private CustomComponentHelper getHelper(){
+        return (CustomComponentHelper)mySettings.getProperty( 
+                NewComponentDescriptor.HELPER);
+    }
+    
     protected HelpCtx getHelp() {
         return new HelpCtx(ComponentFinalVisualPanel.class);
     }
     
     private String getCodeNameBase(){
-        return (String)mySettings.getProperty( 
-                NewComponentDescriptor.CODE_NAME_BASE);
+        return getHelper().getCodeNameBase();
     }
 
     private String getCDClassName() {
@@ -123,6 +131,7 @@ final class ComponentFinalVisualPanel extends JPanel {
         addCDToList(created, modified);
         addProducerToList(created, modified);
         addLayerXmlToList(created, modified);
+        addBundleToList(created, modified);
         addIconsToList(created, modified);
 
         // publish
@@ -158,11 +167,22 @@ final class ComponentFinalVisualPanel extends JPanel {
     }
     
     private void addLayerXmlToList(List<String> created, List<String> modified){
+        
         String dotCodeNameBase = getCodeNameBase();
         
         String codeNameBase = dotCodeNameBase.replace('.', '/'); // NOI18N
         modified.add(
                 codeNameBase + "/" + CustomComponentWizardIterator.LAYER_XML); // NOI18N
+    }
+    
+    private void addBundleToList(List<String> created, List<String> modified){
+        String dotCodeNameBase = getCodeNameBase();
+        
+        String codeNameBase = dotCodeNameBase.replace('.', '/'); // NOI18N
+        String bundle = codeNameBase + "/" +                                    // NOI18N
+                CustomComponentWizardIterator.BUNDLE_PROPERTIES;
+        // simply add to modified, while for the first producer it will be created.
+        modified.add(bundle);
     }
     
     private void addIconsToList(List<String> created, List<String> modified){

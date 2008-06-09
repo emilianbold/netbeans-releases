@@ -60,13 +60,14 @@ import java.util.Iterator;
 import java.util.List;
 
 import java.util.TreeSet;
-import javax.swing.JPopupMenu;
+import org.netbeans.api.visual.graph.GraphScene;
+import org.netbeans.api.visual.widget.ConnectionWidget;
+import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jemmy.EventTool;
 
 import org.netbeans.jemmy.JemmyProperties;
-
-import com.tomsawyer.drawing.geometry.TSConstPoint;
 import org.netbeans.jemmy.Timeout;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
@@ -75,34 +76,22 @@ import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.core.support.umlsupport.ETRect;
-import org.netbeans.modules.uml.core.support.umlsupport.IETPoint;
-import org.netbeans.modules.uml.core.support.umlsupport.IETRect;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.products.ad.graphobjects.ETEdge;
-import org.netbeans.modules.uml.ui.support.applicationmanager.IEdgePresentation;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETEdge;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETLabel;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETNode;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.PointConversions;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.TSLabelKind;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
-import org.netbeans.modules.uml.ui.swing.drawingarea.ADGraphWindow;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
+import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.test.umllib.actions.Actionable;
 import org.netbeans.test.umllib.exceptions.NotFoundException;
 
 /**
  * This is operator for a link beween diagram elements.
  * Using it you can perform various operations on link.
- * @author Alexei Mokeev
+ * @author Alexei Mokeev, Sherry Zhou
  */
 public class LinkOperator implements Actionable{
-    private IETEdge edge = null;
-    private IETGraphObject to = null;
-    private IETGraphObject from = null;
+    private Widget edge = null;
+    private Widget to = null;
+    private Widget from = null;
     private DiagramOperator diagramOperator = null;
+    private UMLWidgetOperator edgeOpr = null; 
     //absolute correction for x and y for click/get point (should be removed if the nature of shift will be discovered)
     //for now it seems like different approximation to integer in different parts of link creation
     //for now shift to right bottom works with 100%,200%,400% zoom and horizontal/vertical link orientation
@@ -123,13 +112,15 @@ public class LinkOperator implements Actionable{
      * @param diagram 
      * @param edge 
      */
-    public LinkOperator(DiagramOperator diagram, IETEdge edge) {
+     public LinkOperator(DiagramOperator diagram, Widget edge) {
         this.edge = edge;
-        to = (IETGraphObject)edge.getToNode();//We should get class cast in case of an error
-        from = (IETGraphObject)edge.getFromNode();
+        to = getToNode(edge);//We should get class cast in case of an error
+        from = getFromNode(edge);
         diagramOperator = diagram;
+        edgeOpr = new UMLWidgetOperator(edge);
     }
     
+   
     /**
      * Creates a new instance of LinkOperator
      * @param source 
@@ -139,7 +130,7 @@ public class LinkOperator implements Actionable{
      * @throws qa.uml.exceptions.NotFoundException 
      */
     public LinkOperator(DiagramElementOperator source, DiagramElementOperator destination, LinkTypes linkType, int index) throws NotFoundException{
-        this(source.getDiagram(), waitForLink(source,destination, linkType, index).getSource());
+        this(source.getDiagram(), waitForLink(source, destination, linkType, index).getSource());
         
     }
     
@@ -151,7 +142,7 @@ public class LinkOperator implements Actionable{
      * @throws qa.uml.exceptions.NotFoundException 
      */
     public LinkOperator(DiagramElementOperator source, DiagramElementOperator destination, LinkTypes linkType)  throws NotFoundException {
-        this(source,destination, linkType, 0);
+        this(source, destination, linkType, 0);
     }
     
     /**
@@ -161,10 +152,8 @@ public class LinkOperator implements Actionable{
      * @throws qa.uml.exceptions.NotFoundException 
      */
     public LinkOperator(DiagramElementOperator source, DiagramElementOperator destination)  throws NotFoundException{
-        this(source,destination, LinkTypes.ANY, 0);
+        this(source, destination, LinkTypes.ANY, 0);
     }
-    
-    
     
     
     /**
@@ -175,6 +164,7 @@ public class LinkOperator implements Actionable{
         return diagramOperator;
     }
     
+   
     //Methods from Actionable interface
     /**
      * 
@@ -207,18 +197,20 @@ public class LinkOperator implements Actionable{
      * @return 
      */
     public Point makeVisible(Point point){
-        ADGraphWindow area = diagramOperator.getDrawingArea().getArea();
-        IDrawingAreaControl daControl = area.getDrawingArea();
-        
-        IETPoint etPoint = daControl.deviceToLogicalPoint(point.x,point.y);
-        
-        IETRect eDeviceAreaRect = new ETRect(area.getVisibleRect());
-        IETRect eVisibleAreaRect = daControl.deviceToLogicalRect(eDeviceAreaRect);
-        IETRect eElementRect = edge.getEngine().getLogicalBoundingRect(true);
-        if (!eVisibleAreaRect.contains(etPoint)){
-            diagramOperator.getDrawingArea().centerAtPoint(point);            
-        }
-        return daControl.logicalToDevicePoint(etPoint).asPoint();
+        //TODO: wait for trey's center api
+// 6.0       ADGraphWindow area = diagramOperator.getDrawingArea().getArea();
+//        IDrawingAreaControl daControl = area.getDrawingArea();
+//        
+//        IETPoint etPoint = daControl.deviceToLogicalPoint(point.x,point.y);
+//        
+//        IETRect eDeviceAreaRect = new ETRect(area.getVisibleRect());
+//        IETRect eVisibleAreaRect = daControl.deviceToLogicalRect(eDeviceAreaRect);
+//        IETRect eElementRect = edge.getEngine().getLogicalBoundingRect(true);
+//        if (!eVisibleAreaRect.contains(etPoint)){
+//            diagramOperator.getDrawingArea().centerAtPoint(point);            
+//        }
+//6.0        return daControl.logicalToDevicePoint(etPoint).asPoint();
+        return point;
     }
     
     
@@ -234,55 +226,54 @@ public class LinkOperator implements Actionable{
      * @param deselectOthers
      */
     public void center(boolean selectIt, boolean deselectOthers) {
-        ADGraphWindow area = diagramOperator.getDrawingArea().getArea();
-        area.getDrawingArea().centerPresentationElement(edge.getPresentationElement(), selectIt, deselectOthers);
+        // TODO: Wait for Trey's api
+//6.0        ADGraphWindow area = diagramOperator.getDrawingArea().getArea();
+//6.0        area.getDrawingArea().centerPresentationElement(edge.getPresentationElement(), selectIt, deselectOthers);
     }
     
     
     
     public void select() {
         Point p = getPointForClick();
-        
+
         diagramOperator.getDrawingArea().moveMouse(p.x, p.y);
-        new Timeout("",10).sleep();
-        diagramOperator.getDrawingArea().clickMouse(p.x, p.y,1);
-        new Timeout("",50).sleep();
-        
-        //somehow the above doesn't always work so we add a little hack
-        
-        if (!this.edge.isSelected()){            
+        new Timeout("", 10).sleep();
+        diagramOperator.getDrawingArea().clickMouse(p.x, p.y, 1);
+        new Timeout("", 50).sleep();
+
+        //somehow the above doesn't always work so we add a little hack     
+        if (!edgeOpr.isSelected()) {
             //dragndrop doesn't work too :(
             int x1 = p.x;
             int y1 = p.y;
-            for(int i=1; i<10; i++){
-                x1 = p.x+i;
-                diagramOperator.getDrawingArea().clickMouse(x1, y1, 1);        
+            for (int i = 1; i < 10; i++) {
+                x1 = p.x + i;
+                diagramOperator.getDrawingArea().clickMouse(x1, y1, 1);
                 new EventTool().waitNoEvent(500);
-                if (this.edge.isSelected()){
+                if (edgeOpr.isSelected()) {
                     break;
                 }
-                x1 = p.x-i;
-                diagramOperator.getDrawingArea().clickMouse(x1, y1, 1);        
+                x1 = p.x - i;
+                diagramOperator.getDrawingArea().clickMouse(x1, y1, 1);
                 new EventTool().waitNoEvent(500);
-                if (this.edge.isSelected()){
+                if (edgeOpr.isSelected()) {
                     break;
                 }
-                y1 = p.y+i;
-                diagramOperator.getDrawingArea().clickMouse(x1, y1, 1);        
+                y1 = p.y + i;
+                diagramOperator.getDrawingArea().clickMouse(x1, y1, 1);
                 new EventTool().waitNoEvent(500);
-                if (this.edge.isSelected()){
+                if (edgeOpr.isSelected()) {
                     break;
                 }
-                y1 = p.y-i;
-                diagramOperator.getDrawingArea().clickMouse(x1, y1, 1);        
+                y1 = p.y - i;
+                diagramOperator.getDrawingArea().clickMouse(x1, y1, 1);
                 new EventTool().waitNoEvent(500);
-                if (this.edge.isSelected()){
+                if (edgeOpr.isSelected()) {
                     break;
                 }
             }
-            diagramOperator.getDrawingArea().moveMouse(p.x, p.y);        
+            diagramOperator.getDrawingArea().moveMouse(p.x, p.y);
         }
-        
     }
     
     public void addToSelection() {
@@ -296,26 +287,45 @@ public class LinkOperator implements Actionable{
      * 
      * @return 
      */
-    public IETEdge getSource() {
+    public Widget getSource() {
         return edge;
     }
     
+     /*
+     *  Find edge's source widget
+     */
+    public static Widget getToNode(Widget edge) {
+        DesignerScene scene =(DesignerScene)edge.getScene();
+        IPresentationElement edgePre = (IPresentationElement)scene.findObject(edge);
+        IPresentationElement sourcePre =scene.getEdgeSource(edgePre);
+        return scene.findWidget(sourcePre);
+    }
+    
+    /*
+     *  Find edge's target nodet
+     */
+    public static Widget getFromNode(Widget edge) {
+        DesignerScene scene =(DesignerScene)edge.getScene();
+        IPresentationElement edgePre = (IPresentationElement)scene.findObject(edge);
+        IPresentationElement targetPre =scene.getEdgeTarget(edgePre);
+        return scene.findWidget(targetPre);
+    }
     
        
     
     /**
      * 
-     * @return 
+     * @return current edge's target node
      */
-    public IETGraphObject getTo() {
+    public Widget getToNode() {
         return to;
     }
     
     /**
      * 
-     * @return 
+     * @return current edge's source node
      */
-    public IETGraphObject getFrom() {
+    public Widget getFromNode() {
         return from;
     }
     
@@ -324,7 +334,10 @@ public class LinkOperator implements Actionable{
      * @return 
      */
     public boolean hasBends() {
-        return edge.hasBends();
+       if (getBends().size()>=1)
+           return true;
+       else
+           return false;
     }
     
     /**
@@ -332,7 +345,8 @@ public class LinkOperator implements Actionable{
      * @return 
      */
     public List getBends() {
-        return edge.bendPoints();
+        return ((ConnectionWidget)edge).getControlPoints();
+         
     }
     
     /**
@@ -340,23 +354,22 @@ public class LinkOperator implements Actionable{
      * @return 
      */
     public String getType() {
-        if(edge.getPresentationElement().getSubjectCount()==1) {
-            return edge.getPresentationElement().getFirstSubject().getElementType();
-        }else {
-            return null;
+        UMLWidgetOperator edgeOpr = new UMLWidgetOperator(edge);
+         return edgeOpr.getElementType();
         }
-        //Probably it a source for bugs :)
-    }
     
     /**
      * 
      * @return 
      */
     public ArrayList<DiagramLabelOperator> getLabels() {
-        Iterator<IETLabel> it=  edge.getLabels().iterator();
+        List<Widget> list = edge.getChildren();
         ArrayList<DiagramLabelOperator> res = new ArrayList<DiagramLabelOperator>();
-        while(it.hasNext()) {
-            res.add(new DiagramLabelOperator(diagramOperator, it.next()));
+        for (Widget child : list) {
+            if (child instanceof UMLLabelWidget) {
+
+                res.add(new DiagramLabelOperator(diagramOperator, child));
+            }
         }
         return res;
     }
@@ -367,13 +380,16 @@ public class LinkOperator implements Actionable{
      *@return 
      */
     public String[] getLabelsTexts() {
-        Iterator<IETLabel> it= edge.getLabels().iterator();
-        String[] res=new String[edge.getLabels().size()];
+        List<Widget> list = edge.getChildren();
+        String[] res=new String[list.size()];
         int cnt=0;
-        while(it.hasNext()) {
-            res[cnt++]=it.next().getLabel().getText();
+        for (Widget child : list) {
+            if ( child instanceof UMLLabelWidget){
+               res[cnt++]=((UMLLabelWidget)child).getLabel(); 
+            }
         }
         return res;
+ 
     }
     
     
@@ -427,34 +443,38 @@ public class LinkOperator implements Actionable{
      * @return 
      */
     private Point getPointForClick(boolean findEmptyPoint) {
-        TSConstPoint fromPoint =((ETEdge)edge).getSourceClippingPoint();
-        TSConstPoint toPoint =((ETEdge)edge).getTargetClippingPoint();
-        List bendPoints = ((ETEdge)edge).bendPoints();
-        if((bendPoints!=null)&&(bendPoints.size() >=1)) {
-            fromPoint = (TSConstPoint)bendPoints.get(bendPoints.size()-1);
-        }
-        double y = (fromPoint.getY()+toPoint.getY())*0.5;
-        double x = (fromPoint.getX()+toPoint.getX())*0.5;        
-        Point tmp=diagramOperator.getDrawingAreaControl().logicalToDevicePoint(PointConversions.newETPoint(new TSConstPoint(x,y))).asPoint();        
-        tmp.translate(pnt_shift_x, pnt_shift_y);
-        tmp = makeVisible(tmp);
-        //check also +-2 area
-        /*Point a=new Point(tmp);a.translate(2,2);
-        Point b=new Point(tmp);b.translate(-2,2);
-        Point c=new Point(tmp);c.translate(-2,-2);
-        Point d=new Point(tmp);d.translate(2,-2);*/
-        boolean notFreeArea=!diagramOperator.getDrawingArea().isFreePoint(tmp);// || !diagramOperator.getDrawingArea().isFreePoint(a) || !diagramOperator.getDrawingArea().isFreePoint(b) ||!diagramOperator.getDrawingArea().isFreePoint(c) || !diagramOperator.getDrawingArea().isFreePoint(d);
-        long counter=0;//avoid infinit search
-        while(notFreeArea && findEmptyPoint && counter<2000){
-            y = (y+toPoint.getY())*0.5;
-            x = (x+toPoint.getX())*0.5;        
-            tmp=diagramOperator.getDrawingAreaControl().logicalToDevicePoint(PointConversions.newETPoint(new TSConstPoint(x,y))).asPoint();                    
-            tmp.translate(pnt_shift_x, pnt_shift_y);
-            tmp = makeVisible(tmp);
-            notFreeArea=!diagramOperator.getDrawingArea().isFreePoint(tmp);// || !diagramOperator.getDrawingArea().isFreePoint(a) || !diagramOperator.getDrawingArea().isFreePoint(b) ||!diagramOperator.getDrawingArea().isFreePoint(c) || !diagramOperator.getDrawingArea().isFreePoint(d);
-            counter++;
-        }
-        return tmp;        
+         //TODO: Wait for Trey on getSourceClippingPoint and getTargetClippingPoint()
+        //6.0
+//        TSConstPoint fromPoint =((ETEdge)edge).getSourceClippingPoint();
+//        TSConstPoint toPoint =((ETEdge)edge).getTargetClippingPoint();
+//        List bendPoints = ((ETEdge)edge).bendPoints();
+//        if((bendPoints!=null)&&(bendPoints.size() >=1)) {
+//            fromPoint = (TSConstPoint)bendPoints.get(bendPoints.size()-1);
+//        }
+//        double y = (fromPoint.getY()+toPoint.getY())*0.5;
+//        double x = (fromPoint.getX()+toPoint.getX())*0.5;        
+//        Point tmp=diagramOperator.getDrawingAreaControl().logicalToDevicePoint(PointConversions.newETPoint(new TSConstPoint(x,y))).asPoint();        
+//        tmp.translate(pnt_shift_x, pnt_shift_y);
+//        tmp = makeVisible(tmp);
+//        //check also +-2 area
+//        /*Point a=new Point(tmp);a.translate(2,2);
+//        Point b=new Point(tmp);b.translate(-2,2);
+//        Point c=new Point(tmp);c.translate(-2,-2);
+//        Point d=new Point(tmp);d.translate(2,-2);*/
+//        boolean notFreeArea=!diagramOperator.getDrawingArea().isFreePoint(tmp);// || !diagramOperator.getDrawingArea().isFreePoint(a) || !diagramOperator.getDrawingArea().isFreePoint(b) ||!diagramOperator.getDrawingArea().isFreePoint(c) || !diagramOperator.getDrawingArea().isFreePoint(d);
+//        long counter=0;//avoid infinit search
+//        while(notFreeArea && findEmptyPoint && counter<2000){
+//            y = (y+toPoint.getY())*0.5;
+//            x = (x+toPoint.getX())*0.5;        
+//            tmp=diagramOperator.getDrawingAreaControl().logicalToDevicePoint(PointConversions.newETPoint(new TSConstPoint(x,y))).asPoint();                    
+//            tmp.translate(pnt_shift_x, pnt_shift_y);
+//            tmp = makeVisible(tmp);
+//            notFreeArea=!diagramOperator.getDrawingArea().isFreePoint(tmp);// || !diagramOperator.getDrawingArea().isFreePoint(a) || !diagramOperator.getDrawingArea().isFreePoint(b) ||!diagramOperator.getDrawingArea().isFreePoint(c) || !diagramOperator.getDrawingArea().isFreePoint(d);
+//            counter++;
+//        }
+//        return tmp;  
+        //6.0
+        return null;
     }
     
     /**
@@ -488,23 +508,26 @@ public class LinkOperator implements Actionable{
      */
     public Point getNearTargetPoint(int edgeShift)
     {
-        TSConstPoint fromPoint =((ETEdge)edge).getSourceClippingPoint();
-        TSConstPoint toPoint =((ETEdge)edge).getTargetClippingPoint();
-        List bendPoints = ((ETEdge)edge).bendPoints();
-        if((bendPoints!=null)&&(bendPoints.size() >=1)) {
-            fromPoint = (TSConstPoint)bendPoints.get(bendPoints.size()-1);
-        }
-        double toX=toPoint.getX();
-        double toY=toPoint.getY();
-        double frX=fromPoint.getX();
-        double frY=fromPoint.getY();
-         double len=Math.sqrt((frY-toY)*(frY-toY)+(frX-toX)*(frX-toX));
-       double y = toY+edgeShift*(frY-toY)/len;
-        double x = toX+edgeShift*(frX-toX)/len;
-        
-        Point tmp=diagramOperator.getDrawingAreaControl().logicalToDevicePoint(PointConversions.newETPoint(new TSConstPoint(x,y))).asPoint();
-         tmp.translate(pnt_shift_x,pnt_shift_y);
-       return tmp;        
+     
+         //TODO: Wait for Trey on getSourceClippingPoint and getTargetClippingPoint()
+        //TSConstPoint fromPoint =((ETEdge)edge).getSourceClippingPoint();
+//        TSConstPoint toPoint =((ETEdge)edge).getTargetClippingPoint();
+//        List bendPoints = ((ETEdge)edge).bendPoints();
+//        if((bendPoints!=null)&&(bendPoints.size() >=1)) {
+//            fromPoint = (TSConstPoint)bendPoints.get(bendPoints.size()-1);
+//        }
+//        double toX=toPoint.getX();
+//        double toY=toPoint.getY();
+//        double frX=fromPoint.getX();
+//        double frY=fromPoint.getY();
+//         double len=Math.sqrt((frY-toY)*(frY-toY)+(frX-toX)*(frX-toX));
+//       double y = toY+edgeShift*(frY-toY)/len;
+//        double x = toX+edgeShift*(frX-toX)/len;
+//        
+//        Point tmp=diagramOperator.getDrawingAreaControl().logicalToDevicePoint(PointConversions.newETPoint(new TSConstPoint(x,y))).asPoint();
+//         tmp.translate(pnt_shift_x,pnt_shift_y);
+//6.0       return tmp; 
+         return new Point(10,10);
     }
     /**
      *
@@ -520,23 +543,25 @@ public class LinkOperator implements Actionable{
      */
    public Point getNearSourcePoint(int edgeShift)
     {
-        TSConstPoint fromPoint =((ETEdge)edge).getSourceClippingPoint();
-        TSConstPoint toPoint =((ETEdge)edge).getTargetClippingPoint();
-        List bendPoints = ((ETEdge)edge).bendPoints();
-        if((bendPoints!=null)&&(bendPoints.size() >=1)) {
-            toPoint = (TSConstPoint)bendPoints.get(0);
-        }
-        double toX=toPoint.getX();
-        double toY=toPoint.getY();
-        double frX=fromPoint.getX();
-        double frY=fromPoint.getY();
-        double len=Math.sqrt((frY-toY)*(frY-toY)+(frX-toX)*(frX-toX));
-        double y = frY-edgeShift*(frY-toY)/len;
-        double x = frX-edgeShift*(frX-toX)/len;
-        
-        Point tmp=diagramOperator.getDrawingAreaControl().logicalToDevicePoint(PointConversions.newETPoint(new TSConstPoint(x,y))).asPoint();
-        tmp.translate(pnt_shift_x,pnt_shift_y);
-        return tmp;        
+       //TODO: Wait for Trey on getSourceClippingPoint and getTargetClippingPoint()
+//        TSConstPoint fromPoint =((ETEdge)edge).getSourceClippingPoint();
+//        TSConstPoint toPoint =((ETEdge)edge).getTargetClippingPoint();
+//        List bendPoints = ((ETEdge)edge).bendPoints();
+//        if((bendPoints!=null)&&(bendPoints.size() >=1)) {
+//            toPoint = (TSConstPoint)bendPoints.get(0);
+//        }
+//        double toX=toPoint.getX();
+//        double toY=toPoint.getY();
+//        double frX=fromPoint.getX();
+//        double frY=fromPoint.getY();
+//        double len=Math.sqrt((frY-toY)*(frY-toY)+(frX-toX)*(frX-toX));
+//        double y = frY-edgeShift*(frY-toY)/len;
+//        double x = frX-edgeShift*(frX-toX)/len;
+//        
+//        Point tmp=diagramOperator.getDrawingAreaControl().logicalToDevicePoint(PointConversions.newETPoint(new TSConstPoint(x,y))).asPoint();
+//        tmp.translate(pnt_shift_x,pnt_shift_y);
+//        return tmp;   
+       return null;
     }
     
     /**
@@ -646,10 +671,10 @@ public class LinkOperator implements Actionable{
                 String all="\nfrom source: ";
                 Object tmp[];
                 tmp=source.getLinks().toArray();
-                for(int i=0;i<tmp.length;i++)all+=((LinkOperator)tmp[i]).getName()+"|"+((LinkOperator)tmp[i]).getType()+"|"+((LinkOperator)tmp[i]).getFrom()+"|"+((LinkOperator)tmp[i]).getTo()+";";
+                for(int i=0;i<tmp.length;i++)all+=((LinkOperator)tmp[i]).getName()+"|"+((LinkOperator)tmp[i]).getType()+"|"+((LinkOperator)tmp[i]).getFromNode()+"|"+((LinkOperator)tmp[i]).getToNode()+";";
                 tmp=destination.getLinks().toArray();
                 all+="\nfrom destination: ";
-                for(int i=0;i<tmp.length;i++)all+=((LinkOperator)tmp[i]).getName()+"|"+((LinkOperator)tmp[i]).getType()+"|"+((LinkOperator)tmp[i]).getFrom()+"|"+((LinkOperator)tmp[i]).getTo()+";";
+                for(int i=0;i<tmp.length;i++)all+=((LinkOperator)tmp[i]).getName()+"|"+((LinkOperator)tmp[i]).getType()+"|"+((LinkOperator)tmp[i]).getFromNode()+"|"+((LinkOperator)tmp[i]).getToNode()+";";
                 //
                 return("Wait with link chooser: " + linkChooser.getDescription()+" between "+source.getName()+"/"+source.getType()+" and "+destination.getName()+"/"+destination.getType()+"///all:"+all+"///findResult: "+findLink(source, destination, linkChooser, index));
             }
@@ -663,7 +688,7 @@ public class LinkOperator implements Actionable{
      * @return 
      */
     public boolean isSelected(){
-        return edge.isSelected();
+        return edgeOpr.isSelected();
     }
         
     /**
@@ -672,17 +697,8 @@ public class LinkOperator implements Actionable{
      */
     public String getName()
     {
-        String name=null;
-        ETList<IPresentationElement> els=TypeConversions.getElement(edge).getPresentationElements();
-        if(els.size()>0)
-        {
-            ETList<IElement> subjects = els.get(0).getSubjects();
-            if(subjects.size() > 0){
-                name = subjects.get(0).toString();
-            }
-        }
-        return name;
-        
+        return edgeOpr.getName();
+    
         /*String ret=null;
         ETList<IETLabel> lbls= edge.getLabels();
         for(int i=0;lbls!=null && i<lbls.size();i++)
@@ -695,13 +711,15 @@ public class LinkOperator implements Actionable{
         return ret;*/
     }
     
-    private boolean isNameLabel(IETLabel sourceLabel)
+//    private boolean isNameLabel(IETLabel sourceLabel)
+    private boolean isNameLabel(String sourceLabel)
     {
-        int kind=sourceLabel.getLabelKind();
-        //
-        boolean isName=kind==TSLabelKind.TSLK_ACTIVITYEDGE_NAME;
-        isName=isName || kind==TSLabelKind.TSLK_ASSOCIATION_NAME;
-        isName=isName || kind==TSLabelKind.TSLK_NAME;
+        //TODO: need getLableKind();
+//6.0        int kind=sourceLabel.getLabelKind();
+//        //
+//        boolean isName=kind==TSLabelKind.TSLK_ACTIVITYEDGE_NAME;
+//        isName=isName || kind==TSLabelKind.TSLK_ASSOCIATION_NAME;
+//6.0        isName=isName || kind==TSLabelKind.TSLK_NAME;
         /*isName=isName || kind==TSLabelKind.;
         isName=isName || kind==TSLabelKind.;
         isName=isName || kind==TSLabelKind.;
@@ -712,7 +730,7 @@ public class LinkOperator implements Actionable{
         isName=isName || kind==TSLabelKind.;
         isName=isName || kind==TSLabelKind.;
         isName=isName || kind==TSLabelKind.;*/
-        return isName;
+        return false;
 
     }
     
@@ -786,7 +804,7 @@ public class LinkOperator implements Actionable{
             LinkOperator edge =  it.next();
             if (linkChooser.checkLink(edge.getSource())){
                 linksFound.add(edge);
-            }
+          }
         }
         
         if(linksFound.size()>index) {
@@ -803,8 +821,8 @@ public class LinkOperator implements Actionable{
     
     public static class LinkByElementsChooser implements LinkChooser {
         
-        private IETGraphObject from = null;
-        private IETGraphObject to = null;
+        private Widget from = null;
+        private Widget to = null;
         private String linkType = null;
         
         /**
@@ -812,7 +830,7 @@ public class LinkOperator implements Actionable{
          * @param from 
          * @param to 
          */
-        public LinkByElementsChooser(IETGraphObject from, IETGraphObject to){
+        public LinkByElementsChooser(Widget from, Widget to){
             this(from,to,LinkTypes.ANY);
         }
         
@@ -822,7 +840,7 @@ public class LinkOperator implements Actionable{
          * @param to 
          * @param linkType 
          */
-        public LinkByElementsChooser(IETGraphObject from, IETGraphObject to, LinkTypes linkType){
+        public LinkByElementsChooser(Widget from, Widget to, LinkTypes linkType){
             this.from = from;
             this.to = to;
             this.linkType = linkType.toString();
@@ -834,27 +852,30 @@ public class LinkOperator implements Actionable{
          * @param edge 
          * @return 
          */
-        public boolean checkLink(IETEdge edge) {
-            IETNode fromNode  = edge.getFromNode();
-            IETNode toNode = edge.getToNode();
-            
-            if ( from.equals( fromNode ) && to.equals( toNode ) ){
-                IPresentationElement presentation = edge.getPresentationElement();
-                if  (presentation == null ){
+        public boolean checkLink(Widget edge) {
+            Widget fromNode  = getFromNode(edge);
+            Widget toNode = getToNode(edge);
+
+            if (from.equals(fromNode) && to.equals(toNode)) {
+                GraphScene scene = (GraphScene) edge.getScene();
+                IPresentationElement presentation = (IPresentationElement) scene.findObject(edge);
+
+
+                if (presentation == null) {
                     return false;
                 }
-                presentation.getSubjects();
-                ETList subjects = presentation.getSubjects();
-                Iterator itSubj = subjects.iterator();
+                
+                ETList<IElement> subjects = presentation.getSubjects();
+                Iterator<IElement> itSubj = subjects.iterator();
                 while (itSubj.hasNext()) {
                     IElement sbj = (IElement) itSubj.next();
-                    if ( sbj.getElementType().equals(linkType) ){
-                        return true;
+                        if (sbj.getElementType().equals(linkType)) {
+                            return true;
+                        }
                     }
                 }
-            }
             return false;
-        }
+            }
       
         
         /**
@@ -895,16 +916,18 @@ public class LinkOperator implements Actionable{
          * @param edge 
          * @return 
          */
-        public boolean checkLink(IETEdge edge) {
-            IPresentationElement presentation = edge.getPresentationElement();
-            IEdgePresentation iPres=(IEdgePresentation)(edge.getPresentationElement());
+        public boolean checkLink(Widget edge) {
+            GraphScene scene = (GraphScene) edge.getScene();
+            IPresentationElement presentation = (IPresentationElement) scene.findObject(edge);
+
+ 
             if  (presentation == null ){
                 return false;
             }
             if(LinkTypes.ANY.toString().equals(linkType)) {
                 return true;
             }
-            presentation.getSubjects();
+
             ETList subjects = presentation.getSubjects();
             Iterator itSubj = subjects.iterator();
             while (itSubj.hasNext()) {
@@ -913,7 +936,7 @@ public class LinkOperator implements Actionable{
                     return true;
                 }
             }
-            return false;
+          return false;   
         }
         
         
@@ -937,19 +960,22 @@ public class LinkOperator implements Actionable{
          * @return 
          */
         public int compare(C o1, C o2){
-            IETEdge o1s=o1.getSource();
-            IETEdge o2s=o2.getSource();
-            if(o1s instanceof ETEdge && o2s instanceof ETEdge)
-            {
-                //if both are ETEdge it's possible to compare by id which seems to be unique instead of borders center
-                if((((ETEdge)o1s).getID()-((ETEdge)o2s).getID())<0)return -1;
-                else if ((((ETEdge)o1s).getID()-((ETEdge)o2s).getID())>0)return 1;
-                else return 0;
-            }
-            else
-            {
-                Point o1Center = o1s.getEngine().getBoundingRect().getCenterPoint();
-                Point o2Center = o2s.getEngine().getBoundingRect().getCenterPoint();
+             Widget o1s=o1.getSource();
+             Widget o2s=o2.getSource();
+//            if(o1s instanceof UMLEdgeWidget && o2s instanceof UMLEdgeWidget)
+//            {
+//                //if both are UMLEdgeWidget it's possible to compare by id which seems to be unique instead of borders center
+//                if((((UMLEdgeWidget)o1s).getUMLWidgetID()()-((UMLEdgeWidget)o2s).UMLEdgeWidget())<0) return -1;
+//                else if ((((ETEdge)o1s).getID()-((ETEdge)o2s).getID())>0)return 1;
+//                else return 0;
+//            }
+//            else
+//            {
+               UMLWidgetOperator o1sOpr = new  UMLWidgetOperator(o1s);
+               UMLWidgetOperator o2sOpr = new  UMLWidgetOperator(o2s);
+               
+                Point o1Center = o1sOpr.getCenterPoint();
+                Point o2Center = o2sOpr.getCenterPoint();
                 if (o1Center.y>o2Center.y){
                     return 1;
                 }else if (o1Center.y == o2Center.y){
@@ -962,8 +988,8 @@ public class LinkOperator implements Actionable{
                     return -1;
                 }
             }
+             
         }
-    }
-    
-    
+      
+
 }

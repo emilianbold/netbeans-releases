@@ -40,6 +40,10 @@
  */
 package org.netbeans.modules.visual.border;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import org.netbeans.api.visual.widget.ResourceTable;
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.visual.util.GeomUtil;
 import org.netbeans.api.visual.border.Border;
 
@@ -56,13 +60,33 @@ public final class ResizeBorder implements Border {
     private int thickness;
     private Color color;
     private boolean outer;
+    private ResourceTableListener listener = null;
 
     public ResizeBorder (int thickness, Color color, boolean outer) {
         this.thickness = thickness;
         this.color = color;
         this.outer = outer;
     }
+    
+    public ResizeBorder (int thickness, String property, Widget attachedWidget, boolean outer) {
+        this(thickness, property, attachedWidget.getResourceTable(), outer);
+    }
 
+    public ResizeBorder (int thickness, String property, ResourceTable table, boolean outer)
+    {
+        this.thickness = thickness;
+        this.outer = outer;
+        
+        Object value = table.getProperty(property);
+        if(value instanceof Color)
+        {
+            this.color = (Color)value;
+        }
+        
+        listener = new ResourceTableListener();
+        table.addPropertyChangeListener(property, listener);
+    }
+    
     public Insets getInsets () {
         return new Insets (thickness, thickness, thickness, thickness);
     }
@@ -101,5 +125,13 @@ public final class ResizeBorder implements Border {
     public boolean isOpaque () {
         return outer;
     }
-
+    
+    public class ResourceTableListener implements PropertyChangeListener
+    {
+        public void propertyChange(PropertyChangeEvent event)
+        {
+            color = (Color)event.getNewValue();
+        }
+    }
+    
 }

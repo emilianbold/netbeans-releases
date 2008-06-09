@@ -50,21 +50,15 @@ package org.netbeans.test.umllib;
  * @author Alexei Mokeev
  */
 public enum LinkTypes {
-    /* This means ANY link */
+    // This means ANY link */
     ANY("Any"),
-    /*SECTION1: from standart links toolbar*/
-    GENERALIZATION("Generalization"),
-    DEPENDENCY("Dependency"),
-    REALIZE("Realization"),
-    USAGE("Usage"),
-    PERMISSION("Permission"),
-    ABSTRACTION("Abstraction"),
-    IMPLEMENTATION("Implementation"),
-    NESTED_LINK("Class"),
-    CLASS("Class"),
-   /*END SECTION1: from standart links toolbar*/
     
-    /*SECTION2 */
+    //Context Palette 
+    IMPLEMENTATION("Implementation"),
+    GENERALIZATION("Generalization"),
+    COMMENT_LINK("CommentLink"),
+  
+    // Association 
     ASSOCIATION("Association"),
     ASSOCIATION_CLASS("AssociationClass"),
     COMPOSITION("Composition"),
@@ -72,9 +66,17 @@ public enum LinkTypes {
     AGGREGATION("Aggregation"),
     NAVIGABLE_AGGREGATION("Navigable Aggregation"),
     NAVIGABLE_ASSOCIATION("Navigable Association"),
-    /*END SECTION2*/
     
-    
+    // Dependece  
+    DEPENDENCY("Dependency"),
+    REALIZE("Realization"),
+    USAGE("Usage"),
+    PERMISSION("Permission"),
+    ABSTRACTION("Abstraction"), 
+  
+    NESTED_LINK("Class"),
+    CLASS("Class"),
+
     DERIVATION_EDGE("Derivation"), 
     DELEGATE("Delegate"),
     ASSEMBLY("AssemblyConnector"),
@@ -92,10 +94,11 @@ public enum LinkTypes {
     EXTEND("Extend"),
     
     //seq spec
-    SYNC_MESSAGE("Message"), //this should be corrected, no such type exists 
+    SYNC_MESSAGE("Synchronous Message"), 
     MESSAGE_TO_SELF("Message"), //this should be corrected, no such type exists 
-    ASYNC_MESSAGE("Message"), //this should be corrected, no such type exists 
-    CREATE_MESSAGE("Message"), //this should be corrected, no such type exists 
+    ASYNC_MESSAGE("Asynchronous Message"),  
+    CREATE_MESSAGE("Create Message"),  
+    DESTROY_LIFELINE("Destroy Lifeline"),
     MESSAGE("Message"),
     PART_FACADE("PartFacade"),
     ROLE("Role"),

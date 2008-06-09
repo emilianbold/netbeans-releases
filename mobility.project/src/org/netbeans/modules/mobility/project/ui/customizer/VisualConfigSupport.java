@@ -198,6 +198,10 @@ public final class VisualConfigSupport {
         final ConfigurationsSelectionPanelGUI ncp = new ConfigurationsSelectionPanelGUI(allNames);
         final ErrorPanel ep = new ErrorPanel();
         final JPanel p = new JPanel(new BorderLayout());
+        p.getAccessibleContext().setAccessibleName(
+                ncp.getAccessibleContext().getAccessibleName());
+        p.getAccessibleContext().setAccessibleDescription(
+                ncp.getAccessibleContext().getAccessibleDescription());
         p.add(ncp, BorderLayout.CENTER);
         p.add(ep, BorderLayout.SOUTH);
         final DialogDescriptor dd = new DialogDescriptor(p, NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_AddConfiguration"), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null); //NOI18N

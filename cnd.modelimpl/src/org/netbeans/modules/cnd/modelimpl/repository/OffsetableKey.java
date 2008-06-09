@@ -47,6 +47,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 
 /**
@@ -76,6 +77,9 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
     }
 
     /*package-local*/ CharSequence getName(){
+        if (name != null && name.length() >= 0 && Character.isDigit(name.charAt(0))) {
+            return CharSequenceKey.empty();
+        }
         return name;
     }
     

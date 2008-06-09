@@ -57,7 +57,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 public class RestoreWindowAction extends Action {
     
     /** "Window" main menu item. */
-    private static final String windowItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle",
+    private static final String windowItem = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle",
                                                                      "Menu/Window");
     
     /** "Window|Restore Window" */

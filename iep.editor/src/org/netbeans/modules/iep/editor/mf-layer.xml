@@ -90,7 +90,6 @@
 
             <file name="InsertStream.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/relationConverter/InsertStream.xml"/>
             <file name="DeleteStream.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/relationConverter/DeleteStream.xml"/>
-            <file name="Table.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/relationConverter/Table.xml"/>
             <file name="RelationStream.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/relationConverter/RelationStream.xml"/>
             <file name="NotificationStream.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/relationConverter/NotificationStream.xml"/>
         </folder>

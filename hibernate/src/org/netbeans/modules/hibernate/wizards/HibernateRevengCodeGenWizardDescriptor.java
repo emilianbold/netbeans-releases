@@ -42,6 +42,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
+import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -59,15 +61,15 @@ public class HibernateRevengCodeGenWizardDescriptor implements WizardDescriptor.
     private HibernateRevengCodeGenerationPanel component;
     private boolean componentInitialized;
     private WizardDescriptor wizardDescriptor;
-    private Project project;    
-    
+    private Project project;
+
     public HibernateRevengCodeGenWizardDescriptor(Project project, WizardDescriptor wizardDescriptor) {
         this.project = project;
         this.wizardDescriptor = wizardDescriptor;
     }
 
     public HibernateRevengCodeGenerationPanel getComponent() {
-        if (component == null) {           
+        if (component == null) {
             component = new HibernateRevengCodeGenerationPanel();
             component.addChangeListener(this);
         }
@@ -89,33 +91,57 @@ public class HibernateRevengCodeGenWizardDescriptor implements WizardDescriptor.
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         HibernateRevengWizardHelper helper = HibernateRevengWizard.getHelper(wizardDescriptor);
-        
+
         if (!componentInitialized) {
             componentInitialized = true;
             project = Templates.getProject(wizardDescriptor);
             FileObject targetFolder = Templates.getTargetFolder(wizardDescriptor);
             getComponent().initialize(project, targetFolder);
-        }        
+        }
         getComponent().update(helper.getTableClosure());
     }
 
     public boolean isValid() {
+        SourceGroup sourceGroup = getComponent().getLocationValue();
+        String packageName = getComponent().getPackageName();
+        if (sourceGroup == null) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "ERR_JavaTargetChooser_SelectSourceGroup")); // NOI18N
+            return false;
+        }
+
+        if (packageName.trim().equals("")) { // NOI18N
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "ERR_JavaTargetChooser_CantUseDefaultPackage")); // NOI18N
+            return false;
+        }
+        if (!JavaIdentifiers.isValidPackageName(packageName)) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "ERR_JavaTargetChooser_InvalidPackage")); //NOI18N
+            return false;
+        }
+
+        if (!SourceGroups.isFolderWritable(sourceGroup, packageName)) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "ERR_JavaTargetChooser_UnwritablePackage")); //NOI18N
+            return false;
+        }
+
+        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
         return true;
     }
 
     public void storeSettings(Object settings) {
         Object buttonPressed = ((WizardDescriptor) settings).getValue();
         if (buttonPressed.equals(WizardDescriptor.NEXT_OPTION) ||
-                    buttonPressed.equals(WizardDescriptor.FINISH_OPTION)) {
+                buttonPressed.equals(WizardDescriptor.FINISH_OPTION)) {
 
-                HibernateRevengWizardHelper helper = HibernateRevengWizard.getHelper(wizardDescriptor);                
-                helper.setSelectedTables(getComponent().getSelectedTables());
-                helper.setLocation(getComponent().getLocationValue());
-                helper.setPackageName(getComponent().getPackageName());
-                helper.setDomainGen(getComponent().getChkDomain());
-                helper.setHbmGen(getComponent().getChkHbm());
-                
-            }        
+            HibernateRevengWizardHelper helper = HibernateRevengWizard.getHelper(wizardDescriptor);
+            helper.setSelectedTables(getComponent().getSelectedTables());
+            helper.setLocation(getComponent().getLocationValue());
+            helper.setPackageName(getComponent().getPackageName());
+            helper.setDomainGen(getComponent().getChkDomain());
+            helper.setHbmGen(getComponent().getChkHbm());
+            helper.setJavaSyntax(getComponent().getChkJava());
+            helper.setEjbAnnotation(getComponent().getChkEjb());
+
+        }
     }
 
     public void stateChanged(ChangeEvent event) {

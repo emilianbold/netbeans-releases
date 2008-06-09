@@ -61,6 +61,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
+import org.netbeans.modules.websvc.core.ServerType;
+import org.netbeans.modules.websvc.core.WSStackUtils;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -85,7 +87,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
     
     private boolean jsr109Supported;
     private boolean jsr109oldSupported;
-    private boolean jwsdpSupported;
+    //private boolean jwsdpSupported;
     private boolean jaxWsInJ2ee14Supported;
     private WebModule wm;
     private EjbJar em;
@@ -96,10 +98,10 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         
         initComponents();
         
-        jsr109Supported = PlatformUtil.isJsr109Supported(project);
-        jsr109oldSupported = PlatformUtil.isJsr109OldSupported(project);
-        jwsdpSupported = PlatformUtil.isJWSDPSupported(project);
-        jaxWsInJ2ee14Supported = PlatformUtil.isJaxWsInJ2ee14Supported(project);
+        WSStackUtils stackUtils = new WSStackUtils(project);
+        jsr109Supported = stackUtils.isJsr109Supported();
+        jsr109oldSupported = stackUtils.isJsr109OldSupported();
+        jaxWsInJ2ee14Supported = (ServerType.JBOSS == stackUtils.getServerType());
         
         //convert Java class not implemented for 5.5 release, disable components
         jRadioButtonConvert.setEnabled(false);
@@ -117,7 +119,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         if ((em == null && wm == null)
         ||  //disable encapsulate session beans for Tomcat
                 ((!jsr109Supported && !jsr109oldSupported ||
-                (!jsr109Supported && jsr109oldSupported && jwsdpSupported ))) ) {
+                (!jsr109Supported && jsr109oldSupported/* && jwsdpSupported*/ ))) ) {
             disableDelegateToEJB();
         }
         
@@ -315,7 +317,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
      */
     private boolean checkNonJsr109Valid(WizardDescriptor wizardDescriptor){
         if( (!jsr109Supported && !jsr109oldSupported) || jaxWsInJ2ee14Supported || 
-                (!jsr109Supported && jsr109oldSupported && jwsdpSupported )){
+                (!jsr109Supported && jsr109oldSupported/* && jwsdpSupported */)){
             if (Util.isSourceLevel14orLower(project)) {
                 wizardDescriptor.putProperty("WizardPanel_errorMessage",
                         NbBundle.getMessage(WebServiceTypePanel.class, "ERR_NeedProperSourceLevel")); // NOI18N

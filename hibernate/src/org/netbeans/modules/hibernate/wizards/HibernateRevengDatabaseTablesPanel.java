@@ -86,6 +86,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final DBSchemaManager dbschemaManager = new DBSchemaManager();
     private DatabaseConnection dbconn;
+    private String schemaName;
     private boolean sourceSchemaUpdateEnabled;
     private Project project;
     org.netbeans.modules.hibernate.service.HibernateEnvironment env;
@@ -160,6 +161,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
             dbconn = HibernateUtil.getDBConnection(hibConf);
             if (dbconn != null) {
                 sourceSchemaElement = dbschemaManager.getSchemaElement(dbconn);
+                schemaName = dbconn.getSchema();
             }
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
@@ -223,6 +225,10 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
     public TableClosure getTableClosure() {
         return tableClosure;
     }
+    
+    public String getSchemaName() {
+        return schemaName;
+    }
 
     private static void notify(String message) {
         NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE);
@@ -268,7 +274,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
         tablesPanel.setLayout(new java.awt.GridBagLayout());
 
         availableTablesLabel.setLabelFor(availableTablesList);
-        org.openide.awt.Mnemonics.setLocalizedText(availableTablesLabel, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "LBL_AvailableTables")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(availableTablesLabel, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "HibernateRevengDatabaseTablesPanel_AvailableTables")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
@@ -289,7 +295,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
         tablesPanel.add(availableTablesScrollPane, gridBagConstraints);
 
         selectedTablesLabel.setLabelFor(selectedTablesList);
-        org.openide.awt.Mnemonics.setLocalizedText(selectedTablesLabel, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "LBL_SelectedTables")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(selectedTablesLabel, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "HibernateRevengDatabaseTablesPanel_SelectedTables")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -312,7 +318,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
 
         buttonPanel.setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "LBL_Add")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "HibernateRevengDatabaseTablesPanel_Add")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
@@ -322,7 +328,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         buttonPanel.add(addButton, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "LBL_Remove")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "HibernateRevengDatabaseTablesPanel_Remove")); // NOI18N
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
@@ -335,7 +341,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         buttonPanel.add(removeButton, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(addAllButton, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "LBL_AddAll")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addAllButton, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "HibernateRevengDatabaseTablesPanel_AddAll")); // NOI18N
         addAllButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addAllButtonActionPerformed(evt);
@@ -348,7 +354,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(17, 0, 0, 0);
         buttonPanel.add(addAllButton, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(removeAllButton, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "LBL_RemoveAll")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeAllButton, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "HibernateRevengDatabaseTablesPanel_RemoveAll")); // NOI18N
         removeAllButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeAllButtonActionPerformed(evt);
@@ -370,7 +376,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
         tablesPanel.add(buttonPanel, gridBagConstraints);
 
         tableClosureCheckBox.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(tableClosureCheckBox, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "LBL_IncludeRelatedTables")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(tableClosureCheckBox, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "HibernateRevengDatabaseTablesPanel_IncludeRelatedTables")); // NOI18N
         tableClosureCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         tableClosureCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         tableClosureCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -392,7 +398,9 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
         tableError.setOpaque(false);
         jScrollPane3.setViewportView(tableError);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "Configuration File:");
+        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("Configuration_mnemonic").charAt(0));
+        jLabel1.setLabelFor(cmbDatabaseConn);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "HibernateRevengDatabaseTablesPanel_Configuration")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

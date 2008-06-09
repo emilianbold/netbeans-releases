@@ -193,16 +193,25 @@ TestSupport.prototype = {
         }
     },
     
+    getResourcePath : function (n) {
+        var path = this.getPath(n, '')
+        return path.replace(/\/\//g,"\/");
+    },
+    
     getPath : function (n, pathVal) {
-        if(n.parentNode == null || n.attributes.getNamedItem('path') == null)
-            return pathVal.replace(/\/\//g,"\/");
-        else {
+        if(n.parentNode == null || n.attributes.getNamedItem('path') == null) {
+            if(pathVal == null || pathVal == '')
+                return '';
+            else
+                return pathVal;
+        } else {
             var path = n.attributes.getNamedItem('path');
             var pathElem = path.nodeValue;
-            pathElem = pathElem.replace(/\/\//g,"\/");
-            pathElem = ts.wdr.trimSeperator(pathElem);
-            pathElem = ts.wdr.prependSeperator(pathElem);
-            return this.getPath(n.parentNode, pathElem+'/'+pathVal);
+            if(pathVal == null || pathVal == '') {
+                return this.getPath(n.parentNode, pathElem);
+            } else {
+                return this.getPath(n.parentNode, pathElem+'/'+pathVal);
+            }
         }
     },
     
@@ -241,13 +250,17 @@ TestSupport.prototype = {
         var paramRep = "";
         var req = this.getDisplayUri(uri);
         var paths = req.split('/');
-        for(var i=0;i<paths.length;i++) {
+        for(var i in paths) {
             var path = paths[i];
-            if(path.indexOf('{') > -1) {
-                var pname = path.substring(1, path.length-1);
-                paramRep += '<tr><td valign="top"><span id="j_id14"><label for="tparams" class="LblLev2Txt_sun4">';
-                paramRep += '<span>'+pname+': </span></label></span></td>';
-                paramRep += '<td><span id="j_id14"><input id=tparams name="'+pname+'" type=text value="" size=40 title="'+pname+'" class="TxtFld_sun4 TxtFldVld_sun4"/></span></td></tr>';
+            var compositeIds = path.split(',');
+            for(var j in compositeIds) {
+              var compositeId = compositeIds[j];
+              if(compositeId.indexOf('{') > -1) {
+                  var pname = compositeId.substring(1, compositeId.length-1);
+                  paramRep += '<tr><td valign="top"><span id="j_id14"><label for="tparams" class="LblLev2Txt_sun4">';
+                  paramRep += '<span>'+pname+': </span></label></span></td>';
+                  paramRep += '<td><span id="j_id14"><input id=tparams name="'+pname+'" type=text value="" size=40 title="'+pname+'" class="TxtFld_sun4 TxtFldVld_sun4"/></span></td></tr>';
+              }
             }
         }
         if(paramRep != "") {
@@ -1297,7 +1310,13 @@ WADLParser.prototype = {
           var resources = this.getAllResourcesFromWadl(content);
           if(resources != null) {
               for (i=0;i<resources.length;i++) {
-                str += '<node uri="'+baseURL+ts.getPath(resources[i], '')+'"/>';
+                  var path = ts.getResourcePath(resources[i]);
+                  var url = '';
+                  if(baseURL.substring(baseURL.length-1, baseURL.length) != '/' && path.substring(0, 1) != '/')
+                      url = baseURL + '/' + path;
+                  else
+                      url = baseURL + path;
+                  str += '<node uri="'+url+'"/>';
               }
           }
         }

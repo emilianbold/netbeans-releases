@@ -101,6 +101,10 @@ public class DataObjectSizeTest extends NbTestCase {
                     Item item = (Item) obj;
                     try {
                         DataObject dobj = item.getDataObjectOrNull();
+                        if (dobj == null) {
+                            // Unreproducible NPE in NB-Core-Build #672
+                            return false;
+                        }
                         if (dobj.getPrimaryFile().getFileSystem().isDefault()) {
                             return false;
                         }

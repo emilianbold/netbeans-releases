@@ -554,14 +554,10 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
         context.caretOffset = caretOffset;
         context.selectionStart = selectionStart;
         context.selectionEnd = selectionEnd;
-        try {
-            context.doc = (BaseDocument)info.getDocument();
-            if (context.doc == null) {
-                // Document closed
-                return null;
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        context.doc = (BaseDocument)info.getDocument();
+        if (context.doc == null) {
+            // Document closed
+            return null;
         }
         
         

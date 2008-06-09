@@ -30,29 +30,35 @@ package org.netbeans.modules.groovy.grailsproject.ui.wizards;
 
 import java.awt.Component;
 import java.io.IOException;
+import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.groovy.grailsproject.execution.LineSnooper;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import org.openide.util.NbBundle;
 import java.io.File;
+import java.nio.charset.Charset;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import java.util.concurrent.Callable;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptorBuilder;
+import org.netbeans.modules.extexecution.api.ExecutionService;
+import org.netbeans.modules.extexecution.api.input.InputProcessor;
+import org.netbeans.modules.extexecution.api.input.InputProcessors;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.GrailsProjectSettings;
-import org.netbeans.modules.groovy.grailsproject.execution.Descriptor;
-import org.netbeans.modules.groovy.grailsproject.execution.ExecutionService;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.util.Task;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
 
 
 
@@ -97,9 +103,13 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
             String displayName = "<new project> (create-app)"; // NOI18N
             Callable<Process> callable = ExecutionSupport.getInstance().createCreateApp(
                     (File) wiz.getProperty("projectFolder")); // NOI18N
-            ExecutionService service = new ExecutionService(callable, displayName,
-                    new CreateDescriptor(new ProgressSnooper(handle, 100, 2)));
-
+            
+            ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
+            builder.frontWindow(true).inputVisible(true);
+            builder.outProcessor(InputProcessors.bridge(new ProgressSnooper(handle, 100, 2)));
+            // TODO refresh
+            
+            ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
             Task task = service.run();
             task.waitFinished();
         } finally {
@@ -214,46 +224,4 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
 
     public void removeChangeListener(ChangeListener l) {}
 
-
-    private static class CreateDescriptor implements Descriptor {
-
-        private final LineSnooper snooper;
-
-        public CreateDescriptor(LineSnooper snooper) {
-            this.snooper = snooper;
-        }
-        
-        public FileObject getFileObject() {
-            return null;
-        }
-
-        public LineSnooper getOutputSnooper() {
-            return snooper;
-        }
-
-        public Runnable getPostExecution() {
-            return null;
-        }
-
-        public boolean isFrontWindow() {
-            return true;
-        }
-
-        public boolean isInputVisible() {
-            return true;
-        }
-
-        public boolean showProgress() {
-            return false;
-        }
-
-        public boolean showSuspended() {
-            return false;
-        }
-
-        public boolean isControlable() {
-            return false;
-        }
-
-    }
 }

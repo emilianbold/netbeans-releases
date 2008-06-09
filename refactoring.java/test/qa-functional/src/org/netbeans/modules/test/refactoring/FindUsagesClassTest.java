@@ -53,7 +53,7 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.modules.test.refactoring.operators.FindUsagesAction;
+import org.netbeans.modules.test.refactoring.actions.FindUsagesAction;
 import org.netbeans.modules.test.refactoring.operators.FindUsagesClassOperator;
 import org.netbeans.modules.test.refactoring.operators.FindUsagesResultOperator;
 
@@ -88,7 +88,7 @@ public class FindUsagesClassTest extends FindUsagesTestCase{
         openSourceFile("fu", fileName);
         EditorOperator editor = new EditorOperator(fileName);
         editor.setCaretPosition(12, 19);
-        new FindUsagesAction().performPopup(editor);
+        new FindUsagesAction().perform(editor);
         new EventTool().waitNoEvent(1000);
         FindUsagesClassOperator findUsagesClassOperator = new FindUsagesClassOperator();
         findUsagesClassOperator.getSearchInComments().setSelected(false);
@@ -223,7 +223,7 @@ public class FindUsagesClassTest extends FindUsagesTestCase{
         int tabCount = furo.getTabCount();
         EditorOperator editor = new EditorOperator("FindUsagesClass");
         editor.setCaretPosition(12, 19);
-        new FindUsagesAction().performPopup(editor);
+        new FindUsagesAction().perform(editor);
         new EventTool().waitNoEvent(1000);
         FindUsagesClassOperator findUsagesClassOperator = new FindUsagesClassOperator();
         findUsagesClassOperator.getCancel().push();

@@ -52,19 +52,25 @@ import org.openide.util.NbBundle;
  */
 public abstract class Table implements Comparable<Table> {
 
+    private final String schema;
+    private final String catalog;
     private final String name;
     private final boolean join;
     private final DisabledReason disabledReason;
     private final boolean tableOrView; // true for table and false for view
 
-    public Table(String name, boolean join, DisabledReason disabledReason) {
+    public Table(String schema, String catalog, String name, boolean join, DisabledReason disabledReason) {
+        this.schema = schema;
+        this.catalog = catalog;
         this.name = name;
         this.join = join;
         this.disabledReason = disabledReason;
         tableOrView = true; // default to table
     }
     
-    public Table(String name, boolean join, DisabledReason disabledReason, boolean isTable) {
+    public Table(String schema, String catalog, String name, boolean join, DisabledReason disabledReason, boolean isTable) {
+        this.schema = schema;
+        this.catalog = catalog;
         this.name = name;
         this.join = join;
         this.disabledReason = disabledReason;
@@ -89,6 +95,14 @@ public abstract class Table implements Comparable<Table> {
             return 1;
         }
         return this.getName().compareTo(that.getName());
+    }
+    
+    public String getSchema() {
+        return this.schema;
+    }
+    
+    public String getCatalog() {
+        return this.catalog;
     }
 
     /**
@@ -139,6 +153,11 @@ public abstract class Table implements Comparable<Table> {
      * Returns the tables which this table joins.
      */
     public abstract Set<Table> getJoinTables();
+    
+    /**
+     * Returns the unique constaints defined on this table
+     */
+    public abstract Set<String[]> getUniqueConstraints();
 
     /**
      * A generic reason for a table to be disabled. If there is no need

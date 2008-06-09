@@ -89,6 +89,7 @@
             <folder name="x-httpd-eruby">
                 <file name="org-netbeans-modules-ruby-rhtml-RhtmlIndentTaskFactory.instance"/>
                 <file name="org-netbeans-modules-ruby-rhtml-EmbeddedSectionsHighlighting$Factory.instance"/>
+                <file name="org-netbeans-modules-gsfret-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
 
                 <file name="language.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId.language"/>
@@ -218,18 +219,13 @@
     <folder name="GsfPlugins">
         <folder name="application">
             <folder name="x-httpd-eruby">
-                <attr name="displayName" stringvalue="RHTML"/>
                 <attr name="useCustomEditorKit" boolvalue="true"/>
-                
                 <file name="language.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.GsfLanguage"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rhtml.RhtmlLanguage"/>
                 </file>
-                
                 <file name="structure.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.StructureScanner"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.StructureAnalyzer"/>
-                </file>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyStructureAnalyzer"/>
+                </file> 
             </folder>
         </folder>
     </folder>

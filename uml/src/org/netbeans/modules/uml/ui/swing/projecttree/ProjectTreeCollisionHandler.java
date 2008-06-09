@@ -46,15 +46,11 @@
  */
 package org.netbeans.modules.uml.ui.swing.projecttree;
 
-import java.util.Vector;
-
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.NameCollisionHandler;
 import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.core.support.umlutils.IPropertyElement;
-import org.netbeans.modules.uml.ui.support.applicationmanager.IProductGraphPresentation;
+
 /**
  * @author sumitabhk
  *

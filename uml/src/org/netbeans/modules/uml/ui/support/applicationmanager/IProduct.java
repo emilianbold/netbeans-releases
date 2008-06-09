@@ -272,8 +272,9 @@ public interface IProduct extends ICoreProduct
 	*/
 	public void setVBAIntegrator( Object value );
 	
-	public IPresentationTypesMgr getPresentationTypesMgr();
-	
-	public IPresentationResourceMgr getPresentationResourceMgr();
+        // TODO: meteora
+//	public IPresentationTypesMgr getPresentationTypesMgr();
+//	
+//	public IPresentationResourceMgr getPresentationResourceMgr();
 
 }

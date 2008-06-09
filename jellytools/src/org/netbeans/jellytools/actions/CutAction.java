@@ -51,7 +51,7 @@ import org.netbeans.jellytools.Bundle;
 public class CutAction extends Action {
 
     private static final String cutPopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Cut");
-    private static final String cutMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Edit")
+    private static final String cutMenu = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Edit")
                                             + "|" + cutPopup;
     private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
             KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.META_MASK) :

@@ -73,7 +73,22 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
-
+        <change id="classpath-api-module">
+            <api name="classpath"/>
+            <summary>Splitting the java API to independent ClassPath API and the rest of the java API</summary>
+            <version major="1" minor="18"/>
+            <date day="5" month="6" year="2008"/>
+            <author login="tzezula"/>
+            <compatibility addition="no" modification="no" semantic="compatible" source="incompatible" binary="compatible"/>
+            <description>
+                <p>
+                    The copy of the ClassPath API was used by generic scripting framework, which cannot depend on the java cluster.
+                    To remove this copy of the ClassPath API the java API needs to be splitted into the ClassPath API (IDE cluster)
+                    and the rest of the java API (java cluster).
+                </p>
+            </description>
+            <issue number="136169"/>
+        </change>
         <change id="ClassPath.string">
             <api name="classpath"/>
             <summary>Interconversions with string-format classpaths</summary>
@@ -89,11 +104,10 @@ made subject to such option by the copyright holder.
                     and NetBeans' internal representation.
                 </p>
             </description>
-            <class package="org.netbeans.api.java.classpath" name="ClassPath"/>
-            <class package="org.netbeans.spi.java.classpath.support" name="ClassPathSupport"/>
+            <!-- <class package="org.netbeans.api.java.classpath" name="ClassPath"/>
+            <class package="org.netbeans.spi.java.classpath.support" name="ClassPathSupport"/> -->
             <issue number="59311"/>
         </change>
-
         <change id="queries-spi-support">
             <api name="queries"/>
             <summary>Support for delegating SourceForBinaryQueryImplementation2</summary>
@@ -146,8 +160,8 @@ made subject to such option by the copyright holder.
                     currently only excludes on <code>SOURCE</code> paths are honored by Java language features.)
                 </p>
             </description>
-            <class package="org.netbeans.api.java.classpath" name="ClassPath"/>
-            <class package="org.netbeans.spi.java.classpath" name="FilteringPathResourceImplementation"/>
+            <!-- <class package="org.netbeans.api.java.classpath" name="ClassPath"/>
+            <class package="org.netbeans.spi.java.classpath" name="FilteringPathResourceImplementation"/> -->
             <issue number="49026"/>
         </change>
 
@@ -247,14 +261,14 @@ made subject to such option by the copyright holder.
                     instances.
                 </p>
             </description>
-            <class package="org.netbeans.api.java.classpath" name="ClassPath"/>
+            <!-- <class package="org.netbeans.api.java.classpath" name="ClassPath"/>
             <class package="org.netbeans.spi.java.classpath" name="ClassPathProvider"/>
             <class package="org.netbeans.spi.java.classpath" name="ClassPathFactory"/>
             <class package="org.netbeans.spi.java.classpath" name="ClassPathImplementation"/>
             <class package="org.netbeans.spi.java.classpath" name="PathResourceImplementation"/>
             <class package="org.netbeans.spi.java.classpath.support" name="ClassPathSupport"/>
             <class package="org.netbeans.spi.java.classpath.support" name="CompositePathResourceBase"/>
-            <class package="org.netbeans.spi.java.classpath.support" name="PathResourceBase"/>
+            <class package="org.netbeans.spi.java.classpath.support" name="PathResourceBase"/> -->
         </change>
 
         <change id="GlobalPathRegistry">
@@ -274,7 +288,7 @@ made subject to such option by the copyright holder.
                 Added a new class <code>GlobalPathRegistry</code> to represent
                 classpaths of current interest, typically from open projects.
             </description>
-            <class package="org.netbeans.api.java.classpath" name="GlobalPathRegistry"/>
+            <!-- <class package="org.netbeans.api.java.classpath" name="GlobalPathRegistry"/> -->
         </change>
 
         <change id="new-queries">

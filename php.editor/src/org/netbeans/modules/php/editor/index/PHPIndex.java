@@ -65,6 +65,7 @@ import org.netbeans.modules.gsf.api.Index.SearchResult;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -81,6 +82,7 @@ public class PHPIndex {
 
     /** Set property to true to find ALL functions regardless of file includes */
     //private static final boolean ALL_REACHABLE = Boolean.getBoolean("javascript.findall");
+    public static final int ANY_ATTR = 0xFFFFFFFF;
     private static String clusterUrl = null;
     private static final String CLUSTER_URL = "cluster:"; // NOI18N
 
@@ -166,13 +168,14 @@ public class PHPIndex {
     }
     
     /** returns all methods of a class. */
-    public Collection<IndexedFunction> getAllMethods(PHPParseResult context, String className, String name, NameKind kind) {
+    public Collection<IndexedFunction> getAllMethods(PHPParseResult context, String className, String name, NameKind kind, int attrMask) {
         Collection<IndexedFunction> methods = new ArrayList<IndexedFunction>();
         List<IndexedClass> inheritanceLine = getClassInheritanceLine(context, className);
         
         if (inheritanceLine != null){
             for (IndexedClass clazz : inheritanceLine){
-                methods.addAll(getMethods(context, clazz.getName(), "", kind)); //NOI18N
+                int mask = inheritanceLine.get(0) == clazz ? attrMask : (attrMask & (~Modifier.PRIVATE));
+                methods.addAll(getMethods(context, clazz.getName(), "", kind, mask)); //NOI18N
             }
         }
         
@@ -180,13 +183,14 @@ public class PHPIndex {
     }
     
     /** returns all fields of a class. */
-    public Collection<IndexedConstant> getAllProperties(PHPParseResult context, String className, String name, NameKind kind) { 
+    public Collection<IndexedConstant> getAllProperties(PHPParseResult context, String className, String name, NameKind kind, int attrMask) { 
         Collection<IndexedConstant> properties = new ArrayList<IndexedConstant>();
         List<IndexedClass> inheritanceLine = getClassInheritanceLine(context, className);
         
         if (inheritanceLine != null){
             for (IndexedClass clazz : inheritanceLine){
-                properties.addAll(getProperties(context, clazz.getName(), "", NameKind.PREFIX)); //NOI18N
+                int mask = inheritanceLine.get(0) == clazz ? attrMask : (attrMask & (~Modifier.PRIVATE));
+                properties.addAll(getProperties(context, clazz.getName(), "", NameKind.PREFIX, mask)); //NOI18N
             }
         }
         
@@ -242,22 +246,29 @@ public class PHPIndex {
     }
     
     /** returns methods of a class. */
-    public Collection<IndexedFunction> getMethods(PHPParseResult context, String className, String name, NameKind kind) {
+    public Collection<IndexedFunction> getMethods(PHPParseResult context, String className, String name, NameKind kind, int attrMask) {
         Collection<IndexedFunction> methods = new ArrayList<IndexedFunction>();
         Map<String, String> signaturesMap = getClassSpecificSignatures(context, className, PHPIndexer.FIELD_METHOD, name, kind);
         
         for (String signature : signaturesMap.keySet()) {
             //items are not indexed, no case insensitive search key user
             Signature sig = Signature.get(signature);
-            String funcName = sig.string(0);
-            String args = sig.string(1);
-            int offset = sig.integer(2);
             int flags = sig.integer(3);
+            
+            if ((flags & (Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE)) == 0){
+                flags |= Modifier.PUBLIC; // default modifier
+            }
+            
+            if ((flags & attrMask) != 0) {
+                String funcName = sig.string(0);
+                String args = sig.string(1);
+                int offset = sig.integer(2);
 
-            IndexedFunction func = new IndexedFunction(funcName, className,
-                    this, signaturesMap.get(signature), args, offset, flags, ElementKind.METHOD);
+                IndexedFunction func = new IndexedFunction(funcName, className,
+                        this, signaturesMap.get(signature), args, offset, flags, ElementKind.METHOD);
 
-            methods.add(func);
+                methods.add(func);
+            }
 
         }
     
@@ -265,22 +276,27 @@ public class PHPIndex {
     }
     
     /** returns fields of a class. */
-    public Collection<IndexedConstant> getProperties(PHPParseResult context, String className, String name, NameKind kind) { 
+    public Collection<IndexedConstant> getProperties(PHPParseResult context, String className, String name, NameKind kind, int attrMask) { 
         Collection<IndexedConstant> properties = new ArrayList<IndexedConstant>();
         Map<String, String> signaturesMap = getClassSpecificSignatures(context, className, PHPIndexer.FIELD_FIELD, name, kind);
         
         for (String signature : signaturesMap.keySet()) {
             Signature sig = Signature.get(signature);
+            int flags = sig.integer(2);
             
-            String propName = "$" + sig.string(0);
-            int offset = sig.integer(1);
-            int modifiers = sig.integer(2);
+            if ((flags & (Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE)) == 0){
+                flags |= Modifier.PUBLIC; // default modifier
+            }
+            
+            if ((flags & attrMask) != 0) {
+                String propName = "$" + sig.string(0);
+                int offset = sig.integer(1);
 
-            IndexedConstant prop = new IndexedConstant(propName, className,
-                    this, signaturesMap.get(signature), offset, modifiers, null);
+                IndexedConstant prop = new IndexedConstant(propName, className,
+                        this, signaturesMap.get(signature), offset, flags, null);
 
-            properties.add(prop);
-
+                properties.add(prop);
+            }
         }
 
         return properties;

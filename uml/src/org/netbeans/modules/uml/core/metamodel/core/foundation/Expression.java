@@ -45,7 +45,6 @@ package org.netbeans.modules.uml.core.metamodel.core.foundation;
 import org.dom4j.Document;
 import org.dom4j.Node;
 
-import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 
 /**
@@ -99,7 +98,7 @@ public class Expression extends ValueSpecification implements IExpression{
 			{
 				UMLXMLManip.setNodeTextValue(this, "UML:Expression.body", "", false);
 			}
-                        
+			
 			if (listener != null)
 			{
 				listener.onBodyModified(this);

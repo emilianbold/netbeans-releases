@@ -97,6 +97,10 @@ public final class EntityDataObject extends MultiDataObject implements XMLDataOb
 //         new CookieManager (this, set, EntityCookieFactoryCreator.class);
     }
 
+    @Override
+    public final Lookup getLookup() {
+        return getCookieSet().getLookup();
+    }
 
     /**
      */
@@ -129,10 +133,6 @@ public final class EntityDataObject extends MultiDataObject implements XMLDataOb
     }
         
 
-    //
-    // class EntityDataNode
-    //
-
     /**
      *
      */
@@ -156,17 +156,5 @@ public final class EntityDataObject extends MultiDataObject implements XMLDataOb
         }
         
     } // end of class EntityDataNode
-
-
-//     //
-//     // interface EntityCookieFactoryCreator
-//     //
-
-//     /**
-//      *
-//      */
-//     public static interface EntityCookieFactoryCreator extends CookieFactoryCreator {
-        
-//     } // end: interface EntityCookieFactoryCreator
 
 }

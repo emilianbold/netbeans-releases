@@ -39,7 +39,6 @@
 
 package org.netbeans.test.web;
 
-import java.io.File;
 import java.io.IOException;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewProjectWizardOperator;
@@ -66,17 +65,12 @@ public class WebJSFProjectValidation extends WebProjectValidationEE5 {
 
     static {
         PROJECT_NAME = "WebJSFProject";
-        PROJECT_FOLDER = PROJECT_LOCATION + File.separator + PROJECT_NAME;
+//        PROJECT_FOLDER = PROJECT_LOCATION + File.separator + PROJECT_NAME;
     }
 
-    // name of sample project
-    
     protected static String URL_PATTERN_NULL = "The URL Pattern has to be entered.";
     protected static String URL_PATTERN_INVALID = "The URL Pattern is not valid.";
     // folder of sample project
-    protected TestURLDisplayer urlDisplayer;
-    private static final String BUILD_SUCCESSFUL = "BUILD SUCCESSFUL";
-    protected static int logIdx = 0;
 
     /** Need to be defined because of JUnit */
     public WebJSFProjectValidation(String name) {
@@ -87,9 +81,10 @@ public class WebJSFProjectValidation extends WebProjectValidationEE5 {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new WebJSFProjectValidation("testPreconditions"));
         suite.addTest(new WebJSFProjectValidation("testNewJSFWebProject"));
+        suite.addTest(new WebJSFProjectValidation("testRedeployProject"));
 //        suite.addTest(new WebJSFProjectValidation("testNewJSP"));
 //        suite.addTest(new WebJSFProjectValidation("testNewJSP2"));
-////        suite.addTest(new WebJSFProjectValidation("testJSPNavigator"));
+//        suite.addTest(new WebJSFProjectValidation("testJSPNavigator"));
 //        suite.addTest(new WebJSFProjectValidation("testNewServlet"));
 //        suite.addTest(new WebJSFProjectValidation("testNewServlet2"));
         suite.addTest(new WebJSFProjectValidation("testBuildProject"));
@@ -104,11 +99,11 @@ public class WebJSFProjectValidation extends WebProjectValidationEE5 {
 //        suite.addTest(new WebJSFProjectValidation("testCreateTagHandler"));
 //        suite.addTest(new WebJSFProjectValidation("testRunTag"));
 //        suite.addTest(new WebJSFProjectValidation("testNewHTML"));
-////        suite.addTest(new WebJSFProjectValidation("testHTMLNavigator"));
+//        suite.addTest(new WebJSFProjectValidation("testHTMLNavigator"));
 //        suite.addTest(new WebJSFProjectValidation("testRunHTML"));
 //        suite.addTest(new WebJSFProjectValidation("testNewSegment"));
 //        suite.addTest(new WebJSFProjectValidation("testNewDocument"));
-//        suite.addTest(new WebJSFProjectValidation("testStopServer"));
+        suite.addTest(new WebJSFProjectValidation("testStopServer"));
 //        suite.addTest(new WebJSFProjectValidation("testStartServer"));
 //        suite.addTest(new WebJSFProjectValidation("testBrowserSettings"));
 //        suite.addTest(new WebJSFProjectValidation("testFinish"));
@@ -135,7 +130,8 @@ public class WebJSFProjectValidation extends WebProjectValidationEE5 {
         nameStep.txtProjectName().setText("");
         nameStep.txtProjectName().typeText(PROJECT_NAME);
         nameStep.txtProjectLocation().setText("");
-        nameStep.txtProjectLocation().typeText(getProjectFolder(PROJECT_NAME));
+        String sFolder = getProjectFolder(PROJECT_NAME);
+        nameStep.txtProjectLocation().typeText(sFolder);
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
         serverStep.selectServer("GlassFish V2");

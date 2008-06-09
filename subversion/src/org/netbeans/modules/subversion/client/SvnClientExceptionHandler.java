@@ -98,11 +98,11 @@ public class SvnClientExceptionHandler {
     
     private final ISVNClientAdapter adapter;
     private final SvnClient client;
+    private final SvnClientDescriptor desc;    
     private final int handledExceptions;
     
     private static final String NEWLINE = System.getProperty("line.separator"); // NOI18N
     private static final String CHARSET_NAME = "ASCII7";                        // NOI18N
-  
     private class CertificateFailure {
         int mask;
         String error;
@@ -148,10 +148,11 @@ public class SvnClientExceptionHandler {
             
     static final String ACTION_CANCELED_BY_USER = org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_ActionCanceledByUser");
     
-    public SvnClientExceptionHandler(SVNClientException exception, ISVNClientAdapter adapter, SvnClient client, int handledExceptions) {
+    public SvnClientExceptionHandler(SVNClientException exception, ISVNClientAdapter adapter, SvnClient client, SvnClientDescriptor desc, int handledExceptions) {
         this.exception = exception;                
         this.adapter = adapter;
         this.client = client;
+        this.desc = desc;
         this.handledExceptions = handledExceptions;
         exceptionMask = getMask(exception.getMessage());
     }      
@@ -170,7 +171,13 @@ public class SvnClientExceptionHandler {
     }
          
     private boolean handleRepositoryConnectError() {        
-        SVNUrl url = getSVNUrl();
+        // try to get the repository url from the svnclientdescriptor 
+        SVNUrl url = desc != null ? desc.getSvnUrl() : null;
+        if(url == null) { 
+            // huh ??? - try to fallback to the url given by the error msg. 
+            // unfortunatelly - this musn't be the repo url but only the the remote host url
+            url = getSVNUrl();
+        }
         Repository repository = new Repository(Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
         repository.selectUrl(url, true);
         
@@ -196,7 +203,7 @@ public class SvnClientExceptionHandler {
 
     private boolean handleNoCertificateError() throws Exception {
         
-        SVNUrl url = getSVNUrl();
+        SVNUrl url = getSVNUrl(); // get the remote host url
         String realmString = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort(); // NOI18N
         String hostString = SvnUtils.ripUserFromHost(url.getHost());                                
         

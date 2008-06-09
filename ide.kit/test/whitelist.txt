@@ -5627,9 +5627,11 @@ org.openide.loaders.DataFolder$ListPCL
 org.openide.loaders.DataFolder$Paste
 org.openide.loaders.DataFolder$SortMode
 org.openide.loaders.DataLoader
+org.openide.loaders.DataLoader$1Rec
 org.openide.loaders.DataLoader$RecognizedFiles
 org.openide.loaders.DataLoaderPool
 org.openide.loaders.DataLoaderPool$1
+org.openide.loaders.DataLoaderPool$1MimeEnum
 org.openide.loaders.DataLoaderPool$DefaultLoader
 org.openide.loaders.DataLoaderPool$DefaultPool
 org.openide.loaders.DataLoaderPool$FolderLoader
@@ -5651,6 +5653,7 @@ org.openide.loaders.DataObject
 org.openide.loaders.DataObject$1
 org.openide.loaders.DataObject$1WrapRun
 org.openide.loaders.DataObject$Container
+org.openide.loaders.DataObject$Factory
 org.openide.loaders.DataObject$ModifiedRegistry
 org.openide.loaders.DataObject$Registry
 org.openide.loaders.DataObjectAccessorImpl

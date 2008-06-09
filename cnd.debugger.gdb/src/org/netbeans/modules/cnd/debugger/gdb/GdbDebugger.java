@@ -1017,6 +1017,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (!isTmp && getState().equals(STATE_SILENT_STOP) && pendingBreakpointMap.isEmpty()) {
                 setRunning();
             }
+        } else if (msg.startsWith("gdb: unknown target exception")) { // NOI18N
+            DialogDisplayer.getDefault().notify(
+                           new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
+                           "ERR_UnknownTargetException"))); // NOI18N
+            setExited();
+            finish(false);
         } else if (msg.startsWith("Copyright ") || // NOI18N
                 msg.startsWith("GDB is free software,") || // NOI18N
                 msg.startsWith("welcome to change it and") || // NOI18N
@@ -1101,6 +1107,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      */
     public void output(String msg) {
         if (iotab != null) {
+            if (msg.contains("PR_SYSEXIT")) { // NOI18N
+                DialogDisplayer.getDefault().notify(
+                       new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
+                       "ERR_ExitedFromSYSEXIT"))); // NOI18N
+                setExited();
+                finish(true);
+            }
             if (!(firstOutput && Utilities.getOperatingSystem() == Utilities.OS_SOLARIS &&
                     msg.startsWith("PR_"))) { // NOI18N
                 firstOutput = false;

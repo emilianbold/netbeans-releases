@@ -101,6 +101,9 @@ final class ClassPathProviderMerger implements LookupMerger<ClassPathProvider> {
                 }
             }
             ProxyClassPathImplementation result = new ProxyClassPathImplementation(defaultProvider, lookup, file, type);
+            if (!result.hasAnyResults()) {
+                return null;
+            }
             ClassPath cp = ClassPathFactory.createClassPath(result);
             synchronized (cpCache) {
                 Map<String, ClassPath> cptype = cpCache.get(file);
@@ -130,6 +133,7 @@ final class ClassPathProviderMerger implements LookupMerger<ClassPathProvider> {
         private PropertyChangeListener classPathsListener;
         private FileObject file;
         private String type;
+        private boolean hasAny = false;
 
         public ProxyClassPathImplementation(ClassPathProvider dominant, Lookup context, FileObject fo, String type) {
             assert dominant != null;
@@ -149,10 +153,16 @@ final class ClassPathProviderMerger implements LookupMerger<ClassPathProvider> {
             
         }
         
+        boolean hasAnyResults() {
+            return hasAny;
+        }
+        
         private void checkProviders() {
+            hasAny = false;
             List<PathResourceImplementation> impls = new ArrayList<PathResourceImplementation>();
             ClassPath mainResult = mainProvider.findClassPath(file, type);
             if (mainResult != null) {
+                hasAny = true;
                 impls.add(getClassPathImplementation(mainResult));
             }
             
@@ -160,6 +170,7 @@ final class ClassPathProviderMerger implements LookupMerger<ClassPathProvider> {
                 ClassPath path = prvd.findClassPath(file, type);
                 if (path != null) {
                     impls.add(getClassPathImplementation(path));
+                    hasAny = true;
                 }
             }
             synchronized (this) {

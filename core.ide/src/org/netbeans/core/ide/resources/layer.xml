@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
     <folder name="Services">
         <folder name="IndentEngine">
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/indentEngines.gif"/>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ide.resources.Bundle"/>
             <attr name="helpID" stringvalue="org.netbeans.core.services.IndentEngines"/>
         </folder>
         <folder name="MIMEResolver">
@@ -67,7 +67,7 @@ made subject to such option by the copyright holder.
         <folder name="Services">
             <folder name="IndentEngine">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/indentEngines.gif"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ide.resources.Bundle"/>
             </folder>
         </folder>
     </folder>
@@ -98,16 +98,13 @@ made subject to such option by the copyright holder.
             <attr name="helpID" stringvalue="org.netbeans.core.ControlPanelNode"/>
             
             <folder name="IDEConfiguration"> <!-- PENDING rename to somethink like APP Settings or so -->
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
 
-                <folder name="LookAndFeel"> 
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-                </folder>
+                <folder name="LookAndFeel"/>
                 
             </folder>        
             
             <folder name="Editing">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ide.resources.Bundle"/>
                 <file name="IndentationEngines.shadow">
                         <attr name="originalFile" stringvalue="Services/IndentEngine"/>
                 </file>
@@ -116,7 +113,7 @@ made subject to such option by the copyright holder.
         </folder>
         
         <folder name="Runtime">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ide.resources.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/environment.gif"/>
         </folder> <!-- Runtime -->
         
@@ -134,10 +131,10 @@ made subject to such option by the copyright holder.
              org/netbeans/core/ui/resources/Standard.xml also, and sync
              the changes if appropriate -->
         <file name="Standard.xml" url="Standard.xml">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ide.resources.Bundle"/>
         </file>
         <file name="Debugging.xml" url="Debugging.xml">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ide.resources.Bundle"/>
         </file>
  
     </folder> <!-- Toolbars -->

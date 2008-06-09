@@ -110,6 +110,8 @@ public interface SharedConstants {
     
     public static String INPUT_TYPE_KEY = "inputType";
     
+    public static String IS_RELATION_INPUT_STATIC = "isRelationInputStatic";
+    
     public static String INPUT_MAX_COUNT_KEY = "inputMaxCount";
     
     public static String INPUT_ID_LIST_KEY = "inputIdList";

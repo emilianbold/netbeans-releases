@@ -43,6 +43,8 @@ package org.netbeans.modules.gsfret.editor.completion;
 import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.editor.completion.Completion;
@@ -136,7 +138,17 @@ public class GsfCompletionDoc implements CompletionDocumentation {
         
         ElementHandle handle = language.getCompletionProvider().resolveLink(link, elementHandle);
         if (handle != null) {
-            return new GsfCompletionDoc(controller, handle, null);
+            URL url = null;
+            if(handle instanceof ElementHandle.UrlHandle) {
+                String url_text = ((ElementHandle.UrlHandle)handle).getUrl();
+                try {
+                    url = new URL(url_text);
+                } catch (MalformedURLException mue) {
+                    Logger.getLogger("global").log(Level.INFO, null, mue);
+                }
+            }
+            
+            return new GsfCompletionDoc(controller, handle, url);
         }
         return null;
     }

@@ -302,6 +302,15 @@ public class ProprietarySecurityPolicyModelHelper {
         return null;
     }
     
+    public static String getPreSTSWstVersion(Binding b) {
+        Policy p = PolicyModelHelper.getPolicyForElement(b);
+        PreconfiguredSTS ps = getPreconfiguredSTS(p);
+        if (ps != null) {
+            return ps.getTrustVersion();
+        }
+        return null;
+    }
+
     public static boolean isRenewExpired(Binding b) {
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         SCClientConfiguration sc = getSCClientConfiguration(p);
@@ -1420,6 +1429,26 @@ public class ProprietarySecurityPolicyModelHelper {
         }
     }
     
+    public static void setPreSTSWstVersion(Binding b, String trustVersion) {
+        WSDLModel model = b.getModel();
+        Policy p = PolicyModelHelper.getPolicyForElement(b);
+        PreconfiguredSTS ps = getPreconfiguredSTS(p);
+        if ((ps == null) || (p == null)) {
+            ps = createPreconfiguredSTS(b);
+        }
+        boolean isTransaction = model.isIntransaction();
+        if (!isTransaction) {
+            model.startTransaction();
+        }
+        try {
+            ps.setTrustVersion(trustVersion);
+        } finally {
+            if (!isTransaction) {
+                model.endTransaction();
+            }
+        }
+    }
+
     public static void setMaxClockSkew(Binding b, String value, boolean client) {
         WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);

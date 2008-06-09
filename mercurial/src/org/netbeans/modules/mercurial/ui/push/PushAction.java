@@ -123,16 +123,16 @@ public class PushAction extends ContextAction {
         
     }
                 
-    private static void notifyUpdatedFiles(File pushFile, List<String> list){
-        // When hg output -v is called the output is
-        // resolving manifests
-        // getting file
-        // ...
+    public static void notifyUpdatedFiles(File repo, List<String> list){
+        // When hg -v output, or hg -v unbundle or hg -v pull is called 
+        // the output contains line
+        // getting <file>
+        // for each file updated.
         //  
         for (String line : list) {
             if (line.startsWith("getting ")) {
                 String name = line.substring(8);
-                File file = new File (pushFile, name);
+                File file = new File (repo, name);
                 Mercurial.getInstance().notifyFileChanged(file);
             }
         }

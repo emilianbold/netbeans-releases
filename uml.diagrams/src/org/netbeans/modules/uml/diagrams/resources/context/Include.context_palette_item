@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<palette_item version="1.0">
+  <element name="Include" />
+  <icon16 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/include.png" />
+  <icon32 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/include-32.png" />
+
+  <description localizing-bundle="org.netbeans.modules.uml.diagrams.resources.context.Bundle"
+               display-name-key="NAME_Include" 
+               tooltip-key="HINT_Include" />
+</palette_item>

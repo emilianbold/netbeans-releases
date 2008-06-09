@@ -48,7 +48,6 @@ package org.netbeans.modules.uml.ui.support.drawingproperties;
 
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
-import org.netbeans.modules.uml.ui.support.applicationmanager.IPresentationResourceMgr;
 
 /**
  * @author jingmingm
@@ -125,15 +124,15 @@ public class DrawingProperty implements IDrawingProperty, Comparable
 	public ETPairT<String, String> getDisplayName()
 	{
 		ETPairT<String, String> retVal = null;
-		
-		if (m_DrawEngineName.length() > 0 && m_ResourceName.length() > 0)
-		{
-			IPresentationResourceMgr pResourceMgr = ProductHelper.getPresentationResourceMgr();
-			if (pResourceMgr != null)
-			{
-				retVal = pResourceMgr.getDisplayName(m_DrawEngineName, m_ResourceName);
-			}
-		}
+		// TODO: meteora
+//		if (m_DrawEngineName.length() > 0 && m_ResourceName.length() > 0)
+//		{
+//			IPresentationResourceMgr pResourceMgr = ProductHelper.getPresentationResourceMgr();
+//			if (pResourceMgr != null)
+//			{
+//				retVal = pResourceMgr.getDisplayName(m_DrawEngineName, m_ResourceName);
+//			}
+//		}
 		
 		return retVal;
 	}
@@ -141,15 +140,15 @@ public class DrawingProperty implements IDrawingProperty, Comparable
 	public boolean isAdvanced()
 	{
 		boolean bAdvanced = false;
-      
-		if (m_DrawEngineName.length() > 0 && m_ResourceName.length() > 0)
-		{
-			IPresentationResourceMgr pResourceMgr = ProductHelper.getPresentationResourceMgr();
-			if (pResourceMgr != null)
-			{
-				bAdvanced = pResourceMgr.isAdvanced(m_DrawEngineName, m_ResourceName);
-		   }
-		}
+      // TODO: meteora
+//		if (m_DrawEngineName.length() > 0 && m_ResourceName.length() > 0)
+//		{
+//			IPresentationResourceMgr pResourceMgr = ProductHelper.getPresentationResourceMgr();
+//			if (pResourceMgr != null)
+//			{
+//				bAdvanced = pResourceMgr.isAdvanced(m_DrawEngineName, m_ResourceName);
+//		   }
+//		}
 		
 		return bAdvanced;
 	}
@@ -157,21 +156,22 @@ public class DrawingProperty implements IDrawingProperty, Comparable
 	public String toString()
 	{
 		String displayName = getResourceName();
-		IPresentationResourceMgr pMgr = ProductHelper.getPresentationResourceMgr();
-		if (pMgr != null)
-		{
-			// Convert that name to something more reasonable
-			ETPairT<String, String> val = pMgr.getDisplayName(getDrawEngineName(), getResourceName());
-			if (val != null)
-			{
-				displayName = val.getParamOne();
-			}
-
-			if (displayName == null || displayName.length() == 0)
-			{
-				displayName = getResourceName();
-			}
-		}
+                // TODO: meteora
+//		IPresentationResourceMgr pMgr = ProductHelper.getPresentationResourceMgr();
+//		if (pMgr != null)
+//		{
+//			// Convert that name to something more reasonable
+//			ETPairT<String, String> val = pMgr.getDisplayName(getDrawEngineName(), getResourceName());
+//			if (val != null)
+//			{
+//				displayName = val.getParamOne();
+//			}
+//
+//			if (displayName == null || displayName.length() == 0)
+//			{
+//				displayName = getResourceName();
+//			}
+//		}
 		return displayName;
 	}
 

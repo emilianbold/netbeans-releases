@@ -39,15 +39,14 @@
 
 package org.netbeans.modules.groovy.grailsproject.ui.wizards;
 
-import java.io.IOException;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.groovy.grailsproject.execution.LineSnooper;
+import org.netbeans.modules.extexecution.api.input.LineProcessor;
 
 /**
  *
  * @author Petr Hejl
  */
-public class ProgressSnooper implements LineSnooper {
+public class ProgressSnooper implements LineProcessor {
 
     private final ProgressHandle progress;
 
@@ -63,13 +62,17 @@ public class ProgressSnooper implements LineSnooper {
         this.step = step;
     }
 
-    public void lineFilter(String line) throws IOException {
+    public void processLine(String line) {
         value += step;
         if (value > max) {
                         value = max;
         }
 
         progress.progress(value);
+    }
+
+    public void reset() {
+        // noop
     }
 
 }

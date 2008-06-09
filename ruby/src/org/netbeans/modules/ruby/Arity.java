@@ -123,7 +123,6 @@ public final class Arity {
         return getCallArity(call).min > 0;
     }
     
-    @SuppressWarnings(value = "unchecked")
     private void initializeFromCall(Node node) {
         if (node instanceof FCallNode) {
             Node argsNode = ((FCallNode)node).getArgsNode();
@@ -169,12 +168,18 @@ public final class Arity {
             List<Node> children = node.childNodes();
 
             for (Node child : children) {
+                if (child.isInvisible()) {
+                    continue;
+                }
                 initializeFromCall(child);
             }
         } else if (node instanceof ListNode) {
             List<Node> children = node.childNodes();
 
             for (Node child : children) {
+                if (child.isInvisible()) {
+                    continue;
+                }
                 if (AstUtilities.isCall(child)) {
                     min++;
 
@@ -205,7 +210,6 @@ public final class Arity {
         }
     }
 
-    @SuppressWarnings(value = "unchecked")
     public static Arity getDefArity(Node method) {
         assert method instanceof DefsNode || method instanceof DefnNode;
 
@@ -228,7 +232,6 @@ public final class Arity {
         }
     }
 
-    @SuppressWarnings(value = "unchecked")
     private void initializeFromDef(Node node) {
         if (node instanceof ArgsNode) {
             ArgsNode argsNode = (ArgsNode)node;
@@ -262,6 +265,9 @@ public final class Arity {
             List<Node> children = node.childNodes();
 
             for (Node child : children) {
+                if (child.isInvisible()) {
+                    continue;
+                }
                 initializeFromDef(child);
             }
         }

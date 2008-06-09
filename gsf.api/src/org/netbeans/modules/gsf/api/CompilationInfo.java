@@ -102,9 +102,8 @@ public abstract class CompilationInfo {
         return fo;
     }
 
-    /** @todo Remove throws-clause */
     @CheckForNull
-    public Document getDocument() throws IOException {
+    public Document getDocument() {
         if (doc == null) {
             if (this.fo == null) {
                 return null;

@@ -393,34 +393,42 @@ public class SourcePath {
         JPDAThread t,
         String stratumn
     ) {
+        return annotate(t, stratumn, true);
+    }
+    
+    public Object annotate (
+        JPDAThread t,
+        String stratumn,
+        boolean isCurrent
+    ) {
         int lineNumber = t.getLineNumber (stratumn);
         if (lineNumber < 1) return null;
-        //AST ast = t.getAST(stratumn);
-        Operation operation = t.getCurrentOperation();
         String url;
         try {
             url = getURL (convertSlash (t.getSourcePath (stratumn)), true);
         } catch (AbsentInformationException e) {
             url = getURL (convertClassNameToRelativePath (t.getClassName ()), true);
         }
-        List operationsAnn = annotateOperations(debugger, url, operation, t.getLastOperations(), lineNumber);
+        Operation operation;
+        List operationsAnn;
+        if (isCurrent) {
+            operation = t.getCurrentOperation();
+            operationsAnn = annotateOperations(debugger, url, operation, t.getLastOperations(), lineNumber);
+        } else {
+            operation = null;
+            operationsAnn = Collections.EMPTY_LIST;
+        }
         if (operation == null) {
             if (operationsAnn.size() == 0) {
                 return EditorContextBridge.getContext().annotate (
                     url,
                     lineNumber,
-                    EditorContext.CURRENT_LINE_ANNOTATION_TYPE,
-                    debugger
+                    isCurrent ?
+                        EditorContext.CURRENT_LINE_ANNOTATION_TYPE :
+                        EditorContext.OTHER_THREAD_ANNOTATION_TYPE,
+                    debugger,
+                    t
                 );
-            } else {
-                /*
-                operationsAnn.add(EditorContextBridge.annotate (
-                    url,
-                    lineNumber,
-                    EditorContext.CURRENT_LINE_ANNOTATION_TYPE,
-                    debugger
-                ));
-                 */
             }
         }
         return operationsAnn;

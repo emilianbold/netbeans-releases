@@ -280,4 +280,11 @@ public class IntroduceHintTest extends HintTestBase {
         applyHint(this, hint, "testfiles/introduce13.rb",
                 "^c = 1", "d = 2^", "Extract Method...");
     }
+
+    public void testWrongIntroduce() throws Exception {
+        IntroduceHint hint = new IntroduceHint();
+        IntroduceHint.testName = "mymethod";
+        applyHint(this, hint, "testfiles/wrong-extract-method.rb",
+                "^attr_accessor :x", "helper :all^", "Extract Method...");
+    }
 }

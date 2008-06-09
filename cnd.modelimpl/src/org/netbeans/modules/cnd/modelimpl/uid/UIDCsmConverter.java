@@ -131,7 +131,11 @@ public class UIDCsmConverter {
         Collection<T> out = UIDsToList(uids, false);
         return out;
     }
-    
+
+    public static <T extends CsmDeclaration> Iterator<T> UIDsToDeclarationsFiltered(Collection<CsmUID<T>> uids, CsmFilter filter) {
+        return new LazyCsmCollection<T, T>(new ArrayList<CsmUID<T>>(uids), true).iterator(filter);
+    }
+
     public static <T extends CsmDeclaration> Collection<T> UIDsToDeclarationsUnsafe(Collection<CsmUID<T>> uids) {
         Collection<T> out = UIDsToList(uids, true);
         return out;

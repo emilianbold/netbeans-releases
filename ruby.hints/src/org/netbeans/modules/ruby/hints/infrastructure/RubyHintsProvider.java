@@ -287,10 +287,12 @@ public class RubyHintsProvider implements HintsProvider {
             List<Hint> result) {
         applyRules(manager, context, node.nodeId, node, path, hints, result);
         
-        @SuppressWarnings(value = "unchecked")
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            if (child.isInvisible()) {
+                continue;
+            }
             if (isCancelled()) {
                 return;
             }
