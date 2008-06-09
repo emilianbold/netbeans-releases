@@ -174,6 +174,7 @@ public class ContainerWidget extends Widget
         
         createActions(DesignerTools.SELECT).addAction(acceptAction);
         createActions(DesignerTools.PALETTE).addAction(new WidgetAcceptAction(provider));
+        createActions(DesignerTools.CONTEXT_PALETTE).addAction(acceptAction);
     }
     
     private boolean addChildNode(INamespace namespace, Object nodeData, Widget node)
@@ -368,10 +369,17 @@ public class ContainerWidget extends Widget
     protected boolean isFullyContained(Widget widget)
     {
         Rectangle area = widget.getClientArea();
-        Rectangle sceneArea = widget.convertLocalToScene(area);
         
-        Rectangle localArea = convertSceneToLocal(sceneArea);
-        return getClientArea().contains(localArea);
+        boolean retVal = false;
+        if(area != null)
+        {
+            Rectangle sceneArea = widget.convertLocalToScene(area);
+
+            Rectangle localArea = convertSceneToLocal(sceneArea);
+            retVal = getClientArea().contains(localArea);
+        }
+        
+        return retVal;
     }
     
     public class ContainerAcceptProvider extends SceneAcceptProvider

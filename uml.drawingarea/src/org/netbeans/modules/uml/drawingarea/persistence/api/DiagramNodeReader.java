@@ -54,5 +54,5 @@ public interface DiagramNodeReader {
     public void load(NodeInfo nodeReader);
     
     public void loadDependencies(NodeInfo nodeReader);
-    
+
 }
