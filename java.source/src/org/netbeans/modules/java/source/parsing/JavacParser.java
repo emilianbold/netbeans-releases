@@ -274,7 +274,7 @@ public class JavacParser extends Parser {
                         this.changedMethod = null;
                     }
                     if (_changedMethod != null && ciImpl != null) {
-                        LOGGER.fine("\t:trying partial reparse");                           //NOI18N
+                        LOGGER.fine("\t:trying partial reparse:\n" + _changedMethod.first.getText());                           //NOI18N
                         needsFullReparse = !reparseMethod(ciImpl, snapshot, _changedMethod.second, _changedMethod.first.getText());
                     }
                 }
