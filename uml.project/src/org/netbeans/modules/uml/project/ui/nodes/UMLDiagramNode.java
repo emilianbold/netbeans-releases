@@ -363,72 +363,68 @@ public class UMLDiagramNode extends UMLElementNode
             DialogDisplayer.getDefault().notify(msg);
             return;
         }
-        
-        int yesToSave = UMLDiagramNode.RESULT_CANCEL;
-        String nodeName = getName();
-        IProxyDiagram pDiagram = getDiagram();
+        String nodeName = getName();  // get the node's name
+        IProxyDiagram proxyDiagram = getDiagram();
         IDiagram diagram = null;
-        String oldName = null;
+        String diagramName = null;
+        boolean proceed = true;
         
-        if (pDiagram != null )
+        if (proxyDiagram != null )
         {
-            oldName = pDiagram.getName();
-            if (nodeName.equals(""))  // Set the node name the very first time
+            if (nodeName.equals(""))  // this's the case when a diagram is first open
             {   
-                setNodeName (oldName, newName);
+                setNodeName (nodeName, newName);
                 return;
             }
-            
-            if ( pDiagram.isOpen())
+            diagramName = proxyDiagram.getName();  // get the diagram's name
+            if ( proxyDiagram.isOpen())
             {
-                diagram = pDiagram.getDiagram();
-                if (!newName.equals(oldName) && // diagram name not equals new name
-                    !nodeName.equals(newName))  // diagram's node name not new name
+                diagram = proxyDiagram.getDiagram();  // get UIDiagram object
+                boolean dirty =  diagram.isDirty();
+                
+                // take care the diagram name first
+                if (!newName.equals(diagramName)) // diagram name not equals to new name
                 {
-                    // if diagram is modified, ask users if they want to save the diagram, 
-                    // else if diagram is not modified, go ahead to update diagram 
-                    // with new diagram name.
-                    yesToSave = diagram.isDirty() ? 
-                        askToSaveDiagram(oldName) :
-                        UMLDiagramNode.RESULT_YES;
-                }
-
-                // Base on the value of yesToSave flag, the following actions are 
-                // executed:
-                // - if (yesToSave == yes), we change the diagram name, update the 
-                // diagram tab name, save the diagram and change the diagram node 
-                // name on project tree.
-                // - else (yesToSave == no), we do NOT change diagram name, diagram 
-                // node name nor save the diagram. 
-
-                if (yesToSave == UMLDiagramNode.RESULT_YES)
-                {       
-                    try
-                    {   // change diagram name and diagram tab name
-                        pDiagram.setName(newName);
-                        if (ProductHelper.getShowAliasedNames())
-                        {
-                            pDiagram.setAlias(newName);
-                        }
-                        diagram.save(); // autosave diagram after rename
-                    }
-                    catch (IOException ex)
+                    if ( dirty )   // ask users if they want to save diagram before changing name
                     {
-                        Exceptions.printStackTrace(ex);
+                         proceed = (askToSaveDiagram(diagramName) == UMLDiagramNode.RESULT_YES);
                     }
-                    setNodeName (oldName, newName);
-                } 
+                    
+                    proceed = (!dirty || proceed);
+                    
+                    if (proceed) // go ahead changing the diagram name and save the diagram
+                    {
+                        try
+                        {   // change diagram name and diagram tab name
+                            proxyDiagram.setName(newName);
+                            if (ProductHelper.getShowAliasedNames())
+                            {
+                                proxyDiagram.setAlias(newName);
+                            }
+                            diagram.save(); // autosave diagram after rename
+                        }
+                        catch (IOException ex)
+                        {
+                            Exceptions.printStackTrace(ex);
+                        }
+                     }
+                }
+                
+                // take care the diagram node on project tree
+                if (!getName().equals(newName) &&  proceed)  
+                {
+                    setNodeName (diagramName, newName);
+                }
             }
             else // Diagram is not open
             {
                 // TODO: update the diagram name from diagram file using file IO.
                 // Since the diagram is not open, no need to check for diagram dirty state.
-                pDiagram.setName(newName);
-                setNodeName (oldName, newName);
+                proxyDiagram.setName(newName);
+                setNodeName (nodeName, newName);
             }
         }
     }
-    
     
     private void setNodeName (String oldName, String newName)
     {
