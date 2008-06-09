@@ -198,7 +198,7 @@ public class TaskProcessor {
                 if (!invalid) {
                     currentResult = parser.getResult(userTask, null);
                 }                             
-                if (currentResult == null) {
+                else {
                     boolean parseSuccess = false;
                     try {
                         parser.parse(snapshot, userTask, null);
@@ -601,7 +601,7 @@ public class TaskProcessor {
                                             if (!invalid) {
                                                 currentResult = parser.getResult(r.task, event);
                                             }                                        
-                                            if (currentResult == null) {
+                                            else {
                                                 boolean parseSuccess = false;
                                                 try {
                                                     parser.parse(source.createSnapshot(), r.task, event);
