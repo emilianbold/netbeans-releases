@@ -45,6 +45,8 @@ import java.util.Iterator;
 
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.parsing.impl.ParserManagerImpl;
+import org.netbeans.modules.parsing.impl.SourceAccessor;
+import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -105,8 +107,30 @@ public final class ResultIterator {
             }           
         }
         if (parser == null) throw new ParseException ();
-        parser.parse (snapshot, task, null);
-        return parser.getResult (task, null);
+        final Source source = snapshot.getSource();
+        boolean invalid;        
+        synchronized (source) {
+            invalid = SourceAccessor.getINSTANCE().getFlags(source).remove(SourceFlags.INVALID);
+        }        
+        Result result;
+        if (!invalid) {
+            result = parser.getResult (task, null);
+        }
+        else {
+            boolean parseSuccess = false;
+            try {
+                parser.parse (snapshot, task, null);
+                result = parser.getResult (task, null);
+                parseSuccess = true;
+            } finally {
+               if (invalid && !parseSuccess) {
+                   synchronized (source ) {
+                       SourceAccessor.getINSTANCE().getFlags(source).add(SourceFlags.INVALID); //Rollback of optimistic update
+                   }
+               }
+            }
+        }
+        return result;
     }
     
     /**
