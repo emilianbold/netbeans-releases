@@ -108,7 +108,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-time">
   <p>
-   XXX no answer for arch-time
+    Design two weeks, implementation of API and basic content providers about 4-5 weeks,
+    stabilization three weeks, all estimates in manwork. Initial version should
+    be available in release 6.5 M1, full version in release 6.5 M2.
   </p>
  </answer>
 
@@ -224,7 +226,10 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-what">
   <p>
-   XXX no answer for arch-what
+    QuickSearch API and its implementations provides way for end user to learn
+    system earlier and easier and also to find various things in the system more
+    quickly, conveniently and in standard way.
+    Main project page is on nb wiki, http://wiki.netbeans.org/QuickSearch
   </p>
  </answer>
 
@@ -259,7 +264,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-deprecation">
   <p>
-   XXX no answer for compat-deprecation
+    QuickSearch API is new API, so no deprecations for now.
   </p>
  </answer>
 
@@ -277,7 +282,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-i18n">
   <p>
-   XXX no answer for compat-i18n
+    Yes.
   </p>
  </answer>
 
@@ -291,7 +296,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-standards">
   <p>
-   XXX no answer for compat-standards
+   Infrastructure module offers SPI for content provider implementors and
+   implements Request-Response pattern for communication between API side
+   and client module side.
   </p>
  </answer>
 
@@ -313,7 +320,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-version">
   <p>
-   XXX no answer for compat-version
+    Yes, module can coexist, as no settings are persistent now.
   </p>
  </answer>
 
@@ -331,7 +338,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-jre">
   <p>
-   XXX no answer for dep-jre
+    JRE 1.5 and higher is needed, as Java 1.5 language constructs are used.
   </p>
  </answer>
 
@@ -344,7 +351,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-jrejdk">
   <p>
-   XXX no answer for dep-jrejdk
+    JRE is enough.
   </p>
  </answer>
 
@@ -397,7 +404,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-non-nb">
   <p>
-   XXX no answer for dep-non-nb
+    No external dependencies.
   </p>
  </answer>
 
@@ -425,7 +432,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-platform">
   <p>
-   XXX no answer for dep-platform
+    Works on all platforms, no OS dependency.
   </p>
  </answer>
 
@@ -449,7 +456,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-dependencies">
   <p>
-   XXX no answer for deploy-dependencies
+    Nothing, regular depencency is enough.
   </p>
  </answer>
 
@@ -477,7 +484,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-jar">
   <p>
-   XXX no answer for deploy-jar
+    One module JAR, no extras.
   </p>
  </answer>
 
@@ -493,7 +500,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-nbm">
   <p>
-   XXX no answer for deploy-nbm
+    Yes, can be deployed via UC.
   </p>
  </answer>
 
@@ -514,7 +521,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-packages">
   <p>
-   XXX no answer for deploy-packages
+    API package is intentionally public, rest is not public.
   </p>
  </answer>
 
@@ -532,7 +539,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-shared">
   <p>
-   XXX no answer for deploy-shared
+    Module can be installed anywhere.
   </p>
  </answer>
 
@@ -552,7 +559,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-ant-tasks">
   <p>
-   XXX no answer for exec-ant-tasks
+    No ant tasks.
   </p>
  </answer>
 
@@ -568,7 +575,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-classloader">
   <p>
-   XXX no answer for exec-classloader
+    No own class loader.
   </p>
  </answer>
 
@@ -591,7 +598,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-component">
   <p>
-   XXX no answer for exec-component
+    No properties.
   </p>
  </answer>
 
@@ -611,7 +618,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-introspection">
   <p>
-   XXX no answer for exec-introspection
+   No.
   </p>
  </answer>
 
@@ -629,7 +636,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-privateaccess">
   <p>
-   XXX no answer for exec-privateaccess
+    No.
   </p>
  </answer>
 
@@ -647,7 +654,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-process">
   <p>
-   XXX no answer for exec-process
+    No external process.
   </p>
  </answer>
 
@@ -675,7 +682,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-property">
   <p>
-   XXX no answer for exec-property
+    No properties, I plan to use Logger and UI gesture collector in future.
   </p>
  </answer>
 
@@ -693,7 +700,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-reflection">
   <p>
-   XXX no answer for exec-reflection
+    No Java Reflection.
   </p>
  </answer>
 
@@ -725,7 +732,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-threading">
   <p>
-   XXX no answer for exec-threading
+    Content providers are called outside EQ thread to not block system UI, 
+    RequestProcessor is used. Module's internal data model of provider's results
+    is synchronized to be able to work both with providers and UI code.
   </p>
  </answer>
 
@@ -744,7 +753,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="format-clipboard">
   <p>
-   XXX no answer for format-clipboard
+    No direct clipboard access, just Swing controls are used that communicate with clipboard.
   </p>
  </answer>
 
@@ -762,7 +771,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="format-dnd">
   <p>
-   XXX no answer for format-dnd
+    No direcr DnD, same as for clipboard.
   </p>
  </answer>
 
@@ -793,7 +802,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="format-types">
   <p>
-   XXX no answer for format-types
+    No file IO.
   </p>
  </answer>
 
@@ -825,7 +834,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-lookup">
   <p>
-   XXX no answer for lookup-lookup
+    Infrastructure requests providers to create own lookup and is searching in
+    it for capabilities (description) which are then displayed in QuickSearch UI.
   </p>
  </answer>
 
@@ -842,7 +852,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-register">
   <p>
-   XXX no answer for lookup-register
+        No, see lookup answer.
   </p>
  </answer>
 
@@ -859,7 +869,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-remove">
   <p>
-   XXX no answer for lookup-remove
+    No.
   </p>
  </answer>
 
@@ -886,7 +896,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-huge_dialogs">
   <p>
-   XXX no answer for perf-huge_dialogs
+    No huge dialogs.
   </p>
  </answer>
 
@@ -913,7 +923,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-limit">
   <p>
-   XXX no answer for perf-limit
+    No practical limit.
   </p>
  </answer>
 
@@ -927,7 +937,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-mem">
   <p>
-   XXX no answer for perf-mem
+    Small memory consumption, only up to a few results items per provider,
+    so say several KBs of data, cleared after each search.
   </p>
  </answer>
 
@@ -949,7 +960,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-menus">
   <p>
-   XXX no answer for perf-menus
+    No dynamic context menus.
   </p>
  </answer>
 
@@ -973,7 +984,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-progress">
   <p>
-   XXX no answer for perf-progress
+    Yes, providers can run their search for a long time. See threading anwer for
+    implemented solution.
   </p>
  </answer>
 
@@ -992,7 +1004,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-scale">
   <p>
-   XXX no answer for perf-scale
+    Number and speed of individual content providers. See threading anwer for
+    implemented solution.
   </p>
  </answer>
 
@@ -1010,7 +1023,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-spi">
   <p>
-   XXX no answer for perf-spi
+    Code from SPI clients runs in isolated thread and Request-Response API pattern
+    is implemented to enable clients to compute results iteratively and stop
+    whenever desirable.
   </p>
  </answer>
 
@@ -1023,7 +1038,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-startup">
   <p>
-   XXX no answer for perf-startup
+   No.
   </p>
  </answer>
 
@@ -1037,7 +1052,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-wakeup">
   <p>
-   XXX no answer for perf-wakeup
+   No.
   </p>
  </answer>
 
@@ -1058,7 +1073,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-file">
   <p>
-   XXX no answer for resources-file
+    No.
   </p>
  </answer>
 
@@ -1081,7 +1096,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-layer">
   <p>
-   XXX no answer for resources-layer
+    Yes, Quick Search UI is plugged into NB window system through xml layer.
+    Moreover, Quick Search API defines layer structure for its clients, 
+    explained in use cases reply.
   </p>
  </answer>
 
@@ -1102,7 +1119,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-mask">
   <p>
-   XXX no answer for resources-mask
+    No.
   </p>
  </answer>
 
@@ -1127,7 +1144,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-preferences">
   <p>
-   XXX no answer for resources-preferences
+    No preferences API for now.
   </p>
  </answer>
 
@@ -1147,7 +1164,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-read">
   <p>
-   XXX no answer for resources-read
+    Yes, properly described in use-cases section.
   </p>
  </answer>
 
@@ -1165,7 +1182,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="security-grant">
   <p>
-   XXX no answer for security-grant
+   No.
   </p>
  </answer>
 
@@ -1182,7 +1199,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="security-policy">
   <p>
-   XXX no answer for security-policy
+   No.
   </p>
  </answer>
 
