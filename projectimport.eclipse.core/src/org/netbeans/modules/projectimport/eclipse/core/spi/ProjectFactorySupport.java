@@ -152,8 +152,11 @@ public class ProjectFactorySupport {
         all.addAll(model.getEclipseTestSourceRoots());
         all.addAll(model.getEclipseClassPathEntries());
         for (DotClassPathEntry entry : all) {
-            sb.append(encodeDotClassPathEntryToKey(entry));
-            sb.append(";");
+            String oneItem = encodeDotClassPathEntryToKey(entry);
+            if (oneItem != null) {
+                sb.append(oneItem);
+                sb.append(";");
+            }
         }
         // TODO: commented out JRE till EclipseProjectReference.getEclipseProject is fixed.
         //sb.append("jre="+model.getJavaPlatform().getDisplayName()+";");
@@ -164,7 +167,11 @@ public class ProjectFactorySupport {
     }
     
     private static String encodeDotClassPathEntryToKey(DotClassPathEntry entry) {
-        return getKindTag(entry.getKind()) + "=" + getValueTag(entry);
+        String value = getValueTag(entry);
+        if (value.length() == 0) {
+            return null;
+        }
+        return getKindTag(entry.getKind()) + "=" + value;
     }
     
     private static String getKindTag(DotClassPathEntry.Kind kind) {
