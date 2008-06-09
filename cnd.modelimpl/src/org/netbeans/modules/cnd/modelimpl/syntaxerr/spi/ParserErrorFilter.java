@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.syntaxerr;
+package org.netbeans.modules.cnd.modelimpl.syntaxerr.spi;
 
 import antlr.RecognitionException;
 import java.util.Collection;
@@ -69,9 +69,9 @@ public abstract class ParserErrorFilter {
         
         
         @Override
-        public void filter(Collection<RecognitionException> parserErrors, Collection<CsmErrorInfo> result,BaseDocument doc) {
+        public void filter(Collection<RecognitionException> parserErrors, Collection<CsmErrorInfo> result, ReadOnlyTokenBuffer tokenBuffer, BaseDocument doc) {
             for( ParserErrorFilter filter : res.allInstances() ) {
-                filter.filter(parserErrors, result, doc);
+                filter.filter(parserErrors, result, tokenBuffer, doc);
             }
         }
     }
@@ -96,5 +96,6 @@ public abstract class ParserErrorFilter {
     abstract public void filter(
             Collection<RecognitionException> parserErrors, 
             Collection<CsmErrorInfo> result,
+            ReadOnlyTokenBuffer tokenBuffer,
             BaseDocument doc);
 }
