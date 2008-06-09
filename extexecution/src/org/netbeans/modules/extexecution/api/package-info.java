@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,46 +39,10 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.spi.client;
-
-import java.io.IOException;
-import java.util.List;
-
-import org.openide.filesystems.FileObject;
-
-import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
-import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
-
 /**
+ * The API supporting execution of an external process in the IDE.
  *
- * @author Peter Williams
+ * @see org.netbeans.modules.extexecution.api.ExecutionService
  */
-public interface WebServicesClientSupportImpl {
-	
-    public void addServiceClient(String serviceName, String packageName,
-        String sourceUrl, FileObject configFile, ClientStubDescriptor stubDescriptor);
+package org.netbeans.modules.extexecution.api;
 
-    public void addServiceClient(String serviceName, String packageName, 
-        String sourceUrl, FileObject configFile, ClientStubDescriptor stubDescriptor, String[] wscompileFeatures);
-    
-    public void addServiceClientReference(String serviceName, String fqServiceName, String relativeWsdlPath, String mappingPath, String[] portSEIInfo);
-
-    public void removeServiceClient(String serviceName);
-		
-    public FileObject getWsdlFolder(boolean create) throws IOException;
-
-    public FileObject getDeploymentDescriptor();
-	
-    public List<ClientStubDescriptor> getStubDescriptors();
-    
-    public List/*WsCompileClientEditorSupport.ServiceSettings*/ getServiceClients();
-    
-    public String getWsdlSource(String serviceName);
-    
-    public void setWsdlSource(String serviceName, String wsdlSource);
-    
-    public void setProxyJVMOptions(String proxyHost, String proxyPort);
-    
-    public String getServiceRefName(String serviceName);
-    
-}

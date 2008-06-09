@@ -341,8 +341,11 @@ public final class SystemUtils {
     }
     
     public static boolean isCurrentJava64Bit() {
-        return System.getProperty("os.arch").equals("amd64") ||
-                System.getProperty("os.arch").equals("sparcv9");
+        final String osArch = System.getProperty("os.arch");
+        return osArch.equals("amd64") ||
+                osArch.equals("sparcv9") ||
+                osArch.equals("x86_64") ||
+                osArch.equals("ppc64");
     }
     
     public static File getPacker() {
@@ -738,10 +741,7 @@ public final class SystemUtils {
         if (currentPlatform == null) {
             final String osArch = System.getProperty("os.arch");
             final String osName = System.getProperty("os.name");
-            boolean is64bit = 
-                    osArch.equals("amd64") ||
-                    osArch.equals("sparcv9") || 
-                    osArch.equals("ppc64");
+            boolean is64bit = isCurrentJava64Bit();                    
             
             if (osName.contains("Windows")) {
                 currentPlatform =
@@ -763,7 +763,7 @@ public final class SystemUtils {
             if (osName.contains("Mac OS X")) {
                 if(osArch.contains("ppc")) {
                     currentPlatform = Platform.MACOSX_PPC;
-                } else if(osArch.contains("i386")) {
+                } else {
                     currentPlatform = Platform.MACOSX_X86;
                 }
             }

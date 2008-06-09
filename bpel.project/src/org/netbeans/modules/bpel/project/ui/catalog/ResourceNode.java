@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -38,47 +38,68 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.bpel.project.ui.catalog;
 
-package org.netbeans.modules.websvc.spi.client;
+import javax.swing.Action;
+import java.awt.Image;
 
-import java.io.IOException;
-import java.util.List;
-
-import org.openide.filesystems.FileObject;
-
-import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
-import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.util.Utilities;
+import org.netbeans.modules.xml.retriever.catalog.CatalogEntry;
 
 /**
- *
- * @author Peter Williams
+ * @author Vladimir Yaroslavskiy
+ * @version 2008.06.09
  */
-public interface WebServicesClientSupportImpl {
-	
-    public void addServiceClient(String serviceName, String packageName,
-        String sourceUrl, FileObject configFile, ClientStubDescriptor stubDescriptor);
+final class ResourceNode extends AbstractNode{
+    
+  ResourceNode(CatalogEntry system) {
+    super(Children.LEAF);
+    mySystem = system;
+  }
+  
+  @Override
+  public Image getIcon(int type) {
+    return IMAGE;
+  }
+  
+  @Override
+  public boolean canRename() {
+    return false;
+  }
+  
+  @Override
+  public String getDisplayName() {
+    return getFileName(mySystem.getSource());
+  }
+  
+  private String getFileName(String file) {
+    file = file.replaceAll("%20", " ");
 
-    public void addServiceClient(String serviceName, String packageName, 
-        String sourceUrl, FileObject configFile, ClientStubDescriptor stubDescriptor, String[] wscompileFeatures);
-    
-    public void addServiceClientReference(String serviceName, String fqServiceName, String relativeWsdlPath, String mappingPath, String[] portSEIInfo);
+    if (file.startsWith("file:")) { // NOI18N
+      file = file.substring(5);
+    }
+    if (file.startsWith("/") && Utilities.isWindows()) {
+      file = file.substring(1);
+    }
+    return file.replace("\\", "/"); // NOI18N
+  }
 
-    public void removeServiceClient(String serviceName);
-		
-    public FileObject getWsdlFolder(boolean create) throws IOException;
+  @Override
+  public String getName() {
+    return getDisplayName();
+  }
 
-    public FileObject getDeploymentDescriptor();
-	
-    public List<ClientStubDescriptor> getStubDescriptors();
-    
-    public List/*WsCompileClientEditorSupport.ServiceSettings*/ getServiceClients();
-    
-    public String getWsdlSource(String serviceName);
-    
-    public void setWsdlSource(String serviceName, String wsdlSource);
-    
-    public void setProxyJVMOptions(String proxyHost, String proxyPort);
-    
-    public String getServiceRefName(String serviceName);
-    
+  @Override
+  public Action[] getActions(boolean context) {
+    return new Action [] {
+      null, // todo a
+//          SystemAction.get(DeleteAction.class),
+//          SystemAction.get(RenameAction.class),
+    };
+  }
+
+  private CatalogEntry mySystem;
+  private static final Image IMAGE = Utilities.loadImage("org/netbeans/modules/bpel/project/ui/resources/resource.gif"); // NOI18N
 }

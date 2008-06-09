@@ -39,12 +39,11 @@
 
 package org.netbeans.modules.hibernate.service.listener;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
-import org.netbeans.modules.hibernate.service.HibernateEnvironment;
+import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 
@@ -72,7 +71,7 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook{
         // Check for Hibernate files in this project.
         List<HibernateConfiguration> hibernateConfigurations = HibernateUtil.getAllHibernateConfigurations(project);
         if(hibernateConfigurations.size() != 0) {
-            hibernateEnvironment = new HibernateEnvironment(project);
+            hibernateEnvironment = project.getLookup().lookup(HibernateEnvironment.class);
         }
         logger.info("project opened .. " + project);
         logger.info("config : " + project.getLookup().lookup(HibernateEnvironment.class).getAllHibernateConfigurationsFromProject());

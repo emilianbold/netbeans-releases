@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.hibernate.service;
 
+import org.netbeans.modules.hibernate.service.spi.HibernateEnvironmentImpl;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.spi.project.LookupProvider;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -54,7 +56,7 @@ import org.openide.util.lookup.Lookups;
 public class HibernateProjectLookupExtender implements LookupProvider {
 
     public Lookup createAdditionalLookup(Lookup baseContext) {
-        HibernateEnvironment hibernateEnvironment = new HibernateEnvironment(baseContext.lookup(Project.class));
+        HibernateEnvironment hibernateEnvironment = new HibernateEnvironmentImpl(baseContext.lookup(Project.class));
         return Lookups.fixed(new Object[]{hibernateEnvironment});
     }
 

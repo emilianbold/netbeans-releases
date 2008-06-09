@@ -835,12 +835,7 @@ public final class UI {
 
   private static final Border CORNER_BORDER = new CornerBorder();
 
-  private static final boolean ENABLE_LOG =
-    System.getProperty("org.netbeans.modules.log") != null; // NOI18N
-  
-  private static final boolean ENABLE_OUT =
-    System.getProperty("org.netbeans.modules.out") != null; // NOI18N
-
-  private static final boolean ENABLE_TIM =
-    System.getProperty("org.netbeans.modules.tim") != null; // NOI18N
+  private static final boolean ENABLE_LOG = System.getProperty("org.netbeans.modules.log") != null; // NOI18N
+  private static final boolean ENABLE_OUT = System.getProperty("org.netbeans.modules.out") != null; // NOI18N
+  private static final boolean ENABLE_TIM = System.getProperty("org.netbeans.modules.tim") != null; // NOI18N
 }

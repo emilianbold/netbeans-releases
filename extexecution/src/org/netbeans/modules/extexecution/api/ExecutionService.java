@@ -215,8 +215,7 @@ public final class ExecutionService {
 
                 if (descriptor.isControlable()) {
                     stopAction = new StopAction();
-                    //rerunAction = new RerunAction(this, descriptor.getFileObject());
-                    rerunAction = new RerunAction(this, null);
+                    rerunAction = new RerunAction(this, descriptor.getRerunCondition());
 
                     io = IOProvider.getDefault().getIO(displayName, new Action[]{rerunAction, stopAction});
                 } else {
@@ -288,6 +287,8 @@ public final class ExecutionService {
                             io.select();
                         }
                     });
+                    
+            handle.setInitialDelay(0);
             handle.start();
             handle.switchToIndeterminate();
 

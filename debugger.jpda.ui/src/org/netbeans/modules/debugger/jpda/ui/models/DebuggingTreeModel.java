@@ -411,17 +411,6 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         for (ModelListener ml : ls) {
             ml.modelChanged (event);
         }
-        if (node instanceof JPDAThread && preferences.getBoolean(SHOW_THREAD_GROUPS, false)) {
-            JPDAThread thread = (JPDAThread)node;
-            JPDAThreadGroup group = thread.getParentThreadGroup();
-            while (group != null) {
-                event = new ModelEvent.NodeChanged(this, group, ModelEvent.NodeChanged.ICON_MASK);
-                for (ModelListener ml : ls) {
-                    ml.modelChanged (event);
-                } // for
-                group = group.getParentThreadGroup();
-            } // while
-        } // if
     }
     
     private void watchState(JPDAThread t) {
@@ -652,13 +641,13 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
 
         public void preferenceChange(PreferenceChangeEvent evt) {
             String key = evt.getKey();
-            if (SORT_ALPHABET.equals(key) || SORT_SUSPEND.equals(key) || SHOW_SYSTEM_THREADS.equals(key)) {
-                fireThreadStateChanged(ROOT);
-            } else if (SHOW_THREAD_GROUPS.equals(key)) {
+            if (SORT_ALPHABET.equals(key) || SORT_SUSPEND.equals(key) ||
+                    SHOW_SYSTEM_THREADS.equals(key) || SHOW_THREAD_GROUPS.equals(key) || 
+                    DebuggingNodeModel.SHOW_PACKAGE_NAMES.equals(key)) {
                 fireNodeChanged(ROOT);
             }
         }
-        
+
     }
 
 }
