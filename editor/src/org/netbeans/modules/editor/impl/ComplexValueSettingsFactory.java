@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.editor.impl;
 
+import java.util.Collection;
 import java.util.prefs.Preferences;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -52,6 +53,7 @@ import org.netbeans.modules.editor.IndentEngineFormatter;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.text.IndentEngine;
+import org.openide.util.Lookup;
 
 /**
  * This class contains static methods that provide values of some deprecated settings.
@@ -84,8 +86,20 @@ public final class ComplexValueSettingsFactory {
     public static final Object getFormatterValue(MimePath mimePath, String settingName) {
         assert settingName.equals(NbEditorDocument.FORMATTER) : "The getFormatter factory called for '" + settingName + "'"; //NOI18N
         
+        IndentEngine eng = null;
         Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
-        IndentEngine eng = (IndentEngine) SettingsConversions.callFactory(prefs, mimePath, NbEditorDocument.INDENT_ENGINE, null);
+        String handle = prefs.get(NbEditorDocument.INDENT_ENGINE, null);
+        if (handle != null && handle.indexOf('.') == -1) { //NOI18N
+            // looks like Lookup handle from previous version
+            Lookup.Template<IndentEngine> query = new Lookup.Template(IndentEngine.class, handle, null);
+            Collection<? extends IndentEngine> all = Lookup.getDefault().lookup(query).allInstances();
+            if (!all.isEmpty()) {
+                eng = all.iterator().next();
+            }
+        } else {
+            eng = (IndentEngine) SettingsConversions.callFactory(prefs, mimePath, NbEditorDocument.INDENT_ENGINE, null);
+        }
+
         if (eng != null) {
             if (eng instanceof FormatterIndentEngine) {
                 return ((FormatterIndentEngine)eng).getFormatter();

@@ -166,7 +166,7 @@ public final class SettingsConversions {
         
         if (factoryRef != null) {
             int lastDot = factoryRef.lastIndexOf('.'); //NOI18N
-            assert lastDot != -1 : "Need fully qualified name of class with the static setting factory method."; //NOI18N
+            assert lastDot != -1 : "Need fully qualified name of class with the static setting factory method, but got '" + factoryRef + "'"; //NOI18N
 
             String classFqn = factoryRef.substring(0, lastDot);
             String methodName = factoryRef.substring(lastDot + 1);
