@@ -9,6 +9,7 @@ package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.CollectionType;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.FetchType;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
@@ -27,15 +28,23 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         NbBundle.getMessage(MappingOptionsPanel.class, "LBL_FETCH_EAGER"),
         NbBundle.getMessage(MappingOptionsPanel.class, "LBL_FETCH_LAZY")
     };
+    
+    private final String[] collectionTypes = new String[] {
+        "java.util.Collection",  // NOI18N
+        "java.util.List",        // NOI18N
+        "java.util.Set"};        // NOI18N
 
     /** Creates new form TableMappingPanel */
     public MappingOptionsPanel() {
         initComponents();
         fetchComboBox.setModel(new DefaultComboBoxModel(fetchTypes));
         fetchComboBox.setSelectedIndex(0);
+        
+        collectionTypeComboBox.setModel(new DefaultComboBoxModel(collectionTypes));
+        collectionTypeComboBox.setSelectedIndex(0);
     }
     
-    public void initialize(FetchType fetchType, boolean fullyQualifiedTblName, boolean regenSchemaAttrs) {
+    public void initialize(CollectionType collectionType, FetchType fetchType, boolean fullyQualifiedTblName, boolean regenSchemaAttrs) {
         
         if(fetchType.equals(FetchType.DEFAULT)) {
             fetchComboBox.setSelectedIndex(0);
@@ -45,6 +54,16 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
             fetchComboBox.setSelectedIndex(2);
         } else {
             fetchComboBox.setSelectedIndex(0);
+        }
+        
+        if(collectionType.equals(CollectionType.COLLECTION)) {
+            collectionTypeComboBox.setSelectedIndex(0);
+        } else if(collectionType.equals(CollectionType.LIST)) {
+            collectionTypeComboBox.setSelectedIndex(1);
+        } else if(collectionType.equals(CollectionType.SET)) {
+            collectionTypeComboBox.setSelectedIndex(2);
+        } else {
+            collectionTypeComboBox.setSelectedIndex(0);
         }
         
         tableNameCheckBox.setSelected(fullyQualifiedTblName);
@@ -63,6 +82,17 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
             return FetchType.EAGER;
         } else {
             return FetchType.LAZY;
+        }
+    }
+    
+    public CollectionType getCollectionType() {
+        int selected = collectionTypeComboBox.getSelectedIndex();
+        if(selected == 0 ) {
+            return CollectionType.COLLECTION;
+        } else if(selected == 1 ) {
+            return CollectionType.LIST;
+        } else {
+            return CollectionType.SET;
         }
     }
     
@@ -89,7 +119,9 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         tableNameCheckBox = new javax.swing.JCheckBox();
         regenSchemaCheckBox = new javax.swing.JCheckBox();
         paddingPanel = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
+        descLabel = new javax.swing.JLabel();
+        collectionTypeLabel = new javax.swing.JLabel();
+        collectionTypeComboBox = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -98,14 +130,14 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         fetchLabel.setText(org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "LBL_FETCH")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(fetchLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
@@ -115,7 +147,7 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         tableNameCheckBox.setText(org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "LBL_TABLE_NAME")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
@@ -125,34 +157,52 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         regenSchemaCheckBox.setText(org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "LBL_REGENERATE_SCHEMA")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(regenSchemaCheckBox, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
         add(paddingPanel, gridBagConstraints);
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "LBL_TABLE_MAPPING_DESC")); // NOI18N
+        descLabel.setText(org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "LBL_TABLE_MAPPING_DESC")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
-        add(jLabel1, gridBagConstraints);
+        add(descLabel, gridBagConstraints);
+
+        collectionTypeLabel.setText(org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "LBL_COLLECTOIN_TYPE")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        add(collectionTypeLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
+        add(collectionTypeComboBox, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox collectionTypeComboBox;
+    private javax.swing.JLabel collectionTypeLabel;
+    private javax.swing.JLabel descLabel;
     private javax.swing.JComboBox fetchComboBox;
     private javax.swing.JLabel fetchLabel;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel paddingPanel;
     private javax.swing.JCheckBox regenSchemaCheckBox;
     private javax.swing.JCheckBox tableNameCheckBox;
@@ -201,7 +251,8 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
                 FetchType fetchType = helper.getFetchType();
                 boolean fullTblName = helper.isFullyQualifiedTableNames();
                 boolean regenSchema = helper.isRegenSchemaAttrs();
-                getComponent().initialize(fetchType, fullTblName, regenSchema);
+                CollectionType clcType = helper.getCollectionType();
+                getComponent().initialize(clcType, fetchType, fullTblName, regenSchema);
             }
         }
 
@@ -219,6 +270,7 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
                 helper.setFetchType(mPanel.getFetchType());
                 helper.setFullyQualifiedTableNames(mPanel.isFullyQualifiedTableName());
                 helper.setRegenSchemaAttrs(mPanel.isRegenSchemaAttributes());
+                helper.setCollectionType(mPanel.getCollectionType());
             }
         }
 

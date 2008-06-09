@@ -858,9 +858,22 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 String typeName = getRelationshipFieldType(role, entityClass.getPackage());
                 TypeMirror fieldType = copy.getElements().getTypeElement(typeName).asType();
                 if (role.isToMany()) {
-                    // XXX this will probably not resolve imports
-                    TypeElement collectionType = copy.getElements().getTypeElement("java.util.Collection"); // NOI18N
-                    fieldType = copy.getTypes().getDeclaredType(collectionType, fieldType);
+                    // Use the collection type the user wants
+                    String collectionType = "java.util.Collection"; // NOI18N
+
+                    switch (entityClass.getCollectionType()) {
+                        case LIST:
+                            collectionType = "java.util.List"; // NOI18N
+                            break;
+                        case SET:
+                            collectionType = "java.util.Set"; // NOI18N
+                            break;
+                        default:
+                            collectionType = "java.util.Collection"; // NOI18
+
+                    }
+                    TypeElement collectionTypeElem = copy.getElements().getTypeElement(collectionType);
+                    fieldType = copy.getTypes().getDeclaredType(collectionTypeElem, fieldType);
                 }
 
                 List<AnnotationTree> annotations = new ArrayList<AnnotationTree>();
