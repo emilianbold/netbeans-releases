@@ -45,15 +45,14 @@ import java.util.Collection;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -73,7 +72,7 @@ public class TestReparseAction extends TestProjectActionBase {
     
     @Override
     public String getName() {
-        return NbBundle.getMessage(getClass(), "CTL_TestProjectReparse");
+        return NbBundle.getMessage(getClass(), "CTL_TestProjectReparse"); //NOI18N
     }
 
     
@@ -136,32 +135,44 @@ public class TestReparseAction extends TestProjectActionBase {
     }
     
     private void testReparse(final FileImpl fileImpl, final OutputWriter out) {
+        for (CsmInclude include : fileImpl.getIncludes()) {
+            if (include.getIncludeFile() == null) {
+                int line = include.getStartPosition().getLine();
+                int column = include.getStartPosition().getColumn();
+                char lBracket = include.isSystem() ? '<' : '"'; //NOI18N
+                char rBracket = include.isSystem() ? '>' : '"'; //NOI18N
+                printError(out, fileImpl, line, column, "Unresolved include: " + lBracket + include.getIncludeName() + rBracket); //NOI18N
+            }
+        }
         fileImpl.getErrors(new FileImpl.ErrorListener() {
             public void error(String text, int line, int column) {
-                ErrorInfo info = new ErrorInfo(line, column, text);
-                text = fileImpl.getAbsolutePath() + 
-                        ':' + info.line + ':' + info.column + ": " + info.text;
-                try {
-                    out.println(text, new MyOutputListener(fileImpl, info));
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                printError(out, fileImpl, line, column, text);
             }
         });
     }
 
+    private void printError(OutputWriter out, CsmFile fileImpl, int line, int column, String text) {
+        ErrorInfo info = new ErrorInfo(line, column, text);
+        text = fileImpl.getAbsolutePath().toString() + ':' + info.line + ':' + info.column + ": " + info.text; //NOI18N
+        try {
+            out.println(text, new MyOutputListener(fileImpl, info));
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
     private static class MyOutputListener implements OutputListener {
         
-        private FileImpl fileImpl;
+        private CsmFile file;
         private ErrorInfo info;
 
-        public MyOutputListener(FileImpl fileImpl, ErrorInfo info) {
-            this.fileImpl = fileImpl;
+        public MyOutputListener(CsmFile file, ErrorInfo info) {
+            this.file = file;
             this.info = info;
         }
         
         public void outputLineAction(OutputEvent ev) {
-            CsmUtilities.openSource(fileImpl, info.line, info.column);
+            CsmUtilities.openSource(file, info.line, info.column);
         }
         
         public void outputLineSelected(OutputEvent ev) {}

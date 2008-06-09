@@ -178,10 +178,10 @@ public class UnixNativeUtils extends NativeUtils {
             allUsersLocation = new File(DEFAULT_XDG_DATA_DIRS);
         } else {
             // Workaround for Issue 131194 : 
-            // Cannot install nb 6.1beta in ubuntu with xubuntu session
+            // Cannot install netbeans using xfce4 session (incorrect XDG_DATA_DIRS set)
             // http://www.netbeans.org/issues/show_bug.cgi?id=131194
-            String firstPath = XDG_DATA_DIRS.split(SystemUtils.getPathSeparator())[0];
-            if(firstPath.startsWith("etc/xdg/")) {
+            String firstPath = XDG_DATA_DIRS.split(SystemUtils.getPathSeparator())[0].trim();
+            if(firstPath.contains(File.separator) && !firstPath.startsWith(File.separator)) {            
                 firstPath = File.separator + firstPath;
             }
             allUsersLocation = new File(firstPath);
