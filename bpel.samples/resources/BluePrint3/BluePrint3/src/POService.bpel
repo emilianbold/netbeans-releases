@@ -140,6 +140,10 @@
                 <from variable="purchaseOrderRequest" part="purchaseOrder"/>
                 <to variable="purchaseOrderReply" part="purchaseOrder"/>
             </copy>
+            <copy>
+                <from variable="inventoryServiceReply"/>
+                <to variable="inventoryServiceReply"/>
+            </copy>
         </assign>
         <reply name="sendPurchaseOrder.Reply"
                partnerLink="POServicePLink"

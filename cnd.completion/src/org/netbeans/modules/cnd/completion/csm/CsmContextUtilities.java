@@ -300,6 +300,21 @@ public class CsmContextUtilities {
         }
         return resList;
     }
+  
+    public static CsmFilter createFilter(final CsmDeclaration.Kind[] kinds, final String strPrefix,
+            final boolean match, boolean caseSensitive, final boolean returnUnnamedMembers){
+        CsmFilter filter = null;
+        if (kinds != null && strPrefix != null){
+            filter = CsmSelect.getDefault().getFilterBuilder().createCompoundFilter(
+                     CsmSelect.getDefault().getFilterBuilder().createKindFilter(kinds),
+                     CsmSelect.getDefault().getFilterBuilder().createNameFilter(strPrefix, match, caseSensitive, returnUnnamedMembers));
+        } else if (kinds != null){
+            filter = CsmSelect.getDefault().getFilterBuilder().createKindFilter(kinds);
+        } else if (strPrefix != null){
+            filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(strPrefix, match, caseSensitive, returnUnnamedMembers);
+        }
+        return filter;
+    }
 
     public static List<CsmDeclaration> findFileLocalEnumerators(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
         List<CsmDeclaration> res = new ArrayList<CsmDeclaration>();
@@ -321,7 +336,9 @@ public class CsmContextUtilities {
                         }
                     } else if (CsmKindUtilities.isNamespaceDefinition(decl) && decl.getName().length()==0){
                         CsmNamespaceDefinition ns = (CsmNamespaceDefinition)decl;
-                        for(Iterator i = ns.getDeclarations().iterator(); i.hasNext();){
+                        CsmFilter filter = createFilter(new CsmDeclaration.Kind[] {CsmDeclaration.Kind.ENUM},
+                                strPrefix, match, caseSensitive, true);
+                        for(Iterator i = CsmSelect.getDefault().getDeclarations(ns, filter); i.hasNext();){
                             CsmDeclaration nsDecl = (CsmDeclaration) i.next();
                             if (canBreak(offsetInScope, nsDecl, context)) {
                                 break;

@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.persistence.entitygenerator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.FetchType;
 import org.openide.filesystems.FileObject;
 
@@ -62,6 +63,7 @@ public class EntityClass {
     private final String packageName;
     private final FetchType fetchType;
     private final boolean regenSchemaAttrs;
+    private final Set<String[]> uniqueConstraints;
     
     private List<RelationshipRole> roles;
     private List<EntityMember> fields;
@@ -73,7 +75,7 @@ public class EntityClass {
     
     public EntityClass(boolean fullyQualifiedTblNames, String schemaName, String catalogName, String tableName, 
             FileObject rootFolder, String packageName, String className,
-            FetchType fetchType, boolean regenSchemaAttrs) {
+            FetchType fetchType, boolean regenSchemaAttrs, Set<String[]> uniqueConstraints) {
         this.fullyQualifiedTblNames = fullyQualifiedTblNames;
         this.schemaName = schemaName;
         this.catalogName = catalogName;
@@ -83,6 +85,7 @@ public class EntityClass {
         this.className = className;
         this.fetchType = fetchType;
         this.regenSchemaAttrs = regenSchemaAttrs;
+        this.uniqueConstraints = uniqueConstraints;
         
         roles = Collections.<RelationshipRole>emptyList();
         fields = new ArrayList<EntityMember>();
@@ -95,6 +98,10 @@ public class EntityClass {
     
     public void setIsForTable( boolean forTable) {
         this.forTable = forTable;
+    }
+    
+    public Set<String[]> getUniqueConstraints() {
+        return this.uniqueConstraints;
     }
     
     public boolean isFullyQualifiedTblNames() {
