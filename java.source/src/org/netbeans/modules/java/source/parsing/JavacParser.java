@@ -127,6 +127,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.java.source.JavaParserResultTask;
 import org.openide.cookies.EditorCookie;
@@ -307,11 +308,19 @@ public class JavacParser extends Parser {
                 parse (cachedSnapShot, task, event);
             }            
         }
-        final boolean isParserResultTask = task instanceof JavaParserResultTask;
+        final boolean isJavaParserResultTask = task instanceof JavaParserResultTask;
+        final boolean isParserResultTask = task instanceof ParserResultTask;
         final boolean isUserTask = task instanceof MultiLanguageUserTask || task instanceof UserTask;
         JavacParserResult result = null;
         if (isParserResultTask) {
-            final Phase requiredPhase = ((JavaParserResultTask)task).getPhase();
+            Phase requiredPhase;
+            if (isJavaParserResultTask) {
+                requiredPhase = ((JavaParserResultTask)task).getPhase();
+            }
+            else {
+                requiredPhase = JavaSource.Phase.RESOLVED;
+                LOGGER.warning("ParserResultTask: " + task + " doesn't provide phase, assuming RESOLVED");                   //NOI18N
+            }
             Phase reachedPhase;
             try {
                     reachedPhase = moveToPhase(requiredPhase, ciImpl, true, false);
