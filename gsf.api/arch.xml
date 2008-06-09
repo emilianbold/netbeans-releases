@@ -20,10 +20,9 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
   <!ENTITY api-questions SYSTEM "../nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml">
 ]>
-
 <api-answers
   question-version="1.29"
-  author="yourname@netbeans.org"
+  author="tor@netbeans.org"
 >
 
   &api-questions;
@@ -45,11 +44,74 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="arch-overall">
-  <p>
-   XXX no answer for arch-overall
-  </p>
- </answer>
+    <answer id="arch-overall">
+        <p>
+      GSF is a set of APIs to make it easier to provide editing support for new languages.
+      The goal is to make it as easy as possible to write first-rate support, such that
+      language developers can focus only on aspects of their language, not on infrastructure
+      tasks.  Language plugin developers don't write editor actions, event listeners, and so on.
+      Instead, they implement their own lexers, parsers, and narrow feature APIs where they
+      use their own lexer token sequences and parse trees to implement the language-specific
+      aspects of features like code completion, go to declaration, semantic highlighting and so on.
+        </p>
+        <p>
+            GSF can be seen as a layer on top of some of the existing NetBeans editing APIs.
+            It directly uses the Lexer API, and while it has its own parsing API, the plan
+            is to replace that with the upcoming NetBeans Parsing API.  It defines a number
+            of additional feature APIs, such as "keystroke handler", and "code completion handler",
+            which lets modules go and implement for example logic that should be run when
+            the user presses Return, without the need to go in and implement a custom
+            data loader, editor kit, default editing actions, and so on.
+        </p>
+        <p>
+            Here's an illustration of this:
+            <br/>
+            <br/>
+            <img class="inline" src="@TOP@/gsf-architecture.png" alt="Diagram showing GSF's architecture" />
+            <br/>
+            <br/>
+            The language plugins shown above (Ruby, Groovy, etc.) are the targets of the
+            GSF API.   GSF provides interfaces (and in many cases, optional default
+            abstract class implementations) that the language plugins implement and
+            register. These implementations are then invoked as part of feature
+            implementations provided by GSF. All the generic work and UI involved
+            in writing various language features are handled by GSF, and it delegates
+            to language plugins for the actual language-specific logic.
+        </p>
+        <p>
+            The key thing here is that the GSF implementation provides implementations for
+            a lot of the non-language-specific code that is currently required to implement
+            language features. For example, semantic highlighting involves writing an
+            editing highlighting layer, scheduling parsing jobs when the editor is
+            modified, and iterating the parse tree to pull out interesting information,
+            and then mapping this to the editing highlighting layer.  Only the parse
+            tree analysis part here is specific per language, so GSF handles all the
+            other aspects and simply delegates to the language plugin for this
+            specific part.
+        </p>
+        <p>
+            Here's another example of this, for the Instant Rename feature:
+            <br/>
+            <br/>
+            <img class="inline" src="@TOP@/instant-rename.png" alt="Diagram showing instant rename operation" />
+            <br/>
+            <br/>
+            This diagram shows the division of labor, with GSF on the left hand side
+            and the language plugin on the right. The parser task handled by the language
+            plugin is reused for nearly all features. The language plugin implements
+            a lexer, an optional parser, and an optional indexer, and these are then
+            invoked as necessary before asking the language plugin to provide answers
+            for specific features like go to declaration, code completion, and so on.
+        </p>
+        <p>
+            Language plugins register their services via the default file system layer.
+            This is described in more detail in the
+            <a href="registration.html">Registration Document</a>.
+            NOTE - many details of registration are still TBD. There
+            are some significant implementation problems with the current approach
+            and I'd really like to find a better way to do it.
+        </p>
+    </answer>
 
 
 
@@ -66,11 +128,33 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="arch-quality">
-  <p>
-   XXX no answer for arch-quality
-  </p>
- </answer>
+    <answer id="arch-quality">
+<p>
+    Unit tests.  GSF needs more. GSF provides unit testing support for its clients,
+    which makes it really trivial to test that your (say) code completion handler
+    works correctly. You just subclass GSF's <code>TestCase</code> implementation (which in
+    turn is a subclass of <code>NbTestCase</code>), and then there are a number
+    of feature specific assertion methods you can call. To test your semantic highlighter,
+    or your keystroke handler, or your code completion handler, you typically just
+    have to write a single line, such as "checkCompletion", and hand it a test file
+    and a caret location, and GSF handles calling your parser, calling your
+    feature handler, golden file generation and diffing, etc.
+</p>
+<p>
+    This is call described in more detail in the <a href="unit-testing.html">unit testing document</a>.
+</p>
+<p>
+    However, GSF <b>itself</b> needs more testing. GSF is all about infrastructure,
+    and UI, so it's much trickier to test. I've been relying on a lot of manual testing
+    at this point; e.g. unit tests cover Ruby and JavaScript's correct result computation
+    of say code completion data, and I've manually tested that these code completion
+    results show correctly on the screen.
+</p>
+<p>
+    I'd really like to get some help in writing infrastructure tests to ensure
+    that all of this is correct.
+</p>
+    </answer>
 
 
 
@@ -85,11 +169,17 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="arch-time">
-  <p>
-   XXX no answer for arch-time
-  </p>
- </answer>
+    <answer id="arch-time">
+<p>
+    There are a lot of unknown factors involved here; fixing GSF registration, adapting
+    to the Parsing API (which will require a number of API and implementation changes),
+    as well as competing resources for the Ruby and JavaScript editor maintenance as well
+    as consulting on other language support projects like the Python one. 
+</p>
+<p>
+    However, an educated guess would be something along the order of six months.
+</p>
+    </answer>
 
 
 
@@ -109,11 +199,11 @@ Microsystems, Inc. All Rights Reserved.
             to use the module?
         </question>
 -->
- <answer id="arch-usecases">
-  <p>
+    <answer id="arch-usecases">
+        <p>
    XXX no answer for arch-usecases
-  </p>
- </answer>
+        </p>
+    </answer>
 
 
 
@@ -127,11 +217,20 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="arch-what">
-  <p>
-   XXX no answer for arch-what
-  </p>
- </answer>
+    <answer id="arch-what">
+        <p>
+GSF attempts to make adding deep editing support for new languages in NetBeans as easy as
+possible, attempting to reuse existing lexers and parsers, and making it possible to
+add advanced features like quickfixes, code completion, semantic highlighting, and so on.
+GSF also attempts to let language plugin developers focus <b>only</b> on the language
+specific aspects of the editing support. GSF handles infrastructure tasks like
+parser scheduling, editor kit, loader and action implementations, UI, and so on.
+As a language plugin developer, "all" you have to do is implement (usually via
+delegation) your own lexer, parser, indexer, and then implement thin feature APIs
+like a keystroke handler, a code completion handler, a declaration finder, and so on,
+based on your own lexing, parser, and indexed data.
+        </p>
+    </answer>
 
 
 
@@ -145,9 +244,9 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="arch-where">
-  <defaultanswer generate='here' />
- </answer>
+    <answer id="arch-where">
+        <defaultanswer generate='here' />
+    </answer>
 
 
 
@@ -162,11 +261,22 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="compat-deprecation">
-  <p>
-   XXX no answer for compat-deprecation
-  </p>
- </answer>
+    <answer id="compat-deprecation">
+        <p>
+            GSF will not deprecate any existing APIs, but it provides a much
+            simpler way to implement functionality that is covered by other
+            APIs.  Instead of implementing your own DataLoader, DataObject,
+            EditorKit, various editor actions etc., you can simply reuse
+            GSF's default implementations of these, which will delegate to
+            your plugin only for the language-specific aspects.
+        </p>
+        <p>
+            In some cases, not all the functionality in the existing APIs are
+            exposed through GSF, so there may be cases where developers want
+            to register with the base editing API instead of the GSF layer
+            on top.
+        </p>
+    </answer>
 
 
 
@@ -180,11 +290,11 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="compat-i18n">
-  <p>
-   XXX no answer for compat-i18n
-  </p>
- </answer>
+    <answer id="compat-i18n">
+        <p>
+            Yes, GSF is properly i18n'ized. Any exceptions are unintentional bugs.
+        </p>
+    </answer>
 
 
 
@@ -194,11 +304,11 @@ Microsystems, Inc. All Rights Reserved.
             implementation exact or does it deviate somehow?
         </question>
 -->
- <answer id="compat-standards">
-  <p>
-   XXX no answer for compat-standards
-  </p>
- </answer>
+    <answer id="compat-standards">
+        <p>
+            No.
+        </p>
+    </answer>
 
 
 
@@ -216,11 +326,42 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="compat-version">
-  <p>
-   XXX no answer for compat-version
-  </p>
- </answer>
+    <answer id="compat-version">
+<p>
+GSF was included in 6.0 (as part of the Ruby cluster), and in 6.1 (as part of the GSF
+cluster used by JavaScript, HTML and Ruby), and probably in 6.5. In each version,
+GSF has changed incompatibly. 
+</p>
+<p>
+    GSF doesn't have any settings that need to be preserved compatibly (that I can
+    think of).  There is a tricky area around editor kit settings (for things like
+    indentation size, tab versus space selection, etc). For architectural reasons,
+    this has been a problem for GSF, where a single EditorKit is shared by multiple
+    mime types, which isn't compatible with the old BaseOptions approach (where
+    each mimetype needed its own editor kit). This is being addressed in NetBeans 6.5
+    and will hopefully not be an issue in the future.
+</p>
+<p>
+    One area of concern is the way GSF registers editing services. In order to
+    implement various editing (and navigation and tasklist) functionality, it needs
+    to expose its implementations of various services to other modules that are
+    doing system file system lookup. It does this by actually writing into the system
+    file system at startup. This is persisted in the user directory, under
+    <code>config/Editors/<i>mimetype</i></code>. This hardcodes in for example
+    the full package and class name of the implementation classes for GSF. I have
+    dealt with this in the past by having various logic in my code go and look
+    for old registration files and removing them. And furthermore, the settings migration
+    wizard for 6.1 had specific rules to block these files.
+</p>
+<p>
+    This mechanism (registering services with the editor, navigation api and
+    tasklist api) is one I'd <b>really</b> like to improve. I had hoped to 
+    use the pluggable system file system (see 
+    <a href="http://ruby.netbeans.org/issues/show_bug.cgi?id=26338">issue 26338</a>),
+    but I couldn't get it to work. Hopefully the GSF inception review will 
+    come up with some advise for this area.
+</p>
+    </answer>
 
 
 
@@ -234,11 +375,11 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="dep-jre">
-  <p>
-   XXX no answer for dep-jre
-  </p>
- </answer>
+    <answer id="dep-jre">
+        <p>
+I'm using JRE 5.0+ features and APIs.
+        </p>
+    </answer>
 
 
 
@@ -247,11 +388,11 @@ Microsystems, Inc. All Rights Reserved.
             Do you require the JDK or is the JRE enough?
         </question>
 -->
- <answer id="dep-jrejdk">
-  <p>
-   XXX no answer for dep-jrejdk
-  </p>
- </answer>
+    <answer id="dep-jrejdk">
+        <p>
+I believe the JRE is enough but I haven't tested this.
+        </p>
+    </answer>
 
 
 
@@ -276,9 +417,9 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="dep-nb">
-  <defaultanswer generate='here' />
- </answer>
+    <answer id="dep-nb">
+        <defaultanswer generate='here' />
+    </answer>
 
 
 
@@ -300,11 +441,11 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="dep-non-nb">
-  <p>
-   XXX no answer for dep-non-nb
-  </p>
- </answer>
+    <answer id="dep-non-nb">
+        <p>
+None.
+        </p>
+    </answer>
 
 
 
@@ -328,11 +469,17 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="dep-platform">
-  <p>
-   XXX no answer for dep-platform
-  </p>
- </answer>
+    <answer id="dep-platform">
+        <p>
+GSF should work on all platforms and all versions of Java, for JDK 5.0 and higher.
+        </p>
+        <p>
+There is only one OS-specific item in GSF: The code which chooses the delay for 
+parse jobs defaults to 2 seconds on Windows and 1 second elsewhere. I'm not
+sure why this was done; this is code copied from Retouche (and is still there
+in the <code>java.source RepositoryUpdater.java</code> file.)
+        </p>
+    </answer>
 
 
 
@@ -352,11 +499,11 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="deploy-dependencies">
-  <p>
-   XXX no answer for deploy-dependencies
-  </p>
- </answer>
+    <answer id="deploy-dependencies">
+        <p>
+None.
+        </p>
+    </answer>
 
 
 
@@ -380,11 +527,11 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="deploy-jar">
-  <p>
-   XXX no answer for deploy-jar
-  </p>
- </answer>
+    <answer id="deploy-jar">
+        <p>
+            GSF does not have any extra files or jars.
+        </p>
+    </answer>
 
 
 
@@ -396,11 +543,11 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="deploy-nbm">
-  <p>
-   XXX no answer for deploy-nbm
-  </p>
- </answer>
+    <answer id="deploy-nbm">
+        <p>
+        Yes
+        </p>
+    </answer>
 
 
 
@@ -417,11 +564,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="deploy-packages">
-  <p>
-   XXX no answer for deploy-packages
-  </p>
- </answer>
+    <answer id="deploy-packages">
+        <p>
+            Yes. The API packages in the <code>gsf.api</code> module
+            will be exposed as public (they are currently
+            friend only until GSF is API reviewed and approved). 
+            The implementation classes in the <code>gsf</code> module
+            will not be made public.
+        </p>
+    </answer>
 
 
 
@@ -435,11 +586,11 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="deploy-shared">
-  <p>
-   XXX no answer for deploy-shared
-  </p>
- </answer>
+    <answer id="deploy-shared">
+        <p>
+            GSF can be installed anywhere.
+        </p>
+    </answer>
 
 
 
@@ -455,11 +606,11 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="exec-ant-tasks">
-  <p>
-   XXX no answer for exec-ant-tasks
-  </p>
- </answer>
+    <answer id="exec-ant-tasks">
+        <p>
+            No
+        </p>
+    </answer>
 
 
 
@@ -471,11 +622,11 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="exec-classloader">
-  <p>
-   XXX no answer for exec-classloader
-  </p>
- </answer>
+    <answer id="exec-classloader">
+        <p>
+            No
+        </p>
+    </answer>
 
 
 
@@ -494,11 +645,11 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="exec-component">
-  <p>
-   XXX no answer for exec-component
-  </p>
- </answer>
+    <answer id="exec-component">
+        <p>
+            No
+        </p>
+    </answer>
 
 
 
@@ -514,11 +665,11 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="exec-introspection">
-  <p>
-   XXX no answer for exec-introspection
-  </p>
- </answer>
+    <answer id="exec-introspection">
+        <p>
+No
+        </p>
+    </answer>
 
 
 
@@ -532,11 +683,11 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="exec-privateaccess">
-  <p>
-   XXX no answer for exec-privateaccess
-  </p>
- </answer>
+    <answer id="exec-privateaccess">
+        <p>
+No
+        </p>
+    </answer>
 
 
 
@@ -550,11 +701,11 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="exec-process">
-  <p>
-   XXX no answer for exec-process
-  </p>
- </answer>
+    <answer id="exec-process">
+        <p>
+No
+        </p>
+    </answer>
 
 
 
@@ -578,11 +729,41 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="exec-property">
-  <p>
-   XXX no answer for exec-property
-  </p>
- </answer>
+    <answer id="exec-property">
+<table border="1">
+<tr>
+    <th>Property</th><th>Default</th><th>Purpose</th>
+</tr>
+<tr>
+    <td>no-ruby-camel-case-style-navigation</td><td>false</td><td>Ability to turn off camel case navigation.</td>
+</tr>
+<tr>
+    <td>org.netbeans.javacore.ignoreDirectories</td><td>SCCS CVS .svn</td><td>Directories to skip during indexing. Copied from Retouche.</td>
+</tr>
+<tr>
+    <td>org.netbeans.modules.gsf.enableMBeans</td><td>false</td><td>Turn on to enable MBeans to introspect memory usage and settings etc.</td>
+</tr>
+<tr>
+    <td>gsf.im_feeling_lucky</td><td>false</td><td>Tell the Go To Declaration code to skip ambiguous results popup and just jump to first match</td>
+</tr>
+<tr>
+    <td>LuceneIndex.debugIndexMerge</td><td>false</td><td>Enable Lucene index merging debugging. Not sure what this is for (copied code).</td>
+</tr>
+<tr>
+    <td>gsf.preindexing</td><td>false</td><td>Tell GSF it's running as part of pre-indexing. This is used to compute indexes for libraries in advance for startup speedup. 
+        Used as part of various scripts in the Ruby support which also look at this flag.</td>
+</tr>
+<tr>
+    <td>netbeans.javacore.noscan</td><td>false</td><td>Turn off file system scanning. Inherited from Java support.</td>
+</tr>
+<tr>
+    <td>perf.refactoring.test</td><td>false</td><td>Set by performance tests?</td>
+</tr>
+<tr>
+    <td>org.netbeans.napi.gsfret.source.Source.reportSlowTasks</td><td>false</td><td>If set, times source tasks and reports tasks that take more than 250 ms</td>
+</tr>
+</table>
+    </answer>
 
 
 
@@ -596,11 +777,13 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="exec-reflection">
-  <p>
-   XXX no answer for exec-reflection
-  </p>
- </answer>
+    <answer id="exec-reflection">
+        <p>
+There is one instance of this, inherited from Retouche, where the code is using
+<code>Class.forName</code> to get access to some code which is hidden from the API.
+The class is called <code>SourceAccessor</code> and it provides access to the <code>Source</code> class.
+        </p>
+    </answer>
 
 
 
@@ -628,11 +811,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="exec-threading">
-  <p>
-   XXX no answer for exec-threading
-  </p>
- </answer>
+    <answer id="exec-threading">
+        <p>
+Most GSF code isn't interesting from a threading perspective, but there is one exception:
+The <code>Source</code> and <code>RepositoryUpdater</code> classes. These correspond to
+the <code>JavaSource</code> and <code>RepositoryUpdater</code> classes in the Java Source
+module, and they perform task schedling etc. in very carefully crafted multi threaded code.
+I plan to replace this code with the Parsing API, which should make this all go away.
+        </p>
+    </answer>
 
 
 
@@ -647,11 +834,19 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="format-clipboard">
-  <p>
-   XXX no answer for format-clipboard
-  </p>
- </answer>
+    <answer id="format-clipboard">
+        <p>
+            None. 
+            </p>
+            <p>
+                In the future, I'd like to automatically supply an HTML transferable when the
+                user copies text in the editor, such that the clipboard contains a fully syntax 
+                highlighted (including semantic colors) copy of the code they can paste
+                into for example open office or a mail program. It would be even better if 
+                this could be done in the editor itself without language plugin support,
+                but if it will require specific EditorKit support, GSF will have it.
+        </p>
+    </answer>
 
 
 
@@ -665,11 +860,11 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="format-dnd">
-  <p>
-   XXX no answer for format-dnd
-  </p>
- </answer>
+    <answer id="format-dnd">
+        <p>
+            None.
+        </p>
+    </answer>
 
 
 
@@ -696,11 +891,31 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="format-types">
-  <p>
-   XXX no answer for format-types
-  </p>
- </answer>
+    <answer id="format-types">
+        <p>
+            The only persistence GSF is involved with is the Lucene index it creates for each
+            language that wants indexing and querying services. In this case, it creates
+            a separate Lucene index for each combination of a language and a source or library
+            root. These are all located under <code>var/cache/gsf-index</code>. This is similar
+            to the Java Source module, except in GSF's case there is an extra directory
+            per language such that languages have their own unique and isolated Lucene index.
+            Each Lucene database is also indexed by two version numbers: one supplied by
+            GSF, which is incremented when GSF changes the Lucene data format (for example
+            by upgrading to a new version of GSF) and another supplied by each language
+            (when they change their stored data incompatibly).
+            For example, in my user dir I see these directories:
+            </p>
+<pre>
+var/cache/gsf-index/1.118/php/0.4.2/
+var/cache/gsf-index/1.118/ruby/6.103/
+var/cache/gsf-index/1.118/scala/6.118/
+</pre>
+<p>
+Here, <code>1.118</code> is the current GSF data format version, and
+<code>0.4.2</code> is the current version of the data supplied by PHP, 
+<code>6.103</code> by the Ruby plugin, and so on.
+        </p>
+    </answer>
 
 
 
@@ -728,11 +943,19 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="lookup-lookup">
-  <p>
-   XXX no answer for lookup-lookup
-  </p>
- </answer>
+    <answer id="lookup-lookup">
+        <p>
+            GSF uses lookup to communicate between the API module and the implementation
+            module.  For example, the GSF API interfaces            
+<code>org.netbeans.modules.gsf.api.EditRegions</code>,
+<code>org.netbeans.modules.gsf.api.EditorOptionsFactory</code>,
+<code>org.netbeans.modules.gsf.api.HintsProvider$Factory</code>,
+and <code>org.netbeans.modules.gsf.api.SourceModelFactory</code>
+are provided in the GSF API and implemented by the GSF module. The
+<code>org.netbeans.modules.gsf.api.TypeSearcher</code> interface can be implemented
+by language clients and is looked up by GSF.
+</p>
+    </answer>
 
 
 
@@ -745,11 +968,19 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="lookup-register">
-  <p>
-   XXX no answer for lookup-register
-  </p>
- </answer>
+    <answer id="lookup-register">
+        <p>
+            Yes. GSF provides implementations for a wide variety of editing APIs as well
+            as the tasklist and navigation APIs.
+
+     <api group="lookup" name="org.openide.loaders.CreateFromTemplateAttributesProvider" type="export" category="official">
+       Attributes provider is registered in <code>META-INF/services</code>. It provides
+       <code>package</code> attribute for java templates using scripting support.
+     </api>
+
+
+        </p>
+    </answer>
 
 
 
@@ -762,11 +993,11 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="lookup-remove">
-  <p>
-   XXX no answer for lookup-remove
-  </p>
- </answer>
+    <answer id="lookup-remove">
+        <p>
+            None
+        </p>
+    </answer>
 
 
 
@@ -775,11 +1006,12 @@ Microsystems, Inc. All Rights Reserved.
             Does your module run any code on exit?
         </question>
 -->
- <answer id="perf-exit">
-  <p>
-   XXX no answer for perf-exit
-  </p>
- </answer>
+    <answer id="perf-exit">
+        <p>
+            Yes. On <code>ModuleInstall.closing()</code>, the module closes the open Lucene indices,
+            unregisters file system listeners and cancels scheduled parsing jobs.
+        </p>
+    </answer>
 
 
 
@@ -789,11 +1021,14 @@ Microsystems, Inc. All Rights Reserved.
             GUI controls such as combo boxes, lists, trees, or text areas?
         </question>
 -->
- <answer id="perf-huge_dialogs">
-  <p>
-   XXX no answer for perf-huge_dialogs
-  </p>
- </answer>
+    <answer id="perf-huge_dialogs">
+        <p>
+            Define "large number" please :)   There aren't many dialogs in GSF,
+            but GSF does provide an Options panel for quickfixes (for language
+            clients that request it, currently only Ruby), which will add
+            a checkbox for every available hint.
+        </p>
+    </answer>
 
 
 
@@ -816,11 +1051,18 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="perf-limit">
-  <p>
-   XXX no answer for perf-limit
-  </p>
- </answer>
+    <answer id="perf-limit">
+        <p>
+            None that I can think of.
+            </p>
+            <p>
+                There may be performance problems supporting really huge
+                source files. There was a bug with huge HTML files in the navigator,
+                where GSF's code which expands all nodes caused some problems. 
+                when there are thousands and thousands of nested elements.
+                
+        </p>
+    </answer>
 
 
 
@@ -830,11 +1072,13 @@ Microsystems, Inc. All Rights Reserved.
             with a relation to the number of windows, etc.
         </question>
 -->
- <answer id="perf-mem">
-  <p>
-   XXX no answer for perf-mem
-  </p>
- </answer>
+    <answer id="perf-mem">
+        <p>
+            GSF itself shouldn't need to hold much memory. Typically, the memory
+            consumption will come from GSF's language clients, which will create
+            lexing hierarchies and parsing trees which may require a fair bit of space.
+        </p>
+    </answer>
 
 
 
@@ -852,11 +1096,12 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="perf-menus">
-  <p>
-   XXX no answer for perf-menus
-  </p>
- </answer>
+    <answer id="perf-menus">
+        <p>
+            GSF adds some actions to editor context menus which are enabled/disabled on the fly.
+            There aren't many of these.
+        </p>
+    </answer>
 
 
 
@@ -876,11 +1121,17 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="perf-progress">
-  <p>
-   XXX no answer for perf-progress
-  </p>
- </answer>
+    <answer id="perf-progress">
+        <p>
+            Yes, GSF runs parsing tasks which can often take a while. The most visible
+            such task is the startup indexing task, which iterates over all the source
+            folders in the user's project, checks each timestamp to see if the file
+            has changed since last indexing operation, and if not, indexes the file.
+        </p>
+        <p>
+            This should all be occurring in proper background threads.
+        </p>
+    </answer>
 
 
 
@@ -895,11 +1146,17 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="perf-scale">
-  <p>
-   XXX no answer for perf-scale
-  </p>
- </answer>
+    <answer id="perf-scale">
+        <p>
+            The performance of GSF typically depends on the size of the
+            source file, and the speed of the lexer and parser for each
+            language (which is supplied by the language plugins). For example,
+            most bottlenecks I've seen in Ruby development have come from
+            JRuby parsing. Another slow operation I've seen is type analysis,
+            which is performed by the JavaScript language plugin. GSF itself
+            shouldn't cause performance problems.
+        </p>
+    </answer>
 
 
 
@@ -913,11 +1170,13 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="perf-spi">
-  <p>
-   XXX no answer for perf-spi
-  </p>
- </answer>
+    <answer id="perf-spi">
+        <p>
+            GSF doesn't do this. Arguably, it should. There is a flag (documented
+            in the properties section) which when set will complain about long
+            running parsing tasks.
+        </p>
+    </answer>
 
 
 
@@ -926,11 +1185,12 @@ Microsystems, Inc. All Rights Reserved.
             Does your module run any code on startup?
         </question>
 -->
- <answer id="perf-startup">
-  <p>
-   XXX no answer for perf-startup
-  </p>
- </answer>
+    <answer id="perf-startup">
+        <p>
+Yes. It initializes the parsing task scheduler (called RepositoryUpdater) which
+will listen for project opening events, kick off background indexing tasks, etc.
+        </p>
+    </answer>
 
 
 
@@ -940,11 +1200,11 @@ Microsystems, Inc. All Rights Reserved.
             even when the system is otherwise idle (no user interaction)?
         </question>
 -->
- <answer id="perf-wakeup">
-  <p>
-   XXX no answer for perf-wakeup
-  </p>
- </answer>
+    <answer id="perf-wakeup">
+        <p>
+No.
+        </p>
+    </answer>
 
 
 
@@ -961,11 +1221,16 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="resources-file">
-  <p>
-   XXX no answer for resources-file
-  </p>
- </answer>
+    <answer id="resources-file">
+        <p>
+Yes. The startup indexing code is (like the Java Source module) using the 
+java.io.File API to quickly scan files during startup to look for files
+that should be indexed. This was deliberately using java.io.File in the Java
+module for performance reasons, and I'm doing the same thing for GSF.
+Once a file is identified as a source file to be indexed, it will have its
+FileObject looked up and the parser proceeds from there.
+        </p>
+    </answer>
 
 
 
@@ -984,11 +1249,12 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="resources-layer">
-  <p>
-   XXX no answer for resources-layer
-  </p>
- </answer>
+    <answer id="resources-layer">
+        <p>
+Yes, GSF writes entries into the layer on behalf of all the language clients which registers
+GSF implementations that provide implementations for Editor APIs, Navigation APIs, Tasklist APIs, etc.
+        </p>
+    </answer>
 
 
 
@@ -1005,11 +1271,11 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="resources-mask">
-  <p>
-   XXX no answer for resources-mask
-  </p>
- </answer>
+    <answer id="resources-mask">
+        <p>
+No.
+        </p>
+    </answer>
 
 
 
@@ -1030,11 +1296,15 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="resources-preferences">
-  <p>
-   XXX no answer for resources-preferences
-  </p>
- </answer>
+    <answer id="resources-preferences">
+        <p>
+Yes. The GSF hints implementation uses the Preferences API to store persistent state for
+hints that should be enabled/disabled.   When a GSF quickfix offers a solution, it also
+adds a fix named something like "Disable this hint", and if you select that, the Preferences API
+will be called to turn off that hint. This setting is consulted by the hints infrastructure
+as well as the options UI code in GSF.
+        </p>
+    </answer>
 
 
 
@@ -1050,11 +1320,14 @@ Microsystems, Inc. All Rights Reserved.
             </hint>
         </question>
 -->
- <answer id="resources-read">
-  <p>
-   XXX no answer for resources-read
-  </p>
- </answer>
+    <answer id="resources-read">
+        <p>
+Yes, GSF uses the layer filesystem to register GSF language plugin clients. 
+It looks in the "<code>GsfPlugins/<i>mimetype</i></code>" folder for registrations of GSF
+interface implementations.
+This is all documented in the <a href="@TOP@/registration.html">registration document</a>.
+        </p>
+    </answer>
 
 
 
@@ -1068,11 +1341,11 @@ Microsystems, Inc. All Rights Reserved.
             calling AccessController.doPrivileged().</hint>
         </question>
 -->
- <answer id="security-grant">
-  <p>
-   XXX no answer for security-grant
-  </p>
- </answer>
+    <answer id="security-grant">
+        <p>
+            No
+        </p>
+    </answer>
 
 
 
@@ -1085,10 +1358,9 @@ Microsystems, Inc. All Rights Reserved.
             with NetBeans. Which permissions need to be granted to which domains?</hint>
         </question>
 -->
- <answer id="security-policy">
-  <p>
-   XXX no answer for security-policy
-  </p>
- </answer>
-
+    <answer id="security-policy">
+        <p>
+            No
+        </p>
+    </answer>
 </api-answers>
