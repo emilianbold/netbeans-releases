@@ -136,9 +136,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         FileObject sourceDir = createSourceRoot(helper);
         resultSet.add(sourceDir);
 
-        // XXX
         // UI Logging
-        //logUI(helper.getProjectDirectory(), sourceDir, isCopyFiles());
+        logUI(helper.getProjectDirectory(), sourceDir, getRunAsType(), isCopyFiles());
 
         // index file
         Boolean createIndexFile = (Boolean) descriptor.getProperty(ConfigureProjectPanel.CREATE_INDEX_FILE);
@@ -274,7 +273,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     private void configureRunConfiguration(EditableProperties properties) {
-        PhpProjectProperties.RunAsType runAs = (RunAsType) descriptor.getProperty(RunConfigurationPanel.RUN_AS);
+        PhpProjectProperties.RunAsType runAs = getRunAsType();
         properties.put(PhpProjectProperties.RUN_AS, runAs.name());
         switch (runAs) {
             case LOCAL:
@@ -292,12 +291,15 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
     }
 
+    private RunAsType getRunAsType() {
+        return (RunAsType) descriptor.getProperty(RunConfigurationPanel.RUN_AS);
+    }
+
     private void configureRunAsLocalWeb(EditableProperties properties) {
         String url = (String) descriptor.getProperty(RunConfigurationPanel.URL);
-        Boolean copyFiles = (Boolean) descriptor.getProperty(RunConfigurationPanel.COPY_SRC_FILES);
 
         properties.put(PhpProjectProperties.URL, url);
-        properties.put(PhpProjectProperties.COPY_SRC_FILES, String.valueOf(copyFiles));
+        properties.put(PhpProjectProperties.COPY_SRC_FILES, String.valueOf(isCopyFiles()));
         properties.put(PhpProjectProperties.COPY_SRC_TARGET, getCopySrcTarget());
     }
 
@@ -343,14 +345,32 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return name;
     }
 
+    private boolean isCopyFiles() {
+        boolean copyFiles = false;
+        PhpProjectProperties.RunAsType runAs = getRunAsType();
+        switch (runAs) {
+            case LOCAL:
+                Boolean tmp = (Boolean) descriptor.getProperty(RunConfigurationPanel.COPY_SRC_FILES);
+                if (tmp != null && tmp) {
+                    copyFiles = true;
+                }
+                break;
+            default:
+                // noop
+                break;
+        }
+        return copyFiles;
+    }
+
     // http://wiki.netbeans.org/UILoggingInPHP
-    private void logUI(FileObject projectDir, FileObject sourceDir, Boolean copyFiles) {
+    private void logUI(FileObject projectDir, FileObject sourceDir, RunAsType runAs, boolean copyFiles) {
         LogRecord logRecord = new LogRecord(Level.INFO, "UI_NEW_PHP_PROJECT"); //NOI18N
         logRecord.setLoggerName(PhpProject.UI_LOGGER_NAME);
         logRecord.setResourceBundle(NbBundle.getBundle(NewPhpProjectWizardIterator.class));
         logRecord.setParameters(new Object[] {
             FileUtil.isParentOf(projectDir, sourceDir),
-            copyFiles != null && copyFiles
+            runAs.name(),
+            copyFiles
         });
         Logger.getLogger(PhpProject.UI_LOGGER_NAME).log(logRecord);
     }
