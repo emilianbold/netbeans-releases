@@ -774,7 +774,7 @@ public class LinkOperator implements Actionable{
         if (( source == null ) || ( destination == null) || (linkChooser == null)) {
             return null;
         }
-        
+  
         //It is not the best way, but retainAll doesn't work :(
         HashSet<LinkOperator> outLinks = source.getOutLinks();
         HashSet<LinkOperator> inLinks = destination.getInLinks();
@@ -788,9 +788,9 @@ public class LinkOperator implements Actionable{
             while(outIt.hasNext()) {
                 LinkOperator out = outIt.next();
                 //should be compare references here?
-                if(out.getSource()==in.getSource()) {
+               // if(out.getSource()==in.getSource()) {
                 //or objects
-                //if(out.getSource().equals(in.getSource())) {
+                 if(out.getSource().equals(in.getSource())) {
                     intersection.add(in);
                 }
             }
