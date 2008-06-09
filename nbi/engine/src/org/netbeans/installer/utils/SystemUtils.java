@@ -74,13 +74,13 @@ import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.helper.FilesList;
-import org.netbeans.installer.utils.helper.FinishHandler;
 import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.system.shortcut.FileShortcut;
 import org.netbeans.installer.utils.system.shortcut.Shortcut;
 import org.netbeans.installer.utils.helper.ShortcutLocationType;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.NativeUtils;
+import org.netbeans.installer.utils.system.NativeUtilsFactory;
 import org.netbeans.installer.utils.system.launchers.Launcher;
 import org.netbeans.installer.utils.system.launchers.LauncherFactory;
 import org.netbeans.installer.utils.system.launchers.LauncherProperties;
@@ -102,8 +102,6 @@ public final class SystemUtils {
     private static KeyStore permanentTrustedStore;
     private static KeyStore sessionTrustedStore;
     private static KeyStore deniedStore;
-    
-    private static Platform currentPlatform;
     
     // string resolution ////////////////////////////////////////////////////////////
     public static String resolveString(String string) {
@@ -707,7 +705,7 @@ public final class SystemUtils {
             launcher = LauncherFactory.newLauncher(props, platform);
             long start = System.currentTimeMillis();
             launcher.initialize();
-            launcher.create(progress);
+            launcher.create(prg);
             long seconds = System.currentTimeMillis() - start ;
             LogManager.unindent();
             LogManager.log("[launcher] Time : " + (seconds/1000) + "."+ (seconds%1000)+ " seconds");
@@ -738,49 +736,7 @@ public final class SystemUtils {
     }
     
     public static Platform getCurrentPlatform() {
-        if (currentPlatform == null) {
-            final String osArch = System.getProperty("os.arch");
-            final String osName = System.getProperty("os.name");
-            boolean is64bit = isCurrentJava64Bit();                    
-            
-            if (osName.contains("Windows")) {
-                currentPlatform =
-                        is64bit ? Platform.WINDOWS_X64 : Platform.WINDOWS_X86;
-            }
-            
-            if (osName.contains("Linux")) {
-                if (osArch.contains("ppc")) {
-                    currentPlatform =
-                            is64bit ? Platform.LINUX_PPC64 : Platform.LINUX_PPC;
-                } else if(osArch.contains("sparc")) {
-                    currentPlatform = Platform.LINUX_SPARC;
-                } else {
-                    currentPlatform =
-                            is64bit ? Platform.LINUX_X64 : Platform.LINUX_X86;
-                }
-            }
-            
-            if (osName.contains("Mac OS X")) {
-                if(osArch.contains("ppc")) {
-                    currentPlatform = Platform.MACOSX_PPC;
-                } else {
-                    currentPlatform = Platform.MACOSX_X86;
-                }
-            }
-            
-            if (osName.contains("SunOS")) {
-                if(osArch.contains("sparc")) {
-                    currentPlatform = Platform.SOLARIS_SPARC;
-                } else {
-                    currentPlatform = Platform.SOLARIS_X86;
-                }
-            }
-            if(currentPlatform==null) {
-                currentPlatform = Platform.UNIX;
-            }
-        }
-        
-        return currentPlatform;
+        return getNativeUtils().getCurrentPlatform();        
     }
     
     public static String getHostName() {
@@ -1088,7 +1044,7 @@ public final class SystemUtils {
     // native accessor //////////////////////////////////////////////////////////////
     public static synchronized NativeUtils getNativeUtils() {
         if (nativeUtils == null) {
-            nativeUtils = NativeUtils.getInstance();
+            nativeUtils = NativeUtilsFactory.newNativeUtils();
         }
         return nativeUtils;
     }

@@ -20,7 +20,7 @@
  * Contributor(s):
  * 
  * The Original Software is NetBeans. The Initial Developer of the Original Software
- * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
+ * is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun Microsystems, Inc. All
  * Rights Reserved.
  * 
  * If you wish your version of this file to be governed by only the CDDL or only the
@@ -33,60 +33,25 @@
  * the option applies only if the new code is made subject to such option by the
  * copyright holder.
  */
-
 package org.netbeans.installer.utils.system;
 
-import org.netbeans.installer.utils.SystemUtils;
-import org.netbeans.installer.utils.helper.Platform;
 /**
- *
- * @author Kirill Sorokin
+ * @author Dmitry Lipin
  */
-public class SolarisNativeUtils extends UnixNativeUtils {
-    
-    public static final String LIBRARY_PATH_SOLARIS_SPARC =
-            NATIVE_JNILIB_RESOURCE_SUFFIX +
-            "solaris-sparc/" + //NOI18N
-            "solaris-sparc.so"; //NOI18N
-    
-    public static final String LIBRARY_PATH_SOLARIS_SPARCV9 =
-            NATIVE_JNILIB_RESOURCE_SUFFIX +
-            "solaris-sparc/" + //NOI18N
-            "solaris-sparcv9.so"; //NOI18N
-    
-    public static final String LIBRARY_PATH_SOLARIS_X86 =
-            NATIVE_JNILIB_RESOURCE_SUFFIX +
-            "solaris-x86/" + //NOI18N
-            "solaris-x86.so"; // NOI18N
-    
-    public static final String LIBRARY_PATH_SOLARIS_X64 =
-            NATIVE_JNILIB_RESOURCE_SUFFIX +
-            "solaris-x86/" + //NOI18N
-            "solaris-amd64.so"; // NOI18N
-    
-    private static final String[] FORBIDDEN_DELETING_FILES_SOLARIS = {};
-    
-    SolarisNativeUtils() {
-        String library = null;
-        
-        if(System.getProperty("os.arch").contains("sparc")) {
-            library = SystemUtils.isCurrentJava64Bit() ? 
-                LIBRARY_PATH_SOLARIS_SPARCV9 : 
-                LIBRARY_PATH_SOLARIS_SPARC;
+public class NativeUtilsFactory {
+
+    public static synchronized NativeUtils newNativeUtils() {
+        final String osName = System.getProperty("os.name");
+        if (osName.contains("Windows")) {
+            return new WindowsNativeUtils();
+        } else if (osName.contains("Linux")) {
+            return new LinuxNativeUtils();
+        } else if (osName.contains("SunOS")) {
+            return new SolarisNativeUtils();
+        } else if (osName.contains("Mac OS X")) {
+            return new MacOsNativeUtils();
         } else {
-            library = SystemUtils.isCurrentJava64Bit() ? 
-                LIBRARY_PATH_SOLARIS_X64 : 
-                LIBRARY_PATH_SOLARIS_X86;
-        }
-        
-        loadNativeLibrary(library);
-        initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_SOLARIS);
-    }
-    @Override
-    protected Platform getPlatform() {        
-        final String osArch = System.getProperty("os.arch");
-        return osArch.contains("sparc") ? 
-            Platform.SOLARIS_SPARC : 
-            Platform.SOLARIS_X86;        
+            return new UnixNativeUtils();            
+        }        
     }
 }
