@@ -32,6 +32,10 @@ public class NoViableAltException extends RecognitionException {
         this.tokenNames = tokenNames;
     }
 
+    public BitSet getExpected() {
+        return expected;
+    }
+    
     /**
      * Returns a clean error message (no line number/column information)
      */
