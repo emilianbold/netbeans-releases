@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.ui.customizer;
+package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.Color;
 import java.util.List;
@@ -53,64 +53,55 @@ import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
 import org.netbeans.modules.php.project.connections.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
-import org.netbeans.modules.php.project.ui.customizer.RunAsValidator.InvalidUrlException;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
 public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
-    private static final long serialVersionUID = -559348988746891271L;
-    private static final RemoteConfiguration NO_REMOTE_CONFIGURATION = new RemoteConfiguration(
+    private static final long serialVersionUID = -559266988746891271L;
+    static final RemoteConfiguration NO_REMOTE_CONFIGURATION = new RemoteConfiguration(
             NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration"), "", null, null, 0, null, false, null, 0); // NOI18N
-    private static final RemoteConfiguration MISSING_REMOTE_CONFIGURATION = new RemoteConfiguration(
-            NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_MissingRemoteConfiguration"), "", null, null, 0, null, false, null, 0); // NOI18N
     private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.ON_RUN;
 
+    final ChangeSupport changeSupport = new ChangeSupport(this);
     private final JLabel[] labels;
     private final JTextField[] textFields;
     private final String[] propertyNames;
     private final String displayName;
-    final Category category;
 
-    public RunAsRemoteWeb(ConfigManager manager, Category category) {
-        this(manager, category, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_ConfigRemoteWeb"));
+    public RunAsRemoteWeb(ConfigManager manager) {
+        this(manager, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_ConfigRemoteWeb"));
     }
 
-    public RunAsRemoteWeb(ConfigManager manager, Category category, String displayName) {
+    public RunAsRemoteWeb(ConfigManager manager, String displayName) {
         super(manager);
         this.displayName = displayName;
-        this.category = category;
 
         initComponents();
 
         labels = new JLabel[] {
             urlLabel,
-            indexFileLabel,
-            argsLabel,
             uploadDirectoryLabel,
         };
         textFields = new JTextField[] {
             urlTextField,
-            indexFileTextField,
-            argsTextField,
             uploadDirectoryTextField,
         };
         propertyNames = new String[] {
-            PhpProjectProperties.URL,
-            PhpProjectProperties.INDEX_FILE,
-            PhpProjectProperties.ARGS,
-            PhpProjectProperties.REMOTE_DIRECTORY,
+            RunConfigurationPanel.URL,
+            RunConfigurationPanel.REMOTE_DIRECTORY,
         };
         assert labels.length == textFields.length && labels.length == propertyNames.length;
 
@@ -134,7 +125,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 return remoteConfiguration.getName();
             }
         };
-        remoteConnectionComboBox.addActionListener(new ComboBoxUpdater(PhpProjectProperties.REMOTE_CONNECTION, remoteConnectionLabel,
+        remoteConnectionComboBox.addActionListener(new ComboBoxUpdater(RunConfigurationPanel.REMOTE_CONNECTION, remoteConnectionLabel,
                 remoteConnectionComboBox, remoteConfigurationConvertor));
         // remote upload
         ComboBoxSelectedItemConvertor remoteUploadConvertor = new ComboBoxSelectedItemConvertor() {
@@ -145,8 +136,13 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 return uploadFiles.name();
             }
         };
-        uploadFilesComboBox.addActionListener(new ComboBoxUpdater(PhpProjectProperties.REMOTE_UPLOAD, uploadFilesLabel, uploadFilesComboBox,
+        uploadFilesComboBox.addActionListener(new ComboBoxUpdater(RunConfigurationPanel.REMOTE_UPLOAD, uploadFilesLabel, uploadFilesComboBox,
                 remoteUploadConvertor));
+        runAsComboBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                changeSupport.fireChange();
+            }
+        });
     }
 
     @Override
@@ -178,7 +174,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         selectRemoteConnection();
         // remote upload
         UploadFiles uploadFiles = null;
-        String remoteUpload = getValue(PhpProjectProperties.REMOTE_UPLOAD);
+        String remoteUpload = getValue(RunConfigurationPanel.REMOTE_UPLOAD);
         if (remoteUpload == null) {
             uploadFiles = DEFAULT_UPLOAD_FILES;
         } else {
@@ -193,31 +189,15 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
     @Override
     protected void validateFields() {
-        String url = urlTextField.getText();
-        String indexFile = indexFileTextField.getText();
-        String args = argsTextField.getText();
-
-        String err = RunAsValidator.validateWebFields(url, indexFile, args);
-        if (err != null) {
-            validateCategory(err);
-            return;
-        }
-
-        RemoteConfiguration selected = (RemoteConfiguration) remoteConnectionComboBox.getSelectedItem();
-        assert selected != null;
-        if (selected == NO_REMOTE_CONFIGURATION) {
-            validateCategory(NbBundle.getMessage(RunAsRemoteWeb.class, "MSG_NoConfigurationSelected"));
-            return;
-        } else if (selected == MISSING_REMOTE_CONFIGURATION) {
-            validateCategory(NbBundle.getMessage(RunAsRemoteWeb.class, "MSG_NonExistingConfigurationSelected"));
-            return;
-        }
-        validateCategory(null);
+        changeSupport.fireChange();
     }
 
-    private void validateCategory(String error) {
-        category.setErrorMessage(error);
-        category.setValid(error == null);
+    public void addRunAsRemoteWebListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeRunAsRemoteWebListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
 
     private void populateRemoteConnectionComboBox() {
@@ -235,7 +215,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     }
 
     private void selectRemoteConnection() {
-        String remoteConnection = getValue(PhpProjectProperties.REMOTE_CONNECTION);
+        String remoteConnection = getValue(RunConfigurationPanel.REMOTE_CONNECTION);
         if (remoteConnection == null) {
             remoteConnectionComboBox.setSelectedItem(NO_REMOTE_CONFIGURATION);
             return;
@@ -251,9 +231,39 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 return;
             }
         }
-        // remote connection is missing (probably removed?)
-        remoteConnectionComboBox.addItem(MISSING_REMOTE_CONFIGURATION);
-        remoteConnectionComboBox.setSelectedItem(MISSING_REMOTE_CONFIGURATION);
+        assert false : "Should not get here";
+    }
+
+    public String getUrl() {
+        return urlTextField.getText().trim();
+    }
+
+    public void setUrl(String url) {
+        urlTextField.setText(url);
+    }
+
+    public RemoteConfiguration getRemoteConfiguration() {
+        return (RemoteConfiguration) remoteConnectionComboBox.getSelectedItem();
+    }
+
+    public void setRemoteConfiguration(RemoteConfiguration remoteConfiguration) {
+        remoteConnectionComboBox.setSelectedItem(remoteConfiguration);
+    }
+
+    public String getUploadDirectory() {
+        return uploadDirectoryTextField.getText().trim();
+    }
+
+    public void setUploadDirectory(String uploadDirectory) {
+        uploadDirectoryTextField.setText(uploadDirectory);
+    }
+
+    public UploadFiles getUploadFiles() {
+        return (UploadFiles) uploadFilesComboBox.getSelectedItem();
+    }
+
+    public void setUploadFiles(UploadFiles uploadFiles) {
+        uploadFilesComboBox.setSelectedItem(uploadFiles);
     }
 
     /** This method is called from within the constructor to
@@ -269,11 +279,6 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         runAsComboBox = new javax.swing.JComboBox();
         urlLabel = new javax.swing.JLabel();
         urlTextField = new javax.swing.JTextField();
-        indexFileLabel = new javax.swing.JLabel();
-        indexFileTextField = new javax.swing.JTextField();
-        argsLabel = new javax.swing.JLabel();
-        argsTextField = new javax.swing.JTextField();
-        urlHintLabel = new javax.swing.JTextArea();
         remoteConnectionLabel = new javax.swing.JLabel();
         remoteConnectionComboBox = new javax.swing.JComboBox();
         manageRemoteConnectionButton = new javax.swing.JButton();
@@ -288,20 +293,6 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         urlLabel.setLabelFor(urlTextField);
         org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_ProjectUrl")); // NOI18N
-
-        indexFileLabel.setLabelFor(indexFileTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(indexFileLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_IndexFile")); // NOI18N
-
-        argsLabel.setLabelFor(argsTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(argsLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Arguments")); // NOI18N
-
-        urlHintLabel.setEditable(false);
-        urlHintLabel.setLineWrap(true);
-        urlHintLabel.setRows(2);
-        urlHintLabel.setWrapStyleWord(true);
-        urlHintLabel.setBorder(null);
-        urlHintLabel.setEnabled(false);
-        urlHintLabel.setOpaque(false);
 
         remoteConnectionLabel.setLabelFor(remoteConnectionComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(remoteConnectionLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_FtpConnection")); // NOI18N
@@ -332,15 +323,10 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                     .add(uploadDirectoryLabel)
                     .add(uploadFilesLabel)
                     .add(urlLabel)
-                    .add(runAsLabel)
-                    .add(indexFileLabel)
-                    .add(argsLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 72, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(runAsLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
-                    .add(indexFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
-                    .add(argsTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
-                    .add(urlHintLabel)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, uploadFilesHintLabel)
                     .add(layout.createSequentialGroup()
                         .add(remoteConnectionComboBox, 0, 121, Short.MAX_VALUE)
@@ -361,17 +347,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(urlLabel)
                     .add(urlTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(indexFileLabel)
-                    .add(indexFileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(argsLabel)
-                    .add(argsTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(urlHintLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(remoteConnectionLabel)
                     .add(manageRemoteConnectionButton)
@@ -409,10 +385,6 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     }//GEN-LAST:event_manageRemoteConnectionButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel argsLabel;
-    private javax.swing.JTextField argsTextField;
-    private javax.swing.JLabel indexFileLabel;
-    private javax.swing.JTextField indexFileTextField;
     private javax.swing.JButton manageRemoteConnectionButton;
     private javax.swing.JComboBox remoteConnectionComboBox;
     private javax.swing.JLabel remoteConnectionLabel;
@@ -423,7 +395,6 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private javax.swing.JComboBox uploadFilesComboBox;
     private javax.swing.JLabel uploadFilesHintLabel;
     private javax.swing.JLabel uploadFilesLabel;
-    private javax.swing.JTextArea urlHintLabel;
     private javax.swing.JLabel urlLabel;
     private javax.swing.JTextField urlTextField;
     // End of variables declaration//GEN-END:variables
@@ -436,18 +407,6 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         protected final String getDefaultValue() {
             return RunAsRemoteWeb.this.getDefaultValue(getPropName());
-        }
-
-        @Override
-        protected void processUpdate() {
-            super.processUpdate();
-            String hint = ""; // NOI18N
-            try {
-                hint = RunAsValidator.composeUrlHint(urlTextField.getText(), indexFileTextField.getText(), argsTextField.getText());
-            } catch (InvalidUrlException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            urlHintLabel.setText(hint);
         }
     }
 
@@ -499,8 +458,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         }
 
         private Color getForeground(RemoteConfiguration remoteConfig, JList list, boolean isSelected) {
-            if (remoteConfig == MISSING_REMOTE_CONFIGURATION
-                    || remoteConfig == NO_REMOTE_CONFIGURATION) {
+            if (remoteConfig == NO_REMOTE_CONFIGURATION) {
                 return UIManager.getColor("nb.errorForeground"); // NOI18N
             }
             return isSelected ? list.getSelectionForeground() : list.getForeground();
