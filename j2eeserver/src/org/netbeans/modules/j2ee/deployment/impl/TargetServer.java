@@ -613,7 +613,7 @@ public class TargetServer {
         if (incremental == null) { 
             return;
         }        
-        
+              
         TargetModule[] modules = getDeploymentDirectoryModules();
         
         /*
@@ -655,6 +655,7 @@ public class TargetServer {
                 }
             }
             
+            List<File> files = new ArrayList<File>();
             for (File file : artifacts) {
                 for (Map.Entry<FileObject, File> content : contentDirs.entrySet()) {
                     FileObject artifact = FileUtil.toFileObject(FileUtil.normalizeFile(file));
@@ -663,7 +664,11 @@ public class TargetServer {
                         if (relative != null) {
                             //copy
                             try {
-                                updateDeploymentDirectory(content.getValue(), relative, file);
+                                FileObject updated = updateDeploymentDirectory(content.getValue(), relative, file);
+                                File updatedFile = FileUtil.toFile(updated);
+                                if (updatedFile != null) {
+                                    files.add(updatedFile);
+                                }
                             } catch (IOException ex) {
                                 LOGGER.log(Level.INFO, null, ex);
                             }
@@ -671,16 +676,20 @@ public class TargetServer {
                         }
                     }
                 }
-            }
+            }         
+            reloadArtifacts(modules, files);
+        } else {
+            reloadArtifacts(modules, artifacts);
         }
-
-        for (TargetModule module : modules) {
-            // FIXME send real artifacts
-            incremental.reloadArtifacts(module.delegate(), artifacts);
-        }        
     }
     
-    private void updateDeploymentDirectory(File targetDir, String relativePath, File artifact) throws IOException {
+    private void reloadArtifacts(TargetModule[] modules, Iterable<File> files) {
+        for (TargetModule module : modules) {
+            incremental.reloadArtifacts(module.delegate(), files);
+        }                
+    }
+    
+    private FileObject updateDeploymentDirectory(File targetDir, String relativePath, File artifact) throws IOException {
         FileObject destRoot = FileUtil.createFolder(targetDir);
         FileObject destObject = FileUtil.createData(destRoot, relativePath);
         FileObject artifactObject = FileUtil.toFileObject(FileUtil.normalizeFile(artifact));
@@ -698,6 +707,8 @@ public class TargetServer {
                 is.close();
             }
         }
+        
+        return destObject;
     }
     
     private TargetModule[] getDeploymentDirectoryModules() {

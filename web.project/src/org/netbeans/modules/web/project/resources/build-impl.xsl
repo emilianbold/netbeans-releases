@@ -1319,11 +1319,16 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 <nbdeploy debugmode="false" clientUrlPart="${{client.urlPart}}" forceRedeploy="${{forceRedeploy}}"/>
             </target>
             
-            <target name="-init-deploy-ant" unless="netbeans.home">
+            <target name="-init-deploy-ant, -init-cos" unless="netbeans.home">
                 <property name="deploy.ant.archive" value="${{dist.war}}"/>
                 <property name="deploy.ant.docbase.dir" value="${{web.docbase.dir}}"/>
                 <property name="deploy.ant.resource.dir" value="${{resource.dir}}"/>
                 <property name="deploy.ant.enabled" value="true"/>
+            </target>
+           
+            <!-- COS feature -->
+            <target name="-init-cos" unless="netbeans.home">
+                <property name="ensure.built.source.roots" value="${{src.dir}}"/>
             </target>
             
             <target name="run-undeploy">
