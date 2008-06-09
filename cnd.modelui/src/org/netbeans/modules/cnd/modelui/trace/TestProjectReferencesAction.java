@@ -38,28 +38,20 @@
  */
 package org.netbeans.modules.cnd.modelui.trace;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
 import javax.swing.Action;
-import javax.swing.JMenuItem;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmModel;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceXRef;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
-import org.openide.util.actions.NodeAction;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
@@ -68,22 +60,19 @@ import org.openide.windows.OutputWriter;
  *
  * @author Vladirmir Voskresensky
  */
-public class TestProjectReferencesAction extends NodeAction {
+public class TestProjectReferencesAction extends TestProjectActionBase {
 
-    private CsmModel model;
     private static boolean running = false;
-    private final JMenuItem presenter;
-    private final static boolean TEST_XREF = Boolean.getBoolean("test.xref.action"); // NOI18N
     private final boolean allReferences;
     private final boolean analyzeStatistics;
     
-    private enum State {
-
-        Enabled, Disabled, Indeterminate
-    }
 
     public static Action getSmartCompletionAnalyzerAction() {
         return SharedClassObject.findObject(SmartCompletionAnalyzerAction.class, true);
+    }
+    
+    public static Action getTestReparseAction() {
+        return SharedClassObject.findObject(TestReparseAction.class, true);
     }
     
     public static Action getDirectUsageReferencesAction() {
@@ -117,46 +106,8 @@ public class TestProjectReferencesAction extends NodeAction {
     protected TestProjectReferencesAction(boolean allReferences, boolean analyzeStatistics) {
         this.allReferences = allReferences;
         this.analyzeStatistics = analyzeStatistics;
-        this.presenter = new JMenuItem();
-        this.model = CsmModelAccessor.getModel();
-        org.openide.awt.Actions.connect(presenter, (Action) this, true);
     }
 
-    protected boolean enable(Node[] activatedNodes) {
-        if (!TEST_XREF) {
-            return false;
-        }
-        if (model == null) {
-            return false;
-        }
-        if (running) {
-            return false;
-        }
-        Collection<NativeProject> projects = getNativeProjects(getActivatedNodes());
-        if (projects == null) {
-            return false;
-        }
-        return getState(projects) != State.Indeterminate;
-    }
-    public void performAction(final Node[] activatedNodes) {
-        running = true;
-        model.enqueue(new Runnable() {
-
-            public void run() {
-                try {
-                    performAction(getNativeProjects(getActivatedNodes()));
-                } finally {
-                    running = false;
-                }
-            }
-        }, "Testing xRef"); //NOI18N
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-    
     public String getName() {
         String nameKey;
         if (analyzeStatistics) {
@@ -167,89 +118,7 @@ public class TestProjectReferencesAction extends NodeAction {
         return NbBundle.getMessage(getClass(), nameKey); // NOI18N
     }
 
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override
-    public JMenuItem getMenuPresenter() {
-        return getPresenter();
-    }
-
-    @Override
-    public JMenuItem getPopupPresenter() {
-        return getPresenter();
-    }
-
-    private JMenuItem getPresenter() {
-        final Collection<NativeProject> projects = getNativeProjects(getActivatedNodes());
-        if (TEST_XREF) {
-            if (projects == null) {
-                this.setEnabled(!running);
-                presenter.setVisible(false);
-            } else {
-                try {
-                    presenter.setVisible(true);
-                    this.setEnabled(!running);
-                } catch (Throwable thr) {
-                    // we are in awt thread;
-                    // if exception occurs here, it doesn't allow even to close the project!
-                    thr.printStackTrace();
-                    this.setEnabled(false);
-                }
-            }
-        } else {
-            presenter.setVisible(false);
-        }
-
-        return presenter;
-    }
-
-    /** 
-     * Gets the collection of native projects that correspond the given nodes.
-     * @return in the case all nodes correspond to native projects -
-     * collection of native projects; otherwise null
-     */
-    private Collection<NativeProject> getNativeProjects(Node[] nodes) {
-        Collection<NativeProject> projects = new ArrayList<NativeProject>();
-        for (int i = 0; i < nodes.length; i++) {
-            Object o = nodes[i].getValue("Project"); // NOI18N 
-            if (!(o instanceof Project)) {
-                return null;
-            }
-            NativeProject nativeProject = (NativeProject) ((Project) o).getLookup().lookup(NativeProject.class);
-            if (nativeProject == null) {
-                return null;
-            }
-            projects.add(nativeProject);
-        }
-        return projects;
-    }
-
-    private State getState(Collection<NativeProject> projects) {
-        if (model == null) {
-            return State.Indeterminate;
-        }
-        State state = State.Indeterminate;
-        for (NativeProject p : projects) {
-            State curr = getState(p);
-            if (state == State.Indeterminate) {
-                state = curr;
-            } else {
-                if (state != curr) {
-                    return State.Indeterminate;
-                }
-            }
-        }
-        return state;
-    }
-
-    private State getState(NativeProject p) {
-        CsmProject csmPrj = model.getProject(p);
-        return csmPrj != null && csmPrj.isStable(null) ? State.Enabled : State.Disabled;
-    }
-
-    private void performAction(Collection<NativeProject> projects) {
+    protected void performAction(Collection<NativeProject> projects) {
         if (projects != null) {
             for (NativeProject p : projects) {
                 testProject(p);
