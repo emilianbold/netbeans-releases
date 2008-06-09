@@ -139,7 +139,7 @@ public final class ExecutionDescriptorBuilder {
             return descriptorData.inputOutput;
         }
 
-        public boolean isControlable() {
+        public boolean isControllable() {
             return descriptorData.controllable;
         }
 

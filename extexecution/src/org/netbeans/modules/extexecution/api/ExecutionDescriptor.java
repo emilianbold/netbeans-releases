@@ -73,7 +73,7 @@ public interface ExecutionDescriptor {
      * @return <code>true</code> if the control buttons (rerun, stop) should
      *             be available in io tab
      */
-    boolean isControlable();
+    boolean isControllable();
 
     /**
      * Returns <code>true</code> if the io should be selected before

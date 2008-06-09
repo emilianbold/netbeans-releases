@@ -197,7 +197,7 @@ public final class ExecutionService {
             // try to find free output windows
             synchronized (this) {
                 if (io == null) {
-                    FreeIOHandler freeIO = FreeIOHandler.findFreeIO(originalDisplayName, descriptor.isControlable());
+                    FreeIOHandler freeIO = FreeIOHandler.findFreeIO(originalDisplayName, descriptor.isControllable());
                     if (freeIO != null) {
                         io = freeIO.getIO();
                         displayName = freeIO.getDisplayName();
@@ -213,7 +213,7 @@ public final class ExecutionService {
             if (io == null) { // free IO was not found, create new one
                 displayName = getNonActiveDisplayName(originalDisplayName);
 
-                if (descriptor.isControlable()) {
+                if (descriptor.isControllable()) {
                     stopAction = new StopAction();
                     rerunAction = new RerunAction(this, descriptor.getRerunCondition());
 
@@ -299,7 +299,7 @@ public final class ExecutionService {
             handle = null;
         }
 
-        if (descriptor.isControlable()) {
+        if (descriptor.isControllable()) {
             stopAction.setEnabled(true);
             rerunAction.setEnabled(false);
         }
@@ -324,7 +324,7 @@ public final class ExecutionService {
                         handle.finish();
                     }
 
-                    if (descriptor.isControlable()) {
+                    if (descriptor.isControllable()) {
                         stopAction.setEnabled(false);
                         rerunAction.setEnabled(true);
                     }
