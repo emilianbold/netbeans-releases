@@ -561,22 +561,22 @@ public class DiagramElementOperator extends Operator implements Actionable {
      */
     public HashSet<LinkOperator> getLinks() {
         HashSet<LinkOperator> links = new HashSet<LinkOperator>();
-     Widget sObject = getGraphObject();
+        Widget sObject = getGraphObject();
         if ((sObject != null) && (sObject instanceof UMLNodeWidget)) {
             UMLNodeWidget node = (UMLNodeWidget) sObject;
             UMLWidgetOperator wo = new UMLWidgetOperator(sObject);
             Collection<UMLEdgeWidget> edges = wo.getScene().findNodeEdges(wo.getPresentationElement(), true, true);
             Iterator<UMLEdgeWidget> it = edges.iterator();
             UMLWidgetOperator eo ;
-              while (it.hasNext()) {
+            while (it.hasNext()) {
                 UMLEdgeWidget edge = (UMLEdgeWidget) it.next();
-                  eo = new UMLWidgetOperator(edge);
+                eo = new UMLWidgetOperator(edge);
                 IPresentationElement presentation = eo.getPresentationElement();
                 if (presentation != null) {
                     links.add(new LinkOperator(diagramOperator, edge));
                 }
             }
-         }
+        }
         return links;
     }
 
