@@ -46,16 +46,15 @@
 
 package org.netbeans.modules.visualweb.ejb;
 
-import org.netbeans.modules.visualweb.ejb.datamodel.EjbContainerVendor;
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbGroup;
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbInfo;
-import java.util.ArrayList;
 import java.util.Iterator;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.api.project.Project;
 //This was a hacker. Can not use it anymore
 //import org.netbeans.modules.j2ee.deployment.devmodules.spi.RequestedEjbResource;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.ErrorManager;
 import org.w3c.dom.Document;
@@ -72,12 +71,7 @@ public class EjbRefTracker {
     
     /*public static RequestedEjbResource[] getRequestedEjbResources( Project project ) 
     {
-        AuxiliaryConfiguration projectAux = (AuxiliaryConfiguration)project.getLookup().lookup(AuxiliaryConfiguration.class) ;
-        if ( projectAux == null ) {
-            ErrorManager.getDefault().getInstance( "org.netbeans.modules.visualweb.ejb.nodes.SessionBeanNode" ).log( ErrorManager.ERROR, "no AuxiliaryConfiguration.class implementation for Project "+ project ) ; // NOI18N
-        } else {
-            ErrorManager.getDefault().getInstance( "org.netbeans.modules.visualweb.ejb.nodes.SessionBeanNode" ).log( ErrorManager.INFORMATIONAL, "we have an AuxiliaryConfiguration") ; // NOI18N
-        }
+        AuxiliaryConfiguration projectAux = ProjectUtils.getAuxiliaryConfiguration(project;
         Element ejbdatasourceElement = projectAux.getConfigurationFragment(EJB_DATASOURCE_ELEMENT_NAME, EJB_DATASOURCE_ELEMENT_NAMESPACE, false) ;
         
         if ( ejbdatasourceElement != null ) {
@@ -142,12 +136,7 @@ public class EjbRefTracker {
     public static void AddEjbDataSourcesToProject( Project project, EjbGroup ejbGroup )
     {
         // Get the AuxiliaryConfiguration
-        AuxiliaryConfiguration projectAux = (AuxiliaryConfiguration)project.getLookup().lookup(AuxiliaryConfiguration.class) ;
-        if ( projectAux == null ) {
-            ErrorManager.getDefault().getInstance( "org.netbeans.modules.visualweb.ejb.nodes.SessionBeanNode" ).log( ErrorManager.ERROR, "no AuxiliaryConfiguration.class implementation for Project "+ project ) ; // NOI18N
-        } else {
-            ErrorManager.getDefault().getInstance( "org.netbeans.modules.visualweb.ejb.nodes.SessionBeanNode" ).log( ErrorManager.INFORMATIONAL, "we have an AuxiliaryConfiguration") ; // NOI18N
-        }
+        AuxiliaryConfiguration projectAux = ProjectUtils.getAuxiliaryConfiguration(project);
         
         try { 
             Element ejbdatasourceElement = projectAux.getConfigurationFragment(EJB_DATASOURCE_ELEMENT_NAME, EJB_DATASOURCE_ELEMENT_NAMESPACE, false) ;

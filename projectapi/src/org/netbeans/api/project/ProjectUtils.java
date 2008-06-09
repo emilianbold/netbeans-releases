@@ -51,8 +51,12 @@ import java.util.prefs.Preferences;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.projectapi.AuxiliaryConfigBasedPreferencesProvider;
+import org.netbeans.modules.projectapi.AuxiliaryConfigImpl;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.GenericSources;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Mutex;
 import org.openide.util.Parameters;
@@ -239,4 +243,23 @@ public class ProjectUtils {
         
     }
     
+    /**
+     * Find a way of storing extra configuration in a project.
+     * If the project's {@linkplain Project#getLookup lookup} does not provide an instance,
+     * a fallback implementation is used.
+     * <p class="nonnormative">
+     * The current fallback implementation uses {@linkplain FileObject#setAttribute file attributes}
+     * for "nonsharable" configuration, and a specially named file in the project directory
+     * for "sharable" configuration. For compatibility purposes (in case a project adds an
+     * {@link AuxiliaryConfiguration} instance to its lookup where before it had none),
+     * the fallback storage is read (but not written) even if there is an instance in project lookup.
+     * </p>
+     * @param project a project
+     * @return an auxiliary configuration handle
+     * @since org.netbeans.modules.projectapi/1 1.17
+     */
+    public static AuxiliaryConfiguration getAuxiliaryConfiguration(Project project) {
+        return new AuxiliaryConfigImpl(project);
+    }
+
 }
