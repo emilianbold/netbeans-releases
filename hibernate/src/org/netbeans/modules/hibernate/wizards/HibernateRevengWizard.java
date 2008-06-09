@@ -45,6 +45,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -223,7 +224,7 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
         return res;
     }
 
-    private boolean foundRevengFileInProject(ArrayList<FileObject> revengFiles, String revengFileName) {
+    private boolean foundRevengFileInProject(List<FileObject> revengFiles, String revengFileName) {
         for (FileObject fo : revengFiles) {
             if (fo.getName().equals(revengFileName)) {
                 return true;
@@ -283,7 +284,7 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
         // and not like : hibernate.reveng<i>.xml.
         if (wiz instanceof TemplateWizard) {
             HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
-            ArrayList<FileObject> revengFiles = hibernateEnv.getAllHibernateReverseEnggFileObjects();
+            List<FileObject> revengFiles = hibernateEnv.getAllHibernateReverseEnggFileObjects();
             String targetName = DEFAULT_REVENG_FILENAME;
             if (!revengFiles.isEmpty() && foundRevengFileInProject(revengFiles, DEFAULT_REVENG_FILENAME)) {
                 int revengFilesCount = revengFiles.size();

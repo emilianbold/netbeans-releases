@@ -39,11 +39,11 @@
 package org.netbeans.modules.hibernate.framework;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -170,7 +170,7 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
 
     private void showConfigPanelForCustomizer(WebModule webModule) {
         Project enclosingProject = Util.getEnclosingProjectFromWebModule(webModule);
-        ArrayList<FileObject> configFileObjects = HibernateUtil.getAllHibernateConfigFileObjects(enclosingProject);
+        List<FileObject> configFileObjects = HibernateUtil.getAllHibernateConfigFileObjects(enclosingProject);
         for (FileObject configFile : configFileObjects) {
             if (configFile.getName().equals(DEFAULT_CONFIG_FILENAME)) {
                 try {

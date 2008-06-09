@@ -40,8 +40,8 @@ package org.netbeans.modules.hibernate.wizards;
 
 import java.awt.Component;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -130,7 +130,7 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
         return panels;
     }
 
-    private boolean foundConfigFileInProject(ArrayList<FileObject> configFiles, String configFileName) {
+    private boolean foundConfigFileInProject(List<FileObject> configFiles, String configFileName) {
         for (FileObject fo : configFiles) {
             if (fo.getName().equals(configFileName)) {
                 return true;
@@ -213,7 +213,7 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
         // and not like : hibernate.cfg<i>.xml.
         if (wizard instanceof TemplateWizard) {
             HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
-            ArrayList<FileObject> configFiles = hibernateEnv.getAllHibernateConfigFileObjects();
+            List<FileObject> configFiles = hibernateEnv.getAllHibernateConfigFileObjects();
             String targetName = DEFAULT_CONFIGURATION_FILENAME;
             if (!configFiles.isEmpty() && foundConfigFileInProject(configFiles, DEFAULT_CONFIGURATION_FILENAME)) {
                 int configFilesCount = configFiles.size();

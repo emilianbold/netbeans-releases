@@ -39,8 +39,8 @@
 package org.netbeans.modules.hibernate.hqleditor.ui;
 
 import java.awt.CardLayout;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -96,7 +96,7 @@ public final class HQLEditorTopComponent extends TopComponent {
                 logger.warning("HiberEnv is not found in enclosing project.");
                 return;
             }
-            ArrayList<HibernateConfiguration> configurations = env.getAllHibernateConfigurationsFromProject();
+            List<HibernateConfiguration> configurations = env.getAllHibernateConfigurationsFromProject();
             for (HibernateConfiguration hibernateConfiguration : configurations) {
                 hibernateConfigMap.put(hibernateConfiguration.getSessionFactory().getAttributeValue("name"), //NOI18N
                         hibernateConfiguration);

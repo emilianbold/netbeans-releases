@@ -74,7 +74,7 @@ import org.openide.loaders.DataObject;
 public class HibernateMappingWizardPanel extends javax.swing.JPanel {
 
     private Project project;
-    ArrayList<FileObject> configFileObjects;
+    List<FileObject> configFileObjects;
     List<String> databaseTables;
     org.netbeans.modules.hibernate.service.HibernateEnvironment env;
 
@@ -164,7 +164,7 @@ public class HibernateMappingWizardPanel extends javax.swing.JPanel {
 
     // Gets the list of Config files from HibernateEnvironment.
     public String[] getConfigFilesFromProject(Project project) {
-        ArrayList<String> configFiles = new ArrayList<String>();
+        List<String> configFiles = new ArrayList<String>();
         configFileObjects = env.getAllHibernateConfigFileObjects();
         for (FileObject fo : configFileObjects) {
             configFiles.add(fo.getNameExt());
