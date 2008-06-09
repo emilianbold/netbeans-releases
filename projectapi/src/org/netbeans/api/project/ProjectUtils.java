@@ -47,12 +47,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.prefs.Preferences;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.modules.projectapi.AuxiliaryConfigBasedPreferencesProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Mutex;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
 /**
@@ -140,6 +143,27 @@ public class ProjectUtils {
                 return visit(new HashSet<Project>(), new HashMap<Project,Set<? extends Project>>(), master, master, candidate);
             }
         });
+    }
+    
+    /**
+     * Return {@link Preferences} for the given project and given module.
+     * 
+     * <p class="nonnormative">
+     * The preferences are stored in the project using either {@link AuxiliaryConfiguration}
+     * or {@link AuxiliaryProperties}.
+     * </p>
+     * 
+     * @param project project for which preferences should be returned
+     * @param clazz module specification as in {@link org.openide.util.NbPreferences#forModule(java.lang.Class)}
+     * @param shared whether the returned settings should be shared
+     * @return {@link Preferences} for the given project
+     * @since 1.16
+     */
+    public static Preferences getPreferences(Project project, Class clazz, boolean shared) {
+        Parameters.notNull("project", project);
+        Parameters.notNull("clazz", clazz);
+        
+        return AuxiliaryConfigBasedPreferencesProvider.getPreferences(project, clazz, shared);
     }
     
     /**

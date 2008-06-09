@@ -300,9 +300,15 @@ public final class TextRegionEditing {
         return groupEditings.empty() ? null : groupEditings.peek();
     }
     
-    void enterAction() {
-        activateTextSync(findEditableTextSyncIndex(activeGroupEditing().activeTextSyncIndex + 1, +1, false, false),
-                true);
+    boolean enterAction() {
+        TextRegion<?> master = activeTextSync().validMasterRegion();
+        if (master.startOffset() <= component.getCaretPosition() && component.getCaretPosition() <= master.endOffset()) {
+            activateTextSync(findEditableTextSyncIndex(activeGroupEditing().activeTextSyncIndex + 1, +1, false, false),
+                    true);
+            return true;
+        }
+        releaseActiveGroup(false);
+        return false;
     }
     
     void escapeAction() {
@@ -443,7 +449,10 @@ public final class TextRegionEditing {
                         editing.shiftTabAction();
                         break;
                     case ENTER:
-                        editing.enterAction();
+                        if (!editing.enterAction()) {
+                            Action original = (Action)getValue(ORIGINAL_ACTION_PROPERTY);
+                            original.actionPerformed(evt);
+                        }
                         break;
                 }
             }

@@ -43,10 +43,13 @@ package org.netbeans.modules.websvc.core;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -78,22 +81,21 @@ public class ProjectInfo {
     
     public ProjectInfo(Project project) {
         this.project=project;
-        JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-        if (wss != null) {
-            Map properties = wss.getAntProjectHelper().getStandardPropertyEvaluator().getProperties();
-            String serverInstance = (String)properties.get("j2ee.server.instance"); //NOI18N
-            if (serverInstance != null) {
-                J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
-                
-                if (j2eePlatform != null) {
+        J2eeModuleProvider javaeeModule = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (javaeeModule != null) {
+            String serverInstanceId = javaeeModule.getServerInstanceID();
+            if (serverInstanceId != null) {
+                try {
+                    J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstanceId).getJ2eePlatform();               
                     WSStack wsStack = JaxWsStackProvider.getJaxWsStackForTool(j2eePlatform, WSStack.TOOL_WSIMPORT);
-                    
                     jsr109Supported = wsStack.getServiceFeatures().contains(WSStackFeature.JSR_109);
                     //jsr109oldSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE);
                     //wsgenSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSGEN);
                     wsgenSupported = wsStack.getServiceFeatures().contains(WSStack.TOOL_WSGEN);
                     wsimportSupported = true;
                     serverType = getServerType(project);
+                } catch (InstanceRemovedException ex) {
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, "Failed to find J2eePlatform", ex);
                 }
             }
         }

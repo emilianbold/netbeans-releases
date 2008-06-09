@@ -560,19 +560,26 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         
         private class Refresher extends Object implements Runnable {
             public void run() {
-                JPDAThread t = tr.get();
-                if (t != null) {
-                    fireNodeChanged(t);
+                JPDAThread thread = tr.get();
+                if (thread != null) {
+                    fireNodeChanged(thread);
                     boolean shouldExpand;
                     synchronized (this) {
                         shouldExpand = ThreadStateUpdater.this.shouldExpand;
                         ThreadStateUpdater.this.shouldExpand = false;
                     }
                     if (shouldExpand) {
-                        DebuggingTreeExpansionModelFilter.expand(debugger, t);
+                        DebuggingTreeExpansionModelFilter.expand(debugger, thread);
                     }
-                }
-            }
+                    if (preferences.getBoolean(DebuggingTreeModel.SHOW_THREAD_GROUPS, false)) {
+                        JPDAThreadGroup group = thread.getParentThreadGroup();
+                        while (group != null) {
+                            fireNodeChanged(group);
+                            group = group.getParentThreadGroup();
+                        } // while
+                    } // if
+                } // if
+            } // run
         }
     }
     

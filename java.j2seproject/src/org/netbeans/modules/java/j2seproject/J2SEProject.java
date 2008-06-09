@@ -260,6 +260,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             new Info(),
             aux,
             helper.createCacheDirectoryProvider(),
+            helper.createAuxiliaryProperties(),
             spp,
             actionProvider,
             new J2SELogicalViewProvider(this, this.updateHelper, evaluator(), spp, refHelper),

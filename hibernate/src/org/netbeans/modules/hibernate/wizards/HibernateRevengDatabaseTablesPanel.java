@@ -67,6 +67,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
+import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.hibernate.wizards.support.Table;
 import org.netbeans.modules.hibernate.wizards.support.TableClosure;
 import org.netbeans.modules.hibernate.wizards.support.TableProvider;
@@ -89,8 +90,8 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
     private String schemaName;
     private boolean sourceSchemaUpdateEnabled;
     private Project project;
-    org.netbeans.modules.hibernate.service.HibernateEnvironment env;
-    ArrayList<FileObject> configFileObjects;
+    private HibernateEnvironment env;
+    List<FileObject> configFileObjects;
     List<String> databaseTables;
     private TableClosure tableClosure;
     private SchemaElement sourceSchemaElement;
@@ -123,14 +124,14 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
     }
 
     private void fillConfiguration() {
-        env = project.getLookup().lookup(org.netbeans.modules.hibernate.service.HibernateEnvironment.class);
+        env = project.getLookup().lookup(HibernateEnvironment.class);
         String[] configFiles = getConfigFilesFromProject(project);
         this.cmbDatabaseConn.setModel(new DefaultComboBoxModel(configFiles));
     }
 
     // Gets the list of Config files from HibernateEnvironment.
     public String[] getConfigFilesFromProject(Project project) {
-        ArrayList<String> configFiles = new ArrayList<String>();
+        List<String> configFiles = new ArrayList<String>();
         configFileObjects = env.getAllHibernateConfigFileObjects();
         for (FileObject fo : configFileObjects) {
             configFiles.add(fo.getNameExt());

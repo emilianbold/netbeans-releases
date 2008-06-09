@@ -50,12 +50,15 @@
 package org.netbeans.modules.websvc.core;
 
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.serverapi.api.WSStack;
@@ -81,7 +84,11 @@ public class WSStackUtils {
         if(provider != null){
             String serverInstanceID = provider.getServerInstanceID();
             if(serverInstanceID != null && serverInstanceID.length() > 0) {
-                return Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+                try {
+                    return Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
+                } catch (InstanceRemovedException ex) {
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, "Failed to find J2eePlatform", ex);
+                }
             }
         }
         return null;
