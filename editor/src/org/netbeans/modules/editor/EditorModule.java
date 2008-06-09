@@ -120,7 +120,7 @@ public class EditorModule extends ModuleInstall {
                     b = prefs.getBoolean(AnnotationTypes.PROP_COMBINE_GLYPHS, true);
                     AnnotationTypes.getTypes().setCombineGlyphs(b);
                     
-                    b = prefs.getBoolean(AnnotationTypes.PROP_GLYPHS_OVER_LINE_NUMBERS, false);
+                    b = prefs.getBoolean(AnnotationTypes.PROP_GLYPHS_OVER_LINE_NUMBERS, true);
                     AnnotationTypes.getTypes().setGlyphsOverLineNumbers(b);
                     
                     b = prefs.getBoolean(AnnotationTypes.PROP_SHOW_GLYPH_GUTTER, true);
