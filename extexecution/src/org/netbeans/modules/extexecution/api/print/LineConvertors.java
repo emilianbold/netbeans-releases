@@ -257,20 +257,9 @@ public final class LineConvertors {
             if (matcher.matches()) {
                 String stringUrl = matcher.group(1);
                 try {
-                    final URL url = new URL(stringUrl);
-
-                    return Collections.<ConvertedLine>singletonList(new SimpleConvertedLine(line, new OutputListener() {
-
-                        public void outputLineSelected(OutputEvent ev) {
-                        }
-
-                        public void outputLineAction(OutputEvent ev) {
-                            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-                        }
-
-                        public void outputLineCleared(OutputEvent ev) {
-                        }
-                    }));
+                    URL url = new URL(stringUrl);
+                    return Collections.<ConvertedLine>singletonList(
+                            new SimpleConvertedLine(line, new UrlOutputListener(url)));
                 } catch (MalformedURLException ex) {
                     // retur chain
                 }
@@ -303,6 +292,26 @@ public final class LineConvertors {
         public String getText() {
             return text;
         }
+    }
 
+    private static class UrlOutputListener implements OutputListener {
+
+        private final URL url;
+
+        public UrlOutputListener(URL url) {
+            this.url = url;
+        }
+
+        public void outputLineAction(OutputEvent ev) {
+            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+        }
+
+        public void outputLineCleared(OutputEvent ev) {
+            // noop
+        }
+
+        public void outputLineSelected(OutputEvent ev) {
+            // noop
+        }
     }
 }
