@@ -349,6 +349,7 @@ public class EntityClassInfo {
 
         private String name;
         private String type;
+        private String simpleTypeName;
         private String typeArg;
         private List<String> annotations;
         private Collection<FieldInfo> fieldInfos;
@@ -366,7 +367,15 @@ public class EntityClassInfo {
         }
 
         public void setType(String type) {
-            this.type = type;
+            Class primitiveType = Util.getPrimitiveType(type);
+            
+            if (primitiveType != null) {
+                this.type = primitiveType.getName();
+                this.simpleTypeName = primitiveType.getSimpleName();
+            } else {
+                this.type = type;
+                this.simpleTypeName = type.substring(type.lastIndexOf(".") + 1);
+            }
         }
 
         public String getType() {
@@ -374,7 +383,7 @@ public class EntityClassInfo {
         }
 
         public String getSimpleTypeName() {
-            return type.substring(type.lastIndexOf(".") + 1);
+            return simpleTypeName;
         }
 
         public void setTypeArg(String typeArg) {

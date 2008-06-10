@@ -51,7 +51,9 @@ import java.io.PrintWriter;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 
 /**
- *
+ * This support is intended to work with RemoteNativeExecution and provide input (and eventually
+ * output) for project actions.
+ * 
  * @author gordonp
  */
 public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
@@ -65,10 +67,10 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
         try {
             setChannelCommand(dirf, exe, args, envp);
             InputStream is = channel.getInputStream();
-            in = new BufferedReader(new InputStreamReader(is));
+            in = new BufferedReader(new InputStreamReader(is)); // XXX - Change to non-buffered input
             
             String line;
-            while ((line = in.readLine()) != null) {
+            while ((line = in.readLine()) != null) { // XXX - Change to character oriented input
                 out.println(line);
                 out.flush();
             }
@@ -104,7 +106,8 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
 //            echannel.setEnv(var, val); // not in 0.1.24
 //        }
         
-        echannel.setCommand(dircmd + exe + " " + args); //NOI18N
+        String cmdline = dircmd + exe + " " + args; // NOI18N
+        echannel.setCommand(cmdline.replace('\\', '/'));
         echannel.setInputStream(System.in);
         echannel.setErrStream(System.err);
         echannel.connect();

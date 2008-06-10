@@ -67,8 +67,9 @@ final class JavaOptionsPanelController extends OptionsPanelController {
     
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     
+    private Map<String, OptionsPanelController> id2Controller;
     private Map<JComponent, OptionsPanelController> component2Option;
-    private List<AdvancedOption> options;
+    private Lookup.Result<AdvancedOption> options;    
 
     private JTabbedPane pane;
     
@@ -138,6 +139,17 @@ final class JavaOptionsPanelController extends OptionsPanelController {
         }
         return pane;
     }
+
+    @Override
+    protected void setCurrentSubcategory(String path) {
+        String subcategoryID = path.indexOf('/') == -1 ? path : path.substring(0, path.indexOf('/'));
+        OptionsPanelController controller = id2Controller.get(subcategoryID);
+        if (controller == null)
+            return;
+        JComponent c = controller.getComponent(controller.getLookup());
+        if (c != pane.getSelectedComponent())
+            pane.setSelectedComponent(c);
+    }
     
     public void addPropertyChangeListener(PropertyChangeListener l) {
 	pcs.addPropertyChangeListener(l);
@@ -154,10 +166,14 @@ final class JavaOptionsPanelController extends OptionsPanelController {
     
     private synchronized Collection<OptionsPanelController> getControllers() {
         if (controllers == null) {
+            id2Controller = new HashMap<String, OptionsPanelController>();
             controllers2Options = new LinkedHashMap<OptionsPanelController, AdvancedOption>();
             controllers = new LinkedList<OptionsPanelController>();
-            for (AdvancedOption o : options) {
+            for (Lookup.Item<AdvancedOption> item : options.allItems()) {
+                AdvancedOption o = item.getInstance();
                 OptionsPanelController c = o.create();
+                String id = item.getId().substring(item.getId().lastIndexOf('/') + 1);
+                id2Controller.put(id, c);
                 controllers2Options.put(c, o);
                 controllers.add(c);
             }
@@ -175,13 +191,6 @@ final class JavaOptionsPanelController extends OptionsPanelController {
         
         Lookup lookup = fl.getLookup();
         
-        Lookup.Result<AdvancedOption> result = lookup.lookup(new Lookup.Template<AdvancedOption>( AdvancedOption.class ));
-        
-        options = new LinkedList<AdvancedOption>();
-        
-        for( AdvancedOption advancedOption : result.allInstances()) {
-            options.add(advancedOption);
-        }
-        
+        options = lookup.lookup(new Lookup.Template<AdvancedOption>( AdvancedOption.class ));
     }
 }

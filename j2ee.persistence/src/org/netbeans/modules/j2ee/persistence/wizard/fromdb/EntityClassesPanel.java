@@ -445,7 +445,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
     private javax.swing.JLabel specifyNamesLabel;
     // End of variables declaration//GEN-END:variables
 
-    public static final class WizardPanel implements WizardDescriptor.Panel, ChangeListener {
+    public static final class WizardPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel, ChangeListener {
 
         private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -602,6 +602,10 @@ public class EntityClassesPanel extends javax.swing.JPanel {
 
         private void setErrorMessage(String errorMessage) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage", errorMessage); // NOI18N
+        }
+
+        public boolean isFinishPanel() {
+            return true;
         }
     }
 

@@ -41,6 +41,7 @@
 
 package org.netbeans.spi.project;
 
+import org.netbeans.api.project.ProjectUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -57,6 +58,10 @@ import org.w3c.dom.Element;
  * unless it is explicitly given permission to read and/or write other fragments
  * owned by another module. XML namespaces should be used to scope the data
  * to avoid accidental clashes.
+ * </p>
+ * <p>
+ * <strong>Do not look for this object directly in project lookup.</strong>
+ * Instead use {@link ProjectUtils#getAuxiliaryConfiguration}.
  * </p>
  * @see org.netbeans.api.project.Project#getLookup
  * @author Jesse Glick

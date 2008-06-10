@@ -516,13 +516,13 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 Integer precision = m.getPrecision();
                 Integer scale = m.getScale();
                 if (entityClass.isRegenSchemaAttrs() ) {
-                    if(length != null) {
+                    if(length != null && isCharacterType(memberType)) {
                         columnAnnArguments.add(genUtils.createAnnotationArgument("length", length)); // NOI18N
                     }
-                    if(precision != null) {
+                    if(precision != null && isDecimalType(memberType)) {
                         columnAnnArguments.add(genUtils.createAnnotationArgument("precision", precision)); // NOI18N
                     }
-                    if(scale != null) {
+                    if(scale != null && isDecimalType(memberType)) {
                         columnAnnArguments.add(genUtils.createAnnotationArgument("scale", scale)); // NOI18N
                     }
                 }
@@ -565,6 +565,14 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     // (better to use TypeMirror)
                     return true;
                 } 
+                return false;
+            }
+            
+            private boolean isDecimalType(String type) {
+                if ("java.lang.Double".equals(type) || // NOI18N
+                    "java.lang.Float".equals(type) ) { // NOI18N
+                    return true;
+                }
                 return false;
             }
 
@@ -850,9 +858,22 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 String typeName = getRelationshipFieldType(role, entityClass.getPackage());
                 TypeMirror fieldType = copy.getElements().getTypeElement(typeName).asType();
                 if (role.isToMany()) {
-                    // XXX this will probably not resolve imports
-                    TypeElement collectionType = copy.getElements().getTypeElement("java.util.Collection"); // NOI18N
-                    fieldType = copy.getTypes().getDeclaredType(collectionType, fieldType);
+                    // Use the collection type the user wants
+                    String collectionType = "java.util.Collection"; // NOI18N
+
+                    switch (entityClass.getCollectionType()) {
+                        case LIST:
+                            collectionType = "java.util.List"; // NOI18N
+                            break;
+                        case SET:
+                            collectionType = "java.util.Set"; // NOI18N
+                            break;
+                        default:
+                            collectionType = "java.util.Collection"; // NOI18
+
+                    }
+                    TypeElement collectionTypeElem = copy.getElements().getTypeElement(collectionType);
+                    fieldType = copy.getTypes().getDeclaredType(collectionTypeElem, fieldType);
                 }
 
                 List<AnnotationTree> annotations = new ArrayList<AnnotationTree>();
@@ -929,7 +950,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 }
                 
                 if (!role.isToMany()) { // meaning ManyToOne or OneToOne
-                    // Add optional=false if the relationship is not optional/non-nullable 
+                    // Add optional=false on @ManyToOne or the owning side of @OneToOne
+                    // if the relationship is non-optional (or non-nuallable in other words)  
                     if(!role.isOptional() && (role.isMany() || role.equals(role.getParent().getRoleA())) ) {
                         annArguments.add(genUtils.createAnnotationArgument("optional", false)); // NOI18N
                     }

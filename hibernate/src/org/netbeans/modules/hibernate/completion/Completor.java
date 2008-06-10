@@ -62,7 +62,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.hibernate.service.HibernateEnvironment;
+import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.hibernate.service.TableColumn;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;

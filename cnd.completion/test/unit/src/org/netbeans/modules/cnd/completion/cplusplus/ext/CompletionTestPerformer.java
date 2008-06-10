@@ -42,6 +42,8 @@ package org.netbeans.modules.cnd.completion.cplusplus.ext;
 import java.beans.PropertyVetoException;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -54,7 +56,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
-import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -167,7 +169,7 @@ public class CompletionTestPerformer {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException("The testPerform method may be called only inside AWT event dispatch thread.");
         }
-        
+        Logger.getLogger(FileLock.class.getName()).setLevel(Level.SEVERE);
         doc = doc == null ? Utilities.getDocument(editor) : doc;
         assert doc != null;
         int offset = CndCoreTestUtils.getDocumentOffset(doc, lineIndex, colIndex);
@@ -177,6 +179,7 @@ public class CompletionTestPerformer {
             try {
                 doc.insertString(offset, textToInsert, null);
             } finally {
+                Logger.getLogger(FileLock.class.getName()).setLevel(Level.SEVERE);
                 doc.atomicUnlock();
             }
             String text = doc.getText(0, doc.getLength());

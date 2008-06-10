@@ -44,8 +44,8 @@ package org.netbeans.modules.websvc.serverapi.api;
  * @author mkuchtiak
  */
 public interface WSUriDescriptor {
-    /** Pattern for WSDL URI */
-    public String getWsdlUri (String applicationRoot, String serviceName, String portName, boolean isEjb);
+    /** Pattern for service descriptor URI (WSDL, WADL) */
+    public String getDescriptorUri (String applicationRoot, String serviceName, String portName, boolean isEjb);
     /** Pattern for Web Service URI */
     public String getServiceUri (String applicationRoot, String serviceName, String portName, boolean isEjb);
     /** Pattern for Tester Page URI */

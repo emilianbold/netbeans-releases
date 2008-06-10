@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.java.ui;
 
+import java.util.prefs.Preferences;
 import javax.swing.UIManager;
 import org.netbeans.api.java.source.CodeStyle.WrapStyle;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
@@ -90,8 +91,9 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         amArrayInitCheckBox.putClientProperty(OPTION_ID, alignMultilineArrayInit);
     }
     
-    public static FormatingOptionsPanel.Category getController() {
+    public static FormatingOptionsPanel.Category getController(Preferences preferences) {
         return new CategorySupport(
+                preferences,
                 "LBL_AlignmentAndBraces", // NOI18N
                 new FmtAlignmentBraces(), // NOI18N
                 NbBundle.getMessage(FmtAlignmentBraces.class, "SAMPLE_AlignBraces"),
@@ -165,7 +167,9 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         nlModifiersCheckBox = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
 
+        setMinimumSize(new java.awt.Dimension(0, 0));
         setOpaque(false);
+        setPreferredSize(new java.awt.Dimension(0, 0));
         setLayout(new java.awt.BorderLayout());
 
         bracesPlacementPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
