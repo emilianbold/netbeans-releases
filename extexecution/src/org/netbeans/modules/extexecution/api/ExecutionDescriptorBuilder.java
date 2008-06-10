@@ -44,82 +44,214 @@ import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.openide.windows.InputOutput;
 
 /**
+ * This class is used to create execution descriptors.
+ * <p>
+ * This class in <i>not thread safe</i>.
  *
  * @author Petr Hejl
+ * @see ExecutionDescriptor
  */
 public final class ExecutionDescriptorBuilder {
 
     private final DescriptorData descriptorData = new DescriptorData();
 
+    /**
+     * Creates the new builder. All properites of the builder are configured
+     * to <code>false</code> or <code>null</code>.
+     */
     public ExecutionDescriptorBuilder() {
         super();
     }
 
+    /**
+     * Sets this builder's custom io. ExecutionDescriptor subsequently created
+     * by {@link #create()} method will return this io on
+     * {@link ExecutionDescriptor#getInputOutput()}.
+     *
+     * @param io custom input output, <code>null</code> allowed
+     * @return this descriptor builder
+     * @see ExecutionDescriptor#getInputOutput()
+     */
     public ExecutionDescriptorBuilder inputOutput(InputOutput io) {
         descriptorData.inputOutput = io;
         return this;
     }
 
+    /**
+     * Sets this builder's controllable flag. ExecutionDescriptor subsequently
+     * created by {@link #create()} method will return this flag on
+     * {@link ExecutionDescriptor#isControllable()}.
+     *
+     * @param controllable controllable flag
+     * @return this descriptor builder
+     * @see ExecutionDescriptor#isControllable()
+     */
     public ExecutionDescriptorBuilder controllable(boolean controllable) {
         descriptorData.controllable = controllable;
         return this;
     }
 
+    /**
+     * Sets this builder's front window flag. ExecutionDescriptor subsequently
+     * created by {@link #create()} method will return this flag on
+     * {@link ExecutionDescriptor#isFrontWindow()}.
+     *
+     * @param frontWindow front window flag
+     * @return this descriptor builder
+     * @see ExecutionDescriptor#isFrontWindow()
+     */
     public ExecutionDescriptorBuilder frontWindow(boolean frontWindow) {
         descriptorData.front = frontWindow;
         return this;
     }
 
+    /**
+     * Sets this builder's input visible flag. ExecutionDescriptor subsequently
+     * created by {@link #create()} method will return this flag on
+     * {@link ExecutionDescriptor#isInputVisible()}.
+     *
+     * @param inputVisible input visible flag
+     * @return this descriptor builder
+     * @see ExecutionDescriptor#isInputVisible()
+     */
     public ExecutionDescriptorBuilder inputVisible(boolean inputVisible) {
         descriptorData.input = inputVisible;
         return this;
     }
 
+    /**
+     * Sets this builder's show progress flag. ExecutionDescriptor subsequently
+     * created by {@link #create()} method will return this flag on
+     * {@link ExecutionDescriptor#showProgress()}.
+     *
+     * @param showProgress show progress flag
+     * @return this descriptor builder
+     * @see ExecutionDescriptor#showProgress()
+     */
     public ExecutionDescriptorBuilder showProgress(boolean showProgress) {
         descriptorData.progress = showProgress;
         return this;
     }
 
-    public ExecutionDescriptorBuilder showSuspend(boolean showSuspend) {
-        descriptorData.suspend = showSuspend;
+    /**
+     * Sets this builder's show suspend flag. ExecutionDescriptor subsequently
+     * created by {@link #create()} method will return this flag on
+     * {@link ExecutionDescriptor#showSuspended()}.
+     *
+     * @param showSuspended show suspended
+     * @return this descriptor builder
+     * @see ExecutionDescriptor#showSuspended()
+     */
+    public ExecutionDescriptorBuilder showSuspended(boolean showSuspended) {
+        descriptorData.suspend = showSuspended;
         return this;
     }
 
+    /**
+     * Sets this builder's standard output processor. ExecutionDescriptor
+     * subsequently created by {@link #create()} method will return this
+     * processor on {@link ExecutionDescriptor#getOutProcessor()}.
+     *
+     * @param outProcessor processor for standard output, <code>null</code> allowed
+     * @return this descriptor builder
+     * @see ExecutionDescriptor#getOutProcessor()
+     */
     public ExecutionDescriptorBuilder outProcessor(InputProcessor outProcessor) {
         descriptorData.outProcessor = outProcessor;
         return this;
     }
 
+    /**
+     * Sets this builder's standard error output processor. ExecutionDescriptor
+     * subsequently created by {@link #create()} method will return this
+     * processor on {@link ExecutionDescriptor#getErrProcessor()}.
+     *
+     * @param errProcessor processor for standard error output, <code>null</code> allowed
+     * @return this descriptor builder
+     * @see ExecutionDescriptor#getErrProcessor()
+     */
     public ExecutionDescriptorBuilder errProcessor(InputProcessor errProcessor) {
         descriptorData.errProcessor = errProcessor;
         return this;
     }
 
+    /**
+     * Sets this builder's convertor for standard output. ExecutionDescriptor
+     * subsequently created by {@link #create()} method will return this
+     * convertor on {@link ExecutionDescriptor#getOutConvertor()}.
+     *
+     * @param convertor convertor for standard output, <code>null</code> allowed
+     * @return this descriptor builder
+     * @see ExecutionDescriptor#getOutConvertor()
+     */
     public ExecutionDescriptorBuilder outConvertor(LineConvertor convertor) {
         descriptorData.outConvertor = convertor;
         return this;
     }
 
+    /**
+     * Sets this builder's convertor for standard error output. ExecutionDescriptor
+     * subsequently created by {@link #create()} method will return this
+     * convertor on {@link ExecutionDescriptor#getErrConvertor()}.
+     *
+     * @param convertor convertor for standard error output, <code>null</code> allowed
+     * @return this descriptor builder
+     * @see ExecutionDescriptor#getErrConvertor()
+     */
     public ExecutionDescriptorBuilder errConvertor(LineConvertor convertor) {
         descriptorData.errConvertor = convertor;
         return this;
     }
 
-    public ExecutionDescriptorBuilder preExecution(Runnable preExcetion) {
-        descriptorData.preExecution = preExcetion;
+    /**
+     * Sets this builder's pre execution runnable. ExecutionDescriptor
+     * subsequently created by {@link #create()} method will return this
+     * runnable on {@link ExecutionDescriptor#getPreExecution()}.
+     *
+     * @param preExecution pre exceution runnable, <code>null</code> allowed
+     * @return this descriptor builder
+     * @see ExecutionDescriptor#getPreExecution()
+     */
+    public ExecutionDescriptorBuilder preExecution(Runnable preExecution) {
+        descriptorData.preExecution = preExecution;
         return this;
     }
 
+    /**
+     * Sets this builder's post execution runnable. ExecutionDescriptor
+     * subsequently created by {@link #create()} method will return this
+     * runnable on {@link ExecutionDescriptor#getPostExecution()}.
+     *
+     * @param postExecution post execution runnable, <code>null</code> allowed
+     * @return this descriptor builder
+     * @see ExecutionDescriptor#getPostExecution()
+     */
     public ExecutionDescriptorBuilder postExecution(Runnable postExecution) {
         descriptorData.postExecution = postExecution;
         return this;
     }
 
+    /**
+     * Sets this builder's rerun condition. ExecutionDescriptor
+     * subsequently created by {@link #create()} method will return this
+     * condition on {@link ExecutionDescriptor#getRerunCondition()}.
+     *
+     * @param rerunCondition rerun condition, <code>null</code> allowed
+     * @return this descriptor builder
+     * @see ExecutionDescriptor#getRerunCondition()
+     */
     public ExecutionDescriptorBuilder rerunCondition(ExecutionDescriptor.RerunCondition rerunCondition) {
         descriptorData.rerunCondition = rerunCondition;
         return this;
     }
 
+    /**
+     * Creates the new {@link ExecutionDescriptor} based on the properties
+     * configured in this builder.
+     *
+     * @return the new {@link ExecutionDescriptor} based on the properties
+     *             configured in this builder
+     */
     public ExecutionDescriptor create() {
         return new Descriptor(descriptorData);
     }
