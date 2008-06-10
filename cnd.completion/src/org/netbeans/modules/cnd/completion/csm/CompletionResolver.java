@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 
@@ -205,7 +206,7 @@ public interface CompletionResolver {
 
         public Collection<CsmTemplateParameter> getTemplateparameters();
 
-        public Collection addResulItemsToCol(Collection orig);
+        public Collection<? extends CsmObject> addResulItemsToCol(Collection<? extends CsmObject> orig);
         
         public int size();
     }
