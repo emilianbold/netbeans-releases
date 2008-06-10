@@ -56,6 +56,13 @@ public interface LogicalViewProvider {
      * Projects should not attempt to cache this node in any way;
      * this call should always create a fresh node with no parent.
      * The node's lookup should contain the project object.
+     * <p>
+     * The node need not bother implementing {@linkplain org.openide.filesystems.FileSystem.Status badging}
+     * for the root node; any files {@linkplain org.netbeans.api.project.Sources contained} in the project will
+     * be considered as badging sources automatically. Other subnodes representing
+     * various collections of files may still need explicit badging logic.
+     * <em>As of <code>org.netbeans.modules.projectuiapi/1 1.31</code></em>
+     * </p>
      * @return a node displaying the contents of the project in an intuitive way
      */
     Node createLogicalView();

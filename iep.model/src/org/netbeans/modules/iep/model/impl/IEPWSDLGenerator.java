@@ -150,7 +150,7 @@ public class IEPWSDLGenerator {
             OutputOperatorComponent op = (OutputOperatorComponent)outList.get(i);
             String name = op.getDisplayName();
             name = NameUtil.makeJavaId(name);
-            boolean isRelation = op.getProperty(OperatorComponent.PROP_INPUTTYPE).getValue().equals(OperatorType.OPERATOR_RELATION.toString());
+            boolean isRelation = op.getInputType().equals(OperatorType.OPERATOR_RELATION);
             SchemaComponent outputSchema = op.getOutputSchemaId();
             
             if (outputSchema == null) {

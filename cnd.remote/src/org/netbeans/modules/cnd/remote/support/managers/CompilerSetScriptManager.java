@@ -37,10 +37,9 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.support.manager;
+package org.netbeans.modules.cnd.remote.support.managers;
 
 import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
-import org.netbeans.modules.cnd.remote.support.ScriptManager;
 
 /**
  * Manage the getCompilerSets script.

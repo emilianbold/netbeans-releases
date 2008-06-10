@@ -37,7 +37,7 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.hibernate.service;
+package org.netbeans.modules.hibernate.util;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -253,7 +253,7 @@ public class CustomClassLoader extends URLClassLoader {
     // Construct our own hibernate.properties and register ConnectionProvider.
     // Ofcourse this will override the user's version of the properties file.
     private InputStream getHibernateProperties() {
-        ByteArrayInputStream bIn = new ByteArrayInputStream("hibernate.connection.provider_class=org.netbeans.modules.hibernate.service.CustomJDBCConnectionProvider".getBytes());
+        ByteArrayInputStream bIn = new ByteArrayInputStream("hibernate.connection.provider_class=org.netbeans.modules.hibernate.util.CustomJDBCConnectionProvider".getBytes());
         return bIn;
     }
 }

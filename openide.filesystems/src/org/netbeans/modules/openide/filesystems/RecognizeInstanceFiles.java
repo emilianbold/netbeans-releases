@@ -29,7 +29,7 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core.startup.layers;
+package org.netbeans.modules.openide.filesystems;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;

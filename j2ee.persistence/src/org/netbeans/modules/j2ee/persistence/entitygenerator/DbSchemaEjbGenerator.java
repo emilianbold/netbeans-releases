@@ -160,7 +160,8 @@ public class DbSchemaEjbGenerator {
                 genTables.getClassName(tableName),
                 genTables.getFetchType(),
                 genTables.isRegenSchemaAttrs(),
-                genTables.getUniqueConstraints(tableName));
+                genTables.getUniqueConstraints(tableName),
+                genTables.getCollectionType());
         beans.put(tableName, bean);
         
         return bean;
