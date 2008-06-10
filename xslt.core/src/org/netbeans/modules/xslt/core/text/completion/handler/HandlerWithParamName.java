@@ -53,10 +53,10 @@ import org.netbeans.modules.xslt.model.Template;
 /**
  * @author Alex Petrov (06.06.2008)
  */
-public class HandlerCallTemplateName extends BaseCompletionHandler {
+public class HandlerWithParamName extends BaseCompletionHandler {
     private static final String
-        XSLT_TAG_NAME_CALL_TEMPLATE = "call-template";
-    
+        XSLT_TAG_NAME_WITH_PARAM = "with-param";
+
     @Override
     public List<XSLTCompletionResultItem> getResultItemList(
         XSLTEditorComponentHolder editorComponentHolder) {
@@ -64,40 +64,23 @@ public class HandlerCallTemplateName extends BaseCompletionHandler {
         if ((xslModel != null) && (xslModel.getState().equals(State.NOT_WELL_FORMED))) {
             return getIncorrectDocumentResultItem();
         }
-        return getNamedTemplateNameList();
+        return getTemplatesParamNameList();
     }
     
-    private List<XSLTCompletionResultItem> getNamedTemplateNameList() {
+    private List<XSLTCompletionResultItem> getTemplatesParamNameList() {
         if ((schemaModel == null) || (surroundTag == null) || 
             (attributeName == null) || (xslModel == null)) 
             return Collections.EMPTY_LIST;
         
         String tagName = surroundTag.getTagName(); //getLocalName();
-        if (! tagName.contains(XSLT_TAG_NAME_CALL_TEMPLATE))
+        if (! tagName.contains(XSLT_TAG_NAME_WITH_PARAM))
             return Collections.EMPTY_LIST;
         if (! attributeName.equals(XSLTCompletionUtil.ATTRIB_NAME))
             return Collections.EMPTY_LIST;
+/*        
 
         return findNamedTemplates();
-    }
-    
-    private List<XSLTCompletionResultItem> findNamedTemplates() {
-        Stylesheet stylesheet = xslModel.getStylesheet();
-        List<Template> templateList = stylesheet.getChildren(Template.class);
-        if (templateList.isEmpty()) return Collections.EMPTY_LIST;
-        
-        List<XSLTCompletionResultItem> resultItemList = 
-            new ArrayList<XSLTCompletionResultItem>();
-        for (Template template : templateList) {
-            QName valueofAttributeName = template.getName();
-            if (valueofAttributeName != null) {
-                String templateName = valueofAttributeName.toString();
-                if ((templateName != null) && (templateName.length() > 0)) {
-                    resultItemList.add(new XSLTCompletionResultItem(
-                        templateName, document, caretOffset));
-                }
-            }   
-        }
-        return resultItemList;
+*/
+        return Collections.EMPTY_LIST;
     }
 }
