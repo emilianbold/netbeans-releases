@@ -60,6 +60,7 @@ import org.w3c.dom.Element;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 
 
@@ -132,13 +133,7 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
 
     // --- ProjectTypeProfiler implementation ------------------------------------------------------------------------------
     public boolean isProfilingSupported(final Project project) {
-        final AuxiliaryConfiguration aux = (AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class);
-
-        if (aux == null) {
-            ProfilerLogger.severe("Auxiliary Configuration is null for Project: " + project); // NOI18N
-
-            return false;
-        }
+        final AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
 
         Element e = aux.getConfigurationFragment("data", NBMODULE_PROJECT_NAMESPACE_2, true); // NOI18N
 
@@ -158,7 +153,7 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
     }
 
     public JavaPlatform getProjectJavaPlatform(Project project) {
-        final AuxiliaryConfiguration aux = (AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class);
+        final AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
         FileObject projectDir = project.getProjectDirectory();
 
         if (aux.getConfigurationFragment("data", NBMODULE_SUITE_PROJECT_NAMESPACE, true) != null) { // NOI18N

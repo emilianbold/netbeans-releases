@@ -104,6 +104,7 @@ public final class JaxWsDataObject extends MultiDataObject {
         JaxWsModel model = p.getLookup().lookup(JaxWsModel.class);
         if(model==null) return null;
         ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        if(classPath==null) return null;
         String implClass = classPath.getResourceName(fo, '.', false);
         if(implClass==null) return null;
         return model.findServiceByImplementationClass(implClass);
@@ -119,7 +120,7 @@ public final class JaxWsDataObject extends MultiDataObject {
         super.handleDelete();
         Project project = FileOwnerQuery.getOwner(getPrimaryFile());
         JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-        if (wss != null) {
+        if (service!=null && wss != null) {
             String serviceName = service.getName();
             FileObject localWsdlFolder = wss.getLocalWsdlFolderForService(serviceName, false);
             if (localWsdlFolder != null) {

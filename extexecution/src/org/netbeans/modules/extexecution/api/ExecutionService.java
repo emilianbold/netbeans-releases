@@ -40,11 +40,12 @@
  */
 package org.netbeans.modules.extexecution.api;
 
-import org.netbeans.modules.extexecution.FreeIOHandler;
+import org.netbeans.modules.extexecution.InputOutputManager;
 import org.netbeans.modules.extexecution.StopAction;
 import org.netbeans.modules.extexecution.RerunAction;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.nio.charset.Charset;
@@ -63,6 +64,8 @@ import javax.swing.Action;
 
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.extexecution.api.input.InputProcessor;
+import org.netbeans.modules.extexecution.api.input.InputProcessors;
 import org.netbeans.modules.extexecution.api.input.InputReaderTask;
 import org.netbeans.modules.extexecution.api.input.InputReaders;
 import org.openide.filesystems.FileObject;
@@ -197,7 +200,7 @@ public final class ExecutionService {
             // try to find free output windows
             synchronized (this) {
                 if (io == null) {
-                    FreeIOHandler freeIO = FreeIOHandler.findFreeIO(originalDisplayName, descriptor.isControlable());
+                    InputOutputManager freeIO = InputOutputManager.findFreeIO(originalDisplayName, descriptor.isControllable());
                     if (freeIO != null) {
                         io = freeIO.getIO();
                         displayName = freeIO.getDisplayName();
@@ -213,10 +216,9 @@ public final class ExecutionService {
             if (io == null) { // free IO was not found, create new one
                 displayName = getNonActiveDisplayName(originalDisplayName);
 
-                if (descriptor.isControlable()) {
+                if (descriptor.isControllable()) {
                     stopAction = new StopAction();
-                    //rerunAction = new RerunAction(this, descriptor.getFileObject());
-                    rerunAction = new RerunAction(this, null);
+                    rerunAction = new RerunAction(this, descriptor.getRerunCondition());
 
                     io = IOProvider.getDefault().getIO(displayName, new Action[]{rerunAction, stopAction});
                 } else {
@@ -288,6 +290,8 @@ public final class ExecutionService {
                             io.select();
                         }
                     });
+                    
+            handle.setInitialDelay(0);
             handle.start();
             handle.switchToIndeterminate();
 
@@ -298,7 +302,7 @@ public final class ExecutionService {
             handle = null;
         }
 
-        if (descriptor.isControlable()) {
+        if (descriptor.isControllable()) {
             stopAction.setEnabled(true);
             rerunAction.setEnabled(false);
         }
@@ -310,7 +314,7 @@ public final class ExecutionService {
                     RUNNING_PROCESSES.remove(ExecutionService.this);
 
                     if (io != null && io != customio) {
-                        FreeIOHandler.addFreeIO(io, displayName, stopAction, rerunAction);
+                        InputOutputManager.addFreeIO(io, displayName, stopAction, rerunAction);
                     }
 
                     ACTIVE_DISPLAY_NAMES.remove(displayName);
@@ -323,7 +327,7 @@ public final class ExecutionService {
                         handle.finish();
                     }
 
-                    if (descriptor.isControlable()) {
+                    if (descriptor.isControllable()) {
                         stopAction.setEnabled(false);
                         rerunAction.setEnabled(true);
                     }
@@ -349,31 +353,18 @@ public final class ExecutionService {
         Reader in = io.getIn();
 
         try {
-
-            // FIXME will be repaced with output API
-//            executor.submit(InputReaderTask.newTask(
-//                    InputReaders.forStream(process.getInputStream(), Charset.defaultCharset()),
-//                    InputProcessors.proxy(
-//                        InputProcessors.ansiStripping(InputProcessors.printing(out,
-//                            LineConvertors.httpUrl(null), true)),
-//                        snooper)));
-//            executor.submit(InputReaderTask.newTask(
-//                    InputReaders.forStream(process.getErrorStream(), Charset.defaultCharset()),
-//                    InputProcessors.ansiStripping(InputProcessors.printing(err,
-//                        LineConvertors.httpUrl(null), false))));
-//            executor.submit(InputReaderTask.newTask(
-//                    InputReaders.forReader(in),
-//                    InputProcessors.copying(new OutputStreamWriter(process.getOutputStream()))));
-
             executor.submit(InputReaderTask.newTask(
                     InputReaders.forStream(process.getInputStream(), Charset.defaultCharset()),
-                    descriptor.getOutProcessor(io.getOut())));
+                    createOutProcessor(out)));
+                    //descriptor.getOutProcessor(io.getOut())));
             executor.submit(InputReaderTask.newTask(
                     InputReaders.forStream(process.getErrorStream(), Charset.defaultCharset()),
-                    descriptor.getErrProcessor(io.getErr())));
+                    createErrProcessor(err)));
+                    //descriptor.getErrProcessor(io.getErr())));
             executor.submit(InputReaderTask.newTask(
                     InputReaders.forReader(in),
-                    descriptor.getInProcessor(new OutputStreamWriter(process.getOutputStream()))));
+                    createInProcessor(process.getOutputStream())));
+                    //descriptor.getInProcessor(new OutputStreamWriter(process.getOutputStream()))));
 
             process.waitFor();
         } catch (InterruptedException ex) {
@@ -404,6 +395,34 @@ public final class ExecutionService {
         }
     }
 
+    private InputProcessor createOutProcessor(OutputWriter writer) {
+        InputProcessor outProcessor = InputProcessors.ansiStripping(
+                InputProcessors.printing(writer, descriptor.getOutConvertor(), true));
+
+        InputProcessor descriptorOut = descriptor.getOutProcessor();
+        if (descriptorOut != null) {
+            outProcessor = InputProcessors.proxy(outProcessor, descriptorOut);
+        }
+
+        return outProcessor;
+    }
+
+    private InputProcessor createErrProcessor(OutputWriter writer) {
+        InputProcessor errProcessor = InputProcessors.ansiStripping(
+                InputProcessors.printing(writer, descriptor.getErrConvertor(), false));
+
+        InputProcessor descriptorErr = descriptor.getErrProcessor();
+        if (descriptorErr != null) {
+            errProcessor = InputProcessors.proxy(errProcessor, descriptorErr);
+        }
+
+        return errProcessor;
+    }
+
+    private InputProcessor createInProcessor(OutputStream os) {
+        return InputProcessors.copying(new OutputStreamWriter(os));
+    }
+    
     private static String getNonActiveDisplayName(final String displayNameBase) {
         String nonActiveDN = displayNameBase;
         if (ACTIVE_DISPLAY_NAMES.contains(nonActiveDN)) {

@@ -69,7 +69,6 @@ import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.moduleinfo.JPAModuleInfo;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.wizard.entity.WrapperPanel;
-import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanelDS;
@@ -310,9 +309,8 @@ public class Util {
                 PersistenceUnitWizardPanelJdbc puJdbc = (PersistenceUnitWizardPanelJdbc) panel;
                 punit = ProviderUtil.buildPersistenceUnit(puJdbc.getPersistenceUnitName(), puJdbc.getSelectedProvider(), puJdbc.getPersistenceConnection());
                 punit.setTransactionType("RESOURCE_LOCAL"); //NOI18N
-                Library lib = PersistenceLibrarySupport.getLibrary(puJdbc.getSelectedProvider());
-                if (lib != null){
-                    addLibraryToProject(project, lib);
+                if (puJdbc.getPersistenceLibrary() != null){
+                    addLibraryToProject(project, puJdbc.getPersistenceLibrary());
                 }
             }
             punit.setName(panel.getPersistenceUnitName());

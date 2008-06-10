@@ -622,12 +622,23 @@ public class GroovyParser implements Parser {
                 }
             }
 
-            // TODO: This seems to be a duplicate call into notifyError(), since it's done
-            // indirectly from handleErrorCollector() below. Have to doublecheck.
+            /*
+             
+            This used to be a direct call to notifyError(). Now all calls to 
+            notifyError() should be done via handleErrorCollector() below
+            to make sure to eliminate duplicates and the like.
             
-            // if (!ignoreErrors) {
-            //      notifyError(context, null, Severity.ERROR, errorMessage, localizedMessage, offset, sanitizing);
-            // }
+            I've added the two logging calls only for debugging purposes
+            
+             */
+            
+             // if (!ignoreErrors) {
+             //      notifyError(context, null, Severity.ERROR, errorMessage, localizedMessage, offset, sanitizing);
+             // }
+            
+            LOG.log(Level.FINEST, "Comp-Ex, errorMessage    : {0}", errorMessage);
+            LOG.log(Level.FINEST, "Comp-Ex, localizedMessage: {0}", localizedMessage);
+            
         }
 
         CompileUnit compileUnit = compilationUnit.getAST();
@@ -727,16 +738,25 @@ public class GroovyParser implements Parser {
     
     
     
-    private static void handleErrorCollector(ErrorCollector errorCollector, Context context, ModuleNode moduleNode, boolean ignoreErrors, Sanitize sanitizing) {
+    private void handleErrorCollector(ErrorCollector errorCollector, Context context, ModuleNode moduleNode, boolean ignoreErrors, Sanitize sanitizing) {
+        LOG.log(Level.FINEST, "handleErrorCollector()");
         if (!ignoreErrors && errorCollector != null) {
             List errors = errorCollector.getErrors();
             if (errors != null) {
                 for (Object object : errors) {
+                    LOG.log(Level.FINEST, "Error found in collector: {0}", object);
                     if (object instanceof SyntaxErrorMessage) {
                         SyntaxException ex = ((SyntaxErrorMessage)object).getCause();
-                        String sourceLocator = ex.getSourceLocator();
-                        String name = moduleNode != null ? moduleNode.getContext().getName() : null;
-                        if (sourceLocator != null && name != null && sourceLocator.equals(name)) {
+                        
+                        // here i removed the moduleNode checkes introduced in
+                        // #124886: java.lang.AssertionError: Line number is higher than lines in text
+                        // http://hg.netbeans.org/main/rev/e3b2edd87b0e
+                        // since they drop errors which trigger exceptions (see parseBuffer above), but 
+                        // return an empty set of modules in compileUnit.getModules();
+                        // The original problen in #124886 is fixed elsewhere, so it's save to test
+                        // for ex != null only.
+                        
+                        if (ex != null) {
                             int startOffset = AstUtilities.getOffset(context.document, ex.getStartLine(), ex.getStartColumn());
                             int endOffset = AstUtilities.getOffset(context.document, ex.getLine(), ex.getEndColumn());
                             notifyError(context, null, Severity.ERROR, ex.getMessage(), null, startOffset, endOffset, sanitizing);

@@ -44,6 +44,7 @@ import java.io.IOException;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -84,8 +85,7 @@ class EclipseProjectReference {
     }
     
     public static EclipseProjectReference read(Project project) {
-        AuxiliaryConfiguration aux = project.getLookup().lookup(AuxiliaryConfiguration.class);
-        assert aux != null;
+        AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
         Element el = aux.getConfigurationFragment("eclipse", NS, true);
         if (el == null) {
             return null;
@@ -100,8 +100,7 @@ class EclipseProjectReference {
     }
     
     public static void write(Project project, EclipseProjectReference ref) throws IOException {
-        AuxiliaryConfiguration aux = project.getLookup().lookup(AuxiliaryConfiguration.class);
-        assert aux != null;
+        AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
         Document doc = XMLUtil.createDocument("ignore", null, null, null);
         Element reference = doc.createElementNS(NS, "eclipse"); // NOI18N
 

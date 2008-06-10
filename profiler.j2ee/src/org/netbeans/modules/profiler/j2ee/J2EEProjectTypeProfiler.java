@@ -263,13 +263,7 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public static boolean isEjbProject(final Project project) {
-        final AuxiliaryConfiguration aux = (AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class);
-
-        if (aux == null) {
-            ProfilerLogger.warning("Auxiliary Configuration is null for Project: " + project); // NOI18N
-
-            return false;
-        }
+        final AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
 
         Element e = aux.getConfigurationFragment("data", J2EE_EJBJARPROJECT_NAMESPACE_50, true); // NOI18N // is EJB Project in NB50?
 
@@ -281,13 +275,7 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
     }
 
     public static boolean isEnterpriseAppProject(final Project project) {
-        final AuxiliaryConfiguration aux = (AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class);
-
-        if (aux == null) {
-            ProfilerLogger.warning("Auxiliary Configuration is null for Project: " + project); // NOI18N
-
-            return false;
-        }
+        final AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
 
         Element e = aux.getConfigurationFragment("data", J2EE_EARPROJECT_NAMESPACE_50, true); // NOI18N // is Enterprise App Project in NB50?
 
@@ -322,13 +310,7 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
     }
 
     public static boolean isWebProject(final Project project) {
-        final AuxiliaryConfiguration aux = (AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class);
-
-        if (aux == null) {
-            ProfilerLogger.warning("Auxiliary Configuration is null for Project: " + project); // NOI18N
-
-            return false;
-        }
+        final AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
 
         Element e = aux.getConfigurationFragment("data", J2EE_WEBPROJECT_NAMESPACE_50, true); // NOI18N // is Web Project in NB50?
 
@@ -521,8 +503,7 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
                                                 .createElementNS(ProjectUtilities.PROFILER_NAME_SPACE, "data"); // NOI18N
         profilerFragment.setAttribute(PROFILE_VERSION_ATTRIBUTE, VERSION_NUMBER); // NOI18N
 
-        ((AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class)).putConfigurationFragment(profilerFragment,
-                                                                                                                     false);
+        ProjectUtils.getAuxiliaryConfiguration(project).putConfigurationFragment(profilerFragment, false);
 
         try {
             ProjectManager.getDefault().saveProject(project);
