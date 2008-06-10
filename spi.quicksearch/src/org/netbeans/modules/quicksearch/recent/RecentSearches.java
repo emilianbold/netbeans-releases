@@ -65,6 +65,13 @@ public class RecentSearches {
     } 
     
     public void add(ItemResult result) {
+        // don't create duplicates, however poor-man's test only
+        for (ItemResult ir : recent) {
+            if (ir.getDisplayName().equals(result.getDisplayName())) {
+                return;
+            }
+        }
+        
         if (recent.size()>=MAX_ITEMS) {
             recent.removeLast();
         }

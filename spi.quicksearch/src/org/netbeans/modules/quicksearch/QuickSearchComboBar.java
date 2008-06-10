@@ -40,6 +40,7 @@
 package org.netbeans.modules.quicksearch;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
@@ -62,28 +63,38 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     QuickSearchPopup displayer = new QuickSearchPopup(this);
     WeakReference<TopComponent> caller;
     
+    Color origForeground;
+    
     /** Creates new form SilverLightComboBar */
     public QuickSearchComboBar() {
         initComponents();
 
+        origForeground = command.getForeground();
         command.getDocument().addDocumentListener(new DocumentListener() {
 
             public void insertUpdate(DocumentEvent arg0) {
-                processCommand(command.getText());
+                textChanged();
             }
 
             public void removeUpdate(DocumentEvent arg0) {
-                processCommand(command.getText());
+                textChanged();
             }
 
             public void changedUpdate(DocumentEvent arg0) {
-                processCommand(command.getText());
+                textChanged();
             }
+            
+            private void textChanged () {
+                if (command.isFocusOwner()) {
+                    processCommand(command.getText());
+                }
+            }
+            
         });
     }
 
     private void processCommand(String text) {
-        if (popup == null && !"".equals(command.getText())) {
+        if (popup == null) {
             Point where = new Point(-SearchResultRender.shift-6, jPanel1.getSize().height - 1);
             Window parent = SwingUtilities.windowForComponent(this);
             SwingUtilities.convertPointToScreen(where, command);
@@ -152,6 +163,9 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         command.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         command.setName("command"); // NOI18N
         command.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                commandFocusGained(evt);
+            }
             public void focusLost(java.awt.event.FocusEvent evt) {
                 commandFocusLost(evt);
             }
@@ -209,7 +223,18 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
             popup.setVisible(false);
             popup=null;
         }
-        command.setText("");
+        SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    if (command.isFocusOwner() && caller != null) {
+                        System.out.println("reactivating old TC...");
+                        TopComponent tc = caller.get();
+                        if (tc != null) {
+                            tc.requestActive();
+                            tc.requestFocus();
+                        }
+                    }
+                }
+            });
     } else if ((evt.getKeyCode()) == KeyEvent.VK_ESCAPE) {
         if (popup != null) {
             popup.setVisible(false);
@@ -233,7 +258,15 @@ private void commandFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_
             popup = null;
         }
     }
+    command.setForeground(command.getDisabledTextColor());
+    command.setText("Search in NetBeans IDE");
 }//GEN-LAST:event_commandFocusLost
+
+private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_commandFocusGained
+// TODO add your handling code here:
+    command.setForeground(origForeground);
+    command.setText("");
+}//GEN-LAST:event_commandFocusGained
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

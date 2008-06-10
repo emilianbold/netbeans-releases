@@ -55,6 +55,8 @@ import org.openide.util.Lookup;
  */
 public class CommandEvaluator {
     
+    private final static String RECENT = "Recent";
+    
     /**
      * command pattern is:
      * "command arguments"
@@ -85,9 +87,16 @@ public class CommandEvaluator {
             text = command;
         }
         
+        boolean onlyRecent = text == null || text.trim().equals("");
+        
         SearchRequest sRequest = Accessor.DEFAULT.createRequest(text, null);
         
         for (ProviderModel.Category cat : ProviderRegistry.getInstance().getProviders().getCategories()) {
+            // skip all but recent if empty string came
+            if (onlyRecent && !RECENT.equals(cat.getName())) {
+                continue;
+            }
+            
             CategoryResult catResult = new CategoryResult(cat);
             SearchResponse sResponse = Accessor.DEFAULT.createResponse(catResult);
             for (SearchProvider provider : cat.getProviders()) {

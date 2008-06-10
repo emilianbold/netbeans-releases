@@ -80,19 +80,20 @@ public class QuickSearchPopup extends javax.swing.JPanel {
     }
     
     void update(String text) {
-        //should update existing, not create new
         JWindow popup = comboBar.getPopup();
         if (popup != null) {
-            if (text.equals("")) {
-                popup.setVisible(false);
-            } else {
-                jList1.setModel(new ResultsModel(text));
+            //should update existing, not create new
+            ResultsModel model = new ResultsModel(text);
+            if (model.getSize() > 0) {
+                jList1.setModel(model);
                 jList1.setSelectedIndex(0);
                 jList1.setVisibleRowCount(jList1.getModel().getSize());
                 final Dimension preferredSize = jList1.getPreferredSize();
                 popup.setSize(preferredSize.width + 3, preferredSize.height + 3);
                 popup.setVisible(true);
                 comboBar.getCommand().requestFocus();
+            } else {
+                popup.setVisible(false);
             }
         }
     }
