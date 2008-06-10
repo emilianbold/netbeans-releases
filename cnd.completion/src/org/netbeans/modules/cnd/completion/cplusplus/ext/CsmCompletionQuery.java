@@ -1115,31 +1115,30 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 break;
 
             case CsmCompletionExpression.ARRAY:
-                cont = resolveItem(item.getParameter(0), first, false, ExprKind.NONE);
-                if (cont) {
-                    cont = false;
-                    if (lastType != null) { // must be type
-                        if (item.getParameterCount() == 2) { // index in array follows
+//                cont = resolveItem(item.getParameter(0), first, false, ExprKind.NONE);
+                lastType = resolveType(item.getParameter(0));
+                cont = false;
+                if (lastType != null) { // must be type
+                    if (item.getParameterCount() == 2) { // index in array follows
 //                            CsmType arrayType = resolveType(item.getParameter(0));
 //                            if (arrayType != null && arrayType.equals(CsmCompletion.INT_TYPE)) {
-                               if (lastType.getArrayDepth() == 0) {
-                                   CsmClassifier cls = getClassifier(lastType);
-                                   if (cls != null) {
-                                       CsmFunction opArray = CsmBaseUtilities.getOperator(cls, CsmFunction.OperatorKind.ARRAY);
-                                       if (opArray != null) {
-                                           lastType = opArray.getReturnType();
-                                       }
+                           if (lastType.getArrayDepth() == 0) {
+                               CsmClassifier cls = getClassifier(lastType);
+                               if (cls != null) {
+                                   CsmFunction opArray = CsmBaseUtilities.getOperator(cls, CsmFunction.OperatorKind.ARRAY);
+                                   if (opArray != null) {
+                                       lastType = opArray.getReturnType();
                                    }
                                }
-                               lastType = CsmCompletion.getType(lastType.getClassifier(),
-                                                    Math.max(lastType.getArrayDepth() - 1, 0));
-                                cont = true;
-//                            }
-                        } else { // no index, increase array depth
-                            lastType = CsmCompletion.getType(lastType.getClassifier(),
-                                                              lastType.getArrayDepth() + 1);
+                           }
+                           lastType = CsmCompletion.getType(lastType.getClassifier(),
+                                                Math.max(lastType.getArrayDepth() - 1, 0));
                             cont = true;
-                        }
+//                            }
+                    } else { // no index, increase array depth
+                        lastType = CsmCompletion.getType(lastType.getClassifier(),
+                                                          lastType.getArrayDepth() + 1);
+                        cont = true;
                     }
                 }
                 break;
