@@ -76,7 +76,7 @@ public class BaseTest extends ExtJellyTestCase {
         super(testName);
     }
     
-    public void setUp() throws IOException{
+    public void setUp() throws IOException {
         openProject(DATA_PROJECT_NAME);
     }
 
@@ -123,7 +123,7 @@ public class BaseTest extends ExtJellyTestCase {
         EditAction editAction = new EditAction();
         editAction.perform(formnode);
         log("Source Editor window opened.");
-
+        
         OpenAction openAction = new OpenAction();
         openAction.perform(formnode);
         log("Form Editor window opened.");
@@ -441,8 +441,7 @@ public class BaseTest extends ExtJellyTestCase {
      * @param args arguments from command line
      */
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(BaseTest.class)
-                .addTest("testScenario").enableModules(".*").gui(true).clusters(".*"));
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(BaseTest.class).addTest("testScenario").enableModules(".*").gui(true).clusters(".*"));
 
 
     }
