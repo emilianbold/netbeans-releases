@@ -70,10 +70,16 @@ import org.openide.util.NbBundle;
  */
 public class BasicUMLLabelManager extends AbstractLabelManager
 {
+    private String keywords;
     
     public BasicUMLLabelManager(ConnectionWidget widget)
     {
+        this(widget,null);
+    }
+    public BasicUMLLabelManager(ConnectionWidget widget,String keywordsAsString)
+    {
         super(widget);
+        keywords=keywordsAsString;
     }
     
     //////////////////////////////////////////////////////////////////
@@ -108,7 +114,7 @@ public class BasicUMLLabelManager extends AbstractLabelManager
             
             IElement element = getModelElement();
             List stereotypes = element.getAppliedStereotypes();
-            if(stereotypes.size() > 0)
+            if(stereotypes.size() > 0 || keywords!=null)
             {
                  ToggleLabelAction stereotypeAction = new ToggleLabelAction(this, 
                                                              STEREOTYPE, 
@@ -147,9 +153,25 @@ public class BasicUMLLabelManager extends AbstractLabelManager
         {
             IElement element = getModelElement();
             String stereotype = element.getAppliedStereotypesAsString(true);
-            if((stereotype != null) && (stereotype.length() > 0))
+            if(((stereotype != null) && (stereotype.length() > 0)) || (keywords!=null))
             {
-                updateLabel(LabelType.EDGE, STEREOTYPE, stereotype);
+                String txt="";
+                if(stereotype!=null && stereotype.length() > 0)
+                {
+                    txt+=stereotype;
+                }
+                if(keywords!=null)
+                {
+                    if(txt.length()>0)
+                    {
+                        txt="<<"+keywords+","+txt.substring(2);
+                    }
+                    else
+                    {
+                        txt="<<"+keywords+">>";
+                    }
+                }
+                updateLabel(LabelType.EDGE, STEREOTYPE, txt);
             }
             else
             {
@@ -184,7 +206,24 @@ public class BasicUMLLabelManager extends AbstractLabelManager
             IElement element = getModelElement();
             
             UMLLabelWidget label = new UMLLabelWidget(getScene(), "dummy", null);
-            label.setLabel(element.getAppliedStereotypesAsString(true));
+            String stereotype = element.getAppliedStereotypesAsString(true);
+            String txt="";
+            if(stereotype!=null && stereotype.length() > 0)
+            {
+                txt+=stereotype;
+            }
+            if(keywords!=null)
+            {
+                if(txt.length()>0)
+                {
+                    txt="<<"+keywords+","+txt.substring(2);
+                }
+                else
+                {
+                    txt="<<"+keywords+">>";
+                }
+            }
+            label.setLabel(txt);
             retVal = label;
         }
         
@@ -230,7 +269,7 @@ public class BasicUMLLabelManager extends AbstractLabelManager
     private void createStereotypeLabel(IElement element, boolean assignDefaultName)
     {
         String name = element.getAppliedStereotypesAsString(true);
-        if((name != null) && (name.length() > 0))
+        if(((name != null) && (name.length() > 0)) || (keywords!=null))
         {
             showLabel(STEREOTYPE);
         }
@@ -276,5 +315,10 @@ public class BasicUMLLabelManager extends AbstractLabelManager
                 showLabel(name, type);
             }
         }
+    }
+    
+    public String getKeywords()
+    {
+        return keywords!=null ? "<<"+keywords+">>" : null;
     }
 }
