@@ -43,6 +43,9 @@ package org.netbeans.modules.print.spi;
 import java.util.Date;
 
 /**
+ * Print provider is the collection of the pages to be printed,
+ * where collection is the 2D matrix
+ *
  * @author Vladimir Yaroslavskiy
  * @version 2006.04.24
  */
@@ -50,9 +53,9 @@ public interface PrintProvider {
 
   /**
    * Returns pages for given option.
-   * @param width of page.
-   * @param height of page.
-   * @param zoom of page.
+   * @param width specifies the width of pages.
+   * @param height specifies the height of pages.
+   * @param zoom specifies the zoom of pages.
    * @return pages for given option
    */
   PrintPage [][] getPages(int width, int height, double zoom);

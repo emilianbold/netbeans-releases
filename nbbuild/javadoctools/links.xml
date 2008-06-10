@@ -168,3 +168,4 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-api-java-classpath}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-api-java-classpath"/>
 <link href="${javadoc.docs.org-netbeans-modules-websvc-serverapi}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-websvc-serverapi"/>
 <link href="${javadoc.docs.org-netbeans-modules-extexecution}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-extexecution"/>
+<link href="${javadoc.docs.org-netbeans-modules-print}" offline="true" packagelistloc="${netbeans.javadoc.dir}\org-netbeans-modules-print"/>
