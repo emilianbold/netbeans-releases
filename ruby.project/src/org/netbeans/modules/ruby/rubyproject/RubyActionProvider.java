@@ -616,7 +616,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             if (rspec.isRSpecInstalled() && RSpecSupport.isSpecFile(file)) {
                 TestRunner rspecRunner = getTestRunner(TestRunner.TestType.RSPEC);
                 if (rspecRunner != null) {
-                    rspecRunner.runTest(file);
+                    rspecRunner.runTest(file, isDebug);
                 } else {
                     rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context, project), true,
                             isDebug);
@@ -626,7 +626,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             
             TestRunner testRunner = getTestRunner(TestRunner.TestType.TEST_UNIT);
             if (testRunner != null) {
-                testRunner.getInstance().runTest(file);
+                testRunner.getInstance().runTest(file, isDebug);
             } else {
                 runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(),
                         file.getNameExt(), context, isDebug, new OutputRecognizer[]{new TestNotifier(true, true)});
@@ -636,7 +636,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         if (COMMAND_TEST.equals(command)) {
             TestRunner testRunner = getTestRunner(TestRunner.TestType.TEST_UNIT);
             if (testRunner != null) {
-                testRunner.getInstance().runAllTests(project);
+                testRunner.getInstance().runAllTests(project, false);
             } else {
                 File pwd = FileUtil.toFile(project.getProjectDirectory());
                 RakeRunner runner = new RakeRunner(project);
@@ -652,7 +652,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         if (COMMAND_RSPEC.equals(command)) {
             TestRunner testRunner = getTestRunner(TestRunner.TestType.RSPEC);
             if (testRunner != null) {
-                testRunner.getInstance().runAllTests(project);
+                testRunner.getInstance().runAllTests(project, false);
             } else {
                 File pwd = FileUtil.toFile(project.getProjectDirectory());
                 RakeRunner runner = new RakeRunner(project);
