@@ -53,25 +53,25 @@ import org.openide.util.NbBundle;
  */
 public abstract class Table implements Comparable<Table> {
 
-    private final String schema;
     private final String catalog;
+    private final String schema;
     private final String name;
     private final boolean join;
     private final DisabledReason disabledReason;
     private final boolean tableOrView; // true for table and false for view
 
-    public Table(String schema, String catalog, String name, boolean join, DisabledReason disabledReason) {
-        this.schema = schema;
+    public Table(String catalog, String schema, String name, boolean join, DisabledReason disabledReason) {
         this.catalog = catalog;
+        this.schema = schema;
         this.name = name;
         this.join = join;
         this.disabledReason = disabledReason;
         tableOrView = true; // default to table
     }
     
-    public Table(String schema, String catalog, String name, boolean join, DisabledReason disabledReason, boolean isTable) {
-        this.schema = schema;
+    public Table(String catalog, String schema, String name, boolean join, DisabledReason disabledReason, boolean isTable) {
         this.catalog = catalog;
+        this.schema = schema;
         this.name = name;
         this.join = join;
         this.disabledReason = disabledReason;

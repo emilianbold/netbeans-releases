@@ -292,7 +292,7 @@ public class RelatedCMPHelper {
         String pkgName = getPackageName();
 
         for (Table table : selectedTables.getTables()) {
-            genTables.addTable(table.getSchema(), table.getCatalog(), table.getName(), rootFolder, pkgName, 
+            genTables.addTable(table.getCatalog(), table.getSchema(), table.getName(), rootFolder, pkgName, 
                     selectedTables.getClassName(table), table.getUniqueConstraints());
         }
 
@@ -304,7 +304,7 @@ public class RelatedCMPHelper {
                 String fqClassName = exDisReason.getFQClassName();
                 SourceGroup sourceGroup = Util.getClassSourceGroup(getProject(), fqClassName); // NOI18N
                 if (sourceGroup != null) {
-                    genTables.addTable(table.getSchema(), table.getCatalog(), table.getName(), sourceGroup.getRootFolder(), 
+                    genTables.addTable(table.getCatalog(), table.getSchema(), table.getName(), sourceGroup.getRootFolder(), 
                             JavaIdentifiers.getPackageName(fqClassName), JavaIdentifiers.unqualify(fqClassName),
                             table.getUniqueConstraints());
                 }
@@ -326,8 +326,8 @@ public class RelatedCMPHelper {
         
         private boolean fullyQualifiedTableNames; // not for per table
         private final Set<String> tableNames = new HashSet<String>();
-        private final Map<String, String> schemas = new HashMap<String, String>();
         private final Map<String, String> catalogs = new HashMap<String, String>();
+        private final Map<String, String> schemas = new HashMap<String, String>();
         private final Map<String, FileObject> rootFolders = new HashMap<String, FileObject>();
         private final Map<String, String> packageNames = new HashMap<String, String>();
         private final Map<String, String> classNames = new HashMap<String, String>();
@@ -340,12 +340,12 @@ public class RelatedCMPHelper {
             return Collections.unmodifiableSet(tableNames);
         }
         
-        private void addTable(String schemaName, String catalogName, String tableName, 
+        private void addTable(String catalogName, String schemaName, String tableName, 
                 FileObject rootFolder, String packageName, String className,
                 Set<List<String>> uniqueConstraints) {
             tableNames.add(tableName);
-            schemas.put(tableName, schemaName);
             catalogs.put(tableName, catalogName);
+            schemas.put(tableName, schemaName);
             rootFolders.put(tableName, rootFolder);
             packageNames.put(tableName, packageName);
             classNames.put(tableName, className);

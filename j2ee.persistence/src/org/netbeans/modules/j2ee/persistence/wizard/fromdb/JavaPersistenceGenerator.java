@@ -744,11 +744,11 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 if(entityClass.isFullyQualifiedTblNames()) {
                     String schemaName = entityClass.getSchemaName();
                     String catalogName = entityClass.getCatalogName();
-                    if(schemaName != null ) {
-                        tableAnnArgs.add(genUtils.createAnnotationArgument("schema", schemaName)); // NOI18N
-                    }
                     if(catalogName != null) {
                         tableAnnArgs.add(genUtils.createAnnotationArgument("catalog", catalogName)); // NOI18N
+                    }
+                    if(schemaName != null ) {
+                        tableAnnArgs.add(genUtils.createAnnotationArgument("schema", schemaName)); // NOI18N
                     }
                 }
                 

@@ -50,9 +50,4 @@ made subject to such option by the copyright holder.
         <resolver mime="text/xml-external-parsed-entity"/>
     </file>
     
-    <file>
-        <ext name="ent"/>
-        <resolver mime="application/xml-external-parsed-entity"/>
-    </file>
-    
 </MIME-resolver>

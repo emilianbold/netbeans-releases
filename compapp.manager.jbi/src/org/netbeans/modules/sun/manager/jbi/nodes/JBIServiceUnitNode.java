@@ -209,33 +209,18 @@ public class JBIServiceUnitNode extends AppserverJBIMgmtLeafNode {
         //add the 'data' into the Transferable
         final String suDD = getDeploymentDescriptor();
 
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(true);
+        retValue.put(new ExTransferable.Single(ServiceUnitDataFlavor) {
 
-        try {
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            // parse SU DD
-            Document suDoc = builder.parse(new InputSource(new StringReader(suDD)));
-            Element services = (Element) suDoc.getElementsByTagName("services").item(0); // NOI18N
-            boolean isBC = services.getAttribute("binding-component").equals("true"); // NOI18N
-
-            if (!isBC) {
-                retValue.put(new ExTransferable.Single(ServiceUnitDataFlavor) {
-
-                    protected Object getData() throws IOException, UnsupportedFlavorException {
-                        List<String> ret = new ArrayList<String>();
-                        ret.add("JBIMGR_SU_TRANSFER"); // NOI18N
-                        ret.add(getName()); // service unit name
-                        ret.add(getComponentName());
-                        ret.add(getShortDescription());
-                        ret.add(suDD);
-                        return ret;
-                    }
-                });
+            protected Object getData() throws IOException, UnsupportedFlavorException {
+                List<String> ret = new ArrayList<String>();
+                ret.add("JBIMGR_SU_TRANSFER"); // NOI18N
+                ret.add(getName()); // service unit name
+                ret.add(getComponentName());
+                ret.add(getShortDescription());
+                ret.add(suDD);
+                return ret;
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        });
 
         /*
         return new Transferable() {
