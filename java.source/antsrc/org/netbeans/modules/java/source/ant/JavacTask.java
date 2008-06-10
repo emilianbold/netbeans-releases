@@ -66,6 +66,9 @@ public class JavacTask extends Javac {
         if (ensureBuilt != null) {
             for (String path : PropertyUtils.tokenizePath(ensureBuilt)) {
                 File f = new File(path);
+                if (!f.isAbsolute()) {
+                    f = new File(p.getBaseDir(), path);
+                }
                 
                 try {
                     BuildArtifactMapperImpl.ensureBuilt(f.toURI().toURL());
