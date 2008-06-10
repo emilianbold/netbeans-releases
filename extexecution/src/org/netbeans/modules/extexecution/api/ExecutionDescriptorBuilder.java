@@ -39,12 +39,9 @@
 
 package org.netbeans.modules.extexecution.api;
 
-import java.io.Writer;
 import org.netbeans.modules.extexecution.api.input.InputProcessor;
-import org.netbeans.modules.extexecution.api.input.InputProcessors;
 import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
 
 /**
  *
@@ -118,6 +115,11 @@ public final class ExecutionDescriptorBuilder {
         return this;
     }
 
+    public ExecutionDescriptorBuilder rerunCondition(ExecutionDescriptor.RerunCondition rerunCondition) {
+        descriptorData.rerunCondition = rerunCondition;
+        return this;
+    }
+
     public ExecutionDescriptor create() {
         return new Descriptor(descriptorData);
     }
@@ -134,7 +136,7 @@ public final class ExecutionDescriptorBuilder {
             return descriptorData.inputOutput;
         }
 
-        public boolean isControlable() {
+        public boolean isControllable() {
             return descriptorData.controllable;
         }
 
@@ -154,28 +156,20 @@ public final class ExecutionDescriptorBuilder {
             return descriptorData.suspend;
         }
 
-        public InputProcessor getOutProcessor(OutputWriter writer) {
-            InputProcessor outProcessor = InputProcessors.ansiStripping(
-                    InputProcessors.printing(writer, descriptorData.outConvertor, true));
-            if (descriptorData.outProcessor != null) {
-                outProcessor = InputProcessors.proxy(outProcessor, descriptorData.outProcessor);
-            }
-
-            return outProcessor;
+        public LineConvertor getErrConvertor() {
+            return descriptorData.errConvertor;
         }
 
-        public InputProcessor getErrProcessor(OutputWriter writer) {
-            InputProcessor errProcessor = InputProcessors.ansiStripping(
-                    InputProcessors.printing(writer, descriptorData.errConvertor, false));
-            if (descriptorData.errProcessor != null) {
-                errProcessor = InputProcessors.proxy(errProcessor, descriptorData.errProcessor);
-            }
-
-            return errProcessor;
+        public InputProcessor getErrProcessor() {
+            return descriptorData.errProcessor;
         }
 
-        public InputProcessor getInProcessor(Writer writer) {
-            return InputProcessors.copying(writer);
+        public LineConvertor getOutConvertor() {
+            return descriptorData.outConvertor;
+        }
+
+        public InputProcessor getOutProcessor() {
+            return descriptorData.outProcessor;
         }
 
         public Runnable getPreExecution() {
@@ -184,6 +178,10 @@ public final class ExecutionDescriptorBuilder {
 
         public Runnable getPostExecution() {
             return descriptorData.postExecution;
+        }
+
+        public RerunCondition getRerunCondition() {
+            return descriptorData.rerunCondition;
         }
 
     }
@@ -214,6 +212,8 @@ public final class ExecutionDescriptorBuilder {
 
         private InputOutput inputOutput;
 
+        private ExecutionDescriptor.RerunCondition rerunCondition;
+
         public DescriptorData() {
             super();
         }
@@ -231,6 +231,7 @@ public final class ExecutionDescriptorBuilder {
             this.outProcessor = data.outProcessor;
             this.errProcessor = data.errProcessor;
             this.inputOutput = data.inputOutput;
+            this.rerunCondition = rerunCondition;
         }
 
     }

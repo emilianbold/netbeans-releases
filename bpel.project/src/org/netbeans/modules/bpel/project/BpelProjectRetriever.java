@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.project;
 
 import java.awt.Dialog;
@@ -29,12 +28,12 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
 import java.net.URISyntaxException;
-    import java.awt.BorderLayout;
+import java.awt.BorderLayout;
 
 import java.net.URL;
 
 import javax.swing.JComponent;
-    import javax.swing.SwingUtilities;
+import javax.swing.SwingUtilities;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
@@ -52,8 +51,6 @@ import org.netbeans.modules.bpel.model.spi.BpelModelFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 
 import org.netbeans.api.project.Project;
-
-
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.spi.BpelModelFactory;
@@ -1057,6 +1054,4 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
             message.setText (name);
         }
     }
-
-
 }

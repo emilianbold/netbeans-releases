@@ -82,7 +82,7 @@ public class WsdlReferenceTest extends TestCase {
         URL url = ImportWSDLTest.class.getResource("data/PurchaseOrderEventProcess.iep");
         URI wfFile = url.toURI();
         IEPModelProvider provider = new IEPModelProviderInsideIde ();
-        IEPModel model = provider.getWLMModel(wfFile);
+        IEPModel model = provider.getIEPModel(wfFile);
            model.sync();
         assertNotNull(model);
 
@@ -197,7 +197,7 @@ public class WsdlReferenceTest extends TestCase {
         URL url = ImportWSDLTest.class.getResource("data/PurchaseOrderEventProcessImplementWsdl.iep");
         URI wfFile = url.toURI();
         IEPModelProvider provider = new IEPModelProviderInsideIde ();
-        IEPModel model = provider.getWLMModel(wfFile);
+        IEPModel model = provider.getIEPModel(wfFile);
            model.sync();
         assertNotNull(model);
 

@@ -80,6 +80,16 @@ public class RemotePathMap extends HashMap<String, String> {
         return rpath;
     }
     
+    /** 
+     * Implement the path initialization here:
+     * Windows Algorythm:
+     *    1. Get the drive letter
+     *    2. See if there is an NFS mount point in the Windows registry
+     *    3. Run a RemotePathMapSupport(host, user, [mount point host], [mount point path])
+     * 
+     * Unix Algorythm:
+     *    1. TBD 
+     */
     private String initializePath(String lpath) {
         String rpath = null;
         
@@ -95,15 +105,9 @@ public class RemotePathMap extends HashMap<String, String> {
                     rpath = lpath;
                 }
             } else if (user.equals("sg155630")) {
-                // fill in your pathmaps...
+                // fill in your debugging pathmaps if you want...
             }
         }
-        
-        // Implement the real path initialization here:
-        // Windows Algorythm:
-        //    1. Get the drive letter
-        //    2. See if there is an NFS mount point in the Windows registry
-        //    3. Run a RemotePathMapSupport(host, user, [mount point host], [mount point path])
         
         if (rpath != null) {
             put(lpath, rpath);
