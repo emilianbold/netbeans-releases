@@ -273,7 +273,6 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
         } else if (dep != null && dep.toLowerCase ().startsWith ("package")) { // NOI18N
             displayName = getBundle ("OperationDescriptionStep_PluginBrokesPackageDependency", dep);
         }
-        System.out.println ("dep: " + dep + "[" + displayName + "]");
         return displayName == null ? dep : displayName;
     }
     

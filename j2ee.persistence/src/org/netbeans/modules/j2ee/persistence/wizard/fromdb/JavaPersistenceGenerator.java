@@ -158,7 +158,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             final RelatedCMPHelper helper,
             final FileObject dbSchemaFile,
             final ProgressContributor handle) throws IOException {
-
+        
         generateBeans(helper.getBeans(), helper.isGenerateFinderMethods(), handle, progressPanel);
     }
 
@@ -756,11 +756,11 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 if(entityClass.isRegenSchemaAttrs() && entityClass.getUniqueConstraints() != null &&
                         entityClass.getUniqueConstraints().size() != 0) {
                     List<ExpressionTree> uniqueConstraintAnnotations = new ArrayList<ExpressionTree>();
-                    for(String[] constraintCols : entityClass.getUniqueConstraints()) {
+                    for(List<String> constraintCols : entityClass.getUniqueConstraints()) {
 
                         List<ExpressionTree> colArgs = new ArrayList<ExpressionTree>();
-                        for(int colIx = 0; colIx < constraintCols.length; colIx ++ ) {
-                            colArgs.add(genUtils.createAnnotationArgument(null, constraintCols[colIx]));
+                        for(String colName : constraintCols) {
+                            colArgs.add(genUtils.createAnnotationArgument(null, colName));
                         }
                         ExpressionTree columnNamesArg = genUtils.createAnnotationArgument("columnNames", colArgs); // NOI18N
                         uniqueConstraintAnnotations.add(genUtils.createAnnotation("javax.persistence.UniqueConstraint", 
