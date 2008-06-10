@@ -113,7 +113,7 @@ public class ClassPathContainerResolver {
      * At the moment it creates global NB libraries.
      * 
      */
-    public static void setup(Workspace workspace, DotClassPathEntry entry) throws IOException {
+    public static void setup(Workspace workspace, DotClassPathEntry entry, List<String> importProblems) throws IOException {
         assert entry.getKind() == DotClassPathEntry.Kind.CONTAINER : entry;
         assert entry.getContainerMapping() != null : entry;
         

@@ -94,6 +94,13 @@ final class Importer {
     private List<JavaPlatform> justCreatedPlatforms = new ArrayList<JavaPlatform>(); // platforms created during import
     private File nbDefPlfFile; // NetBeans default platform directory
     
+    /**
+     * 
+     * @param eclProjects list of eclipse projects to import
+     * @param destination destination location for NetBeans projects; can be null
+     *  in which case NetBeans projects should be generated to the same folder as 
+     *  eclipse projects
+     */
     Importer(final List<EclipseProject> eclProjects, String destination) {
         this.eclProjects = eclProjects;
         this.destination = destination;
@@ -169,29 +176,51 @@ final class Importer {
     
     private Project importProject(EclipseProject eclProject, List<String> importProblems) throws IOException {
         assert eclProject != null : "Eclipse project cannot be null"; // NOI18N
+
+        List<String> projectImportProblems = new ArrayList<String>();
         
         // create global libraries, etc.
-        eclProject.setupEvaluatedContainers();
+        eclProject.setupEvaluatedContainers(projectImportProblems);
         
         // create ENV variables in build.properties
-        eclProject.setupEnvironmentVariables();
+        eclProject.setupEnvironmentVariables(projectImportProblems);
         
         nOfProcessed++;
         progressInfo = NbBundle.getMessage(Importer.class,
                 "MSG_Progress_ProcessingProject", eclProject.getName()); // NOI18N
         
-        ProjectImportModel model = new ProjectImportModel(eclProject, destination, getJavaPlatform(eclProject));
-        Project p = eclProject.getProjectTypeFactory().createProject(model, importProblems);
-        
-        if (eclProject.getProjectTypeFactory() instanceof ProjectTypeUpdater) {
-            ProjectTypeUpdater updater = (ProjectTypeUpdater)eclProject.getProjectTypeFactory();
-            String key = updater.calculateKey(model);
-            EclipseProjectReference ref = new EclipseProjectReference(p, 
-                    eclProject.getDirectory().getAbsolutePath(), 
-                    eclProject.getWorkspace().getDirectory().getAbsolutePath(), "0", key);
-            EclipseProjectReference.write(p, ref);
+        String dest;
+        Project alreadyImported = null;
+        if (destination == null) {
+            dest = eclProject.getDirectory().getAbsolutePath();
+            File f = new File(dest);
+            if (f.exists()) {
+                alreadyImported = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
+            }
+        } else {
+            dest = FileUtil.normalizeFile(new File(destination+File.separator+eclProject.getDirectory().getName())).getAbsolutePath();
         }
-        assert p != null;
+        ProjectImportModel model = new ProjectImportModel(eclProject, dest, getJavaPlatform(eclProject), nbProjects);
+        Project p;
+        if (alreadyImported != null) {
+            p = alreadyImported;
+            projectImportProblems.add("Existing NetBeans project was found and will be used intead.");
+        } else {
+            p = eclProject.getProjectTypeFactory().createProject(model, projectImportProblems);
+        
+            if (eclProject.getProjectTypeFactory() instanceof ProjectTypeUpdater) {
+                ProjectTypeUpdater updater = (ProjectTypeUpdater)eclProject.getProjectTypeFactory();
+                String key = updater.calculateKey(model);
+                EclipseProjectReference ref = new EclipseProjectReference(p, 
+                        eclProject.getDirectory().getAbsolutePath(), 
+                        eclProject.getWorkspace().getDirectory().getAbsolutePath(), "0", key);
+                EclipseProjectReference.write(p, ref);
+            }
+            assert p != null;
+        }
+        for (String s : projectImportProblems) {
+            importProblems.add(""+eclProject.getName()+": "+s);
+        }
         return p;
     }
     

@@ -44,6 +44,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -58,6 +60,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -74,6 +77,7 @@ import org.xml.sax.SAXException;
 public class WebProjectFactory implements ProjectTypeUpdater {
 
     private static final String WEB_NATURE = "org.eclipse.wst.common.modulecore.ModuleCoreNature"; // NOI18N
+    private static final Icon WEB_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif")); // NOI18
     
     // TODO: check this one as well
     private static final String MYECLIPSE_WEB_NATURE = "com.genuitec.eclipse.j2eedt.core.webnature"; // NOI18N
@@ -87,7 +91,7 @@ public class WebProjectFactory implements ProjectTypeUpdater {
 
     public Project createProject(final ProjectImportModel model, final List<String> importProblems) throws IOException {
         // create nb project location
-        File nbProjectDir = FileUtil.normalizeFile(new File(model.getNetBeansProjectLocation() + "/" + model.getProjectName())); // NOI18N
+        File nbProjectDir = FileUtil.normalizeFile(new File(model.getNetBeansProjectLocation())); // NOI18N
         
         WebContentData webData = parseWebContent(model.getEclipseProjectFolder());
 
@@ -201,4 +205,13 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         // save project
         ProjectManager.getDefault().saveProject(project);
     }
+
+    public Icon getProjectTypeIcon() {
+        return WEB_PROJECT_ICON;
+    }
+
+    public String getProjectTypeName() {
+        return "Web Application";
+    }
+    
 }

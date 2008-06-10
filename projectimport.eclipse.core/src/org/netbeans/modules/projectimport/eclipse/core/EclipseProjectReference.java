@@ -41,12 +41,14 @@ package org.netbeans.modules.projectimport.eclipse.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.xml.XMLUtil;
@@ -106,11 +108,12 @@ class EclipseProjectReference {
         Element reference = doc.createElementNS(NS, "eclipse"); // NOI18N
 
         Element el = doc.createElementNS(NS, "project"); // NOI18N
-        el.appendChild(doc.createTextNode(ref.eclipseProjectLocation.getAbsolutePath()));
+        File baseDir = FileUtil.toFile(project.getProjectDirectory());
+        el.appendChild(doc.createTextNode(PropertyUtils.relativizeFile(baseDir, ref.eclipseProjectLocation)));
         reference.appendChild(el);
         
         el = doc.createElementNS(NS, "workspace"); // NOI18N
-        el.appendChild(doc.createTextNode(ref.eclipseWorkspaceLocation.getAbsolutePath()));
+        el.appendChild(doc.createTextNode(PropertyUtils.relativizeFile(baseDir, ref.eclipseWorkspaceLocation)));
         reference.appendChild(el);
         
         el = doc.createElementNS(NS, "timestamp"); // NOI18N
@@ -169,7 +172,7 @@ class EclipseProjectReference {
                 Exceptions.printStackTrace(ex);
             }
             File f = FileUtil.toFile(project.getProjectDirectory());
-            importModel = new ProjectImportModel(eclipseProject, f.getAbsolutePath(), /*TODO*/ JavaPlatform.getDefault());
+            importModel = new ProjectImportModel(eclipseProject, f.getAbsolutePath(), /*TODO*/ JavaPlatform.getDefault(), Collections.<Project>emptyList());
             initialized = true;
         }
         return eclipseProject;

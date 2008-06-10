@@ -57,6 +57,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseUtils;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -86,7 +87,7 @@ public class ProjectFactorySupport {
         assert model.getEclipseSourceRootsAsFileArray().length > 0 : model.getProjectName(); // XXX handle more gracefully (add an import problem)
         FileObject sourceRoot = FileUtil.toFileObject(model.getEclipseSourceRootsAsFileArray()[0]);
         for (DotClassPathEntry entry : model.getEclipseClassPathEntries()) {
-            addItemToClassPath(helper, entry, model.getNetBeansProjectLocation(), model.getProjectName(), importProblems, sourceRoot);
+            addItemToClassPath(helper, entry, model.getAlreadyImportedProjects(), model.getProjectName(), importProblems, sourceRoot);
         }
     }
 
@@ -108,7 +109,7 @@ public class ProjectFactorySupport {
             if (!oldKey.contains(t)) {
                 DotClassPathEntry entry = findEntryByEncodedValue(model.getEclipseClassPathEntries(), t);
                 // TODO: items appended to the end of classpath
-                addItemToClassPath(helper, entry, model.getNetBeansProjectLocation(), model.getProjectName(), importProblems, sourceRoot);
+                addItemToClassPath(helper, entry, model.getAlreadyImportedProjects(), model.getProjectName(), importProblems, sourceRoot);
             }
         }
         
@@ -212,41 +213,76 @@ public class ProjectFactorySupport {
     /**
      * Adds single DotClassPathEntry to NB project classpath.
      */
-    private static boolean addItemToClassPath(AntProjectHelper helper, DotClassPathEntry entry, String nbProjLocation, String projName, List<String> importProblems, FileObject sourceRoot/*, AntProjectHelper helper*/) throws IOException {
+    private static boolean addItemToClassPath(AntProjectHelper helper, DotClassPathEntry entry, List<Project> alreadyCreatedProjects, String projName, List<String> importProblems, FileObject sourceRoot/*, AntProjectHelper helper*/) throws IOException {
         if (entry.getKind() == DotClassPathEntry.Kind.PROJECT) {
-            File proj = new File(nbProjLocation + File.separatorChar + entry.getRawPath().substring(1));
-            if (!proj.exists()) {
-                // TODO: perhaps search NetBeans OpenProjectList for a project of that name and use it if found one.
-                importProblems.add("Project " + projName + " depends on project " + entry.getRawPath() + " which cannot be found at " + proj);
+            Project requiredProject = null;
+            // first try to find required project in list of already created projects.
+            // if this is workspace import than required project must be there:
+            for (Project p : alreadyCreatedProjects) {
+                if (entry.getRawPath().substring(1).equals(p.getLookup().lookup(ProjectInformation.class).getDisplayName())) {
+                    requiredProject = p;
+                    break;
+                }
+            }
+            if (requiredProject == null) {
+                // try to find project by its name in list of opened projects.
+                // if this is single project import than project might have already been imported:
+                for (Project p : OpenProjects.getDefault().getOpenProjects()) {
+                    if (entry.getRawPath().substring(1).equals(p.getLookup().lookup(ProjectInformation.class).getDisplayName())) {
+                        requiredProject = p;
+                        break;
+                    }
+                }
+            }
+            if (requiredProject == null) {
+                importProblems.add("Required project '" + entry.getRawPath().substring(1) + "' cannot be found.");
                 return true;
             }
-            FileObject fo = FileUtil.toFileObject(proj);
-            assert fo != null : proj;
-            Project p = ProjectManager.getDefault().findProject(fo);
-            if (p == null) {
-                throw new IOException("cannot find project for " + fo);
-            }
-            AntArtifact[] artifact = AntArtifactQuery.findArtifactsByType(p, JavaProjectConstants.ARTIFACT_TYPE_JAR);
+            AntArtifact[] artifact = AntArtifactQuery.findArtifactsByType(requiredProject, JavaProjectConstants.ARTIFACT_TYPE_JAR);
             List<URI> elements = new ArrayList<URI>();
             for (AntArtifact art : artifact) {
                 elements.addAll(Arrays.asList(art.getArtifactLocations()));
             }
-            ProjectClassPathModifier.addAntArtifacts(artifact, elements.toArray(new URI[elements.size()]), sourceRoot, ClassPath.COMPILE);
+            if (artifact.length == 0) {
+                importProblems.add("Required project '"+requiredProject.getProjectDirectory()+"' does not provide any JAR articfacts.");
+            } else {
+                ProjectClassPathModifier.addAntArtifacts(artifact, elements.toArray(new URI[elements.size()]), sourceRoot, ClassPath.COMPILE);
+            }
         } else if (entry.getKind() == DotClassPathEntry.Kind.LIBRARY) {
-            ProjectClassPathModifier.addRoots(new URL[]{FileUtil.urlForArchiveOrDir(new File(entry.getAbsolutePath()))}, sourceRoot, ClassPath.COMPILE);
+            File f = new File(entry.getAbsolutePath());
+            if (!f.exists()) {
+                importProblems.add("Classpath entry '"+f.getPath()+"' does not seems to exist.");
+            }
+            ProjectClassPathModifier.addRoots(new URL[]{FileUtil.urlForArchiveOrDir(f)}, sourceRoot, ClassPath.COMPILE);
         } else if (entry.getKind() == DotClassPathEntry.Kind.VARIABLE) {
             // add property directly to Ant property
-            addToBuildProperties(helper, "javac.classpath", ProjectFactorySupport.asAntVariable(entry));
-//            ProjectClassPathModifier.addRoots(new URI[]{new URI(null, null, ProjectFactorySupport.asAntVariable(entry), null)}, sourceRoot, ClassPath.COMPILE);
+            String antProp = ProjectFactorySupport.asAntVariable(entry);
+            addToBuildProperties(helper, "javac.classpath", antProp);
+            testProperty(antProp, helper, importProblems);
         } else if (entry.getKind() == DotClassPathEntry.Kind.CONTAINER) {
             String antProperty = entry.getContainerMapping();
             if (antProperty != null && antProperty.length() > 0) {
                 // add property directly to Ant property
-                addToBuildProperties(helper, "javac.classpath", "${"+antProperty+"}");
-//                  ProjectClassPathModifier.addRoots(new URI[]{new URI(null, null, "${" + antProperty + "}", null)}, sourceRoot, ClassPath.COMPILE);
+                String antProp = "${"+antProperty+"}";
+                addToBuildProperties(helper, "javac.classpath", antProp);
+                testProperty(antProp, helper, importProblems);
             }
         }
         return false;
+    }
+    
+    private static void testProperty(String property, AntProjectHelper helper, List<String> importProblems) {
+        String value = helper.getStandardPropertyEvaluator().evaluate(property);
+        if (value.contains("${")) {
+            importProblems.add("Classpath entry '"+property+"' cannot be resolved.");
+        }
+        String paths[] = PropertyUtils.tokenizePath(value);
+        for (String path : paths) {
+            File f = new File(path);
+            if (!f.exists()) {
+                importProblems.add("Classpath entry '"+path+"' does not seem to exist.");
+            }
+        }
     }
     
     /**

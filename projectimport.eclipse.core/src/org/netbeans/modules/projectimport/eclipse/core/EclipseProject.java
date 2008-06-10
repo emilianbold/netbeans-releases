@@ -187,7 +187,7 @@ public final class EclipseProject implements Comparable {
         return importSupported.booleanValue();
     }
     
-    ProjectTypeFactory getProjectTypeFactory() {
+    public ProjectTypeFactory getProjectTypeFactory() {
         performRecognitionIfNeeded();
         return projectFactory;
     }
@@ -257,16 +257,16 @@ public final class EclipseProject implements Comparable {
         }
     }
     
-    void setupEvaluatedContainers() throws IOException {
+    void setupEvaluatedContainers(List<String> importProblems) throws IOException {
         for (DotClassPathEntry entry : cp.getClassPathEntries()) {
             if (entry.getKind() != DotClassPathEntry.Kind.CONTAINER) {
                 continue;
             }
-            ClassPathContainerResolver.setup(workspace, entry);
+            ClassPathContainerResolver.setup(workspace, entry, importProblems);
         }
     }
     
-    void setupEnvironmentVariables() throws IOException {
+    void setupEnvironmentVariables(List<String> importProblems) throws IOException {
         EditableProperties ep = PropertyUtils.getGlobalProperties();
         boolean changed = false;
         for (DotClassPathEntry entry : cp.getClassPathEntries()) {
@@ -274,8 +274,10 @@ public final class EclipseProject implements Comparable {
                 continue;
             }
             String s = EclipseUtils.splitVariable(entry.getRawPath())[0];
+            boolean resolved = false;
             for (Variable v : workspace.getVariables()) {
                 if (v.getName().equals(s)) {
+                    resolved = true;
                     s = "var."+PropertyUtils.getUsablePropertyName(s);
                     if (ep.getProperty(s) == null) {
                         ep.setProperty(s, v.getLocation());
@@ -283,6 +285,11 @@ public final class EclipseProject implements Comparable {
                     }
                     continue;
                 }
+            }
+            if (!resolved) {
+                importProblems.add("IDE variable '"+s+"' was not found in workspace. Set the value in NetBeans.");
+                ep.setProperty(s, "");
+                changed = true;
             }
         }
         if (changed) {

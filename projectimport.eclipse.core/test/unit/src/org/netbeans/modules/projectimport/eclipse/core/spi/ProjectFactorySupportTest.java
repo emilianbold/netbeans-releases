@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
@@ -147,7 +148,7 @@ public class ProjectFactorySupportTest extends NbTestCase {
     
     public void testCalculateKey() throws IOException {
         EclipseProject eclipse = getTestableProject(1, getWorkDir());
-        ProjectImportModel model = new ProjectImportModel(eclipse, getWorkDirPath()+File.separator+"nb", JavaPlatform.getDefault());
+        ProjectImportModel model = new ProjectImportModel(eclipse, getWorkDirPath()+File.separator+"nb", JavaPlatform.getDefault(), Collections.<Project>emptyList());
         String expResult = 
             "src=src;" +
             "var=MAVEN_REPOPO/commons-cli/commons-cli/1.0/commons-cli-1.0.jar;" +
@@ -161,10 +162,15 @@ public class ProjectFactorySupportTest extends NbTestCase {
     public void testUpdateProjectClassPath() throws IOException {
         EclipseProject eclipse = getTestableProject(1, getWorkDir());
         File prj = new File(getWorkDirPath()+File.separator+"nb");
-        ProjectImportModel model = new ProjectImportModel(eclipse, prj.getAbsolutePath(), JavaPlatform.getDefault());
         // create required project
         AntProjectHelper helper0 = J2SEProjectGenerator.createProject(
                 new File(prj, "JavaLibrary1"), "JavaLibrary1", new File[0], new File[0], null, null, null);
+        Project p0 = ProjectManager.getDefault().findProject(helper0.getProjectDirectory());
+        AntProjectHelper helper00 = J2SEProjectGenerator.createProject(
+                new File(prj, "jlib"), "jlib", new File[0], new File[0], null, null, null);
+        Project p00 = ProjectManager.getDefault().findProject(helper00.getProjectDirectory());
+        ProjectImportModel model = new ProjectImportModel(eclipse, prj.getAbsolutePath()+File.separator+"test", 
+                JavaPlatform.getDefault(), Arrays.<Project>asList(new Project[]{p0, p00}));
         final AntProjectHelper helper = J2SEProjectGenerator.createProject(
                 new File(prj, "test"), "test", model.getEclipseSourceRootsAsFileArray(), 
                 model.getEclipseTestSourceRootsAsFileArray(), null, null, null);
@@ -184,10 +190,15 @@ public class ProjectFactorySupportTest extends NbTestCase {
         // ================= start of copy of testUpdateProjectClassPath
         EclipseProject eclipse = getTestableProject(1, getWorkDir());
         File prj = new File(getWorkDirPath()+File.separator+"nb");
-        ProjectImportModel model = new ProjectImportModel(eclipse, prj.getAbsolutePath(), JavaPlatform.getDefault());
         // create required project
         AntProjectHelper helper0 = J2SEProjectGenerator.createProject(
                 new File(prj, "JavaLibrary1"), "JavaLibrary1", new File[0], new File[0], null, null, null);
+        Project p0 = ProjectManager.getDefault().findProject(helper0.getProjectDirectory());
+        AntProjectHelper helper00 = J2SEProjectGenerator.createProject(
+                new File(prj, "jlib"), "jlib", new File[0], new File[0], null, null, null);
+        Project p00 = ProjectManager.getDefault().findProject(helper00.getProjectDirectory());
+        ProjectImportModel model = new ProjectImportModel(eclipse, prj.getAbsolutePath()+File.separator+"test", 
+                JavaPlatform.getDefault(), Arrays.<Project>asList(new Project[]{p0, p00}));
         final AntProjectHelper helper = J2SEProjectGenerator.createProject(
                 new File(prj, "test"), "test", model.getEclipseSourceRootsAsFileArray(), 
                 model.getEclipseTestSourceRootsAsFileArray(), null, null, null);
@@ -203,8 +214,6 @@ public class ProjectFactorySupportTest extends NbTestCase {
             ep.getProperty("javac.classpath").replace(';', ':'));
         // ================= end of copy of testUpdateProjectClassPath
         
-        AntProjectHelper helper00 = J2SEProjectGenerator.createProject(
-                new File(prj, "jlib"), "jlib", new File[0], new File[0], null, null, null);
         Project p = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
         String oldKey = ProjectFactorySupport.calculateKey(model);
         assertEquals(
@@ -216,7 +225,8 @@ public class ProjectFactorySupportTest extends NbTestCase {
         
         // add some items to classpath:
         eclipse = getTestableProject(2, getWorkDir());
-        model = new ProjectImportModel(eclipse, prj.getAbsolutePath(), JavaPlatform.getDefault());
+        model = new ProjectImportModel(eclipse, prj.getAbsolutePath()+File.separator+"test", 
+                JavaPlatform.getDefault(), Arrays.<Project>asList(new Project[]{p0, p00}));
         String newKey = ProjectFactorySupport.calculateKey(model);
         assertEquals("src=src;" +
             "var=MAVEN_REPOPO/commons-cli/commons-cli/1.0/commons-cli-1.0.jar;" +
@@ -243,7 +253,8 @@ public class ProjectFactorySupportTest extends NbTestCase {
         oldKey = newKey;
         // remove some items from classpath:
         eclipse = getTestableProject(3, getWorkDir());
-        model = new ProjectImportModel(eclipse, prj.getAbsolutePath(), JavaPlatform.getDefault());
+        model = new ProjectImportModel(eclipse, prj.getAbsolutePath()+File.separator+"test", 
+                JavaPlatform.getDefault(), Arrays.<Project>asList(new Project[]{p0, p00}));
         newKey = ProjectFactorySupport.calculateKey(model);
         assertEquals("src=src;" +
             "var=MAVEN_REPOPO/some/other.jar;" +

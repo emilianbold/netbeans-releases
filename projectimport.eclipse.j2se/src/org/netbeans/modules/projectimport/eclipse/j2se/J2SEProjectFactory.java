@@ -44,6 +44,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -57,6 +59,7 @@ import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 import org.w3c.dom.Element;
 
 /**
@@ -65,6 +68,7 @@ import org.w3c.dom.Element;
 public class J2SEProjectFactory implements ProjectTypeUpdater {
 
     private static final String JAVA_NATURE = "org.eclipse.jdt.core.javanature"; // NOI18N
+    private static final Icon J2SE_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png")); // NOI18N
 
     public J2SEProjectFactory() {
     }
@@ -75,7 +79,7 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
 
     public Project createProject(final ProjectImportModel model, final List<String> importProblems) throws IOException {
         // calculate nb project location
-        File nbProjectDir = FileUtil.normalizeFile(new File(model.getNetBeansProjectLocation() + "/" + model.getProjectName())); // NOI18N
+        File nbProjectDir = FileUtil.normalizeFile(new File(model.getNetBeansProjectLocation())); // NOI18N
         
         // create basic NB project
         final AntProjectHelper helper = J2SEProjectGenerator.createProject(
@@ -141,6 +145,14 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         
         // save project
         ProjectManager.getDefault().saveProject(project);
+    }
+
+    public Icon getProjectTypeIcon() {
+        return J2SE_PROJECT_ICON;
+    }
+
+    public String getProjectTypeName() {
+        return "Java Project";
     }
     
 }

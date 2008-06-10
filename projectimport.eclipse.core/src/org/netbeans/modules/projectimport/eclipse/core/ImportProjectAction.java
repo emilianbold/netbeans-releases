@@ -75,7 +75,7 @@ public class ImportProjectAction extends CallableSystemAction {
         wizard.start();
         List<EclipseProject> eclProjects = wizard.getProjects();
         String destination = wizard.getDestination();
-        if (wizard.isCancelled() || eclProjects == null || destination == null) {
+        if (wizard.isCancelled() || eclProjects == null) {
             return;
         }
         

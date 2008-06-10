@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.projectimport.eclipse.core.wizard;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -58,6 +59,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractCellEditor;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -88,63 +90,67 @@ final class ProjectSelectionPanel extends JPanel {
     private static final Logger logger = Logger.getLogger(ProjectSelectionPanel.class.getName());
 
     /** Renderer for projects */
-    private class ProjectCellRenderer extends JCheckBox
-            implements TableCellRenderer {
-        public Component getTableCellRendererComponent(JTable table, Object value,
+    private class ProjectCellRenderer extends AbstractCellEditor
+            implements TableCellEditor, TableCellRenderer {
+        
+        private JCheckBox checkbox;
+        
+        private Component createComponent(JTable table, Object value,
                 boolean isSelected, boolean hasFocus, int row, int column) {
             EclipseProject project = projects[row];
-            setColors(this, isSelected);
-            setText(project.getName());
-            setSelected(selectedProjects.contains(project) ||
+            JLabel label = new JLabel();
+            checkbox = new JCheckBox();
+            JPanel p = new JPanel();
+            p.setLayout(new BorderLayout());
+            p.add(checkbox, BorderLayout.WEST);
+            p.add(label, BorderLayout.CENTER);
+            if (project.isImportSupported()) {
+                label.setText(project.getName() + " ("+project.getProjectTypeFactory().getProjectTypeName()+")"); // NOI18N
+                label.setIcon(project.getProjectTypeFactory().getProjectTypeIcon());
+            } else {
+                label.setText(project.getName()); // NOI18N
+            }
+            checkbox.setSelected(selectedProjects.contains(project) ||
                     requiredProjects.contains(project));
-            setToolTipText(null);
+            checkbox.setToolTipText(null);
+            label.setToolTipText(null);
             if (project.isImportSupported() && !requiredProjects.contains(project)) {
-                setEnabled(true);
+                checkbox.setEnabled(true);
+                label.setEnabled(true);
             } else {
                 // required and non-java project are disabled
-                setEnabled(false);
+                checkbox.setEnabled(false);
+                label.setEnabled(false);
                 if (!project.isImportSupported()) {
-                    setToolTipText(ProjectImporterWizard.getMessage(
+                    checkbox.setToolTipText(ProjectImporterWizard.getMessage(
+                            "MSG_NonJavaProject", project.getName())); // NOI18N
+                    label.setToolTipText(ProjectImporterWizard.getMessage(
                             "MSG_NonJavaProject", project.getName())); // NOI18N
                 }
             }
-            return this;
-        }
-    }
-    
-    private void setColors(Component c, boolean isSelected) {
-        c.setBackground(UIManager.getColor(isSelected ?
-            "Table.selectionBackground" : "Table.background")); // NOI18N
-        c.setForeground(UIManager.getColor(isSelected ?
-            "Table.selectionForeground" : "Table.foreground")); // NOI18N
-    }
-    
-    private class ProjectCellEditor extends AbstractCellEditor
-            implements TableCellEditor {
-        
-        private JCheckBox checkBox;
-        
-        public Object getCellEditorValue() {
-            return Boolean.valueOf(checkBox.isSelected());
+            return p;
         }
         
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                boolean isSelected, boolean hasFocus, int row, int column) {
+            return createComponent(table, value, isSelected, hasFocus, row, column);
+        
+        }
         public Component getTableCellEditorComponent(JTable table, Object value,
                 boolean isSelected, int row, int column) {
-            EclipseProject project = projects[row];
-            checkBox = new JCheckBox(project.getName(),
-                    ((Boolean) value).booleanValue());
-            setColors(checkBox, isSelected);
-            checkBox.addActionListener(new ActionListener() {
+            Component c = createComponent(table, value, isSelected, isSelected, row, column);
+            checkbox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent ev) {
                     fireEditingStopped();
                 }
             });
-            return checkBox;
+            return c;
+        }
+
+        public Object getCellEditorValue() {
+            return Boolean.valueOf(checkbox.isSelected());
         }
         
-        public boolean shouldSelectCell(java.util.EventObject anEvent) {
-            return true;
-        }
     }
     
     /** All projects in a workspace. */
@@ -209,6 +215,7 @@ final class ProjectSelectionPanel extends JPanel {
     
     /** Updates panel validity. */
     public void updateValidity() {
+        note.setVisible(projects == null || projects.length == 0 || !destination.getText().equals(projects[0].getWorkspace().getDirectory().getAbsolutePath()));
         if (selectedProjects == null || selectedProjects.isEmpty()) {
             // user has to select at least one project
             setErrorMessage(ProjectImporterWizard.getMessage(
@@ -216,12 +223,14 @@ final class ProjectSelectionPanel extends JPanel {
             return;
         }
         String parent = destination.getText();
-        for (EclipseProject prj : allProjects()) {
-            String destDir = parent + "/" + prj.getName(); // NOI18N
-            if (new File(destDir).exists()) {
-                setErrorMessage(ProjectImporterWizard.getMessage(
-                        "MSG_ProjectExist", prj.getName())); // NOI18N
-                return;
+        if (!parent.equals(projects[0].getWorkspace().getDirectory().getAbsolutePath())) {
+            for (EclipseProject prj : allProjects()) {
+                String destDir = parent + "/" + prj.getName(); // NOI18N
+                if (new File(destDir).exists()) {
+                    setErrorMessage(ProjectImporterWizard.getMessage(
+                            "MSG_ProjectExist", prj.getName())); // NOI18N
+                    return;
+                }
             }
         }
         setErrorMessage(null);
@@ -313,9 +322,9 @@ final class ProjectSelectionPanel extends JPanel {
         projectTable.setTableHeader(null);
         projectTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         projectTable.setDefaultRenderer(Boolean.class, new ProjectCellRenderer());
-        projectTable.setDefaultEditor(Boolean.class, new ProjectCellEditor());
+        projectTable.setDefaultEditor(Boolean.class, new ProjectCellRenderer());
         projectTableSP.getViewport().setBackground(projectTable.getBackground());
-        destination.setText(System.getProperty("user.home")); // NOI18N
+        destination.setText(System.getProperty("user.home")+File.separatorChar+"NetBeansProjects"); // NOI18N
     }
     
     /** Loads project from workspace in the given <code>workspaceDir</code>. */
@@ -379,9 +388,15 @@ final class ProjectSelectionPanel extends JPanel {
     
     /**
      * Returns destination directory where new NetBeans projects will be stored.
+     * Will return null if NetBeans projects should be created into the same folder
+     * as Eclipse projects.
      */
     String getDestination() {
-        return destination.getText();
+        if (destination.getText().equals(projects[0].getWorkspace().getDirectory().getAbsolutePath())) {
+            return null;
+        } else {
+            return destination.getText();
+        }
     }
     
     void setErrorMessage(String newMessage) {
@@ -395,82 +410,70 @@ final class ProjectSelectionPanel extends JPanel {
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
-        choosePanel = new javax.swing.JPanel();
-        destination = new javax.swing.JTextField();
-        chooseDestButton = new javax.swing.JButton();
-        prjLocationLBL = new javax.swing.JLabel();
-        projectPanel = new javax.swing.JPanel();
         projectListLabel = new javax.swing.JLabel();
         projectTableSP = new javax.swing.JScrollPane();
         projectTable = new javax.swing.JTable();
-
-        setLayout(new java.awt.BorderLayout(0, 12));
+        prjLocationLBL = new javax.swing.JLabel();
+        destination = new javax.swing.JTextField();
+        chooseDestButton = new javax.swing.JButton();
+        note = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        choosePanel.setLayout(new java.awt.GridBagLayout());
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        choosePanel.add(destination, gridBagConstraints);
+        projectListLabel.setLabelFor(projectTable);
+        org.openide.awt.Mnemonics.setLocalizedText(projectListLabel, org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "LBL_ProjectsToImport")); // NOI18N
+        projectListLabel.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
 
-        org.openide.awt.Mnemonics.setLocalizedText(chooseDestButton, org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "CTL_BrowseButton_B"));
+        projectTable.setShowHorizontalLines(false);
+        projectTable.setShowVerticalLines(false);
+        projectTableSP.setViewportView(projectTable);
+
+        prjLocationLBL.setLabelFor(destination);
+        org.openide.awt.Mnemonics.setLocalizedText(prjLocationLBL, org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "LBL_LocationOfNBProjects")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(chooseDestButton, org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "CTL_BrowseButton_B")); // NOI18N
         chooseDestButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 chooseDestButtonActionPerformed(evt);
             }
         });
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 0);
-        choosePanel.add(chooseDestButton, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(note, org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "MSG_Project_Location_Note")); // NOI18N
 
-        prjLocationLBL.setLabelFor(destination);
-        org.openide.awt.Mnemonics.setLocalizedText(prjLocationLBL, org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "LBL_LocationOfNBProjects"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        choosePanel.add(prjLocationLBL, gridBagConstraints);
-
-        add(choosePanel, java.awt.BorderLayout.SOUTH);
-
-        projectPanel.setLayout(new java.awt.GridBagLayout());
-
-        projectListLabel.setLabelFor(projectTable);
-        org.openide.awt.Mnemonics.setLocalizedText(projectListLabel, org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "LBL_ProjectsToImport"));
-        projectListLabel.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        projectPanel.add(projectListLabel, gridBagConstraints);
-
-        projectTable.setShowHorizontalLines(false);
-        projectTable.setShowVerticalLines(false);
-        projectTableSP.setViewportView(projectTable);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
-        projectPanel.add(projectTableSP, gridBagConstraints);
-
-        add(projectPanel, java.awt.BorderLayout.CENTER);
-
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(projectListLabel)
+            .add(projectTableSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 572, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(prjLocationLBL)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(note, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(destination, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(chooseDestButton))))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(projectListLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(projectTableSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(prjLocationLBL)
+                        .add(destination, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(chooseDestButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(note))
+        );
     }// </editor-fold>//GEN-END:initComponents
 
     private void chooseDestButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseDestButtonActionPerformed
@@ -484,11 +487,10 @@ final class ProjectSelectionPanel extends JPanel {
         
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton chooseDestButton;
-    private javax.swing.JPanel choosePanel;
     private javax.swing.JTextField destination;
+    private javax.swing.JLabel note;
     private javax.swing.JLabel prjLocationLBL;
     private javax.swing.JLabel projectListLabel;
-    private javax.swing.JPanel projectPanel;
     private javax.swing.JTable projectTable;
     private javax.swing.JScrollPane projectTableSP;
     // End of variables declaration//GEN-END:variables
