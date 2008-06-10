@@ -43,5 +43,5 @@ made subject to such option by the copyright holder.
 
 <project basedir="." default="netbeans" name="glassfish-jruby">
     <description>Builds, tests, and runs the project org.netbeans.modules.glassfish.jruby</description>
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 </project>
