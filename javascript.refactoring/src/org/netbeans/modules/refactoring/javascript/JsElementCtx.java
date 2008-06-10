@@ -35,6 +35,7 @@ import org.mozilla.javascript.Token;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.javascript.editing.AstPath;
 import org.netbeans.modules.javascript.editing.AstUtilities;
 import org.netbeans.modules.javascript.editing.Element;
@@ -236,7 +237,13 @@ public class JsElementCtx {
 
         return name;
     }
+    
+    public void setNames(String name, String simpleName) {
+        this.name = name;
+        this.simpleName = simpleName;
+    }
 
+    @CheckForNull
     public String getSimpleName() {
         if (name == null) {
             getName();
