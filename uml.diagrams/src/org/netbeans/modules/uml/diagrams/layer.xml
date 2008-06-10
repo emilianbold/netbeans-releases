@@ -1810,17 +1810,17 @@ made subject to such option by the copyright holder.
             <folder name="AssociationClass">
                 <file name="org-netbeans-modules-uml-diagrams-nodes-factories-ClassNodeFactory.instance"/>
                 <folder name="Views">
-                    <file name="org-netbeans-modules-uml-diagrams-nodes-BoundaryView.instance">
+                    <file name="org-netbeans-modules-uml-diagrams-nodes-factories-BoundaryViewNodeFactory.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.diagrams.nodes.Bundle"/>
                         <attr name="stereotypes" stringvalue="boundary"/>
                         <attr name="id" stringvalue="boundary"/>
                     </file>
-                    <file name="org-netbeans-modules-uml-diagrams-nodes-ControllerView.instance">
+                    <file name="org-netbeans-modules-uml-diagrams-nodes-factories-ControllerViewNodeFactory.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.diagrams.nodes.Bundle"/>
                         <attr name="stereotypes" stringvalue="controller"/>
                         <attr name="id" stringvalue="controller"/>
                     </file>
-                    <file name="org-netbeans-modules-uml-diagrams-nodes-EntityView.instance">
+                    <file name="org-netbeans-modules-uml-diagrams-nodes-factories-EntityViewNodeFactory.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.diagrams.nodes.Bundle"/>
                         <attr name="stereotypes" stringvalue="entity"/>
                         <attr name="id" stringvalue="entity"/>
