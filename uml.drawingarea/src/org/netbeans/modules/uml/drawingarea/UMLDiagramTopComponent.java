@@ -210,6 +210,7 @@ public class UMLDiagramTopComponent extends TopComponent
     private static final int RESULT_CANCEL = 0;
     private static final int RESULT_NO = 1;
     private static final int RESULT_YES = 2;
+    private boolean activated;
     
     private UMLDiagramTopComponent()
     {
@@ -483,6 +484,7 @@ public class UMLDiagramTopComponent extends TopComponent
     @Override
     protected void componentActivated() {
         super.componentActivated();
+        this.activated=true;
         if (getDiagram() != null && getDiagram().getView() != null)
         {
             getDiagram().getView().requestFocusInWindow();
@@ -498,7 +500,16 @@ public class UMLDiagramTopComponent extends TopComponent
         }
     }
 
-    
+    @Override
+    protected void componentDeactivated() {
+        super.componentDeactivated();
+        this.activated=false;
+    }
+
+    public boolean isActivated()
+    {
+        return activated;
+    }
     
     @Override
     public int getPersistenceType()

@@ -111,10 +111,6 @@ public class InteractionOperandConstraintWidget extends FeatureWidget implements
         expression.showLabel();
     }
 
-    void switchToEditMode() {
-        
-    }
-
     public String getWidgetID() {
         return UMLWidgetIDString.INTERACTIONOPERANDCONSTRAINTWIDGET.toString();
     }

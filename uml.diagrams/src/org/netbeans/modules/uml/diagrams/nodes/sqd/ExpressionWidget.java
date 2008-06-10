@@ -146,10 +146,6 @@ public class ExpressionWidget extends FeatureWidget implements PropertyChangeLis
     }
    
     
-    void switchToEditMode() {
-        
-    }
-    
     public String getWidgetID() {
         return UMLWidgetIDString.EXPRESSIONWIDGET.toString();
     }

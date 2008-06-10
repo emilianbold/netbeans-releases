@@ -41,6 +41,7 @@
 package org.netbeans.modules.uml.diagrams.nodes;
 
 import java.awt.Color;
+import java.util.HashSet;
 import java.util.List;
 import javax.swing.UIManager;
 import org.netbeans.api.visual.action.WidgetAction;
@@ -57,6 +58,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.support.umlutils.DataFormatter;
 import org.netbeans.modules.uml.diagrams.engines.DefaultDiagramEngine;
+import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.persistence.EdgeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
@@ -64,6 +66,7 @@ import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
 
@@ -135,6 +138,7 @@ public abstract class FeatureWidget extends CustomizableWidget
             if((label != null) && (getParentWidget() != null))
             {
                 label.setForeground(getParentWidget().getForeground());
+                //label.closeEditorCommitChanges();//
             }
             
             setParentSelectedState(false);
@@ -329,4 +333,35 @@ public abstract class FeatureWidget extends CustomizableWidget
         return formatter.formatElement(getElement());
     }
     
+    public void switchToEditMode()
+    {
+        if(label!=null)label.switchToEditMode();
+    }
+    
+    /**
+     * select feature widget for edition, usually after addiion of new feature widget
+     * works for active editor only
+     */
+    public void select()
+    {
+        DesignerScene scene=(DesignerScene) getScene();
+        UMLDiagramTopComponent tc=(UMLDiagramTopComponent) scene.getTopComponent();
+        if(tc.isActivated())//diagram action
+        {
+            //Set selected=scene.getSelectedObjects();
+            HashSet newSelection=new HashSet();
+            newSelection.add(getObject());
+            scene.setFocusedObject(getObject());
+            scene.setSelectedObjects(newSelection);
+            //ObjectState stFocFoc=attrW.getState().deriveWidgetFocused(true).deriveObjectFocused(true).deriveHighlighted(true).deriveWidgetAimed(true);
+            //attrW.setState(stFocFoc);
+            //scene.setSelectedObjects(newSelection);
+//                        new AfterValidationExecutor(new ActionProvider() {
+//                            public void perfomeAction() {
+//                                attrW.switchToEditMode();
+//                            }
+//                        }, scene);
+            scene.validate();
+        }
+    }
 }

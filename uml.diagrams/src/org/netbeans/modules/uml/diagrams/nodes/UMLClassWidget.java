@@ -56,12 +56,15 @@ import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
+import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
@@ -74,10 +77,15 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameterableElement;
 import org.netbeans.modules.uml.diagrams.DefaultWidgetContext;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
+import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
+import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
+import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
 import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 
 public class UMLClassWidget  extends SwitchableWidget
@@ -418,19 +426,20 @@ public class UMLClassWidget  extends SwitchableWidget
         return retVal;
     }
     
-    protected void addOperation(IOperation op)
+    protected OperationWidget addOperation(IOperation op)
     {
         if(op.getIsRedefined() == false)
         {
             OperationWidget widget = new OperationWidget(getScene());
             widget.initialize(op);
             operations.addChild(widget);
+            return widget;
         }
         else
         {
            addRedefinedOperation(op);
         }
-        
+        return null;
     }
     
     protected void removeOperation(IOperation op)
@@ -438,7 +447,7 @@ public class UMLClassWidget  extends SwitchableWidget
         operations.removeElement(op);
     }
     
-    protected void addAttribute(IAttribute attr)
+    protected AttributeWidget addAttribute(IAttribute attr)
     {
         
         if(attr.getIsRedefined() == false)
@@ -447,12 +456,13 @@ public class UMLClassWidget  extends SwitchableWidget
             ResourceValue.initResources(getWidgetID() + "." + DEFAULT, widget);
             widget.initialize(attr);
             members.addChild(widget);
+            return widget;
         }
         else
         {
            addRedefinedAttribute(attr);
         }
-        
+        return null;
         
     }
     
@@ -521,6 +531,7 @@ public class UMLClassWidget  extends SwitchableWidget
     public void propertyChange(PropertyChangeEvent event)
     {
         super.propertyChange(event);
+        DesignerScene scene=(DesignerScene) getScene();
         
         if(classView != null)
         {
@@ -542,11 +553,13 @@ public class UMLClassWidget  extends SwitchableWidget
             {
                 if(event.getNewValue() instanceof IOperation)
                 {
-                    addOperation((IOperation)event.getNewValue());
+                    OperationWidget operW=addOperation((IOperation)event.getNewValue());
+                    if(operW!=null)operW.select();
                 }
                 else if(event.getNewValue() instanceof IAttribute)
                 {
-                    addAttribute((IAttribute)event.getNewValue());
+                    AttributeWidget attrW=addAttribute((IAttribute)event.getNewValue());
+                    if(attrW!=null)attrW.select();
                 }
             }
             else if(propName.equals(ModelElementChangedKind.FEATUREMOVED.toString()) ||
