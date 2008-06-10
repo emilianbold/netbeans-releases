@@ -68,7 +68,6 @@ import java.io.CharArrayWriter;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -724,7 +723,6 @@ public class BaseKit extends DefaultEditorKit {
         }
 
         c.enableInputMethods(enableIM);
-        executeInstallActions(c);
         
         org.netbeans.lib.editor.hyperlink.HyperlinkOperation.ensureRegistered(c, getContentType());
 
@@ -751,16 +749,17 @@ public class BaseKit extends DefaultEditorKit {
         }
         
         c.setKeymap(keymap);
+        
+        executeInstallActions(c);
     }
 
     protected void executeInstallActions(JEditorPane c) {
-        Preferences prefs = MimeLookup.getLookup(getContentType()).lookup(Preferences.class);
-        List<String> actionNamesList = new  ArrayList<String>();
-        String actionNames = prefs.get(EditorPreferencesKeys.KIT_INSTALL_ACTION_NAME_LIST, ""); //NOI18N
-        for(StringTokenizer t = new StringTokenizer(actionNames, ","); t.hasMoreTokens(); ) { //NOI18N
-            String actionName = t.nextToken().trim();
-            actionNamesList.add(actionName);
-        }
+        MimePath mimePath = MimePath.parse(getContentType());
+        Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
+
+        @SuppressWarnings("unchecked")
+        List<String> actionNamesList = (List<String>) SettingsConversions.callFactory(
+                prefs, mimePath, EditorPreferencesKeys.KIT_INSTALL_ACTION_NAME_LIST, null); //NOI18N
         
         List<Action> actionsList = translateActionNameList(actionNamesList); // translate names to actions
         for (Action a : actionsList) {
@@ -771,7 +770,9 @@ public class BaseKit extends DefaultEditorKit {
     public @Override void deinstall(JEditorPane c) {
         assert (SwingUtilities.isEventDispatchThread()) // expected in AWT only
             : "BaseKit.deinstall() incorrectly called from non-AWT thread."; // NOI18N
-    
+
+        executeDeinstallActions(c);
+        
         // reset the keymap and remove the component from the tracker
         c.setKeymap(null);
         synchronized (KEYMAPS_AND_ACTIONS_LOCK) {
@@ -783,7 +784,6 @@ public class BaseKit extends DefaultEditorKit {
         }
         
         BaseTextUI.uninstallUIWatcher(c);
-        executeDeinstallActions(c);
         c.updateUI();
         
         // #41209: reset ancestor override flag if previously set
@@ -793,13 +793,12 @@ public class BaseKit extends DefaultEditorKit {
     }
 
     protected void executeDeinstallActions(JEditorPane c) {
-        Preferences prefs = MimeLookup.getLookup(getContentType()).lookup(Preferences.class);
-        List<String> actionNamesList = new  ArrayList<String>();
-        String actionNames = prefs.get(EditorPreferencesKeys.KIT_DEINSTALL_ACTION_NAME_LIST, ""); //NOI18N
-        for(StringTokenizer t = new StringTokenizer(actionNames, ","); t.hasMoreTokens(); ) { //NOI18N
-            String actionName = t.nextToken().trim();
-            actionNamesList.add(actionName);
-        }
+        MimePath mimePath = MimePath.parse(getContentType());
+        Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
+        
+        @SuppressWarnings("unchecked")
+        List<String> actionNamesList = (List<String>) SettingsConversions.callFactory(
+                prefs, mimePath, EditorPreferencesKeys.KIT_DEINSTALL_ACTION_NAME_LIST, null); //NOI18N
         
         List<Action> actionsList = translateActionNameList(actionNamesList); // translate names to actions
         for (Action a : actionsList) {
