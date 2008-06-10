@@ -383,6 +383,7 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
         columnList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.columnList.AccessibleContext.accessibleName")); // NOI18N
         columnList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.columnList.AccessibleContext.accessibleDescription")); // NOI18N
 
+        connVariableLabel.setLabelFor(connVariableLabel);
         org.openide.awt.Mnemonics.setLocalizedText(connVariableLabel, org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.connVariableLabel.text")); // NOI18N
 
         connVariableTextField.setColumns(16);
