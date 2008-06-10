@@ -48,7 +48,8 @@ public class HudsonJobBuild implements HudsonJobBuildConstants {
     }
     
     public boolean isBuilding() {
-        return properties.getProperty(HUDSON_JOB_BUILD_BUILDING, Boolean.class);
+        Boolean building = properties.getProperty(HUDSON_JOB_BUILD_BUILDING, Boolean.class);
+        return building != null ? building : false;
     }
     
     public int getDuration() {
