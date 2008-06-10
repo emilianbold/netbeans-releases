@@ -39,6 +39,8 @@
 package org.netbeans.modules.uml.drawingarea.view;
 
 import java.awt.Color;
+import org.netbeans.api.visual.action.ResizeProvider;
+import org.netbeans.modules.uml.drawingarea.border.ResizeBorder;
 
 /**
  *
@@ -47,6 +49,9 @@ import java.awt.Color;
 public interface UMLWidget {
 
     public static final Color BORDER_HILIGHTED_COLOR = new Color(0xFFA400);
+    public  static ResizeBorder NON_RESIZABLE_BORDER =
+            new ResizeBorder(5, Color.BLACK,
+                             new ResizeProvider.ControlPoint[]{});
     // Every WidgetType should have an ID
     // Also refer to UMLWidgetIDString.java
     public String getWidgetID();

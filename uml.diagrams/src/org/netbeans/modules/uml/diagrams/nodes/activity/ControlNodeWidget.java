@@ -51,6 +51,7 @@ import org.netbeans.modules.uml.diagrams.nodes.UMLLabelNodeWidget;
 import org.netbeans.modules.uml.drawingarea.border.ResizeBorder;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
+import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
 import org.openide.util.NbBundle;
 
 /**
@@ -96,11 +97,6 @@ public abstract class ControlNodeWidget extends UMLLabelNodeWidget
         return paletteModel;
     }
     
-    private static int RESIZE_SIZE = 5;
-    private static ResizeBorder NON_RESIZABLE_BORDER =
-            new ResizeBorder(RESIZE_SIZE, Color.BLACK,
-                             new ResizeProvider.ControlPoint[]{});
-
     protected void processStateChange(ObjectState previousState,
                                        ObjectState state)
     {
@@ -109,7 +105,7 @@ public abstract class ControlNodeWidget extends UMLLabelNodeWidget
 
         if (select && !wasSelected)
         {
-            setBorder(NON_RESIZABLE_BORDER);
+            setBorder(UMLWidget.NON_RESIZABLE_BORDER);
         }
         else
         {
