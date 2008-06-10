@@ -47,7 +47,20 @@ import org.netbeans.modules.cnd.api.remote.ServerRecord;
  *
  * @author gordonp
  */
-public class RemoteServerList extends ArrayList<ServerRecord> implements ServerList {
+public class RemoteServerList extends ArrayList<RemoteServerRecord> implements ServerList {
+    
+    private static RemoteServerList serverList = null;
+    
+    public static RemoteServerList getInstance() {
+        if (serverList == null) {
+            serverList = new RemoteServerList();
+        }
+        return serverList;
+    }
+    
+    public RemoteServerList() {
+        add(new RemoteServerRecord()); // creates the "localhost" record
+    }
 
     public ServerRecord getActive() {
         throw new UnsupportedOperationException("Not supported yet.");
