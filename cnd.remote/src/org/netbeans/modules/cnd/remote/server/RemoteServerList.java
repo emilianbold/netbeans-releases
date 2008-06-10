@@ -37,31 +37,19 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.compilers;
+package org.netbeans.modules.cnd.remote.server;
 
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetProvider;
-import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
-import org.netbeans.modules.cnd.remote.support.managers.CompilerSetScriptManager;
+import java.util.ArrayList;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 
 /**
  *
  * @author gordonp
  */
-public class RemoteCompilerSetProvider implements CompilerSetProvider {
-    
-    public RemoteCompilerSetProvider() {
-        String host = System.getProperty("cnd.remote.server");
-        String user = System.getProperty("user.name");
-        
-        RemoteScriptSupport support = new RemoteScriptSupport(host, user, new CompilerSetScriptManager());
-    }
+public class RemoteServerList extends ArrayList<ServerRecord> implements ServerList {
 
-    public boolean hasMoreCompilerSets() {
-        return false;
-    }
-
-    public CompilerSet getNextCompilerSet() {
-        return null;
+    public ServerRecord getActive() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

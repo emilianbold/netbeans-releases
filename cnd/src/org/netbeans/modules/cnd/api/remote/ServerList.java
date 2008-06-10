@@ -37,31 +37,17 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.compilers;
-
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetProvider;
-import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
-import org.netbeans.modules.cnd.remote.support.managers.CompilerSetScriptManager;
+package org.netbeans.modules.cnd.api.remote;
 
 /**
- *
+ * This is a place holder for a RemoteServerList which will be implemented in cnd.remote.
+ * 
  * @author gordonp
  */
-public class RemoteCompilerSetProvider implements CompilerSetProvider {
+public interface ServerList {
+
+    /** Get the active server */
+    public ServerRecord getActive();
     
-    public RemoteCompilerSetProvider() {
-        String host = System.getProperty("cnd.remote.server");
-        String user = System.getProperty("user.name");
-        
-        RemoteScriptSupport support = new RemoteScriptSupport(host, user, new CompilerSetScriptManager());
-    }
-
-    public boolean hasMoreCompilerSets() {
-        return false;
-    }
-
-    public CompilerSet getNextCompilerSet() {
-        return null;
-    }
+    // Other methods are TBD...
 }

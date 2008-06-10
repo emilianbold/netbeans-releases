@@ -37,31 +37,23 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.compilers;
+package org.netbeans.modules.cnd.remote.support.managers;
 
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetProvider;
 import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
-import org.netbeans.modules.cnd.remote.support.managers.CompilerSetScriptManager;
 
 /**
- *
+ * Manage the getCompilerSets script.
+ * 
  * @author gordonp
  */
-public class RemoteCompilerSetProvider implements CompilerSetProvider {
-    
-    public RemoteCompilerSetProvider() {
-        String host = System.getProperty("cnd.remote.server");
-        String user = System.getProperty("user.name");
-        
-        RemoteScriptSupport support = new RemoteScriptSupport(host, user, new CompilerSetScriptManager());
+public class CompilerSetScriptManager implements ScriptManager {
+
+    public void runScript(RemoteScriptSupport support) {
+        System.err.println("CompilerSetScriptManager.runScript: ");
     }
 
-    public boolean hasMoreCompilerSets() {
-        return false;
+    public String getScript() {
+        return System.getProperty("user.home") + "/.netbeans/rddev/cnd.remote/scripts/getCompilerSets"; // NOI18N
     }
 
-    public CompilerSet getNextCompilerSet() {
-        return null;
-    }
 }
