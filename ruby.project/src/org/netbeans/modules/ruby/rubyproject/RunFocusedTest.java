@@ -122,7 +122,8 @@ public class RunFocusedTest extends BaseAction {
 
                             // Line+1: spec seems to be 1-based rather than 0-based (first line is 1)
                             TestRunner runner = getTestRunner(TestRunner.TestType.RSPEC);
-                            if (runner != null) {
+                            // not using the UI test runner for debugging for now, see #136930
+                            if (runner != null && !debug) {
                                 runner.runSingleTest(file, String.valueOf(line + 1), debug);
                             } else {
                                 rspec.runRSpec(null, file, line + 1, file.getName(), locator, true, debug);

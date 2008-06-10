@@ -287,7 +287,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             RSpecSupport rspec = new RSpecSupport(project);
             if (rspec.isRSpecInstalled() && RSpecSupport.isSpecFile(file)) {
                 TestRunner rspecRunner = getTestRunner(TestRunner.TestType.RSPEC);
-                if (rspecRunner != null) {
+                if (rspecRunner != null && !isDebug) {
                     rspecRunner.runTest(file, isDebug);
                 } else {
                     rspec.runRSpec(null, file, file.getName(), new RailsFileLocator(context, project), true, isDebug);
@@ -329,9 +329,15 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             
             RSpecSupport rspec = new RSpecSupport(project);
             if (rspec.isRSpecInstalled() && RSpecSupport.isSpecFile(file)) {
-                // Save all files first - this rake file could be accessing other files
-                LifecycleManager.getDefault().saveAll();
-                rspec.runRSpec(null, file, file.getName(), new RailsFileLocator(context, project), true, debugSingleCommand);
+                TestRunner rspecRunner = getTestRunner(TestRunner.TestType.RSPEC);
+                boolean debug = COMMAND_DEBUG_SINGLE.equals(command);
+                if (rspecRunner != null && !debug) {
+                    rspecRunner.runTest(file, debug);
+                } else {
+                    // Save all files first - this rake file could be accessing other files
+                    LifecycleManager.getDefault().saveAll();
+                    rspec.runRSpec(null, file, file.getName(), new RailsFileLocator(context, project), true, debugSingleCommand);
+                }
                 return;
             }
             
@@ -432,8 +438,13 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             //    // XXX What do we do here?
             } else if (fileName.endsWith("_test")) { // NOI18N
                 // Run test normally - don't pop up browser
-                runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, debugSingleCommand,
-                        new OutputRecognizer[] { new TestNotifier(true, true) });
+                TestRunner testRunner = getTestRunner(TestRunner.TestType.TEST_UNIT);
+                if (testRunner != null) {
+                    testRunner.getInstance().runTest(file, COMMAND_DEBUG_SINGLE.equals(command));
+                } else {
+                    runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, debugSingleCommand,
+                            new OutputRecognizer[]{new TestNotifier(true, true)});
+                }
                 return;
             }
             
