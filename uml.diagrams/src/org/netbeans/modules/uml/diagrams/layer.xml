@@ -1114,7 +1114,7 @@ made subject to such option by the copyright holder.
                 <file name="LinkComment.shadow">
                     <attr name="originalFile" stringvalue="modeling/relationships/LinkComment.context_palette_item"/>
                     <attr name="default-node" stringvalue="Comment"/>
-                    <attr name="position" intvalue="250"/>
+                    <attr name="position" intvalue="550"/>
                 </file>
             </folder>
             <folder name="DataType">

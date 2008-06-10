@@ -63,7 +63,6 @@ import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.widgets.ListWidget;
@@ -74,7 +73,6 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameterableElement;
 import org.netbeans.modules.uml.diagrams.DefaultWidgetContext;
-import org.netbeans.modules.uml.diagrams.actions.ClassifierSelectAction;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
@@ -117,6 +115,7 @@ public class UMLClassWidget  extends SwitchableWidget
         
         addToLookup(initializeContextPalette());
         addToLookup(new DefaultWidgetContext("Class"));
+        //addToLookup(new DefaultWidgetContext(metatype));
 //        addToLookup(new ClassifierSelectAction());
     }
 
@@ -602,7 +601,7 @@ public class UMLClassWidget  extends SwitchableWidget
         revalidate();
     }
     
-    private DefaultContextPaletteModel initializeContextPalette()
+    protected DefaultContextPaletteModel initializeContextPalette()
     {
         DefaultContextPaletteModel paletteModel = new DefaultContextPaletteModel(this);
         paletteModel.initialize("UML/context-palette/Class");
