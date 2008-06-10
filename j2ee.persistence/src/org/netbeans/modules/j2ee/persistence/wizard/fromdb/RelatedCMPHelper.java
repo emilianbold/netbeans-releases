@@ -333,7 +333,7 @@ public class RelatedCMPHelper {
         private final Map<String, String> classNames = new HashMap<String, String>();
         private  FetchType fetchType; // global
         private boolean regenSchemaAttrs; // global
-        private final Map<String, Set<String[]>> allUniqueConstraints = new HashMap<String, Set<String[]>>();
+        private final Map<String, Set<List<String>>> allUniqueConstraints = new HashMap<String, Set<List<String>>>();
         private CollectionType collectionType; // global
         
         public Set<String> getTableNames() {
@@ -342,7 +342,7 @@ public class RelatedCMPHelper {
         
         private void addTable(String schemaName, String catalogName, String tableName, 
                 FileObject rootFolder, String packageName, String className,
-                Set<String[]> uniqueConstraints) {
+                Set<List<String>> uniqueConstraints) {
             tableNames.add(tableName);
             schemas.put(tableName, schemaName);
             catalogs.put(tableName, catalogName);
@@ -396,7 +396,7 @@ public class RelatedCMPHelper {
             this.regenSchemaAttrs = regenSchemaAttrs;
         }
 
-        public Set<String[]> getUniqueConstraints(String tableName) {
+        public Set<List<String>> getUniqueConstraints(String tableName) {
             return this.allUniqueConstraints.get(tableName);
         }
 

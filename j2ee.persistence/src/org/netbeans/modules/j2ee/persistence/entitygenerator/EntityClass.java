@@ -64,7 +64,7 @@ public class EntityClass {
     private final String packageName;
     private final FetchType fetchType;
     private final boolean regenSchemaAttrs;
-    private final Set<String[]> uniqueConstraints;
+    private final Set<List<String>> uniqueConstraints;
     private final CollectionType collectionType;
     
     private List<RelationshipRole> roles;
@@ -77,7 +77,7 @@ public class EntityClass {
     
     public EntityClass(boolean fullyQualifiedTblNames, String schemaName, String catalogName, String tableName, 
             FileObject rootFolder, String packageName, String className,
-            FetchType fetchType, boolean regenSchemaAttrs, Set<String[]> uniqueConstraints,
+            FetchType fetchType, boolean regenSchemaAttrs, Set<List<String>> uniqueConstraints,
             CollectionType collectionType) {
         this.fullyQualifiedTblNames = fullyQualifiedTblNames;
         this.schemaName = schemaName;
@@ -104,7 +104,7 @@ public class EntityClass {
         this.forTable = forTable;
     }
     
-    public Set<String[]> getUniqueConstraints() {
+    public Set<List<String>> getUniqueConstraints() {
         return this.uniqueConstraints;
     }
     
