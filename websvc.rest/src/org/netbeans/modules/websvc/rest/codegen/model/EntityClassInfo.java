@@ -404,7 +404,10 @@ public class EntityClassInfo {
         
         public boolean isId() {
             return matchAnnotation("@javax.persistence.Id") || matchAnnotation("@javax.persistence.EmbeddedId"); //NOI18N
-
+        }
+        
+        public boolean isGeneratedValue() {
+            return matchAnnotation("@javax.persistence.GeneratedValue");        //NOI18N
         }
 
         public boolean isEmbeddedId() {

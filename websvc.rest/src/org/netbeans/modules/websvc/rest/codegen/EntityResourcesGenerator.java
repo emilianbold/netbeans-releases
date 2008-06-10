@@ -802,8 +802,15 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         String[] params = new String[] { "entity" };
         Object[] paramTypes = new Object[] { getEntityClassType(bean) };
         
-        String bodyText = "{" +
-                "PersistenceService.getInstance().persistEntity(entity);";
+        FieldInfo idField = bean.getEntityClassInfo().getIdFieldInfo();
+        
+        String bodyText = "{";
+  
+        if (idField.isGeneratedValue()) {
+            bodyText += "entity." + getSetterName(idField) + "(null);";
+        }
+        
+        bodyText += "PersistenceService.getInstance().persistEntity(entity);";
         
         bodyText = bodyText + getUpdateOneToManyRelSubText(getItemSubResource(bean)) +
                 "}";
@@ -1139,11 +1146,11 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         Object[] paramTypes = new Object[] {
             getEntityClassType(bean), getEntityClassType(bean) };
         
-        String bodyText = "{ newEntity.$SETTER$(entity.$GETTER$();";
-        bodyText = bodyText.replace("$SETTER$", getIdSetter(bean)).
-                replace("$GETTER$", getIdGetter(bean));
+//        String bodyText = "{ newEntity.$SETTER$(entity.$GETTER$();";
+//        bodyText = bodyText.replace("$SETTER$", getIdSetter(bean)).
+//                replace("$GETTER$", getIdGetter(bean));
         
-        bodyText = bodyText + getRemoveOneToManyRelSubText(bean);
+        String bodyText = "{"+ getRemoveOneToManyRelSubText(bean);
         
         bodyText = bodyText +
                 "entity = PersistenceService.getInstance().mergeEntity(newEntity);";
