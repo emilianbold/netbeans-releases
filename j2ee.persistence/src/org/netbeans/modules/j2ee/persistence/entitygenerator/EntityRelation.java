@@ -104,4 +104,8 @@ public class EntityRelation {
     public static enum FetchType {
         DEFAULT, EAGER, LAZY
     }
+    
+    public static enum CollectionType {
+        COLLECTION, LIST, SET
+    }
 }

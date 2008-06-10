@@ -186,6 +186,7 @@ public enum CppTokenId implements TokenId {
     FLOAT_LITERAL(null, "number"), // NOI18N
     DOUBLE_LITERAL(null, "number"), // NOI18N
     UNSIGNED_LITERAL(null, "number"), // NOI18N
+    UNSIGNED_LONG_LITERAL(null, "number"), // NOI18N
     CHAR_LITERAL(null, "character"), // NOI18N
     STRING_LITERAL(null, "string"), // NOI18N
     

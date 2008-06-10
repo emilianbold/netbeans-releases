@@ -27,5 +27,5 @@ import org.netbeans.modules.iep.model.IEPModel;
  */
 public interface IEPModelProvider {
    
-    IEPModel getWLMModel(URI locationURI) throws Exception;
+    IEPModel getIEPModel(URI locationURI) throws Exception;
 }

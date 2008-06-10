@@ -216,19 +216,6 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
             StringWriter sw = new StringWriter();
             PrintWriter out = new PrintWriter(sw);
 
-            Verifier verifier = new Verifier() {
-
-                public void addCovariantMethods(ClassNode cn) {
-                }
-
-                protected void addTimeStamp(ClassNode node) {
-                }
-
-                protected void addInitialization(ClassNode node) {
-                }
-            };
-            verifier.visitClass(classNode);
-
             try {
                 String packageName = classNode.getPackageName();
                 if (packageName != null) {

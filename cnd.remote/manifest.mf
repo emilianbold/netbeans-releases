@@ -4,4 +4,3 @@ OpenIDE-Module: org.netbeans.modules.cnd.remote
 DISABLE-OpenIDE-Module-Layer: org/netbeans/modules/cnd/remote/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/cnd/remote/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
-

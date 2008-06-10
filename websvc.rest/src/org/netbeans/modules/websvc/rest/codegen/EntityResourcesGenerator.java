@@ -86,8 +86,6 @@ public class EntityResourcesGenerator extends AbstractGenerator {
     public static final String CONVERTER_FOLDER = "converter";      //NOI18N
     public static final String RESOURCE_SUFFIX = GenericResourceBean.RESOURCE_SUFFIX;
     public static final String CONVERTER_SUFFIX = "Converter";      //NOI18N
-    public static final String REF_CONVERTER_SUFFIX = "RefConverter";   //NOI18N
-    public static final String REF_SUFFIX = "Ref";    //NOI18N
     
     private static final String DEFAULT_TEMPLATE = "Templates/WebServices/DefaultResource.java"; //NOI18N
     private static final String URI_RESOLVER_TEMPLATE = "Templates/WebServices/UriResolver.java";  //NOI18N
@@ -118,6 +116,8 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         RestConstants.DELETE,
         RestConstants.PRODUCE_MIME,
         RestConstants.CONSUME_MIME,
+        RestConstants.QUERY_PARAM,
+        RestConstants.DEFAULT_VALUE,
         Constants.WEB_APPLICATION_EXCEPTION,
         Constants.NO_RESULT_EXCEPTION
     };
@@ -134,20 +134,13 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         Constants.XML_ROOT_ELEMENT,
         Constants.XML_ELEMENT,
         Constants.XML_TRANSIENT,
-        Constants.XML_ATTRIBUTE
-    };
-    
-    private static final String[] REF_CONVERTER_IMPORTS = {
-        Constants.XML_ROOT_ELEMENT,
-        Constants.XML_ELEMENT,
-        Constants.XML_TRANSIENT,
         Constants.XML_ATTRIBUTE,
         Constants.URI_BUILDER
     };
-    
+  
     private static final String mimeTypes = "{\"" + MimeType.XML.value() + "\", \"" +
             MimeType.JSON.value() + "\"}";        //NOI18N
-    
+   
     private String persistenceUnitName;
     private String targetPackageName;
     private FileObject targetFolder;
@@ -223,9 +216,6 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         for (EntityResourceBean bean : beans) {
             classes.add(getResourceType(bean));
             classes.add(getConverterType(bean));
-            if (bean.isItem()) {
-                classes.add(getRefConverterType(bean));
-            }
         }
         classes.add(getPersistenceServiceClassType());
         classes.add(getUriResolverClassType());
@@ -242,26 +232,17 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         
         Map<EntityResourceBean, JavaSource> resourceMap = new HashMap<EntityResourceBean, JavaSource>();
         Map<EntityResourceBean, JavaSource> converterMap = new HashMap<EntityResourceBean, JavaSource>();
-        Map<EntityResourceBean, JavaSource> refConverterMap = new HashMap<EntityResourceBean, JavaSource>();
-        
+      
         Collection<EntityResourceBean> resourceBeans = model.getResourceBeans();
         
         for (EntityResourceBean bean : resourceBeans) {
             resourceMap.put(bean, generateResourceBean(bean));
             converterMap.put(bean, generateConverter(bean));
-            
-            if (bean.isItem()) {
-                refConverterMap.put(bean, generateRefConverter(bean));
-            }
         }
         
         for (EntityResourceBean bean : resourceBeans) {
             modifyResourceBean(resourceMap.get(bean), bean);
             modifyConverter(converterMap.get(bean), bean);
-            
-            if (bean.isItem()) {
-                modifyRefConverter(refConverterMap.get(bean), bean);
-            }
         }
         
         finishProgressReporting();
@@ -354,13 +335,6 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         
         return JavaSourceHelper.createJavaSource(DEFAULT_TEMPLATE, converterFolder,
                 getConverterPackageName(), getConverterName(bean));
-    }
-    
-    private JavaSource generateRefConverter(EntityResourceBean bean) {
-        reportProgress(getRefConverterType(bean), false);
-        
-        return JavaSourceHelper.createJavaSource(DEFAULT_TEMPLATE, converterFolder,
-                getConverterPackageName(), getRefConverterName(bean));
     }
     
     private void modifyResourceBean(JavaSource source, EntityResourceBean bean) {
@@ -480,13 +454,13 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                     JavaSourceHelper.addClassAnnotation(copy,
                             new String[] {Constants.XML_ROOT_ELEMENT_ANNOTATION},
                             new Object[] {
-                        JavaSourceHelper.createAssignmentTree(copy, "name",
+                        JavaSourceHelper.createAssignmentTree(copy, "name",     //I18N
                                 getConverterXMLName(bean))});
                     
-                    modifiedTree = addConverterFields(copy, modifiedTree, bean, false);
-                    modifiedTree = addConverterConstructor(copy, modifiedTree, bean, false);
-                    modifiedTree = addGetReferencesMethod(copy, modifiedTree, bean);
-                    modifiedTree = addSetReferencesMethod(copy, modifiedTree, bean);
+                    modifiedTree = addConverterFields(copy, modifiedTree, bean);
+                    modifiedTree = addConverterConstructor(copy, modifiedTree, bean);
+                    modifiedTree = addGetItemsMethod(copy, modifiedTree, bean);
+                    modifiedTree = addSetItemsMethod(copy, modifiedTree, bean);
                     modifiedTree = addGetUriMethod(copy, modifiedTree);
                     modifiedTree = addContainerConverterGetEntitiesMethod(copy, modifiedTree, bean);
                     
@@ -500,40 +474,17 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         }
     }
     
-    private void modifyItemConverterDefaultConstructor(JavaSource source,
-            final EntityResourceBean bean) {
+    private void modifyItemConverter(JavaSource source, final EntityResourceBean bean) {   
         try {
             ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
                 public void run(WorkingCopy copy) throws IOException {
                     copy.toPhase(JavaSource.Phase.RESOLVED);
                     
-                    JavaSourceHelper.addImports(copy, new String[] {getEntityClassType(bean)});
-                    
-                    String bodyText = "{ entity = new $CLASS$(); }";
-                    bodyText = bodyText.replace("$CLASS$", getEntityClassName(bean));
-                    
-                    JavaSourceHelper.replaceMethodBody(copy,
-                            JavaSourceHelper.getDefaultConstructor(copy),
-                            bodyText);
-                }
-            });
-            result.commit();
-            
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-    
-    private void modifyItemConverter(JavaSource source, final EntityResourceBean bean) {
-        modifyItemConverterDefaultConstructor(source, bean);
-        
-        try {
-            ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
-                public void run(WorkingCopy copy) throws IOException {
-                    copy.toPhase(JavaSource.Phase.RESOLVED);
-                    
-                    JavaSourceHelper.addImports(copy, ITEM_CONVERTER_IMPORTS);
-                    
+                    List<String> imports = new ArrayList<String>(Arrays.asList(ITEM_CONVERTER_IMPORTS));
+                    imports.add(getEntityClassType(bean));
+                    imports.add(resourcePackageName + "." + PERSISTENCE_SERVICE);
+                    JavaSourceHelper.addImports(copy, imports.toArray(new String[imports.size()]));
+               
                     ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
                     ClassTree modifiedTree = tree;
                     
@@ -543,8 +494,8 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                         JavaSourceHelper.createAssignmentTree(copy, "name",
                                 getConverterXMLName(bean))});
                     
-                    modifiedTree = addConverterFields(copy, modifiedTree, bean, false);
-                    modifiedTree = addConverterConstructor(copy, modifiedTree, bean, false);
+                    modifiedTree = addConverterFields(copy, modifiedTree, bean);
+                    modifiedTree = addConverterConstructor(copy, modifiedTree, bean);
                     
                     for (FieldInfo fieldInfo : bean.getEntityClassInfo().getFieldInfos()) {
                         modifiedTree = addGetterMethod(copy, modifiedTree, fieldInfo);
@@ -552,8 +503,10 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                     }
                     
                     modifiedTree = addGetUriMethod(copy, modifiedTree);
+                    modifiedTree = addSetUriMethod(copy, modifiedTree);
                     modifiedTree = addItemConverterGetEntityMethod(copy, modifiedTree, bean);
                     modifiedTree = addItemConverterSetEntityMethod(copy, modifiedTree, bean);
+                     modifiedTree = addItemConverterResolveEntityMethod(copy, modifiedTree, bean);
                     
                     copy.rewrite(tree, modifiedTree);
                 }
@@ -565,44 +518,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         }
     }
     
-    private void modifyRefConverter(JavaSource source, final EntityResourceBean bean) {
-        reportProgress(getRefConverterType(bean), true);
-        
-        try {
-            ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
-                public void run(WorkingCopy copy) throws IOException {
-                    copy.toPhase(JavaSource.Phase.RESOLVED);
-                    
-                    JavaSourceHelper.addImports(copy, REF_CONVERTER_IMPORTS);
-                    
-                    ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
-                    ClassTree modifiedTree = tree;
-                    
-                    JavaSourceHelper.addClassAnnotation(copy,
-                            new String[] {Constants.XML_ROOT_ELEMENT_ANNOTATION},
-                            new Object[] {
-                        JavaSourceHelper.createAssignmentTree(copy, "name",
-                                getRefConverterXMLName(bean))}); //NOI18N
-                    
-                    modifiedTree = addConverterFields(copy, modifiedTree, bean, true);
-                    modifiedTree = addConverterConstructor(copy, modifiedTree, bean, true);
-                    
-                    FieldInfo fieldInfo = bean.getEntityClassInfo().getIdFieldInfo();
-                    modifiedTree = addGetterMethod(copy, modifiedTree, fieldInfo);
-                    modifiedTree = addGetUriMethod(copy, modifiedTree, fieldInfo);
-                    modifiedTree = addSetUriMethod(copy, modifiedTree, fieldInfo);
-                    modifiedTree = addRefConverterGetEntityMethod(copy, modifiedTree, bean);
-                    
-                    copy.rewrite(tree, modifiedTree);
-                }
-            });
-            
-            result.commit();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-    
+ 
     private String[] getContainerResourceImports(EntityResourceBean bean) {
         List<String> imports = new ArrayList<String>(Arrays.asList(CONTAINER_IMPORTS));
         
@@ -721,20 +637,23 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         
         Object returnType = getConverterType(bean);
         
-        String[] parameters = new String[] {"start", "max"};        //NOI18N
-        Object[] paramTypes = new String[] {"int", "int"};          //NOI18N
+        String[] parameters = new String[] {"start", "max", "expandLevel"};        //NOI18N
+        String intType = Integer.TYPE.getName();
+        Object[] paramTypes = new String[] {intType, intType, intType};          //NOI18N
         String[][] paramAnnotations = new String[][] {
+            {RestConstants.QUERY_PARAM_ANNOTATION, RestConstants.DEFAULT_VALUE_ANNOTATION},
             {RestConstants.QUERY_PARAM_ANNOTATION, RestConstants.DEFAULT_VALUE_ANNOTATION},
             {RestConstants.QUERY_PARAM_ANNOTATION, RestConstants.DEFAULT_VALUE_ANNOTATION}
         };
         
         Object[][] paramAnnotationAttrs = new Object[][] {
             {"start", "0"},
-            {"max", "10"}
+            {"max", "10"},
+            {"expandLevel", "1"},
         };
          
         String bodyText = "{ try {" +
-                "return new $CONVERTER$(getEntities(start, max), context.getAbsolutePath());" +
+                "return new $CONVERTER$(getEntities(start, max), context.getAbsolutePath(), expandLevel);" +
                 "} finally {" +
                 "PersistenceService.getInstance().close();" +
                 "}" +
@@ -924,9 +843,18 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             JavaSourceHelper.createIdentifierTree(copy, mimeTypes) };
         
         Object returnType = getConverterType(bean);
- 
+  
+        String[] parameters = new String[] {"expandLevel"};        //NOI18N
+        Object[] paramTypes = new String[] {Integer.TYPE.getName()};          //NOI18N
+        String[][] paramAnnotations = new String[][] {
+            {RestConstants.QUERY_PARAM_ANNOTATION, RestConstants.DEFAULT_VALUE_ANNOTATION}
+        };
+        
+        Object[][] paramAnnotationAttrs = new Object[][] {
+            {"expandLevel", "1"},
+        };
         String bodyText = "{ try {" +
-                "return  new $CONVERTER$(getEntity(), context.getAbsolutePath()); " +
+                "return  new $CONVERTER$(getEntity(), context.getAbsolutePath(), expandLevel); " +
                 "} finally {" +
                 "PersistenceService.getInstance().close();" +
                 "}" +
@@ -942,7 +870,8 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         
         return JavaSourceHelper.addMethod(copy, tree,
                 modifiers, annotations, annotationAttrs,
-                methodName, returnType, null, null, null, null,
+                methodName, returnType, 
+                parameters, paramTypes, paramAnnotations, paramAnnotationAttrs,
                 bodyText, comment);      //NOI18N
     }
     
@@ -1025,27 +954,13 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         Modifier[] modifiers = new Modifier[] {Modifier.PUBLIC};
         String[] annotations = new String[] {RestConstants.PATH_ANNOTATION};
    
-        String uriTemplate = lowerCaseFirstLetter(subBean.getName()) + "/";
+        String uriTemplate = fieldInfo.getName() + "/";
         String[] annotationAttrs = new String[] {uriTemplate};
         Object returnType = getResourceType(subBean);
         String resourceName = getResourceName(subBean);
-        
-        // Check to see if there is any conflict.
-        boolean hasConflict = false;
-        for (RelatedEntityResource resource : bean.getSubResources()) {
-            if (resource != relatedResource) {
-                if (resourceName.equals(getResourceName(resource.getResourceBean()))) {
-                    hasConflict = true;
-                    break;
-                }
-            }
-        }
-        
-        String methodName = "get" + resourceName;       //NOI18N
-        
-        if (hasConflict) {
-            methodName += "For" + capitalizeFirstLetter(fieldInfo.getName());    //NOI18N
-        }
+  
+        String getterName = getGetterName(fieldInfo);
+        String methodName = getterName + RESOURCE_SUFFIX;     //NOI18N
         
         String bodyText = null;
         
@@ -1066,7 +981,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                     replace("$RESOURCE$", resourceName).
                     replace("$SUBCLASS$", getEntityClassName(subBean)).
                     replace("$ID_PARAMS$", getIdFieldNullValueList(subBean)).
-                    replace("$GETTER$", getGetterName(fieldInfo));
+                    replace("$GETTER$", getterName);
         } else {
             bodyText = "{" +
                     "final $CLASS$ parent = getEntity();" +
@@ -1117,7 +1032,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             bodyText = bodyText.replace("$CLASS$", getEntityClassName(bean)).
                     replace("$RESOURCE$", resourceName).
                     replace("$SUBCLASS$", getEntityClassName(subBean)).
-                    replace("$GETTER$", getGetterName(fieldInfo));
+                    replace("$GETTER$", getterName);
         }
         
         String comment = "Returns a dynamic instance of $RESOURCE$ used for entity navigation.\n\n" +
@@ -1309,79 +1224,88 @@ public class EntityResourcesGenerator extends AbstractGenerator {
     }
     
     private ClassTree addConverterFields(WorkingCopy copy, ClassTree tree,
-            EntityResourceBean bean, boolean isRefConverter) {
+            EntityResourceBean bean) {
         Modifier[] modifiers = new Modifier[] {Modifier.PRIVATE};
         ClassTree modifiedTree = tree;
         
         modifiedTree = JavaSourceHelper.addField(copy, modifiedTree, modifiers,
-                null, null, "uri", Constants.URI_TYPE);
+                null, null, "expandLevel", Integer.TYPE.getName());   //NOI18N            
         
-        if (bean.isItem()) {
-            if (isRefConverter) {
-                modifiedTree = JavaSourceHelper.addField(copy, modifiedTree, modifiers,
-                        null, null, "isUriExtendable", "boolean");
-            }
+        modifiedTree = JavaSourceHelper.addField(copy, modifiedTree, modifiers,
+                null, null, "uri", Constants.URI_TYPE);             //NOI18N            
+        
+        if (bean.isItem()) {    
             modifiedTree = JavaSourceHelper.addField(copy, modifiedTree, modifiers,
-                    null, null, "entity", getEntityClassType(bean));
+                    null, null, "entity", getEntityClassType(bean));    //NOI18N   
         } else {
             Tree typeTree = JavaSourceHelper.createParameterizedTypeTree(copy,
-                    Constants.COLLECTION_TYPE, new String[] {getRefConverterType(bean)});
+                    Constants.COLLECTION_TYPE, new String[] {getItemConverterType(bean)});
             
             modifiedTree = JavaSourceHelper.addField(copy, modifiedTree, modifiers,
-                    null, null, "references", typeTree);
+                    null, null, "items", typeTree);     //NOI18N
             
             typeTree = JavaSourceHelper.createParameterizedTypeTree(copy,
                     Constants.COLLECTION_TYPE, new String[] {getEntityClassType(bean)});
             
             modifiedTree = JavaSourceHelper.addField(copy, modifiedTree, modifiers,
-                    null, null, "entities", typeTree);
-        }
+                    null, null, "entities", typeTree);      //NOI18N
+            }
         
         return modifiedTree;
     }
     
     private ClassTree addConverterConstructor(WorkingCopy copy,
-            ClassTree tree, EntityResourceBean bean, boolean isRefConverter) {
+            ClassTree tree, EntityResourceBean bean) {
         String[] parameters = null;
         Object[] types = null;
         String bodyText = null;
         String comment = null;
+        String converterName = getConverterName(bean);
         
         if (bean.isItem()) {
             types = new String[] {getEntityClassType(bean),
-            Constants.URI_TYPE, "boolean"};
+                Constants.URI_TYPE, Integer.TYPE.getName(), Boolean.TYPE.getName()};
+        
+            parameters = new String[] {"entity", "uri", "expandLevel", "isUriExtendable"};      //NOI18N
             
-            if (isRefConverter) {
-                parameters = new String[] {"entity", "uri", "isUriExtendable"};
-                bodyText = "{this.entity = entity; this.uri = uri;" +
-                        "this.isUriExtendable = isUriExtendable;}";
-                
-                comment = "Creates a new instance of $CONVERTER$.\n\n" +
+            bodyText = "{this.entity = entity;" +
+                "this.uri = (isUriExtendable) ? UriBuilder.fromUri(uri).path(" +
+                getIdFieldToUriStmt(bean.getEntityClassInfo().getIdFieldInfo()) + " + \"/\").build() : uri;" +
+                "this.expandLevel = expandLevel;}";         //NOI18N
+        
+            comment = "Creates a new instance of " + converterName + ".\n\n" +
                         "@param entity associated entity\n" +
                         "@param uri associated uri\n" +
-                        "@param isUriExtendable indicates whether the uri can be extended";
-                comment = comment.replace("$CONVERTER$", getRefConverterName(bean));
-            } else {
-                parameters = new String[] {"entity", "uri"};
-                bodyText = "{this.entity = entity; this.uri = uri;}";
-                
-                comment = "Creates a new instance of $CONVERTER$.\n\n" +
+                        "@param expandLevel indicates the number of levels the entity graph should be expanded" +
+                        "@param isUriExtendable indicates whether the uri can be extended";         //NOI18N 
+            
+            tree = JavaSourceHelper.addConstructor(copy, tree,
+                new Modifier[] {Modifier.PUBLIC},
+                parameters, types, bodyText, comment);
+            
+            parameters = new String[] {"entity", "uri", "expandLevel"};      //NOI18N
+            
+            bodyText = "{this(entity, uri, expandLevel, false);}";      //NOI18N
+      
+            comment = "Creates a new instance of " + converterName + ".\n\n" +
                         "@param entity associated entity\n" +
-                        "@param uri associated uri";
-                comment = comment.replace("$CONVERTER$", getConverterName(bean));
-            }
+                        "@param uri associated uri\n" +
+                        "@param expandLevel indicates the number of levels the entity graph should be expanded";        //NOI18N
         } else {
-            parameters = new String[] {"entities", "uri"};
+            parameters = new String[] {"entities", "uri", "expandLevel"};       //NOI18N
+            
             Tree typeTree = JavaSourceHelper.createParameterizedTypeTree(copy,
                     Constants.COLLECTION_TYPE,
                     new String[] {getEntityClassType(bean)});
-            types = new Object[] {typeTree, Constants.URI_TYPE};
-            bodyText = "{this.entities = entities; this.uri = uri;}";
             
-            comment = "Creates a new instance of $CONVERTER$.\n\n" +
+            types = new Object[] {typeTree, Constants.URI_TYPE, Integer.TYPE.getName()};
+            
+            bodyText = "{this.entities = entities; this.uri = uri; this.expandLevel = expandLevel}"; //NOI18N
+            
+            comment = "Creates a new instance of " + converterName + ".\n\n" +
                     "@param entities associated entities\n" +
-                    "@param uri associated uri";
-            comment = comment.replace("$CONVERTER$", getConverterName(bean));
+                    "@param uri associated uri\n" +
+                    "@param expandLevel indicates the number of levels the entity graph should be expanded";  //NOI18N
         }
         
         return JavaSourceHelper.addConstructor(copy, tree,
@@ -1389,58 +1313,56 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                 parameters, types, bodyText, comment);
     }
     
-    private ClassTree addGetReferencesMethod(WorkingCopy copy,
+    private ClassTree addGetItemsMethod(WorkingCopy copy,
             ClassTree tree, EntityResourceBean bean) {
         Modifier[] modifiers = new Modifier[] {Modifier.PUBLIC};
         String[] annotations = new String[] {Constants.XML_ELEMENT_ANNOTATION};
-        Object[] annotationAttrs = new Object[] {
-            JavaSourceHelper.createAssignmentTree(copy, "name",
-                    getRefConverterXMLName(bean))
-        };
-        
+        String methodName = "get" + getItemName(bean);              //NOI18
         Object returnType = JavaSourceHelper.createParameterizedTypeTree(copy,
                 Constants.COLLECTION_TYPE,
-                new String[] {getRefConverterType(bean)});
+                new String[] {getItemConverterType(bean)});
         
+        String itemConverterName = getItemConverterName(bean);
         String bodyText = "{ " +
-                "references = new ArrayList<$REF_CONVERTER$>();" +
+                "if (items == null) {" +
+                "items = new ArrayList<$ITEM_CONVERTER$>();" +               
+                "}" + 
                 "if (entities != null) {" +
                 "for ($CLASS$ entity : entities) {" +
-                "references.add(new $REF_CONVERTER$(entity, uri, true));" +
+                "items.add(new $ITEM_CONVERTER$(entity, uri, expandLevel, true));" +
                 "}" +
                 "}" +
-                "return references;" +
-                "}";
+                "return items;" +
+                "}";       //NOI18N 
         
         bodyText = bodyText.replace("$CLASS$", getEntityClassName(bean)).
-                replace("$REF_CONVERTER$", getRefConverterName(bean));
+                replace("$ITEM_CONVERTER$", itemConverterName);             //NOI18N
         
-        String comment = "Returns a collection of $REF_CONVERTER$.\n\n" +
-                "@return a collection of $REF_CONVERTER$";
-        comment = comment.replace("$REF_CONVERTER$", getRefConverterName(bean));
+        String comment = "Returns a collection of $ITEM_CONVERTER$.\n\n" +
+                "@return a collection of $ITEM_CONVERTER$";                 //NOI18M
+        comment = comment.replace("$ITEM_CONVERTER$", itemConverterName);   //NOI18N
         
         return JavaSourceHelper.addMethod(copy, tree,
-                modifiers, annotations, annotationAttrs,
-                "getReferences", returnType, null, null, null, null,
+                modifiers, annotations, null,
+                methodName, returnType, null, null, null, null,
                 bodyText, comment);
     }
     
-    private ClassTree addSetReferencesMethod(WorkingCopy copy,
+    private ClassTree addSetItemsMethod(WorkingCopy copy,
             ClassTree tree, EntityResourceBean bean) {
-        String[] args = new String[] { "references" };
-        String refClassName = getRefConverterType(bean);
+        String[] args = new String[] { "items" };           //NOI18N
         Object argType = JavaSourceHelper.createParameterizedTypeTree(copy,
                 Constants.COLLECTION_TYPE,
-                new String[] { refClassName });
+                new String[] { getItemConverterType(bean)});
+        String methodName = "set" + getItemName(bean);              //NOI18
+        String bodyText = "{this.items = items;}";         //NOI18N
         
-        String bodyText = "{this.references = references;}";
-        
-        String comment = "Sets a collection of $REF_CONVERTER$.\n\n" +
-                "@param a collection of $REF_CONVERTER$ to set";
-        comment = comment.replace("$REF_CONVERTER$", getRefConverterName(bean));
+        String comment = "Sets a collection of $ITEM_CONVERTER$.\n\n" +
+                "@param a collection of $ITEM_CONVERTER$ to set";           //NOI18N
+        comment = comment.replace("$ITEM_CONVERTER$", getItemConverterName(bean));
         
         return JavaSourceHelper.addMethod(copy, tree, Constants.PUBLIC,
-                null, null, "setReferences", Constants.VOID,
+                null, null, methodName, Constants.VOID,
                 args, new Object[] { argType }, null, null,
                 bodyText, comment);
     }
@@ -1448,21 +1370,33 @@ public class EntityResourcesGenerator extends AbstractGenerator {
     private ClassTree addGetUriMethod(WorkingCopy copy, ClassTree tree) {
         Modifier[] modifiers = new Modifier[] {Modifier.PUBLIC};
         String[] annotations = new String[] {Constants.XML_ATTRIBUTE_ANNOTATION};
-        Object[] annotationAttrs = new Object[] {
-            JavaSourceHelper.createAssignmentTree(copy, "name", "uri")
-        };
-        
         Object returnType = Constants.URI_TYPE;
         
-        String bodyText = "{return uri;}";
+        String bodyText = "{return uri;}";              //NOI18N
         
         String comment = "Returns the URI associated with this converter.\n\n" +
-                "@return the uri";
+                "@return the uri";          //NOI18N
         
         return JavaSourceHelper.addMethod(copy, tree,
-                modifiers, annotations, annotationAttrs,
-                "getResourceUri", returnType, null, null, null, null,
-                bodyText, comment);
+                modifiers, annotations, null,
+                "getUri", returnType, null, null, null, null,
+                bodyText, comment);         //NOI18N
+    }
+   
+    private ClassTree addSetUriMethod(WorkingCopy copy, ClassTree tree) {
+        Modifier[] modifiers = new Modifier[] {Modifier.PUBLIC};
+        Object returnType = Constants.VOID;
+        String[] params = new String[] { "uri" };     //NOI18N
+        Object[] paramTypes = new Object[] { Constants.URI_TYPE };
+        
+        String bodyText = "{ this.uri = uri; }";        //NOI18N
+        
+        String comment = "Sets the URI for this reference converter.\n\n";      //NOI18N
+        
+        return JavaSourceHelper.addMethod(copy, tree,
+                modifiers, null, null, "setUri", returnType,
+                params, paramTypes, null, null,
+                bodyText, comment);     //NOI18N
     }
     
     private ClassTree addContainerConverterGetEntitiesMethod(WorkingCopy copy,
@@ -1473,24 +1407,25 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                 Constants.COLLECTION_TYPE,
                 new String[] {getEntityClassType(bean)});
         
+        String entityClass = getEntityClassName(bean);
         String bodyText = "{ entities = new ArrayList<$CLASS$>();" +
-                "if (references != null) { " +
-                "for ($REFCLASS$ ref : references) {" +
-                "entities.add(ref.getEntity()); } " +
+                "if (items != null) { " +
+                "for ($ITEM_CONVERTER$ item : items) {" +
+                "entities.add(item.resolveEntity()); } " +
                 "}" +
                 "return entities;" +
-                "}";
+                "}";        //NOI18N
         
-        bodyText = bodyText.replace("$CLASS$", getEntityClassName(bean)).
-                replace("$REFCLASS$", getRefConverterName(bean));
+        bodyText = bodyText.replace("$CLASS$", entityClass).
+                replace("$ITEM_CONVERTER$", getItemConverterName(bean));
         
         String comment = "Returns a collection $CLASS$ entities.\n\n" +
                 "@return a collection of $CLASS$ entities";
-        comment = comment.replace("$CLASS$", getEntityClassName(bean));
+        comment = comment.replace("$CLASS$", entityClass);
         
         return JavaSourceHelper.addMethod(copy, tree, modifiers, annotations,
                 null, "getEntities", returnType, null, null, null, null,
-                bodyText, comment);
+                bodyText, comment);         //NOI18N
     }
     
     
@@ -1512,37 +1447,36 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                         new String[] {fieldInfo.getTypeArg()});
             }
             
-            bodyText = "{return entity.$GETTER$();}";
-            bodyText = bodyText.replace("$GETTER$", getterName);
+            bodyText = "{return (expandLevel > 0) ? getEntity().$GETTER$() : null;}";         //NOI18N
+            bodyText = bodyText.replace("$GETTER$", getterName);                    //NOI18N
         } else {
             if (fieldInfo.isOneToMany() || fieldInfo.isManyToMany()) {
                 EntityResourceBean foreignBean = model.getContainerResourceBean(fieldInfo.getTypeArg());
-                annotationAttrs = new Object[] {
-                    JavaSourceHelper.createAssignmentTree(copy, "name",
-                            lowerCaseFirstLetter(foreignBean.getName()))
-                };
                 returnType = getConverterType(foreignBean);
                 
-                bodyText = "{if (entity.$GETTER$() != null)"+
-                        "{return new $CONVERTER$(entity.$GETTER$(), uri.resolve(\"$FIELD$/\"));}"+
-                        " return null;}";
+                bodyText = "{if (expandLevel > 0) {" +
+                        "if (getEntity().$GETTER$() != null) {"+
+                        "return new $CONVERTER$(getEntity().$GETTER$(), uri.resolve(\"$FIELD$/\"), expandLevel - 1);"+
+                        "}" +
+                        "}" +
+                        "return null;" +
+                        "}";        //NOI18N
                 bodyText = bodyText.replace("$CONVERTER$", getConverterName(foreignBean)).
                         replace("$GETTER$", getGetterName(fieldInfo)).
-                        replace("$FIELD$", lowerCaseFirstLetter(foreignBean.getName()));
+                        replace("$FIELD$", fieldInfo.getName());        //NOI18N
             } else { // should be 1-1 or n-1
                 EntityResourceBean foreignBean = model.getItemResourceBean(fieldInfo.getType());
-                annotationAttrs = new Object[] {
-                    JavaSourceHelper.createAssignmentTree(copy, "name",
-                            getRefConverterXMLName(foreignBean))
-                };
-                returnType = getRefConverterType(foreignBean);
+                returnType = getConverterType(foreignBean);
                 
-                bodyText = "{if (entity.$GETTER$() != null)"+
-                        "{return new $REF_CONVERTER$(entity.$GETTER$(), uri.resolve(\"$FIELD$/\"), false);}"+
+                bodyText = "{if (expandLevel > 0) {" +
+                        "if (getEntity().$GETTER$() != null) {"+
+                        "return new $ITEM_CONVERTER$(getEntity().$GETTER$(), uri.resolve(\"$FIELD$/\"), expandLevel - 1, false);" +
+                        "}" +
+                        "}" +
                         "return null;}";
-                bodyText = bodyText.replace("$REF_CONVERTER$", getRefConverterName(foreignBean)).
+                bodyText = bodyText.replace("$ITEM_CONVERTER$", getItemConverterName(foreignBean)).
                         replace("$GETTER$", getGetterName(fieldInfo)).
-                        replace("$FIELD$", lowerCaseFirstLetter(foreignBean.getName()));
+                        replace("$FIELD$", fieldInfo.getName());
             }
         }
         
@@ -1562,7 +1496,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         Modifier[] modifiers = new Modifier[] {Modifier.PUBLIC};
         String[] annotations = null;
         Object[] annotationAttrs = null;
-        String[] args = new String[] { "value" };
+        String[] args = new String[] { "value" };       //NOI18N
         Object argType = null;
         String bodyText = null;
         
@@ -1575,32 +1509,24 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                         new String[] {fieldInfo.getTypeArg()});
             }
             
-            bodyText = "{ entity.$SETTER$(value); }";
-            bodyText = bodyText.replace("$SETTER$", setterName).
-                    replace("$CLASS$", getEntityClassName(bean));
+            bodyText = "{ getEntity().$SETTER$(value); }";      //NOI18N
+            bodyText = bodyText.replace("$SETTER$", setterName).    
+                    replace("$CLASS$", getEntityClassName(bean));       //NOI18N
         } else {
             if (fieldInfo.isOneToMany() || fieldInfo.isManyToMany()) {
                 EntityResourceBean foreignBean = model.getContainerResourceBean(fieldInfo.getTypeArg());
                 String relatedEntityName = model.getItemResourceBean(fieldInfo.getTypeArg()).getName();
                 argType = getConverterType(foreignBean);
-                bodyText = "{ if (value != null) {" +
-                        "entity.$SETTER$(value.getEntities());" +
-                        "}" +
-                        "}";
-                
-                bodyText = bodyText.replace("$CLASS$", relatedEntityName).
-                        replace("$SETTER$", setterName);
+                bodyText = "{getEntity().$SETTER$((value != null) ? value.getEntities() : null);}";     //NOI18N    
+                bodyText = bodyText.replace("$CLASS$", relatedEntityName).      //NOI18N
+                        replace("$SETTER$", setterName);        //NOI18N
             } else { // should be 1-1
                 EntityResourceBean foreignBean = model.getItemResourceBean(fieldInfo.getType());
-                argType = getRefConverterType(foreignBean);
+                argType = getConverterType(foreignBean);
                 
-                bodyText = "{ if (value != null) {" +
-                        "entity.$SETTER$(value.getEntity()); " +
-                        "}" +
-                        "}";
-                
+                bodyText = "{getEntity().$SETTER$((value != null) ? value.resolveEntity() : null);}";        //NOI18N
                 bodyText = bodyText.replace("$CLASS$", foreignBean.getName()).
-                        replace("$SETTER$", setterName);
+                        replace("$SETTER$", setterName);            //NOI18N
             }
         }
         
@@ -1620,104 +1546,69 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         String[] annotations = new String[] {Constants.XML_TRANSIENT_ANNOTATION};
         Modifier[] modifiers = new Modifier[] { Modifier.PUBLIC };
         
-        String bodyText = "{ return entity; }";
+        String className = getEntityClassName(bean);
+        String bodyText = "{ if (entity == null) { " +
+                "entity = new $CLASS$();" +
+                "}" +
+                "return entity; }";         //NOI18N
         
-        String comment = "Returns the $CLASS$ entity.\n\n" +
-                "@return an entity";
-        comment = comment.replace("$CLASS$", getEntityClassName(bean));
+        bodyText = bodyText.replace("$CLASS$", className);      //NOI18N
+        String comment = "Returns the $CLASS$ entity.\n\n" +    
+                "@return an entity";                            //NOI18N
+        comment = comment.replace("$CLASS$", className);         //NOI18N
         
         return JavaSourceHelper.addMethod(copy, tree,
                 modifiers, annotations, null, "getEntity",
                 getEntityClassType(bean), null, null,
-                null, null, bodyText, comment);
+                null, null, bodyText, comment);                 //NOI18N
     }
     
     private ClassTree addItemConverterSetEntityMethod(WorkingCopy copy,
             ClassTree tree, EntityResourceBean bean) {
         Modifier[] modifiers = new Modifier[] { Modifier.PUBLIC };
-        String[] params = new String[] { "entity" };
+        String[] params = new String[] { "entity" };            //NOI18N
         Object[] paramTypes = new Object[] { getEntityClassName(bean) };
-        String bodyText = "{ this.entity = entity; }";
+        String bodyText = "{ this.entity = entity; }";          //NOI18N
         
         String comment = "Sets the $CLASS$ entity.\n\n" +
-                "@param entity to set";
-        comment = comment.replace("$CLASS$", getEntityClassName(bean));
+                "@param entity to set";                         //NOI18N
+        comment = comment.replace("$CLASS$", getEntityClassName(bean));     //NOI18N
         
         return JavaSourceHelper.addMethod(copy, tree,
                 modifiers, null, null, "setEntity",
                 Constants.VOID, params, paramTypes,
-                null, null, bodyText, comment);
+                null, null, bodyText, comment);                 //NOI18N
     }
     
-    private ClassTree addGetUriMethod(WorkingCopy copy, ClassTree tree,
-            FieldInfo fieldInfo) {
-        Modifier[] modifiers = new Modifier[] {Modifier.PUBLIC};
-        String[] annotations = new String[] {Constants.XML_ATTRIBUTE_ANNOTATION};
-        Object[] annotationAttrs = new Object[] {
-            JavaSourceHelper.createAssignmentTree(copy, "name", "uri")
-        };
-        
-        Object returnType = Constants.URI_TYPE;
-        
-        String bodyText = "{if (isUriExtendable) {" +
-                "return UriBuilder.fromUri(uri).path($ID_TO_URI$ + \"/\").build();" +
-                "}" +
-                "return uri;" +
-                "}";
-        
-        bodyText = bodyText.replace("$ID_TO_URI$", getIdFieldToUriStmt(fieldInfo));
-        
-        String comment = "Returns the URI associated with this reference converter.\n\n" +
-                "@return the converted uri";
-        
-        return JavaSourceHelper.addMethod(copy, tree,
-                modifiers, annotations, annotationAttrs,
-                "getResourceUri", returnType, null, null, null, null,
-                bodyText, comment);
-    }
-    
-    private ClassTree addSetUriMethod(WorkingCopy copy, ClassTree tree,
-            FieldInfo fieldInfo) {
-        Modifier[] modifiers = new Modifier[] {Modifier.PUBLIC};
-        Object returnType = Constants.VOID;
-        String[] params = new String[] { "uri" };     //NOI18N
-        Object[] paramTypes = new Object[] { Constants.URI_TYPE };
-        
-        String bodyText = "{ this.uri = uri; }";        //NOI18N
-        
-        String comment = "Sets the URI for this reference converter.\n\n";
-        
-        return JavaSourceHelper.addMethod(copy, tree,
-                modifiers, null, null, "setResourceUri", returnType,
-                params, paramTypes, null, null,
-                bodyText, comment);
-    }
-    
-    private ClassTree addRefConverterGetEntityMethod(WorkingCopy copy, ClassTree tree,
-            EntityResourceBean bean) {
-        String[] annotations = new String[] {Constants.XML_TRANSIENT_ANNOTATION};
+     
+    private ClassTree addItemConverterResolveEntityMethod(WorkingCopy copy,
+            ClassTree tree, EntityResourceBean bean) {
         Modifier[] modifiers = new Modifier[] { Modifier.PUBLIC };
         
-        String bodyText = "{ " +
-                "$CONVERTER$ result = UriResolver.getInstance().resolve($CONVERTER$.class, uri);" +
+        String className = getEntityClassName(bean);
+        String bodyText = "{ if (entity != null) {" +
+                "return PersistenceService.getInstance().resolveEntity(entity);" +
+                "} else {" +
+                "$ITEM_CONVERTER$ result = UriResolver.getInstance().resolve($ITEM_CONVERTER$.class, uri);" +
                 "if (result != null) {" +
                 "return result.getEntity();" +
                 "}" +
+                "}" +
                 "return null;" +
-                "}";
+                "}";                //NOI18N
         
-        bodyText = bodyText.replace("$CONVERTER$", getConverterName(bean));
-        
-        String comment = "Returns the $CLASS$ entity.\n\n" +
-                "@return $CLASS$ entity";
-        comment = comment.replace("$CLASS$", getEntityClassName(bean));
+        bodyText = bodyText.replace("$CLASS$", className).
+                replace("$ITEM_CONVERTER$", getItemConverterName(bean)); //NOI18N
+        String comment = "Returns the resolved $CLASS$ entity.\n\n" +    
+                "@return an resolved entity";                            //NOI18N
+        comment = comment.replace("$CLASS$", className);         //NOI18N
         
         return JavaSourceHelper.addMethod(copy, tree,
-                modifiers, annotations, null, "getEntity",
+                modifiers, null, null, "resolveEntity",
                 getEntityClassType(bean), null, null,
-                null, null, bodyText, comment);
+                null, null, bodyText, comment);                 //NOI18N
     }
-    
+      
     private EntityResourceBean getItemSubResource(EntityResourceBean containerResource) {
         Collection<RelatedEntityResource> subResources = containerResource.getSubResources();
         
@@ -1736,8 +1627,12 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         return bean.getName() + RESOURCE_SUFFIX;
     }
     
+    private String getItemName(EntityResourceBean bean) {
+        return Util.getSingularName(bean);
+    }
+    
     private String getItemResourceName(EntityResourceBean bean) {
-        return Util.getSingularName(bean) + RESOURCE_SUFFIX;
+        return getItemName(bean) + RESOURCE_SUFFIX;
     }
     
     private String getConverterName(EntityResourceBean bean) {
@@ -1745,31 +1640,20 @@ public class EntityResourcesGenerator extends AbstractGenerator {
     }
     
     private String getItemConverterName(EntityResourceBean bean) {
-        return Util.getSingularName(bean) + CONVERTER_SUFFIX;
+        return getItemName(bean) + CONVERTER_SUFFIX;
     }
-    
-    private String getRefConverterName(EntityResourceBean bean) {
-        return Util.getSingularName(bean) + REF_CONVERTER_SUFFIX;
-    }
-    
+  
     private String getConverterXMLName(EntityResourceBean bean) {
         return lowerCaseFirstLetter(bean.getName());
     }
     
-    private String getRefConverterXMLName(EntityResourceBean bean) {
-        return lowerCaseFirstLetter(Util.getSingularName(bean) +
-                REF_SUFFIX);
-    }
-    
-    private String getRefConverterType(EntityResourceBean bean) {
-        return getConverterPackageName() + "." +                    //NOI18N
-                getRefConverterName(bean);
-    }
-    
-    
     private String getConverterType(EntityResourceBean bean) {
         return getConverterPackageName() + "." +                    //NOI18N
                 bean.getName() + CONVERTER_SUFFIX;
+    }
+    
+    private String getItemConverterType (EntityResourceBean bean) {
+        return getConverterPackageName() + "." + getItemConverterName(bean);
     }
     
     private String getResourceType(EntityResourceBean bean) {

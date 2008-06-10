@@ -1506,18 +1506,16 @@ public final class ReferenceHelper {
      * @since org.netbeans.modules.project.ant/1 1.19
      */
     public static LibraryManager getProjectLibraryManager(Project p) {
-        AuxiliaryConfiguration aux = p.getLookup().lookup(AuxiliaryConfiguration.class);
-        if (aux != null) {
-            File libFile = ProjectLibraryProvider.getLibrariesLocation(aux, 
-                    FileUtil.toFile(p.getProjectDirectory()));
-            if (libFile != null) {
-                try {
-                    return LibraryManager.forLocation(libFile.toURI().toURL());
-                } catch (MalformedURLException e) {
-                    // ok, no project manager
-                    Logger.getLogger(ReferenceHelper.class.getName()).info(
-                        "library manager cannot be found for "+libFile+". "+e.toString()); //NOI18N
-                }
+        AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(p);
+        File libFile = ProjectLibraryProvider.getLibrariesLocation(aux, 
+                FileUtil.toFile(p.getProjectDirectory()));
+        if (libFile != null) {
+            try {
+                return LibraryManager.forLocation(libFile.toURI().toURL());
+            } catch (MalformedURLException e) {
+                // ok, no project manager
+                Logger.getLogger(ReferenceHelper.class.getName()).info(
+                    "library manager cannot be found for "+libFile+". "+e.toString()); //NOI18N
             }
         }
         return null;
