@@ -44,10 +44,9 @@ package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.dbschema.ForeignKeyElement;
-import org.netbeans.modules.dbschema.TableElement;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.Table.DisabledReason;
 
 /**
@@ -158,7 +157,7 @@ public class TableProviderImpl implements TableProvider {
         }
 
         @Override
-        public Set<String[]> getUniqueConstraints() {
+        public Set<List<String>> getUniqueConstraints() {
             return null;
         }
     }
