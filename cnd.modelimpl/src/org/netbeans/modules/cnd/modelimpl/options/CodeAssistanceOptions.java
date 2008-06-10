@@ -45,6 +45,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.openide.util.Mutex;
@@ -72,7 +73,7 @@ public class CodeAssistanceOptions {
     
     public CodeAssistanceOptions(Project project, boolean shared) {
         this.shared = shared;
-        aux = ((AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class));
+        aux = ProjectUtils.getAuxiliaryConfiguration(project);
         
         AntBasedProjectType antPrj = ((AntBasedProjectType) project.getLookup().lookup(AntBasedProjectType.class));
         namespace = antPrj.getPrimaryConfigurationDataElementNamespace(shared);

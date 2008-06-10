@@ -37,62 +37,23 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.extbrowser;
+package org.netbeans.modules.cnd.remote.support.managers;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.logging.Level;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
 
 /**
- * Basic support for default browser funcionality on Unix system,
- * currently using "xdg-open".
- * Note this class is not used for JDK 6 and up, for that purpose is used
- * build-in JDK mechanism (java.awt.Desktop#browse).
- *
- * @author Peter Zavadsky
+ * Manage the getCompilerSets script.
+ * 
+ * @author gordonp
  */
-class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
-    
-    private static final String COMMAND = "xdg-open"; // NOI18N
+public class CompilerSetScriptManager implements ScriptManager {
 
-    private static final boolean AVAILABLE;
-    
-    static {
-        // XXX Lame check to find out whether the functionality is installed.
-        // TODO Find some better way to ensure it is there.
-        AVAILABLE = new File("/usr/bin/" + COMMAND).exists(); // NOI18N
-    }
-    
-    static boolean isAvailable() {
-        return AVAILABLE;
-    }
-    
-    
-    NbDefaultUnixBrowserImpl(ExtWebBrowser extBrowser) {
-        super ();
-        this.extBrowserFactory = extBrowser;
-        if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
-            ExtWebBrowser.getEM().log(Level.FINE, "" + System.currentTimeMillis() + "NbDefaultUnixBrowserImpl created with factory: " + extBrowserFactory); // NOI18N
-        }
+    public void runScript(RemoteScriptSupport support) {
+        System.err.println("CompilerSetScriptManager.runScript: ");
     }
 
-    
-    public void setURL(URL url) {
-        if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
-            ExtWebBrowser.getEM().log(Level.FINE, "" + System.currentTimeMillis() + "NbDeaultUnixBrowserImpl.setUrl: " + url); // NOI18N
-        }
-        String urlArgument = url.toExternalForm();
-        ProcessBuilder pb = new ProcessBuilder(new String[] {
-            COMMAND,
-            urlArgument
-        });
-        try {
-            Process p = pb.start();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    public String getScript() {
+        return System.getProperty("user.home") + "/.netbeans/rddev/cnd.remote/scripts/getCompilerSets"; // NOI18N
     }
 
 }

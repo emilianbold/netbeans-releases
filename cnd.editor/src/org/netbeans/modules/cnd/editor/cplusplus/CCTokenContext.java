@@ -72,7 +72,9 @@ public class CCTokenContext extends TokenContext {
     public static final int STRING_LITERAL_ID     = CHAR_LITERAL_ID + 1;
     public static final int INT_LITERAL_ID        = STRING_LITERAL_ID + 1;
     public static final int LONG_LITERAL_ID       = INT_LITERAL_ID + 1;
-    public static final int HEX_LITERAL_ID        = LONG_LITERAL_ID + 1;
+    public static final int UNSIGNED_LITERAL_ID = LONG_LITERAL_ID + 1;
+    public static final int UNSIGNED_LONG_LITERAL_ID = UNSIGNED_LITERAL_ID + 1;
+    public static final int HEX_LITERAL_ID        = UNSIGNED_LONG_LITERAL_ID + 1;
     public static final int OCTAL_LITERAL_ID      = HEX_LITERAL_ID + 1;
     public static final int FLOAT_LITERAL_ID      = OCTAL_LITERAL_ID + 1;
     public static final int DOUBLE_LITERAL_ID     = FLOAT_LITERAL_ID + 1;
@@ -304,6 +306,14 @@ public class CCTokenContext extends TokenContext {
     public static final BaseTokenID LONG_LITERAL
     = new BaseTokenID("long-literal", LONG_LITERAL_ID, NUMERIC_LITERALS);// NOI18N
 
+    /** CC long literal e.g. 12u */
+    public static final BaseTokenID UNSIGNED_LITERAL
+    = new BaseTokenID("int-literal", UNSIGNED_LITERAL_ID, NUMERIC_LITERALS);// NOI18N
+
+    /** CC long literal e.g. 12UL */
+    public static final BaseTokenID UNSIGNED_LONG_LITERAL
+    = new BaseTokenID("long-literal", UNSIGNED_LONG_LITERAL_ID, NUMERIC_LITERALS);// NOI18N
+    
     /** CC hexadecimal literal e.g. 0x5a */
     public static final BaseTokenID HEX_LITERAL
     = new BaseTokenID("hex-literal", HEX_LITERAL_ID, NUMERIC_LITERALS); // NOI18N

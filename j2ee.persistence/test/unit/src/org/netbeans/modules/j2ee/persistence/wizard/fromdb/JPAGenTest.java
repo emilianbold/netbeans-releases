@@ -53,6 +53,7 @@ import org.netbeans.modules.dbschema.SchemaElementUtil;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.DbSchemaEjbGenerator;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityClass;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityMember;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.CollectionType;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.FetchType;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.GeneratedTables;
 import org.netbeans.modules.j2ee.persistence.sourcetestsupport.SourceTestSupport;
@@ -101,7 +102,7 @@ public class JPAGenTest extends SourceTestSupport{
         EntityClass user = getUserEntity();
         
         EntityClass product = new EntityClass(false, "testGeneratTwoUnrelated_schema", null ,"PRODUCT", 
-                getWorkDirFO(), packageName, "Product", FetchType.DEFAULT, false, null);
+                getWorkDirFO(), packageName, "Product", FetchType.DEFAULT, false, null, CollectionType.COLLECTION);
         product.usePkField(true);
         
         EntityMemberImpl description = new EntityMemberImpl();
@@ -194,7 +195,9 @@ public class JPAGenTest extends SourceTestSupport{
     
     
     private EntityClass getUserEntity() throws IOException{
-        EntityClass user = new EntityClass(false, "TestUserEntity_schema", null, "USER", getWorkDirFO(), packageName, "User", FetchType.DEFAULT, false, null);
+        EntityClass user = new EntityClass(false, "TestUserEntity_schema", null, 
+                "USER", getWorkDirFO(), packageName, "User", FetchType.DEFAULT, 
+                false, null, CollectionType.COLLECTION);
         user.usePkField(true);
         
         EntityMemberImpl name = new EntityMemberImpl();
@@ -360,6 +363,10 @@ public class JPAGenTest extends SourceTestSupport{
 
         public Set<String[]> getUniqueConstraints(String tableName) {
             return null;
+        }
+
+        public CollectionType getCollectionType() {
+            return CollectionType.COLLECTION;
         }
     }
     

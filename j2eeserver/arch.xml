@@ -756,7 +756,7 @@ Implementations of<br/>
 type="import"
 category="devel"
 name="org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation"
-url="@org-netbeans-api-java@/org/netbeans/spi/java/queries/SourceForBinaryQueryImplementation.html"
+url="@org-netbeans-api-java-classpath@/org/netbeans/spi/java/queries/SourceForBinaryQueryImplementation.html"
 >Information about where Java sources corresponding to binaries
 can be found.</api><br/>
 

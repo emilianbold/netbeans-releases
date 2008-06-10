@@ -37,17 +37,19 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.support;
+package org.netbeans.modules.cnd.remote.server;
+
+import java.util.ArrayList;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 
 /**
  *
  * @author gordonp
  */
-public interface ScriptManager {
+public class RemoteServerList extends ArrayList<ServerRecord> implements ServerList {
 
-    /** Get the script */
-    public String getScript();
-    
-    /** Provide a script manager */
-    public void runScript(RemoteScriptSupport support);
+    public ServerRecord getActive() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

@@ -54,6 +54,7 @@ import org.openide.filesystems.*;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.dbschema.SchemaElement;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.CollectionType;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.FetchType;
 
 /**
@@ -93,6 +94,7 @@ public class RelatedCMPHelper {
     private boolean fullyQualifiedTableNames = false;
     private FetchType fetchType = FetchType.DEFAULT;
     private boolean regenSchemaAttrs = false;
+    private CollectionType collectionType = CollectionType.COLLECTION;
     
     public RelatedCMPHelper(Project project, FileObject configFilesFolder, PersistenceGenerator persistenceGen) {
         this.project = project;
@@ -267,6 +269,14 @@ public class RelatedCMPHelper {
         this.regenSchemaAttrs = regenSchemaAttrs;
     }
     
+    public CollectionType getCollectionType() {
+        return collectionType;
+    }
+    
+    public void setCollectionType(CollectionType type) {
+        collectionType = type;
+    }
+    
     /**
      * Public because used in J2EE functional tests.
      */
@@ -277,6 +287,7 @@ public class RelatedCMPHelper {
         genTables.setFullyQualifiedTableNames(isFullyQualifiedTableNames());
         genTables.setFetchType(getFetchType());
         genTables.setRegenSchemaAttrs(isRegenSchemaAttrs());
+        genTables.setCollectionType(getCollectionType());
         FileObject rootFolder = getLocation().getRootFolder();
         String pkgName = getPackageName();
 
@@ -323,6 +334,7 @@ public class RelatedCMPHelper {
         private  FetchType fetchType; // global
         private boolean regenSchemaAttrs; // global
         private final Map<String, Set<String[]>> allUniqueConstraints = new HashMap<String, Set<String[]>>();
+        private CollectionType collectionType; // global
         
         public Set<String> getTableNames() {
             return Collections.unmodifiableSet(tableNames);
@@ -386,6 +398,14 @@ public class RelatedCMPHelper {
 
         public Set<String[]> getUniqueConstraints(String tableName) {
             return this.allUniqueConstraints.get(tableName);
+        }
+
+        public CollectionType getCollectionType() {
+            return collectionType;
+        }
+
+        public void setCollectionType(CollectionType collectionType) {
+            this.collectionType = collectionType;
         }
     }
 }

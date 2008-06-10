@@ -39,41 +39,159 @@
 
 package org.netbeans.modules.extexecution.api;
 
-import java.io.Writer;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.extexecution.api.input.InputProcessor;
+import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
 
 /**
+ * Descriptor for the execution environment. To build the most common kind
+ * of descriptor use {@link ExecutionDescriptorBuilder}.
  *
  * @author Petr Hejl
+ * @see ExecutionDescriptorBuilder
  */
 public interface ExecutionDescriptor {
 
+    /**
+     * Returns the <i>custom</i> io to use. May return <code>null</code>
+     * which means that client is fine with infrustructure provided io (visible
+     * as tab in output pane).
+     *
+     * @return the <i>custom</i> io to use; may return <code>null</code>
+     */
     InputOutput getInputOutput();
 
-    boolean isControlable();
+    /**
+     * Returns <code>true</code> if the control buttons (rerun, stop) should
+     * be available in io tab.
+     * <p>
+     * Note that this property has no meaning when custom io
+     * ({@link #getInputOutput}) is used.
+     *
+     * @return <code>true</code> if the control buttons (rerun, stop) should
+     *             be available in io tab
+     */
+    boolean isControllable();
 
-    /* Select the tab on run */
+    /**
+     * Returns <code>true</code> if the io should be selected before
+     * the execution.
+     *
+     * @return <code>true</code> if the io should be selected before
+     *             the execution
+     */
     boolean isFrontWindow();
 
-    /* Allows user input */
+    /**
+     * Returns <code>true</code> if the input from user is allowed.
+     *
+     * @return <code>true</code> if the input from user is allowed
+     */
     boolean isInputVisible();
 
-    /* Suspend the progress bar on run */
-    boolean showSuspended();
-
-    /* Show progress bar */
+    /**
+     * Returns <code>true</code> if progress bar should be visible.
+     *
+     * @return <code>true</code> if progress bar should be visible
+     */
     boolean showProgress();
 
-    InputProcessor getOutProcessor(OutputWriter writer);
+    /**
+     * Returns <code>true</code> if progress bar should suspended to just
+     * "running" message.
+     *
+     * @return <code>true</code> if progress bar should suspended to just
+     *             "running" message
+     */
+    boolean showSuspended();
 
-    InputProcessor getErrProcessor(OutputWriter writer);
+    /**
+     * Returns the additional processor to use for standard output.
+     * {@link ExecutionService} automatically uses the printing one.
+     *
+     * @return the additional processor to use for standard output
+     */
+    InputProcessor getOutProcessor();
 
-    InputProcessor getInProcessor(Writer writer);
+    /**
+     * Returns the additional processor to use for standard error output.
+     * {@link ExecutionService} automatically uses the printing one.
+     *
+     * @return the additional processor to use for standard error output
+     */
+    InputProcessor getErrProcessor();
 
+    /**
+     * Returns the convertor to use with processor printing the standard
+     * output (that used by {@link ExecutionService} automatically.
+     *
+     * @return the convertor to use with processor printing the standard
+     *             output
+     */
+    LineConvertor getOutConvertor();
+
+    /**
+     * Returns the convertor to use with processor printing the standard
+     * error output (that used by {@link ExecutionService} automatically.
+     *
+     * @return the convertor to use with processor printing the standard
+     *             error output
+     */
+    LineConvertor getErrConvertor();
+
+    /**
+     * Returns the runnable to execute <i>before</i> the external execution itself;
+     * may return <code>null</code>.
+     *
+     * @return the runnable to execute <i>before</i> the external execution itself;
+     *             may return <code>null</code>
+     */
     Runnable getPreExecution();
 
+    /**
+     * Returns the runnable to execute <i>after</i> the external execution itself;
+     * may return <code>null</code>.
+     *
+     * @return the runnable to execute <i>after</i> the external execution itself;
+     *             may return <code>null</code>
+     */
     Runnable getPostExecution();
 
+    /**
+     * Returns the condition to control the possibility of the rerun action;
+     * may return <code>null</code>.
+     *
+     * @return the condition to control the possibility of the rerun action;
+     *             may return <code>null</code>
+     */
+    RerunCondition getRerunCondition();
+
+    /**
+     * Represents the possibility of reruning the action.
+     */
+    interface RerunCondition {
+
+        /**
+         * Adds a listener to listen for the change in rerun possibility state.
+         *
+         * @param listener listener that will listen for changes in rerun possibility
+         */
+        void addChangeListener(ChangeListener listener);
+
+        /**
+         * Removes previously registered listener.
+         *
+         * @param listener listener to remove
+         */
+        void removeChangeListener(ChangeListener listener);
+
+        /**
+         * Returns <code>true</code> if it is possible to execute the action again.
+         *
+         * @return <code>true</code> if it is possible to execute the action again
+         */
+        boolean isRerunPossible();
+
+    }
 }

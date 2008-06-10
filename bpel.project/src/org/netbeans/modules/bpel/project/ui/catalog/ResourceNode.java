@@ -71,9 +71,21 @@ final class ResourceNode extends AbstractNode{
   
   @Override
   public String getDisplayName() {
-    return mySystem.getSource();
+    return getFileName(mySystem.getSource());
   }
   
+  private String getFileName(String file) {
+    file = file.replaceAll("%20", " ");
+
+    if (file.startsWith("file:")) { // NOI18N
+      file = file.substring(5);
+    }
+    if (file.startsWith("/") && Utilities.isWindows()) {
+      file = file.substring(1);
+    }
+    return file.replace("\\", "/"); // NOI18N
+  }
+
   @Override
   public String getName() {
     return getDisplayName();

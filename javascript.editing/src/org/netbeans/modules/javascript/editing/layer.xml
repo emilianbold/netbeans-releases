@@ -95,7 +95,7 @@
                 <file name="structure.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.JsAnalyzer"/>
                 </file> 
-            `</folder>
+            </folder>
         </folder>
     </folder>
     

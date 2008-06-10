@@ -37,64 +37,68 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.syntaxerr;
+package org.netbeans.modules.cnd.remote.support;
 
-import antlr.RecognitionException;
-import java.util.Collection;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
-import org.openide.util.Lookup;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSchException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 
 /**
- * An abstrasct class (a usual NB parttern - 
- * hybrid of an interface and a factory)
- * for filtering ANTLR recognition exceptions.
- * 
- * Implementation can
- * - filter out some particular sort of errors
- * - convert messages / info into human understandable format
- * 
- * @author Vladimir Kvashin
+ *
+ * @author gordonp
  */
-public abstract class ParserErrorFilter {
+public class RemoteCommandSupport extends RemoteConnectionSupport {
+        
+    private BufferedReader in;
+    private StringWriter out;
 
-    /** A class that just joins all available filters to a single one */
-    private static class JointFilter extends ParserErrorFilter {
-        
-        private final Lookup.Result<ParserErrorFilter> res;
-
-        public JointFilter() {
-            res = Lookup.getDefault().lookupResult(ParserErrorFilter.class);
-        }
-        
-        
-        @Override
-        public void filter(Collection<RecognitionException> parserErrors, Collection<CsmErrorInfo> result,BaseDocument doc) {
-            for( ParserErrorFilter filter : res.allInstances() ) {
-                filter.filter(parserErrors, result, doc);
+    public RemoteCommandSupport(String host, String user) {
+        super(host, user);
+                
+        try {
+            InputStream is = channel.getInputStream();
+            in = new BufferedReader(new InputStreamReader(is));
+            out = new StringWriter();
+            
+            String line;
+            while ((line = in.readLine()) != null) {
+                out.write(line);
+                out.flush();
             }
+            in.close();
+            is.close();
+        } catch (IOException ex) {
         }
     }
     
-    private static final ParserErrorFilter DEFAULT = new JointFilter();  
-    
-    public static ParserErrorFilter getDefault() {
-        return DEFAULT;
+    @Override
+    public String toString() {
+        if (out != null) {
+            return out.toString();
+        } else {
+            return "";
+        }
     }
 
-    /**
-     * Filters the collection of exceptions returned by ANTLR parser,
-     * converts some (or all) of them to CsmErrorInfo
-     * 
-     * 
-     * @param parserErrors the collection of exceptions returned by ANTLR parser. 
-     * Feel free to remove some elements if the filter knows they are induced errors
-     * and you don't want anyone to process them
-     * 
-     * @param result a collection to add resulting CsmErrorInfos to
-     */
-    abstract public void filter(
-            Collection<RecognitionException> parserErrors, 
-            Collection<CsmErrorInfo> result,
-            BaseDocument doc);
+    @Override
+    protected Channel createChannel() throws JSchException {
+        ChannelExec echannel = (ChannelExec) session.openChannel("exec");
+        String cmd = System.getProperty("cnd.remote.program");
+        
+        if (cmd == null) {
+            cmd = "/home/gordonp/.netbeans/rddev/cnd.remote/scripts/hello.sh";
+        }
+        
+        echannel.setCommand(cmd);
+        echannel.setInputStream(null);
+        echannel.setErrStream(System.err);
+        echannel.connect();
+        return echannel;
+    }
+
 }

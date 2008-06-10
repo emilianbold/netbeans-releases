@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.db.util;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -49,254 +50,314 @@ import java.util.Vector;
 
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.openide.util.NbBundle;
 
 public class DriverListUtil {
 
-    private static List drivers = new LinkedList();
-    private static List urls = new LinkedList();
-    private static List names = new LinkedList();
+    private static List<JdbcUrl> urls = new LinkedList<JdbcUrl>();
+    
+    private static String getMessage(String key, String ... params) {
+        return NbBundle.getMessage(DriverListUtil.class, key, params);
+    }
 
-    //private default constructor -> singleton
+            //private default constructor -> singleton
     private DriverListUtil() {
+    }
+    
+    
+    private static void add(JdbcUrl url) {
+        urls.add(url);
+    }
+    
+    private static void add(String name, String type, String driverClassName, String urlTemplate) {
+        urls.add(new JdbcUrl(name, driverClassName, type, urlTemplate));
+    }
+    
+    private static void add(String name, String type, String driverClassName, String urlTemplate, boolean parseUrl) {
+        urls.add(new JdbcUrl(name, driverClassName, type, urlTemplate, parseUrl));
+    }
+        
+    private  static void add(String name, String driverClassName, String urlTemplate) {
+        add(name, null, driverClassName, urlTemplate);
+    }
+    
+    /**
+     * Do NOT use this version of add() (with parseUrl set to true) unless you have added a 
+     * unit test to DriverListUtilTest for the driver, to make sure that it is parsed correctly.
+     */
+    private static void add(String name, String driverClassName, String urlTemplate, boolean parseUrl) {
+        add(name, null, driverClassName, urlTemplate, parseUrl);
     }
 
     static {
-        names.add("IBM DB2 (net)");
-        drivers.add("COM.ibm.db2.jdbc.net.DB2Driver");
-        urls.add("jdbc:db2://<HOST>:<PORT>/<DB>");
+        add("IBM DB2 (net)",
+        "COM.ibm.db2.jdbc.net.DB2Driver",
+        "jdbc:db2://<HOST>:<PORT>/<DB>");
 
-        names.add("IBM DB2 (local)");
-        drivers.add("COM.ibm.db2.jdbc.app.DB2Driver");
-        urls.add("jdbc:db2:<DB>");
+        add("IBM DB2 (local)",
+        "COM.ibm.db2.jdbc.app.DB2Driver",
+        "jdbc:db2:<DB>");
         
-        names.add("JDBC-ODBC Bridge");
-        drivers.add("sun.jdbc.odbc.JdbcOdbcDriver");
-        urls.add("jdbc:odbc:<DB>");
+        add("JDBC-ODBC Bridge",
+        "sun.jdbc.odbc.JdbcOdbcDriver",
+        "jdbc:odbc:<DB>");
         
-        names.add("Microsoft SQL Server (Weblogic driver)");
-        drivers.add("weblogic.jdbc.mssqlserver4.Driver");
-        urls.add("jdbc:weblogic:mssqlserver4:<DB>@<HOST>:<PORT>");
+        add("Microsoft SQL Server (Weblogic driver)",
+        "weblogic.jdbc.mssqlserver4.Driver",
+        "jdbc:weblogic:mssqlserver4:<DB>@<HOST>[:<PORT>]");
         
-        names.add("Oracle"); //thin
-        drivers.add("oracle.jdbc.OracleDriver");
-        urls.add("jdbc:oracle:thin:@<HOST>:<PORT>:<SID>");
-        
-        names.add("PointBase"); //Network Server
-        drivers.add("com.pointbase.jdbc.jdbcUniversalDriver");
-        urls.add("jdbc:pointbase://<HOST>[:<PORT>]/<DB>");
+        add("PointBase", "Network Server",
+        "com.pointbase.jdbc.jdbcUniversalDriver",
+        "jdbc:pointbase://<HOST>[:<PORT>]/<DB>");
 
-        names.add("PointBase"); //Embedded Server
-        drivers.add("com.pointbase.jdbc.jdbcUniversalDriver");
-        urls.add("jdbc:pointbase://embedded[:<PORT>]/<DB>");
+        add("PointBase", "Embedded", 
+        "com.pointbase.jdbc.jdbcUniversalDriver",
+        "jdbc:pointbase://embedded[:<PORT>]/<DB>");
         
-        names.add("PointBase"); //Mobile Edition
-        drivers.add("com.pointbase.jdbc.jdbcUniversalDriver");
-        urls.add("jdbc:pointbase:<DB>");
+        add("PointBase", "Mobile Edition",
+        "com.pointbase.jdbc.jdbcUniversalDriver",
+        "jdbc:pointbase:<DB>");
         
-        names.add("Cloudscape");
-        drivers.add("COM.cloudscape.core.JDBCDriver");
-        urls.add("jdbc:cloudscape:<DB>");
+        add("Cloudscape",
+        "COM.cloudscape.core.JDBCDriver",
+        "jdbc:cloudscape:<DB>");
         
-        names.add("Cloudscape RMI");
-        drivers.add("RmiJdbc.RJDriver");
-        urls.add("jdbc:rmi://<HOST>:<PORT>/jdbc:cloudscape:<DB>");
+        add("Cloudscape RMI",
+        "RmiJdbc.RJDriver",
+        "jdbc:rmi://<HOST>[:<PORT>]/jdbc:cloudscape:<DB>");
         
-        names.add("Java DB (Embedded)");
-        drivers.add("org.apache.derby.jdbc.EmbeddedDriver");
-        urls.add("jdbc:derby:<DB>");
+        add(getMessage("DRIVERNAME_JavaDbEmbedded"),
+        "org.apache.derby.jdbc.EmbeddedDriver",
+        "jdbc:derby:<DB>[;<ADDITIONAL>]", true);
         
-        names.add("Java DB (Network)");
-        drivers.add("org.apache.derby.jdbc.ClientDriver");
-        urls.add("jdbc:derby://<HOST>[:<PORT>]/databaseName[;attr1=value1[;...]]");
+        add(getMessage("DRIVERNAME_JavaDbNetwork"),
+        "org.apache.derby.jdbc.ClientDriver",
+        "jdbc:derby://<HOST>[:<PORT>]/<DB>[;<ADDITIONAL>]", true);
         
-        names.add("DB2 JDBC");
-        drivers.add("com.ibm.db2.jcc.DB2Driver");
-        urls.add("jdbc:db2://<hostname>:<port>/<database>");
+        add("DB2 JDBC",
+        "com.ibm.db2.jcc.DB2Driver",
+        "jdbc:db2://<HOST>[:<PORT>]/<DB>");
         
-        names.add("Firebird (JCA/JDBC driver)");
-        drivers.add("org.firebirdsql.jdbc.FBDriver");
-        urls.add("jdbc:firebirdsql:[//<HOST>[:<PORT>]/]<DB>");
+        add("Firebird (JCA/JDBC driver)",
+        "org.firebirdsql.jdbc.FBDriver",
+        "jdbc:firebirdsql:[//<HOST>[:<PORT>]/]<DB>");
         
-        names.add("FirstSQL/J"); //Enterprise Server Edition
-        drivers.add("COM.FirstSQL.Dbcp.DbcpDriver");
-        urls.add("jdbc:dbcp://<HOST>:<PORT>");
+        add("FirstSQL/J", "Enterprise Server Edition",
+        "COM.FirstSQL.Dbcp.DbcpDriver",
+        "jdbc:dbcp://<HOST>[:<PORT>]");
         
-        names.add("FirstSQL/J"); //Professional Edition
-        drivers.add("COM.FirstSQL.Dbcp.DbcpDriver");
-        urls.add("jdbc:dbcp://local");
+        add("FirstSQL/J" , "Professional Edition", 
+        "COM.FirstSQL.Dbcp.DbcpDriver",
+        "jdbc:dbcp://local");
         
-        names.add("IBM DB2 (DataDirect Connect for JDBC)");
-        drivers.add("com.ddtek.jdbc.db2.DB2Driver");
-        urls.add("jdbc:datadirect:db2://<HOST>:<PORT>[;databaseName=<DB>]");
+        add("IBM DB2 (DataDirect Connect for JDBC)",
+        "com.ddtek.jdbc.db2.DB2Driver",
+        "jdbc:datadirect:db2://<HOST>[:<PORT>][;databaseName=<DB>]");
 
-        names.add("IDS Server");
-        drivers.add("ids.sql.IDSDriver");
-        urls.add("jdbc:ids://<HOST>:<PORT>/conn?dsn='<ODBC_DSN_NAME>'");
+        add("IDS Server",
+        "ids.sql.IDSDriver",
+        "jdbc:ids://<HOST>[:<PORT>]/conn?dsn='<DSN>'");
         
-        names.add("Informix Dynamic Server");
-        drivers.add("com.informix.jdbc.IfxDriver");
-        urls.add("jdbc:informix-sqli://<HOST>:<PORT>/<DB>:INFORMIXSERVER=<SERVER_NAME>");
+        add("Informix Dynamic Server",
+        "com.informix.jdbc.IfxDriver",
+        "jdbc:informix-sqli://<HOST>[:<PORT>]/<DB>:INFORMIXSERVER=<SERVER_NAME>");
 
-        names.add("Informix Dynamic Server (DataDirect Connect for JDBC)");
-        drivers.add("com.ddtek.jdbc.informix.InformixDriver");
-        urls.add("jdbc:datadirect:informix://<HOST>:<PORT>;informixServer=<SERVER_NAME>;databaseName=<DB>");
+        add("Informix Dynamic Server (DataDirect Connect for JDBC)",
+        "com.ddtek.jdbc.informix.InformixDriver",
+        "jdbc:datadirect:informix://<HOST>[:<PORT>];informixServer=<SERVER_NAME>;databaseName=<DB>");
         
-        names.add("InstantDB (v3.13 and earlier)");
-        drivers.add("jdbc.idbDriver");
-        urls.add("jdbc:idb:<DB>");
+        add("InstantDB (v3.13 and earlier)",
+        "jdbc.idbDriver",
+        "jdbc:idb:<DB>");
         
-        names.add("InstantDB (v3.14 and later)");
-        drivers.add("org.enhydra.instantdb.jdbc.idbDriver");
-        urls.add("jdbc:idb:<DB>");
+        add("InstantDB (v3.14 and later)",
+        "org.enhydra.instantdb.jdbc.idbDriver",
+        "jdbc:idb:<DB>");
         
-        names.add("Interbase (InterClient driver)");
-        drivers.add("interbase.interclient.Driver");
-        urls.add("jdbc:interbase://<HOST>/<DB>");
+        add("Interbase (InterClient driver)",
+        "interbase.interclient.Driver",
+        "jdbc:interbase://<HOST>/<DB>");
         
-        names.add("HSQLDB"); //(server)
-        drivers.add("org.hsqldb.jdbcDriver");
-        urls.add("jdbc:hsqldb:hsql://<HOST>[:<PORT>]");
+        add("HSQLDB", "Server", 
+        "org.hsqldb.jdbcDriver",
+        "jdbc:hsqldb:hsql://<HOST>[:<PORT>]");
         
-        names.add("HSQLDB"); //(standalone)
-        drivers.add("org.hsqldb.jdbcDriver");
-        urls.add("jdbc:hsqldb:<DB>");
+        add("HSQLDB", "Embedded",
+        "org.hsqldb.jdbcDriver",
+        "jdbc:hsqldb:<DB>");
         
-        names.add("HSQLDB"); //(webserver)
-        drivers.add("org.hsqldb.jdbcDriver");
-        urls.add("jdbc:hsqldb:http://<HOST>[:<PORT>]");
+        add("HSQLDB", "Web Server",
+        "org.hsqldb.jdbcDriver",
+        "jdbc:hsqldb:http://<HOST>[:<PORT>]");
         
-        names.add("HSQLDB"); //(in-memory)
-        drivers.add("org.hsqldb.jdbcDriver");
-        urls.add("jdbc:hsqldb:.");
+        add("HSQLDB", "In-Memory",
+        "org.hsqldb.jdbcDriver",
+        "jdbc:hsqldb:.");
         
-        names.add("Hypersonic SQL (v1.2 and earlier)");
-        drivers.add("hSql.hDriver");
-        urls.add("jdbc:HypersonicSQL:<DB>");
+        add("Hypersonic SQL (v1.2 and earlier)",
+        "hSql.hDriver",
+        "jdbc:HypersonicSQL:<DB>");
         
-        names.add("Hypersonic SQL (v1.3 and later)");
-        drivers.add("org.hsql.jdbcDriver");
-        urls.add("jdbc:HypersonicSQL:<DB>");
+        add("Hypersonic SQL (v1.3 and later)",
+        "org.hsql.jdbcDriver",
+        "jdbc:HypersonicSQL:<DB>");
         
-        names.add("jTDS");
-        drivers.add("net.sourceforge.jtds.jdbc.Driver");
-        urls.add("jdbc:jtds:sqlserver://<server>[:<PORT>][/<DATABASE>]");
+        add("jTDS", "SQL Server",
+        "net.sourceforge.jtds.jdbc.Driver",
+        "jdbc:jtds:sqlserver://<HOST>[:<PORT>][/<DB>]");
         
-        names.add("jTDS");
-        drivers.add("net.sourceforge.jtds.jdbc.Driver");
-        urls.add("jdbc:jtds:sybase://<server>[:<PORT>][/<DATABASE>]");
+        add("jTDS", "Sybase",
+        "net.sourceforge.jtds.jdbc.Driver",
+        "jdbc:jtds:sybase://<HOST>[:<PORT>][/<DB>]");
         
-        names.add("Mckoi SQL Database"); //(server)
-        drivers.add("com.mckoi.JDBCDriver");
-        urls.add("jdbc:mckoi://<HOST>[:<PORT>]");
+        add("Mckoi SQL Database", "Server",
+        "com.mckoi.JDBCDriver",
+        "jdbc:mckoi://<HOST>[:<PORT>]");
         
-        names.add("Mckoi SQL Database"); //(standalone)
-        drivers.add("com.mckoi.JDBCDriver");
-        urls.add("jdbc:mckoi:local://<DB>");
+        add("Mckoi SQL Database", "Embedded",
+        "com.mckoi.JDBCDriver",
+        "jdbc:mckoi:local://<DB>");
         
-        names.add("Microsoft SQL Server (DataDirect Connect for JDBC)");
-        drivers.add("com.ddtek.jdbc.sqlserver.SQLServerDriver");
-        urls.add("jdbc:datadirect:sqlserver://<HOST>:<PORT>[;databaseName=<DB>]");
+        add("Microsoft SQL Server (DataDirect Connect for JDBC)",
+        "com.ddtek.jdbc.sqlserver.SQLServerDriver",
+        "jdbc:datadirect:sqlserver://<HOST>[:<PORT>][;databaseName=<DB>]");
         
-        names.add("Microsoft SQL Server (JTurbo driver)");
-        drivers.add("com.ashna.jturbo.driver.Driver");
-        urls.add("jdbc:JTurbo://<HOST>:<PORT>/<DB>");
+        add("Microsoft SQL Server (JTurbo driver)",
+        "com.ashna.jturbo.driver.Driver",
+        "jdbc:JTurbo://<HOST>:<PORT>/<DB>");
         
-        names.add("Microsoft SQL Server (Sprinta driver)");
-        drivers.add("com.inet.tds.TdsDriver");
-        urls.add("jdbc:inetdae:<HOST>:<PORT>?database=<DB>");
+        add("Microsoft SQL Server (Sprinta driver)",
+        "com.inet.tds.TdsDriver",
+        "jdbc:inetdae:<HOST>[:<PORT>]?database=<DB>");
         
-        names.add("Microsoft SQL Server 2000 (Microsoft driver)");
-        drivers.add("com.microsoft.jdbc.sqlserver.SQLServerDriver");
-        urls.add("jdbc:microsoft:sqlserver://<HOST>:<PORT>[;DatabaseName=<DB>]");
+        add("Microsoft SQL Server 2000 (Microsoft driver)",
+        "com.microsoft.jdbc.sqlserver.SQLServerDriver",
+        "jdbc:microsoft:sqlserver://<HOST>[:<PORT>][;DatabaseName=<DB>]");
 
-        names.add("Microsoft SQL Server 2005");
-        drivers.add("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-        urls.add("jdbc:sqlserver://<HOST>:<PORT>;databaseName=<DB>");
+        add("Microsoft SQL Server 2005",
+        "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+        "jdbc:sqlserver://<HOST>[:<PORT>];databaseName=<DB>");
         
-        names.add("MySQL (Connector/J driver)");
-        drivers.add("com.mysql.jdbc.Driver");
-        urls.add("jdbc:mysql://<HOST>:<PORT>/<DB>");
+        add(getMessage("DRIVERNAME_MySQL"),
+                "com.mysql.jdbc.Driver", 
+                "jdbc:mysql://[<HOST>[:<PORT>]]/[<DB>][?<ADDITIONAL>]", true); // NOI18N
         
-        names.add("MySQL (MM.MySQL driver)");
-        drivers.add("org.gjt.mm.mysql.Driver");
-        urls.add("jdbc:mysql://<HOST>:<PORT>/<DB>");
+        add("MySQL (MM.MySQL driver)",
+        "org.gjt.mm.mysql.Driver",
+        "jdbc:mysql://<HOST>[:<PORT>][/<DB>]");
         
-        names.add("Oracle"); //OCI 8i
-        drivers.add("oracle.jdbc.driver.OracleDriver");
-        urls.add("jdbc:oracle:oci8:@<SID>");
+        add("Oracle (Thin)",
+        "oracle.jdbc.OracleDriver",
+        "jdbc:oracle:thin:@<HOST>[:<PORT>]:<SID>");
         
-        names.add("Oracle"); //OCI 9i
-        drivers.add("oracle.jdbc.driver.OracleDriver");
-        urls.add("jdbc:oracle:oci:@<SID>");
+        add("Oracle", "OCI 8i",
+        "oracle.jdbc.driver.OracleDriver",
+        "jdbc:oracle:oci8:@<SID>");
         
-        names.add("Oracle (DataDirect Connect for JDBC)");
-        drivers.add("com.ddtek.jdbc.oracle.OracleDriver");
-        urls.add("jdbc:datadirect:oracle://<HOST>:<PORT>;SID=<SID>");
+        add("Oracle", "OCI 9i",
+        "oracle.jdbc.driver.OracleDriver",
+        "jdbc:oracle:oci:@<SID>");
         
-        names.add("PostgreSQL (v6.5 and earlier)");
-        drivers.add("postgresql.Driver");
-        urls.add("jdbc:postgresql://<HOST>:<PORT>/<DB>");
+        add("Oracle (DataDirect Connect for JDBC)",
+        "com.ddtek.jdbc.oracle.OracleDriver",
+        "jdbc:datadirect:oracle://<HOST>[:<PORT>];SID=<SID>");
         
-        names.add("PostgreSQL"); // 7.0 and later
-        drivers.add("org.postgresql.Driver");
-        urls.add("jdbc:postgresql://<HOST>:<PORT>/<DB>");
+        add("PostgreSQL (v6.5 and earlier)",
+        "postgresql.Driver",
+        "jdbc:postgresql:[//<HOST>[:<PORT>]/]<DB>[?<ADDITIONAL>]");
         
-        names.add("Quadcap Embeddable Database");
-        drivers.add("com.quadcap.jdbc.JdbcDriver");
-        urls.add("jdbc:qed:<DB>");
+        add(getMessage("DRIVERNAME_PostgreSQL"), // 7.0 and later
+        "org.postgresql.Driver",
+        "jdbc:postgresql:[//<HOST>[:<PORT>]/]<DB>[?<ADDITIONAL>]", true);
         
-        names.add("Sybase (jConnect 4.2 and earlier)");
-        drivers.add("com.sybase.jdbc.SybDriver");
-        urls.add("jdbc:sybase:Tds:<HOST>:<PORT>");
+        add("Quadcap Embeddable Database",
+        "com.quadcap.jdbc.JdbcDriver",
+        "jdbc:qed:<DB>");
         
-        names.add("Sybase (jConnect 5.2)");
-        drivers.add("com.sybase.jdbc2.jdbc.SybDriver");
-        urls.add("jdbc:sybase:Tds:<HOST>:<PORT>");
+        add("Sybase (jConnect 4.2 and earlier)",
+        "com.sybase.jdbc.SybDriver",
+        "jdbc:sybase:Tds:<HOST>[:<PORT>]");
         
-        names.add("Sybase (DataDirect Connect for JDBC)");
-        drivers.add("com.ddtek.jdbc.sybase.SybaseDriver");
-        urls.add("jdbc:datadirect:sybase://<HOST>:<PORT>[;databaseName=<DB>]");
+        add("Sybase (jConnect 5.2)",
+        "com.sybase.jdbc2.jdbc.SybDriver",
+        "jdbc:sybase:Tds:<HOST>[:<PORT>]");
+        
+        add("Sybase (DataDirect Connect for JDBC)",
+        "com.ddtek.jdbc.sybase.SybaseDriver",
+        "jdbc:datadirect:sybase://<HOST>[:<PORT>][;databaseName=<DB>]");
 
         // Following four entries for drivers to be included in Java Studio Enterprise 7 (Bow)
-        names.add("Microsoft SQL Server Driver");
-        drivers.add("com.sun.sql.jdbc.sqlserver.SQLServerDriver");
-        urls.add("jdbc:sun:sqlserver://server_name[:portNumber]");        
+        add("Microsoft SQL Server Driver",
+        "com.sun.sql.jdbc.sqlserver.SQLServerDriver",
+        "jdbc:sun:sqlserver://<HOST>[:<PORT>]");       
         
-        names.add("DB2 Driver");
-        drivers.add("com.sun.sql.jdbc.db2.DB2Driver");
-        urls.add("jdbc:sun:db2://server_name:portNumber;databaseName=DATABASENAME");  
+        add("DB2 Driver",
+        "com.sun.sql.jdbc.db2.DB2Driver",
+        "jdbc:sun:db2://<HOST>[:<PORT>];databaseName=<DB>");  
         
-        names.add("Oracle Driver");
-        drivers.add("com.sun.sql.jdbc.oracle.OracleDriver");
-        urls.add("jdbc:sun:oracle://server_name[:portNumber][;SID=DATABASENAME]");  
+        add("Oracle Driver",
+        "com.sun.sql.jdbc.oracle.OracleDriver",
+        "jdbc:sun:oracle://<HOST>[:<PORT>][;SID=<SID>]");  
         
-        names.add("Sybase Driver");
-        drivers.add("com.sun.sql.jdbc.sybase.SybaseDriver");
-        urls.add("jdbc:sun:sybase://server_name[:portNumber]");          
+        add("Sybase Driver",
+        "com.sun.sql.jdbc.sybase.SybaseDriver",
+        "jdbc:sun:sybase://<HOST>[:<PORT]");          
     }
     
-    public static Set getDrivers() {
-        return new TreeSet(drivers);
+    public static Set<String> getDrivers() {
+        TreeSet<String> drivers = new TreeSet<String>();
+        for (JdbcUrl url : urls) {
+            // A set contains no duplicate elements, so if the same class name 
+            // is found twice, that's OK, because it just replaces the entry
+            // that was already there
+            drivers.add(url.getClassName());
+        }
+        return drivers;
     }
     
-    public static List getURLs(String drv) {
-        List ret = new LinkedList();
+    public static List<JdbcUrl> getJdbcUrls(JDBCDriver driver) {
+        ArrayList<JdbcUrl> driverUrls = new ArrayList<JdbcUrl>();
+        for (JdbcUrl url : urls) {
+            if (url.getClassName().equals(driver.getClassName())) {
+                // Lazily set the driver for this url now that we know it's
+                // registered...
+                if (url.getDriver() == null) {
+                    url.setDriver(driver);
+                }
+                
+                // Clear out any properties that may be set
+                url.clear();
+                
+                driverUrls.add(url);
+            }
+        }
         
-        for (int i = 0; i < drivers.size(); i++)
-            if (((String) drivers.get(i)).equals(drv))
-                ret.add(urls.get(i));
+        if (driverUrls.isEmpty()) {
+            JdbcUrl url = new JdbcUrl(driver, null, "");
+            
+            add(url);
+            driverUrls.add(url);
+        }
         
-        return ret;
+        return driverUrls;
     }
     
-    public static String getName(String drv) {
-        for (int i = 0; i < drivers.size(); i++)
-            if (((String) drivers.get(i)).equals(drv))
-                return (String) names.get(i);
+    static List<JdbcUrl> getJdbcUrls() {
+        // For unit testing
+        return urls;
+    }
+    
+    public static String getName(String driverClass) {
+        // Find the first match
+        for ( JdbcUrl url : urls) {
+            if (url.getClassName().equals(driverClass)) {
+                return url.getName();
+            }
+        }
         
         return "";
     }
-
+    
     public static String findFreeName(String name) {
         String ret;
         Vector names = new Vector();

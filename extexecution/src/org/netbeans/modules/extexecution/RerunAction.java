@@ -41,26 +41,19 @@
 package org.netbeans.modules.extexecution;
 
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor.RerunCondition;
 import org.netbeans.modules.extexecution.api.ExecutionService;
-import org.openide.ErrorManager;
-import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.openide.util.Task;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -71,76 +64,40 @@ import org.openide.util.Utilities;
  *
  * @author Tor Norbye, Petr Hejl
  */
-public final class RerunAction extends AbstractAction implements FileChangeListener {
+public final class RerunAction extends AbstractAction implements ChangeListener {
 
     private transient ExecutionService prototype;
 
-    private FileObject fileObject;
+    private final RerunCondition rerunCondition;
 
-    public RerunAction(ExecutionService prototype, FileObject fileObject) {
+    public RerunAction(ExecutionService prototype, RerunCondition rerunCondition) {
         this.prototype = prototype;
         setEnabled(false); // initially, until ready
         putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage(
                 "org/netbeans/modules/extexecution/resources/rerun.png")));
         putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(RerunAction.class, "Rerun"));
 
-        this.fileObject = fileObject;
-
-        if (fileObject != null) {
-            fileObject.addFileChangeListener(FileUtil.weakFileChangeListener(this, fileObject));
+        this.rerunCondition = rerunCondition;
+        if (rerunCondition != null) {
+            rerunCondition.addChangeListener(WeakListeners.change(this, rerunCondition));
         }
     }
 
     public void actionPerformed(ActionEvent e) {
         setEnabled(false);
 
-        // Save the file before running it, if any
-        if (fileObject != null) {
-            // Save the file
-            try {
-                DataObject dobj = DataObject.find(fileObject);
-
-                if (dobj != null) {
-                    SaveCookie saveCookie = dobj.getCookie(SaveCookie.class);
-
-                    if (saveCookie != null) {
-                        saveCookie.save();
-                    }
-                }
-            } catch (DataObjectNotFoundException donfe) {
-                ErrorManager.getDefault().notify(donfe);
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
-            }
-        }
-
         if (prototype != null) {
             Accessor.getDefault().rerun(prototype);
         }
     }
 
-    public void fileDeleted(FileEvent fe) {
-        firePropertyChange("enabled", null, false); // NOI18N
+    public void stateChanged(ChangeEvent e) {
+        firePropertyChange("enabled", null, rerunCondition.isRerunPossible()); // NOI18N
     }
 
-    public void fileFolderCreated(FileEvent fe) {
-    }
-
-    public void fileDataCreated(FileEvent fe) {
-    }
-
-    public void fileChanged(FileEvent fe) {
-    }
-
-    public void fileRenamed(FileRenameEvent fe) {
-    }
-
-    public void fileAttributeChanged(FileAttributeEvent fe) {
-    }
-
+    @Override
     public boolean isEnabled() {
-        // #84874: should be disabled in case the original Ant script is now gone.
-        return super.isEnabled() && ((fileObject == null) || fileObject.isValid());
+        return super.isEnabled() && (rerunCondition == null || rerunCondition.isRerunPossible());
     }
 
     /**
