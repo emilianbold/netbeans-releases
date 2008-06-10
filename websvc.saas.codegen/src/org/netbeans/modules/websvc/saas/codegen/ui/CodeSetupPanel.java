@@ -39,8 +39,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.saas.codegen.java;
+package org.netbeans.modules.websvc.saas.codegen.ui;
 
+import org.netbeans.modules.websvc.saas.codegen.*;
 import java.awt.Component;
 import java.util.List;
 import javax.swing.DefaultCellEditor;
@@ -53,9 +54,9 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import org.netbeans.modules.websvc.saas.codegen.java.Constants;
-import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
-import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
+import org.netbeans.modules.websvc.saas.codegen.Constants;
+import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
 import org.openide.util.NbBundle;
 
