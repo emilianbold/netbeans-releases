@@ -37,42 +37,20 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.server;
+package org.netbeans.modules.cnd.remote.explorer.nodes;
 
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import java.util.List;
+import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import org.openide.nodes.ChildFactory;
 
 /**
- * The definition of a remote server and login. 
- * 
+ *
  * @author gordonp
  */
-public class RemoteServerRecord implements ServerRecord {
-    
-    private String name;
-    private String user;
-    private boolean editable;
-    
-    protected RemoteServerRecord(String name, String user) {
-        this.name = name;
-        this.user = user;
-        editable = true;
-    }
-    
-    protected RemoteServerRecord() {
-        name = "localhost"; // NOI18N
-        user = null;
-        editable = false;
-    }
-    
-    public boolean isEditable() {
-        return editable;
-    }
+public class RemoteServicesChildFactory extends ChildFactory<RemoteServerList> {
 
-    public boolean isRemote() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public boolean isActive() {
+    @Override
+    protected boolean createKeys(List toPopulate) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
