@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
+import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.openide.util.NbBundle;
@@ -157,7 +158,7 @@ public abstract class Table implements Comparable<Table> {
     /**
      * Returns the unique constaints defined on this table
      */
-    public abstract Set<String[]> getUniqueConstraints();
+    public abstract Set<List<String>> getUniqueConstraints();
 
     /**
      * A generic reason for a table to be disabled. If there is no need
