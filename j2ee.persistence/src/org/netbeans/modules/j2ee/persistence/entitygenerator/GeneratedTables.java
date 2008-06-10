@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.j2ee.persistence.entitygenerator;
 
+import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.CollectionType;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.FetchType;
@@ -105,7 +106,7 @@ public interface GeneratedTables {
     /**
      * Returns the unique constraints defined on the table
      */
-    public Set<String[]> getUniqueConstraints(String tableName);
+    public Set<List<String>> getUniqueConstraints(String tableName);
     
     /**
      * The collection type should be used for the OneToMany or ManyToMany cmr fields

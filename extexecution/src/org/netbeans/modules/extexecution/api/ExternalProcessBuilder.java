@@ -59,9 +59,11 @@ public final class ExternalProcessBuilder {
 
     // FIXME: get rid of those proxy constants as soon as some NB Proxy API is available
     private static final String USE_PROXY_AUTHENTICATION = "useProxyAuthentication"; // NOI18N
+
     private static final String PROXY_AUTHENTICATION_USERNAME = "proxyAuthenticationUsername"; // NOI18N
+
     private static final String PROXY_AUTHENTICATION_PASSWORD = "proxyAuthenticationPassword"; // NOI18N
-    
+
     private final String command;
 
     private File pwd;
@@ -106,6 +108,7 @@ public final class ExternalProcessBuilder {
         return this;
     }
 
+    // last added is the first one in path
     public ExternalProcessBuilder addPath(File path) {
         Parameters.notNull("path", path);
 
@@ -164,12 +167,10 @@ public final class ExternalProcessBuilder {
         return pb.start();
     }
 
-    private List<String> buildArguments() {
-        return new ArrayList<String>(arguments);
-    }
-
-    private Map<String, String> buildEnvironment(Map<String, String> original) {
+    // package level for unit testing
+    Map<String, String> buildEnvironment(Map<String, String> original) {
         Map<String, String> ret = new HashMap<String, String>(original);
+        ret.putAll(envVariables);
 
         // Find PATH environment variable - on Windows it can be some other
         // case and we should use whatever it has.
@@ -187,6 +188,7 @@ public final class ExternalProcessBuilder {
             }
         }
 
+        // TODO use StringBuilder
         String currentPath = ret.get(pathName);
 
         if (currentPath == null) {
@@ -194,12 +196,22 @@ public final class ExternalProcessBuilder {
         }
 
         for (File path : paths) {
-            currentPath = path.getAbsolutePath().replace(" ", "\\ "); // NOI18N
+            currentPath = path.getAbsolutePath().replace(" ", "\\ ") //NOI18N
+                    + File.pathSeparator + currentPath;
         }
 
         if (pwdToPath) {
-            currentPath = pwd.getAbsolutePath().replace(" ", "\\ ") // NOI18N
-                    + File.pathSeparator + currentPath;
+            File path = pwd;
+            if (path == null) {
+                String userDir = System.getProperty("user.dir");
+                if (userDir != null) {
+                    path = new File(userDir);
+                }
+            }
+            if (path != null) {
+                currentPath = path.getAbsolutePath().replace(" ", "\\ ") // NOI18N
+                        + File.pathSeparator + currentPath;
+            }
         }
 
         if (javaHomeToPath) {
@@ -224,12 +236,17 @@ public final class ExternalProcessBuilder {
             }
         }
 
-        ret.put(pathName, currentPath);
-        ret.putAll(envVariables);
+        if (!"".equals(currentPath.trim())) {
+            ret.put(pathName, currentPath);
+        }
         return ret;
     }
 
-    private static void adjustProxy(final ProcessBuilder pb) {
+    private List<String> buildArguments() {
+        return new ArrayList<String>(arguments);
+    }
+
+    private void adjustProxy(ProcessBuilder pb) {
         String proxy = getNetBeansHttpProxy();
         if (proxy != null) {
             Map<String, String> env = pb.environment();
@@ -278,5 +295,5 @@ public final class ExternalProcessBuilder {
         }
 
         return host + ":" + port; // NOI18N
-    }    
+    }
 }
