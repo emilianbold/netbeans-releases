@@ -54,7 +54,6 @@ import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
@@ -80,6 +79,7 @@ import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.actions.PropertiesAction;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.modules.web.NavigatorOperator;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
@@ -103,7 +103,7 @@ import org.openide.loaders.DataObject;
 
 /**
  */
-public class WebProjectValidation extends JellyTestCase {
+public class WebProjectValidation extends J2eeTestCase {
     protected static ProjectHelper phelper = new ProjectHelper() {
         public Node getSourceNode() {
             return new SourcePackagesNode(PROJECT_NAME);
@@ -128,8 +128,8 @@ public class WebProjectValidation extends JellyTestCase {
     }
     
     public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(WebProjectValidation.class).addTest(
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebProjectValidation.class);
+        conf = addServerTests(conf, 
               "testPreconditions", "testNewWebProject", "testRegisterTomcat",
               "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
               "testBuildProject", "testCompileAllJSP", "testCompileJSP",
@@ -137,10 +137,9 @@ public class WebProjectValidation extends JellyTestCase {
               "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
               "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
               "testStopServer", "testStartServer", "testBrowserSettings", "testFinish"
-               /*"testJSPNavigator", "testHTMLNavigator" */)
-            .enableModules(".*")
-            .clusters(".*")
-        );
+               /*"testJSPNavigator", "testHTMLNavigator" */);
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
     }
 
     /** Use for execution inside IDE */

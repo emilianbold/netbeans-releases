@@ -333,6 +333,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.jellytools.modules.form.properties.editors</package>
                 <package>org.netbeans.jellytools.modules.freeform.actions</package>
                 <package>org.netbeans.jellytools.modules.freeform.nodes</package>
+                <package>org.netbeans.jellytools.modules.j2ee</package>
                 <package>org.netbeans.jellytools.modules.j2ee.actions</package>
                 <package>org.netbeans.jellytools.modules.j2ee.nodes</package>
                 <package>org.netbeans.jellytools.modules.javacvs</package>
