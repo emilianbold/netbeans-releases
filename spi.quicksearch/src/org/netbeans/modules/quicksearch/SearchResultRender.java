@@ -46,17 +46,23 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
+import org.openide.util.Utilities;
 
 /**
  * ListCellRenderer for SearchResults
  * @author Jan Becicka
  */
 class SearchResultRender extends JLabel implements ListCellRenderer {
+    
+    private static final boolean IS_GTK = "GTK".equals(UIManager.getLookAndFeel().getID()); //NOI18N
     
     private JLabel fake = new JLabel("XXXXXXXXXXXXX");
     static int shift;
@@ -70,7 +76,7 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
         if (value instanceof ItemResult) {
             JLabel categoryLabel = new JLabel();
             JPanel rendererComponent = new JPanel();
-            categoryLabel.setText("XXXXXXXXXXXXXX");
+            categoryLabel.setText("XXXXXXXXXXXXXXXXXX");
             categoryLabel.setFont(categoryLabel.getFont().deriveFont(Font.BOLD));
             categoryLabel.setBorder(new EmptyBorder(0, 5, 0, 0));
             rendererComponent.setLayout(new BorderLayout());
@@ -79,8 +85,18 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
             categoryLabel.setPreferredSize(fake.getPreferredSize());
             categoryLabel.setForeground(QuickSearchComboBar.getCategoryTextColor());
             shift = categoryLabel.getPreferredSize().width;
-            JLabel itemLabel = new JLabel(((ItemResult) value).getDisplayName());
-            itemLabel.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 2));
+            ItemResult ir = (ItemResult) value;
+            KeyStroke shortcut = ir.getShortcut();
+            JMenuItem itemLabel = new JMenuItem(ir.getDisplayName());
+            if (shortcut != null) {
+                itemLabel.setAccelerator(shortcut);
+            }
+            if (!IS_GTK) {
+                itemLabel.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 2));
+            } else {
+                itemLabel.setBorder(null);
+            }
+            
             ListModel model = list.getModel();
             if (model instanceof ResultsModel && ((ResultsModel) model).isFirstinCat((ItemResult) value)) {
                 ProviderModel.Category cat = ((ResultsModel) model).getCategory((ItemResult) value);

@@ -40,20 +40,27 @@
 
 package org.netbeans.modules.jumpto.quicksearch;
 
+import java.awt.event.ActionEvent;
 import java.lang.reflect.Field;
-import java.util.HashSet;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.swing.Action;
+import javax.swing.JEditorPane;
+import javax.swing.KeyStroke;
+import javax.swing.text.TextAction;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.spi.KeymapManager;
 import org.netbeans.spi.quicksearch.CategoryDescription;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
+import org.openide.cookies.EditorCookie;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
+import org.openide.windows.TopComponent;
 
 /**
  * SearchProvider for all actions. 
@@ -62,54 +69,98 @@ import org.openide.util.lookup.Lookups;
 public class ActionsSearchProvider implements SearchProvider, CategoryDescription {
 
     /**
-     * Returns List (ShortcutAction) of all global and editor actions.
+     * Iterates through all found KeymapManagers and their sets of actions
+     * and fills response object with proper actions that are enabled
+     * and can be run meaningfully on current actions context.
      */
-    private Set<ShortcutAction> getActions() {
-        Set<ShortcutAction> actions = new HashSet<ShortcutAction>();
+    public void evaluate(SearchRequest request, SearchResponse response) {
+        // iterate over all found KeymapManagers
         for (KeymapManager m : Lookup.getDefault().lookupAll(KeymapManager.class)) {
             for (Entry<String, Set<ShortcutAction>> entry : m.getActions().entrySet()) {
-                for (ShortcutAction a:entry.getValue()) {
-                    actions.add(a);
+                for (ShortcutAction sa : entry.getValue()) {
+                    // check action and obtain only meaningful ones
+                    Object[] actAndEvent = getActionAndEvent(sa);
+                    if (actAndEvent == null) {
+                        continue;
+                    }
+                    if (sa.getDisplayName().toLowerCase().indexOf(request.getText().toLowerCase()) != -1) {
+                        Object shortcut = ((Action)actAndEvent[0]).getValue(Action.ACCELERATOR_KEY);
+                        KeyStroke stroke = null;
+                        if (shortcut instanceof KeyStroke) {
+                            stroke = (KeyStroke)shortcut;
+                        }
+                        if (!response.addResult(
+                                new ActionResult((Action)actAndEvent[0], (ActionEvent)actAndEvent[1]),
+                                sa.getDisplayName(), stroke, null)) {
+                            // return immediatelly if no further result is needed
+                            return;
+                        }
+                    }
                 }
             }
         }
-        return actions;
     }
     
-    public void evaluate(SearchRequest request, SearchResponse response) {
-        for (ShortcutAction a : getActions()) {
-            if (a.getDisplayName().toLowerCase().indexOf(request.getText().toLowerCase()) != -1) {
-                if (!response.addResult(new ActionResult(a), a.getDisplayName())) {
-                    break;
-                }
+    private Object[] getActionAndEvent(ShortcutAction sa) {
+        Class clazz = sa.getClass();
+        Field f = null;
+        try {
+            f = clazz.getDeclaredField("action");
+            f.setAccessible(true);
+            Action action = (Action) f.get(sa);
+            
+            if (!action.isEnabled()) {
+                return null;
             }
+            
+            Object evSource = null;
+            int evId = ActionEvent.ACTION_PERFORMED;
+            
+            // text (editor) actions
+            if (action instanceof TextAction) {
+                EditorCookie ec = Utilities.actionsGlobalContext().lookup(EditorCookie.class);
+                if (ec == null) {
+                    return null;
+                }
+                
+                JEditorPane[] editorPanes = ec.getOpenedPanes();
+                if (editorPanes == null || editorPanes.length <= 0) {
+                    return null;
+                }
+                evSource = editorPanes[0];
+            }
+            
+            if (evSource == null) {
+                evSource = TopComponent.getRegistry().getActivated();
+            }
+            
+            return new Object[] {action, new ActionEvent(evSource, evId, null)};
+            
+        } catch (NoSuchFieldException ex) {
+            System.out.println("no field action for: " + sa.getDisplayName());
+            //Exceptions.printStackTrace(ex);
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
         }
+        // fallback
+        return null;
     }
     
     private static class ActionResult implements Runnable {
-        private ShortcutAction command;
-        
-        public ActionResult(ShortcutAction command) {
+        private Action command;
+        private ActionEvent event;
+
+        public ActionResult(Action command, ActionEvent event) {
             this.command = command;
+            this.event = event;
         }
         
         public void run() {
-            Class clazz = command.getClass();
-            Field f = null;
-            try {
-                f = clazz.getDeclaredField("action");
-                f.setAccessible(true);
-                Action a = (Action) f.get(command);
-                a.actionPerformed(null);
-            } catch (NoSuchFieldException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (SecurityException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IllegalArgumentException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IllegalAccessException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            command.actionPerformed(event);
         }
     }
 
@@ -128,6 +179,7 @@ public class ActionsSearchProvider implements SearchProvider, CategoryDescriptio
     public String getHint() {
         return null;
     }
+
 
 
 }
