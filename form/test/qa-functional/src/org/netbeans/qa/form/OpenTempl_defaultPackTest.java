@@ -79,7 +79,7 @@ import org.netbeans.junit.NbModuleSuite;
  * Created on 29 January 2007, 15:59
  * Test is only for java 1.6 for now
  */
-public class OpenTempl_defaultPack extends JellyTestCase {
+public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
 
     public String DATA_PROJECT_NAME = "SampleProject";
     public String PACKAGE_NAME = "Source Package";
@@ -92,7 +92,7 @@ public class OpenTempl_defaultPack extends JellyTestCase {
     ComponentInspectorOperator cio;
 
     /** Constructor required by JUnit */
-    public OpenTempl_defaultPack(String name) {
+    public OpenTempl_defaultPackTest(String name) {
         super(name);
 
     }
@@ -100,13 +100,14 @@ public class OpenTempl_defaultPack extends JellyTestCase {
     /** Creates suite from particular test cases. You can define order of testcases here. */
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(OpenTempl_defaultPack.class).addTest(
+                NbModuleSuite.createConfiguration(OpenTempl_defaultPackTest.class).addTest(
                 "testApplet", "testDialog", "testFrame", "testInter", "testAppl", "testMidi",
                 "testPanel", "testBean").gui(true).enableModules(".*").clusters(".*"));
     }
 
     /** Called before every test case. */
     public void setUp() throws IOException {
+        openProject(DATA_PROJECT_NAME);
         workdirpath = getWorkDir().getParentFile().getAbsolutePath();
         System.out.println("########  " + getName() + "  #######");
     }
