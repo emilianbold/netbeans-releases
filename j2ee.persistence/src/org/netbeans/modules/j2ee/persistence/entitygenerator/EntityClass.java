@@ -56,8 +56,8 @@ import org.openide.filesystems.FileObject;
  */
 public class EntityClass {
     private final boolean fullyQualifiedTblNames;
-    private final String schemaName;
     private final String catalogName;
+    private final String schemaName;
     private final String tableName;
     private final FileObject rootFolder;
     private final String className;
@@ -75,13 +75,13 @@ public class EntityClass {
     
     private boolean forTable = true;  // false means forView
     
-    public EntityClass(boolean fullyQualifiedTblNames, String schemaName, String catalogName, String tableName, 
+    public EntityClass(boolean fullyQualifiedTblNames, String catalogName, String schemaName, String tableName, 
             FileObject rootFolder, String packageName, String className,
             FetchType fetchType, boolean regenSchemaAttrs, Set<List<String>> uniqueConstraints,
             CollectionType collectionType) {
         this.fullyQualifiedTblNames = fullyQualifiedTblNames;
-        this.schemaName = schemaName;
         this.catalogName = catalogName;
+        this.schemaName = schemaName;
         this.tableName = tableName;
         this.rootFolder = rootFolder;
         this.packageName = packageName;
