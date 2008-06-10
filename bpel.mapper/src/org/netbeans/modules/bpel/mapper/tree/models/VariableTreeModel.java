@@ -170,25 +170,28 @@ public class VariableTreeModel implements MapperTreeExtensionModel<Object> {
             WSDLReference<Message> msgRef = varDecl.getMessageType();
             if (msgRef != null) {
                 Message msg = msgRef.get();
-                Collection<Part> parts = msg != null ? msg.getParts() : null;
-                //
-                if (mCastManager == null) {
-                    ArrayList<Part> partList = parts != null ? 
-                        new ArrayList<Part>(parts) : new ArrayList<Part>();
-                    return partList;
-                } else {
-                    List<Object> childrenList = new ArrayList<Object>();
-                    childrenList.addAll(parts);
-                    //
-                    // Add casted parts
-                    // Look for the corresponding cast nodes.
-                    for (Part part : parts) {
-                        List<AbstractTypeCast> typeCast = 
-                                mCastManager.getCastedVariables(varDecl, part);
-                        childrenList.addAll(typeCast);
+                if (msg != null) {
+                    Collection<Part> parts = msg.getParts();
+                    if (parts != null && !parts.isEmpty()) {
+                        if (mCastManager == null) {
+                            ArrayList<Part> partList = parts != null ? 
+                                new ArrayList<Part>(parts) : new ArrayList<Part>();
+                            return partList;
+                        } else {
+                            List<Object> childrenList = new ArrayList<Object>();
+                            childrenList.addAll(parts);
+                            //
+                            // Add casted parts
+                            // Look for the corresponding cast nodes.
+                            for (Part part : parts) {
+                                List<AbstractTypeCast> typeCast = 
+                                        mCastManager.getCastedVariables(varDecl, part);
+                                childrenList.addAll(typeCast);
+                            }
+                            //
+                            return childrenList;
+                        }
                     }
-                    //
-                    return childrenList;
                 }
             } else {
                 SchemaReference<GlobalType> gTypeRef = varDecl.getType();
