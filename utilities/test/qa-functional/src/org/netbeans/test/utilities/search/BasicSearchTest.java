@@ -48,16 +48,11 @@ package org.netbeans.test.utilities.search;
 
 import java.util.Hashtable;
 import java.util.Iterator;
+import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JMenuItemOperator;
-import org.netbeans.jemmy.operators.JMenuOperator;
-import org.netbeans.jemmy.operators.JTabbedPaneOperator;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.utilities.operators.SearchResultsOperator;
 import org.netbeans.test.utilities.testcase.Utilities;
 
@@ -84,18 +79,11 @@ public class BasicSearchTest extends JellyTestCase {
      * Adds tests to suite
      * @return created suite
      */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new BasicSearchTest("testSearchForClass"));
-        suite.addTest(new BasicSearchTest("testRememberSearchesInsideComboBox"));
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(BasicSearchTest.class).addTest("testSearchForClass", "testRememberSearchesInsideComboBox").enableModules(".*").clusters(".*"));
     }
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
-        // run only selected test case
-        //junit.textui.TestRunner.run(new DesktopAppTest("test1"));
-    }
+    
     public void testSearchForClass() {
         NbDialogOperator ndo = Utilities.getFindDialogMainMenu();        
         JComboBoxOperator jcbo = new JComboBoxOperator(ndo,

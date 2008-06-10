@@ -42,6 +42,7 @@ import java.io.File;
 import java.io.PrintStream;
 import javax.swing.table.TableModel;
 import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputOperator;
@@ -51,7 +52,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.mercurial.operators.CommitOperator;
 import org.netbeans.test.mercurial.operators.VersioningOperator;
 import org.netbeans.test.mercurial.utils.TestKit;
@@ -71,17 +72,12 @@ public class InitializeTest extends JellyTestCase {
         super(name);
     }
 
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(InitializeTest.class).addTest("testInitializeAndFirstCommit").enableModules(".*").clusters(".*"));
     }
-
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new InitializeTest("testInitializeAndFirstCommit"));
-        return suite;
-    }
-
+    
     public void testInitializeAndFirstCommit() throws Exception {
         long timeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
         try {

@@ -54,6 +54,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.InputStream;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
@@ -77,7 +78,7 @@ import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
@@ -100,25 +101,24 @@ public class ExportPatchAndDiffTest extends JellyTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
-    }
-    
     protected void setUp() throws Exception {
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
         System.out.println("### " + getName() + " ###");
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ExportPatchAndDiffTest("testCheckOutProject"));
-        suite.addTest(new ExportPatchAndDiffTest("testExportDiffPatch"));
-        suite.addTest(new ExportPatchAndDiffTest("testDiffFile"));
-        suite.addTest(new ExportPatchAndDiffTest("removeAllData"));
-        return suite;
-    }
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(ExportPatchAndDiffTest.class).addTest(
+                     "testCheckOutProject",
+                     "testExportDiffPatch",
+                     "testDiffFile",
+                     "removeAllData"
+                )
+                .enableModules(".*")
+                .clusters(".*")
+        );
+     }
     
     public void testCheckOutProject() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);

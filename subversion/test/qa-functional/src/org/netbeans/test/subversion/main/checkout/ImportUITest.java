@@ -11,6 +11,7 @@ package org.netbeans.test.subversion.main.checkout;
 
 import java.io.File;
 import javax.swing.table.TableModel;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -20,7 +21,7 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.subversion.operators.CommitStepOperator;
 import org.netbeans.test.subversion.operators.CreateNewFolderOperator;
 import org.netbeans.test.subversion.operators.FolderToImportStepOperator;
@@ -65,20 +66,19 @@ public class ImportUITest extends JellyTestCase {
         }
         return unix;
     }
-
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
-    }
-
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ImportUITest("testInvoke"));
-        suite.addTest(new ImportUITest("testWarningMessage"));
-        suite.addTest(new ImportUITest("testRepositoryFolderLoad"));
-        suite.addTest(new ImportUITest("testCommitStep"));
-        return suite;
-    }
+    
+    public static Test suite() {
+         return NbModuleSuite.create(
+                 NbModuleSuite.createConfiguration(ImportUITest.class).addTest(
+                    "testInvoke",
+                    "testWarningMessage",
+                    "testRepositoryFolderLoad",
+                    "testCommitStep"
+                 )
+                 .enableModules(".*")
+                 .clusters(".*")
+        );
+     }
 
     public void testInvoke() throws Exception {
 

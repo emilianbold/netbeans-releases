@@ -44,6 +44,7 @@ package org.netbeans.test.cvsmodule;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Random;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -69,7 +70,7 @@ import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 /**
  *
@@ -91,42 +92,35 @@ public class CheckOutWizardTest extends JellyTestCase {
         super(name);
     }
     
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
-    }
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(CheckOutWizardTest.class).addTest(
+                     "testInvokeCheckoutWizard",
+                     "testCancelCheckoutWizard",
+                     "testCheckoutWizardLocal",
+                     "testCheckoutWizardFork",
+                     "testCheckoutWizardPserver",
+                     "testCheckoutWizardExt",
+                     "testRandomChange",
+                     "testLocalUI",
+                     "testForkUI",
+                     "testPserverUI",
+                     "testExtUI",
+                     "testEditCVSRootDialogUI",
+                     "testPserverLoginSuccess",
+                     "testCheckWizardSecondStepUI",
+                     "testPserverLoginFailed",
+                     "testRepositoryBrowsing",
+                     "testAliasBrowsing",
+                     "testBranchBrowsing",
+                     "testTagBrowsing",
+                     "testCheckWizardFinish"                     
+                )
+                .enableModules(".*")
+                .clusters(".*")
+        );
+     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CheckOutWizardTest("testInvokeCheckoutWizard"));
-        suite.addTest(new CheckOutWizardTest("testCancelCheckoutWizard"));
-        suite.addTest(new CheckOutWizardTest("testCheckoutWizardLocal"));
-        suite.addTest(new CheckOutWizardTest("testCheckoutWizardFork"));
-        suite.addTest(new CheckOutWizardTest("testCheckoutWizardPserver"));
-        suite.addTest(new CheckOutWizardTest("testCheckoutWizardExt"));
-        suite.addTest(new CheckOutWizardTest("testRandomChange"));
-        suite.addTest(new CheckOutWizardTest("testLocalUI"));
-        suite.addTest(new CheckOutWizardTest("testForkUI"));
-        suite.addTest(new CheckOutWizardTest("testPserverUI"));
-        suite.addTest(new CheckOutWizardTest("testExtUI"));
-        suite.addTest(new CheckOutWizardTest("testEditCVSRootDialogUI"));
-        suite.addTest(new CheckOutWizardTest("testPserverLoginSuccess"));
-        suite.addTest(new CheckOutWizardTest("testCheckWizardSecondStepUI"));
-        suite.addTest(new CheckOutWizardTest("testPserverLoginFailed"));
-        suite.addTest(new CheckOutWizardTest("testRepositoryBrowsing"));
-        suite.addTest(new CheckOutWizardTest("testAliasBrowsing"));
-        suite.addTest(new CheckOutWizardTest("testBranchBrowsing"));
-        suite.addTest(new CheckOutWizardTest("testTagBrowsing"));
-        suite.addTest(new CheckOutWizardTest("testCheckWizardFinish"));
-        //debug
-        //suite.addTest(new CheckOutWizardTest("testCheckWizardFinish"));
-       
-        //suite.addTest(new CheckOutWizardTest("testBranchBrowsing"));
-        return suite;
-    }
     protected void setUp() throws Exception {
         
         os_name = System.getProperty("os.name");

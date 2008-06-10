@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.PrintStream;
 import javax.swing.table.TableModel;
 import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
@@ -22,7 +23,7 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.mercurial.operators.CommitOperator;
 import org.netbeans.test.mercurial.operators.VersioningOperator;
 import org.netbeans.test.mercurial.utils.RepositoryMaintenance;
@@ -59,18 +60,11 @@ public class CommitDataTest extends JellyTestCase {
         return unix;
     }
     
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(CommitDataTest.class).addTest("testCommitFile", "testRecognizeMimeType").enableModules(".*").clusters(".*"));
     }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CommitDataTest("testCommitFile"));
-        suite.addTest(new CommitDataTest("testRecognizeMimeType"));
-        return suite;
-    }
-    
+        
     public void testCommitFile() throws Exception {
         long timeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
         try {

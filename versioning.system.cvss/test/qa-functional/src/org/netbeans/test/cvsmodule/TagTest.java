@@ -43,6 +43,7 @@ package org.netbeans.test.cvsmodule;
 
 import java.io.File;
 import java.io.InputStream;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
@@ -62,7 +63,7 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 /**
  *
@@ -100,23 +101,16 @@ public class TagTest extends JellyTestCase {
         return unix;
     }
     
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new TagTest("testCheckOutProject"));
-        suite.addTest(new TagTest("testTagDialogUI"));
-        suite.addTest(new TagTest("testCreateNewTag"));
-        suite.addTest(new TagTest("testCreateTagOnModified"));
-        suite.addTest(new TagTest("testOnNonVersioned"));
-        suite.addTest(new TagTest("removeAllData"));
-        //debug
-        //suite.addTest(new TagTest("testOnNonVersioned"));
-        return suite;
-    }
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(TagTest.class).addTest(
+                      "testCheckOutProject", "testTagDialogUI", "testCreateNewTag",
+                      "testCreateTagOnModified", "testOnNonVersioned", "removeAllData"
+                )
+                .enableModules(".*")
+                .clusters(".*")
+        );
+     }
     
     public void testCheckOutProject() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);

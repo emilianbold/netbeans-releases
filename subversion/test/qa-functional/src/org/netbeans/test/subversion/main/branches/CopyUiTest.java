@@ -10,13 +10,14 @@
 package org.netbeans.test.subversion.main.branches;
 
 import java.io.File;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.subversion.operators.CommitStepOperator;
 import org.netbeans.test.subversion.operators.CopyToOperator;
 import org.netbeans.test.subversion.operators.CreateNewFolderOperator;
@@ -61,16 +62,15 @@ public class CopyUiTest extends JellyTestCase{
         return unix;
     }
     
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CopyUiTest("testInvokeCloseCopy")); 
-        return suite;
-    }
+    public static Test suite() {
+         return NbModuleSuite.create(
+                 NbModuleSuite.createConfiguration(CopyUiTest.class).addTest(
+                    "testInvokeCloseCopy"
+                 )
+                 .enableModules(".*")
+                 .clusters(".*")
+        );
+     }
     
     public void testInvokeCloseCopy() throws Exception{
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);

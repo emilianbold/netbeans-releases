@@ -12,12 +12,13 @@ package org.netbeans.test.mercurial.main.archeology;
 import java.io.File;
 import java.io.PrintStream;
 import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.mercurial.utils.RepositoryMaintenance;
 import org.netbeans.test.mercurial.utils.TestKit;
 
@@ -51,15 +52,14 @@ public class AnnotationsTest extends JellyTestCase {
         return unix;
     }
     
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new AnnotationsTest("testShowAnnotations"));
-        return suite;
+    public static Test suite() {
+//        NbTestSuite suite = new NbTestSuite();
+//        suite.addTest(new AnnotationsTest("testShowAnnotations"));
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(AnnotationsTest.class)
+                .addTest("testShowAnnotations")
+                .enableModules(".*")
+                .clusters(".*")
+        );
     }
     
     public void testShowAnnotations() throws Exception {

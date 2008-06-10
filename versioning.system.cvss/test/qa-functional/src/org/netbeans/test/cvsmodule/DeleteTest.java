@@ -11,6 +11,7 @@ package org.netbeans.test.cvsmodule;
 
 import java.io.File;
 import java.io.InputStream;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -30,7 +31,7 @@ import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
@@ -56,17 +57,16 @@ public class DeleteTest extends JellyTestCase {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new DeleteTest("testCheckOutProject"));
-        suite.addTest(new DeleteTest("testDeleteFile"));
-        suite.addTest(new DeleteTest("removeAllData"));
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(DeleteTest.class).addTest(
+                     "testCheckOutProject",
+                     "testDeleteFile",
+                     "removeAllData"
+                )
+                .enableModules(".*")
+                .clusters(".*")
+        );
      }
     
     protected void setUp() throws Exception {

@@ -53,6 +53,7 @@ package org.netbeans.test.cvsmodule;
 import java.io.File;
 import java.io.InputStream;
 import javax.swing.ListModel;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -74,7 +75,7 @@ import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
@@ -95,25 +96,24 @@ public class ShowAnnotationsAndSearchHistoryTest extends JellyTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
-    }
-    
     protected void setUp() throws Exception {
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
         System.out.println("### " + getName() + " ###");
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ShowAnnotationsAndSearchHistoryTest("testCheckOutProject"));
-        //suite.addTest(new ShowAnnotationsAndSearchHistoryTest("testSearchHistory"));
-        suite.addTest(new ShowAnnotationsAndSearchHistoryTest("testShowAnnotations"));
-        suite.addTest(new ShowAnnotationsAndSearchHistoryTest("removeAllData"));
-        return suite;
-    }
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(ResolveConflictsAndRevertTest.class).addTest(
+                     "testCheckOutProject",
+                     //"testSearchHistory",
+                     "testShowAnnotations",
+                     "removeAllData"
+                )
+                .enableModules(".*")
+                .clusters(".*")
+        );
+     }
     
     public void testCheckOutProject() throws Exception {
         long timeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");

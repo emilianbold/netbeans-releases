@@ -52,6 +52,7 @@ package org.netbeans.test.cvsmodule;
 
 import java.io.File;
 import java.io.InputStream;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -72,7 +73,7 @@ import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
@@ -92,10 +93,6 @@ public class VersioningButtonsTest extends JellyTestCase {
     public VersioningButtonsTest(String name) {
         super(name);
     }
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
-    }
     
     protected void setUp() throws Exception {
         os_name = System.getProperty("os.name");
@@ -103,13 +100,18 @@ public class VersioningButtonsTest extends JellyTestCase {
         System.out.println("### " + getName() + " ###");
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new VersioningButtonsTest("testCheckOutProject"));
-        suite.addTest(new VersioningButtonsTest("testVersioningButtons"));
-        //        suite.addTest(new VersioningButtonsTest("removeAllData"));
-        return suite;
-    }
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(VersioningButtonsTest.class).addTest(
+                     "testCheckOutProject",
+                     //"removeAllData",
+                     "testVersioningButtons"
+                )
+                .enableModules(".*")
+                .clusters(".*")
+        );
+     }
+    
     public void testCheckOutProject() throws Exception {
         long timeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
         try {

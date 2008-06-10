@@ -53,6 +53,7 @@ package org.netbeans.test.cvsmodule;
 import java.io.File;
 import java.io.InputStream;
 import javax.swing.table.TableModel;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
@@ -74,7 +75,7 @@ import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 /**
  *
@@ -98,24 +99,23 @@ public class CommittingCvs11Test extends JellyTestCase {
         super(name);
     }
 
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
-    }
-    
     protected void setUp() throws Exception {        
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
         System.out.println("### " + getName() + " ###");
     }
-
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CommittingCvs11Test("testCheckOutProject"));
-        suite.addTest(new CommittingCvs11Test("testCommitModified"));
-        suite.addTest(new CommittingCvs11Test("removeAllData"));
-        return suite;
-    }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(CommittingCvs11Test.class).addTest(
+                     "testCheckOutProject",
+                     "testCommitModified",
+                     "removeAllData"
+                )
+                .enableModules(".*")
+                .clusters(".*")
+        );
+     }
 
     public void testCheckOutProject() throws Exception {
         PROTOCOL_FOLDER = "protocol";

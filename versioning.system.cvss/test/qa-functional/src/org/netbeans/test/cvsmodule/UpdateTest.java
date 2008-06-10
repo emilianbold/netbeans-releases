@@ -10,6 +10,7 @@
 package org.netbeans.test.cvsmodule;
 
 import java.io.File;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
@@ -30,7 +31,7 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
@@ -77,30 +78,19 @@ public class UpdateTest extends JellyTestCase {
         return unix;
     }
     
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        //suite.addTest(new UpdateTest("testOpen"));
-        suite.addTest(new UpdateTest("testBrokenUpdateModMer"));
-        suite.addTest(new UpdateTest("testBrokenUpdateModConf"));
-        suite.addTest(new UpdateTest("testBrokenUpdateModMod"));
-        suite.addTest(new UpdateTest("testBrokenUpdateMerMer"));
-        suite.addTest(new UpdateTest("testBrokenUpdateMerConf"));
-        suite.addTest(new UpdateTest("testBrokenUpdateConfMer"));
-        suite.addTest(new UpdateTest("testBrokenUpdateConfMod"));
-        suite.addTest(new UpdateTest("testBrokenUpdateModMerMer"));
-        suite.addTest(new UpdateTest("testBrokenUpdateModMerConf"));
-        suite.addTest(new UpdateTest("testBrokenUpdateModConfConf"));
-        suite.addTest(new UpdateTest("testBrokenUpdateMerModMer"));
-        suite.addTest(new UpdateTest("testBrokenUpdateConfModConf"));
-        suite.addTest(new UpdateTest("testBrokenUpdateConfConfMod"));
-        suite.addTest(new UpdateTest("testBrokenUpdateMerMerMod"));
-        return suite;
-    }
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(UpdateTest.class).addTest(
+                     "testBrokenUpdateModMer", "testBrokenUpdateModConf", "testBrokenUpdateModMod",
+                     "testBrokenUpdateMerMer", "testBrokenUpdateMerConf", "testBrokenUpdateConfMer",
+                     "testBrokenUpdateConfMod", "testBrokenUpdateModMerMer", "testBrokenUpdateModMerConf",
+                     "testBrokenUpdateModConfConf", "testBrokenUpdateMerModMer", "testBrokenUpdateConfModConf",
+                     "testBrokenUpdateConfConfMod", "testBrokenUpdateMerMerMod"
+                )
+                .enableModules(".*")
+                .clusters(".*")
+        );
+     }
     
     public void testOpen() throws Exception {
         File loc = new File("/tmp/work/w1153322002833");

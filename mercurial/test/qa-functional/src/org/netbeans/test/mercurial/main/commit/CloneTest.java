@@ -41,6 +41,7 @@ package org.netbeans.test.mercurial.main.commit;
 import java.io.File;
 import java.io.PrintStream;
 import junit.textui.TestRunner;
+import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputTabOperator;
@@ -50,7 +51,7 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.mercurial.utils.TestKit;
 
 /**
@@ -68,15 +69,9 @@ public class CloneTest extends JellyTestCase {
         super(name);
     }
 
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TestRunner.run(suite());
-    }
-
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CloneTest("testCloneProject"));
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(CloneTest.class).addTest("testCloneProject").enableModules(".*").clusters(".*"));
     }
 
     public void testCloneProject() throws Exception {
