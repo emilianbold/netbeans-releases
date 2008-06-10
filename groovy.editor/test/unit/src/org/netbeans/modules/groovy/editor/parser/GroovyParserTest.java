@@ -187,5 +187,22 @@ public class GroovyParserTest extends GroovyTestBase {
         // by the sanatizer, therefore we expect a null here.
         assertNull(root);
     }
+    
+//    public void testDuplicateDefinitions() throws Exception {
+//        copyStringToFileObject(testFO,
+//            "class DuplicateFieldExample {\n" +
+//            "String name\n" +
+//            "String name\n" +
+//            "def method() {\n" +
+//            "\tprintln 'Hello, world'\n" +
+//            "\t}\n" +
+//            "}\n");
+//
+//        CompilationInfo info = getInfo(testFO);
+//        ASTNode root = AstUtilities.getRoot(info);
+//        assertNotNull("AstUtilities.getRoot(info) failed", root);
+//    }
+    
+    
 
 }

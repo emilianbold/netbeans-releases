@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
+import antlr.Parser;
 import antlr.RecognitionException;
 import antlr.Token;
 import antlr.TokenStream;
@@ -93,7 +95,6 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
-import org.netbeans.editor.BaseDocument;
 
 /**
  * CsmFile implementations
@@ -619,14 +620,27 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     /** For text purposes only */
     public void getErrors(ErrorListener errorListener) {
-        Collection<RecognitionException> errors = getErrors();
+        Collection<RecognitionException> errors = new ArrayList<RecognitionException>();
+        getErrors(errors);
         for (RecognitionException e : errors) {
             errorListener.error(e.getMessage(), e.getLine(), e.getColumn());
         }
     }
+
+    private static class ParserBasedTokenBuffer implements ReadOnlyTokenBuffer {
+        Parser parser;
+        public ParserBasedTokenBuffer(Parser parser) {
+            this.parser = parser;
+        }
+        public int LA(int i) {
+            return parser.LA(i);
+        }
+        public Token LT(int i) {
+            return parser.LT(i);
+        }
+    }
     
-    public Collection<RecognitionException> getErrors() {
-        final Collection<RecognitionException> result = new ArrayList<RecognitionException>();
+    public ReadOnlyTokenBuffer getErrors(final Collection<RecognitionException> result) {
         CPPParserEx.ErrorDelegate delegate = new CPPParserEx.ErrorDelegate() {
             public void onError(RecognitionException e) {
                 result.add(e);
@@ -652,14 +666,16 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             parser.setErrorDelegate(delegate);
             parser.setLazyCompound(false);
             parser.translation_unit();
+            return new ParserBasedTokenBuffer(parser);
         } catch (IOException ex) {
             DiagnosticExceptoins.register(ex);
+            return null;
         } catch (Error ex){
             System.err.println(ex.getClass().getName()+" at parsing file "+fileBuffer.getFile().getAbsolutePath()); // NOI18N
             throw ex;
+        } finally {
+            if( TraceFlags.TRACE_ERROR_PROVIDER ) System.err.printf("<<< Done parsing (getting errors) %s %d ms\n\n\n", getName(), System.currentTimeMillis() - time);
         }
-        if( TraceFlags.TRACE_ERROR_PROVIDER ) System.err.printf("<<< Done parsing (getting errors) %s %d ms\n\n\n", getName(), System.currentTimeMillis() - time);
-        return result;
     }
     
     private AST doParse(APTPreprocHandler preprocHandler) {

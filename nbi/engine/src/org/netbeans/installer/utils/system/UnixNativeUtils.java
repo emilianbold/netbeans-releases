@@ -62,6 +62,7 @@ import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.ApplicationDescriptor;
 import org.netbeans.installer.utils.helper.Pair;
+import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.system.cleaner.ProcessOnExitCleanerHandler;
 import org.netbeans.installer.utils.system.launchers.Launcher;
 import org.netbeans.installer.utils.progress.Progress;
@@ -128,6 +129,11 @@ public class UnixNativeUtils extends NativeUtils {
     public UnixNativeUtils() {
         initializeForbiddenFiles();
     }
+    @Override
+    protected Platform getPlatform() {
+        return Platform.UNIX;
+    }
+    
     public boolean isCurrentUserAdmin() throws NativeException{
         if(isUserAdminSet) {
             return isUserAdmin;

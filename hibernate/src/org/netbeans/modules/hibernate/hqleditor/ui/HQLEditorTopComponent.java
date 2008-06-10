@@ -41,15 +41,22 @@ package org.netbeans.modules.hibernate.hqleditor.ui;
 import java.awt.CardLayout;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Vector;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
+import org.netbeans.modules.hibernate.hqleditor.HQLEditorController;
+import org.netbeans.modules.hibernate.hqleditor.HQLResult;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.util.Utilities;
@@ -63,20 +70,22 @@ public final class HQLEditorTopComponent extends TopComponent {
 
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/hibernate/hqleditor/ui/resources/runsql.png"; //NOI18N
-
     private Logger logger = Logger.getLogger(HQLEditorTopComponent.class.getName());
-    private HashMap<String, HibernateConfiguration> hibernateConfigMap = new HashMap<String, HibernateConfiguration>();
+    private HashMap<String, FileObject> hibernateConfigMap = new HashMap<String, FileObject>();
     private static int count = 0;
+    private HQLEditorController controller = null;
+    private HibernateEnvironment env = null;
 
     private static String getNextWindowTitle() {
         return NbBundle.getMessage(HQLEditorTopComponent.class, "CTL_HQLEditorTopComponent") + (++count);
     }
-    
+
     public static HQLEditorTopComponent getInstance() {
-        return new HQLEditorTopComponent();
+        return new HQLEditorTopComponent(null);
     }
 
-    public HQLEditorTopComponent() {
+    public HQLEditorTopComponent(HQLEditorController controller) {
+        this.controller = controller;
         initComponents();
         setName(getNextWindowTitle());
         setToolTipText(NbBundle.getMessage(HQLEditorTopComponent.class, "HINT_HQLEditorTopComponent"));
@@ -91,23 +100,33 @@ public final class HQLEditorTopComponent extends TopComponent {
         if (dO instanceof HibernateCfgDataObject) {
 
             Project enclosingProject = FileOwnerQuery.getOwner(dO.getPrimaryFile());
-            HibernateEnvironment env = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
+            env = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
             if (env == null) {
                 logger.warning("HiberEnv is not found in enclosing project.");
                 return;
             }
-            List<HibernateConfiguration> configurations = env.getAllHibernateConfigurationsFromProject();
-            for (HibernateConfiguration hibernateConfiguration : configurations) {
-                hibernateConfigMap.put(hibernateConfiguration.getSessionFactory().getAttributeValue("name"), //NOI18N
-                        hibernateConfiguration);
+            List<FileObject> configFileObjects = env.getAllHibernateConfigFileObjects();
+            for (FileObject configFileObject : configFileObjects) {
+                try {
+                    HibernateCfgDataObject hibernateCfgDataObject = (HibernateCfgDataObject) DataObject.find(configFileObject);
+                    hibernateConfigMap.put(hibernateCfgDataObject.getHibernateConfiguration().getSessionFactory().getAttributeValue("name"), configFileObject);
+                } catch (DataObjectNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
             hibernateConfigurationComboBox.setModel(new DefaultComboBoxModel(hibernateConfigMap.keySet().toArray()));
             HibernateConfiguration config = ((HibernateCfgDataObject) dO).getHibernateConfiguration();
             hibernateConfigurationComboBox.setSelectedItem(config.getSessionFactory().getAttributeValue("name"));
+
         } else {
             //TODO Don't know whether this case will actually arise..
         }
 
+    }
+
+    public void setResult(Vector<Vector> tableData, Vector<String> tableHeaders) {
+        resultToggleButton.setSelected(true);
+        resultsTable.setModel(new DefaultTableModel(tableData, tableHeaders));
     }
 
     /** This method is called from within the constructor to
@@ -151,6 +170,11 @@ public final class HQLEditorTopComponent extends TopComponent {
         runHQLButton.setFocusable(false);
         runHQLButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         runHQLButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        runHQLButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                runHQLButtonActionPerformed(evt);
+            }
+        });
         toolBar.add(runHQLButton);
 
         toolbarSeparator1.setSeparatorSize(new java.awt.Dimension(300, 10));
@@ -224,7 +248,7 @@ public final class HQLEditorTopComponent extends TopComponent {
             .add(containerPanelLayout.createSequentialGroup()
                 .add(toolBar2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(executionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE))
+                .add(executionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE))
         );
 
         splitPane.setRightComponent(containerPanel);
@@ -258,6 +282,22 @@ private void sqlToggleButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GE
         resultToggleButton.setSelected(false);
     }
 }//GEN-LAST:event_sqlToggleButtonItemStateChanged
+
+private void runHQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runHQLButtonActionPerformed
+    try {
+        FileObject selectedConfigFile = (FileObject) hibernateConfigMap.get(hibernateConfigurationComboBox.getSelectedItem());
+
+        HQLResult result = controller.executeHQLQuery(hqlEditor.getText(),
+                selectedConfigFile);
+        if (result.getResults() != null) {
+            logger.info(result.getResults().toString());
+        } else {
+            System.out.println(" result is null");
+        }
+    } catch (Exception ex) {
+        Exceptions.printStackTrace(ex);//GEN-LAST:event_runHQLButtonActionPerformed
+    }
+}//GEN-LAST:event_runHQLButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel containerPanel;
     private javax.swing.JPanel executionPanel;
@@ -278,7 +318,6 @@ private void sqlToggleButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GE
     private javax.swing.JToolBar.Separator toolbarSeparator;
     private javax.swing.JToolBar.Separator toolbarSeparator1;
     // End of variables declaration//GEN-END:variables
-
     @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;

@@ -42,12 +42,22 @@
 package org.openide.loaders;
 
 
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.image.ImageObserver;
 import org.openide.filesystems.*;
 import java.io.IOException;
 import java.util.*;
 import org.netbeans.junit.*;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.net.URL;
+import javax.swing.Action;
 import junit.framework.Test;
+import org.openide.actions.EditAction;
+import org.openide.nodes.Node;
+import org.openide.util.Utilities;
 
 /** Check what can be done when registering loaders in layer.
  * @author Jaroslav Tulach
@@ -93,6 +103,20 @@ public class DataLoaderInLayerTest extends NbTestCase {
             }
         }
     }
+    private static <F extends DataObject.Factory> void addRemove(String mime, F factory, boolean add) throws IOException {
+        String res = "Loaders/" + mime + "/Factories/" + factory.getClass().getSimpleName().replace('.', '-') + ".instance";
+        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        if (add) {
+            FileObject fo = FileUtil.createData(root, res);
+            fo.setAttribute("instanceCreate", factory);
+            assertSame("No serialization, just memory fs is used", factory, fo.getAttribute("instanceCreate"));
+        } else {
+            FileObject fo = root.getFileObject(res);
+            if (fo != null) {
+                fo.delete();
+            }
+        }
+    }
     
     public void testSimpleGetChildren() throws Exception {
         DataLoader l = DataLoader.getLoader(SimpleUniFileLoader.class);
@@ -122,6 +146,92 @@ public class DataLoaderInLayerTest extends NbTestCase {
             assertEquals(SimpleDataObject.class, dob.getClass());
         } finally {
             addRemove("text/plain", SimpleFactory.class, false);
+        }
+    }
+
+    public void testFactoryInstanceRegistrationWorksAsWell() throws Exception {
+        URL u = DataLoaderInLayerTest.class.getResource("/org/openide/loaders/saveAll.gif");
+        Image img = Toolkit.getDefaultToolkit().createImage(u);
+        
+        DataObject.Factory f = DataLoaderPool.factory(SimpleDataObject.class, "text/simplefactory", img);
+        
+        addRemove("text/plain", f, true);
+        try {
+            FileSystem lfs = createFS("folderF/file.simple");
+            FileObject fo = lfs.findResource("folderF");
+            DataFolder df = DataFolder.findFolder(fo);
+            DataObject[] arr = df.getChildren();
+            assertEquals("One object", 1, arr.length);
+            DataObject dob = arr[0];
+            assertEquals(SimpleDataObject.class, dob.getClass());
+            
+            FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+            FileObject edit = FileUtil.createData(root, "/Loaders/text/simplefactory/Actions/org-openide-actions-EditAction.instance");
+            
+            Node node = dob.getNodeDelegate();
+            Action[] actions = node.getActions(true);
+            assertEquals("One action is present: " + Arrays.asList(actions), 1, actions.length);
+            assertEquals("It is the edit one", EditAction.class, actions[0].getClass());
+            
+            assertSame("Icon is propagated for open", img, node.getOpenedIcon(0));
+            assertSame("Icon is propagated", img, node.getIcon(0));
+            
+            Reference<DataFolder> ref = new WeakReference<DataFolder>(df);
+            df = null;
+            assertGC("Folder can go away", ref);
+            
+            df = DataFolder.findFolder(fo);
+            arr = df.getChildren();
+            assertEquals("One object", 1, arr.length);
+            assertEquals("Object is the same", dob, arr[0]);
+        } finally {
+            addRemove("text/plain", f, false);
+        }
+    }
+    
+    public void testFactoryInstanceRegistrationWorksAsWellNowFromLayer() throws Exception {
+        URL u = DataLoaderInLayerTest.class.getResource("/org/openide/loaders/saveAll.gif");
+        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject instance = FileUtil.createData(root, "TestLoaders/text/L.instance");
+        instance.setAttribute("dataObjectClass", SimpleDataObject.class.getName());
+        instance.setAttribute("mimeType", "text/simplefactory");
+        instance.setAttribute("SystemFileSystem.icon", u);
+        
+        
+        Image img = Utilities.loadImage("org/openide/loaders/saveAll.gif");
+        
+        DataObject.Factory f = DataLoaderPool.factory(instance);
+        
+        addRemove("text/plain", f, true);
+        try {
+            FileSystem lfs = createFS("folderQ/file.simple");
+            FileObject fo = lfs.findResource("folderQ");
+            DataFolder df = DataFolder.findFolder(fo);
+            DataObject[] arr = df.getChildren();
+            assertEquals("One object", 1, arr.length);
+            DataObject dob = arr[0];
+            assertEquals(SimpleDataObject.class, dob.getClass());
+            
+            FileObject edit = FileUtil.createData(root, "/Loaders/text/simplefactory/Actions/org-openide-actions-EditAction.instance");
+            
+            Node node = dob.getNodeDelegate();
+            Action[] actions = node.getActions(true);
+            assertEquals("One action is present: " + Arrays.asList(actions), 1, actions.length);
+            assertEquals("It is the edit one", EditAction.class, actions[0].getClass());
+            
+            assertImage("Icon is propagated for open", img, node.getOpenedIcon(0));
+            assertImage("Icon is propagated", img, node.getIcon(0));
+            
+            Reference<DataFolder> ref = new WeakReference<DataFolder>(df);
+            df = null;
+            assertGC("Folder can go away", ref);
+            
+            df = DataFolder.findFolder(fo);
+            arr = df.getChildren();
+            assertEquals("One object", 1, arr.length);
+            assertEquals("Object is the same", dob, arr[0]);
+        } finally {
+            addRemove("text/plain", f, false);
         }
     }
 
@@ -311,5 +421,25 @@ public class DataLoaderInLayerTest extends NbTestCase {
             supp.remove (l);
         }        
     }
-    
+
+    private static void assertImage(String msg, Image img1, Image img2) {
+        ImageObserver obs = new ImageObserver() {
+            public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
+                fail("Already updated, hopefully");
+                return true;
+            }
+        };
+        
+        int h, w;
+        assertEquals("Width: " + msg, w = img1.getWidth(obs), img2.getWidth(obs));
+        assertEquals("Height: " + msg, h = img1.getHeight(obs), img2.getHeight(obs));
+        
+        
+        for (int i = 0; i < w; i++) {
+            for (int j = 0; j < h; j++) {
+                //assertEquals("Pixel " + i + ", " + j + " same: " + msg, img1.get)
+            }
+        }
+        
+    }
 }

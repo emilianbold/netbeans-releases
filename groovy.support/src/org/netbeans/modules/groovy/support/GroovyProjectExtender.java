@@ -48,9 +48,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -111,15 +115,18 @@ public class GroovyProjectExtender {
     private boolean addClasspath() {
         Library groovyAllLib = LibraryManager.getDefault().getLibrary("groovy-all"); // NOI18N
         if (groovyAllLib != null) {
-            FileObject projectDir = project.getProjectDirectory();
             try {
-                ProjectClassPathModifier.addLibraries(new Library[]{groovyAllLib}, projectDir, ClassPath.COMPILE);
+                Sources sources = ProjectUtils.getSources(project);
+                SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                for (SourceGroup sourceGroup : sourceGroups) {
+                    ProjectClassPathModifier.addLibraries(new Library[]{groovyAllLib}, sourceGroup.getRootFolder(), ClassPath.COMPILE);
+                }
                 return true;
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (UnsupportedOperationException ex) {
                 Exceptions.printStackTrace(ex);
-            }
+        }
         }
         return false;
     }

@@ -47,6 +47,8 @@ public class OperatorComponentContainerImpl extends ComponentImpl implements Ope
                          child = new InvokeStreamOperatorComponentImpl(getModel(), childEl);
                      } else if  (type.endsWith("ExternalTablePollingStream")) {
                          child = new ExternalTablePollingStreamOperatorComponentImpl(getModel(), childEl);
+                     } else if  (type.endsWith("ReplayStream")) {
+                         child = new ReplayStreamOperatorComponentImpl(getModel(), childEl);
                      } else {
                         child = new OperatorComponentImpl(getModel(), childEl);
                      }

@@ -22,7 +22,7 @@ org.netbeans.modules.websvc.wsitmodelext.rm.RMMSFactories$FlowControlFactory
 org.netbeans.modules.websvc.wsitmodelext.rm.RMMSFactories$MaxReceiveBufferSizeFactory
 org.netbeans.modules.websvc.wsitmodelext.rm.RMFactories$RMAssertionFactory
 org.netbeans.modules.websvc.wsitmodelext.rm.RMFactories$AcknowledgementIntervalFactory
-org.netbeans.modules.websvc.wsitmodelext.rm.RMFactories$InactivityTimeoutFactory
+org.netbeans.modules.websvc.wsitmodelext.rm.RMMS13Factories$InactivityTimeoutFactory
 org.netbeans.modules.websvc.wsitmodelext.rm.RMFactories$DeliveryAssuranceFactory
 org.netbeans.modules.websvc.wsitmodelext.rm.RMFactories$ExactlyOnceFactory
 org.netbeans.modules.websvc.wsitmodelext.rm.RMFactories$AtMostOnceFactory
