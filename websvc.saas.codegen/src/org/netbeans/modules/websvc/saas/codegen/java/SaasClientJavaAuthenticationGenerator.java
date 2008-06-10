@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
+import org.netbeans.modules.websvc.saas.codegen.*;
 import com.sun.source.tree.ClassTree;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -55,24 +56,23 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
-import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.HttpBasicAuthentication;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseGenerator;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseGenerator.Login;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseGenerator.Method;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseGenerator.Token;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseGenerator.Token.Prompt;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseTemplates;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseTemplates.Template;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SignedUrlAuthentication;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean;
-import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
+import org.netbeans.modules.websvc.saas.codegen.Constants.SaasAuthenticationType;
+import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.HttpBasicAuthentication;
+import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SessionKeyAuthentication;
+import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseGenerator;
+import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseGenerator.Login;
+import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseGenerator.Method;
+import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseGenerator.Token;
+import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseGenerator.Token.Prompt;
+import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseTemplates;
+import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseTemplates.Template;
+import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SignedUrlAuthentication;
+import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
+import org.netbeans.modules.websvc.saas.codegen.model.RestClientSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
-import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
+import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -82,60 +82,18 @@ import org.openide.loaders.DataObject;
  *
  * @author nam
  */
-public class SaasAuthenticationGenerator {
-
-    private SaasBean bean = null;
-    private String loginArgs;
-    private FileObject serviceFolder;
-    private Object saasAuthFile;
-    private JavaSource saasAuthJS;
-    private List<ParameterInfo> authMethodParams;
+public class SaasClientJavaAuthenticationGenerator extends SaasClientAuthenticationGenerator {
+    
     private JavaSource loginJS;
-    private FileObject loginFile;
     private JavaSource callbackJS;
+    private JavaSource saasAuthJS;
+    private FileObject saasAuthFile;
+    private FileObject loginFile;
     private FileObject callbackFile;
-    private Project project;
-
-    public SaasAuthenticationGenerator(SaasBean bean,
-            Project project) throws IOException {
-        this.bean = bean;
-        this.project = project;
-    }
-
-    public SaasBean getBean() {
-        return bean;
-    }
     
-    public Project getProject() {
-        return project;
-    }
-    
-    public String getLoginArguments() {
-        return loginArgs;
-    }
-    
-    public void setLoginArguments(String loginArgs) {
-        this.loginArgs = loginArgs;
-    }
-    
-    public List<ParameterInfo> getAuthenticatorMethodParameters() {
-        return authMethodParams;
-    }
-    
-    public void setAuthenticatorMethodParameters(List<ParameterInfo> authMethodParams) {
-        this.authMethodParams = authMethodParams;
-    }
-    
-    public FileObject getSaasServiceFolder() throws IOException {
-        return serviceFolder;
-    }
-    
-    public void setSaasServiceFolder(FileObject serviceFolder) throws IOException {
-        this.serviceFolder = serviceFolder;
-    }
-    
-    public SaasAuthenticationType getAuthenticationType() throws IOException {
-        return getBean().getAuthenticationType();
+    public SaasClientJavaAuthenticationGenerator(SaasBean bean,
+            Project project) {
+        super(bean, project);
     }
 
     /* 
@@ -214,16 +172,16 @@ public class SaasAuthenticationGenerator {
                 String authTemplate = null;
                 SaasAuthenticationType authType = getBean().getAuthenticationType();
                 if (authType == SaasAuthenticationType.API_KEY) {
-                    authTemplate = AbstractGenerator.TEMPLATES_SAAS + 
+                    authTemplate = SaasClientCodeGenerator.TEMPLATES_SAAS + 
                             getAuthenticationType().getClassIdentifier();
                 } else if (authType == SaasAuthenticationType.HTTP_BASIC) {
-                    authTemplate = AbstractGenerator.TEMPLATES_SAAS + 
+                    authTemplate = SaasClientCodeGenerator.TEMPLATES_SAAS + 
                             getAuthenticationType().getClassIdentifier();
                 } else if (authType == SaasAuthenticationType.SIGNED_URL) {
-                    authTemplate = AbstractGenerator.TEMPLATES_SAAS + 
+                    authTemplate = SaasClientCodeGenerator.TEMPLATES_SAAS + 
                             getAuthenticationType().getClassIdentifier();
                 } else if (authType == SaasAuthenticationType.SESSION_KEY) {
-                    authTemplate = AbstractGenerator.TEMPLATES_SAAS + 
+                    authTemplate = SaasClientCodeGenerator.TEMPLATES_SAAS + 
                             getAuthenticationType().getClassIdentifier();
                 }
                 if (authTemplate != null) {
@@ -238,11 +196,11 @@ public class SaasAuthenticationGenerator {
             }
         } else {
             UseTemplates useTemplates = null;
-            if(bean.getAuthentication() instanceof SessionKeyAuthentication) {
-                SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) bean.getAuthentication();
+            if(getBean().getAuthentication() instanceof SessionKeyAuthentication) {
+                SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) getBean().getAuthentication();
                 useTemplates = sessionKey.getUseTemplates();
-            } else if(bean.getAuthentication() instanceof HttpBasicAuthentication) {
-                HttpBasicAuthentication httpBasic = (HttpBasicAuthentication) bean.getAuthentication();
+            } else if(getBean().getAuthentication() instanceof HttpBasicAuthentication) {
+                HttpBasicAuthentication httpBasic = (HttpBasicAuthentication) getBean().getAuthentication();
                 useTemplates = httpBasic.getUseTemplates();
             }
             if(useTemplates != null) {
@@ -293,16 +251,16 @@ public class SaasAuthenticationGenerator {
                 }
             } else {
                 try {
-                    prof = Util.createDataObjectFromTemplate(AbstractGenerator.SAAS_SERVICES + "/" +
+                    prof = Util.createDataObjectFromTemplate(SaasClientCodeGenerator.SAAS_SERVICES + "/" +
                             getBean().getGroupName() + "/" + getBean().getDisplayName() + "/profile.properties", targetFolder, profileName);// NOI18n
                 } catch (Exception ex1) {
                     try {
-                        prof = Util.createDataObjectFromTemplate(AbstractGenerator.SAAS_SERVICES + "/" +
+                        prof = Util.createDataObjectFromTemplate(SaasClientCodeGenerator.SAAS_SERVICES + "/" +
                                 getBean().getGroupName() + "/profile.properties",
                                 targetFolder, profileName);// NOI18n
                     } catch (Exception ex2) {
                         try {
-                            prof = Util.createDataObjectFromTemplate(AbstractGenerator.TEMPLATES_SAAS +
+                            prof = Util.createDataObjectFromTemplate(SaasClientCodeGenerator.TEMPLATES_SAAS +
                                     getBean().getAuthenticationType().value() +
                                     ".properties", targetFolder, profileName);// NOI18n
                         } catch (Exception ex3) {//ignore
@@ -336,13 +294,13 @@ public class SaasAuthenticationGenerator {
     /**
      *  Return target and generated file objects
      */
-    protected void modifyAuthenticationClass() throws IOException {
-        if (bean.getAuthenticationType() != SaasAuthenticationType.SESSION_KEY) {
+    public void modifyAuthenticationClass() throws IOException {
+        if (getBean().getAuthenticationType() != SaasAuthenticationType.SESSION_KEY) {
             return;
         }
         Modifier[] modifiers = Constants.PUBLIC_STATIC;
         Object[] throwList = null;
-        SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) bean.getAuthentication();
+        SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) getBean().getAuthentication();
         if (sessionKey.getUseGenerator() != null) {
             UseGenerator useGenerator = sessionKey.getUseGenerator();
             //create getSessionKey() method
@@ -405,7 +363,7 @@ public class SaasAuthenticationGenerator {
     /**
      *  Return target and generated file objects
      */
-    protected void modifyAuthenticationClass(final String comment, final Modifier[] modifiers,
+    public void modifyAuthenticationClass(final String comment, final Modifier[] modifiers,
             final Object returnType, final String name, final String[] parameters, final Object[] paramTypes,
             final Object[] throwList, final String bodyText)
             throws IOException {
@@ -429,7 +387,7 @@ public class SaasAuthenticationGenerator {
         result.commit();
     }
 
-    protected String getLoginBody(SaasBean bean,
+    public String getLoginBody(SaasBean bean,
             String groupName, String paramVariableName) throws IOException {
         if (getBean().isDropTargetWeb()) {
             if (getBean().getAuthenticationType() != SaasAuthenticationType.SESSION_KEY) {
@@ -438,7 +396,7 @@ public class SaasAuthenticationGenerator {
             return Util.createSessionKeyLoginBodyForWeb(bean, groupName, paramVariableName);
         }
         String methodBody = "";
-        SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) bean.getAuthentication();
+        SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) getBean().getAuthentication();
         UseGenerator useGenerator = sessionKey.getUseGenerator();
         if (useGenerator != null) {
             Login login = useGenerator.getLogin();
@@ -464,12 +422,12 @@ public class SaasAuthenticationGenerator {
         return methodBody;
     }
 
-    protected String getLogoutBody() {
+    public String getLogoutBody() {
         String methodBody = "";
         return methodBody;
     }
 
-    protected String getTokenBody(SaasBean bean,
+    public String getTokenBody(SaasBean bean,
             String groupName, String paramVariableName, String saasServicePkgName) throws IOException {
         if (getBean().isDropTargetWeb()) {
             if (getBean().getAuthenticationType() != SaasAuthenticationType.SESSION_KEY) {
@@ -480,7 +438,7 @@ public class SaasAuthenticationGenerator {
         }
         String authFileName = getBean().getAuthorizationFrameClassName();
         String methodBody = "";
-        SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) bean.getAuthentication();
+        SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) getBean().getAuthentication();
         UseGenerator useGenerator = sessionKey.getUseGenerator();
         if (useGenerator != null) {
             Token token = useGenerator.getToken();
@@ -528,12 +486,12 @@ public class SaasAuthenticationGenerator {
                         }
                     }
                     String href = method.getHref();
-                    if (href != null && bean instanceof WadlSaasBean) {
+                    if (href != null && bean instanceof RestClientSaasBean) {
                         org.netbeans.modules.websvc.saas.model.wadl.Method wadlMethod =
                                 SaasUtil.wadlMethodFromIdRef(
-                                ((WadlSaasBean)bean).getMethod().getSaas().getWadlModel(), href);
+                                ((RestClientSaasBean)bean).getMethod().getSaas().getWadlModel(), href);
                         if (wadlMethod != null) {
-                            ArrayList<ParameterInfo> params = ((WadlSaasBean)bean).findWadlParams(wadlMethod);
+                            ArrayList<ParameterInfo> params = ((RestClientSaasBean)bean).findWadlParams(wadlMethod);
                             if (params != null &&
                                     params.size() > 0) {
                                 queryParamsCode = Util.getHeaderOrParameterDefinition(params, paramVariableName, false);
@@ -546,8 +504,8 @@ public class SaasAuthenticationGenerator {
                 methodBody += "        " + queryParamsCode;
 
                 String url = "";
-                if (bean instanceof WadlSaasBean) {
-                    url = ((WadlSaasBean) bean).getUrl();
+                if (bean instanceof RestClientSaasBean) {
+                    url = ((RestClientSaasBean) bean).getUrl();
                 }
                 methodBody += "             " + Constants.REST_CONNECTION + " conn = new " + Constants.REST_CONNECTION + "(\"" + url + "\"";
                 if (!queryParamsCode.trim().equals("")) {
@@ -607,7 +565,7 @@ public class SaasAuthenticationGenerator {
         return methodBody;
     }
 
-    private String getSignParamUsage(List<ParameterInfo> signParams, String groupName) {
+    public String getSignParamUsage(List<ParameterInfo> signParams, String groupName) {
         return Util.getSignParamUsage(signParams, groupName, 
                 getBean().isDropTargetWeb());
     }

@@ -39,16 +39,16 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.saas.codegen.java.model;
+package org.netbeans.modules.websvc.saas.codegen.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
-import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
-import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
+import org.netbeans.modules.websvc.saas.codegen.Constants.HttpMethodType;
+import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo.ParamStyle;
+import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 
@@ -57,12 +57,12 @@ import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
  * 
  * @author nam
  */
-public class WsdlSaasBean extends SaasBean {
+public class SoapClientSaasBean extends SaasBean {
     
-    private JaxwsOperationInfo[] jaxwsInfos;
+    private SoapClientOperationInfo[] jaxwsInfos;
     private WsdlSaasMethod m;
     
-    public WsdlSaasBean(WsdlSaasMethod m, Project project) {
+    public SoapClientSaasBean(WsdlSaasMethod m, Project project) {
         this(m.getSaas(), Util.deriveResourceName(m.getName()), 
                 toJaxwsOperationInfos(m, project));
     }
@@ -74,7 +74,7 @@ public class WsdlSaasBean extends SaasBean {
      * @param jaxwsInfos array of JAXWS info objects.
      * @param packageName name of package
      */ 
-    private WsdlSaasBean(Saas saas, String name, JaxwsOperationInfo[] jaxwsInfos) {
+    private SoapClientSaasBean(Saas saas, String name, SoapClientOperationInfo[] jaxwsInfos) {
         super(saas, name, 
               null,
               Util.deriveUriTemplate(jaxwsInfos[jaxwsInfos.length-1].getOperationName()),
@@ -84,18 +84,18 @@ public class WsdlSaasBean extends SaasBean {
         this.jaxwsInfos = jaxwsInfos;
     }
 
-    private static JaxwsOperationInfo[] toJaxwsOperationInfos(WsdlSaasMethod m, 
+    private static SoapClientOperationInfo[] toJaxwsOperationInfos(WsdlSaasMethod m, 
             Project project) {
-        List<JaxwsOperationInfo> infos = new ArrayList<JaxwsOperationInfo>();
-        infos.add(new JaxwsOperationInfo(m, project));
+        List<SoapClientOperationInfo> infos = new ArrayList<SoapClientOperationInfo>();
+        infos.add(new SoapClientOperationInfo(m, project));
         
-        return infos.toArray(new JaxwsOperationInfo[infos.size()]);
+        return infos.toArray(new SoapClientOperationInfo[infos.size()]);
     }
     
     protected List<ParameterInfo> initInputParameters() {
         List<ParameterInfo> inputParams = new ArrayList<ParameterInfo>();
         
-        for(JaxwsOperationInfo info : jaxwsInfos) {
+        for(SoapClientOperationInfo info : jaxwsInfos) {
             String[] names = info.getInputParameterNames();
             Class[] types = info.getInputParameterTypes();
             
@@ -118,14 +118,14 @@ public class WsdlSaasBean extends SaasBean {
         return types;
     }
     
-    public JaxwsOperationInfo[] getOperationInfos() {
+    public SoapClientOperationInfo[] getOperationInfos() {
         return jaxwsInfos;
     }
 
     @Override
     public List<ParameterInfo> getHeaderParameters() {
         HashMap<QName,ParameterInfo> params = new HashMap<QName,ParameterInfo>();
-        for (JaxwsOperationInfo info : getOperationInfos()) {
+        for (SoapClientOperationInfo info : getOperationInfos()) {
             for (ParameterInfo pinfo : info.getSoapHeaderParameters()) {
                 params.put(pinfo.getQName(), pinfo);
             }
@@ -154,7 +154,7 @@ public class WsdlSaasBean extends SaasBean {
                String.class.getName().equals(lastOperationInfo().getOperation().getReturnTypeName());
     }
     
-    public JaxwsOperationInfo lastOperationInfo() {
+    public SoapClientOperationInfo lastOperationInfo() {
         return getOperationInfos()[getOperationInfos().length-1];
     }
 

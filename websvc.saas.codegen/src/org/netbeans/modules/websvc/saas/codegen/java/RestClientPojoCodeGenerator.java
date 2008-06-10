@@ -43,7 +43,6 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 import com.sun.source.tree.ClassTree;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -51,65 +50,70 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
+import javax.swing.text.Document;
 import javax.xml.namespace.QName;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.websvc.saas.codegen.java.Constants.DropFileType;
-import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
-import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
-import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
-import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamFilter;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication;
-import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
+import org.netbeans.modules.websvc.saas.codegen.Constants;
+import org.netbeans.modules.websvc.saas.codegen.Constants.DropFileType;
+import org.netbeans.modules.websvc.saas.codegen.Constants.HttpMethodType;
+import org.netbeans.modules.websvc.saas.codegen.Constants.SaasAuthenticationType;
+import org.netbeans.modules.websvc.saas.codegen.SaasClientCodeGenerator;
 import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.support.SourceGroupSupport;
-import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
+import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.model.RestClientSaasBean;
+import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SessionKeyAuthentication;
+import org.netbeans.modules.websvc.saas.codegen.util.Util;
+import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.openide.filesystems.FileObject;
 
 /**
- * Code generator for REST services wrapping WSDL-based web service.
+ * Code generator for Accessing Saas services.
  *
  * @author nam
  */
-public class JaxRsCodeGenerator extends SaasCodeGenerator {
+public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
 
+    private JavaSource targetSource;
     private FileObject saasServiceFile = null;
     private JavaSource saasServiceJS = null;
     private FileObject serviceFolder = null;
     private DropFileType dropFileType;
-    private JaxRsAuthenticationGenerator authGen;
+    private SaasClientJavaAuthenticationGenerator authGen;
 
-    public JaxRsCodeGenerator(JTextComponent targetComponent,
-            FileObject targetFile, WadlSaasMethod m) throws IOException {
-        this(targetComponent, targetFile, new WadlSaasBean(m));
+    public RestClientPojoCodeGenerator() {
+        setDropFileType(Constants.DropFileType.JAVA_CLIENT);
     }
-
-    public JaxRsCodeGenerator(JTextComponent targetComponent,
-            FileObject targetFile, WadlSaasBean bean) throws IOException {
-        super(targetComponent, targetFile, bean);
+    
+    @Override
+    public void init(SaasMethod m, Document doc) throws IOException {
+        super.init(m, doc);
+        setBean(new RestClientSaasBean((WadlSaasMethod) m)); 
+        targetSource = JavaSource.forFileObject(getTargetFile());
+        String packageName = JavaSourceHelper.getPackageName(targetSource);
+        getBean().setPackageName(packageName);
+        
         saasServiceFile = SourceGroupSupport.findJavaSourceFile(getProject(),
                 getBean().getSaasServiceName());
         if (saasServiceFile != null) {
             saasServiceJS = JavaSource.forFileObject(saasServiceFile);
         }
 
-        this.authGen = new JaxRsAuthenticationGenerator(bean, getProject());
+        this.authGen = new SaasClientJavaAuthenticationGenerator(getBean(),getProject());
         this.authGen.setLoginArguments(getLoginArguments());
         this.authGen.setAuthenticatorMethodParameters(getAuthenticatorMethodParameters());
         this.authGen.setSaasServiceFolder(getSaasServiceFolder());
-
+    }
+    
+    protected JavaSource getTargetSource() {
+        return this.targetSource;
     }
 
-    @Override
-    public WadlSaasBean getBean() {
-        return (WadlSaasBean) bean;
-    }
-
-    public JaxRsAuthenticationGenerator getAuthenticationGenerator() {
+    public SaasClientJavaAuthenticationGenerator getAuthenticationGenerator() {
         return authGen;
     }
 
@@ -130,13 +134,19 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         return dropFileType;
     }
 
-    void setDropFileType(DropFileType dropFileType) {
+    public void setDropFileType(DropFileType dropFileType) {
         this.dropFileType = dropFileType;
     }
-
+    
+    @Override
+    public RestClientSaasBean getBean() {
+        return (RestClientSaasBean) super.getBean();
+    }
+    
     @Override
     protected void preGenerate() throws IOException {
         super.preGenerate();
+        addJaxbLib();
         createRestConnectionFile(getProject());
 
         if (getBean().getMethod().getSaas().getLibraryJars().size() > 0) {
@@ -144,8 +154,87 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         }
     }
 
+    public boolean canAccept(SaasMethod method, Document doc) {
+        if (method instanceof WadlSaasMethod && Util.isJava(doc)) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public Set<FileObject> generate() throws IOException {
+
+        preGenerate();
+
+        //Create Authenticator classes
+        getAuthenticationGenerator().createAuthenticatorClass();
+
+        //Create Authorization classes
+        getAuthenticationGenerator().createAuthorizationClasses();
+
+        createSaasServiceClass();
+        addSaasServiceMethod();
+        addImportsToSaasService();
+
+        //Modify Authenticator class
+        getAuthenticationGenerator().modifyAuthenticationClass();
+
+        //execute this block before insertSaasServiceAccessCode() 
+        setJaxbWrapper();
+        //No need to check scanning, since we are not locking document
+        //Util.checkScanning();
+        insertSaasServiceAccessCode(isInBlock(getTargetDocument()));
+        addImportsToTargetFile();
+
+        finishProgressReporting();
+
+        return new HashSet<FileObject>(Collections.EMPTY_LIST);
+    }
+
+    private void setJaxbWrapper() {
+        List<QName> repTypesFromWadl = getBean().findRepresentationTypes(getBean().getMethod());
+        if (!repTypesFromWadl.isEmpty()) {
+            QName qName = repTypesFromWadl.get(0);
+            String nsUri = qName.getNamespaceURI();
+            getBean().setOutputWrapperName(qName.getLocalPart());
+            getBean().setOutputWrapperPackageName(
+                    (getBean().getGroupName() + "." +
+                    getBean().getDisplayName()).toLowerCase() +
+                    "." + nsUri.substring(nsUri.lastIndexOf(":") + 1).toLowerCase());
+        }
+    }
+
+    protected void addJaxbLib() throws IOException {
+        Util.addJaxbLib(getProject());
+    }
+
+    @Override
     protected String getCustomMethodBody() throws IOException {
-        return "";
+        String paramUse = "";
+        String paramDecl = "";
+
+        //Evaluate parameters (query(not fixed or apikey), header, template,...)
+        String indent = "        ";
+        String indent2 = "             ";
+        List<ParameterInfo> filterParams = getServiceMethodParameters();
+        paramUse += Util.getHeaderOrParameterUsage(filterParams);
+        paramDecl += getHeaderOrParameterDeclaration(filterParams, indent2);
+
+        String methodBody = indent + "try {\n";
+        methodBody += paramDecl + "\n";
+        methodBody += indent2 + REST_RESPONSE + " result = " + getBean().getSaasServiceName() +
+                "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
+        methodBody += Util.createPrintStatement(
+                getBean().getOutputWrapperPackageName(),
+                getBean().getOutputWrapperName(),
+                getDropFileType(),
+                getBean().getHttpMethod(),
+                getBean().canGenerateJAXBUnmarshaller(), indent2);
+        methodBody += indent + "} catch (Exception ex) {\n";
+        methodBody += indent2 + "ex.printStackTrace();\n";
+        methodBody += indent + "}\n";
+
+        return methodBody;
     }
 
     protected String getServiceMethodBody() throws IOException {
@@ -237,32 +326,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
     }
 
     protected List<ParameterInfo> getServiceMethodParameters() {
-        List<ParameterInfo> params = getBean().filterParametersByAuth(getBean().filterParameters(
-                new ParamFilter[]{ParamFilter.FIXED}));
-        HttpMethodType httpMethod = getBean().getHttpMethod();
-
-        if (httpMethod == HttpMethodType.PUT || httpMethod == HttpMethodType.POST) {
-
-            ParameterInfo contentTypeParam = Util.findParameter(getBean().getInputParameters(), Constants.CONTENT_TYPE);
-            Class contentType = InputStream.class;
-
-            if (contentTypeParam != null) {
-                if (!contentTypeParam.isFixed() && !params.contains(contentTypeParam)) {
-                    params.add(contentTypeParam);
-                } else {
-                    String value = findParamValue(contentTypeParam);
-                    if (value.equals("text/plain") || value.equals("application/xml") ||
-                            value.equals("text/xml")) {     //NOI18N
-
-                        contentType = String.class;
-                    }
-                }
-                if (!getBean().findInputRepresentations(getBean().getMethod()).isEmpty()) {
-                    params.add(new ParameterInfo(Constants.PUT_POST_CONTENT, contentType));
-                }
-            }
-        }
-        return params;
+        return Util.getJaxRsMethodParameters(getBean());
     }
 
     protected List<ParameterInfo> getAuthenticatorMethodParameters() {
@@ -308,7 +372,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
                 code += "return result;\n";
                 code += "}\n";
             }
-            insert(code, getTargetComponent(), true);
+            insert(code, true);
         } catch (BadLocationException ex) {
             throw new IOException(ex.getMessage());
         }
@@ -323,7 +387,8 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
             String pkg = getBean().getSaasServicePackageName();
             FileObject targetFolder = SourceGroupSupport.getFolderForPackage(srcGrps[0], pkg, true);
             saasServiceJS = JavaSourceHelper.createJavaSource(
-                    getBean().getSaasServiceTemplate(), targetFolder, pkg, getBean().getSaasServiceName());
+                    getBean().getSaasServiceTemplate()+"."+Constants.JAVA_EXT, 
+                        targetFolder, pkg, getBean().getSaasServiceName());
             Set<FileObject> files = new HashSet<FileObject>(saasServiceJS.getFileObjects());
             if (files != null && files.size() > 0) {
                 saasServiceFile = files.iterator().next();

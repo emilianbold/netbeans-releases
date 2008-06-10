@@ -40,37 +40,40 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
+import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
-import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
-import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
-import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
+import javax.swing.text.Document;
+import org.netbeans.modules.websvc.saas.codegen.Constants;
+import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
-import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.websvc.saas.codegen.util.Util;
 
 /**
  * Code generator for Accessing Saas services.
  *
  * @author ayubskhan
  */
-public class JaxRsJspCodeGenerator extends JaxRsServletCodeGenerator {
+public class RestClientJspCodeGenerator extends RestClientServletCodeGenerator {
 
     private Map<String, String> jspSpecialNamesMap = new HashMap<String, String>();
-    
-    public JaxRsJspCodeGenerator(JTextComponent targetComponent,
-            FileObject targetFile, WadlSaasMethod m) throws IOException {
-        super(targetComponent, targetFile, m);
+
+    public RestClientJspCodeGenerator() {
+        setDropFileType(Constants.DropFileType.JSP);
         jspSpecialNamesMap.put("page", "page1");
+    }
+
+    @Override
+    public boolean canAccept(SaasMethod method, Document doc) {
+        if (method instanceof WadlSaasMethod && Util.isJsp(doc)) {
+            return true;
+        }
+        return false;
     }
     
     /**
@@ -80,37 +83,40 @@ public class JaxRsJspCodeGenerator extends JaxRsServletCodeGenerator {
     protected void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
         try {
             String code = "";
-            code += "\n<%@ page import=\""+AbstractGenerator.REST_CONNECTION_PACKAGE+
-                    ".*, "+getBean().getSaasServicePackageName()+".*\" %>";
+            code += "\n<%@ page import=\"" + REST_CONNECTION_PACKAGE +
+                    ".*, " + getBean().getSaasServicePackageName() + ".*\" %>";
             code += "\n<%\n"; // NOI18n
-            code += getCustomMethodBody()+"\n";
+
+            code += getCustomMethodBody() + "\n";
             code += "%>\n";// NOI18n
-            insert(code, getTargetComponent(), true);
+
+            insert(code, true);
         } catch (BadLocationException ex) {
             throw new IOException(ex.getMessage());
         }
     }
-    
+
     @Override
     protected String getCustomMethodBody() throws IOException {
         String paramUse = "";
         String paramDecl = "";
         String indent2 = "                 ";
-        
+
         //Evaluate parameters (query(not fixed or apikey), header, template,...)
         List<ParameterInfo> filterParams = renameJspParameterNames(getServiceMethodParameters());//includes request, response also
+
         paramUse += Util.getHeaderOrParameterUsage(filterParams);
         filterParams = filterJspParameters(super.getServiceMethodParameters());
         filterParams = renameJspParameterNames(filterParams);
         paramDecl += getHeaderOrParameterDeclaration(filterParams);
         return getCustomMethodBody(paramDecl, paramUse, indent2);
     }
-    
+
     private List<ParameterInfo> filterJspParameters(List<ParameterInfo> params) {
         List<ParameterInfo> returnParams = new ArrayList<ParameterInfo>();
-        for(ParameterInfo p:params) {
+        for (ParameterInfo p : params) {
             String name = getParameterName(p);
-            if(Constants.HTTP_SERVLET_REQUEST_VARIABLE.equals(name) || 
+            if (Constants.HTTP_SERVLET_REQUEST_VARIABLE.equals(name) ||
                     Constants.HTTP_SERVLET_RESPONSE_VARIABLE.equals(name)) {
                 continue;
             }
@@ -118,13 +124,13 @@ public class JaxRsJspCodeGenerator extends JaxRsServletCodeGenerator {
         }
         return returnParams;
     }
-    
+
     private List<ParameterInfo> renameJspParameterNames(List<ParameterInfo> params) {
         List<ParameterInfo> returnParams = new ArrayList<ParameterInfo>();
         int count = 1;
-        for(ParameterInfo p:params) {
+        for (ParameterInfo p : params) {
             String newName = jspSpecialNamesMap.get(getParameterName(p));
-            if(newName != null) {
+            if (newName != null) {
                 ParameterInfo clone = clone(p, newName, p.getType());
                 returnParams.add(clone);
             } else {
@@ -133,30 +139,31 @@ public class JaxRsJspCodeGenerator extends JaxRsServletCodeGenerator {
         }
         return returnParams;
     }
-    
+
     private ParameterInfo clone(ParameterInfo p, String name, Class type) {
         ParameterInfo clone = new ParameterInfo(name, type);
         clone.setFixed(p.getFixed());
         clone.setStyle(p.getStyle());
         clone.setDefaultValue(p.getDefaultValue());
-        clone.setIsApiKey(p.isApiKey());  
-        clone.setId(p.getId());  
+        clone.setIsApiKey(p.isApiKey());
+        clone.setId(p.getId());
         clone.setIsRequired(p.isRequired());
         clone.setIsRepeating(p.isRepeating());
         clone.setIsSessionKey(p.isSessionKey());
         clone.setOption(p.getOption());
         return clone;
     }
-    
+
     public String findSubresourceLocatorUriTemplate() {
         String subresourceLocatorUriTemplate = getAvailableUriTemplate();
         if (!subresourceLocatorUriTemplate.endsWith("/")) {
             //NOI18N
             subresourceLocatorUriTemplate += "/"; //NOI18N
+
         }
         return subresourceLocatorUriTemplate;
     }
-    
+
     private String getAvailableUriTemplate() {
         String uriTemplate = Inflector.getInstance().camelize(getBean().getShortName(), true);
         return uriTemplate;

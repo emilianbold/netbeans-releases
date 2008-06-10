@@ -40,20 +40,15 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
-import java.io.IOException;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
-
 /**
- * Code generator for REST services Authentication
+ * Code generator for REST services wrapping WSDL-based web service.
  *
- * @author ayubskhan
+ * @author nam
  */
-public class JaxRsAuthenticationGenerator extends SaasAuthenticationGenerator {
+public class SoapClientServletCodeGenerator extends SoapClientPojoCodeGenerator {
 
-    public JaxRsAuthenticationGenerator(WadlSaasBean bean,
-            Project project) throws IOException {
-        super(bean, project);
+    public SoapClientServletCodeGenerator() {
+        super();
     }
 
 }

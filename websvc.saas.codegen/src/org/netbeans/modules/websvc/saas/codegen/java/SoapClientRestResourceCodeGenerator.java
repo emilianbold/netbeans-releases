@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
+import org.netbeans.modules.websvc.saas.codegen.Constants;
+import org.netbeans.modules.websvc.saas.codegen.SaasClientCodeGenerator;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
@@ -52,25 +54,25 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.swing.text.JTextComponent;
+import javax.swing.text.Document;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
-import org.netbeans.modules.websvc.saas.codegen.java.model.JaxwsOperationInfo;
-import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
-import org.netbeans.modules.websvc.saas.codegen.java.model.WsdlSaasBean;
-import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
+import org.netbeans.modules.websvc.saas.codegen.model.SoapClientOperationInfo;
+import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.model.SoapClientSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.saas.codegen.util.Util;
+import org.netbeans.modules.websvc.saas.model.SaasMethod;
+import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import static com.sun.source.tree.Tree.Kind.*;
 
@@ -79,28 +81,41 @@ import static com.sun.source.tree.Tree.Kind.*;
  *
  * @author nam
  */
-public class JaxWsCodeGenerator extends SaasCodeGenerator {
+public class SoapClientRestResourceCodeGenerator extends SaasClientCodeGenerator {
 
     public static final String QNAME = "javax.xml.namespace.QName";
     public static final String WS_BINDING_PROVIDER = "com.sun.xml.ws.developer.WSBindingProvider";
     public static final String HEADERS = "com.sun.xml.ws.api.message.Headers";
-
     public static final String SET_HEADER_PARAMS = "setHeaderParameters";
+    
+    public SoapClientRestResourceCodeGenerator() {
+        super();
+    }
+    
+    @Override
+    public void init(SaasMethod m, Document doc) throws IOException {
+        super.init(m, doc);
+        setBean(new SoapClientSaasBean((WsdlSaasMethod) m, 
+                FileOwnerQuery.getOwner(NbEditorUtilities.getFileObject(doc))));
+        super.init(m, doc);
+    }
 
-    public JaxWsCodeGenerator(JTextComponent targetComponent, 
-            FileObject targetFile, WsdlSaasMethod m) throws IOException {
-        super(targetComponent, targetFile, new WsdlSaasBean(m, FileOwnerQuery.getOwner(targetFile)));
+    @Override
+    public SoapClientSaasBean getBean() {
+        return (SoapClientSaasBean) super.getBean();
+    }
+    
+    public boolean canAccept(SaasMethod method, Document doc) {
+        if (method instanceof WadlSaasMethod && Util.isJsp(doc)) {
+            return true;
+        }
+        return false;
     }
 
     @Override
     protected void preGenerate() throws IOException {
     }
-    
-    @Override
-    public WsdlSaasBean getBean() {
-        return (WsdlSaasBean) bean;
-    }
-
+        
     protected String getCustomMethodBody() throws IOException {
         return "";
     }
@@ -108,7 +123,7 @@ public class JaxWsCodeGenerator extends SaasCodeGenerator {
      /**
      * Add JAXWS client code for invoking the given operation at current position.
      */
-    protected String getWSInvocationCode(JaxwsOperationInfo info) throws IOException {
+    protected String getWSInvocationCode(SoapClientOperationInfo info) throws IOException {
         //Collect java names for invocation code
         final String serviceJavaName = info.getService().getJavaName();
         String portJavaName = info.getPort().getJavaName();
@@ -147,7 +162,7 @@ public class JaxWsCodeGenerator extends SaasCodeGenerator {
         } catch (NullPointerException npe) {
             // !PW notify failure to extract service information.
             npe.printStackTrace();
-            String message = NbBundle.getMessage(JaxWsCodeGenerator.class, 
+            String message = NbBundle.getMessage(SoapClientRestResourceCodeGenerator.class, 
                     "ERR_FailedUnexpectedWebServiceDescriptionPattern"); // NOI18N
             NotifyDescriptor desc = new NotifyDescriptor.Message(message, 
                     NotifyDescriptor.Message.ERROR_MESSAGE);

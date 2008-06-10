@@ -40,23 +40,34 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
-import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import java.io.IOException;
-import java.util.Collection;
-import javax.swing.text.JTextComponent;
-import org.openide.filesystems.FileObject;
+import javax.swing.text.BadLocationException;
 
 /**
- * Code generator for REST services wrapping WSDL-based web service.
+ * Code generator for Accessing Saas services.
  *
- * @author nam
+ * @author ayubskhan
  */
-public class JaxWsServletCodeGenerator extends JaxWsJavaClientCodeGenerator {
+public class SoapClientJspCodeGenerator extends SoapClientServletCodeGenerator {
 
-    public JaxWsServletCodeGenerator(JTextComponent targetComponent, 
-            FileObject targetFile, WsdlSaasMethod m) throws IOException {
-        super(targetComponent, targetFile, m);
+    public SoapClientJspCodeGenerator() {
+        super();
     }
 
-
+    /**
+     *  Insert the Saas client call
+     */
+    @Override
+    protected void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
+        try {
+            String code = "";
+            code = "\n<%\n"; // NOI18n
+            code += getCustomMethodBody()+"\n";
+            code += "%>\n";// NOI18n
+            insert(code, true);
+        } catch (BadLocationException ex) {
+            throw new IOException(ex.getMessage());
+        }
+    }
+    
 }

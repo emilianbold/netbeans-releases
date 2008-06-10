@@ -38,21 +38,22 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.websvc.saas.codegen.java;
+package org.netbeans.modules.websvc.saas.codegen.ui;
 
+import org.netbeans.modules.websvc.saas.codegen.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
-import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
-import org.netbeans.modules.websvc.saas.codegen.java.model.CustomSaasBean;
-import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamFilter;
-import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
-import org.netbeans.modules.websvc.saas.model.wadl.Method;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
+import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.model.SoapClientSaasBean;
+import org.netbeans.modules.websvc.saas.codegen.util.Util;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -64,70 +65,63 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-/** CustomEditorDrop
+/** SoapClientEditorDrop
  *
  * @author Ayub Khan, Nam Nguyen
  */
-public class CustomEditorDrop implements ActiveEditorDrop {
+public class SoapClientEditorDrop implements ActiveEditorDrop {
 
-    private CustomSaasMethod method;
+    private WsdlSaasMethod method;
     private FileObject targetFO;
     private RequestProcessor.Task generatorTask;
 
-    public CustomEditorDrop(CustomSaasMethod method) {
+    public SoapClientEditorDrop(WsdlSaasMethod method) {
         this.method = method;
     }
 
-    private boolean isAcceptTarget(JTextComponent targetComponent) {
-        Object mimeType = targetComponent.getDocument().getProperty("mimeType"); //NOI18N
-        if (mimeType != null && ("text/x-java".equals(mimeType) || "text/x-jsp".equals(mimeType))) { //NOI18N
-            return true;
-        }
-        return false;
-    }
-    
     public boolean handleTransfer(JTextComponent targetComponent) {
-        if(isAcceptTarget(targetComponent))
+        if(SaasClientCodeGenerationManager.canAccept(method, targetComponent.getDocument()))
             return doHandleTransfer(targetComponent);
         return false;
     }
     
     private boolean doHandleTransfer(final JTextComponent targetComponent) {
+        final Document targetDoc = targetComponent.getDocument();
         FileObject targetSource = NbEditorUtilities.getFileObject(targetComponent.getDocument());
         Project targetProject = FileOwnerQuery.getOwner(targetSource);
-        final String displayName = method.getName();
+        WsdlOperation op = method.getWsdlOperation();
+        final String displayName = op.getName();
         
         targetFO = getTargetFile(targetComponent);
 
         if (targetFO == null) {
             return false;
         }
-
+        
         final List<Exception> errors = new ArrayList<Exception>();
        
         final ProgressDialog dialog = new ProgressDialog(
-                NbBundle.getMessage(CustomEditorDrop.class, "LBL_CodeGenProgress", 
+                NbBundle.getMessage(SoapClientEditorDrop.class, "LBL_CodeGenProgress", 
                 displayName));
 
         generatorTask = RequestProcessor.getDefault().create(new Runnable() {
             public void run() {
                 try {
-                    CustomCodeGenerator codegen = codegen = 
-                        CustomCodeGeneratorFactory.create(targetComponent, targetFO, method);
-                    if(codegen == null) {//No action for DnD
-                        Util.showUnsupportedDropMessage(new Object[] {
-                            targetFO.getNameExt(), "REST Resource"});
-                        return;
-                    }
+                    SaasClientCodeGenerator codegen =  (SaasClientCodeGenerator) 
+                            SaasClientCodeGenerationManager.lookup(method, targetDoc);
+                    codegen.init(method, targetDoc);
+                    codegen.setDropLocation(targetComponent);
                 
-                    CustomSaasBean bean = codegen.getBean();
-                    List<ParameterInfo> allParams = bean.filterParametersByAuth(
-                            bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}));
+                    SoapClientSaasBean bean = (SoapClientSaasBean) codegen.getBean();
+                    List<ParameterInfo> allParams = new ArrayList<ParameterInfo>(bean.getHeaderParameters());
+                    if (bean.getInputParameters() != null) {
+                        allParams.addAll(bean.getInputParameters());
+                    }
                     if(!allParams.isEmpty()) {
                         CodeSetupPanel panel = new CodeSetupPanel(allParams);
-           
+
                         DialogDescriptor desc = new DialogDescriptor(panel, 
-                                NbBundle.getMessage(CustomEditorDrop.class,
+                                NbBundle.getMessage(SoapClientEditorDrop.class,
                                 "LBL_CustomizeSaasService", displayName));
                         Object response = DialogDisplayer.getDefault().notify(desc);
 
@@ -138,7 +132,8 @@ public class CustomEditorDrop implements ActiveEditorDrop {
                     }
 
                     try {
-                        codegen.generate(dialog.getProgressHandle());
+                        codegen.initProgressReporting(dialog.getProgressHandle());
+                        codegen.generate();
                     } catch(IOException ex) {
                         if(!ex.getMessage().equals(Util.SCANNING_IN_PROGRESS))
                             errors.add(ex);

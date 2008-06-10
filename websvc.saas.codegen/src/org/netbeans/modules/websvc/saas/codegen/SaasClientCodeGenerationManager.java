@@ -38,41 +38,43 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.websvc.saas.codegen.java;
+package org.netbeans.modules.websvc.saas.codegen;
 
 import java.io.IOException;
-import javax.swing.text.JTextComponent;
-import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
-import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
+import java.util.Collection;
+import javax.swing.text.Document;
+import org.netbeans.modules.websvc.saas.codegen.spi.SaasClientCodeGenerationProvider;
+import org.netbeans.modules.websvc.saas.model.SaasMethod;
+import org.openide.util.Lookup;
 
 /**
- * Code generator factory for REST services wrapping WADL-based web service.
+ * Manager to lookup all Code Generation Providers.
  *
  * @author nam
  */
-public class JaxWsCodeGeneratorFactory {
-
-    public static JaxWsCodeGenerator create(JTextComponent targetComponent,
-            FileObject targetFO, WsdlSaasMethod method) throws IOException {
-        JaxWsCodeGenerator codegen = null;
-        try {
-            DataObject d = DataObject.find(targetFO);
-            if (Util.isRestJavaFile(d) || Util.isServlet(d)) {
-                codegen = new JaxWsServletCodeGenerator(
-                        targetComponent, targetFO, method);
-            } else if (Util.isJsp(d)) {
-                codegen = new JaxWsJspCodeGenerator(
-                        targetComponent, targetFO, method);
-            } else {
-                codegen = new JaxWsJavaClientCodeGenerator(
-                        targetComponent, targetFO, method);
-            }
-        } catch (DataObjectNotFoundException ex) {
-            throw new IOException(ex.getMessage());
-        }
-        return codegen;
+public abstract class SaasClientCodeGenerationManager {
+    
+    public static Collection<? extends SaasClientCodeGenerationProvider> providers = null;
+    
+    public static boolean canAccept(SaasMethod m, Document doc) {
+        return lookup(m, doc) != null;
     }
+    
+    public static SaasClientCodeGenerationProvider lookup(SaasMethod m, Document doc) {
+        if(providers == null)
+            providers = Lookup.getDefault().lookupAll(SaasClientCodeGenerationProvider.class);
+        for(SaasClientCodeGenerationProvider provider:providers) {
+            if(provider.canAccept(m, doc)) {
+                try {
+                    provider.init(m, doc);
+                    return provider;
+                } catch (IOException ex) {
+                    break;
+                }
+
+            }
+        }
+        return null;
+    }
+
 }

@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.saas.codegen.java.model;
+package org.netbeans.modules.websvc.saas.codegen.model;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -49,14 +49,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.saas.codegen.java.support.JaxWsUtils;
+import org.netbeans.modules.websvc.saas.codegen.java.support.SoapClientUtils;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
-import org.netbeans.modules.websvc.saas.codegen.java.Constants;
-import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
-import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
+import org.netbeans.modules.websvc.saas.codegen.Constants;
+import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo.ParamStyle;
+import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
 import org.netbeans.modules.websvc.saas.util.LibrariesHelper;
@@ -71,7 +71,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author nam
  */
-public class JaxwsOperationInfo {
+public class SoapClientOperationInfo {
     private WsdlSaasMethod method;
     private String categoryName;
     private String serviceName;
@@ -84,7 +84,7 @@ public class JaxwsOperationInfo {
     private WsdlOperation operation;
     private WsdlPort port;
 
-    public JaxwsOperationInfo(WsdlSaasMethod m, Project project) {
+    public SoapClientOperationInfo(WsdlSaasMethod m, Project project) {
         this.method = m;
         this.categoryName = m.getSaas().getParentGroup().getName();
         this.serviceName = m.getSaas().getDefaultServiceName();
@@ -255,7 +255,7 @@ public class JaxwsOperationInfo {
         if (headerParams == null) {
             headerParams = new java.util.ArrayList<ParameterInfo>();
 
-            Map<QName,String> params = JaxWsUtils.getSoapHandlerParameters(
+            Map<QName,String> params = SoapClientUtils.getSoapHandlerParameters(
                     getXamWsdlModel(), getPort(), getOperation());
             for (Map.Entry<QName,String> entry : params.entrySet()) {
                 Class type = Util.getType(project, entry.getValue());

@@ -40,20 +40,30 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
-import java.io.IOException;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.saas.codegen.java.model.CustomSaasBean;
+import javax.swing.text.Document;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.websvc.saas.codegen.Constants;
+import org.netbeans.modules.websvc.saas.codegen.util.Util;
+import org.netbeans.modules.websvc.saas.model.SaasMethod;
+import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 
 /**
- * Code generator for Custom service Authentication
+ * Code generator for REST services wrapping WSDL-based web service.
  *
- * @author ayubskhan
+ * @author nam
  */
-public class CustomAuthenticationGenerator extends SaasAuthenticationGenerator {
-
-    public CustomAuthenticationGenerator(CustomSaasBean bean,
-            Project project) throws IOException {
-        super(bean, project);
+public class RestClientRestResourceCodeGenerator extends RestClientServletCodeGenerator {
+    
+    public RestClientRestResourceCodeGenerator() {
+        setDropFileType(Constants.DropFileType.RESOURCE);
     }
 
+    @Override
+    public boolean canAccept(SaasMethod method, Document doc) {
+        if (method instanceof WadlSaasMethod && 
+                Util.isRestJavaFile(NbEditorUtilities.getDataObject(doc))) {
+            return true;
+        }
+        return false;
+    }
 }

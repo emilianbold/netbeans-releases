@@ -40,56 +40,37 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
-import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import javax.lang.model.element.TypeElement;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
-import com.sun.source.util.TreePath;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
-import org.netbeans.modules.websvc.saas.codegen.java.model.JaxwsOperationInfo;
-import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
-import org.netbeans.modules.websvc.saas.codegen.java.model.WsdlSaasBean;
-import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
-import org.netbeans.modules.websvc.saas.codegen.java.support.SourceGroupSupport;
-import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.websvc.saas.codegen.model.SoapClientOperationInfo;
+import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.model.SoapClientSaasBean;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
-import static com.sun.source.tree.Tree.Kind.*;
 
 /**
  * Code generator for REST services wrapping WSDL-based web service.
  *
  * @author ayubkhan
  */
-public class JaxWsJavaClientCodeGenerator extends JaxWsCodeGenerator {
-
-    public JaxWsJavaClientCodeGenerator(JTextComponent targetComponent, 
-            FileObject targetFile, WsdlSaasMethod m) throws IOException {
-        super(targetComponent, targetFile, m);
+public class SoapClientPojoCodeGenerator extends SoapClientRestResourceCodeGenerator {
+        
+    public SoapClientPojoCodeGenerator() {
+        super();
     }
 
     @Override
-    public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
-        initProgressReporting(pHandle);
-
+    public SoapClientSaasBean getBean() {
+        return (SoapClientSaasBean) super.getBean();
+    }
+    
+    @Override
+    public Set<FileObject> generate() throws IOException {
         preGenerate();
         
-        insertSaasServiceAccessCode(isInBlock(getTargetComponent()));
+        insertSaasServiceAccessCode(isInBlock(getTargetDocument()));
         //addImportsToTargetFile();
         
         finishProgressReporting();
@@ -100,13 +81,13 @@ public class JaxWsJavaClientCodeGenerator extends JaxWsCodeGenerator {
     @Override
     protected String getCustomMethodBody() throws IOException {
         String methodBody = INDENT + "try {\n";
-        for (ParameterInfo param : bean.getQueryParameters()) {
+        for (ParameterInfo param : getBean().getQueryParameters()) {
             String name = param.getName();
             methodBody += INDENT_2 + param.getType().getName() + " " + name + " = "+
                     resolveInitValue(param)+"\n";
         }
-        JaxwsOperationInfo[] operations = ((WsdlSaasBean) bean).getOperationInfos();
-        for (JaxwsOperationInfo info : operations) {
+        SoapClientOperationInfo[] operations = getBean().getOperationInfos();
+        for (SoapClientOperationInfo info : operations) {
             methodBody += getWSInvocationCode(info);
         }
         methodBody += INDENT + "} catch (Exception ex) {\n";
@@ -129,7 +110,7 @@ public class JaxWsJavaClientCodeGenerator extends JaxWsCodeGenerator {
                 code += "return result;\n";
                 code += "}\n";
             }
-            insert(code, getTargetComponent(), true);
+            insert(code, true);
         } catch (BadLocationException ex) {
             throw new IOException(ex.getMessage());
         }
