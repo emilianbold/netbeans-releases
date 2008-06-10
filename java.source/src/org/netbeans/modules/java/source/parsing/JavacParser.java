@@ -712,7 +712,7 @@ public class JavacParser extends Parser {
             final Snapshot snapshot,
             final MethodTree orig,
             final String newBody) throws IOException {        
-        assert ci != null;         
+        assert ci != null;
         final FileObject fo = ci.getFileObject();
         if (LOGGER.isLoggable(Level.FINER)) {
             LOGGER.finer("Reparse method in: " + fo);          //NOI18N

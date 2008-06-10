@@ -146,8 +146,10 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
         if (content == null) {
             update();
         }
-        else {
+        else {            
+            final CharBuffer charBuffer = CharBuffer.wrap (content);
             this.text = toString(content);
+            tokens = TokenHierarchy.create(charBuffer, false, JavaTokenId.language(), null, null);
         }
     }
     
