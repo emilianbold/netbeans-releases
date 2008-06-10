@@ -41,6 +41,7 @@ import org.netbeans.modules.iep.editor.wizard.database.DatabaseMetaDataHelper;
 import org.netbeans.modules.iep.editor.wizard.database.DatabaseTableWizardConstants;
 import org.netbeans.modules.iep.editor.wizard.database.TableInfo;
 import org.netbeans.modules.iep.editor.wizard.database.TablePollingStreamWizardHelper;
+import org.netbeans.modules.iep.editor.wizard.database.replaystream.ReplayStreamWizardHelper;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.Property;
@@ -85,12 +86,8 @@ public class ReplayStreamCustomEditor extends DefaultCustomEditor {
     }
     
     private class MyCustomizer extends DefaultCustomizer {
-        protected PropertyPanel mPollingIntervalPanel;
-        protected PropertyPanel mPollingIntervalTimeUnitPanel;
-        protected PropertyPanel mPollingRecordSizePanel;
         protected JTextField mRecordIdentifyingColumnsTextField;
         protected PropertyPanel mDatabaseJndiNamePanel;
-        protected PropertyPanel mIsDeleteRecordsPanel;
         
         private SchemaComponent mRecordIdentifyingColumnsSchema;
         
@@ -174,7 +171,7 @@ public class ReplayStreamCustomEditor extends DefaultCustomEditor {
             
             
             JButton selectIEPProcessButton = new JButton(NbBundle.getMessage(ReplayStreamCustomEditor.class, "ExternalTablePollingStreamCustomEditor.SELECT_TABLES"));
-            selectIEPProcessButton.addActionListener(new SelectIEPProcessOperatorActionListener());
+            selectIEPProcessButton.addActionListener(new SelectReplayStreamTableActionListener());
             //selectIEPProcessButton.setAction(SystemAction.get(DatabaseTableSelectionWizardAction.class));
             gbc.gridx = 4;
             gbc.gridy = 0;
@@ -338,9 +335,6 @@ public class ReplayStreamCustomEditor extends DefaultCustomEditor {
         public void validateContent(PropertyChangeEvent evt) throws PropertyVetoException {
             super.validateContent(evt);
             try {
-                mPollingIntervalPanel.validateContent(evt);
-                mPollingIntervalTimeUnitPanel.validateContent(evt);
-                mPollingRecordSizePanel.validateContent(evt);
                 mDatabaseJndiNamePanel.validateContent(evt);
 //                mRecordIdentifyingColumnsPanel.validateContent(evt);
                 
@@ -357,12 +351,10 @@ public class ReplayStreamCustomEditor extends DefaultCustomEditor {
         
         public void setValue() {
             super.setValue();
-            mPollingIntervalPanel.store();
-            mPollingIntervalTimeUnitPanel.store();
-            mPollingRecordSizePanel.store();
+            
 //            mRecordIdentifyingColumnsPanel.store();
             mDatabaseJndiNamePanel.store();
-            mIsDeleteRecordsPanel.store();
+            
             
             
             //store record identifying columns
@@ -481,12 +473,12 @@ public class ReplayStreamCustomEditor extends DefaultCustomEditor {
         }
         
         
-        class SelectIEPProcessOperatorActionListener implements ActionListener {
+        class SelectReplayStreamTableActionListener implements ActionListener {
 
             public void actionPerformed(ActionEvent e) {
                 IEPModel model = getOperatorComponent().getModel();
                 
-                TablePollingStreamWizardHelper helper = new TablePollingStreamWizardHelper();
+                ReplayStreamWizardHelper helper = new ReplayStreamWizardHelper();
                 WizardDescriptor wizardDescriptor = helper.createWizardDescriptor();
                 
                 Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
@@ -497,23 +489,13 @@ public class ReplayStreamCustomEditor extends DefaultCustomEditor {
                     List<TableInfo> tables = (List) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_TABLES);
                     List<ColumnInfo> columns = (List) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_COLUMNS);
                     mWhereClause = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_JOIN_CONDITION);
-                    String pollingInterval = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_POLLING_INTERVAL);
-                    String pollingIntervalUnit = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_POLLING_INTERVAL_TIME_UNIT);
-                    String recordSize = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_POLLING_RECORD_SIZE);
                     String databaseJNDIName = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_JNDI_NAME);
-                    String isDeleteRecords = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_IS_DELETE_RECORDS);
                     List<ColumnInfo> recordIdentifyingColumns =  (List) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_POLLING_UNIQUE_RECORD_IDENTIFIER_COLUMNS);
                     
                     
-                    mPollingIntervalPanel.setStringValue(pollingInterval);
-                    mPollingIntervalTimeUnitPanel.setStringValue(pollingIntervalUnit);
-                    mPollingRecordSizePanel.setStringValue(recordSize);
-                    mDatabaseJndiNamePanel.setStringValue(databaseJNDIName);
-                    mIsDeleteRecordsPanel.setStringValue(isDeleteRecords);
                     
-                    if(pollingIntervalUnit != null) {
-                        mPollingIntervalTimeUnitPanel.setStringValue(pollingIntervalUnit);
-                    }
+                    mDatabaseJndiNamePanel.setStringValue(databaseJNDIName);
+                    
                     
                     Iterator<TableInfo> tableIt = tables.iterator();
                     List<String> fromList = new ArrayList<String>(); 
