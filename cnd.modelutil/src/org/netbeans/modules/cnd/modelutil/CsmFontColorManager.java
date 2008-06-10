@@ -73,7 +73,11 @@ public class CsmFontColorManager {
     /* package */ Color getColor(FontColorProvider.Entity color) {
         // completion is not aware of document type
         AttributeSet as = getCreateProvider(DEFAULT_MIME_TYPE).getColor(color);
-        return (Color)as.getAttribute(StyleConstants.ColorConstants.Foreground);
+        if (as != null) {
+            return (Color)as.getAttribute(StyleConstants.ColorConstants.Foreground);
+        }
+        //FIXME
+        return Color.red;
     }
     
     private FontColorProviderImpl getCreateProvider(String mimeType) {
