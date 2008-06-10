@@ -950,7 +950,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 }
                 
                 if (!role.isToMany()) { // meaning ManyToOne or OneToOne
-                    // Add optional=false if the relationship is not optional/non-nullable 
+                    // Add optional=false on @ManyToOne or the owning side of @OneToOne
+                    // if the relationship is non-optional (or non-nuallable in other words)  
                     if(!role.isOptional() && (role.isMany() || role.equals(role.getParent().getRoleA())) ) {
                         annArguments.add(genUtils.createAnnotationArgument("optional", false)); // NOI18N
                     }
