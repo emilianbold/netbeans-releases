@@ -51,36 +51,68 @@ import org.openide.util.NbBundle;
  */
 public final class Switches {
 
+    /**
+     * 
+     * @return True if TopComponent Drag'n'Drop is enabled.
+     */
     public static boolean isTopComponentDragAndDropEnabled() {
         return getSwitchValue( "TopComponent.DragAndDrop.Enabled", true ); //NOI18N
     }
     
+    /**
+     * 
+     * @return True if undocking of TopComponents is allowed.
+     */
     public static boolean isTopComponentUndockingEnabled() {
         return getSwitchValue( "TopComponent.Undocking.Enabled", true ); //NOI18N
     }
     
+    /**
+     * 
+     * @return True if TopComponents can be minimized (slided out)
+     */
     public static boolean isTopComponentSlidingEnabled() {
         return getSwitchValue( "TopComponent.Sliding.Enabled", true ); //NOI18N
     }
     
+    /**
+     * 
+     * @return True if TopComponents can be resized by moving splitter bars with mouse.
+     */
     public static boolean isTopComponentResizingEnabled() {
         return getSwitchValue( "TopComponent.Resizing.Enabled", true ); //NOI18N
     }
     
+    /**
+     * 
+     * @return True if view-like TopComponents (e.g. navigator, projects view etc) can be closed.
+     */
     public static boolean isViewTopComponentClosingEnabled() {
         return getSwitchValue( "View.TopComponent.Closing.Enabled", true ); //NOI18N
     }
     
+    /**
+     * 
+     * @return True if editor TopComponents can be closed.
+     */
     public static boolean isEditorTopComponentClosingEnabled() {
         return getSwitchValue( "Editor.TopComponent.Closing.Enabled", true ); //NOI18N
     }
     
+    /**
+     * 
+     * @return True if TopComponents can be maximized.
+     */
     public static boolean isTopComponentMaximizationEnabled() {
         return getSwitchValue( "TopComponent.Maximization.Enabled", true ); //NOI18N
     }
     
+    /**
+     * 
+     * @return True if the resizing splitter bar respects the minimum size of TopComponents.
+     */
     public static boolean isSplitterRespectMinimumSizeEnabled() {
-        return getSwitchValue( "Splitter.Respect.MinimumSize.Enabled", false ); //NOI18N
+        return getSwitchValue( "Splitter.Respect.MinimumSize.Enabled", true ); //NOI18N
     }
     
     private static boolean getSwitchValue( String switchName, boolean defaultValue ) {
