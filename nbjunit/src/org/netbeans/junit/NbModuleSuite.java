@@ -120,7 +120,10 @@ public class NbModuleSuite {
         }
 
         static Configuration create(Class<? extends TestCase> clazz) {
-            Map<Class<?>,String[]> single = Collections.<Class<?>,String[]>singletonMap(clazz, null);
+            Map<Class<?>,String[]> single = clazz == null ? 
+                Collections.<Class<?>,String[]>emptyMap() 
+                : 
+                Collections.<Class<?>,String[]>singletonMap(clazz, null);
             return new Configuration(null, null, ClassLoader.getSystemClassLoader().getParent(), single, true);
         }
         
@@ -164,6 +167,10 @@ public class NbModuleSuite {
          *    list of executed tests
          */
         public Configuration addTest(String... testNames) {
+            if (tests.isEmpty()) {
+                throw new IllegalStateException();
+            }
+            
             Class[] all = tests.keySet().toArray(new Class[0]);
             Class<?> key = all[all.length - 1];
             return addTest(key.asSubclass(TestCase.class), testNames);
@@ -290,6 +297,18 @@ public class NbModuleSuite {
      */
     public static Configuration createConfiguration(Class<? extends TestCase> clazz) {
         return Configuration.create(clazz);
+    }
+    
+    /** Creates empty configuration without any class assiciated. You need
+     * to call {@link Configuration#addTest(java.lang.Class, java.lang.String[])}
+     * then to register proper test classes.
+     * 
+     * @return config object prefilled with default values; the defaults may
+     *   be altered with its addition instance methods
+     * @since 1.50
+     */
+    public static Configuration emptyConfiguration() {
+        return Configuration.create(null);
     }
     
     

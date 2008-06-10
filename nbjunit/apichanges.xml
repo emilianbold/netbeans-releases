@@ -55,6 +55,21 @@ made subject to such option by the copyright holder.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="NbModuleSuite.emptyConfiguration">
+        <api name="nbjunit"/>
+        <summary>NbModuleSuite.emptyConfiguration()</summary>
+        <version major="1" minor="51"/>
+        <date day="10" month="6" year="2008"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>NbModuleSuite.Configuration now has 
+            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.html#emptyConfiguration()">emptyConfiguration()</a>
+            method which returns empty, ready to be configured configuration.
+            </p>
+        </description>
+        <class package="org.netbeans.junit" name="NbModuleSuite"/>
+    </change>
     <change id="NbModuleSuite.MultiTestCases">
         <api name="nbjunit"/>
         <summary>NbModuleSuite can now wrap multiple TestCase</summary>
@@ -64,7 +79,7 @@ made subject to such option by the copyright holder.
         <compatibility addition="yes"/>
         <description>
             <p>NbModuleSuite.Configuration now has 
-            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#addTest(java.lang.Class, java.lang.String...)">addTest(clazz, tests)</a>
+            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#addTest(java.lang.Class,%20hg java.lang.String...)">addTest(clazz, tests)</a>
             method which allows to add multiple test classes into single configuration
             and execution of the NbModuleSuite.
             </p>

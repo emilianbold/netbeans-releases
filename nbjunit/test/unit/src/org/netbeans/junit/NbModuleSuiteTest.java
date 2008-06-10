@@ -59,29 +59,6 @@ public class NbModuleSuiteTest extends TestCase {
         super(testName);
     }            
     
-    public static Test suite() {
-        //return new NbModuleSuiteTest("testTwoClassesAtOnce");
-        return new NbTestSuite(NbModuleSuiteTest.class);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
-    public void testRun() {
-        Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(NbModuleSuiteT.class).gui(false));
-        junit.textui.TestRunner.run(instance);
-        
-        assertEquals("OK", System.getProperty("t.one"));
-        assertProperty("netbeans.full.hack", "true");
-    }
-    
     public void testPreparePathes() {
         Properties p = new Properties();
         
@@ -184,7 +161,7 @@ public class NbModuleSuiteTest extends TestCase {
         assertProperty("ins.three", "OK");
     }
     
-    private static void assertProperty(String name, String value) {
+    static void assertProperty(String name, String value) {
         String v = System.getProperty(name);
         assertEquals("Property " + name, value, v);
     }
