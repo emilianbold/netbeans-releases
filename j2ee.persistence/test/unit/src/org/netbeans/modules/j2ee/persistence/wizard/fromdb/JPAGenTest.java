@@ -361,7 +361,7 @@ public class JPAGenTest extends SourceTestSupport{
             return false;
         }
 
-        public Set<String[]> getUniqueConstraints(String tableName) {
+        public Set<List<String>> getUniqueConstraints(String tableName) {
             return null;
         }
 

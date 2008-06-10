@@ -158,7 +158,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             final RelatedCMPHelper helper,
             final FileObject dbSchemaFile,
             final ProgressContributor handle) throws IOException {
-
+        
         generateBeans(helper.getBeans(), helper.isGenerateFinderMethods(), handle, progressPanel);
     }
 
@@ -756,11 +756,11 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 if(entityClass.isRegenSchemaAttrs() && entityClass.getUniqueConstraints() != null &&
                         entityClass.getUniqueConstraints().size() != 0) {
                     List<ExpressionTree> uniqueConstraintAnnotations = new ArrayList<ExpressionTree>();
-                    for(String[] constraintCols : entityClass.getUniqueConstraints()) {
+                    for(List<String> constraintCols : entityClass.getUniqueConstraints()) {
 
                         List<ExpressionTree> colArgs = new ArrayList<ExpressionTree>();
-                        for(int colIx = 0; colIx < constraintCols.length; colIx ++ ) {
-                            colArgs.add(genUtils.createAnnotationArgument(null, constraintCols[colIx]));
+                        for(String colName : constraintCols) {
+                            colArgs.add(genUtils.createAnnotationArgument(null, colName));
                         }
                         ExpressionTree columnNamesArg = genUtils.createAnnotationArgument("columnNames", colArgs); // NOI18N
                         uniqueConstraintAnnotations.add(genUtils.createAnnotation("javax.persistence.UniqueConstraint", 
@@ -950,7 +950,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 }
                 
                 if (!role.isToMany()) { // meaning ManyToOne or OneToOne
-                    // Add optional=false if the relationship is not optional/non-nullable 
+                    // Add optional=false on @ManyToOne or the owning side of @OneToOne
+                    // if the relationship is non-optional (or non-nuallable in other words)  
                     if(!role.isOptional() && (role.isMany() || role.equals(role.getParent().getRoleA())) ) {
                         annArguments.add(genUtils.createAnnotationArgument("optional", false)); // NOI18N
                     }

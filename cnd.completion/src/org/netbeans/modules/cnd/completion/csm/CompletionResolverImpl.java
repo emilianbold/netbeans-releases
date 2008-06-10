@@ -1095,7 +1095,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             return maskNull(templateParameters);
         }
 
-        public Collection addResulItemsToCol(Collection orig) {
+        public Collection<? extends CsmObject> addResulItemsToCol(Collection<? extends CsmObject> orig) {
             assert orig != null;
             return appendResult(orig, this);
         }
@@ -1244,7 +1244,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             return Collections.EMPTY_LIST;
         }
 
-        public Collection addResulItemsToCol(Collection orig) {
+        public Collection<? extends CsmObject> addResulItemsToCol(Collection<? extends CsmObject> orig) {
             return orig;
         }
 
