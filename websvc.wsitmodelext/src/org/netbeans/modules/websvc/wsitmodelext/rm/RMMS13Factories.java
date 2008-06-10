@@ -39,30 +39,34 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.wsitmodelext.rm.impl;
+package org.netbeans.modules.websvc.wsitmodelext.rm;
 
-import org.netbeans.modules.websvc.wsitmodelext.rm.InactivityTimeout;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.websvc.wsitmodelext.rm.impl.*;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
+import org.netbeans.modules.xml.wsdl.model.spi.ElementFactory;
 import org.w3c.dom.Element;
 
-/**
- *
- * @author Martin Grebac
- */
-public class InactivityTimeoutImpl extends RMMS13ComponentImpl implements InactivityTimeout {
-    
-    /**
-     * Creates a new instance of InactivityTimeoutImpl
-     */
-    public InactivityTimeoutImpl(WSDLModel model, Element e) {
-        super(model, e);
-    }
-    
-    public void setMilliseconds(String milliseconds) {
-        setAttribute(MILLISECONDS_PROPERTY, RMAttribute.MILLISECONDS, milliseconds);        
-    }
+import javax.xml.namespace.QName;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
-    public String getMilliseconds() {
-        return getAttribute(RMAttribute.MILLISECONDS);
+public class RMMS13Factories {
+
+    public static class InactivityTimeoutFactory extends ElementFactory {
+        @Override
+        public Set<QName> getElementQNames() {
+            HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(RMMS13QName.INACTIVITYTIMEOUT.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
+        }
+        @Override
+        public WSDLComponent create(WSDLComponent context, Element element) {
+            return new InactivityTimeoutImpl(context.getModel(), element);
+        }
     }
+    
 }

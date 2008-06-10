@@ -51,28 +51,20 @@ import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
  *
  * @author Martin Grebac
  */
-public enum RMQName {
-    RMASSERTION(createRMQName("RMAssertion")),                                  //NOI18N
-    ACKNOWLEDGEMENTINTERVAL(createRMQName("AcknowledgementInterval")),          //NOI18N
-    DELIVERYASSURANCE(createRMQName("DeliveryAssurance")),                    //NOI18N
-    INORDER(createRMQName("InOrder")),                                        //NOI18N
-    EXACTLYONCE(createRMQName("ExactlyOnce")),                                //NOI18N
-    ATLEASTONCE(createRMQName("AtLeastOnce")),                                //NOI18N
-    ATMOSTONCE(createRMQName("AtMostOnce")),                                //NOI18N
-    SEQUENCETRANSPORTSECURITY(createRMQName("SequenceTransportSecurity")),    //NOI18N
-    SEQUENCESTR(createRMQName("SequenceSTR"));                                //NOI18N
+public enum RMMS13QName {
+    INACTIVITYTIMEOUT(createRMQName("InactivityTimeout"));                      //NOI18N
 
-    static final String RM_HEADERS_NS_URI = "http://schemas.xmlsoap.org/ws/2005/02/rm";    //NOI18N
-    
     static final String RM_NS_URI = "http://schemas.xmlsoap.org/ws/2005/02/rm/policy";    //NOI18N
-    public static final String RM_12_NS_URI = "http://docs.oasis-open.org/ws-rx/wsrmp/200702";    //NOI18N
     static final String RM_NS_PREFIX = "wsrm";                                            //NOI18N
+
+    static final String RM_12_NS_URI = "http://schemas.microsoft.com/ws-rx/wsrmp/200702";    //NOI18N
+    static final String RM_12_NS_PREFIX = "netrmp";                                            //NOI18N
     
     static QName createRMQName(String localName){
         return new QName(RM_NS_URI, localName, RM_NS_PREFIX);
     }
     
-    RMQName(QName name) {
+    RMMS13QName(QName name) {
         qName = name;
     }
     
@@ -99,7 +91,7 @@ public enum RMQName {
     
     public static Set<QName> getQNames(ConfigVersion cfgVersion) {
         Set<QName> qnames = new HashSet<QName>();
-        for (RMQName wq : values()) {
+        for (RMMS13QName wq : values()) {
             qnames.add(wq.getQName(cfgVersion));
         }
         return qnames;

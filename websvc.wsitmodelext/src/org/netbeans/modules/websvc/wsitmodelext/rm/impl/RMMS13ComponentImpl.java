@@ -41,28 +41,34 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.rm.impl;
 
-import org.netbeans.modules.websvc.wsitmodelext.rm.InactivityTimeout;
+import org.netbeans.modules.websvc.wsitmodelext.GenericComponentImpl;
+import org.netbeans.modules.websvc.wsitmodelext.rm.RMMS13QName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
  *
- * @author Martin Grebac
+ * @author MartinGrebac
  */
-public class InactivityTimeoutImpl extends RMMS13ComponentImpl implements InactivityTimeout {
+public abstract class RMMS13ComponentImpl extends GenericComponentImpl {
     
     /**
-     * Creates a new instance of InactivityTimeoutImpl
+     * Creates a new instance of RMMS13ComponentImpl
      */
-    public InactivityTimeoutImpl(WSDLModel model, Element e) {
+    public RMMS13ComponentImpl(WSDLModel model, Element e) {
         super(model, e);
-    }
-    
-    public void setMilliseconds(String milliseconds) {
-        setAttribute(MILLISECONDS_PROPERTY, RMAttribute.MILLISECONDS, milliseconds);        
+        cfgVersion = RMMS13QName.getConfigVersion(this.getQName());
     }
 
-    public String getMilliseconds() {
-        return getAttribute(RMAttribute.MILLISECONDS);
+    @Override
+    public void accept(WSDLVisitor visitor) {
+        visitor.visit(this);
     }
+        
+    @Override
+    protected String getNamespaceURI() {
+        return RMMS13QName.getNamespaceUri(cfgVersion);
+    }
+
 }
