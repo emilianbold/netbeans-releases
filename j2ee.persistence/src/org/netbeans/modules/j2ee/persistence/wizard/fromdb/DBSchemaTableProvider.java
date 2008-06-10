@@ -103,10 +103,10 @@ public class DBSchemaTableProvider implements TableProvider {
                 }
             }
 
-            String schemaName = tableElement.getDeclaringSchema().getSchema().getName();
             String catalogName = tableElement.getDeclaringSchema().getCatalog().getName();
+            String schemaName = tableElement.getDeclaringSchema().getSchema().getName();
             String tableName = tableElement.getName().getName();
-            DBSchemaTable table = new DBSchemaTable(schemaName, catalogName, tableName, join, disabledReason, persistenceGen, tableElement.isTable());
+            DBSchemaTable table = new DBSchemaTable(catalogName, schemaName, tableName, join, disabledReason, persistenceGen, tableElement.isTable());
             
             // Set the unique constraints columns
             table.setUniqueConstraints(getUniqueConstraints(tableElement));
@@ -207,13 +207,13 @@ public class DBSchemaTableProvider implements TableProvider {
         // A set of unique constraints columns
         private Set<List<String>> uniqueConstraints;
         
-        public DBSchemaTable(String schema, String catalog, String name, boolean join, DisabledReason disabledReason, PersistenceGenerator persistenceGen) {
-            super(schema, catalog, name, join, disabledReason);
+        public DBSchemaTable(String catalog, String schema, String name, boolean join, DisabledReason disabledReason, PersistenceGenerator persistenceGen) {
+            super(catalog, schema, name, join, disabledReason);
             this.persistenceGen = persistenceGen;
         }
         
-        public DBSchemaTable(String schema, String catalog, String name, boolean join, DisabledReason disabledReason, PersistenceGenerator persistenceGen, boolean isTable) {
-            super(schema, catalog, name, join, disabledReason, isTable);
+        public DBSchemaTable(String catalog, String schema, String name, boolean join, DisabledReason disabledReason, PersistenceGenerator persistenceGen, boolean isTable) {
+            super(catalog, schema, name, join, disabledReason, isTable);
             this.persistenceGen = persistenceGen;
         }
 
