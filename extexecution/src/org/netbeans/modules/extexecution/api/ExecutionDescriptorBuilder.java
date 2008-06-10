@@ -231,7 +231,7 @@ public final class ExecutionDescriptorBuilder {
             this.outProcessor = data.outProcessor;
             this.errProcessor = data.errProcessor;
             this.inputOutput = data.inputOutput;
-            this.rerunCondition = rerunCondition;
+            this.rerunCondition = data.rerunCondition;
         }
 
     }
