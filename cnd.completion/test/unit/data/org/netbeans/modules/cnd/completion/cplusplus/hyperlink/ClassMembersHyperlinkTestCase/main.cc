@@ -53,3 +53,21 @@ void sameValue(int sameValue) {
         sameValue(sameValue - 1);
     }
 }
+
+typedef unsigned int uint32_t;
+typedef	struct ehci_itd {
+    uint32_t itd_state;
+} ehci_itd_t;
+
+typedef struct ehci_state {
+    ehci_itd_t *ehci_itd_pool_addr;
+} ehci_state_t;
+
+void iz136894(ehci_state* state, int i){
+    state->ehci_itd_pool_addr->itd_state;
+    state->ehci_itd_pool_addr[i].itd_state;
+    ehci_itd_t *pool_addr;
+    pool_addr[i].itd_state;
+    state->ehci_itd_pool_addr[0].itd_state;
+    pool_addr[0].itd_state;
+}
