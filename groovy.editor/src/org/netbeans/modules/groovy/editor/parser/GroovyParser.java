@@ -561,7 +561,7 @@ public class GroovyParser implements Parser {
 
 //        long start = System.currentTimeMillis();
         try {
-            compilationUnit.compile(Phases.SEMANTIC_ANALYSIS); // which phase should be used?
+            compilationUnit.compile(Phases.CLASS_GENERATION);
 //            System.out.println("### compilation success in " + (System.currentTimeMillis() - start));
         } catch (Throwable e) {
 //            System.out.println("### compilation failure in " + (System.currentTimeMillis() - start));
@@ -643,7 +643,7 @@ public class GroovyParser implements Parser {
 
         CompileUnit compileUnit = compilationUnit.getAST();
         List<ModuleNode> modules = compileUnit.getModules();
-
+        
         // there are more modules if class references another class,
         // there is one module per class
         ModuleNode module = null;
@@ -748,15 +748,10 @@ public class GroovyParser implements Parser {
                     if (object instanceof SyntaxErrorMessage) {
                         SyntaxException ex = ((SyntaxErrorMessage)object).getCause();
                         
-                        // here i removed the moduleNode checkes introduced in
-                        // #124886: java.lang.AssertionError: Line number is higher than lines in text
-                        // http://hg.netbeans.org/main/rev/e3b2edd87b0e
-                        // since they drop errors which trigger exceptions (see parseBuffer above), but 
-                        // return an empty set of modules in compileUnit.getModules();
-                        // The original problen in #124886 is fixed elsewhere, so it's save to test
-                        // for ex != null only.
+                        String sourceLocator = ex.getSourceLocator();
+                        String name = moduleNode != null ? moduleNode.getContext().getName() : context.file.getNameExt();
                         
-                        if (ex != null) {
+                        if (sourceLocator != null && name != null && sourceLocator.equals(name)) {
                             int startOffset = AstUtilities.getOffset(context.document, ex.getStartLine(), ex.getStartColumn());
                             int endOffset = AstUtilities.getOffset(context.document, ex.getLine(), ex.getEndColumn());
                             notifyError(context, null, Severity.ERROR, ex.getMessage(), null, startOffset, endOffset, sanitizing);
