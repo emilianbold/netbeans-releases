@@ -33,6 +33,7 @@ import org.netbeans.modules.iep.model.LinkComponent;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.OutputOperatorComponent;
 import org.netbeans.modules.iep.model.Property;
+import org.netbeans.modules.iep.model.ReplayStreamOperatorComponent;
 import org.netbeans.modules.iep.model.SchemaAttribute;
 import org.netbeans.modules.iep.model.SchemaComponent;
 
@@ -95,6 +96,10 @@ public class IEPComponentFactoryImpl implements IEPComponentFactory {
     
     public ExternalTablePollingStreamOperatorComponent createExternalTablePollingStreamOperator(IEPModel model) {
         return new ExternalTablePollingStreamOperatorComponentImpl(model);
+    }
+    
+    public ReplayStreamOperatorComponent createReplayStreamOperatorComponent(IEPModel model) {
+        return new ReplayStreamOperatorComponentImpl(model);
     }
     
     public LinkComponent createLink(IEPModel model) {
