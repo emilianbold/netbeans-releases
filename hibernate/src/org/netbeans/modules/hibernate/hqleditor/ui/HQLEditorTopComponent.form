@@ -66,6 +66,9 @@
             <Property name="horizontalTextPosition" type="int" value="0"/>
             <Property name="verticalTextPosition" type="int" value="3"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="runHQLButtonActionPerformed"/>
+          </Events>
         </Component>
         <Component class="javax.swing.JToolBar$Separator" name="toolbarSeparator1">
           <Properties>
@@ -128,7 +131,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="toolBar2" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="executionPanel" pref="292" max="32767" attributes="0"/>
+                      <Component id="executionPanel" pref="284" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
