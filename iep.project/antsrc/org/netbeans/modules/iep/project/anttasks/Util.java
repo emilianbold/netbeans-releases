@@ -18,8 +18,12 @@ public class Util {
 	public static List<PortMapEntry> generatePortMapEntryList(IEPModel model, String tns) throws Exception {
         List<PortMapEntry> pmeList = new ArrayList<PortMapEntry>();
         
-        List<InputOperatorComponent> inList = model.getInputList();
-        List<OutputOperatorComponent> outList = model.getOutputList();
+        boolean wsOnly = true;
+        List<InputOperatorComponent> inList = model.getInputList(wsOnly);
+        List<OutputOperatorComponent> outList = model.getOutputList(wsOnly);
+        
+//        List<InputOperatorComponent> inList = model.getInputList();
+//        List<OutputOperatorComponent> outList = model.getOutputList();
         if (inList.size() > 0) {
             String partnerLink = tns + ":" + INPUT_PARTNER_LINK;
             String portType = tns + ":" + INPUT_PORT_TYPE;
