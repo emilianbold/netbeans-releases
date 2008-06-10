@@ -50,6 +50,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -70,6 +71,8 @@ import org.netbeans.api.visual.widget.ResourceTable;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
+import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 import org.netbeans.modules.uml.drawingarea.actions.ResizeAction;
 import org.netbeans.modules.uml.drawingarea.actions.ResizeStrategyProvider;
 import org.netbeans.modules.uml.drawingarea.actions.WindowStyleResizeProvider;
@@ -95,6 +98,8 @@ public abstract class UMLNodeWidget extends Widget
         implements DiagramNodeWriter, DiagramNodeReader, PropertyChangeListener, UMLWidget
 {   
     private static final int RESIZE_SIZE = 5;
+    private boolean resizedManually=false;
+    private boolean initialized;
         
     protected enum ButtonLocation {Left, op, Right, Bottom};
     public enum RESIZEMODE{PREFERREDBOUNDS,PREFERREDSIZE,MINIMUMSIZE};
@@ -112,6 +117,13 @@ public abstract class UMLNodeWidget extends Widget
     public static String DEFAULT="default";
     protected boolean useGradient = NbPreferences.forModule(DummyCorePreference.class).getBoolean("UML_Gradient_Background", true);
     private ResourceTable localResourceTable = null;
+    private IPresentationElement pe;
+    
+    public final String PSK_RESIZE_ASNEEDED = "PSK_RESIZE_ASNEEDED";
+    public final String PSK_RESIZE_EXPANDONLY = "PSK_RESIZE_EXPANDONLY";
+    public final String PSK_RESIZE_UNLESSMANUAL = "PSK_RESIZE_UNLESSMANUAL";
+    public final String PSK_RESIZE_NEVER = "PSK_RESIZE_NEVER";    
+
     
     public UMLNodeWidget(Scene scene)
     {
@@ -204,7 +216,8 @@ public abstract class UMLNodeWidget extends Widget
     
     public void initializeNode(IPresentationElement element)
     {
-        
+        pe = element;
+        initialized=true;
     }
     
     // display full view widget for preference preview, child class should
@@ -381,7 +394,7 @@ public abstract class UMLNodeWidget extends Widget
         //write dependencies for this node
         if(this.getDependencies().size() > 0) 
         {
-            saveDependencies(nodeWriter);
+            PersistenceUtil.saveDependencies(this, nodeWriter);
         }
         if (!scene.findNodeEdges(getObject(), true, true).isEmpty()) 
         {
@@ -391,13 +404,13 @@ public abstract class UMLNodeWidget extends Widget
 
     }
     
-    protected void saveChildren(Widget widget, NodeWriter nodeWriter) {
+    public void saveChildren(Widget widget, NodeWriter nodeWriter) {
         if (widget == null || nodeWriter == null)
             return;
         
         List<Widget> widList = widget.getChildren();
         for (Widget child : widList) {
-            if (child instanceof DiagramNodeWriter) {
+            if ((child instanceof DiagramNodeWriter) && !(child instanceof Widget.Dependency)) { // we write dependencies in another section
                 ((DiagramNodeWriter) child).save(nodeWriter);
             } else {
                 saveChildren(child, nodeWriter);
@@ -447,30 +460,7 @@ public abstract class UMLNodeWidget extends Widget
         }        
     }
     
-    protected void saveDependencies(NodeWriter nodeWriter)
-    {
-        Collection depList = this.getDependencies();
-        if (depList.size() > 0)
-        {
-            nodeWriter.beginDependencies();
-            Iterator iter = depList.iterator();
-            while (iter.hasNext())
-            {
-                Object obj = iter.next();
-                if (obj instanceof Anchor)
-                {
-                    //don't do anything yet.. we'll deal with this in anchorage section..
-                }
-                else {
-                    System.out.println(" obj is " + obj);
-                    if (obj instanceof DiagramNodeWriter) {
-                        ((DiagramNodeWriter)obj).save(nodeWriter);
-                    }
-                }
-            }
-            nodeWriter.endDependencies();
-        }        
-    }
+    
     
     protected IPresentationElement getObject()
     {
@@ -613,7 +603,25 @@ public abstract class UMLNodeWidget extends Widget
     {
         //figure out how to handle attr/oper
     }
-    
+
+    public void loadDependencies(NodeInfo nodeReader)
+    {
+       if (nodeReader.getLabels().size() > 0)
+       {
+           if (this instanceof LabelNode)
+           {
+               ((LabelNode)this).showLabel(true);
+//               Widget label = ((LabelNode)this).getLabelWidget();
+//               label.setVisible(true);
+////               label.setPreferredLocation(nodeReader.getLabels().get(0).getPosition());
+////               label.setPreferredSize(nodeReader.getLabels().get(0).getSize());
+//               Point localLocation = nodeReader.getLabels().get(0).getPosition();
+//               label.setPreferredLocation(label.convertLocalToScene(localLocation));
+               
+           }
+       }
+    }
+        
     
     ////////////////////////////////////////////////////////////////////////////
     // PropertyChangedListener
@@ -782,9 +790,30 @@ public abstract class UMLNodeWidget extends Widget
     
     public void remove()
     {
-        scene.removeNodeWithEdges(getObject()); 
+        // remove all node object that are associated with child widget 
+        for (Object o : getAllChildren(new ArrayList<Object>(), this))
+        {
+            if (scene.isNode(o))
+                scene.removeNodeWithEdges(o);
+        }
+            
     }
     
+    private List<Object> getAllChildren(List<Object> list, Widget widget)         
+    {
+        for (Widget child : widget.getChildren())
+        {
+          Object pe = scene.findObject(widget);
+          if (scene.isNode(pe))
+          {
+              list.add(pe);
+          }
+          list = getAllChildren(list, child);
+        }
+        return list;
+    }
+    
+   
     protected String getResourcePath()
     {
         return getWidgetID() + "." + DEFAULT;
@@ -802,7 +831,7 @@ public abstract class UMLNodeWidget extends Widget
      */
     public Dimension getResizingMinimumSize()
     {
-        return new Dimension(1,1);
+        return new Dimension(10,10);
     }
     /**
      * instead of Widget::getMinimumSize this is dinamic value used in resize to content action and most im[portant
@@ -833,5 +862,105 @@ public abstract class UMLNodeWidget extends Widget
     public boolean isCopyCutDeletable()
     {
         return true;
+    }
+    
+ 
+    public boolean isManuallyResized() {
+       return resizedManually;
+    }
+    public void setIsManuallyResized(boolean manuallyResized)
+    {
+        resizedManually=manuallyResized;
+    }
+    protected boolean isInitialized()
+    {
+        return initialized;
+    }
+    protected void setIsInitialized(boolean isInitialized)
+    {
+        initialized=isInitialized;
+    }
+   /**
+     * update nodes after changes in node according to global resizing options
+    *  body is executed after scene validation
+     */
+    public void updateSizeWithOptions()
+    {
+        //resize only for already loaded/initialized nodes
+            if(isInitialized())new AfterValidationExecutor(new ActionProvider() {
+                public void perfomeAction() {
+                String resOption=NbPreferences.forModule(DummyCorePreference.class).get("UML_Automatically_Size_Elements", PSK_RESIZE_ASNEEDED);
+                if(handeNeverCases())
+                {
+                    //handled
+                }
+                else if(PSK_RESIZE_EXPANDONLY.equals(resOption))
+                {
+                    setResizeMode(UMLNodeWidget.RESIZEMODE.MINIMUMSIZE);
+                    setPreferredBounds(null);
+                    setPreferredSize(null);
+                    setMinimumSize(null);
+                    switch(getResizeMode())//get mode, it may be different from one we attempt to set
+                    {
+                        case MINIMUMSIZE:
+                            setMinimumSize(getBounds().getSize());
+                            break;
+//                        case PREFERREDBOUNDS:
+//                            setPreferredBounds(new Rectangle(new Point(),getBounds().getSize()));
+//                            break;
+//                        case PREFERREDSIZE:
+//                            setPreferredSize(getBounds().getSize());
+//                            break;
+                    }
+                }
+                else if(PSK_RESIZE_ASNEEDED.equals(resOption))
+                {
+                    setResizeMode(UMLNodeWidget.RESIZEMODE.MINIMUMSIZE);
+                    setPreferredBounds(null);
+                    setPreferredSize(null);
+                    setMinimumSize(null);
+                    switch(getResizeMode())//get mode, it may be different from one we attempt to set
+                    {
+                        case MINIMUMSIZE:
+                            setMinimumSize(getDefaultMinimumSize());
+                            break;
+//                        case PREFERREDBOUNDS:
+//                            setPreferredBounds(new Rectangle(new Point(),getDefaultMinimumSize()));
+//                            break;
+//                        case PREFERREDSIZE:
+//                            setPreferredSize(getPreferredSize());
+//                            break;
+                    }
+                }
+                         }
+                    }, getScene());
+            revalidate();
+            getScene().validate();
+   }
+    
+    protected void handleNeverAfterValidation()
+    {
+            if(isInitialized())new AfterValidationExecutor(new ActionProvider() {
+                public void perfomeAction() {
+                    handeNeverCases();
+                }
+            },
+            getScene());
+            getScene().validate();
+    }
+    
+    protected boolean handeNeverCases()
+    {
+       String resOption=NbPreferences.forModule(DummyCorePreference.class).get("UML_Automatically_Size_Elements", PSK_RESIZE_ASNEEDED);
+       if(PSK_RESIZE_NEVER.equals(resOption) || (PSK_RESIZE_UNLESSMANUAL.equals(resOption) && isManuallyResized()))
+        {
+            //or may be can set pref bounds to current
+            setPreferredSize(null);
+            setMinimumSize(null);
+            setPreferredBounds(getBounds());
+            setResizeMode(RESIZEMODE.PREFERREDBOUNDS);
+            return true;
+        }
+        return false;
     }
 }

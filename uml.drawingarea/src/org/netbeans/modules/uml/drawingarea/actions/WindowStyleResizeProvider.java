@@ -215,7 +215,7 @@ public class WindowStyleResizeProvider extends ResizeStrategyProvider {
             UMLNodeWidget nW=(UMLNodeWidget) widget;
             if((startingmodifiers&InputEvent.SHIFT_DOWN_MASK)==InputEvent.SHIFT_DOWN_MASK)//if resizing was started with shift it force preferred size mode
             {
-                nW.setResizeMode(UMLNodeWidget.RESIZEMODE.PREFERREDSIZE);
+                nW.setResizeMode(UMLNodeWidget.RESIZEMODE.PREFERREDBOUNDS);
             }
             if((startingmodifiers&InputEvent.CTRL_DOWN_MASK)==InputEvent.CTRL_DOWN_MASK)//if resizing was started with shift it force minimum size mode
             {

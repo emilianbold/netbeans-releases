@@ -99,14 +99,16 @@ public class DiagramModelElementNode extends UMLModelElementNode
         } 
     }
 
+    @Override
     public boolean canDestroy()
     {
         return true;
     }
       
     
+    @Override
     public void setName(String val)
-    {
+    { 
         setDisplayName(val);
         getData().setItemText(val);
     }
@@ -114,9 +116,15 @@ public class DiagramModelElementNode extends UMLModelElementNode
     
     public void addSaveCookie()
     {
-        Cookie cookie = dataObject.getCookie(SaveCookie.class);
-        if (lookupContent != null && cookie != null)
-            lookupContent.add(cookie);
+        Cookie cookie = getLookup().lookup(SaveCookie.class);
+        if(cookie == null)
+        {
+            Cookie saveCookie = dataObject.getCookie(SaveCookie.class);
+            if (lookupContent != null && saveCookie != null)
+            {
+                lookupContent.add(saveCookie);
+            }
+        }
     }
 
     public void removeSaveCookie()

@@ -114,6 +114,15 @@ public final class OrthogonalSearchRouter implements Router {
             connectionWidgetCollector.collectCollisions(widget, verticalCollisions, horizontalCollisions);
         }
 
+        if (sourceAnchor.getRelatedWidget() == targetAnchor.getRelatedWidget())
+        {
+            // try to avoid routing path inside node widget
+            Rectangle rec = sourceAnchor.getRelatedWidget().convertLocalToScene(sourceAnchor.getRelatedWidget().getBounds());
+            rec.grow(SPACING_NODE, SPACING_NODE);
+            verticalCollisions.add(rec);
+            horizontalCollisions.add(rec);
+        }
+        
         //the default is to point to the center of any anchor. If an extended anchor
         //overwrites this class to return a different point than the center, then
         //drawing problem will exist. Meaning that the connection may draw over the

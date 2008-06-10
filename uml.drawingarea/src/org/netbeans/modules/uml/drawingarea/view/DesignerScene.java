@@ -486,6 +486,10 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         nodeWriter.beginWriting();
     }
 
+    public void saveChildren(Widget widget, NodeWriter nodeWriter) {
+        //not applicable
+    }
+    
     public void setBackgroundWidget(IPresentationElement element, Point point, String view)
     {
         removeBackgroundWidget();
@@ -521,4 +525,6 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         backgroundWidget = null;
         validate();
     }
+
+    
 }
