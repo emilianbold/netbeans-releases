@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.hudson.impl.HudsonJobImpl;
 import org.netbeans.modules.hudson.impl.HudsonViewImpl;
-import org.openide.nodes.Node;
 
 /**
  * Hudson node factory
@@ -39,7 +38,8 @@ public class HudsonNodesFactory {
     private static HudsonNodesFactory defaultInstance;
     
     /** All caches map */
-    private Map<Object, Map<String, ? extends Node>> maps = new HashMap<Object, Map<String, ? extends Node>>();
+    private final Map<Object,Map<String,HudsonViewNode>> viewMaps = new HashMap<Object,Map<String,HudsonViewNode>>();
+    private final Map<Object,Map<String,HudsonJobNode>> jobMaps = new HashMap<Object,Map<String,HudsonJobNode>>();
     
     private HudsonNodesFactory() {}
     
@@ -55,12 +55,12 @@ public class HudsonNodesFactory {
     
     public HudsonViewNode getHudsonViewNode(Object parent, HudsonViewImpl view) {
         // Get cache map
-        Map<String, HudsonViewNode> cache = (Map<String, HudsonViewNode>) maps.get(parent);
+        Map<String,HudsonViewNode> cache = viewMaps.get(parent);
         
         // If there is no cache map create a new one
         if (cache == null) {
             cache = new HashMap<String, HudsonViewNode>();
-            maps.put(parent, cache);
+            viewMaps.put(parent, cache);
         }
         
         // Try to get HudsonViewNode from cache
@@ -82,12 +82,12 @@ public class HudsonNodesFactory {
     
     public HudsonJobNode getHudsonJobNode(Object parent, HudsonJobImpl job) {
         // Get cache map
-        Map<String, HudsonJobNode> cache = (Map<String, HudsonJobNode>) maps.get(parent);
+        Map<String,HudsonJobNode> cache = jobMaps.get(parent);
         
         // If there is no cache map create a new one
         if (cache == null) {
             cache = new HashMap<String, HudsonJobNode>();
-            maps.put(parent, cache);
+            jobMaps.put(parent, cache);
         }
         
         // Try to get HudsonJobNode from cache
