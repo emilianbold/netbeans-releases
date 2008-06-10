@@ -40,6 +40,7 @@
  */
 package org.netbeans.qa.form.undoredo;
 
+import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.modules.form.*;
@@ -52,8 +53,9 @@ import java.awt.Color;
 import org.netbeans.jellytools.properties.Property;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.qa.form.ExtJellyTestCase;
 
-public class BaseTest extends JellyTestCase {
+public class BaseTest extends ExtJellyTestCase {
 
     public String FILE_NAME = "clear_JFrame";
     public String PACKAGE_NAME = "data";
@@ -72,6 +74,10 @@ public class BaseTest extends JellyTestCase {
     /** */
     public BaseTest(String testName) {
         super(testName);
+    }
+    
+    public void setUp() throws IOException {
+        openProject(DATA_PROJECT_NAME);
     }
 
     /*
@@ -117,7 +123,7 @@ public class BaseTest extends JellyTestCase {
         EditAction editAction = new EditAction();
         editAction.perform(formnode);
         log("Source Editor window opened.");
-
+        
         OpenAction openAction = new OpenAction();
         openAction.perform(formnode);
         log("Form Editor window opened.");
@@ -435,8 +441,7 @@ public class BaseTest extends JellyTestCase {
      * @param args arguments from command line
      */
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(BaseTest.class)
-                .addTest("testScenario").enableModules(".*").gui(true).clusters(".*"));
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(BaseTest.class).addTest("testScenario").enableModules(".*").gui(true).clusters(".*"));
 
 
     }
