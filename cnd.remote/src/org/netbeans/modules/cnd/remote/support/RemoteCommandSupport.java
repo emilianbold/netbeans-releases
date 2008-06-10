@@ -37,31 +37,68 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.compilers;
+package org.netbeans.modules.cnd.remote.support;
 
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetProvider;
-import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
-import org.netbeans.modules.cnd.remote.support.managers.CompilerSetScriptManager;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSchException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 
 /**
  *
  * @author gordonp
  */
-public class RemoteCompilerSetProvider implements CompilerSetProvider {
-    
-    public RemoteCompilerSetProvider() {
-        String host = System.getProperty("cnd.remote.server");
-        String user = System.getProperty("user.name");
+public class RemoteCommandSupport extends RemoteConnectionSupport {
         
-        RemoteScriptSupport support = new RemoteScriptSupport(host, user, new CompilerSetScriptManager());
+    private BufferedReader in;
+    private StringWriter out;
+
+    public RemoteCommandSupport(String host, String user) {
+        super(host, user);
+                
+        try {
+            InputStream is = channel.getInputStream();
+            in = new BufferedReader(new InputStreamReader(is));
+            out = new StringWriter();
+            
+            String line;
+            while ((line = in.readLine()) != null) {
+                out.write(line);
+                out.flush();
+            }
+            in.close();
+            is.close();
+        } catch (IOException ex) {
+        }
+    }
+    
+    @Override
+    public String toString() {
+        if (out != null) {
+            return out.toString();
+        } else {
+            return "";
+        }
     }
 
-    public boolean hasMoreCompilerSets() {
-        return false;
+    @Override
+    protected Channel createChannel() throws JSchException {
+        ChannelExec echannel = (ChannelExec) session.openChannel("exec");
+        String cmd = System.getProperty("cnd.remote.program");
+        
+        if (cmd == null) {
+            cmd = "/home/gordonp/.netbeans/rddev/cnd.remote/scripts/hello.sh";
+        }
+        
+        echannel.setCommand(cmd);
+        echannel.setInputStream(null);
+        echannel.setErrStream(System.err);
+        echannel.connect();
+        return echannel;
     }
 
-    public CompilerSet getNextCompilerSet() {
-        return null;
-    }
 }
