@@ -725,13 +725,16 @@ public class UMLDiagramTopComponent extends TopComponent
                 UIDiagram diagram = (UIDiagram)FactoryRetriever.instance().createType("Diagram", null);
                 diagram.setDataObject(data);
 
-
+                // At this point the diagram has not yet been saved, so 
+                // setting the notify flag to false to prevent the diagram from firing
+                // name-change events
+                diagram.setNotify(false);
                 diagram.setName(name);
 //            diagram.setNamespace(owner);
                 diagram.setDiagramKind(kind);
+                diagram.setNotify(true);
                 setDiagramNameSpace(owner, diagram);
                 lookupContent.add(diagram);   
-//                lookupContent.add(data); // already added in initLookup()
 
                 retVal = diagram;
                 scene = new DesignerScene(diagram,this);

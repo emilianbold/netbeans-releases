@@ -94,6 +94,7 @@ public class UIDiagram extends Diagram {
     private String alias = "";
     //private String xmiIDStr = "";
     private String doc;
+    private boolean notify = true;
     
     // TODO: Convert to enumeration.
     private int diagramType = IDiagramKind.DK_UNKNOWN;
@@ -227,12 +228,15 @@ public class UIDiagram extends Diagram {
         if ( !getName().equals(value))
         {
             name = value;
-            fireDrawingAreaPropertyChange("FireDrawingAreaPostPropertyChange", 
-                    DiagramAreaEnumerations.DAPK_NAME);
-            Node node = null;
-            if ((node = getNode()) != null )
+            if (getNotify()) 
             {
-                XMLManip.setAttributeValue(node, "name",  name);
+                fireDrawingAreaPropertyChange("FireDrawingAreaPostPropertyChange", 
+                        DiagramAreaEnumerations.DAPK_NAME);
+                Node node = null;
+                if ((node = getNode()) != null )
+                {
+                    XMLManip.setAttributeValue(node, "name",  name);
+                }
             }
         }
     }
@@ -248,8 +252,11 @@ public class UIDiagram extends Diagram {
         if ( !getAlias().equals(value))
         {
             alias = value;
-            fireDrawingAreaPropertyChange("FireDrawingAreaPostPropertyChange", 
-                    DiagramAreaEnumerations.DAPK_ALIAS);
+             if (getNotify()) 
+            {
+                fireDrawingAreaPropertyChange("FireDrawingAreaPostPropertyChange", 
+                        DiagramAreaEnumerations.DAPK_ALIAS);
+             }
         }
     }
     
@@ -728,5 +735,15 @@ public class UIDiagram extends Diagram {
                         proxyDiagram, propKind, ePayload);
             }
         }
+    }
+
+    public void setNotify(boolean val)
+    {
+        this.notify = val;
+    }
+
+    public boolean getNotify()
+    {
+        return this.notify;
     }
 }
