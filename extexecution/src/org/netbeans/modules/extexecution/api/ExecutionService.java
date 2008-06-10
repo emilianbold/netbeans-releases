@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.extexecution.api;
 
-import org.netbeans.modules.extexecution.FreeIOHandler;
+import org.netbeans.modules.extexecution.InputOutputManager;
 import org.netbeans.modules.extexecution.StopAction;
 import org.netbeans.modules.extexecution.RerunAction;
 import java.awt.event.ActionEvent;
@@ -200,7 +200,7 @@ public final class ExecutionService {
             // try to find free output windows
             synchronized (this) {
                 if (io == null) {
-                    FreeIOHandler freeIO = FreeIOHandler.findFreeIO(originalDisplayName, descriptor.isControllable());
+                    InputOutputManager freeIO = InputOutputManager.findFreeIO(originalDisplayName, descriptor.isControllable());
                     if (freeIO != null) {
                         io = freeIO.getIO();
                         displayName = freeIO.getDisplayName();
@@ -314,7 +314,7 @@ public final class ExecutionService {
                     RUNNING_PROCESSES.remove(ExecutionService.this);
 
                     if (io != null && io != customio) {
-                        FreeIOHandler.addFreeIO(io, displayName, stopAction, rerunAction);
+                        InputOutputManager.addFreeIO(io, displayName, stopAction, rerunAction);
                     }
 
                     ACTIVE_DISPLAY_NAMES.remove(displayName);

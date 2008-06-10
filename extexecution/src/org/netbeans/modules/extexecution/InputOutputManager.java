@@ -49,7 +49,7 @@ import java.util.WeakHashMap;
 import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 
-public final class FreeIOHandler {
+public final class InputOutputManager {
     
     /**
      * All tabs which were used for some process which has now ended.
@@ -63,7 +63,7 @@ public final class FreeIOHandler {
     private final InputOutput io;
     private final Data data;
     
-    private FreeIOHandler(final InputOutput io, final Data data) {
+    private InputOutputManager(final InputOutput io, final Data data) {
         this.io = io;
         this.data = data;
     }
@@ -96,8 +96,8 @@ public final class FreeIOHandler {
      * @param name the name of the free tab. Other free tabs are ignored.
      * @return free tab and its current display name or <tt>null</tt>
      */
-    public static FreeIOHandler findFreeIO(final String name, boolean actions) {
-        FreeIOHandler result = null;
+    public static InputOutputManager findFreeIO(final String name, boolean actions) {
+        InputOutputManager result = null;
         synchronized (FREE_IOS) {
             for (Iterator<Entry<InputOutput, Data>> it = FREE_IOS.entrySet().iterator(); it.hasNext();) {
                 Entry<InputOutput, Data> entry = it.next();
@@ -112,7 +112,7 @@ public final class FreeIOHandler {
                     if ((actions && data.rerunAction != null && data.stopAction != null)
                             || !actions && data.rerunAction == null && data.stopAction == null) {
                         // Reuse it.
-                        result = new FreeIOHandler(freeIO, data);
+                        result = new InputOutputManager(freeIO, data);
                         try {
                             freeIO.getOut().reset();
                         } catch (IOException ioe) {
