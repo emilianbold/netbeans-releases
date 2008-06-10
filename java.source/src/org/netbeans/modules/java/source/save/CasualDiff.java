@@ -47,7 +47,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.modules.java.source.transform.FieldGroupTree;
 import static com.sun.source.tree.Tree.*;
-import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.api.java.source.Comment;
@@ -63,7 +62,6 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Position;
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.openide.util.NbBundle;
@@ -97,7 +95,7 @@ public class CasualDiff {
         this.tokenSequence = workingCopy.getTokenHierarchy().tokenSequence(JavaTokenId.language());
         this.origText = workingCopy.getText();
         this.context = context;
-        printer = new VeryPretty(workingCopy, CodeStyle.getDefault(null));
+        printer = new VeryPretty(workingCopy);
     }
     
     public com.sun.tools.javac.util.List<Diff> getDiffs() {
