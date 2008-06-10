@@ -90,6 +90,7 @@ public final class EventSupport {
     private FileChangeListener fileChangeListener;
     private DataObjectListener dobjListener;
     private ChangeListener parserListener;
+    private static final EditorRegistryListener editorRegistryListener  = new EditorRegistryListener();
     
     
     private static final RequestProcessor RP = new RequestProcessor ("parsing-event-collector",1);       //NOI18N
@@ -353,7 +354,7 @@ public final class EventSupport {
                             this.request = TaskProcessor.resetState(source, false, false);
                             SourceAccessor.getINSTANCE().getEventSupport(source).k24 = true;
                         }
-                        else {                    
+                        else {
                             TaskProcessor.Request _request = this.request;
                             this.request = null;
                             final EventSupport support = SourceAccessor.getINSTANCE().getEventSupport(source);
