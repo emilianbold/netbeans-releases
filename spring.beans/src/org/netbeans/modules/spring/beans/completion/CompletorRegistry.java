@@ -55,6 +55,7 @@ import java.util.Map;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.spring.beans.BeansAttributes;
 import org.netbeans.modules.spring.beans.BeansElements;
+import org.netbeans.modules.spring.beans.completion.completors.BeanIdCompletor;
 import org.netbeans.modules.spring.beans.completion.completors.PNamespaceCompletor;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
@@ -207,6 +208,9 @@ public final class CompletorRegistry {
         GenericCompletorFactory pNamespaceBeanRefCompletorFactory 
                 = new GenericCompletorFactory(PNamespaceBeanRefCompletor.class);
         registerCompletorFactory(BeansElements.BEAN, null, pNamespaceBeanRefCompletorFactory);
+        
+        GenericCompletorFactory beanIdCompletorFactory = new GenericCompletorFactory(BeanIdCompletor.class);
+        registerCompletorFactory(BeansElements.BEAN, BeansAttributes.ID, beanIdCompletorFactory);
     }
     private static CompletorRegistry INSTANCE = new CompletorRegistry();
 

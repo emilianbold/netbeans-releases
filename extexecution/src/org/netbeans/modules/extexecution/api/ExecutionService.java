@@ -81,18 +81,19 @@ import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
 /**
- * <p>An ExecutionService takes an {@link ExecutionDescriptor} and executes it.
+ * Execution service provides the facility to execute the process while
+ * displaying the output and handling the input.
+ * <p>
  * It will execute the program with an associated I/O window, with stop and
  * restart buttons. It will also obey various descriptor properties such as
  * whether or not to show a progress bar.
  * <p>
- * All launched processes will be killed on exit. Possibly I could make this
- * optional or at least ask the user.
- * </p>
- *
- * @todo Add a Restart button which accomplishes both a stop and a restart
+ * All processes launched by this class are terminated on VM exit by
+ * {@link Process#destroy()}.
  *
  * @author Tor Norbye, Petr Hejl
+ * @see #newService(java.util.concurrent.Callable, org.netbeans.modules.extexecution.api.ExecutionDescriptor, java.lang.String)
+ * @see ExecutionDescriptor
  */
 public final class ExecutionService {
 
@@ -148,10 +149,24 @@ public final class ExecutionService {
         this.descriptor = descriptor;
     }
 
-    public static ExecutionService newService(Callable<Process> processCreator, ExecutionDescriptor descriptor, String displayName) {
+    /**
+     * Creates new execution service. Service will wrap up the processes
+     * created by <code>processCreator</code>.
+     *
+     * @param processCreator callable returning the process to wrap up
+     * @param descriptor descriptor describing the configuration of service
+     * @param displayName display name of this service
+     * @return new execution service
+     */
+    public static ExecutionService newService(Callable<Process> processCreator,
+            ExecutionDescriptor descriptor, String displayName) {
         return new ExecutionService(processCreator, displayName, descriptor);
     }
 
+    /**
+     * Kills the running process. Noop if the execution service is not running
+     * any process.
+     */
     public void kill() {
         // temp logging to track down #131628
         LOGGER.log(Level.FINE, "Killing " + this.displayName + " " + this);
@@ -177,6 +192,13 @@ public final class ExecutionService {
         return run();
     }
 
+    /**
+     * Runs the process described by this service.
+     * <p>
+     * For details on execution control see {@link ExecutionDescriptor}.
+     *
+     * @return task representing the actual run
+     */
     public Task run() {
         if (!rerun) {
             customio = descriptor.getInputOutput();
@@ -290,7 +312,7 @@ public final class ExecutionService {
                             io.select();
                         }
                     });
-                    
+
             handle.setInitialDelay(0);
             handle.start();
             handle.switchToIndeterminate();
@@ -356,15 +378,12 @@ public final class ExecutionService {
             executor.submit(InputReaderTask.newTask(
                     InputReaders.forStream(process.getInputStream(), Charset.defaultCharset()),
                     createOutProcessor(out)));
-                    //descriptor.getOutProcessor(io.getOut())));
             executor.submit(InputReaderTask.newTask(
                     InputReaders.forStream(process.getErrorStream(), Charset.defaultCharset()),
                     createErrProcessor(err)));
-                    //descriptor.getErrProcessor(io.getErr())));
             executor.submit(InputReaderTask.newTask(
                     InputReaders.forReader(in),
                     createInProcessor(process.getOutputStream())));
-                    //descriptor.getInProcessor(new OutputStreamWriter(process.getOutputStream()))));
 
             process.waitFor();
         } catch (InterruptedException ex) {
@@ -422,7 +441,7 @@ public final class ExecutionService {
     private InputProcessor createInProcessor(OutputStream os) {
         return InputProcessors.copying(new OutputStreamWriter(os));
     }
-    
+
     private static String getNonActiveDisplayName(final String displayNameBase) {
         String nonActiveDN = displayNameBase;
         if (ACTIVE_DISPLAY_NAMES.contains(nonActiveDN)) {
