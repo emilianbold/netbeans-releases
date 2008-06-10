@@ -706,7 +706,7 @@ type CDATA #REQUIRED
         <component_type name="ReplayStream" icon="streamInputx32.png" title="IEP.External.ExternalTablePollingStream.title" description="IEP.External.ExternalTablePollingStream.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
-                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.ExternalTablePollingStreamCustomEditor"/>
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.ReplayStreamCustomEditor"/>
                 <property name="inputSchemaIdList" access="" />
                 <property name="inputType" access="" default="i18n.IEP.IOType.table"/>
                 <property name="inputMaxCount" access="" />
@@ -726,16 +726,12 @@ type CDATA #REQUIRED
             <property transient="false" category="IEP.Category.main" name="toColumnList" title="IEP.Operator.StreamProjectionAndFilter.toColumnList.title" description="IEP.Operator.StreamProjectionAndFilter.toColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
             <property transient="false" category="IEP.Category.main" name="fromClause" title="IEP.Operator.StreamProjectionAndFilter.fromClause.title" description="IEP.Operator.StreamProjectionAndFilter.fromClause.description" required="true" type="string" editor="default" default="" renderer="string" access="" multiple="true"/>
             <property transient="false" category="IEP.Category.main" name="whereClause" title="IEP.Operator.StreamProjectionAndFilter.whereClause.title" description="IEP.Operator.StreamProjectionAndFilter.whereClause.description" required="false" type="string" editor="default" default="" renderer="string" access="" multiple="false"/>
-            <property transient="false" category="IEP.Category.main" name="pollingInterval" title="IEP.Operator.StreamProjectionAndFilter.toColumnList.title" description="IEP.Operator.StreamProjectionAndFilter.toColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true" />
-            <property transient="false" category="IEP.Category.main" name="pollingIntervalTimeUnit" title="IEP.Operator.StreamProjectionAndFilter.toColumnList.title" description="IEP.Operator.StreamProjectionAndFilter.toColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true" />
-            <property transient="false" category="IEP.Category.main" name="pollingRecordSize" title="IEP.Operator.StreamProjectionAndFilter.toColumnList.title" description="IEP.Operator.StreamProjectionAndFilter.toColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true" />
             <property transient="false" category="IEP.Category.main" name="databaseJndiName" title="IEP.Operator.StreamProjectionAndFilter.toColumnList.title" description="IEP.Operator.StreamProjectionAndFilter.toColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true" />
             <!--<property transient="false" category="IEP.Category.main" name="recordIdentifierColumns" title="IEP.Operator.StreamProjectionAndFilter.toColumnList.title" description="IEP.Operator.StreamProjectionAndFilter.toColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>-->
             <property transient="false" category="IEP.Category.schema" name="recordIdentifierColumnsSchema" title="IEP.Model.Entity.outputSchemaId.title" description="IEP.Model.Entity.outputSchemaId.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="&R;" multiple="false"/>
             
             
             
-            <property transient="false" category="IEP.Category.entity" name="isDeleteRecords" title="IEP.Model.Entity.isGlobal.title" description="IEP.Model.Entity.isGlobal.description" required="false" type="boolean" editor="default" default="false" renderer="string" access="&RW;" multiple="false"/>
                         
             <code type="xml" file="vm/iep/input/streamInput.xml"/>
         </component_type>
