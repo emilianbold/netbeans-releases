@@ -50,6 +50,8 @@ import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 
 /**
@@ -114,8 +116,10 @@ public interface CompletionResolver {
     
     public static final int RESOLVE_FILE_LOCAL_FUNCTIONS   = 1 << 22;
     
-    public static final int RESOLVE_CONTEXT_CLASSES          = 1 << 23; // as alternative to RESOLVE_CLASSES
+    public static final int RESOLVE_CONTEXT_CLASSES        = 1 << 23; // as alternative to RESOLVE_CLASSES
     
+    public static final int RESOLVE_TEMPLATE_PARAMETERS    = 1 << 24;
+
     public static final int RESOLVE_MACROS                 = RESOLVE_FILE_LOCAL_MACROS | RESOLVE_FILE_PRJ_MACROS | RESOLVE_FILE_LIB_MACROS |
                                                                 RESOLVE_GLOB_MACROS | RESOLVE_LIB_MACROS;
 
@@ -200,7 +204,9 @@ public interface CompletionResolver {
         
         public Collection<CsmNamespaceAlias> getLibNamespaceAliases();
 
-        public Collection addResulItemsToCol(Collection orig);
+        public Collection<CsmTemplateParameter> getTemplateparameters();
+
+        public Collection<? extends CsmObject> addResulItemsToCol(Collection<? extends CsmObject> orig);
         
         public int size();
     }

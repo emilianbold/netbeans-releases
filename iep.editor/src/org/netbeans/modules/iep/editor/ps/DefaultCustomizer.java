@@ -112,7 +112,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
         try {
             mComponent = getOperatorComponent();
             mIsSchemaOwner = mComponent.isSchemaOwner();
-            String inputType = mComponent.getProperty(INPUT_TYPE_KEY).getValue();
+            String inputType = mComponent.getInputType().getType();
             mHasExpressionColumn = mIsSchemaOwner && !inputType.equals(IO_TYPE_NONE);
             mHasFromClause = mComponent.getFromClause() != null;
             mHasWhereClause = mComponent.getWhereClause()!= null;

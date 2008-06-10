@@ -762,9 +762,11 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
                 if (javaClass!=null) {
                     TreeMaker make = workingCopy.getTreeMaker();
                     GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
+                    String pkg = model.getJavaPackage();
+                    String className =  (pkg == null || pkg.equals("")) ? model.getHandler() :
+                        pkg + "." + model.getHandler();
                     ClassTree modifiedClass   = genUtils.addImplementsClause(
-                            javaClass, model.getJavaPackage()+"."+model.getHandler());
-                    
+                            javaClass, className);                    
                      //add private class fields
                         List varTree = new ArrayList();
                         ModifiersTree mods = make.Modifiers(EnumSet.of(Modifier.PUBLIC, Modifier.FINAL, Modifier.STATIC));

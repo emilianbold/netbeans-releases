@@ -59,7 +59,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
-import org.netbeans.modules.gsf.api.GsfLanguage;
+import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.modules.ruby.options.CodeStyle;
 import org.netbeans.modules.ruby.options.FmtOptions;
 import org.netbeans.modules.gsf.spi.DefaultParseListener;
@@ -80,6 +80,7 @@ public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTe
     protected void setUp() throws Exception {
         super.setUp();
         RubyIndex.setClusterUrl("file:/bogus"); // No translation
+        TestSourceModelFactory.currentTest = this;
     }
     
     @Override
@@ -127,7 +128,7 @@ TranslatedSource translatedSource = null; // TODO
         LanguageRegistry registry = LanguageRegistry.getInstance();
         if (!LanguageRegistry.getInstance().isSupported(RubyInstallation.RUBY_MIME_TYPE)) {
             List<Action> actions = Collections.emptyList();
-            org.netbeans.modules.gsf.Language dl = new Language("org/netbeans/modules/ruby/jrubydoc.png", "text/x-ruby", actions, new RubyLanguage(), new RubyParser(), new CodeCompleter(), new RenameHandler(), new DeclarationFinder(), new Formatter(), new BracketCompleter(), new RubyIndexer(), new StructureAnalyzer(), null, false);
+            org.netbeans.modules.gsf.Language dl = new Language("org/netbeans/modules/ruby/jrubydoc.png", "text/x-ruby", actions, new RubyLanguage(), new RubyParser(), new RubyCodeCompleter(), new RubyRenameHandler(), new RubyDeclarationFinder(), new RubyFormatter(), new RubyKeystrokeHandler(), new RubyIndexer(), new RubyStructureAnalyzer(), null, false);
             List<org.netbeans.modules.gsf.Language> languages = new ArrayList<org.netbeans.modules.gsf.Language>();
             languages.add(dl);
             registry.addLanguages(languages);
@@ -167,7 +168,7 @@ TranslatedSource translatedSource = null; // TODO
     }
 
     @Override
-    protected GsfLanguage getPreferredLanguage() {
+    protected DefaultLanguageConfig getPreferredLanguage() {
         return new RubyLanguage();
     }
 
@@ -182,17 +183,17 @@ TranslatedSource translatedSource = null; // TODO
     }
     
     @Override
-    protected Formatter getFormatter(IndentPrefs preferences) {
+    protected RubyFormatter getFormatter(IndentPrefs preferences) {
         if (preferences == null) {
             preferences = new IndentPrefs(2,2);
         }
 
-        Preferences prefs = NbPreferences.forModule(FormatterTest.class);
+        Preferences prefs = NbPreferences.forModule(RubyFormatterTest.class);
         prefs.put(FmtOptions.indentSize, Integer.toString(preferences.getIndentation()));
         prefs.put(FmtOptions.continuationIndentSize, Integer.toString(preferences.getHangingIndentation()));
         CodeStyle codeStyle = CodeStyle.getTestStyle(prefs);
         
-        Formatter formatter = new Formatter(codeStyle, 80);
+        RubyFormatter formatter = new RubyFormatter(codeStyle, 80);
         
         return formatter;
     }

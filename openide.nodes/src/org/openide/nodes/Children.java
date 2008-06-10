@@ -41,8 +41,6 @@
 
 package org.openide.nodes;
 
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,14 +48,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openide.util.Enumerations;
 import org.openide.util.Mutex;
 
@@ -396,8 +391,12 @@ public abstract class Children extends Object {
         return entrySupport().isInitialized();
     }
 
-    /** Get's the node at given position. Package private right now
-     * to allow tests to use it.
+    /** Getter for a child at a given position. If child with such index
+     * does not exists it returns null.
+     *
+     * @param index the index of a node we want to know (non negative)
+     * @return the node at given index or null
+     * @since org.openide.nodes 7.5
      */
     public final Node getNodeAt(int i) {
         return entrySupport().getNodeAt(i);
@@ -558,7 +557,7 @@ public abstract class Children extends Object {
             n.fireSubNodesChange(true, arr, null);
         }
     }
-    
+
     /** Interface that provides a set of nodes.
     */
     static interface Entry {

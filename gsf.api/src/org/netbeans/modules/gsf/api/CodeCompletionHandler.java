@@ -70,6 +70,9 @@ import org.netbeans.modules.gsf.api.annotations.NonNull;
  * @author Tor Norbye
  */
 public interface CodeCompletionHandler {
+    /**
+     * The type of code completion query to perform.
+     */
     enum QueryType {
         COMPLETION,
         DOCUMENTATION,
@@ -82,7 +85,10 @@ public interface CodeCompletionHandler {
     /**
      * Compute a code completion result for the given code completion request.
      * If there are no results, you should NOT return null, you should return
-     * {@link CodeCompletionResult.NONE}.
+     * {@link CodeCompletionResult#NONE}.
+     * @param context Context regarding the completion
+     * @return A result object holding the completion items
+     * 
      */
     @NonNull
     CodeCompletionResult complete(@NonNull CodeCompletionContext context);
@@ -121,9 +127,9 @@ public interface CodeCompletionHandler {
 
     /**
      * Consider a keystroke and decide whether it should automatically invoke some type
-     * of completion. If so, return the desired type, otherwise return QueryType.NONE.
-     * @return A QueryType if automatic completion should be initiated, or {@link QueryType.NONE}
-     *   if it should be left alon, or {@link QueryType.STOP} if completion should be terminated
+     * of completion. If so, return the desired type, otherwise return {@link QueryType#NONE}.
+     * @return A QueryType if automatic completion should be initiated, or {@link QueryType#NONE}
+     *   if it should be left alon, or {@link QueryType#STOP} if completion should be terminated
      */
     @NonNull
     QueryType getAutoQuery(@NonNull JTextComponent component, @NonNull String typedText);

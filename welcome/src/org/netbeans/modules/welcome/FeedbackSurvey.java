@@ -75,7 +75,8 @@ final class FeedbackSurvey {
         } catch (InvocationTargetException ex) {
             Exceptions.printStackTrace(ex);
         } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
+            // Can be thrown on non-Sun JDKs:
+            Logger.getLogger(FeedbackSurvey.class.getName()).log(Level.INFO, null, ex);
         } catch (SecurityException ex) {
             Exceptions.printStackTrace(ex);
         } catch (NoSuchMethodError ex) {

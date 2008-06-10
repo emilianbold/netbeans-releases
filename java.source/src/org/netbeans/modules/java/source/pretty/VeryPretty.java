@@ -70,6 +70,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
@@ -106,19 +107,12 @@ public final class VeryPretty extends JCTree.Visitor {
     private boolean containsError = false;
     
     public VeryPretty(CompilationInfo cInfo) {
-        this(cInfo, CodeStyle.getDefault(null));
-    }
-
-    public VeryPretty(CompilationInfo cInfo, CodeStyle cs) {
-        this(JavaSourceAccessor.getINSTANCE().getJavacTask(cInfo).getContext(), cs);
+        this(JavaSourceAccessor.getINSTANCE().getJavacTask(cInfo).getContext(),
+                CodeStyle.getDefault(FileOwnerQuery.getOwner(cInfo.getFileObject())));
         this.cInfo = cInfo;
         this.origUnit = (JCCompilationUnit) cInfo.getCompilationUnit();
     }
-    
-    public VeryPretty(Context context) {
-        this(context, CodeStyle.getDefault(null));
-    }
-    
+
     public VeryPretty(Context context, CodeStyle cs) {
 	names = Name.Table.instance(context);
 	enclClassName = names.empty;

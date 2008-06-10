@@ -54,7 +54,7 @@ import org.netbeans.modules.gsf.api.PreviewableFix;
 import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.Formatter;
+import org.netbeans.modules.ruby.RubyFormatter;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
@@ -513,7 +513,7 @@ public class ConvertBlockType extends RubyAstRule {
                     Exceptions.printStackTrace(ble);
                 }
             }
-            edits.setFormatter(new Formatter(), true);
+            edits.setFormatter(new RubyFormatter(), true);
         }
 
         private void collapse(EditList edits, BaseDocument doc, Node node, int startOffset, int endOffset) {
@@ -636,7 +636,7 @@ public class ConvertBlockType extends RubyAstRule {
                     Exceptions.printStackTrace(ble);
                 }
             }
-            edits.setFormatter(new Formatter(), true);
+            edits.setFormatter(new RubyFormatter(), true);
         }
 
         /** Determine whether parentheses are necessary around the call

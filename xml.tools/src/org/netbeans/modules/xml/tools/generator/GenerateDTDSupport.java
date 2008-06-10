@@ -127,18 +127,17 @@ public final class GenerateDTDSupport implements XMLGenerateCookie  {
             String name = primFile.getName();
             FileObject folder = primFile.getParent();
 
-            FileObject generFile = (new SelectFileDialog(folder, name, DTD_EXT, Util.NONEMPTY_CHECK)).getFileObject();
-            name = generFile.getName();
-
             // IANA encoding name
-            String encoding = EncodingUtil.getProjectEncoding(generFile);
+            String encoding = EncodingUtil.getProjectEncoding(primFile);
             String dtd = xml2dtd(name, encoding);
             if (dtd == null) {
                 String msg = NbBundle.getMessage(GenerateDTDSupport.class, "BK0009");
                 GuiUtil.notifyWarning(msg + "\n" + warning); // NOI18N
                 return;
             }
-
+            //finally
+            FileObject generFile = (new SelectFileDialog(folder, name, DTD_EXT, Util.NONEMPTY_CHECK)).getFileObject();
+            name = generFile.getName();
             // write to file
             FileLock lock = null;
             Writer writer = null;

@@ -111,7 +111,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
     private boolean stopped;
 
     /** Stack of the expressions. */
-    private ArrayList expStack = new ArrayList();
+    private ArrayList<CsmCompletionExpression> expStack = new ArrayList<CsmCompletionExpression>();
 
     /** TokenID of the last found token except Syntax.EOT and Syntax.EOL */
     private TokenID lastValidTokenID;
@@ -189,25 +189,25 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
     /** Pop exp from top of stack */
     private CsmCompletionExpression popExp() {
         int cnt = expStack.size();
-        return (cnt > 0) ? (CsmCompletionExpression)expStack.remove(cnt - 1) : null;
+        return (cnt > 0) ? expStack.remove(cnt - 1) : null;
     }
 
     /** Look at the exp at top of stack */
     private CsmCompletionExpression peekExp() {
         int cnt = expStack.size();
-        return (cnt > 0) ? (CsmCompletionExpression)expStack.get(cnt - 1) : null;
+        return (cnt > 0) ? expStack.get(cnt - 1) : null;
     }
 
     /** Look at the second exp on stack */
     private CsmCompletionExpression peekExp2() {
         int cnt = expStack.size();
-        return (cnt > 1) ? (CsmCompletionExpression)expStack.get(cnt - 2) : null;
+        return (cnt > 1) ? expStack.get(cnt - 2) : null;
     }
 
     /** Look at the third exp on stack */
     private CsmCompletionExpression peekExp(int ind) {
         int cnt = expStack.size();
-        return (cnt >= ind && cnt > 0) ? (CsmCompletionExpression)expStack.get(cnt - ind) : null;
+        return (cnt >= ind && cnt > 0) ? expStack.get(cnt - ind) : null;
     }
     
     private CsmCompletionExpression createTokenExp(int id) {
@@ -336,11 +336,11 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                     popExp(); // pop '~'
 
                                     // construct new VARIABLE expression
-                                    TokenID curTokenID = top.getTokenID(0);
-                                    int curTokenPosition = top2.getTokenOffset(0);
-                                    String curTokenText = top2.getTokenText(0) + top.getTokenText(0);
+                                    TokenID aCurTokenID = top.getTokenID(0);
+                                    int aCurTokenPosition = top2.getTokenOffset(0);
+                                    String aCurTokenText = top2.getTokenText(0) + top.getTokenText(0);
                                     CsmCompletionExpression exp = new CsmCompletionExpression(VARIABLE);
-                                    exp.addToken(curTokenID, curTokenPosition, curTokenText);                                
+                                    exp.addToken(aCurTokenID, aCurTokenPosition, aCurTokenText);                                
                                     pushExp(exp);
                                 }
                             }
@@ -482,7 +482,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                 if (rightOp != null) {
                     popExp(); // pop rightOp
                     cont = true;
-                    ArrayList opStack = new ArrayList(); // operator stack
+                    ArrayList<CsmCompletionExpression> opStack = new ArrayList<CsmCompletionExpression>(); // operator stack
                     CsmCompletionExpression leftOp = null;
                     do {
                         if (leftOp == null) {
@@ -522,8 +522,8 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                 }
                                 if (opStack.size() > 0) { // at least one right stacked op
                                     lastVar = rightOp; // rightOp becomes item
-                                    rightOp = (CsmCompletionExpression)opStack.remove(opStack.size() - 1); // get stacked op
-                                    rightOpID = rightOp.getOperatorID(rightOp);
+                                    rightOp = opStack.remove(opStack.size() - 1); // get stacked op
+                                    rightOpID = CsmCompletionExpression.getOperatorID(rightOp);
                                 } else { // shift the leftOp to rightOp
                                     leftOp.addParameter(rightOp);
                                     lastVar = null;
@@ -552,7 +552,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
 
                     // pop the whole stack adding the current right op to the stack exp
                     for (int i = opStack.size() - 1; i >= 0; i--) {
-                        CsmCompletionExpression op = (CsmCompletionExpression)opStack.get(i);
+                        CsmCompletionExpression op = opStack.get(i);
                         op.addParameter(rightOp);
                         rightOp = op;
                     }
@@ -791,7 +791,9 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                     //pushExp(createTokenExp(VARIABLE));
                                     // TODO: need to create parameter, we know, that METHOD_OPEN is declaration/definition of method
                                     break;
-                                }  
+                                }
+                                errorState = true;
+                                break;
                             case TYPE_REFERENCE:
                                 if (getValidExpID(peekExp2()) == METHOD_OPEN) {
                                     //top.setExpID(VARIABLE);
@@ -803,6 +805,8 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                     // TODO: need to create parameter, we know, that METHOD_OPEN is declaration/definition of method
                                     break;
                                 }                                
+                                errorState = true;
+                                break;
                             default:
                                 errorState = true;
                                 break;
@@ -1301,6 +1305,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                             case CONSTRUCTOR:
                             case PARENTHESIS:
                             case GENERIC_TYPE:
+                            case MEMBER_POINTER:
                             {
                                 popExp();
                                  // tokenID.getNumericID() is the parameter of the main switch
@@ -1721,11 +1726,13 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                     case CCTokenContext.INT_LITERAL_ID:
                     case CCTokenContext.HEX_LITERAL_ID:
                     case CCTokenContext.OCTAL_LITERAL_ID:
+                    case CCTokenContext.UNSIGNED_ID:
                         constExp = createTokenExp(CONSTANT);
                         constExp.setType("int"); // NOI18N
                         break;
 
                     case CCTokenContext.LONG_LITERAL_ID:
+                    case CCTokenContext.UNSIGNED_LONG_LITERAL_ID:
                         constExp = createTokenExp(CONSTANT);
                         constExp.setType("long"); // NOI18N
                         break;
@@ -2042,6 +2049,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
         this.bufferStartPos = startPos - preScan;
     }
 
+    @Override
     public String toString() {
         int cnt = expStack.size();
         StringBuilder sb = new StringBuilder();
@@ -2052,7 +2060,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
         if (cnt > 0) {
             sb.append("Stack expressions:\n"); // NOI18N
             for (int i = 0; i < cnt; i++) {
-                CsmCompletionExpression e = (CsmCompletionExpression)expStack.get(i);
+                CsmCompletionExpression e = expStack.get(i);
                 sb.append("Stack["); // NOI18N
                 sb.append(i);
                 sb.append("]: "); // NOI18N

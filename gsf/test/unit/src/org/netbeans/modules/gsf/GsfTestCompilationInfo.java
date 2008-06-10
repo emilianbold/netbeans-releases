@@ -126,7 +126,9 @@ public abstract class GsfTestCompilationInfo extends CompilationInfo {
         }
     }
 
-    public abstract String getPreferredMimeType();
+    public String getPreferredMimeType() {
+        return test.getPreferredMimeType();
+    }
     
     @Override
     public abstract ParserResult getEmbeddedResult(String embeddedMimeType, int offset);

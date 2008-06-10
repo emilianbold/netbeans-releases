@@ -44,64 +44,62 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
+import org.netbeans.modules.php.project.ui.customizer.RunAsValidator.InvalidUrlException;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.NbBundle;
 
 /**
- *
- * @author  Radek Matous
+ * @author  Radek Matous, Tomas Mysik
  */
 public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = -5348981723432471L;
     private final JLabel[] labels;
     private final JTextField[] textFields;
     private final String[] propertyNames;
-    private String displayName;
+    private final String displayName;
+    final Category category;
 
     public RunAsLocalWeb(ConfigManager manager, Category category) {
         this(manager, category, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ConfigLocalWeb"));
     }
-    
-    /** Creates new form LocalWebPanel */
+
     private RunAsLocalWeb(ConfigManager manager, Category category, String displayName) {
-        super(manager, category);
-        initComponents();
+        super(manager);
+        this.category = category;
         this.displayName = displayName;
+        initComponents();
         this.labels = new JLabel[] {
-            urlLabel, 
-            indexFileLabel, 
+            urlLabel,
+            indexFileLabel,
             argsLabel
         };
         this.textFields = new JTextField[] {
-            urlTextField, 
-            indexFileTextField, 
+            urlTextField,
+            indexFileTextField,
             argsTextField
         };
         this.propertyNames = new String[] {
-            PhpProjectProperties.URL, 
-            PhpProjectProperties.INDEX_FILE, 
+            PhpProjectProperties.URL,
+            PhpProjectProperties.INDEX_FILE,
             PhpProjectProperties.ARGS
-        
-        
-        
         };
         assert labels.length == textFields.length && labels.length == propertyNames.length;
         for (int i = 0; i < textFields.length; i++) {
             DocumentListener dl = new FieldUpdater(propertyNames[i], labels[i], textFields[i]);
             textFields[i].getDocument().addDocumentListener(dl);
-        }        
+        }
     }
 
     @Override
     protected boolean isDefault() {
         return true;
     }
-    
+
     @Override
     protected RunAsType getRunAsType() {
         return PhpProjectProperties.RunAsType.LOCAL;
     }
-    
+
     @Override
     public String getDisplayName() {
         return displayName;
@@ -111,7 +109,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     protected JLabel getRunAsLabel() {
         return runAsLabel;
     }
-    
+
     @Override
     public JComboBox getRunAsCombo() {
         return runAsCombo;
@@ -126,10 +124,11 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     protected void validateFields() {
         String url = urlTextField.getText();
         String indexFile = indexFileTextField.getText();
+        String args = argsTextField.getText();
 
-        String err = validateWebFields(url, indexFile);
-        getCategory().setErrorMessage(err);
-        getCategory().setValid(err == null);
+        String err = RunAsValidator.validateWebFields(url, indexFile, args);
+        category.setErrorMessage(err);
+        category.setValid(err == null);
     }
 
     private class FieldUpdater extends TextFieldUpdater {
@@ -138,14 +137,21 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
             super(propName, label, field);
         }
 
-        final String getDefaultValue() {
+        protected final String getDefaultValue() {
             return RunAsLocalWeb.this.getDefaultValue(getPropName());
         }
 
         @Override
         protected void processUpdate() {
             super.processUpdate();
-            hintLabel.setText(composeUrlHint(urlTextField.getText(), indexFileTextField.getText(), argsTextField.getText()));
+            String hint = ""; // NOI18N
+            try {
+                hint = RunAsValidator.composeUrlHint(urlTextField.getText(), indexFileTextField.getText(), argsTextField.getText());
+            } catch (InvalidUrlException ex) {
+                category.setErrorMessage(ex.getMessage());
+                category.setValid(false);
+            }
+            hintLabel.setText(hint);
         }
     }
 

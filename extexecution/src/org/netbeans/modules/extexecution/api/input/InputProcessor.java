@@ -42,13 +42,29 @@ package org.netbeans.modules.extexecution.api.input;
 import java.io.IOException;
 
 /**
+ * Processes chars read by {@link InputReader}.
+ * <p>
+ * When the implementation is used just by single InputReader it
+ * does not have to be thread safe.
  *
  * @author Petr Hejl
+ * @see InputReader
  */
 public interface InputProcessor {
 
-    void processInput(byte[] bytes) throws IOException;
+    /**
+     * Processes the characters.
+     *
+     * @param chars characters to process
+     * @throws IOException if any processing error occurs
+     */
+    void processInput(char[] chars) throws IOException;
 
+    /**
+     * Notifies the processor that it should reset its state.
+     *
+     * @throws IOException if error occurs while reseting
+     */
     void reset() throws IOException;
 
 }

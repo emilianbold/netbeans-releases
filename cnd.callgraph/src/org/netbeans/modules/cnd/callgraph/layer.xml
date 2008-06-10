@@ -35,10 +35,10 @@
     </folder>
     <folder name="Menu">
         <folder name="Window">
-            <folder name="Navigator">
+            <folder name="Output">
                 <file name="CallGraphAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-cnd-callgraph-impl-CallGraphAction.instance"/>
-                    <attr name="position" intvalue="1400"/>
+                    <attr name="position" intvalue="2500"/>
                 </file>
             </folder>
         </folder>

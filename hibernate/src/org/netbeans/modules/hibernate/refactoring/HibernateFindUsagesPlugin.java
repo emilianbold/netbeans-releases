@@ -53,7 +53,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hibernate.refactoring.HibernateRefactoringUtil.OccurrenceItem;
-import org.netbeans.modules.hibernate.service.HibernateEnvironment;
+import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -112,7 +112,7 @@ public class HibernateFindUsagesPlugin implements RefactoringPlugin {
 
             // Find the mapping files in this project
             Project proj = org.netbeans.api.project.FileOwnerQuery.getOwner(fo);
-            HibernateEnvironment env = new HibernateEnvironment(proj);
+            HibernateEnvironment env = proj.getLookup().lookup(HibernateEnvironment.class);
             mappingFileObjs = env.getAllHibernateMappingFileObjects();
             if (mappingFileObjs == null || mappingFileObjs.size() == 0) {
                 // OK, no mapping files at all. 

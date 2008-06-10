@@ -153,6 +153,7 @@ public class RegisterExternalHook extends Task {
                     }
                     config += "[decode]" + nl + BINARIES + " = download: http://hg.netbeans.org/binaries/" + nl;
                 }
+                // XXX should also register hooks.pretxncommit.crlf=python:hgext.win32text.forbidcrlf (for Hg 1.0+ only)
                 OutputStream os = new FileOutputStream(hgrc);
                 try {
                     os.write(config.getBytes());

@@ -44,10 +44,13 @@ package org.netbeans.modules.j2ee.persistence.entitygenerator;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.dbschema.SchemaElement;
 import org.netbeans.modules.dbschema.SchemaElementUtil;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.CollectionType;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.FetchType;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 
@@ -120,6 +123,34 @@ public class DbSchemaEjbGeneratorTest extends NbTestCase {
 
         public String getClassName(String tableName) {
             return tableName;
+        }
+
+        public String getSchema(String tableName) {
+            return null;
+        }
+
+        public String getCatalog(String tableName) {
+            return null;
+        }
+
+        public boolean isFullyQualifiedTableNames() {
+            return false;
+        }
+
+        public FetchType getFetchType() {
+             return FetchType.DEFAULT;
+        }
+
+        public boolean isRegenSchemaAttrs() {
+             return false;
+        }
+
+        public Set<List<String>> getUniqueConstraints(String tableName) {
+            return null;
+        }
+
+        public CollectionType getCollectionType() {
+            return CollectionType.COLLECTION;
         }
     }
 }

@@ -41,18 +41,24 @@ package org.netbeans.modules.xslt.core.text.completion;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.text.BadLocationException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
-import org.netbeans.modules.xml.xam.dom.DocumentComponent;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.xml.text.syntax.SyntaxElement;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xslt.core.XSLTDataEditorSupport;
+import org.netbeans.modules.xslt.model.XslModel;
+import org.netbeans.modules.xslt.model.spi.XslModelFactory;
+import org.openide.util.lookup.Lookups;
+import org.openide.windows.TopComponent;
 
 /**
  * @author Alex Petrov (30.04.2008)
  */
 public class XSLTCompletionUtil {
-    private static final String 
+    public static final String 
         PATTERN_ATTRIB_VALUE_PREFIX = "=\"",
         ATTRIB_NAME = "name",
         ATTRIB_TYPE = "type";
@@ -69,8 +75,11 @@ public class XSLTCompletionUtil {
     }
     
     public static String extractAttributeName(Document document, int caretOffset, 
-        DocumentComponent docComponent) {
-        int docComponentPos = docComponent.findPosition(),
+        SyntaxElement surroundTag) {
+        if ((document == null) || (surroundTag == null) || (caretOffset < 0)) 
+            return null;
+        
+        int startTagPos = surroundTag.getElementOffset(),
             startPos = caretOffset - PATTERN_ATTRIB_VALUE_PREFIX.length();
         try {
             int currentPos = startPos - 1;
@@ -82,7 +91,7 @@ public class XSLTCompletionUtil {
                 } else {
                     break;
                 }
-                if ((--currentPos) <= docComponentPos) break;
+                if ((--currentPos) <= startTagPos) break;
             }
             return strBuf.toString();
         } catch (Exception e) {
@@ -126,5 +135,28 @@ public class XSLTCompletionUtil {
             return dataWithNamespace.substring(index + 1);
         }
         return dataWithNamespace;
+    }
+    
+    public static XSLTDataEditorSupport getXsltDataEditorSupport() {
+        try {
+            TopComponent topComponent = TopComponent.getRegistry().getActivated();
+            XSLTDataEditorSupport editorSupport = topComponent.getLookup().lookup(
+                XSLTDataEditorSupport.class);
+            return editorSupport;
+        } catch(Exception e) {
+            Logger logger = Logger.getLogger(XSLTCompletionUtil.class.getName());
+            logger.log(Level.INFO, null, e);
+            return null;
+        }
+    }
+    
+    public static XslModel getXslModel(Document doc) {
+        if (doc == null) return null;
+        if (getXsltDataEditorSupport() == null) return null;
+        
+        ModelSource modelSource = new ModelSource(Lookups.singleton(doc), false);
+        XslModelFactory xslModelFactory = XslModelFactory.XslModelFactoryAccess.getFactory();
+        XslModel xslModel = xslModelFactory.getModel(modelSource);
+        return xslModel;
     }
 }

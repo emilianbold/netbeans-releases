@@ -35,7 +35,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
-import org.netbeans.modules.ruby.CodeCompleter;
+import org.netbeans.modules.ruby.RubyCodeCompleter;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 
 /**
@@ -44,7 +44,7 @@ import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
  * 
  * @author Tor Norbye
  */
-public class RhtmlCompleter extends CodeCompleter {
+public class RhtmlCompleter extends RubyCodeCompleter {
     /**
      *  @todo Pass in the completion type? (Smart versus documentation etc.)
      *  @todo Pass in the line offsets? Nah, just make the completion provider figure those out.

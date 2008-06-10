@@ -66,6 +66,8 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  */
 public class JsIndex {
+    public static final int MAX_SEARCH_ITEMS = 120;
+    
     /** Set property to true to find ALL functions regardless of file includes */
     //private static final boolean ALL_REACHABLE = Boolean.getBoolean("javascript.findall");
     private static final boolean ALL_REACHABLE = !Boolean.getBoolean("javascript.checkincludes");
@@ -158,7 +160,7 @@ public class JsIndex {
     }
     
     @SuppressWarnings("unchecked")
-    public Set<IndexedElement> getConstructors(final String name, NameKind kind,
+    public Pair<Set<IndexedElement>,Boolean> getConstructors(final String name, NameKind kind,
         Set<Index.SearchScope> scope) {
         // TODO - search by the FIELD_CLASS thingy
         return getUnknownFunctions(name, kind, scope, true, null, true, false);
@@ -168,9 +170,16 @@ public class JsIndex {
     public Set<IndexedElement> getAllNames(final String name, NameKind kind,
         Set<Index.SearchScope> scope, JsParseResult context) {
         // TODO - search by the FIELD_CLASS thingy
-        return getUnknownFunctions(name, kind, scope, false, context, true, true);
+        return getUnknownFunctions(name, kind, scope, false, context, true, true).getA();
     }
 
+    @SuppressWarnings("unchecked")
+    public Pair<Set<IndexedElement>,Boolean> getAllNamesTruncated(final String name, NameKind kind,
+        Set<Index.SearchScope> scope, JsParseResult context) {
+        // TODO - search by the FIELD_CLASS thingy
+        return getUnknownFunctions(name, kind, scope, false, context, true, true);
+    }
+    
     public Map<String,String> getAllExtends() {
         final Set<SearchResult> result = new HashSet<SearchResult>();
         search(JsIndexer.FIELD_EXTEND, "", NameKind.CASE_INSENSITIVE_PREFIX, result, JsIndex.ALL_SCOPE, TERMS_EXTEND);
@@ -248,7 +257,7 @@ public class JsIndex {
         return (Set<IndexedFunction>)(Set)getByFqn(name, in, kind, scope, false, context, includeMethods, false, false);
     }
     
-    private Set<IndexedElement> getUnknownFunctions(String name, NameKind kind,
+    private Pair<Set<IndexedElement>,Boolean> getUnknownFunctions(String name, NameKind kind,
         Set<Index.SearchScope> scope, boolean onlyConstructors, JsParseResult context,
         boolean includeMethods, boolean includeProperties) {
         
@@ -371,11 +380,15 @@ public class JsIndex {
                         continue;
                     }
                     elements.add(element);
+                    
+                    if (elements.size() == MAX_SEARCH_ITEMS) {
+                        return new Pair<Set<IndexedElement>,Boolean>(elements, true);
+                    }
                 }
             }
         }
         
-        return elements;
+        return new Pair<Set<IndexedElement>,Boolean>(elements, false);
     }
     
     private Set<IndexedElement> getByFqn(String name, String type, NameKind kind,

@@ -31,7 +31,7 @@ package org.netbeans.modules.ruby.rhtml;
 import javax.swing.text.Document;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.ruby.DeclarationFinder;
+import org.netbeans.modules.ruby.RubyDeclarationFinder;
 
 /**
  * Declaration finder for Ruby. All it does is determine if we're inside Ruby,
@@ -39,7 +39,7 @@ import org.netbeans.modules.ruby.DeclarationFinder;
  * 
  * @author Tor Norbye
  */
-public class RhtmlFinder extends DeclarationFinder {
+public class RhtmlFinder extends RubyDeclarationFinder {
     @Override
     public DeclarationLocation findDeclaration(CompilationInfo info, int caretOffset) {
         Document doc = info.getDocument();

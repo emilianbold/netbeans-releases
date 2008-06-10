@@ -198,7 +198,7 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
     // --- ProjectTypeProfiler implementation ------------------------------------------------------------------------------
     public String getProfilerTargetName(final Project project, final FileObject buildScript, final int type,
             final FileObject profiledClass) {
-        final Element e = ((AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class)).getConfigurationFragment("data",
+        final Element e = ProjectUtils.getAuxiliaryConfiguration(project).getConfigurationFragment("data",
                 ProjectUtilities.PROFILER_NAME_SPACE,
                 false); // NOI18N
         String profileTarget = e.getAttribute(PROFILE_TARGET_ATTRIBUTE);
@@ -231,13 +231,7 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
     }
 
     public boolean isProfilingSupported(final Project project) {
-        final AuxiliaryConfiguration aux = (AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class);
-
-        if (aux == null) {
-            ProfilerLogger.severe("Auxiliary Configuration is null for Project: " + project); // NOI18N
-
-            return false;
-        }
+        final AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
 
         Element e = aux.getConfigurationFragment("general-data", FREEFORM_PROJECT_NAMESPACE_40, true); // NOI18N
 
@@ -257,7 +251,7 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
     }
 
     public boolean checkProjectIsModifiedForProfiler(final Project project) {
-        Element e = ((AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class)).getConfigurationFragment("data",
+        Element e = ProjectUtils.getAuxiliaryConfiguration(project).getConfigurationFragment("data",
                 ProjectUtilities.PROFILER_NAME_SPACE,
                 false); // NOI18N
 
@@ -311,7 +305,7 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
             profilerFragment.setAttribute(PROFILE_SINGLE_TARGET_ATTRIBUTE, profileSingleTarget);
         }
 
-        ((AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class)).putConfigurationFragment(profilerFragment,
+        ProjectUtils.getAuxiliaryConfiguration(project).putConfigurationFragment(profilerFragment,
                 false);
 
         try {

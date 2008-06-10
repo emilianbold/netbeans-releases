@@ -66,9 +66,21 @@ import org.openide.util.Exceptions;
  */
 public class HighlightProvider  {
     
+    /** for test purposes only! */
+    public interface Hook {
+        void highlightingDone(String absoluteFileName);
+    }
+    
+    private Hook hook;
+    
     public static final boolean TRACE_ANNOTATIONS = Boolean.getBoolean("cnd.highlight.trace.annotations"); // NOI18N
     
     private static final HighlightProvider instance = new HighlightProvider();
+    
+    /** for test purposes only! */
+    public synchronized  void setHook(Hook hook) {
+        this.hook = hook;
+    }
     
     public static HighlightProvider getInstance(){
         return instance;
@@ -82,6 +94,10 @@ public class HighlightProvider  {
         assert doc!=null || file==null;
         if (doc instanceof BaseDocument){
             addAnnotations((BaseDocument)doc, file, dao);
+            Hook theHook = this.hook;
+            if( theHook != null ) {
+                theHook.highlightingDone(file.getAbsolutePath().toString());
+            }
         }
     }
     

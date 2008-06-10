@@ -84,6 +84,8 @@ NetBeans.Constants = {
     get ObserverServiceCID() { return '@mozilla.org/observer-service;1';},
 
     get ObserverServiceIF() { return Components.interfaces.nsIObserverService; },
+    
+    get ObserverIF() { return Compontents.interfaces.nsIObserver; },
 
     // Shell
     get ShellServiceCID() { return '@mozilla.org/browser/shell-service;1'; },
@@ -100,6 +102,12 @@ NetBeans.Constants = {
     get WebProgressListenerIF() { return Components.interfaces.nsIWebProgressListener; },
 
     get WebNavigationIF() { return Components.interfaces.nsIWebNavigation; },
+    
+    get HttpChannelIF() { return Components.interfaces.nsIHttpChannel;},
+    
+    get DOMWindowIF() { return Components.interfaces.nsIDOMWindow;},
+    
+    get InterfaceRequestorIF() { return Components.interfaces.nsIInterfaceRequestor;},
 
     // Windows
     get WindowWatcherServiceCID() { return '@mozilla.org/embedcomp/window-watcher;1'; },

@@ -81,7 +81,9 @@ public interface SharedConstants {
     
     public static final String OP_CONTIGUOUS_ORDER = "ContiguousOrder";
     
+    public static final String OP_INVOKE_STREAM = "InvokeStream";
        
+    public static final String OP_EXTERNAL_TABLE_POLLING_STREAM = "ExternalTablePollingStream";
     // Sub TcgCompoent
     public static String METADATA_KEY = "Metadata";
     
@@ -109,6 +111,8 @@ public interface SharedConstants {
     public static String ID_KEY = "id";
     
     public static String INPUT_TYPE_KEY = "inputType";
+    
+    public static String IS_RELATION_INPUT_STATIC = "isRelationInputStatic";
     
     public static String INPUT_MAX_COUNT_KEY = "inputMaxCount";
     
@@ -176,6 +180,26 @@ public interface SharedConstants {
     
     public static String INCREMENT_UNIT_KEY = "incrementUnit";
 
+    //-----Invoke Stream properties --
+    public static String EXTERNAL_IEP_PROCESS_QUALIFIED_NAME = "externalIepProcessQualifiedName";
+    
+    public static String EXTERNAL_OPERATOR_NAME = "externalOperatorName";
+    
+    // ----- External Table Polling Stream operator
+    public static String POLLING_INTERVAL = "pollingInterval";
+    
+    public static String POLLING_INTERVAL_TIME_UNIT = "pollingIntervalTimeUnit";
+    
+    public static String POLLING_RECORD_SIZE = "pollingRecordSize";
+    
+    public static String POLLING_DATABASE_JNDI_NAME = "databaseJndiName";
+    
+    public static String POLLING_RECORD_IDENTIFIER_COLUMNS = "recordIdentifierColumns";
+    
+    public static String RECORD_IDENTIFIER_COLUMNS_SCHEMA = "recordIdentifierColumnsSchema";
+    
+    public static String POLLING_IS_DELETE_RECORDS = "isDeleteRecords";
+    
     //===================================================
     public static String IS_GLOBAL_KEY = "isGlobal"; 
     

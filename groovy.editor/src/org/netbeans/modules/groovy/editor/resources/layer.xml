@@ -46,13 +46,14 @@
             <folder name="x-groovy">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.editor.Bundle"/>
 
+                <folder name="Actions">
+                    <file name="org-netbeans-modules-groovy-editor-actions-FixImportsAction.instance"/>
+                </folder>
                 <folder name="Popup">
-                    <file name="org-netbeans-modules-groovy-editor-actions-FixImportsAction.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.actions.FixImportsAction"/>
+                    <file name="fix-groovy-imports">
                         <attr name="position" intvalue="801"/>
                     </file>
                 </folder>
-
 
                 <file name="language.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.editor.lexer.GroovyTokenId.language"/>
@@ -113,60 +114,11 @@
         <folder name="text">
             <folder name="x-groovy">
                 <file name="language.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.GsfLanguage"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.GroovyLanguage"/>
                 </file>
-                
-                <file name="parser.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Parser"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.parser.GroovyParser"/>
-                </file>
-                
-                <file name="formatter.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Formatter"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.Formatter"/>
-                </file>
-
-                <file name="bracket.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.KeystrokeHandler"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.BracketCompleter"/>
-                </file>
-                
-                <file name="completion.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.CodeCmpletionHandler"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.CodeCompleter"/>
-                </file>
-                
-                <file name="semantic.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.SemanticAnalyzer"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.parser.GroovySemanticAnalyzer"/>
-                </file>
-                
-                <file name="occurrences.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.OccurrencesFinder"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.parser.GroovyOccurrencesFinder"/>
-                </file>
-                
                 <file name="structure.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.StructureScanner"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.StructureAnalyzer"/>
                 </file>
-                
-                <file name="indexer.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Indexer"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.GroovyIndexer"/>
-                </file>
-                
-                <file name="hints.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.HintsProvider"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyHintsProvider"/>
-                </file>
-                
-                <file name="declarationfinder.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.DeclarationFinder"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.GroovyDeclarationFinder"/>
-                </file>
-                
             </folder>
         </folder>
     </folder>

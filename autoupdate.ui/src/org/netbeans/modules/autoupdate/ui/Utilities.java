@@ -109,6 +109,7 @@ public class Utilities {
     private static final String PLUGIN_MANAGER_FIRST_CLASS_MODULES = "plugin.manager.first.class.modules"; // NOI18N
     
     private static final String ALLOW_SHOWING_BALLOON = "plugin.manager.allow.showing.balloon"; // NOI18N
+    private static final String SHOWING_BALLOON_TIMEOUT = "plugin.manager.showing.balloon.timeout"; // NOI18N
     
     private static Collection<String> first_class_modules = null;
     
@@ -493,9 +494,32 @@ public class Utilities {
         return first_class_modules;
     }
     
+    /** Allow show Windows-like balloon in the status line.
+     * 
+     * @return <code>true</code> if showing is allowed, <code>false</code> if don't, or <code>null</code> was not specified in <code>plugin.manager.allow.showing.balloon</code>
+     */
     public static Boolean allowShowingBalloon () {
         String allowShowing = System.getProperty (ALLOW_SHOWING_BALLOON);
         return allowShowing == null ? null : Boolean.valueOf (allowShowing);
+    }
+
+    /** Gets defalut timeout for showing Windows-like balloon in the status line.
+     * The timeout can be specified in <code>plugin.manager.showing.balloon.timeout</code>. The dafault value is 30*1000.
+     * The value 0 means unlimited timeout.
+     * 
+     * @return the amout of time to show the ballon in miliseconds.
+     */
+    public static int getShowingBalloonTimeout () {
+        String timeoutS = System.getProperty (SHOWING_BALLOON_TIMEOUT);
+        int timeout = 30 * 1000;
+        try {
+            if (timeoutS != null) {
+                timeout = Integer.parseInt (timeoutS);
+            }
+        } catch (NumberFormatException nfe) {
+            logger.log (Level.INFO, nfe + " while parsing " + timeoutS + " for " + SHOWING_BALLOON_TIMEOUT);
+        }
+        return timeout;
     }
 
     /** Do auto-check for available new plugins a while after startup.

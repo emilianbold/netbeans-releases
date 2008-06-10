@@ -157,7 +157,9 @@ public class ProjectFactorySupport {
         }
         // TODO: commented out JRE till EclipseProjectReference.getEclipseProject is fixed.
         //sb.append("jre="+model.getJavaPlatform().getDisplayName()+";");
-        sb.append("output="+model.getOuput().getRawPath()+";");
+        if (model.getOuput() != null) {
+            sb.append("output="+model.getOuput().getRawPath()+";");
+        }
         return sb.toString().replace("con=;", ""); // remove empty container entries
     }
     
@@ -227,14 +229,13 @@ public class ProjectFactorySupport {
             ProjectClassPathModifier.addRoots(new URL[]{FileUtil.urlForArchiveOrDir(new File(entry.getAbsolutePath()))}, sourceRoot, ClassPath.COMPILE);
         } else if (entry.getKind() == DotClassPathEntry.Kind.VARIABLE) {
             // add property directly to Ant property
-            // XXX it can happen that entry.absolutePath == null (e.g. "APPLICATION_HOME_DIR/lib/javaee.jar"), in which case the following throws NPE:
-            addToBuildProperties(helper, "javac.classpath", ProjectFactorySupport.asAntVariable(entry), new File(entry.getAbsolutePath()).getName());
+            addToBuildProperties(helper, "javac.classpath", ProjectFactorySupport.asAntVariable(entry));
 //            ProjectClassPathModifier.addRoots(new URI[]{new URI(null, null, ProjectFactorySupport.asAntVariable(entry), null)}, sourceRoot, ClassPath.COMPILE);
         } else if (entry.getKind() == DotClassPathEntry.Kind.CONTAINER) {
             String antProperty = entry.getContainerMapping();
             if (antProperty != null && antProperty.length() > 0) {
                 // add property directly to Ant property
-                addToBuildProperties(helper, "javac.classpath", "${"+antProperty+"}", null);
+                addToBuildProperties(helper, "javac.classpath", "${"+antProperty+"}");
 //                  ProjectClassPathModifier.addRoots(new URI[]{new URI(null, null, "${" + antProperty + "}", null)}, sourceRoot, ClassPath.COMPILE);
             }
         }
@@ -265,16 +266,16 @@ public class ProjectFactorySupport {
             ProjectClassPathModifier.removeRoots(new URL[]{FileUtil.urlForArchiveOrDir(new File(encodedValue))}, sourceRoot, ClassPath.COMPILE);
         } else if ("var".equals(encodedKind)) {
             String v[] = EclipseUtils.splitVariable(encodedValue);
-            removeFromBuildProperties(helper, "javac.classpath", null, "${var."+v[0]+"}"+v[1]);
+            removeFromBuildProperties(helper, "javac.classpath", "${var."+v[0]+"}"+v[1]);
         } else if ("ant".equals(encodedKind)) {
-            removeFromBuildProperties(helper, "javac.classpath", "${"+encodedValue+"}", null);
+            removeFromBuildProperties(helper, "javac.classpath", "${"+encodedValue+"}");
         }
     }
 
     /**
      * Add given value to given classpath-like Ant property.
      */
-    private static void addToBuildProperties(AntProjectHelper helper, String property, String valueToAppend, String referenceNameToCreate) {
+    private static void addToBuildProperties(AntProjectHelper helper, String property, String valueToAppend) {
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String cp = ep.getProperty(property);
         if (cp == null) {
@@ -282,15 +283,7 @@ public class ProjectFactorySupport {
         } else {
             cp += ":";
         }
-        if (referenceNameToCreate != null) {
-            String uniqueProperty = generateUniquePropertyName("file.reference."+
-                    PropertyUtils.getUsablePropertyName(referenceNameToCreate), 
-                    helper.getStandardPropertyEvaluator(), valueToAppend);
-            ep.setProperty(uniqueProperty, valueToAppend);
-            cp += "${"+uniqueProperty+"}";
-        } else {
-            cp += valueToAppend;
-        }
+        cp += valueToAppend;
         String[] arr = PropertyUtils.tokenizePath(cp);
         for (int i = 0; i < arr.length - 1; i++) {
             arr[i] += ":";
@@ -299,34 +292,11 @@ public class ProjectFactorySupport {
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
     }
 
-    private static String generateUniquePropertyName(String property, PropertyEvaluator pev, String value) {
-        if (pev.getProperty(property) == null || pev.getProperty(property).equals(value)) {
-            return property;
-        }
-        int i = 1;
-        while (pev.getProperty(property+"-"+i) != null && !pev.getProperty(property+"-"+i).equals(value)) {
-            i++;
-        }
-        return property+"-"+i;
-    }
-    
     /**
      * Remove given value to given classpath-like Ant property.
      */
-    private static void removeFromBuildProperties(AntProjectHelper helper, String property, String referenceToRemove, String referenceValueToRemove) {
+    private static void removeFromBuildProperties(AntProjectHelper helper, String property, String referenceToRemove) {
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        if (referenceToRemove == null) {
-            for (Map.Entry<String, String> e : ep.entrySet()) {
-                if (e.getValue().equals(referenceValueToRemove)) {
-                    referenceToRemove = "${"+e.getKey()+"}";
-                    ep.remove(e.getKey());
-                    break;
-                }
-            }
-        }
-        if (referenceToRemove == null) {
-            LOG.warning("Could not find reference with value '"+referenceValueToRemove+"'");
-        }
         String cp = ep.getProperty(property);
         if (cp != null && referenceToRemove != null) {
             cp = cp.replace(referenceToRemove, "");

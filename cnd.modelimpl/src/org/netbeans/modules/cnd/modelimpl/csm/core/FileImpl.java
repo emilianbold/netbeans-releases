@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
+import antlr.Parser;
+import antlr.RecognitionException;
 import antlr.Token;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
@@ -69,7 +72,6 @@ import org.netbeans.modules.cnd.modelimpl.cache.impl.FileCacheImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
@@ -93,9 +95,6 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.CharSeq;
-import org.openide.util.Utilities;
 
 /**
  * CsmFile implementations
@@ -613,58 +612,38 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     };
     
-    static class SimpleErrorInfo implements CsmErrorInfo {
     
-        private int startOffset;
-        private int endOffset;
-        private String text;
-
-        public SimpleErrorInfo(int startOffset, int endOffset, String text) {
-            this.startOffset = startOffset;
-            this.endOffset = endOffset;
-            this.text = text;
-        }
-
-        public int getStartOffset() {
-            return startOffset;
-        }
-        
-        public int getEndOffset() {
-            return endOffset;
-        }
-
-        public String getMessage() {
-            return text;
-        }
-
-        public Severity getSeverity() {
-            return Severity.ERROR;
+    /** For text purposes only */
+    public interface ErrorListener {
+        void error(String text, int line, int column);
+    }
+    
+    /** For text purposes only */
+    public void getErrors(ErrorListener errorListener) {
+        Collection<RecognitionException> errors = new ArrayList<RecognitionException>();
+        getErrors(errors);
+        for (RecognitionException e : errors) {
+            errorListener.error(e.getMessage(), e.getLine(), e.getColumn());
         }
     }
-            
-    Collection<CsmErrorInfo> getErrors(final BaseDocument doc) {
-        final Collection<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
+
+    private static class ParserBasedTokenBuffer implements ReadOnlyTokenBuffer {
+        Parser parser;
+        public ParserBasedTokenBuffer(Parser parser) {
+            this.parser = parser;
+        }
+        public int LA(int i) {
+            return parser.LA(i);
+        }
+        public Token LT(int i) {
+            return parser.LT(i);
+        }
+    }
+    
+    public ReadOnlyTokenBuffer getErrors(final Collection<RecognitionException> result) {
         CPPParserEx.ErrorDelegate delegate = new CPPParserEx.ErrorDelegate() {
-            public void onError(String message, int line, int column) {
-                CharSeq text = doc.getText();
-                int start = 0;
-                int currLine = 1;
-                char LF = Utilities.isMac() ? '\r' : '\n'; // NOI18N
-                while (start < text.length() && currLine < line) {
-                    char c = text.charAt(start++);
-                    if( c == LF ) { 
-                        currLine++;
-                    }
-                }
-                //start += column;
-                int end = start+1;
-                while (end < text.length()) {
-                    if(  text.charAt(end++) == LF ) { // NOI18N
-                        break;
-                    }
-                }
-                end--;
-                result.add(new SimpleErrorInfo(start, end, message));
+            public void onError(RecognitionException e) {
+                result.add(e);
             }
         };
         // FIXUP (up to the end of the function)
@@ -687,14 +666,16 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             parser.setErrorDelegate(delegate);
             parser.setLazyCompound(false);
             parser.translation_unit();
+            return new ParserBasedTokenBuffer(parser);
         } catch (IOException ex) {
             DiagnosticExceptoins.register(ex);
+            return null;
         } catch (Error ex){
             System.err.println(ex.getClass().getName()+" at parsing file "+fileBuffer.getFile().getAbsolutePath()); // NOI18N
             throw ex;
+        } finally {
+            if( TraceFlags.TRACE_ERROR_PROVIDER ) System.err.printf("<<< Done parsing (getting errors) %s %d ms\n\n\n", getName(), System.currentTimeMillis() - time);
         }
-        if( TraceFlags.TRACE_ERROR_PROVIDER ) System.err.printf("<<< Done parsing (getting errors) %s %d ms\n\n\n", getName(), System.currentTimeMillis() - time);
-        return result;
     }
     
     private AST doParse(APTPreprocHandler preprocHandler) {
@@ -968,7 +949,21 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         return decls;
     }
-    
+
+    public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFilter filter) {
+        if (!SKIP_UNNECESSARY_FAKE_FIXES) {
+            fixFakeRegistrations();
+        }
+        Iterator<CsmOffsetableDeclaration> out;
+        try {
+            declarationsLock.readLock().lock();
+            out = UIDCsmConverter.UIDsToDeclarationsFiltered(declarations.values(), filter);
+         } finally {
+            declarationsLock.readLock().unlock();
+         }
+         return out;
+    }
+
     public void addMacro(CsmMacro macro) {
         CsmUID<CsmMacro> macroUID = RepositoryUtils.put(macro);
         assert macroUID != null;
@@ -1132,7 +1127,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                     fixFakes = wait;
                 } else {
                     while( ! isParsed() ) {
-                        ParserQueue.instance().addFirst(this, ppState, false);
+                        ParserQueue.instance().add(this, ppState, ParserQueue.Position.HEAD);
                         //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("  !prs " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
                         if( wait ) {
                             stateLock.wait();
@@ -1145,7 +1140,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 }
             } else {
                 while( ! isParsed() ) {
-                    ParserQueue.instance().addFirst(this, ppState, false);
+                    ParserQueue.instance().add(this, ppState, ParserQueue.Position.HEAD);
                     //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("  !prs " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
                     if( wait ) {
                         stateLock.wait();
@@ -1179,8 +1174,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (fakeRegistrationUIDs.size() > 0) {
             List<CsmUID<FunctionImplEx>> fakes = new ArrayList<CsmUID<FunctionImplEx>>(fakeRegistrationUIDs);
             fakeRegistrationUIDs.clear();
-            for( CsmUID<? extends CsmDeclaration> uid : fakes ) {
-                CsmDeclaration curElem = uid.getObject();
+            for( CsmUID<? extends CsmDeclaration> fakeUid : fakes ) {
+                CsmDeclaration curElem = fakeUid.getObject();
                 if (curElem != null) {
                     if( curElem instanceof FunctionImplEx ) {
                         ((FunctionImplEx) curElem).fixFakeRegistration();

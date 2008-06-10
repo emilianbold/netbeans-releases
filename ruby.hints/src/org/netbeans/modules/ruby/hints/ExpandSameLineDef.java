@@ -53,7 +53,7 @@ import org.netbeans.modules.gsf.api.PreviewableFix;
 import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.Formatter;
+import org.netbeans.modules.ruby.RubyFormatter;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
@@ -285,7 +285,7 @@ public class ExpandSameLineDef extends RubyAstRule {
                         newlines.add(offset);
                     }
                     
-                    edits.setFormatter(new Formatter(), true);
+                    edits.setFormatter(new RubyFormatter(), true);
                 } catch (BadLocationException ble) {
                     Exceptions.printStackTrace(ble);
                 }
