@@ -597,7 +597,9 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
             if (i++ != 0) {
                 buf.append(PROP_SEPARATOR);
             }
-
+            if (aProp.getName().equals(PropertyKeys.QUALIFIER) && aProp.getValue().equals("'")) {
+                aProp.setValue("''");
+            }
             buf.append(aProp.getKeyValuePair());
         }
 
