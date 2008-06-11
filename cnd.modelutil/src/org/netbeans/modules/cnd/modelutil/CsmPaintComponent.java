@@ -863,7 +863,52 @@ public abstract class CsmPaintComponent extends JPanel {
             return buf.toString();
         }    
     }
-            
+
+    public static class LabelPaintComponent extends  CsmPaintComponent {
+        private Color LABEL_NAME_COLOR = Color.BLACK.darker().darker();
+        private List params = null;
+        private String name;
+
+        public LabelPaintComponent(){
+            super();
+        }
+
+        public String getName(){
+            return name;
+        }
+        
+        public void setName(String name){
+            this.name = name;
+        }
+        
+        public void setParams(List params){
+            this.params = params;
+        }
+        
+        protected List getParamList(){
+            return params;
+        }
+
+        protected void draw(Graphics g){
+            // IMPORTANT:
+            // when updated => have to update toString!
+            boolean strike = false;
+            drawIcon(g, getIcon());
+            drawString(g, getName(), LABEL_NAME_COLOR, null, strike);
+        }
+
+        /**
+         * returns string representation of paint item
+         * IMPORTANT: have to be in sync with draw() method
+         */
+        public String toString() {
+            StringBuilder buf = new StringBuilder();
+            //macro name
+            buf.append(getName());
+            return buf.toString();
+        }    
+    }
+    
     public static class ConstructorPaintComponent extends CsmPaintComponent{
         
         private Color CONSTRUCTOR_COLOR = Color.orange.darker().darker();
