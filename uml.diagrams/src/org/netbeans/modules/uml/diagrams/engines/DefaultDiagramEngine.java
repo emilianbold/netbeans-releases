@@ -52,6 +52,7 @@ import org.netbeans.api.visual.action.ReconnectProvider;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
+import org.netbeans.api.visual.anchor.PointShape;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.api.visual.widget.LayerWidget;
@@ -235,8 +236,14 @@ public class DefaultDiagramEngine extends  DiagramEngine {
 
     public void setActions(ConnectionWidget widget,IPresentationElement edge) {
         WidgetAction.Chain selectTool = widget.createActions(DesignerTools.SELECT);      
+        
+        selectTool.addAction (ActionFactory.createAddRemoveControlPointAction ());
+        selectTool.addAction (ActionFactory.createFreeMoveControlPointAction ());
         selectTool.addAction(sceneSelectAction);
-                
+        
+        widget.setPaintControlPoints (true);
+        widget.setControlPointShape (PointShape.SQUARE_FILLED_BIG);
+        
         selectTool.addAction(POPUP_ACTION);
         selectTool.addAction(ActionFactory.createReconnectAction(new SceneReconnectProvider()));
         
@@ -256,7 +263,7 @@ public class DefaultDiagramEngine extends  DiagramEngine {
     public Router getEdgeRouter(LayerWidget... layers)
     {
 //        return RouterFactory.createOrthogonalSearchRouter(layers);
-        return RouterFactory.createDirectRouter() ;
+        return RouterFactory.createFreeRouter() ;
     }
     
     public ConnectionWidget createConnectionWidget(DesignerScene scene, 
