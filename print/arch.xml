@@ -608,7 +608,8 @@
   -->
   <answer id="lookup-lookup">
   <p>
-      Yes, uses lookup.
+      Yes, uses lookup for communication with node, data object, top component
+      to obtain print provider.
   </p>
   </answer>
 
@@ -623,7 +624,7 @@
   -->
   <answer id="lookup-register">
   <p>
-      Yes.
+      No.
   </p>
   </answer>
 
