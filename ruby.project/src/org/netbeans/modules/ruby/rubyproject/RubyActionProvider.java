@@ -487,16 +487,13 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             if (rspec.isRSpecInstalled() && RSpecSupport.isSpecFile(file)) {
                 // Save all files first - this rake file could be accessing other files
                 LifecycleManager.getDefault().saveAll();
-                 // not using the UI test runner for debugging for now, see #136930
-                /* 
                 TestRunner rspecRunner = getTestRunner(TestRunner.TestType.RSPEC);
                 if (rspecRunner != null) {
                     rspecRunner.runTest(file, COMMAND_DEBUG_SINGLE.equals(command));
                 } else {
-                 */
                     rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context, project), true,
                             COMMAND_DEBUG_SINGLE.equals(command));
-                //}
+                }
                 return;
             }
             
@@ -607,8 +604,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             RSpecSupport rspec = new RSpecSupport(project);
             if (rspec.isRSpecInstalled() && RSpecSupport.isSpecFile(file)) {
                 TestRunner rspecRunner = getTestRunner(TestRunner.TestType.RSPEC);
-                 // not using the UI test runner for debugging for now, see #136930
-                if (rspecRunner != null && !isDebug) {
+                if (rspecRunner != null) {
                     rspecRunner.runTest(file, isDebug);
                 } else {
                     rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context, project), true,

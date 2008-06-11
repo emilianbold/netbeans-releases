@@ -288,7 +288,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             RSpecSupport rspec = new RSpecSupport(project);
             if (rspec.isRSpecInstalled() && RSpecSupport.isSpecFile(file)) {
                 TestRunner rspecRunner = getTestRunner(TestRunner.TestType.RSPEC);
-                if (rspecRunner != null && !isDebug) {
+                if (rspecRunner != null) {
                     rspecRunner.runTest(file, isDebug);
                 } else {
                     rspec.runRSpec(null, file, file.getName(), new RailsFileLocator(context, project), true, isDebug);
@@ -332,7 +332,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             if (rspec.isRSpecInstalled() && RSpecSupport.isSpecFile(file)) {
                 TestRunner rspecRunner = getTestRunner(TestRunner.TestType.RSPEC);
                 boolean debug = COMMAND_DEBUG_SINGLE.equals(command);
-                if (rspecRunner != null && !debug) {
+                if (rspecRunner != null) {
                     rspecRunner.runTest(file, debug);
                 } else {
                     // Save all files first - this rake file could be accessing other files
