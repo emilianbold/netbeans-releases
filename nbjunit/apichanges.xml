@@ -55,6 +55,22 @@ made subject to such option by the copyright holder.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="NbModuleSuite.Configuration.addTest">
+        <api name="nbjunit"/>
+        <summary>NbModuleSuite.Configuration.addTest(Class &lt; ? extends Test> test)</summary>
+        <version major="1" minor="51"/>
+        <date day="11" month="6" year="2008"/>
+        <author login="jsedek"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>NbModuleSuite.Configuration now has 
+            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#addTest(java.lang.Class)">addTest(java.lang.Class)</a>
+            method which which allows to add Test implementation classes into configuration
+            and execution of the NbModuleSuite.
+            </p>
+        </description>
+        <class package="org.netbeans.junit" name="NbModuleSuite"/>
+    </change>
     <change id="NbModuleSuite.emptyConfiguration">
         <api name="nbjunit"/>
         <summary>NbModuleSuite.emptyConfiguration()</summary>
@@ -63,7 +79,7 @@ made subject to such option by the copyright holder.
         <author login="jtulach"/>
         <compatibility addition="yes"/>
         <description>
-            <p>NbModuleSuite.Configuration now has 
+            <p>NbModuleSuite now has 
             <a href="@TOP@/org/netbeans/junit/NbModuleSuite.html#emptyConfiguration()">emptyConfiguration()</a>
             method which returns empty, ready to be configured configuration.
             </p>
