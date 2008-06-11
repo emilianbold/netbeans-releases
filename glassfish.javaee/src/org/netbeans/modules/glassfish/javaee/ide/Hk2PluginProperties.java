@@ -144,7 +144,7 @@ public class Hk2PluginProperties {
      */
     public List<URL> getClasses() {
         
-        List<String> jars = new ArrayList();
+        List<String> jars = new ArrayList<String>();
         jars.add("javax.javaee-10.0");
         jars.add("webservices-api");        
         jars.add("webservices-tools");
