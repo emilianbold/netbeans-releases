@@ -492,13 +492,13 @@ public final class ModuleActions implements ActionProvider {
     private void bypassAntBuildScript(String command, FileObject[] files) throws IllegalArgumentException {
         FileObject toRun = null;
 
-        if (COMMAND_RUN_SINGLE.equals(command)) {
+        if (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command)) {
             toRun = files[0];
         }
         
         if (toRun != null) {
             try {
-                ProjectRunner.execute(ProjectRunner.QUICK_TEST_SINGLE, new Properties(), Collections.singletonList(toRun));
+                ProjectRunner.execute(COMMAND_RUN_SINGLE.equals(command) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG, new Properties(), toRun);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

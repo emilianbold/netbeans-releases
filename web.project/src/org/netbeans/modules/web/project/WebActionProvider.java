@@ -356,24 +356,6 @@ class WebActionProvider implements ActionProvider {
 
         // RUN, REDEPLOY
         } else if (command.equals(COMMAND_RUN) || command.equals(WebProjectConstants.COMMAND_REDEPLOY)) {
-            StringBuilder sroots = new StringBuilder();
-            boolean first = true;
-            
-            for (URL u : project.getSourceRoots().getRootURLs()) {
-                File f = FileUtil.archiveOrDirForURL(u);
-                
-                if (f != null) {
-                    if (!first) {
-                        sroots.append(":");
-                    }
-                    
-                    sroots.append(f.getAbsolutePath());
-                    first = false;
-                }
-            }
-            
-            p.setProperty("ensure.built.source.roots", sroots.toString());
-            //startListeningOnCos();
             setDirectoryDeploymentProperty(p);
             FileObject[] files = findTestSources(context, false);
             if (files != null) {

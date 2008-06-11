@@ -43,13 +43,19 @@ made subject to such option by the copyright holder.
 <project name="changeme" default="execute" basedir=".">
     <target name="execute">
         <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
+        <nbjpdastart addressproperty="jpda.address" name="${classname}" stopclassname="" transport="dt_socket" listeningcp="${classpath}">
+            <classpath>
+                <path path="${classpath-translated}"/>
+            </classpath>
+        </nbjpdastart>
         <junit showoutput="true" fork="true">
             <test name="${classname}" />
             <classpath path="${classpath-translated}" />
-<!--            <syspropertyset refid="test.unit.properties"/>-->
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
             <jvmarg value="-ea"/>
             <formatter type="brief" usefile="false"/>
             <formatter type="xml"/>
         </junit>
     </target>
+
 </project>

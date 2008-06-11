@@ -245,24 +245,6 @@ class EjbJarActionProvider implements ActionProvider {
                 }
             }
         } else if (command.equals(COMMAND_RUN) || command.equals(EjbProjectConstants.COMMAND_REDEPLOY)) {
-            StringBuilder sroots = new StringBuilder();
-            boolean first = true;
-            
-            for (URL u : project.getSourceRoots().getRootURLs()) {
-                File f = FileUtil.archiveOrDirForURL(u);
-                
-                if (f != null) {
-                    if (!first) {
-                        sroots.append(":");
-                    }
-                    
-                    sroots.append(f.getAbsolutePath());
-                    first = false;
-                }
-            }
-            
-            p.setProperty("ensure.built.source.roots", sroots.toString());
-            
             if (!isSelectedServer()) {
                 return null;
             }

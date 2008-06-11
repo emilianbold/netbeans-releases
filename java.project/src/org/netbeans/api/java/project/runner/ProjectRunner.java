@@ -41,7 +41,6 @@ package org.netbeans.api.java.project.runner;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,42 +53,97 @@ import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 
 /**
- *
+ * Class that allows to execute given file(s). API clients can check whether given
+ * command is support, by calling
+ * {@link #isSupported(String)} and execute the command by calling
+ * {@link #execute(String, Properties, List)}. Please consult documentation of particular
+ * commands for the list of supported properties.
+ * 
+ * SPI clients (command providers) should write a short ant build script performing
+ * the given command and register it on the default filesystem as <code>executor-snippets/&lt;command&gt;.xml</code>.
+ * The project runner will automatically set the following properties:
+ * <ul>
+ * <li><strong>classpath</strong> contains executable classpath of the executed file</li>
+ * <li><strong>classname</strong> contains a classname corresponding to the file that should be executed</li>
+ * </ul>
+ * 
  * @author Jan Lahoda
  */
 public final class ProjectRunner {
     
+    /**
+     * "Test" run the given file. Classfiles produced by the Java infrastructure will be
+     * executed.
+     * 
+     * Supported properties:
+     * <ul>
+     * <li><strong>run.jvmargs</strong> arguments that will be passed to the Java Virtual Machine</li>
+     * <li><strong>application.args</strong> arguments that will be passed to the executed files</li>
+     * </ul>
+     */
     public static final String QUICK_RUN = "run";
-    public static final String QUICK_TEST_SINGLE = "junit-single";
 
+    /**
+     * "Test" run the given file in the debugging mode. Classfiles produced by the Java infrastructure will be
+     * executed.
+     * 
+     * Supported properties:
+     * <ul>
+     * <li><strong>run.jvmargs</strong> arguments that will be passed to the Java Virtual Machine</li>
+     * <li><strong>application.args</strong> arguments that will be passed to the executed files</li>
+     * </ul>
+     */
+    public static final String QUICK_DEBUG = "debug";
+    
+    /**
+     * "Test" run the given test. Classfiles produced by the Java infrastructure will be
+     * executed.
+     * 
+     * Supported properties: none.
+     */
+    public static final String QUICK_TEST = "junit";
+
+    /**
+     * "Test" run the given test in the debugging mode. Classfiles produced by the Java infrastructure will be
+     * executed.
+     * 
+     * Supported properties: none.
+     */
+    public static final String QUICK_TEST_DEBUG = "junit-debug";
+    
     private static final Logger LOG = Logger.getLogger(ProjectRunner.class.getName());
     
+    /**
+     * Check whether the given command is supported.
+     * 
+     * @param command command name
+     * @return true if and only if the given command is supported
+     */
     public static boolean isSupported(String command) {
         return buildScript(command) != null;
     }
     
-    public static void execute(String command, Properties props, List<FileObject> toRun) throws IOException {
-        if (toRun.isEmpty()) {
-            throw new IllegalArgumentException("toRun is empty");
-        }
-        
-        FileObject main = toRun.iterator().next();
-        String jvmArgs = props.getProperty("run.jvmargs");
-        String args = props.getProperty("application.args");
-
-        ClassPath exec = ClassPath.getClassPath(main, ClassPath.EXECUTE);
-        ClassPath source = ClassPath.getClassPath(main, ClassPath.SOURCE);
+    /**
+     * Execute the given command with given parameters. Please refer to the documentation
+     * of the given command for supported properties.
+     * 
+     * @param command command to execute
+     * @param props properties
+     * @param toRun file to run
+     * @throws java.io.IOException if execution fails
+     */
+    public static void execute(String command, Properties props, FileObject toRun) throws IOException {
+        ClassPath exec = ClassPath.getClassPath(toRun, ClassPath.EXECUTE);
+        ClassPath source = ClassPath.getClassPath(toRun, ClassPath.SOURCE);
 
         LOG.log(Level.FINE, "execute classpath={0}", exec);
 
         String cp = toString(exec);
         
-        Properties antProps = new Properties();
+        Properties antProps = new Properties(props); //TODO: should copy the properties to ensure immutability
         
-        antProps.setProperty("jvmargs", jvmArgs != null ? jvmArgs : "");
-        antProps.setProperty("args", args != null ? args : "");
         antProps.setProperty("classpath", cp);
-        antProps.setProperty("classname", source.getResourceName(main, '.', false));
+        antProps.setProperty("classname", source.getResourceName(toRun, '.', false));
         
         ActionUtils.runTarget(buildScript(command), new String[] {"execute"}, antProps);
     }
