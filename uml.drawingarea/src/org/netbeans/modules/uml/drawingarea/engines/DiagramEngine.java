@@ -339,8 +339,6 @@ abstract public class DiagramEngine {
         
         bar.add(new JToolBar.Separator());
         
-        bar.add(new JToolBar.Separator());
-        
         bar.add(exportImageButton);
         bar.add(new JToolBar.Separator());
         manager.addToolbarActions(bar);
