@@ -44,14 +44,10 @@ package org.netbeans.modules.editor.indent.api;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
-import javax.swing.text.PlainDocument;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.Formatter;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.indent.CodeStylePreferences;
 import org.netbeans.modules.editor.indent.IndentImpl;
 
 /**
@@ -88,14 +84,9 @@ public final class IndentUtils {
      * @return &gt;=0 size of indentation level in spaces.
      */
     public static int indentLevelSize(Document doc) {
-        int indentLevel;
-        if (doc instanceof BaseDocument) {
-            indentLevel = ((BaseDocument)doc).getShiftWidth();
-        } else {
-            Object val = Settings.getValue(BaseKit.class, SettingsNames.INDENT_SHIFT_WIDTH);
-            indentLevel = (val instanceof Integer) ? ((Integer)val).intValue() : tabSize(doc);
-        }
-        return indentLevel;
+        int indentLevelSize = CodeStylePreferences.get(doc).getPreferences().getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, 4);
+        assert indentLevelSize > 0 : "Invalid indentLevelSize " + indentLevelSize + " for " + doc; //NOI18N
+        return indentLevelSize;
     }
 
     /**
@@ -104,14 +95,8 @@ public final class IndentUtils {
      * @return &gt;=0 size corresponding to '\t' character in spaces.
      */
     public static int tabSize(Document doc) {
-        int tabSize;
-        if (doc instanceof BaseDocument) {
-            tabSize = ((BaseDocument)doc).getTabSize();
-        } else {
-            Object val = doc.getProperty(PlainDocument.tabSizeAttribute);
-            tabSize = (val instanceof Integer) ? ((Integer)val).intValue() : 8;
-        }
-        assert (tabSize >= 0) : "Retrieved tabSize=" + tabSize + " < 0"; // NOI18N
+        int tabSize = CodeStylePreferences.get(doc).getPreferences().getInt(SimpleValueNames.TAB_SIZE, 8);
+        assert tabSize > 0 : "Invalid tabSize " + tabSize + " for " + doc; //NOI18N
         return tabSize;
     }
 
@@ -122,11 +107,7 @@ public final class IndentUtils {
      * @return true if the tabs should be expanded or false if not.
      */
     public static boolean isExpandTabs(Document doc) {
-        if (doc instanceof BaseDocument) {
-            Formatter formatter = ((BaseDocument)doc).getFormatter();
-            return (formatter != null) ? formatter.expandTabs() : true;
-        } else
-            return true;
+        return CodeStylePreferences.get(doc).getPreferences().getBoolean(SimpleValueNames.EXPAND_TABS, true);
     }
     
     /**
