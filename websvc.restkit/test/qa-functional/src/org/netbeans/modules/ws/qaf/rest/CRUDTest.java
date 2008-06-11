@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -52,6 +53,7 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -302,26 +304,41 @@ public class CRUDTest extends RestTestBase {
     /**
      * Creates suite from particular test cases. You can define order of testcases here.
      */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CRUDTest("testRfE")); //NOI18N
-        suite.addTest(new CRUDTest("testPropAccess")); //NOI18N
-        suite.addTest(new CRUDTest("testDeploy")); //NOI18N
-//        suite.addTest(new CRUDTest("testGet")); //NOI18N
-//        suite.addTest(new CRUDTest("testPost")); //NOI18N
-//        suite.addTest(new CRUDTest("testPut")); //NOI18N
-//        suite.addTest(new CRUDTest("testDelete")); //NOI18N
-        suite.addTest(new CRUDTest("testCreateRestClient")); //NOI18N
-        suite.addTest(new CRUDTest("testUndeploy")); //NOI18N
-        return suite;
+    
+    public static Test suite() {
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(CRUDTest.class),
+                "testRfE",
+                "testPropAccess",
+                "testDeploy",
+//                "testGet",
+//                "testPost",
+//                "testPut",
+//                "testDelete",
+                "testCreateRestClient",
+                "testUndeploy"
+                ).enableModules(".*").clusters(".*"));
     }
-
-    /**
-     * Method allowing test execution directly from the IDE.
-     */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        TestRunner.run(suite());
-    }
+    
+//    public static NbTestSuite suite() {
+//        NbTestSuite suite = new NbTestSuite();
+//        suite.addTest(new CRUDTest("testRfE")); //NOI18N
+//        suite.addTest(new CRUDTest("testPropAccess")); //NOI18N
+//        suite.addTest(new CRUDTest("testDeploy")); //NOI18N
+////        suite.addTest(new CRUDTest("testGet")); //NOI18N
+////        suite.addTest(new CRUDTest("testPost")); //NOI18N
+////        suite.addTest(new CRUDTest("testPut")); //NOI18N
+////        suite.addTest(new CRUDTest("testDelete")); //NOI18N
+//        suite.addTest(new CRUDTest("testCreateRestClient")); //NOI18N
+//        suite.addTest(new CRUDTest("testUndeploy")); //NOI18N
+//        return suite;
+//    }
+//
+//    /**
+//     * Method allowing test execution directly from the IDE.
+//     */
+//    public static void main(java.lang.String[] args) {
+//        // run whole suite
+//        TestRunner.run(suite());
+//    }
 
 }
