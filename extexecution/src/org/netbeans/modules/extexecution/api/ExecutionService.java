@@ -68,8 +68,6 @@ import org.netbeans.modules.extexecution.api.input.InputProcessor;
 import org.netbeans.modules.extexecution.api.input.InputProcessors;
 import org.netbeans.modules.extexecution.api.input.InputReaderTask;
 import org.netbeans.modules.extexecution.api.input.InputReaders;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -90,6 +88,11 @@ import org.openide.windows.OutputWriter;
  * <p>
  * All processes launched by this class are terminated on VM exit by
  * {@link Process#destroy()}.
+ * <p>
+ * Note that once service is run for the first time. Subsequents runs can be
+ * invoked by the user (rerun button) if it is allowed to do so
+ * ({@link ExecutionDescriptor#isControllable()}). As consequence {@link #kill()}
+ * always terminates <i>currently</i> running task.
  *
  * @author Tor Norbye, Petr Hejl
  * @see #newService(java.util.concurrent.Callable, org.netbeans.modules.extexecution.api.ExecutionDescriptor, java.lang.String)
