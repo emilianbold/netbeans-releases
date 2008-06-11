@@ -17,21 +17,19 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.xml.xpath.ext;
+package org.netbeans.modules.xml.xpath.ext.schema.resolver;
 
+import org.netbeans.modules.xml.xpath.ext.*;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.xml.xam.Named;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext.SchemaCompPair;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext.SchemaCompPair;
 
 /**
  * It is intended to: 
@@ -85,7 +83,7 @@ public interface XPathSchemaContext {
      * But if it isn't the last in the chain then there are next chain item 
      * which can specify which schema components are used. 
      */ 
-    void setUsedSchemaComp(Set<SchemaComponent> compSet);
+    void setUsedSchemaCompH(Set<SchemaCompHolder> compHolderSet);
 
     /**
      * Compare this and parents' chain context 
@@ -107,33 +105,40 @@ public interface XPathSchemaContext {
      * component was taken from. 
      */ 
     public final class SchemaCompPair {
-        private SchemaComponent mComp;
-        private SchemaComponent mParentComp;
+        private SchemaCompHolder mCompHolder;
+        private SchemaCompHolder mParentCompHolder;
         
-        public SchemaCompPair(SchemaComponent comp, SchemaComponent parent) {
-            mComp = comp;
-            mParentComp = parent;
+        public SchemaCompPair(SchemaCompHolder comp, SchemaCompHolder parent) {
+            assert comp != null;
+            mCompHolder = comp;
+            mParentCompHolder = parent;
         }
         
-        public SchemaComponent getComp() {
-            return mComp;
+        public SchemaCompPair(SchemaComponent comp, SchemaCompHolder parent) {
+            assert comp != null;
+            mCompHolder = SchemaCompHolder.Factory.construct(comp);
+            mParentCompHolder = parent;
         }
         
-        public SchemaComponent getParetnComp() {
-            return mParentComp;
+        public SchemaCompHolder getCompHolder() {
+            return mCompHolder;
+        }
+        
+        public SchemaCompHolder getParetnCompHolder() {
+            return mParentCompHolder;
         }
         
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
             //
-            SchemaComponent parentComp = getParetnComp();
-            if (parentComp != null) {
-                SchemaCompPair.appendCompName(sb, parentComp);
+            SchemaCompHolder parentCompHolder = getParetnCompHolder();
+            if (parentCompHolder != null) {
+                SchemaCompPair.appendCompName(sb, parentCompHolder);
                 sb.append(">");
             }
-            SchemaComponent schemaComp = getComp();
-            SchemaCompPair.appendCompName(sb, schemaComp);
+            SchemaCompHolder schemaCompHolder = getCompHolder();
+            SchemaCompPair.appendCompName(sb, schemaCompHolder);
             //
             return sb.toString();
         }
@@ -142,7 +147,7 @@ public interface XPathSchemaContext {
         public boolean equals(Object obj) {
             if (obj != null && obj instanceof SchemaCompPair) {
                 SchemaCompPair other = (SchemaCompPair)obj;
-                return (other.mComp == mComp) && (other.mParentComp == mParentComp);
+                return (other.mCompHolder == mCompHolder) && (other.mParentCompHolder == mParentCompHolder);
             }
             //
             return false;
@@ -152,15 +157,19 @@ public interface XPathSchemaContext {
         /**
          * Helper method for toString
          */ 
-        public static void appendCompName(StringBuilder sb, SchemaComponent schemaComp) {
-            if (schemaComp instanceof Attribute) {
-                sb.append("@");
-            }
-            if (schemaComp instanceof Named) {
-                String name = ((Named)schemaComp).getName();
-                sb.append(name);
-            } else {
-                sb.append("???"); // NOI18N
+        public static void appendCompName(StringBuilder sb, 
+                SchemaCompHolder schemaCompHolder) {
+            //
+            switch(schemaCompHolder.getComponentType()) {
+                case ATTRIBUTE:
+                case PSEUDO_ATTRIBUTE:
+                    sb.append("@");
+                case ELEMENT:
+                case PSEUDO_ELEMENT:
+                    sb.append(schemaCompHolder.getName());
+                    break;
+                default:
+                    sb.append("???"); // NOI18N
             }
         }
     
@@ -168,28 +177,28 @@ public interface XPathSchemaContext {
     
     public final class Utilities {
         
-        /**
-         * Returns a chain of schema components if there is the only one possible 
-         * variant of it. Otherwise returns null.
-         * @param context
-         * @return
-         */
-        public static List<SchemaComponent> getSchemaCompChain(
-                XPathSchemaContext context) {
-            ArrayList<SchemaComponent> result = new ArrayList<SchemaComponent>();
-            //
-            do {
-                SchemaComponent sComp = getSchemaComp(context);
-                if (sComp == null) {
-                    return null;
-                } else {
-                    result.add(sComp);
-                    context = context.getParentContext();
-                }
-            } while (context != null);
-            //
-            return result;
-        } 
+//        /**
+//         * Returns a chain of schema components if there is the only one possible 
+//         * variant of it. Otherwise returns null.
+//         * @param context
+//         * @return
+//         */
+//        public static List<SchemaComponent> getSchemaCompChain(
+//                XPathSchemaContext context) {
+//            ArrayList<SchemaComponent> result = new ArrayList<SchemaComponent>();
+//            //
+//            do {
+//                SchemaComponent sComp = getSchemaComp(context);
+//                if (sComp == null) {
+//                    return null;
+//                } else {
+//                    result.add(sComp);
+//                    context = context.getParentContext();
+//                }
+//            } while (context != null);
+//            //
+//            return result;
+//        } 
 
         /**
          * Returns a schema component in case if there is only one possible 
@@ -198,6 +207,15 @@ public interface XPathSchemaContext {
          * @return
          */
         public static SchemaComponent getSchemaComp(XPathSchemaContext context) {
+            SchemaCompHolder sCompHolder = getSchemaCompHolder(context);
+            if (sCompHolder != null)  {
+                return sCompHolder.getSchemaComponent();
+            }
+            //
+            return null;
+        }
+        
+        public static SchemaCompHolder getSchemaCompHolder(XPathSchemaContext context) {
             if (context == null)  {
                 return null;
             }
@@ -206,8 +224,8 @@ public interface XPathSchemaContext {
             if (scPairSet != null && scPairSet.size() == 1) {
                 SchemaCompPair scPair = scPairSet.iterator().next();
                 if (scPair != null) {
-                    SchemaComponent sComp = scPair.getComp();
-                    return sComp;
+                    SchemaCompHolder sCompHolder = scPair.getCompHolder();
+                    return sCompHolder;
                 }
             } 
             //
@@ -441,7 +459,7 @@ public interface XPathSchemaContext {
             // So it is required to go to the next schema context (parent of the parent)
             // to resolve the namespace. This set is intended to prevent scanning 
             // unnecessary parent components.
-            HashSet<SchemaComponent> unresolvedParents = null;
+            HashSet<SchemaCompHolder> unresolvedParents = null;
             //
             // The set of models which already has been checked for getting 
             // the effective namespace. It prevents repeated call of the 
@@ -450,33 +468,34 @@ public interface XPathSchemaContext {
             //
             while (parentContext != null) {
                 Set<SchemaCompPair> scPairsSet = parentContext.getUsedSchemaCompPairs();
-                HashSet<SchemaComponent> unresolvedComp = null;
+                HashSet<SchemaCompHolder> unresolvedCH = null;
                 if (!(unresolvedParents == null || unresolvedParents.isEmpty())) {
                     // Copy unresolved components which was obtained at previous 
                     // step to separate set. It's necessary because the previous 
                     // containter is going to be used here. 
-                    unresolvedComp = new HashSet<SchemaComponent>(unresolvedParents);
+                    unresolvedCH = new HashSet<SchemaCompHolder>(unresolvedParents);
                 }
                 for (SchemaCompPair scPair : scPairsSet) {
-                    SchemaComponent contextSComp = scPair.getComp();
-                    if (contextSComp != null) {
+                    SchemaCompHolder contextSCompHolder = scPair.getCompHolder();
+                    if (contextSCompHolder != null) {
                         //
-                        if (unresolvedComp != null && 
-                                !unresolvedComp.contains(contextSComp)) {
+                        if (unresolvedCH != null && 
+                                !unresolvedCH.contains(contextSCompHolder)) {
                             // This components' chain has already resolved!
                             // Try take another component
                             continue;
                         }
                         //
-                        SchemaModel sModel = contextSComp.getModel();
-                        unresolvedParents = new HashSet<SchemaComponent>();
+                        SchemaModel sModel = contextSCompHolder.
+                                getSchemaComponent().getModel();
+                        unresolvedParents = new HashSet<SchemaCompHolder>();
                         //
                         if (sModel == ownerModel) {
                             // Skip the same schema model. 
                             // This model doesn't have the target namespace
-                            SchemaComponent parentComp = scPair.getParetnComp();
-                            if (parentComp != null) {
-                                unresolvedParents.add(parentComp);
+                            SchemaCompHolder parentCH = scPair.getParetnCompHolder();
+                            if (parentCH != null) {
+                                unresolvedParents.add(parentCH);
                             }
                             continue;
                         }
@@ -484,18 +503,18 @@ public interface XPathSchemaContext {
                         String targetNs = sModel.getSchema().getTargetNamespace();
                         if (targetNs == null || targetNs.length() == 0) {
                             // Skip the parent schema without a targetNamespace
-                            SchemaComponent parentComp = scPair.getParetnComp();
-                            if (parentComp != null) {
-                                unresolvedParents.add(parentComp);
+                            SchemaCompHolder parentCH = scPair.getParetnCompHolder();
+                            if (parentCH != null) {
+                                unresolvedParents.add(parentCH);
                             }
                             continue;
                         }
                         //
                         if (checkedModels.contains(sModel)) {
                             // Skip the schema model if it has already checked.
-                            SchemaComponent parentComp = scPair.getParetnComp();
-                            if (parentComp != null) {
-                                unresolvedParents.add(parentComp);
+                            SchemaCompHolder parentCH = scPair.getParetnCompHolder();
+                            if (parentCH != null) {
+                                unresolvedParents.add(parentCH);
                             }
                             continue;
                         }

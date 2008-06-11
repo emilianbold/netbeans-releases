@@ -40,31 +40,37 @@
 package org.netbeans.modules.bpel.mapper.cast;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.swing.event.TreeModelListener;
-import javax.swing.tree.TreePath;
-import org.netbeans.modules.bpel.mapper.tree.spi.ExtTreeModel;
+import javax.swing.Icon;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.support.BpelExternalModelResolver;
+import org.netbeans.modules.soa.ui.tree.SoaTreeExtensionModel;
+import org.netbeans.modules.soa.ui.tree.SoaTreeModel;
+import org.netbeans.modules.soa.ui.tree.TreeItem;
+import org.netbeans.modules.soa.ui.tree.TreeItemActionsProvider;
+import org.netbeans.modules.soa.ui.tree.TreeItemInfoProvider;
+import org.netbeans.modules.soa.ui.tree.TreeStructureProvider;
+import org.netbeans.modules.soa.ui.schema.SchemaTreeInfoProvider;
 import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.schema.TypeInheritanceUtil;
 import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
 
 /**
- * This model is immutable.
  * 
  * @author nk160297
  */
-public class SubtypeTreeModel implements ExtTreeModel {
+public class TypeCastTreeModel implements SoaTreeModel, 
+        TreeStructureProvider, TreeItemInfoProvider {
 
     private GlobalType mBaseType;
     private Map<GlobalType, GlobalType> mDerivationMap;
-    
-    public SubtypeTreeModel(GlobalType baseType, final BpelModel bpelModel) {
+
+    public TypeCastTreeModel(GlobalType baseType, BpelModel bpelModel) {
         mBaseType = baseType;
+        //
         ExternalModelResolver modelResolver = 
                 new BpelExternalModelResolver(bpelModel);
         mDerivationMap = TypeInheritanceUtil.populateDerivationMap(modelResolver);
@@ -74,66 +80,78 @@ public class SubtypeTreeModel implements ExtTreeModel {
         return mBaseType;
     }
 
-    public List getChildren(Object parent) {
-        assert parent instanceof GlobalType;
-        Set<GlobalType> subtypes = TypeInheritanceUtil.
-                getDirectSubtypes((GlobalType)parent, mDerivationMap);
-        return new ArrayList(subtypes);
-    }
-
-    public Object getChild(Object parent, int index) {
-        assert parent instanceof GlobalType;
-        Set<GlobalType> subtypes = TypeInheritanceUtil.
-                getDirectSubtypes((GlobalType)parent, mDerivationMap);
-        Iterator<GlobalType> itr = subtypes.iterator();
-        int counter = 0;
-        while (itr.hasNext()) {
-            if (counter < index) {
-                counter++;
-                itr.next();
-                continue;
-            }
-            return itr.next();
-        }
+    public List<SoaTreeExtensionModel> getExtensionModelList() {
         return null;
     }
 
-    public int getChildCount(Object parent) {
-        assert parent instanceof GlobalType;
-        Set<GlobalType> subtypes = TypeInheritanceUtil.
-                getDirectSubtypes((GlobalType)parent, mDerivationMap);
-        return subtypes.size();
+    public TreeStructureProvider getTreeStructureProvider() {
+        return this;
     }
 
-    public boolean isLeaf(Object node) {
-        return getChildCount(node) == 0;
+    public TreeItemInfoProvider getTreeItemInfoProvider() {
+        return this;
     }
 
-    public void valueForPathChanged(TreePath path, Object newValue) {
-        return;
+    public TreeItemActionsProvider getTreeItemActionsProvider() {
+        return null;
     }
 
-    public int getIndexOfChild(Object parent, Object child) {
-        assert parent instanceof GlobalType;
-        assert child instanceof GlobalType;
-        Set<GlobalType> subtypes = TypeInheritanceUtil.
-                getDirectSubtypes((GlobalType)parent, mDerivationMap);
-        int counter = 0;
-        for (GlobalType subtype : subtypes) {
-            if (subtype.equals(child)) {
-                return counter;
-            }
-            counter++;
+    //--------------------------------------------------------------------------
+    
+    public List<Object> getChildren(TreeItem treeItem) {
+        List<Object> result = new ArrayList<Object>();
+        //
+        Object dataObj = treeItem.getDataObject();
+        if (dataObj instanceof GlobalType) {
+            assert dataObj instanceof GlobalType;
+            Set<GlobalType> subtypes = TypeInheritanceUtil.
+                    getDirectSubtypes((GlobalType)dataObj, mDerivationMap);
+            result.addAll(subtypes);
         }
-        return -1;
+        //
+        return result;
     }
 
-    public void addTreeModelListener(TreeModelListener l) {
-        return;
+    public Boolean isLeaf(TreeItem treeItem) {
+        List childrent = getChildren(treeItem);
+        return childrent == null || childrent.isEmpty();
     }
 
-    public void removeTreeModelListener(TreeModelListener l) {
-        return;
+    public String getDisplayName(TreeItem treeItem) {
+        Object dataObj = treeItem.getDataObject();
+        //
+        String result = null;
+        if (dataObj instanceof SchemaComponent) {
+            result = SchemaTreeInfoProvider.getInstance().getDisplayName(treeItem);
+        }
+        //
+        if (result == null) {
+            result = dataObj.toString();
+        }
+        //
+        return result;
+    }
+
+    public Icon getIcon(TreeItem treeItem) {
+        Object dataObject = treeItem.getDataObject();
+        //
+        if (dataObject instanceof SchemaComponent) {
+            Icon result = SchemaTreeInfoProvider.getInstance().getIcon(treeItem);
+            if (result != null) {
+                return result;
+            }
+        }
+        //
+        return null;
+    }
+
+    public String getToolTipText(TreeItem treeItem) {
+        String result = SchemaTreeInfoProvider.getInstance().getToolTipText(treeItem);
+        if (result != null) {
+            return result;
+        }
+        //
+        return null;
     }
 
 }

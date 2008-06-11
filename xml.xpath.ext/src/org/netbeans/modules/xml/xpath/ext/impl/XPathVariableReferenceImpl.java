@@ -20,7 +20,7 @@
 package org.netbeans.modules.xml.xpath.ext.impl;
 
 import javax.xml.namespace.QName;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathUtils;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;

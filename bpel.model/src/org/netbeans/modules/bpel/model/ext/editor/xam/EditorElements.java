@@ -36,6 +36,8 @@ public enum EditorElements {
     EDITOR( "editor" ),
     CASTS( "casts" ),
     CAST( "cast" ),
+    PSEUDO_COMPS( "pseudoComps" ),
+    PSEUDO_COMP( "pseudoComp" ),
     ;
 
     EditorElements( String name ) {

@@ -30,7 +30,6 @@ import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.soa.mappercore.LeftTree;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
@@ -42,7 +41,7 @@ import org.openide.util.NbBundle;
  *
  * @author nk160297
  */
-public class AddCastAction extends MapperAction<RestartableIterator<Object>> {
+public class AddCastAction extends MapperAction<Iterable<Object>> {
     
     private static final long serialVersionUID = 1L;
     
@@ -53,8 +52,8 @@ public class AddCastAction extends MapperAction<RestartableIterator<Object>> {
     
     public AddCastAction(GlobalType gType, MapperTcContext mapperTcContext,
             boolean inLeftTree, TreePath treePath, 
-            RestartableIterator<Object> dataObjectPathItr) {
-        super(mapperTcContext, dataObjectPathItr);
+            Iterable<Object> dataObjectPathItrb) {
+        super(mapperTcContext, dataObjectPathItrb);
         mTreePath = treePath;
         mInLeftTree = inLeftTree;
         mGType = gType;
@@ -97,9 +96,9 @@ public class AddCastAction extends MapperAction<RestartableIterator<Object>> {
         GlobalType subtype = chooser.getSelectedValue();
         //
         // The  iterator points to the casted component
-        RestartableIterator<Object> itr = getActionSubject();
-        SyntheticTypeCast newTypeCast = new SyntheticTypeCast(itr, subtype);
-        boolean castAdded = castManager.addTypeCast(itr, newTypeCast);
+        Iterable<Object> itrb = getActionSubject();
+        SyntheticTypeCast newTypeCast = new SyntheticTypeCast(itrb, subtype);
+        boolean castAdded = castManager.addTypeCast(itrb, newTypeCast);
         //
         TreePath parentPath = mTreePath.getParentPath();
         if (castAdded) {
