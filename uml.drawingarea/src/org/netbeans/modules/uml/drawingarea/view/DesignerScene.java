@@ -66,6 +66,7 @@ import org.netbeans.modules.uml.drawingarea.actions.DiagramSceneRectangularSelec
 import org.netbeans.modules.uml.drawingarea.actions.MarqueeZoomSelectProvider;
 import org.netbeans.modules.uml.drawingarea.actions.UMLRectangularSelectAction;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
+import org.netbeans.modules.uml.drawingarea.engines.DiagramEngineFactory;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager; 
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
@@ -420,47 +421,11 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
                         ex.printStackTrace();
                         continue;
                     }
-//                    try
-//                    {
-//                        instance = ic.instanceClass().getConstructor(DesignerScene.class).newInstance(this) ;
-//                    }
-//                    catch (IOException e)
-//                    {
-//                        // ignore
-//                        e.printStackTrace();
-//                        continue;
-//                    }
-//                    catch (ClassNotFoundException e)
-//                    {
-//                        // ignore
-//                        e.printStackTrace();
-//                        continue;
-//                    }
-//                    catch(NoSuchMethodException ex)
-//                    {
-//                        ex.printStackTrace();
-//                        continue;
-//                    }
-//                    catch(InstantiationException ex)
-//                    {
-//                        ex.printStackTrace();
-//                        continue;
-//                    }
-//                    catch(IllegalAccessException ex)
-//                    {
-//                        ex.printStackTrace();
-//                        continue;
-//                    }
-//                     catch(InvocationTargetException ex)
-//                    {
-//                        ex.printStackTrace();
-//                        continue;
-//                    }
                     
-                    if (instance instanceof DiagramEngine)
+                    if (instance instanceof DiagramEngineFactory)
                     {
-                        ret = (DiagramEngine)instance;
-                        ret.initialize(this);
+                        DiagramEngineFactory factory = (DiagramEngineFactory)instance;
+                        ret = factory.createEngine(this);
                         break;
                     }
                  }

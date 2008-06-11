@@ -430,6 +430,7 @@ public class SceneAcceptProvider implements AcceptProvider
                         }
                     }
                     
+                    System.out.println("Comparing Scenes: " + transferWidget.getScene() + ", " + engine.getScene());
                     transferWidget.removeFromParent();
                     engine.getScene().getMainLayer().addChild(transferWidget);
                     transferWidget.setPreferredLocation(point);
