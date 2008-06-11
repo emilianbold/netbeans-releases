@@ -30,9 +30,9 @@ import org.netbeans.modules.xml.schema.model.SchemaComponent;
  * 
  * @author nk160297
  */
-public class CollectAttributesVisitor extends AbstractSchemaSearchVisitor {
+public class CollectInheritedAttributesVisitor extends AbstractSchemaSearchVisitor {
     
-    private boolean mLookForAny;
+    private boolean mSkipXsdAny;
     private AnyAttribute mAnyAttribute;
     private ArrayList<Attribute> mAttributes = new ArrayList<Attribute>();
 
@@ -43,9 +43,9 @@ public class CollectAttributesVisitor extends AbstractSchemaSearchVisitor {
      * @param supportAny indicates if it is necessary to add 
      * AnyElement and AnyAttribute to result list. 
      */
-    public CollectAttributesVisitor(boolean lookForAny) {
+    public CollectInheritedAttributesVisitor(boolean skipXsdAny) {
         super();
-        mLookForAny = lookForAny;
+        mSkipXsdAny = skipXsdAny;
     }
     
     public List<Attribute> getAttributes() {
@@ -71,8 +71,9 @@ public class CollectAttributesVisitor extends AbstractSchemaSearchVisitor {
 
     @Override
     public void visit(AnyAttribute aa) {
-        if (mLookForAny && mAnyAttribute == null) {
+        if (!mSkipXsdAny && mAnyAttribute == null) {
             mAnyAttribute = aa;
+            mSkipXsdAny = true;
         }
     }
 

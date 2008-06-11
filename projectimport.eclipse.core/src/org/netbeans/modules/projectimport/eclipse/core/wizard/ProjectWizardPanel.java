@@ -97,7 +97,7 @@ final class ProjectWizardPanel extends ImporterWizardPanel implements
     
     public void validate() throws WizardValidationException {
         String dest = panel.getDestination();
-        if (!new File(dest).isAbsolute() || !EclipseUtils.isWritable(dest)) {
+        if (dest != null && (!new File(dest).isAbsolute() || !EclipseUtils.isWritable(dest))) {
             String message = ProjectImporterWizard.getMessage(
                     "MSG_CannotCreateProjectInFolder", dest); // NOI18N
             setErrorMessage(message);

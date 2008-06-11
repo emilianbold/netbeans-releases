@@ -35,10 +35,6 @@
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory"/>
                     <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
-<!--                <file name="RegistryNodeFactory.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.nodes.Hk2RegistryNodeFactory"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory"/>
-                </file> -->
                 <file name="J2eePlatformFactory.instance">
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.glassfish.javaee.Hk2JavaEEPlatformFactory"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2JavaEEPlatformFactory"/>

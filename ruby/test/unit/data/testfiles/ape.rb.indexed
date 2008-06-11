@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/ape.rb
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   class : Ape
   class-ig : ape
   field : authent
@@ -54,6 +49,6 @@ Indexed:
   method : warning(message,crumb_key)
   method : write_mark(mark)
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   requires : authent,builder,categories,collection,crumbs,deleter,entry,escaper,feed,getter,html,names,poster,putter,rexml/document,rubygems,samples,service,validator
