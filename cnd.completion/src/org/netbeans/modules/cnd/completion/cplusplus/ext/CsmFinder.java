@@ -171,4 +171,7 @@ public interface CsmFinder {
     */
     public List findNestedClassifiers(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch,
                             boolean inspectParentClasses, boolean sort);      
+
+    public List findLabel(CsmOffsetableDeclaration contextDeclaration, String name, boolean exactMatch,  boolean sort);
+
 }

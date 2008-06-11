@@ -215,7 +215,7 @@ public class PNGEncoder extends Object {
      * @param rect Rectangle of screen to be captured
      * @param fileName file name for screen capture PNG image file */    
     public static void captureScreen(Rectangle rect, String fileName) {
-        captureScreen(rect, fileName, GREYSCALE_MODE);
+        captureScreen(rect, fileName, COLOR_MODE);
     }
 
     /** Static method performing screen capture into PNG image format file with given fileName.
@@ -239,7 +239,7 @@ public class PNGEncoder extends Object {
       * @param comp Component to be captured
       * @param fileName String image target filename */    
     public static void captureScreen(Component comp, String fileName) {
-        captureScreen(comp, fileName, GREYSCALE_MODE);
+        captureScreen(comp, fileName, COLOR_MODE);
     }
     
     /** Static method performing one component screen capture into PNG image format file with given fileName.
@@ -256,7 +256,7 @@ public class PNGEncoder extends Object {
     /** Static method performing whole screen capture into PNG image format file with given fileName.
      * @param fileName String image target filename */    
     public static void captureScreen(String fileName) {
-        captureScreen(fileName, GREYSCALE_MODE);
+        captureScreen(fileName, COLOR_MODE);
     }
     
     /** Static method performing whole screen capture into PNG image format file with given fileName.

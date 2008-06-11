@@ -20,6 +20,7 @@
 package org.netbeans.modules.bpel.mapper.tree;
 
 import java.awt.event.KeyEvent;
+import java.util.Iterator;
 import org.netbeans.modules.bpel.mapper.tree.spi.ExtTreeModel;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,7 +40,6 @@ import org.netbeans.modules.bpel.mapper.multiview.DesignContextController;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemInfoProvider;
 import org.netbeans.modules.print.api.PrintManager;
 import org.netbeans.modules.soa.mappercore.model.GraphItem;
@@ -189,9 +189,9 @@ public class MapperSwingTreeModel implements ExtTreeModel<MapperTreeNode>,
             TreeItemInfoProvider infoProvider =
                     mSourceModel.getTreeItemInfoProvider();
             if (infoProvider != null) {
-                RestartableIterator<Object> dataObjectPathItr = 
-                getDataObjectsPathIterator(mNode);
-                toolTipText = infoProvider.getToolTipText(dataObjectPathItr);
+                Iterable<Object> dataObjectPathItrb = 
+                getDataObjectsPathIterable(mNode);
+                toolTipText = infoProvider.getToolTipText(dataObjectPathItrb);
             }
         }
         return toolTipText;
@@ -228,8 +228,7 @@ public class MapperSwingTreeModel implements ExtTreeModel<MapperTreeNode>,
         MapperTreeNode mNode = (MapperTreeNode)node;
         //
         TreePath treePath = mNode.getTreePath();
-        RestartableIterator<Object> dataObjectPathItr = 
-                getDataObjectsPathIterator(mNode);
+        Iterable<Object> dataObjectPathItrb = getDataObjectsPathIterable(mNode);
         //
         TreeItemInfoProvider infoProvider = mSourceModel.getTreeItemInfoProvider();
         if (infoProvider != null) {
@@ -240,7 +239,7 @@ public class MapperSwingTreeModel implements ExtTreeModel<MapperTreeNode>,
             boolean isLeft = (leftTreeModel == this);
             //
             List<Action> menuActionList = infoProvider.getMenuActions(
-                    mMapperTcContext, isLeft, treePath, dataObjectPathItr);
+                    mMapperTcContext, isLeft, treePath, dataObjectPathItrb);
             if (menuActionList != null && !menuActionList.isEmpty()) {
                 JPopupMenu newMenu = new JPopupMenu();
                 for (Action menuAction : menuActionList) {
@@ -283,10 +282,10 @@ public class MapperSwingTreeModel implements ExtTreeModel<MapperTreeNode>,
             //
             // Construct children nodes here
             childrenList = new ArrayList<MapperTreeNode>();
-            RestartableIterator<Object> dataObjectPathItr = 
-                    getDataObjectsPathIterator(parent);
+            Iterable<Object> dataObjectPathItrb = 
+                    getDataObjectsPathIterable(parent);
             List<Object> childrenDataObjectList = 
-                    mSourceModel.getChildren(dataObjectPathItr);
+                    mSourceModel.getChildren(dataObjectPathItrb);
             
             if (childrenDataObjectList != null) {
                 DesignContextController dcc = mMapperTcContext
@@ -388,36 +387,46 @@ public class MapperSwingTreeModel implements ExtTreeModel<MapperTreeNode>,
      * @param node
      * @return
      */
-    private RestartableIterator<Object> getDataObjectsPathIterator(
+    private Iterable<Object> getDataObjectsPathIterable(
             final MapperTreeNode node) {
-        return new RestartableIterator() {
-
-            private MapperTreeNode mNextNode = node;
+        //
+        return new Iterable<Object>() {
             
-            public boolean hasNext() {
-                return mNextNode != null;
-            }
+            public Iterator<Object> iterator() {
+                
+                return new Iterator() {
 
-            public Object next() {
-                assert mNextNode != null;
-                Object result = mNextNode.getDataObject();
-                mNextNode = mNextNode.getParent();
-                return result;
-            }
+                    private MapperTreeNode mNextNode = node;
 
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
+                    public boolean hasNext() {
+                        return mNextNode != null;
+                    }
 
-            public void restart() {
-                mNextNode = node;
+                    public Object next() {
+                        assert mNextNode != null;
+                        Object result = mNextNode.getDataObject();
+                        mNextNode = mNextNode.getParent();
+                        return result;
+                    }
+
+                    public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+
+                    public void restart() {
+                        mNextNode = node;
+                    }
+
+                };
             }
             
             @Override
             public String toString() {
                 return PathConverter.toString(this);
             }
+            
         };
+        
     }
     
     public List<TreePath> sortByLocation(Collection<TreePath> unsorted) {

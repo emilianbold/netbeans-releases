@@ -702,7 +702,7 @@ private void urlFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event
     }
 
     public String getTitle() {
-        return NbBundle.getBundle(BUNDLE).getString("NewConnectionTitle"); //NOI18N
+        return NbBundle.getBundle(BUNDLE).getString("NewConnectionDialogTitle"); //NOI18N
     }
 
     private void startProgress() {

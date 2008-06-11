@@ -676,10 +676,6 @@ final public class PersistenceHandler implements PersistenceObserver {
                 if (pm.isTopComponentNonPersistentForID(tcID)) {
                     continue;
                 }
-                TopComponent tc = wm.findTopComponent(tcID);
-                if(tc == null || !pm.isTopComponentPersistent(tc)) {
-                    continue;
-                }
             } else {
                 if (pm.isTopComponentNonPersistentForID(tcID)) {
                     continue;

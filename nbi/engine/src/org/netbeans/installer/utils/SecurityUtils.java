@@ -63,7 +63,7 @@ import javax.swing.JOptionPane;
  * @author Kirill Sorokin
  * @author Dmitry Lipin
  */
-public final class SecurityUtils {
+final class SecurityUtils {
 
     private static KeyStore caStore;
     private static KeyStore permanentTrustedStore;

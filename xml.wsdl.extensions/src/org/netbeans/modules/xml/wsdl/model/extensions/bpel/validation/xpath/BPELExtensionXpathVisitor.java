@@ -67,9 +67,9 @@ import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
-import org.netbeans.modules.xml.xpath.ext.spi.SimpleSchemaContext;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.SimpleSchemaContext;
 import org.openide.util.NbBundle;
 
 /**
