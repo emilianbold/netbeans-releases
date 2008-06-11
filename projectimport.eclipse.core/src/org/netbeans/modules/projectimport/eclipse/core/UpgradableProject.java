@@ -96,7 +96,7 @@ final public class UpgradableProject {
         if (!initialized) {
             reference = EclipseProjectReference.read(project);
             // cache data only if project is reachable
-            initialized = reference.isEclipseProjectReachable();
+            initialized = reference == null ? true : reference.isEclipseProjectReachable();
         }
         return reference;
     }
