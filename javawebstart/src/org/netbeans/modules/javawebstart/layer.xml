@@ -128,4 +128,9 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <file name="JWSAntTasks.xml" url="JWSAntTasks.xml"/>
+        </folder>
+    </folder>
 </filesystem>
