@@ -665,7 +665,8 @@ public final class CsmProjectContentResolver {
         return getNamespaceVariables(ns, strPrefix, match, isSortNeeded(), searchNested);
     }
     
-    private List getNamespaceVariables(CsmNamespace ns, String strPrefix, boolean match, boolean sort, boolean searchNested) {
+    @SuppressWarnings("unchecked")
+    private List<CsmVariable> getNamespaceVariables(CsmNamespace ns, String strPrefix, boolean match, boolean sort, boolean searchNested) {
         List res = getNamespaceMembers(ns, CsmDeclaration.Kind.VARIABLE, strPrefix, match, searchNested, false);
         Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
         filterDeclarations(used.iterator(), res, new CsmDeclaration.Kind[] {CsmDeclaration.Kind.VARIABLE}, strPrefix, match, false);
@@ -738,6 +739,7 @@ public final class CsmProjectContentResolver {
         return res;
     }
 
+    @SuppressWarnings("unchecked")
     public List<CsmEnumerator> getNamespaceEnumerators(CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
         // get all enums and check theirs enumerators
         // also get all typedefs and check whether they define
