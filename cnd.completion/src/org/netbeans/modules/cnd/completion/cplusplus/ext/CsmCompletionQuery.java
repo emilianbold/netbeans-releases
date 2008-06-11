@@ -858,7 +858,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
             case CsmCompletionExpression.LABEL:
             {
-                List res = finder.findLabel(contextElement, "", false,  false);
+                String name = exp.getParameter(0).getTokenText(0);
+                List res = finder.findLabel(contextElement, name, false,  false);
                 result = new CsmCompletionResult(component, getBaseDocument(), res, "*", exp, endOffset, 0, 0, isProjectBeeingParsed()); // NOI18N
                 break;
             }
