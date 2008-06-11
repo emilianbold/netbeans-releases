@@ -69,7 +69,6 @@ import org.netbeans.modules.groovy.editor.parser.GroovyParser;
 import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.SourceFileReader;
-import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.gsf.spi.DefaultParseListener;
 import org.netbeans.modules.gsf.spi.DefaultParserFile;
 
@@ -113,7 +112,6 @@ public class FixImportsAction extends BaseAction implements Runnable {
     GroovyParserResult getParserResult(final FileObject fo) {
 
         DefaultParseListener listener = new DefaultParseListener();
-        TranslatedSource translatedSource = null;
         ParserFile parserFile = new DefaultParserFile(fo, null, false);
         List<ParserFile> files = Collections.singletonList(parserFile);
 
@@ -143,7 +141,7 @@ public class FixImportsAction extends BaseAction implements Runnable {
                 };
 
 
-        Parser.Job job = new Parser.Job(files, listener, reader, translatedSource);
+        Parser.Job job = new Parser.Job(files, listener, reader, null);
         new GroovyParser().parseFiles(job);
 
         return (GroovyParserResult) listener.getParserResult();

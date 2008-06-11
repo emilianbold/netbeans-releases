@@ -136,8 +136,19 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_TOKEN}
         );
     
+    private static final List<PHPTokenId[]> COMMENT_TOKENCHAINS = Arrays.asList(
+            new PHPTokenId[]{PHPTokenId.PHP_COMMENT_START},
+            new PHPTokenId[]{PHPTokenId.PHP_COMMENT},
+            new PHPTokenId[]{PHPTokenId.PHP_LINE_COMMENT}
+            );
+    
+    private static final List<PHPTokenId[]> PHPDOC_TOKENCHAINS = Arrays.asList(
+            new PHPTokenId[]{PHPTokenId.PHPDOC_COMMENT_START},
+            new PHPTokenId[]{PHPTokenId.PHPDOC_COMMENT}
+            );
+    
     private static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, STRING,
-        CLASS_MEMBER, STATIC_CLASS_MEMBER, NONE};
+        CLASS_MEMBER, STATIC_CLASS_MEMBER, PHPDOC, NONE};
 
     private final static String[] PHP_KEYWORDS = {"__FILE__", "exception",
         "__LINE__", "array()", "class", "const", "continue", "die()", "echo()", "empty()", "endif",
@@ -189,7 +200,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         } else if (acceptTokenChains(tokenSequence, STATIC_CLASS_MEMBER_TOKENCHAINS)){
             return CompletionContext.STATIC_CLASS_MEMBER;
-
+        } else if (acceptTokenChains(tokenSequence, COMMENT_TOKENCHAINS)){
+            return CompletionContext.NONE;
+        } else if (acceptTokenChains(tokenSequence, PHPDOC_TOKENCHAINS)){
+            return CompletionContext.PHPDOC;
         }
         
         return CompletionContext.EXPRESSION;
@@ -299,6 +313,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 break;
             case STATIC_CLASS_MEMBER:
                 autoCompleteClassMembers(proposals, request, true);
+                break;
+            case PHPDOC:
+                //TODO cc for PHPDoc
                 break;
         }
         

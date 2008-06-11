@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.modelui.trace;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -50,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceXRef;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 import org.openide.windows.IOProvider;
@@ -131,7 +133,13 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
         String task = (this.allReferences ? "All " : "Direct usage ") + "xRef - " + p.getProjectDisplayName() + (this.analyzeStatistics ? " Statistics" : ""); // NOI18N
         InputOutput io = IOProvider.getDefault().getIO(task, false);
         io.select();
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(task);
+        final AtomicBoolean canceled = new AtomicBoolean(false);        
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(task, new Cancellable() {
+            public boolean cancel() {
+                canceled.set(true);
+                return true;
+            }
+        });
         handle.start();
         final OutputWriter out = io.getOut();
         final OutputWriter err = io.getErr();
@@ -156,7 +164,7 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
             public void projectParsingFinished(CsmProject project) {
                 time[1] = System.currentTimeMillis();
             }
-        });
+        }, canceled);
         handle.finish();
         out.println("Analyzing " + p.getProjectDisplayName() + " took " + (time[1]-time[0]) + "ms"); // NOI18N
     }
