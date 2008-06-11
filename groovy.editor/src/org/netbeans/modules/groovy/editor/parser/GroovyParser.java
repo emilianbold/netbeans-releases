@@ -561,7 +561,7 @@ public class GroovyParser implements Parser {
 
 //        long start = System.currentTimeMillis();
         try {
-            compilationUnit.compile(Phases.SEMANTIC_ANALYSIS); // which phase should be used?
+            compilationUnit.compile(Phases.CLASS_GENERATION);
 //            System.out.println("### compilation success in " + (System.currentTimeMillis() - start));
         } catch (Throwable e) {
 //            System.out.println("### compilation failure in " + (System.currentTimeMillis() - start));
@@ -622,17 +622,28 @@ public class GroovyParser implements Parser {
                 }
             }
 
-            // TODO: This seems to be a duplicate call into notifyError(), since it's done
-            // indirectly from handleErrorCollector() below. Have to doublecheck.
+            /*
+             
+            This used to be a direct call to notifyError(). Now all calls to 
+            notifyError() should be done via handleErrorCollector() below
+            to make sure to eliminate duplicates and the like.
             
-            // if (!ignoreErrors) {
-            //      notifyError(context, null, Severity.ERROR, errorMessage, localizedMessage, offset, sanitizing);
-            // }
+            I've added the two logging calls only for debugging purposes
+            
+             */
+            
+             // if (!ignoreErrors) {
+             //      notifyError(context, null, Severity.ERROR, errorMessage, localizedMessage, offset, sanitizing);
+             // }
+            
+            LOG.log(Level.FINEST, "Comp-Ex, errorMessage    : {0}", errorMessage);
+            LOG.log(Level.FINEST, "Comp-Ex, localizedMessage: {0}", localizedMessage);
+            
         }
 
         CompileUnit compileUnit = compilationUnit.getAST();
         List<ModuleNode> modules = compileUnit.getModules();
-
+        
         // there are more modules if class references another class,
         // there is one module per class
         ModuleNode module = null;
@@ -727,15 +738,19 @@ public class GroovyParser implements Parser {
     
     
     
-    private static void handleErrorCollector(ErrorCollector errorCollector, Context context, ModuleNode moduleNode, boolean ignoreErrors, Sanitize sanitizing) {
+    private void handleErrorCollector(ErrorCollector errorCollector, Context context, ModuleNode moduleNode, boolean ignoreErrors, Sanitize sanitizing) {
+        LOG.log(Level.FINEST, "handleErrorCollector()");
         if (!ignoreErrors && errorCollector != null) {
             List errors = errorCollector.getErrors();
             if (errors != null) {
                 for (Object object : errors) {
+                    LOG.log(Level.FINEST, "Error found in collector: {0}", object);
                     if (object instanceof SyntaxErrorMessage) {
                         SyntaxException ex = ((SyntaxErrorMessage)object).getCause();
+                        
                         String sourceLocator = ex.getSourceLocator();
-                        String name = moduleNode != null ? moduleNode.getContext().getName() : null;
+                        String name = moduleNode != null ? moduleNode.getContext().getName() : context.file.getNameExt();
+                        
                         if (sourceLocator != null && name != null && sourceLocator.equals(name)) {
                             int startOffset = AstUtilities.getOffset(context.document, ex.getStartLine(), ex.getStartColumn());
                             int endOffset = AstUtilities.getOffset(context.document, ex.getLine(), ex.getEndColumn());

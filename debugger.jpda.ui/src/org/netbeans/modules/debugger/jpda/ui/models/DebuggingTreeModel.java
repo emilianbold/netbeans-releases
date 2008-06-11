@@ -353,7 +353,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
                 JPDAThread t = (JPDAThread) e.getOldValue();
                 tg = t.getParentThreadGroup();
                 while (tg != null && tg.getThreads().length == 0 && tg.getThreadGroups().length == 0) {
-                    tg = t.getParentThreadGroup();
+                    tg = tg.getParentThreadGroup();
                 }
             } else if (e.getPropertyName() == JPDADebugger.PROP_THREAD_GROUP_ADDED) {
                 tg = (JPDAThreadGroup) e.getNewValue();

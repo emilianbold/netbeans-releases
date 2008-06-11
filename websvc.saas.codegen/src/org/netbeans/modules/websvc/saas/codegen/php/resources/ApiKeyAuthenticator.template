@@ -1,0 +1,19 @@
+<?php
+
+    include("ApiKeyProfile.php");
+
+    class ApiKeyAuthenticator {
+    
+        private static apiKey = "";
+
+        public static getApiKey() {
+            ApiKeyProfile profile = new ApiKeyProfile();
+            apiKey = profile.getApiKey();
+            if (apiKey == null || apiKey.length() == 0) {
+                //throw new IOException("Please specify your api key in the "  + PROP_FILE + " file.");
+            }
+
+            return apiKey;
+        }
+    }
+?>

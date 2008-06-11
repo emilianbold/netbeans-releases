@@ -28,7 +28,7 @@ import org.netbeans.modules.xml.xpath.ext.XPathUtils;
 import org.netbeans.modules.xml.xpath.ext.XPathAxis;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitor;
 
 /**

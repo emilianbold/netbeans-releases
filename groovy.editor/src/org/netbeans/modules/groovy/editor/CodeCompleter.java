@@ -239,7 +239,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             return null;
         }
 
-        ASTNode closest = null;
+        ASTNode closest;
 
         if (request.prefix.equals("")) {
             closest = path.leaf();
@@ -301,9 +301,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         if (root == null) {
             LOG.log(Level.FINEST, "root == null"); // NOI18N
             LOG.log(Level.FINEST, "request.info   = {0}", request.info); // NOI18N
-            LOG.log(Level.FINEST, "request.path   = {0}", request.path); // NOI18N
             LOG.log(Level.FINEST, "request.prefix = {0}", request.prefix); // NOI18N
-            LOG.log(Level.FINEST, "request.node   = {0}", request.node); // NOI18N
             
             return null;
         }
@@ -430,18 +428,20 @@ public class CodeCompleter implements CodeCompletionHandler {
                     ts.moveNext();
                     ts.moveNext();
 
-                    String pkgPrefix = "";
+                    StringBuffer buf = new StringBuffer();
 
                     while (ts.isValid() && ts.moveNext() && ts.offset() < position) {
                         Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
 
                         if (t.id() == GroovyTokenId.DOT || t.id() == GroovyTokenId.IDENTIFIER) {
-                            pkgPrefix = pkgPrefix + t.text().toString();
+                            buf.append(t.text().toString());
                         } else {
                             break;
                         }
                     }
 
+                    String pkgPrefix = buf.toString();
+                    
                     LOG.log(Level.FINEST, "Token prefix = >{0}<", pkgPrefix);
 
                     DataObject dob = NbEditorUtilities.getDataObject(request.doc);
@@ -549,7 +549,7 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
 
     private ClassNode getDeclaringClass(ASTNode closest) {
-        ClassNode declClass = null;
+        ClassNode declClass;
 
         if (closest != null && closest instanceof AnnotatedNode) {
             LOG.log(Level.FINEST, "closest: AnnotatedNode"); // NOI18N
@@ -594,7 +594,6 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         ASTNode closest = getClosestNode(request);
 
-        Class clz = null;
         ClassNode declClass = getDeclaringClass(closest);
 
         if (declClass == null) {
@@ -602,13 +601,13 @@ public class CodeCompleter implements CodeCompletionHandler {
             return false;
         }
 
-        if (clz == null) {
-            try {
-                clz = Class.forName(declClass.getName());
-            } catch (Exception e) {
-                LOG.log(Level.FINEST, "Class.forName() failed: {0}", e.getMessage()); // NOI18N
-                return false;
-            }
+        Class clz;
+        
+        try {
+            clz = Class.forName(declClass.getName());
+        } catch (ClassNotFoundException e) {
+            LOG.log(Level.FINEST, "Class.forName() failed: {0}", e.getMessage()); // NOI18N
+            return false;
         }
 
         if (clz != null) {
@@ -852,7 +851,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
             // figure out who originally defined this method
 
-            String className = null;
+            String className;
 
             if (ame.isGDK()) {
                 className = mm.getDeclaringClass().getCachedClass().getName();
@@ -966,8 +965,6 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         private TokenHierarchy<Document> th;
         private CompilationInfo info;
-        private AstPath path;
-        private Node node;
         private int lexOffset;
         private int astOffset;
         private BaseDocument doc;
@@ -1086,11 +1083,9 @@ public class CodeCompleter implements CodeCompletionHandler {
         HtmlFormatter formatter;
         boolean isGDK;
         AstMethodElement methodElement;
-        Class clz;
 
         MethodItem(Class clz, MetaMethod method, int anchorOffset, CompletionRequest request, boolean isGDK) {
             super(null, anchorOffset, request);
-            this.clz = clz;
             this.method = method;
             this.formatter = request.formatter;
             this.isGDK = isGDK;
@@ -1102,7 +1097,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         @Override
         public String getName() {
-            return method.getName().toString() + "()";
+            return method.getName() + "()";
         }
 
         @Override
@@ -1124,7 +1119,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             formatter.name(kind, true);
 
             if (isGDK) {
-                formatter.appendText(method.getName().toString());
+                formatter.appendText(method.getName());
 
                 // construct signature by removing package names.
 

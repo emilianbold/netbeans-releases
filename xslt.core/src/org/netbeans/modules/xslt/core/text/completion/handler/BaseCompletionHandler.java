@@ -39,19 +39,26 @@
 
 package org.netbeans.modules.xslt.core.text.completion.handler;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.CompletionModel;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.xml.xam.dom.DocumentComponent;
+import org.netbeans.modules.xml.text.syntax.SyntaxElement;
+import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
+import org.netbeans.modules.xml.text.syntax.dom.Tag;
 import org.netbeans.modules.xslt.core.text.completion.XSLTCompletionModelProvider;
 import org.netbeans.modules.xslt.core.text.completion.XSLTCompletionResultItem;
 import org.netbeans.modules.xslt.core.text.completion.XSLTCompletionUtil;
 import org.netbeans.modules.xslt.core.text.completion.XSLTEditorComponentHolder;
-import org.netbeans.modules.xslt.model.XslComponent;
 import org.netbeans.modules.xslt.model.XslModel;
+import org.openide.util.NbBundle;
 
 /**
  * @author Alex Petrov (06.06.2008)
@@ -61,7 +68,7 @@ public abstract class BaseCompletionHandler implements XSLTCompletionHandler {
     protected Document document;
     protected int caretOffset;
     protected XslModel xslModel;
-    protected XslComponent activeXslComponent;
+    protected Tag surroundTag;
     protected String attributeName;
     protected SchemaModel schemaModel;
         
@@ -71,38 +78,75 @@ public abstract class BaseCompletionHandler implements XSLTCompletionHandler {
     }
 
     protected void initHandler(XSLTEditorComponentHolder editorComponentHolder) {
+        srcEditorPane = null;
         if (editorComponentHolder == null) return;
         srcEditorPane = editorComponentHolder.getSourceEditorComponent();
         if (srcEditorPane == null) return;
         
+        document = null;
         document = srcEditorPane.getDocument();
         if (document == null) return;
 
+        caretOffset = 0;
         caretOffset = srcEditorPane.getCaretPosition();
+        
+        xslModel = null;
         xslModel = XSLTCompletionUtil.getXslModel(document);
         if (xslModel == null) return;
             
-        activeXslComponent = findActiveXslComponent(srcEditorPane, xslModel);
-        if (activeXslComponent == null) return;
+        surroundTag = null;
+        surroundTag = findSurroundTag(srcEditorPane);
+        if (surroundTag == null) return;
 
+        attributeName = null;
         if (XSLTCompletionUtil.attributeValueExpected(document, caretOffset)) {
             attributeName = XSLTCompletionUtil.extractAttributeName(
-                document, caretOffset, activeXslComponent);
+                document, caretOffset, surroundTag);
             if (attributeName == null) return;
         }
             
         CompletionModel completionModel = 
             new XSLTCompletionModelProvider().getCompletionModel();
         if ((completionModel == null) || (completionModel.getSchemaModel() == null)) return;
-            
+
+        schemaModel = null;
         schemaModel = completionModel.getSchemaModel();
     }
-    
-    protected XslComponent findActiveXslComponent(JEditorPane srcEditorPane, 
+
+    protected Tag findSurroundTag(JEditorPane srcEditorPane) {
+        if (srcEditorPane == null) return null;
+
+        XMLSyntaxSupport xmlSyntaxSupport = (XMLSyntaxSupport) ((BaseDocument) 
+            document).getSyntaxSupport();
+        if (xmlSyntaxSupport == null) return null;
+        
+        SyntaxElement syntaxElement = null;
+        try {
+            syntaxElement = xmlSyntaxSupport.getElementChain(caretOffset);
+            if (! (syntaxElement instanceof Tag)) return null;
+        } catch (Exception e) {
+            Logger logger = Logger.getLogger(BaseCompletionHandler.class.getName());
+            logger.log(Level.INFO, e.getMessage(), e);
+            return null;
+        }
+        return ((Tag) syntaxElement);
+    }
+/*    
+    protected XslComponent findInclusiveXslComponent(JEditorPane srcEditorPane, 
         XslModel xslModel) {
         if ((srcEditorPane == null) || (xslModel == null)) return null;
 
         DocumentComponent docComponent = xslModel.findComponent(caretOffset);    
         return ((XslComponent) docComponent);
+    }
+*/ 
+    
+    protected List<XSLTCompletionResultItem> getIncorrectDocumentResultItem() {
+        XSLTCompletionResultItem incorrectDocumentResultItem =
+            new XSLTCompletionResultItem(NbBundle.getMessage(
+                XSLTCompletionResultItem.class, "DOCUMENT_IS_NOT_CORRECT"), 
+                document, caretOffset, false);
+        return new ArrayList<XSLTCompletionResultItem>(Arrays.asList(
+            new XSLTCompletionResultItem[] {incorrectDocumentResultItem}));
     }
 }

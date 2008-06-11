@@ -79,7 +79,7 @@ public class BpelExternalModelResolver implements ExternalModelResolver {
         // 
         Project project = Utils.safeGetProject(mBpelModel);
         List<FileObject> schemaFoList = ProjectUtilities.
-                getXSDFilesRecursively(project);
+                getXSDFilesRecursively(project, false);
         Collection<SchemaModel> resultList = new ArrayList<SchemaModel>();
         for (FileObject fo : schemaFoList) {
             SchemaModel sModel = Utils.getSchemaModel(fo);

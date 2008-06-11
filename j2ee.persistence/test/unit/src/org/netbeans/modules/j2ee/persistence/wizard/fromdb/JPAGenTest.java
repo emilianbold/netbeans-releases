@@ -101,7 +101,7 @@ public class JPAGenTest extends SourceTestSupport{
         
         EntityClass user = getUserEntity();
         
-        EntityClass product = new EntityClass(false, "testGeneratTwoUnrelated_schema", null ,"PRODUCT", 
+        EntityClass product = new EntityClass(false, null, null ,"PRODUCT", 
                 getWorkDirFO(), packageName, "Product", FetchType.DEFAULT, false, null, CollectionType.COLLECTION);
         product.usePkField(true);
         
@@ -143,7 +143,7 @@ public class JPAGenTest extends SourceTestSupport{
                 break;
             }
         }
-        GenerateTablesImpl genTables = new GenerateTablesImpl(schema.getSchema().getName(), schema.getCatalog().getName(), tables, packageName, getWorkDirFO());
+        GenerateTablesImpl genTables = new GenerateTablesImpl(schema.getCatalog().getName(), schema.getSchema().getName(), tables, packageName, getWorkDirFO());
         
         EntityClass[] beans = new DbSchemaEjbGenerator(genTables, schema).getBeans();
         
@@ -164,7 +164,7 @@ public class JPAGenTest extends SourceTestSupport{
         relatedTables.add("PRODUCT_CODE");
         relatedTables.add("MANUFACTURER");
         
-        GenerateTablesImpl genTables = new GenerateTablesImpl(schema.getSchema().getName(), schema.getCatalog().getName(), relatedTables, packageName, getWorkDirFO());
+        GenerateTablesImpl genTables = new GenerateTablesImpl(schema.getCatalog().getName(), schema.getSchema().getName(), relatedTables, packageName, getWorkDirFO());
         
         EntityClass[] beans = new DbSchemaEjbGenerator(genTables, schema).getBeans();
         
@@ -195,7 +195,7 @@ public class JPAGenTest extends SourceTestSupport{
     
     
     private EntityClass getUserEntity() throws IOException{
-        EntityClass user = new EntityClass(false, "TestUserEntity_schema", null, 
+        EntityClass user = new EntityClass(false, null, null, 
                 "USER", getWorkDirFO(), packageName, "User", FetchType.DEFAULT, 
                 false, null, CollectionType.COLLECTION);
         user.usePkField(true);
@@ -316,7 +316,7 @@ public class JPAGenTest extends SourceTestSupport{
         private String packageName;
         private FileObject rootFolder;
         
-        public GenerateTablesImpl(String schema, String catalog, Set<String> tableNames, String packageName,
+        public GenerateTablesImpl(String catalog, String schema, Set<String> tableNames, String packageName,
                 FileObject rootFolder) {
             this.schemaName = schema;
             this.catalogName = catalog;
@@ -361,7 +361,7 @@ public class JPAGenTest extends SourceTestSupport{
             return false;
         }
 
-        public Set<String[]> getUniqueConstraints(String tableName) {
+        public Set<List<String>> getUniqueConstraints(String tableName) {
             return null;
         }
 

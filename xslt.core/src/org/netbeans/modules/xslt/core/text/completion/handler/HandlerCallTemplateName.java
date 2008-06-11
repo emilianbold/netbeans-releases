@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xslt.core.text.completion.XSLTCompletionResultItem;
 import org.netbeans.modules.xslt.core.text.completion.XSLTCompletionUtil;
 import org.netbeans.modules.xslt.core.text.completion.XSLTEditorComponentHolder;
@@ -60,15 +61,19 @@ public class HandlerCallTemplateName extends BaseCompletionHandler {
     public List<XSLTCompletionResultItem> getResultItemList(
         XSLTEditorComponentHolder editorComponentHolder) {
         initHandler(editorComponentHolder);
+        if ((xslModel != null) && (xslModel.getState().equals(State.NOT_WELL_FORMED))) {
+            return getIncorrectDocumentResultItem();
+        }
         return getNamedTemplateNameList();
     }
     
     private List<XSLTCompletionResultItem> getNamedTemplateNameList() {
-        if ((activeXslComponent == null) || (attributeName == null) ||
-            (xslModel == null)) return Collections.EMPTY_LIST;
+        if ((schemaModel == null) || (surroundTag == null) || 
+            (attributeName == null) || (xslModel == null)) 
+            return Collections.EMPTY_LIST;
         
-        String activeXslComponentName = activeXslComponent.getPeer().getLocalName();
-        if (! activeXslComponentName.contains(XSLT_TAG_NAME_CALL_TEMPLATE))
+        String tagName = surroundTag.getTagName(); //getLocalName();
+        if (! tagName.contains(XSLT_TAG_NAME_CALL_TEMPLATE))
             return Collections.EMPTY_LIST;
         if (! attributeName.equals(XSLTCompletionUtil.ATTRIB_NAME))
             return Collections.EMPTY_LIST;

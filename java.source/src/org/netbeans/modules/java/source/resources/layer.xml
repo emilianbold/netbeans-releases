@@ -212,4 +212,22 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
                 
+    <folder name="Projects">
+        <folder name="org-netbeans-modules-java-j2seproject">
+            <folder name="Customizer">
+                <file name="CodeStyle.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.java.ui.CodeStyleCustomizerPanel$Factory"/>
+                    <attr name="position" intvalue="1000"/>
+                </file>
+            </folder>
+        </folder>
+        <folder name="org-netbeans-modules-ant-freefrom">
+            <folder name="Customizer">
+                <file name="CodeStyle.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.java.ui.CodeStyleCustomizerPanel$Factory"/>
+                    <attr name="position" intvalue="1000"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>
