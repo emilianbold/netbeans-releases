@@ -341,11 +341,11 @@ public class JPAGenTest extends SourceTestSupport{
             return EntityMember.makeClassName(tableName);
         }
 
-        public String getSchema(String tableName) {
+        public String getSchema() {
             return schemaName;
         }
 
-        public String getCatalog(String tableName) {
+        public String getCatalog() {
             return catalogName;
         }
 

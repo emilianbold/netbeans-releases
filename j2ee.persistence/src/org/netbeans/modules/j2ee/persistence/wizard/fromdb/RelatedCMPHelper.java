@@ -325,9 +325,9 @@ public class RelatedCMPHelper {
     private static final class GenerateTablesImpl implements GeneratedTables {
         
         private boolean fullyQualifiedTableNames; // not for per table
+        private String catalog; // for all the tables
+        private String schema; // for all the tables
         private final Set<String> tableNames = new HashSet<String>();
-        private final Map<String, String> catalogs = new HashMap<String, String>();
-        private final Map<String, String> schemas = new HashMap<String, String>();
         private final Map<String, FileObject> rootFolders = new HashMap<String, FileObject>();
         private final Map<String, String> packageNames = new HashMap<String, String>();
         private final Map<String, String> classNames = new HashMap<String, String>();
@@ -344,8 +344,8 @@ public class RelatedCMPHelper {
                 FileObject rootFolder, String packageName, String className,
                 Set<List<String>> uniqueConstraints) {
             tableNames.add(tableName);
-            catalogs.put(tableName, catalogName);
-            schemas.put(tableName, schemaName);
+            catalog = catalogName;
+            schema = schemaName;
             rootFolders.put(tableName, rootFolder);
             packageNames.put(tableName, packageName);
             classNames.put(tableName, className);
@@ -359,15 +359,15 @@ public class RelatedCMPHelper {
         public boolean isFullyQualifiedTableNames() {
             return this.fullyQualifiedTableNames;
         }
-        
-        public String getSchema(String tableName) {
-            return schemas.get(tableName);
-        }
-        
-        public String getCatalog(String tableName) {
-            return catalogs.get(tableName);
-        }
 
+        public String getCatalog() {
+            return catalog;
+        }
+         
+        public String getSchema() {
+            return schema;
+        }
+        
         public FileObject getRootFolder(String tableName) {
             return rootFolders.get(tableName);
         }

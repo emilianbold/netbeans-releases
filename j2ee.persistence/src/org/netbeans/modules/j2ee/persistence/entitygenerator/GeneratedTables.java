@@ -62,19 +62,19 @@ public interface GeneratedTables {
     public boolean isFullyQualifiedTableNames();
 
     /**
+     * Returns the catalog of the tables
+     */
+    public String getCatalog();
+    
+    /**
+     * Returns the schema of the tables
+     */
+    public String getSchema();
+    
+    /**
      * Returns the names of the tables which should be used to generate classes.
      */
     public Set<String> getTableNames();
-
-    /**
-     * Returns the schema of the table
-     */
-    public String getSchema(String tableName);
-
-    /**
-     * Returns the catalog of the table
-     */
-    public String getCatalog(String tableName);
 
     /**
      * Returns the root folder of the class which will be generated for
