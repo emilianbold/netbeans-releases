@@ -932,7 +932,10 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
                     retVal = ConnectorState.ACCEPT;
                 }
             }
-            
+            else if(sameElement)
+            {
+                retVal=ConnectorState.ACCEPT;
+            }
             return retVal;
         }
 
@@ -949,7 +952,13 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
         public void reconnect(ConnectionWidget connectionWidget, 
                               Widget replacementWidget, boolean reconnectingSource)
         {
+                if (replacementWidget == null)
+            {
+                return;//do not remove but restore to old place
+            }
             IPresentationElement replacementNode = (IPresentationElement)getScene().findObject(replacementWidget);
+            if(reconnectingSource && replacementNode==originalSource)return;
+            else if(!reconnectingSource && replacementNode==originalTarget)return;
             IPresentationElement edge = (IPresentationElement)getScene().findObject(connectionWidget);
             IRelationship relationship = (IRelationship)edge.getFirstSubject();
             
