@@ -100,6 +100,7 @@ public class SQLHistoryManager  {
         // Start managing the persistence of SQL statements that have been executed
         try {
             SQLHistoryPersistenceManager.getInstance().create(tmpFo, sqlList);
+            sqlList.clear();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

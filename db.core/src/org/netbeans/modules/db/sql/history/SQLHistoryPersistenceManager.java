@@ -95,7 +95,6 @@ public class SQLHistoryPersistenceManager {
         DataFolder df = DataFolder.findFolder(fo);
         AtomicWriter writer = new AtomicWriter(sqlHistoryList, df, SQL_HISTORY_FILE_NAME);
         df.getPrimaryFile().getFileSystem().runAtomicAction(writer);
-        this.sqlHistoryList = null; // reset
     }
 
     /**
