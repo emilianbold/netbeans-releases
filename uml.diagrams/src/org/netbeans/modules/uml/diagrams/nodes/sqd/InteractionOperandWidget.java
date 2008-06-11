@@ -207,7 +207,7 @@ public class InteractionOperandWidget extends Widget implements DiagramNodeWrite
         switch(type)
         {
         case BODY:
-            //constraint.setVisible(true);
+            //constraint.setVisible(true);sur
             constraint.showLabel();
             //constraint.switchToEditMode();
             break;
@@ -292,7 +292,8 @@ public class InteractionOperandWidget extends Widget implements DiagramNodeWrite
     public void load(NodeInfo nodeReader) {
         //get all the properties
         Hashtable<String, String> props = nodeReader.getProperties();        //
-        if(nodeReader.getPosition()!=null)setPreferredLocation(nodeReader.getPosition());
+        if(nodeReader.getPosition()!=null)
+            setPreferredLocation(nodeReader.getPosition());
         if (nodeReader.getSize() != null)
         {
             setPreferredSize(nodeReader.getSize());
@@ -304,10 +305,23 @@ public class InteractionOperandWidget extends Widget implements DiagramNodeWrite
         Collection nodeLabels = nodeReader.getLabels();
         for (Iterator it = nodeLabels.iterator(); it.hasNext();)
         {
-            NodeInfo.NodeLabel nodeLabel = (NodeInfo.NodeLabel)it.next();            
+            NodeInfo.NodeLabel nodeLabel = (NodeInfo.NodeLabel) it.next();            
             this.show(LabeledWidget.TYPE.BODY);
+            MovableLabelWidget label = this.getLabel();
+            if (label != null)
+            {
+                if (nodeLabel.getPosition() != null)
+                {
+                    label.setPreferredLocation(nodeLabel.getPosition());
+                }
+//                if (nodeLabel.getSize() != null)
+//                {
+//                    label.setPreferredSize(nodeLabel.getSize());
+//                }
+                label.refresh();
+            }
         }
-        System.out.println(" NodeLabels = "+nodeLabels.toString());
+        System.out.println(" NodeLabels = " + nodeLabels.toString());
     }
             
     protected void setNodeWriterValues(NodeWriter nodeWriter, Widget widget) {

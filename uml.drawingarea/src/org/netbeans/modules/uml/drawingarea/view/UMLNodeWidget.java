@@ -66,6 +66,7 @@ import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.ConnectionWidget;
+import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.ResourceTable;
 import org.netbeans.api.visual.widget.Scene;
@@ -606,20 +607,31 @@ public abstract class UMLNodeWidget extends Widget
 
     public void loadDependencies(NodeInfo nodeReader)
     {
-       if (nodeReader.getLabels().size() > 0)
-       {
-           if (this instanceof LabelNode)
-           {
-               ((LabelNode)this).showLabel(true);
-//               Widget label = ((LabelNode)this).getLabelWidget();
-//               label.setVisible(true);
-////               label.setPreferredLocation(nodeReader.getLabels().get(0).getPosition());
-////               label.setPreferredSize(nodeReader.getLabels().get(0).getSize());
-//               Point localLocation = nodeReader.getLabels().get(0).getPosition();
-//               label.setPreferredLocation(label.convertLocalToScene(localLocation));
-               
-           }
-       }
+        Collection nodeLabels = nodeReader.getLabels();
+        for (Iterator it = nodeLabels.iterator(); it.hasNext();)
+        {
+            NodeInfo.NodeLabel nodeLabel = (NodeInfo.NodeLabel) it.next();
+            if (this instanceof LabelNode)
+            {
+                ((LabelNode)this).showLabel(true);
+                LabelWidget label = ((LabelNode) this).getLabelWidget();
+                if (label != null)
+                {
+                    if (nodeLabel.getPosition() != null)
+                    {
+                        label.setPreferredLocation(nodeLabel.getPosition());
+                    }
+//                if (nodeLabel.getSize() != null)
+//                {
+//                    label.setPreferredSize(nodeLabel.getSize());
+//                }
+                    if (label instanceof UMLWidget)
+                    {
+                        ((UMLWidget) label).refresh();
+                    }
+                }
+            }
+        }
     }
         
     

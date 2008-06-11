@@ -124,6 +124,11 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
         updateLocation = true;
     }
 
+    public void refresh()
+    {
+        updateLocation = true;
+    }
+    
     protected void paintWidget()
     {
         super.paintWidget();
@@ -174,15 +179,19 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
             else dy=y0;
 
         }
-        
+        if (getPreferredLocation() != null)
+        {
+            point = getPreferredLocation();
+        }
+       else
+        {
+            double nodeCenterX = nodeBnd.x + insets.left + (nodeBnd.width - insets.left - insets.right) / 2;
 
-        double nodeCenterX = nodeBnd.x+ insets.left + (nodeBnd.width - insets.left - insets.right) / 2;
+            double nodeCenterY = nodeBnd.y + insets.bottom + (nodeBnd.height - insets.top - insets.bottom) / 2;
 
-        double nodeCenterY = nodeBnd.y+ insets.bottom + (nodeBnd.height - insets.top - insets.bottom) / 2;
-
-        point = new Point((int) (nodeCenterX + dx - labelBnd.width / 2),
-                (int) (nodeCenterY + dy - labelBnd.height / 2));
-
+            point = new Point((int) (nodeCenterX + dx - labelBnd.width / 2),
+                    (int) (nodeCenterY + dy - labelBnd.height / 2));
+        }
         setPreferredLocation(point);
         getScene().revalidate();
     }
