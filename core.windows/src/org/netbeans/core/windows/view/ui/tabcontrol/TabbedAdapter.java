@@ -553,6 +553,10 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
                 return Switches.isViewTopComponentClosingEnabled();
         }
         
+        @Override
+        public boolean isTopComponentMaximizationEnabled() {
+            return Switches.isTopComponentMaximizationEnabled();
+        }
     } // end of LocInfo
 
     /** Returns instance of weak property change listener used to listen to 

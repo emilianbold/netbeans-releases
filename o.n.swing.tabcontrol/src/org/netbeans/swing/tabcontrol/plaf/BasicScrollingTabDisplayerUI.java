@@ -189,7 +189,8 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
             height = Math.max ( height, prefDim.height );
             
             //maximize / restore button
-            if( null != displayer.getContainerWinsysInfo() ) {
+            if( null != displayer.getContainerWinsysInfo() 
+                    && displayer.getContainerWinsysInfo().isTopComponentMaximizationEnabled()) {
                 width += 3;
                 btnMaximizeRestore = TabControlButtonFactory.createMaximizeRestoreButton( displayer, isGTK );
                 buttonsPanel.add( btnMaximizeRestore );

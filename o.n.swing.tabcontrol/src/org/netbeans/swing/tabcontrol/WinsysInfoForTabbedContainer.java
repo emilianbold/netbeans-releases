@@ -57,11 +57,30 @@ import java.awt.Component;
  */
 public abstract class WinsysInfoForTabbedContainer implements WinsysInfoForTabbed {
 
+    /**
+     * 
+     * @return True if TopComponents can be slided out, false to remove Minimize button
+     * from TopComponent's header.
+     */
     public boolean isTopComponentSlidingEnabled() {
         return true;
     }
     
+    /**
+     * 
+     * @return True if TopComponents can be closed, false to remove Close button
+     * from TopComponent's header.
+     */
     public boolean isTopComponentClosingEnabled() {
+        return true;
+    }
+    
+    /**
+     * 
+     * @return True if TopComponents can be maximized, false to remove Maximize/Restore
+     * button from TopComponent's header./
+     */
+    public boolean isTopComponentMaximizationEnabled() {
         return true;
     }
     
