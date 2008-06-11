@@ -202,6 +202,13 @@ public class BuildArtifactMapperImpl {
     }
 
     private static void copyFile(File updatedFile, File target) throws IOException {
+        final File parent = target.getParentFile();
+        if (parent != null && !parent.exists()) {
+            if (!parent.mkdirs()) {
+                throw new IOException("Cannot create folder: " + parent.getAbsolutePath());
+            }
+        }
+            
         InputStream ins = null;
         OutputStream out = null;
 
@@ -254,7 +261,7 @@ public class BuildArtifactMapperImpl {
             if (target.isDirectory()) {
                 throw new IOException("Cannot create file: " + target.getAbsolutePath() + ", already exists as a folder.");
             }
-            
+
             copyFile(source, target);
         }
     }
