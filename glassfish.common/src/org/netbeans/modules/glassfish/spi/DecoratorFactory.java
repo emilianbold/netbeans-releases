@@ -37,24 +37,39 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.spi.glassfish;
+package org.netbeans.modules.glassfish.spi;
+
+import java.util.Map;
 
 /**
  *
  * @author Peter Williams
  */
-public interface RemoveCookie {
+public interface DecoratorFactory {
     
     /**
-     * Called when the associated server instance is being removed from the IDE.
+     * Indicates whether this decorator supports the specified type.  Type is
+     * currently one of the strings returned by list-applications for segregating
+     * applications.
      * 
-     * Addon modules should implement this if they need notification when the
-     * server instance is removed from the IDE (e.g. JavaEE module needs to
-     * remove corresponding JavaEE server instance.)
-     * 
-     * @param serverUri uri of server instance being removed although the addon
-     *   module should already have this information.
+     * @param type String indicating what type the item to be decorated is.
+     * @return true if this decorator should be used with that type, false otherwise.
      */
-    public void removeInstance(String serverUri);
+    public boolean isTypeSupported(String type);
+    
+    /**
+     * Obtain a decorator object for the specified type.
+     * 
+     * @param type String indicating what type the item to be decorated is.
+     * @return decorator instance
+     */
+    public Decorator getDecorator(String type);
 
+    /**
+     * Returns a map of all decorators supported by this factory, indexed by type.
+     * 
+     * @return map of supported decorators
+     */
+    public Map<String, Decorator> getAllDecorators();
+    
 }

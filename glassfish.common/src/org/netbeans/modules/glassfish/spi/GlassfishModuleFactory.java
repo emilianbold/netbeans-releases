@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,42 +34,38 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.spi.glassfish;
+package org.netbeans.modules.glassfish.spi;
 
-import java.util.Map;
+import java.util.Properties;
+import org.openide.util.Lookup;
+
 
 /**
  *
  * @author Peter Williams
  */
-public interface DecoratorFactory {
+public interface GlassfishModuleFactory {
     
-    /**
-     * Indicates whether this decorator supports the specified type.  Type is
-     * currently one of the strings returned by list-applications for segregating
-     * applications.
+    /** Returns true if specified glassfish install supports the module type
+     *  in question.
      * 
-     * @param type String indicating what type the item to be decorated is.
-     * @return true if this decorator should be used with that type, false otherwise.
+     * @param glassfishHome
+     * @param asenvProps
+     * @return
      */
-    public boolean isTypeSupported(String type);
+    public boolean isModuleSupported(String glassfishHome, Properties asenvProps);
     
-    /**
-     * Obtain a decorator object for the specified type.
+    /** Creates support object for whatever GlassFish module type this is.
      * 
-     * @param type String indicating what type the item to be decorated is.
-     * @return decorator instance
-     */
-    public Decorator getDecorator(String type);
-
-    /**
-     * Returns a map of all decorators supported by this factory, indexed by type.
+     * @param instanceLookup Lookup for the owning GlassFish Server Instance.
+     *   Used by created support object to access common instance functionality
+     *   such as start/stop server.
      * 
-     * @return map of supported decorators
+     * @return Support object for this GlassFish module type (JRuby, JavaEE, etc.)
      */
-    public Map<String, Decorator> getAllDecorators();
+    public Object createModule(Lookup instanceLookup);
     
 }

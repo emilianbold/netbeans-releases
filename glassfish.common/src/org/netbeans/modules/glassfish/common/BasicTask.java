@@ -41,9 +41,9 @@ package org.netbeans.modules.glassfish.common;
 
 import java.util.Map;
 import java.util.concurrent.Callable;
-import org.netbeans.spi.glassfish.GlassfishModule;
-import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
-import org.netbeans.spi.glassfish.OperationStateListener;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
+import org.netbeans.modules.glassfish.spi.OperationStateListener;
 import org.openide.util.NbBundle;
 
 /**

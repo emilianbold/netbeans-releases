@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,38 +34,27 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.spi.glassfish;
-
-import java.util.Properties;
-import org.openide.util.Lookup;
-
+package org.netbeans.modules.glassfish.spi;
 
 /**
  *
  * @author Peter Williams
  */
-public interface GlassfishModuleFactory {
+public interface RemoveCookie {
     
-    /** Returns true if specified glassfish install supports the module type
-     *  in question.
+    /**
+     * Called when the associated server instance is being removed from the IDE.
      * 
-     * @param glassfishHome
-     * @param asenvProps
-     * @return
+     * Addon modules should implement this if they need notification when the
+     * server instance is removed from the IDE (e.g. JavaEE module needs to
+     * remove corresponding JavaEE server instance.)
+     * 
+     * @param serverUri uri of server instance being removed although the addon
+     *   module should already have this information.
      */
-    public boolean isModuleSupported(String glassfishHome, Properties asenvProps);
-    
-    /** Creates support object for whatever GlassFish module type this is.
-     * 
-     * @param instanceLookup Lookup for the owning GlassFish Server Instance.
-     *   Used by created support object to access common instance functionality
-     *   such as start/stop server.
-     * 
-     * @return Support object for this GlassFish module type (JRuby, JavaEE, etc.)
-     */
-    public Object createModule(Lookup instanceLookup);
-    
+    public void removeInstance(String serverUri);
+
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,16 +37,26 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.spi.glassfish;
-
-import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
+package org.netbeans.modules.glassfish.spi;
 
 /**
  *
  * @author Peter Williams
  */
-public interface OperationStateListener {
+public class ResourceDesc implements Comparable<ResourceDesc> {
+    
+    private final String name;
+    
+    public ResourceDesc(final String name) {
+        this.name = name;
+    }
 
-    public void operationStateChanged(OperationState newState, String message);
+    public String getName() {
+        return name;
+    }
+
+    public int compareTo(ResourceDesc o) {
+        return name.compareTo(o.name);
+    }
     
 }
