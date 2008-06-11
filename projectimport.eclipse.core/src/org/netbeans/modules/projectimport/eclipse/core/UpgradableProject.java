@@ -39,16 +39,16 @@
 
 package org.netbeans.modules.projectimport.eclipse.core;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex.ExceptionAction;
 import org.openide.util.MutexException;
 
 /**
  *
- * @author david
  */
 final public class UpgradableProject {
 
@@ -71,17 +71,17 @@ final public class UpgradableProject {
         return getEclipse() != null;
     }
     
-    public boolean isUpToDate() {
+    public boolean isUpToDate(boolean deepTest) {
         assert isUpgradable() && isEclipseProjectReachable();
-        return getEclipse().isUpToDate();
+        return getEclipse().isUpToDate(deepTest);
     }
     
-    public void update() throws IOException {
+    public void update(final List<String> importProblems) throws IOException {
         try {
             ProjectManager.mutex().writeAccess(new ExceptionAction<Void>() {
 
                 public Void run() throws Exception {
-                    getEclipse().update();
+                    getEclipse().update(importProblems);
                     return null;
                 }
             });
@@ -95,8 +95,21 @@ final public class UpgradableProject {
     private EclipseProjectReference getEclipse() {
         if (!initialized) {
             reference = EclipseProjectReference.read(project);
-            initialized = true;
+            // cache data only if project is reachable
+            initialized = reference.isEclipseProjectReachable();
         }
         return reference;
+    }
+    
+    /**
+     * Shows UI to resolve location of eclipse project and workspace and returns 
+     * true if reference was succesfully resolved.
+     */
+    public boolean updateBrokenEclipseReference() {
+        return UpdateEclipseReferencePanel.showEclipseReferenceResolver(getEclipse());
+    }
+
+    File getEclipseProjectFolder() {
+        return getEclipse().getFallbackEclipseProjectLocation();
     }
 }
