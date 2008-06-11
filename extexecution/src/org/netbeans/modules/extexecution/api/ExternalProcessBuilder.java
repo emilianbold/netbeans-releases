@@ -54,7 +54,7 @@ import org.openide.util.Utilities;
 /**
  * Utility class to make the external process creation easier.
  * <p>
- * Builder handle command, working directory,"PATH" variable and HTTP proxy.
+ * Builder handle command, working directory, <code>PATH</code> variable and HTTP proxy.
  * <p>
  * This class is <i>not thread safe</i>.
  *
@@ -114,13 +114,14 @@ public final class ExternalProcessBuilder {
 
     /**
      * Configures whether the working directory should be part of
-     * process's PATH environment variable.
+     * process's <code>PATH</code> environment variable.
      * <p>
      * If passed value is <code>true</code> working directory is added to the
-     * PATH variable. For PATH variable construction see {@link #create()}.
+     * <code>PATH</code> variable. For <code>PATH</code> variable construction
+     * see {@link #create()}.
      *
      * @param pwdTopath if <code>true</code> working directory is added to the
-     *             PATH variable
+     *             <code>PATH</code> variable
      * @return this process builder
      */
     public ExternalProcessBuilder pwdToPath(boolean pwdTopath) {
@@ -130,7 +131,7 @@ public final class ExternalProcessBuilder {
 
     /**
      * Configures the additional property where to find java installation
-     * in order to add its bin to PATH (if configured to do so by
+     * in order to add its bin to <code>PATH</code> (if configured to do so by
      * {@link #javaHomeToPath(boolean)}. <code>java.home</code> is always
      * searched as default fallback.
      *
@@ -148,14 +149,14 @@ public final class ExternalProcessBuilder {
 
     /**
      * Configures whether the java installation's bin dir should be part of
-     * process's PATH environment variable.
+     * process's <code>PATH</code> environment variable.
      * <p>
      * If passed value is <code>true</code> the java installation's bin is
-     * added to the PATH variable. For PATH variable construction
-     * see {@link #create()}.
+     * added to the <code>PATH</code> variable. For <code>PATH</code>
+     * variable construction see {@link #create()}.
      *
      * @param javaHomeToPath if <code>true</code>the java installation's bin
-     *             is added to the PATH variable
+     *             is added to the <code>PATH</code> variable
      * @return this process builder
      */
     public ExternalProcessBuilder javaHomeToPath(boolean javaHomeToPath) {
@@ -164,12 +165,12 @@ public final class ExternalProcessBuilder {
     }
 
     /**
-     * Configures the additional path to add to the PATH variable.
+     * Configures the additional path to add to the <code>PATH</code> variable.
      * <p>
      * In the group of paths added by this call the last added path will
-     * be the first one in the PATH variable.
+     * be the first one in the <code>PATH</code> variable.
      *
-     * @param path path to add to PATH variable
+     * @param path path to add to <code>PATH</code> variable
      * @return this process builder
      */
     public ExternalProcessBuilder addPath(File path) {
@@ -209,6 +210,47 @@ public final class ExternalProcessBuilder {
         return this;
     }
 
+    /**
+     * Creates the new {@link Process} based on the properties configured
+     * in this builder.
+     * <p>
+     * Process is created by executing the command with configured arguments.
+     * If custom working directory is specified it is used otherwise value
+     * of system property <code>user.dir</code> is used as working dir.
+     * <p>
+     * Environment variables are prepared in following way:
+     * <ol>
+     *   <li>Get table of system environment variables.
+     *   <li>Put all environment variables configured by
+     * {@link #addEnvironmentVariable(java.lang.String, java.lang.String)}.
+     * This rewrites system variables if conflict occurs.
+     *   <li>Get <code>PATH</code> variable and append all paths added
+     * by {@link #addPath(java.io.File)}. The order of paths in <code>PATH</code>
+     * variable is reversed to order of addition (the last added is the first
+     * one in <code>PATH</code>). Original content of <code>PATH</code> follows
+     * the added content.
+     *   <li>If builder is configured to add working directory to <code>PATH</code>
+     * the working directory is placed to the beginning of the <code>PATH</code>.
+     *   <li>If builder is configured to add java installation bin directory to
+     * <code>PATH</code>:
+     * 
+     *     <ol>
+     *       <li>Ask system for value of each property configured by
+     *     {@link #addJavaHomeProperty(java.lang.String)} (in order in which
+     *     these were added).
+     *       <li>If there is corresponding value this value with appended bin
+     *     diretory is placed at the first place in <code>PATH</code> and no
+     *     further values are investigated.
+     *       <li>If no value for java installation is found <code>java.home</code>
+     *     is used as a fallback. And the result (if any) is placed at the first
+     *     place in <code>PATH</code>.
+     *     </ol>
+     *   <li>HTTP proxy settings are configured (http.proxyHost and http.proxyPort
+     * variables).
+     * </ol>
+     * @return the new {@link Process} based on the properties configured
+     *             in this builder
+     */
     public Process create() throws IOException {
         List<String> commandL = new ArrayList<String>();
 
@@ -339,7 +381,7 @@ public final class ExternalProcessBuilder {
      */
     private static String getNetBeansHttpProxy() {
         // FIXME use ProxySelector
-        
+
         String host = System.getProperty("http.proxyHost"); // NOI18N
 
         if (host == null) {

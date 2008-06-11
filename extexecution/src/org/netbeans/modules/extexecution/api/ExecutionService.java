@@ -281,7 +281,7 @@ public final class ExecutionService {
                             stopAction.setProcess(process);
                         }
 
-                        runIO(stopAction, process, io);
+                        runIO(process, io);
 
                         try {
                             process.waitFor();
@@ -367,7 +367,7 @@ public final class ExecutionService {
         return task;
     }
 
-    private void runIO(final StopAction sa, Process process, InputOutput io) {
+    private void runIO(Process process, InputOutput io) {
         final ExecutorService executor = Executors.newFixedThreadPool(3);
         OutputWriter out = io.getOut();
         OutputWriter err = io.getErr();
