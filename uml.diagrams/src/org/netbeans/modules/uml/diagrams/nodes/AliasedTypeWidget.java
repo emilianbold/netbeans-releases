@@ -53,6 +53,7 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IDataType;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
@@ -69,6 +70,7 @@ public class AliasedTypeWidget extends UMLNodeWidget implements PropertyChangeLi
     public AliasedTypeWidget(Scene scene)
     {
         super(scene, true);
+        addToLookup(initializeContextPalette());
     }
     
     public AliasedTypeWidget(Scene scene, IPresentationElement pe)
@@ -76,8 +78,16 @@ public class AliasedTypeWidget extends UMLNodeWidget implements PropertyChangeLi
         this(scene);
         this.pe = pe;
         initializeNode(pe);
+        addToLookup(initializeContextPalette());
     }
 
+    protected DefaultContextPaletteModel initializeContextPalette()
+    {
+        DefaultContextPaletteModel paletteModel = new DefaultContextPaletteModel(this);
+        paletteModel.initialize("UML/context-palette/AliasedType");
+        return paletteModel;
+    }
+    
     @Override
     public void initializeNode(IPresentationElement presentation)
     {

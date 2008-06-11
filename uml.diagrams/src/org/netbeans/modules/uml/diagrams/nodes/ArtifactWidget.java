@@ -54,6 +54,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IDataType;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.structure.IArtifact;
+import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
@@ -70,6 +71,7 @@ public class ArtifactWidget extends UMLNodeWidget implements PropertyChangeListe
     public ArtifactWidget(Scene scene)
     {
         super(scene, true);
+        addToLookup(initializeContextPalette());
     }
     
     public ArtifactWidget(Scene scene, IPresentationElement pe)
@@ -77,8 +79,16 @@ public class ArtifactWidget extends UMLNodeWidget implements PropertyChangeListe
         this(scene);
         this.pe = pe;
         initializeNode(pe);
+        addToLookup(initializeContextPalette());
     }
 
+    protected DefaultContextPaletteModel initializeContextPalette()
+    {
+        DefaultContextPaletteModel paletteModel = new DefaultContextPaletteModel(this);
+        paletteModel.initialize("UML/context-palette/Artifact");
+        return paletteModel;
+    }
+    
     @Override
     public void initializeNode(IPresentationElement presentation)
     {
