@@ -212,13 +212,15 @@ final class ComponentDescriptorVisualPanel extends JPanel {
     private boolean getCanInstantiate(){
         Object value = mySettings.getProperty(
                 NewComponentDescriptor.CD_CAN_INSTANTIATE);
-        return extractBoolean(value, true);
+        return extractBoolean(value, 
+                NewComponentDescriptor.COMPONENT_DECRIPTOR_DEFAULT_CAN_INSTANTIATE);
     }
 
     private boolean getCanBeSuper(){
         Object value = mySettings.getProperty(
                 NewComponentDescriptor.CD_CAN_BE_SUPER);
-        return extractBoolean(value, true);
+        return extractBoolean(value, 
+                NewComponentDescriptor.COMPONENT_DECRIPTOR_DEFAULT_CAN_BE_SUPER);
     }
     
     private static boolean extractBoolean(Object value, boolean defaultValue){
