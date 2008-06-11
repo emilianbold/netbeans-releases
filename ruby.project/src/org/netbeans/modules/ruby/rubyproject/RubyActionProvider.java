@@ -190,38 +190,14 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             options = null;
         }
 
-        // Set the load path from the source and test folders.
-        // Load paths are additive so users can add their own in the
-        // options field as well.
-        FileObject[] srcPath = project.getSourceRoots().getRoots();
-        FileObject[] testPath = project.getTestSourceRoots().getRoots();
-        StringBuilder sb = new StringBuilder();
-        if (srcPath != null && srcPath.length > 0) {
-            for (FileObject root : srcPath) {
-                if (sb.length() > 0) {
-                    sb.append(' ');
-                }
-                sb.append("-I\""); // NOI18N
-                sb.append(FileUtil.toFile(root).getAbsoluteFile());
-                sb.append("\""); // NOI18N
-            }
-        }
-        if (testPath != null && testPath.length > 0) {
-            for (FileObject root : testPath) {
-                if (sb.length() > 0) {
-                    sb.append(' ');
-                }
-                sb.append("-I\""); // NOI18N
-                sb.append(FileUtil.toFile(root).getAbsoluteFile());
-                sb.append("\""); // NOI18N
-            }
-        }
-        String includePath = sb.toString();
+        String includePath = RubyProjectUtil.getLoadPath(project);
         if (options != null) {
             options = includePath + " " + options; // NOI18N
         } else {
             options = includePath;
         }
+        FileObject[] srcPath = project.getSourceRoots().getRoots();
+        FileObject[] testPath = project.getTestSourceRoots().getRoots();
         
         target = locate(target, srcPath, testPath);
         
