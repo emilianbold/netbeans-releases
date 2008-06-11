@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus;
 import java.util.Set;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.completion.csm.CsmProjectContentResolver;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import java.util.ArrayList;
@@ -64,7 +65,13 @@ import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletion;
 
 /**
@@ -764,5 +771,22 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
         CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
         List classClassifiers = contResolver.getNestedClassifiers(clazz, contextDeclaration, name, exactMatch, inspectParentClasses);
         return classClassifiers; 
+    }
+
+    public List findLabel(CsmOffsetableDeclaration contextDeclaration, String name, boolean exactMatch, boolean sort) {
+        if (CsmKindUtilities.isFunctionDefinition(contextDeclaration)) {
+            Collection<CsmReference> res = CsmLabelResolver.getDefault().getLabels((CsmFunctionDefinition) contextDeclaration, null, CsmLabelResolver.LabelKind.Definiton);
+            List<CsmObject> out = new ArrayList<CsmObject>();
+            for(CsmReference ref : res){
+                if (ref.getReferencedObject() instanceof CsmLabel){
+                    CsmLabel label = (CsmLabel) ref.getReferencedObject();
+                    if (CsmSortUtilities.matchName(label.getLabel(), name, exactMatch, caseSensitive)){
+                        out.add(label);
+                    }
+                }
+            }
+            return out;
+        }
+        return null;
     }
 }

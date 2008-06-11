@@ -532,12 +532,12 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
                 TestRunner testRunner = getTestRunner(TestRunner.TestType.TEST_UNIT);
                 if (testRunner != null) {
                     testRunner.getInstance().runTest(file, COMMAND_DEBUG_SINGLE.equals(command));
-                } else {
-                    runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(),
-                            file.getNameExt(), context, COMMAND_DEBUG_SINGLE.equals(command), null);
+                    return;
                 }
-                return;
             }
+            runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(),
+                    file.getNameExt(), context, COMMAND_DEBUG_SINGLE.equals(command), null);
+            return;
         } else if (COMMAND_REBUILD.equals(command) || COMMAND_BUILD.equals(command) || COMMAND_CLEAN.equals(command)) {
             RakeRunner runner = new RakeRunner(project);
             runner.showWarnings(true);
