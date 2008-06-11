@@ -2977,7 +2977,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             System.gc();
                             continue;
                         }
-                        jt.analyze(types);
+                        jt.analyze();
                         if (listener.lowMemory.getAndSet(false)) {
                             jt.finish();
                             jt = null;
@@ -3000,7 +3000,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         }
                         if (sa != null) {
                             boolean[] main = new boolean[1];
-                            sa.analyse(trees,jt, ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo), active, added, main);
+                            sa.analyse(trees, jt, fileManager, active, added, main);
                             if (activeFile != null) {
                                 //When the active file is not set (generated virtual source) ignore executable flag
                                 ExecutableFilesIndex.DEFAULT.setMainClass(rootFo.getURL(), activeFile.toURI().toURL(), main[0]);

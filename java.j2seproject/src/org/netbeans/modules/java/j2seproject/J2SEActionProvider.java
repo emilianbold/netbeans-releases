@@ -323,15 +323,15 @@ class J2SEActionProvider implements ActionProvider {
                 if (targetNames == null) {
                     return;
                 }
-                if (COMMAND_RUN_SINGLE.equals(command) || COMMAND_RUN.equals(command)) {
+                if (COMMAND_RUN_SINGLE.equals(command) || COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_SINGLE.equals(command)) {
                     bypassAntBuildScript(command, context, p);
                     
                     return ;
                 }
-                if (COMMAND_TEST_SINGLE.equals(command)) {
+                if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
                     FileObject[] files = findSources(context);
                     try {
-                        ProjectRunner.execute(ProjectRunner.QUICK_TEST_SINGLE, new Properties(), Arrays.asList(files));
+                        ProjectRunner.execute(COMMAND_TEST_SINGLE.equals(command) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG, new Properties(), files[0]);
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -892,7 +892,7 @@ class J2SEActionProvider implements ActionProvider {
         FileObject toRun;
         boolean run = true;
 
-        if (COMMAND_RUN.equals(command)) {
+        if (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command)) {
             final String mainClass = project.evaluator().getProperty(J2SEProjectProperties.MAIN_CLASS);
             final FileObject[] mainClassFile = new FileObject[1];
             ClassPathProviderImpl cpProvider = project.getClassPathProvider();
@@ -936,12 +936,12 @@ class J2SEActionProvider implements ActionProvider {
             
             toRun = files[0];
         }
-        final String activePlatformId = J2SEActionProvider.this.project.evaluator().getProperty("platform.active"); //NOI18N
+        boolean debug = COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_SINGLE.equals(command);
         try {
             if (run) {
-                ProjectRunner.execute(ProjectRunner.QUICK_RUN, p, Collections.singletonList(toRun));
+                ProjectRunner.execute(debug ? ProjectRunner.QUICK_DEBUG : ProjectRunner.QUICK_RUN, p, toRun);
             } else {
-                ProjectRunner.execute(ProjectRunner.QUICK_TEST_SINGLE, new Properties(), Collections.singletonList(toRun));
+                ProjectRunner.execute(ProjectRunner.QUICK_TEST, new Properties(), toRun);
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
