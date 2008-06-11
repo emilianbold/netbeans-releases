@@ -181,8 +181,14 @@ public final class ExecutionService {
             if (process != null) {
                 LOGGER.log(Level.FINE, "Destroying process: " + process);
                 process.destroy();
-            }
+            } 
+//            else {
+//                System.out.println("Process is null");
+//            }
         }
+//        else {
+//            System.out.println("Stop action is null");
+//        }
     }
 
     private Task rerun() {
@@ -241,8 +247,9 @@ public final class ExecutionService {
             if (io == null) { // free IO was not found, create new one
                 displayName = getNonActiveDisplayName(originalDisplayName);
 
+                // TODO fix this - UI class needed for kill
+                stopAction = new StopAction();
                 if (descriptor.isControllable()) {
-                    stopAction = new StopAction();
                     rerunAction = new RerunAction(this, descriptor.getRerunCondition());
 
                     io = IOProvider.getDefault().getIO(displayName, new Action[]{rerunAction, stopAction});
@@ -269,6 +276,25 @@ public final class ExecutionService {
         ACTIVE_DISPLAY_NAMES.add(displayName);
         io.setInputVisible(descriptor.isInputVisible());
 
+        final InputProcessor outProcessor = descriptor.getOutProcessor();
+        try {
+            if (outProcessor != null) {
+                outProcessor.reset();
+            }
+
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
+
+        final InputProcessor errProcessor = descriptor.getErrProcessor();
+        try {
+            if (errProcessor != null) {
+                errProcessor.reset();
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
+
         Runnable runnable = new Runnable() {
                 public void run() {
                     try {
@@ -282,6 +308,7 @@ public final class ExecutionService {
                         RUNNING_PROCESSES.add(ExecutionService.this);
                         if (stopAction != null) {
                             stopAction.setProcess(process);
+                            //System.out.println("Process configured");
                         }
 
                         runIO(process, io);
@@ -302,7 +329,7 @@ public final class ExecutionService {
         if (descriptor.showProgress() || descriptor.showSuspended()) {
             handle =
                 ProgressHandleFactory.createHandle(displayName,
-                    stopAction != null
+                    stopAction != null && descriptor.isControllable()
                         ? new Cancellable() {
                             public boolean cancel() {
                                 stopAction.actionPerformed(null);
@@ -339,7 +366,7 @@ public final class ExecutionService {
                     RUNNING_PROCESSES.remove(ExecutionService.this);
 
                     if (io != null && io != customio) {
-                        InputOutputManager.addFreeIO(io, displayName, stopAction, rerunAction);
+                        InputOutputManager.addFreeIO(io, displayName, descriptor.isControllable() ? stopAction : null, rerunAction);
                     }
 
                     ACTIVE_DISPLAY_NAMES.remove(displayName);
