@@ -240,6 +240,14 @@ public class CompletionResolverImpl implements CompletionResolver {
 
                     // get class methods visible in this method
                     resImpl.classMethods = contResolver.getMethods(clazz, fun, strPrefix, staticContext, match, true,false);
+                    if (needNestedClassifiers(context, offset)) {
+                        // get class nested classifiers visible in this context
+                        List<CsmClassifier> innerCls = contResolver.getNestedClassifiers(clazz, fun, strPrefix, match, needClasses(context, offset));
+                        if (resImpl.classesEnumsTypedefs == null) {
+                            resImpl.classesEnumsTypedefs = new ArrayList<CsmClassifier>();
+                        }
+                        resImpl.classesEnumsTypedefs.addAll(innerCls);
+                    }                    
                 }
             }
         } else if (needClassElements(context, offset)) {
