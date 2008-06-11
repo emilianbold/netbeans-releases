@@ -238,11 +238,22 @@ public class TraceXRef extends TraceModel {
         }
         return false;
     }
-    
+
+    private static final int FACTOR = 1;
     public static void traceProjectRefsStatistics(NativeProject prj, StatisticsParameters params, PrintWriter printOut, OutputWriter printErr, CsmProgressListener callback) {
         CsmProject csmPrj = CsmModelAccessor.getModel().getProject(prj);
         XRefResultSet bag = new XRefResultSet();
-        Collection<CsmFile> allFiles = csmPrj.getAllFiles();
+        Collection<CsmFile> allFiles = new ArrayList<CsmFile>();
+        int i = 0;
+        for(CsmFile file : csmPrj.getAllFiles()) {
+            i++;
+            if (FACTOR > 1) {
+                if (i%FACTOR != 0){
+                    continue;
+                }
+            }
+            allFiles.add(file);
+        }
         if (callback != null) {
             callback.projectFilesCounted(csmPrj, allFiles.size());
         }
