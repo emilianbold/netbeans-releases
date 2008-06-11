@@ -24,9 +24,9 @@
     <property name="glassfish.install.dir" value="${install.dir}/glassfish-v2ur2"/>
     <property name="glassfish.version" value="v2ur2"/>
     <!--<property name="glassfish_location" value="${gf_builds_host}/java/re/glassfish/9.1_02/promoted/fcs/latest/images/mac/glassfish-image-SNAPSHOT.jar"/>-->
-    <property name="glassfish_location"    value="${user.home}/releng/hudson/glassfish-image-v2ur2-b04.jar"/>
+    <property name="glassfish_location"    value="file:${user.home}/releng/hudson/glassfish-image-v2ur2-b04.jar"/>
     <!--<property name="glassfish_location_ml" value="${gf_builds_host}/java/re/glassfish/9.1_02/promoted/fcs/latest/l10n/mac/glassfish-image-SNAPSHOT-ml.jar"/>-->
-    <property name="glassfish_location_ml" value="${user.home}/releng/hudson/glassfish-image-v2ur2-b04-ml.jar"/>
+    <property name="glassfish_location_ml" value="file:${user.home}/releng/hudson/glassfish-image-v2ur2-b04-ml.jar"/>
 
     
     <!-- Open ESB Properties-->    

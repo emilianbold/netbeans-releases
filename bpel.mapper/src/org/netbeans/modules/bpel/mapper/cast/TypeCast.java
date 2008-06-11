@@ -33,11 +33,11 @@ import org.netbeans.modules.xml.xpath.ext.XPathException;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathExpressionPath;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContextHolder;
 import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
-import org.netbeans.modules.xml.xpath.ext.spi.CastSchemaContext;
-import org.netbeans.modules.xml.xpath.ext.spi.VariableSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.CastSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.VariableSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathVariable;
 import org.openide.ErrorManager;
@@ -68,18 +68,18 @@ public class TypeCast extends AbstractTypeCast {
     public static TypeCast convert(Cast cast) {
         GlobalType castTo = null;
         //
-        SchemaReference<GlobalType> gTypeRef = cast.getType();
+        SchemaReference<? extends GlobalType> castToRef = cast.getType();
         XPathExpression xPathExpr = getExpression(cast);
         //
-        if (gTypeRef == null) {
+        if (castToRef == null) {
             ErrorManager.getDefault().log(ErrorManager.WARNING, 
                     "Cast To has to be specified");
             return null;
         } else {
-            castTo = gTypeRef.get();
+            castTo = castToRef.get();
             if (castTo == null) {
                 ErrorManager.getDefault().log(ErrorManager.WARNING, 
-                        "Unresolved global type: " + gTypeRef.getQName());
+                        "Unresolved global type: " + castToRef.getQName());
                 return null;
             }
         }
@@ -88,11 +88,11 @@ public class TypeCast extends AbstractTypeCast {
     }
     
     public TypeCast(XPathCast xPathCast) {
-        this(xPathCast.getPathExpression(), xPathCast.getCastTo());
+        this(xPathCast.getPathExpression(), xPathCast.getType());
     }
     
-    public TypeCast(XPathExpression path, GlobalType castTo) {
-        super(castTo);
+    public TypeCast(XPathExpression path, GlobalType type) {
+        super(type);
         assert path != null;
         assert path instanceof XPathSchemaContextHolder;
         mXPathExpression = path;
@@ -130,7 +130,6 @@ public class TypeCast extends AbstractTypeCast {
         return null;
     }
     
-    @Override
     public boolean populateCast(Cast target, 
             BpelEntity destination, boolean inLeftMapperTree) {
         String pathText = mXPathExpression.getExpressionString();
@@ -141,7 +140,7 @@ public class TypeCast extends AbstractTypeCast {
             return false;
         }
         //
-        return super.populateCast(target, destination, inLeftMapperTree);
+        return populateCastImpl(target, destination, inLeftMapperTree);
     }
     
     public Object getCastedObject() {

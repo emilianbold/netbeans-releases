@@ -45,11 +45,32 @@ import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContextHolder;
 
 /**
+ * There are different kinds of casts.
+ * - Type Cast. An element can be casted to another type. Usually it casts 
+ * to a subtype of its own type. 
+ * 
+ * - Element Cast. An Any schema component is casted to a Global Element.
+ * 
+ * - Attribute Cast. An AnyAttribute schema component is casted to a Global Attribute.
+ * 
+ * 
  * @author Vladimir Yaroslavskiy
- * @version 2008.03.24
+ * @author nk160297
+ * @version 2008.05.20
  */
 public interface XPathCast extends XPathSchemaContextHolder {
+    
+    /**
+     * Points to the casted Element.
+     * @return
+     */
     XPathExpression getPathExpression();
     String getPathText();
-    GlobalType getCastTo();
+    
+    /**
+     * @return GlobalType, GlobalElement or GlobalAttrubute depends on 
+     * the CastType.
+     */
+    GlobalType getType();
+    
 }

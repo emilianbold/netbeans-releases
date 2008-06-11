@@ -40,10 +40,11 @@ import org.netbeans.modules.xml.xpath.ext.StepNodeTypeTest;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathExpressionPath;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
-import org.netbeans.modules.xml.xpath.ext.spi.CastSchemaContext;
-import org.netbeans.modules.xml.xpath.ext.spi.VariableSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.CastSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.VariableSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathVariable;
 import org.openide.util.NbBundle;
 
@@ -93,12 +94,12 @@ public class FinderListBuilder {
                     finderList.add(new CastedPartFinder(typeCast));
                 }
             } else {
-                SchemaComponent sComp = XPathSchemaContext.Utilities.
-                        getSchemaComp(context);
-                if (sComp == null) {
+                SchemaCompHolder sCompHolder = XPathSchemaContext.Utilities.
+                        getSchemaCompHolder(context);
+                if (sCompHolder == null) {
                     return null;
                 }
-                result.addFirst(sComp);
+                result.addFirst(sCompHolder.getHeldComponent());
             }
             //
             context = context.getParentContext();
@@ -112,6 +113,14 @@ public class FinderListBuilder {
         return finderList;
     }
     
+    /**
+     * Builds a set of finders for looking a variable with or without a part. 
+     * If a type cast parameter is specified then it is intended for looking 
+     * the casted variable or casted part. 
+     * @param varRef
+     * @param typeCast
+     * @return
+     */
     public static List<TreeItemFinder> build(XPathVariableReference varRef, 
             TypeCast typeCast) {
         ArrayList<TreeItemFinder> finderList = new ArrayList<TreeItemFinder>();
@@ -200,13 +209,13 @@ public class FinderListBuilder {
                     TypeCast typeCast = new TypeCast(castContext.getTypeCast());
                     result.add(typeCast);
                 } else {
-                    SchemaComponent stepSchemaComp = 
-                            XPathSchemaContext.Utilities.getSchemaComp(sContext);
-                    if (stepSchemaComp == null) {
+                    SchemaCompHolder stepSchemaCompHolder = 
+                            XPathSchemaContext.Utilities.getSchemaCompHolder(sContext);
+                    if (stepSchemaCompHolder == null) {
                         return Collections.EMPTY_LIST;
                     }
                     //
-                    result.add(stepSchemaComp);
+                    result.add(stepSchemaCompHolder.getHeldComponent());
                 }
             } else {
                 AbstractPredicate pred = new XPathPredicate(step);

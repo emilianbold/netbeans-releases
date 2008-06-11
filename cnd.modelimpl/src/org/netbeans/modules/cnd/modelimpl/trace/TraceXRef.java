@@ -53,6 +53,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JEditorPane;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -238,11 +239,22 @@ public class TraceXRef extends TraceModel {
         }
         return false;
     }
+    private static final int FACTOR = 1; 
     
-    public static void traceProjectRefsStatistics(NativeProject prj, StatisticsParameters params, PrintWriter printOut, OutputWriter printErr, CsmProgressListener callback) {
+    public static void traceProjectRefsStatistics(NativeProject prj, StatisticsParameters params, PrintWriter printOut, OutputWriter printErr, CsmProgressListener callback, AtomicBoolean canceled) {
         CsmProject csmPrj = CsmModelAccessor.getModel().getProject(prj);
         XRefResultSet bag = new XRefResultSet();
-        Collection<CsmFile> allFiles = csmPrj.getAllFiles();
+        Collection<CsmFile> allFiles = new ArrayList<CsmFile>();
+        int i = 0;
+        for(CsmFile file : csmPrj.getAllFiles()) {
+            i++;
+            if (FACTOR > 1) {
+                if (i%FACTOR != 0){
+                    continue;
+                }
+            }
+            allFiles.add(file);
+        }
         if (callback != null) {
             callback.projectFilesCounted(csmPrj, allFiles.size());
         }
@@ -250,7 +262,11 @@ public class TraceXRef extends TraceModel {
             if (callback != null) {
                 callback.fileParsingStarted(file);
             }
-            analyzeFile(file, params, bag, printOut, printErr);
+            analyzeFile(file, params, bag, printOut, printErr, canceled);
+            if (canceled.get()) {
+                printOut.println("Cancelled");
+                break;
+            }            
         }
         if (callback != null) {
             callback.projectParsingFinished(csmPrj);
@@ -321,23 +337,26 @@ public class TraceXRef extends TraceModel {
         }            
     };  
 
-    private static void analyzeFile(CsmFile file, StatisticsParameters params, XRefResultSet bag, PrintWriter out, OutputWriter printErr) {
+    private static void analyzeFile(CsmFile file, StatisticsParameters params, XRefResultSet bag, PrintWriter out, OutputWriter printErr, AtomicBoolean canceled) {
         long time = System.currentTimeMillis();
-        visitDeclarations(file.getDeclarations(), params, bag, out, printErr);
+        visitDeclarations(file.getDeclarations(), params, bag, out, printErr, canceled);
         time = System.currentTimeMillis() - time;
         out.println(file.getAbsolutePath() + " took " + time + "ms"); // NOI18N
     }
     
     private static void visitDeclarations(Collection<? extends CsmOffsetableDeclaration> decls, StatisticsParameters params, XRefResultSet bag, 
-            PrintWriter printOut, OutputWriter printErr) {
+            PrintWriter printOut, OutputWriter printErr, AtomicBoolean canceled) {
         for (CsmOffsetableDeclaration decl : decls) {
             if (CsmKindUtilities.isFunctionDefinition(decl)) {
                 handleFunctionDefinition((CsmFunctionDefinition)decl, params, bag, printOut, printErr);
             } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
-                visitDeclarations(((CsmNamespaceDefinition)decl).getDeclarations(), params, bag, printOut, printErr);
+                visitDeclarations(((CsmNamespaceDefinition)decl).getDeclarations(), params, bag, printOut, printErr, canceled);
             } else if (CsmKindUtilities.isClass(decl)) {
-                visitDeclarations(((CsmClass)decl).getMembers(), params, bag, printOut, printErr);
+                visitDeclarations(((CsmClass)decl).getMembers(), params, bag, printOut, printErr, canceled);
             }
+            if (canceled.get()) {
+                break;
+            }            
         }
     }
     

@@ -72,17 +72,20 @@ public class ExternalProcessBuilderTest extends NbTestCase {
         Map<String, String> original = new HashMap<String, String>();
         original.put("PATH", "original");
 
+        // original path
         Map<String, String> env = new HashMap<String, String>(
                 builder.buildEnvironment(original));
         assertEquals("original", env.remove("PATH"));
         assertTrue(env.isEmpty());
 
+        // some added path
         File addedPath = new File("addedPath");
         builder.addPath(addedPath);
         env = new HashMap<String, String>(builder.buildEnvironment(original));
         assertEquals(addedPath.getAbsolutePath() + File.pathSeparator + "original", env.remove("PATH"));
         assertTrue(env.isEmpty());
 
+        // yet another path
         File nextPath = new File("nextPath");
         builder.addPath(nextPath);
         env = new HashMap<String, String>(builder.buildEnvironment(original));
@@ -92,11 +95,52 @@ public class ExternalProcessBuilderTest extends NbTestCase {
                 + "original", env.remove("PATH"));
         assertTrue(env.isEmpty());
 
+        // pwd on path
         builder.pwdToPath(true);
         File pwd = new File(System.getProperty("user.dir"));
         env = new HashMap<String, String>(builder.buildEnvironment(original));
         assertEquals(
                 pwd.getAbsolutePath() + File.pathSeparator
+                + nextPath.getAbsolutePath() + File.pathSeparator
+                + addedPath.getAbsolutePath() + File.pathSeparator
+                + "original", env.remove("PATH"));
+        assertTrue(env.isEmpty());
+
+        // custom pwd on path
+        pwd = new File("pwd");
+        builder.pwd(pwd);
+        env = new HashMap<String, String>(builder.buildEnvironment(original));
+        assertEquals(
+                pwd.getAbsolutePath() + File.pathSeparator
+                + nextPath.getAbsolutePath() + File.pathSeparator
+                + addedPath.getAbsolutePath() + File.pathSeparator
+                + "original", env.remove("PATH"));
+        assertTrue(env.isEmpty());
+
+        // java home on path
+        String javaHome = System.getProperty("java.home");
+        System.setProperty("java.home", "javahomedir");
+        try {
+            builder.javaHomeToPath(true);
+            env = new HashMap<String, String>(builder.buildEnvironment(original));
+            assertEquals(
+                    new File("javahomedir").getAbsolutePath() + File.separator + "bin" + File.pathSeparator
+                    + pwd.getAbsolutePath() + File.pathSeparator
+                    + nextPath.getAbsolutePath() + File.pathSeparator
+                    + addedPath.getAbsolutePath() + File.pathSeparator
+                    + "original", env.remove("PATH"));
+            assertTrue(env.isEmpty());
+        } finally {
+            System.setProperty("java.home", javaHome);
+        }
+
+        // java home from custom property on path
+        System.setProperty("netbeans.java", "netbeansjava");
+        builder.addJavaHomeProperty("netbeans.java");
+        env = new HashMap<String, String>(builder.buildEnvironment(original));
+        assertEquals(
+                new File("netbeansjava").getAbsolutePath() + File.separator + "bin" + File.pathSeparator
+                + pwd.getAbsolutePath() + File.pathSeparator
                 + nextPath.getAbsolutePath() + File.pathSeparator
                 + addedPath.getAbsolutePath() + File.pathSeparator
                 + "original", env.remove("PATH"));

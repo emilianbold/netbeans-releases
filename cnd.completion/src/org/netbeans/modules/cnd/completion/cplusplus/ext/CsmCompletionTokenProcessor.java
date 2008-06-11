@@ -77,6 +77,8 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
     private static final int CONVERSION = CsmCompletionExpression.CONVERSION;
     private static final int TYPE = CsmCompletionExpression.TYPE;
     private static final int NEW = CsmCompletionExpression.NEW;
+    private static final int GOTO = CsmCompletionExpression.GOTO;
+    private static final int LABEL = CsmCompletionExpression.LABEL;
     private static final int INSTANCEOF = CsmCompletionExpression.INSTANCEOF;
     private static final int GENERIC_TYPE = CsmCompletionExpression.GENERIC_TYPE;
     private static final int GENERIC_TYPE_OPEN = CsmCompletionExpression.GENERIC_TYPE_OPEN;
@@ -653,7 +655,9 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                             errorState = true;
                         }
                         break;
-
+                    case CCTokenContext.GOTO_ID:
+                        pushExp(createTokenExp(GOTO));
+                        break;
                     case CCTokenContext.NEW_ID:
                         switch (topID) {
                         case VARIABLE:
@@ -731,7 +735,6 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
 //                    case CCTokenContext.FINAL_ID:
 //XXX                    case CCTokenContext.FINALLY_ID:
                     case CCTokenContext.FOR_ID:
-                    case CCTokenContext.GOTO_ID:
                     case CCTokenContext.IF_ID:
 //                    case CCTokenContext.IMPLEMENTS_ID:
 //                    case CCTokenContext.INTERFACE_ID:
@@ -765,6 +768,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                             case METHOD_OPEN:
                             case MEMBER_POINTER_OPEN:
                             case NEW:
+                            case GOTO:
 //                            case CPPINCLUDE:
                             case CONVERSION:
                             case UNARY_OPERATOR:
@@ -1898,6 +1902,12 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                         top2.setExpID(CONSTRUCTOR);
                         reScan = true;
                         break;                    
+                    case GOTO:
+                        popExp();
+                        top2.addParameter(top);
+                        top2.setExpID(LABEL);
+                        reScan = false;
+                        break;
                     case ANNOTATION:
                     case ANNOTATION_OPEN:
                     case CASE:

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.editors.api.EditorUtil;
+import org.netbeans.modules.bpel.mapper.cast.AbstractPseudoComp;
 import org.netbeans.modules.bpel.mapper.cast.AbstractTypeCast;
 import org.netbeans.modules.bpel.mapper.model.FromProcessor.FromForm;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
@@ -124,7 +125,9 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
     //==========================================================================
 
     protected void updateFrom(Graph graph, 
-            Set<AbstractTypeCast> typeCastCollector, From from) throws Exception 
+            Set<AbstractTypeCast> typeCastCollector, 
+            Set<AbstractPseudoComp> pseudoCollector, 
+            From from) throws Exception 
     {
         assert from != null;
         FromForm oldFromForm = FromProcessor.calculateFromForm(from);
@@ -137,10 +140,12 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
             Link link = graphInfo.getTransitLinks().get(0); 
             TreeSourcePin sourcePin = (TreeSourcePin)link.getSource();
             TreePath sourceTreePath = sourcePin.getTreePath();
-            TreePathInfo tpInfo = collectTreeInfo(sourceTreePath, typeCastCollector);
+            TreePathInfo tpInfo = collectTreeInfo(
+                    sourceTreePath, typeCastCollector, pseudoCollector);
             //
             XPathModel xPathModel = BpelXPathModelFactory.create(from);
-            populateFrom(from, xPathModel, tpInfo, typeCastCollector);
+            populateFrom(from, xPathModel, tpInfo, 
+                    typeCastCollector, pseudoCollector);
         } else {
             boolean processed = false;
             // 
@@ -180,7 +185,8 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
             if (!processed) {
                 // Complex case when an XPath expression form definitly has to be used
                 // 
-                populateContentHolder(from, graphInfo, typeCastCollector);
+                populateContentHolder(from, graphInfo, 
+                        typeCastCollector, pseudoCollector);
                 //
                 // Remove other attributes because they are not necessary now.
                 from.removeEndpointReference();
@@ -214,6 +220,7 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
         }
         //
         Set<AbstractTypeCast> typeCastCollector = new HashSet<AbstractTypeCast>();
+        Set<AbstractPseudoComp> pseudoCollector = new HashSet<AbstractPseudoComp>();
         //
         //
         //=====================================================================
@@ -226,9 +233,10 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
             copy.setFrom(from);
         }
         //
-        updateFrom(graph, typeCastCollector, from);
+        updateFrom(graph, typeCastCollector, pseudoCollector, from);
         //
         registerTypeCasts(copy, typeCastCollector, true);
+        registerPseudoComps(copy, pseudoCollector, true);
         //
         //=====================================================================
         // Populate TO
@@ -241,11 +249,14 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
         }
         //
         typeCastCollector = new HashSet<AbstractTypeCast>();
-        TreePathInfo tpInfo = collectTreeInfo(rightTreePath, typeCastCollector);
+        pseudoCollector = new HashSet<AbstractPseudoComp>();
+        TreePathInfo tpInfo = collectTreeInfo(
+                rightTreePath, typeCastCollector, pseudoCollector);
         //
         XPathModel xPathModel = BpelXPathModelFactory.create(to);
-        populateTo(to, xPathModel, tpInfo, typeCastCollector);
+        populateTo(to, xPathModel, tpInfo, typeCastCollector, pseudoCollector);
         registerTypeCasts(copy, typeCastCollector, false);
+        registerPseudoComps(copy, pseudoCollector, false);
     }
     
     private void updateAssign(TreePath rightTreePath, Assign assign) throws Exception {
@@ -293,8 +304,13 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
         }
         // 
         Set<AbstractTypeCast> typeCastCollector = new HashSet<AbstractTypeCast>();
-        populateContentHolder(condition, graphInfo, typeCastCollector);
-        registerTypeCasts((ExtensibleElements)condHolder, typeCastCollector, true);
+        Set<AbstractPseudoComp> pseudoCollector = new HashSet<AbstractPseudoComp>();
+        //
+        populateContentHolder(condition, graphInfo, 
+                typeCastCollector, pseudoCollector);
+        ExtensibleElements destination = (ExtensibleElements)condHolder;
+        registerTypeCasts(destination, typeCastCollector, true);
+        registerPseudoComps(destination, pseudoCollector, true);
     }
     
     private void updateTimeEventHolder(TreePath rightTreePath, 
@@ -327,8 +343,12 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
         }
         // 
         Set<AbstractTypeCast> typeCastCollector = new HashSet<AbstractTypeCast>();
-        populateContentHolder((ContentElement)timeEvent, graphInfo, typeCastCollector);
+        Set<AbstractPseudoComp> pseudoCollector = new HashSet<AbstractPseudoComp>();
+        //
+        populateContentHolder((ContentElement)timeEvent, graphInfo, 
+                typeCastCollector, pseudoCollector);
         registerTypeCasts((ExtensibleElements)timeEventHolder, typeCastCollector, true);
+        registerPseudoComps((ExtensibleElements)timeEventHolder, pseudoCollector, true);
     }
     
     private void updateForEach(TreePath rightTreePath, ForEach forEach) {
@@ -383,14 +403,18 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
         //
         // Populate 
         Set<AbstractTypeCast> typeCastCollector = new HashSet<AbstractTypeCast>();
-        populateContentHolder(bpelExpr, graphInfo, typeCastCollector);
+        Set<AbstractPseudoComp> pseudoCollector = new HashSet<AbstractPseudoComp>();
+        //
+        populateContentHolder(bpelExpr, graphInfo, typeCastCollector, pseudoCollector);
         registerTypeCasts(forEach, typeCastCollector, true);
+        registerPseudoComps(forEach, pseudoCollector, true);
     }
     
     //==========================================================================
 
     private From populateFrom(From from, XPathModel xPathModel, 
-            TreePathInfo tpInfo, Set<AbstractTypeCast> typeCastCollector) {
+            TreePathInfo tpInfo, Set<AbstractTypeCast> typeCastCollector, 
+            Set<AbstractPseudoComp> pseudoCollector) {
         FromProcessor.FromForm fromForm = calculateCopyFromForm(tpInfo);
         //
         switch(fromForm) {
@@ -444,7 +468,8 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
             SchemaModelsStack sms = new SchemaModelsStack();
             sms.appendSchemaComponent(sComp);
             //
-            populateFromQuery(from, xPathModel, tpInfo, typeCastCollector, sms);
+            populateFromQuery(from, xPathModel, tpInfo, 
+                    typeCastCollector, pseudoCollector, sms);
             //
             // from.removeVariable();
             from.removePart();
@@ -473,7 +498,8 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
             SchemaModelsStack sms = new SchemaModelsStack();
             sms.appendSchemaComponent(sComp);
             //
-            populateFromQuery(from, xPathModel, tpInfo, typeCastCollector, sms);
+            populateFromQuery(from, xPathModel, tpInfo, 
+                    typeCastCollector, pseudoCollector, sms);
             //
             // from.removeVariable();
             // from.removePart();
@@ -512,7 +538,7 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
         }
         case EXPRESSION: {
             XPathExpression xPathExpr = createVariableXPath(
-                    xPathModel, tpInfo, typeCastCollector);
+                    xPathModel, tpInfo, typeCastCollector, pseudoCollector);
             if (xPathExpr != null) {
                 try {
                     from.setContent(xPathExpr.getExpressionString());
@@ -537,9 +563,9 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
 
     private void populateFromQuery(From from, XPathModel xPathModel, 
             TreePathInfo tpInfo, Set<AbstractTypeCast> typeCastCollector, 
-            SchemaModelsStack sms) {
-        List<LocationStep> stepList = constructLSteps(
-                xPathModel, tpInfo.schemaCompList, typeCastCollector, sms);
+            Set<AbstractPseudoComp> pseudoCollector, SchemaModelsStack sms) {
+        List<LocationStep> stepList = constructLSteps(xPathModel, 
+                tpInfo.schemaCompList, typeCastCollector, pseudoCollector, sms);
         if (stepList != null && !(stepList.isEmpty())) {
             XPathLocationPath locationPath = xPathModel.getFactory().
                     newXPathLocationPath(
@@ -567,7 +593,8 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
     }
     
     private To populateTo(To to, XPathModel xPathModel, TreePathInfo tpInfo, 
-            Set<AbstractTypeCast> typeCastCollector) {
+            Set<AbstractTypeCast> typeCastCollector, 
+            Set<AbstractPseudoComp> pseudoCollector) {
         CopyToProcessor.CopyToForm toForm = calculateCopyToForm(tpInfo);
         //
         switch(toForm) {
@@ -619,7 +646,8 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
             SchemaModelsStack sms = new SchemaModelsStack();
             sms.appendSchemaComponent(sComp);
             //
-            populateToQuery(to, xPathModel, tpInfo, typeCastCollector, sms);
+            populateToQuery(to, xPathModel, tpInfo, 
+                    typeCastCollector, pseudoCollector, sms);
             //
             // to.removeVariable();
             to.removePart();
@@ -647,7 +675,8 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
             SchemaModelsStack sms = new SchemaModelsStack();
             sms.appendSchemaComponent(sComp);
             //
-            populateToQuery(to, xPathModel, tpInfo, typeCastCollector, sms);
+            populateToQuery(to, xPathModel, tpInfo, 
+                    typeCastCollector, pseudoCollector, sms);
             //
             // to.removeVariable();
             // to.removePart();
@@ -682,7 +711,7 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
         }
         case EXPRESSION: {
             XPathExpression xPathExpr = createVariableXPath(
-                    xPathModel, tpInfo, typeCastCollector);
+                    xPathModel, tpInfo, typeCastCollector, pseudoCollector);
             try {
                 to.setContent(xPathExpr.getExpressionString());
             } catch (VetoException ex) {
@@ -704,9 +733,9 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
 
     private void populateToQuery(To to, XPathModel xPathModel, 
             TreePathInfo tpInfo, Set<AbstractTypeCast> typeCastCollector, 
-            SchemaModelsStack sms) {
-        List<LocationStep> stepList = constructLSteps(
-                xPathModel, tpInfo.schemaCompList, typeCastCollector, sms);
+            Set<AbstractPseudoComp> pseudoCollector, SchemaModelsStack sms) {
+        List<LocationStep> stepList = constructLSteps(xPathModel, 
+                tpInfo.schemaCompList, typeCastCollector, pseudoCollector, sms);
         if (stepList != null && !(stepList.isEmpty())) {
             XPathLocationPath locationPath = xPathModel.getFactory().
                     newXPathLocationPath(
