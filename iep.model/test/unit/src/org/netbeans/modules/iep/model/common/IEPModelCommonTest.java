@@ -1,5 +1,5 @@
 /*
- * WLMModelCommonTest.java
+ * IEPModelCommonTest.java
  * JUnit based test
  *
  * Created on May 31, 2007, 3:10 PM
@@ -53,7 +53,7 @@ public class IEPModelCommonTest extends TestCase {
         URL url = IEPModelCommonTest.class.getResource("data/empty.iep");
         URI wfFile = url.toURI();
         IEPModelProvider provider = new IEPModelProviderInsideIde ();
-        IEPModel model = provider.getWLMModel(wfFile);
+        IEPModel model = provider.getIEPModel(wfFile);
         
         IEPComponentFactory factory = new IEPComponentFactoryImpl (model);
         
@@ -92,7 +92,7 @@ public class IEPModelCommonTest extends TestCase {
 //        InputSource source = new InputSource (is);
 //        Element rootEl = XmlUtil.createDocument(true, source).getDocumentElement();
         IEPModelProvider provider = new IEPModelProviderInsideIde ();
-        IEPModel model = provider.getWLMModel(wfFile);
+        IEPModel model = provider.getIEPModel(wfFile);
            model.sync();
         assertNotNull(model);
 //        IEPComponent root = ((AbstractDocumentModel <IEPComponent>) model).createRootComponent(rootEl);

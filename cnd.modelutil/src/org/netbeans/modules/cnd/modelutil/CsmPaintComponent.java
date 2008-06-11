@@ -563,11 +563,12 @@ public abstract class CsmPaintComponent extends JPanel {
     public static class TypedefPaintComponent extends CsmPaintComponent{
         
         String formatTypedefName;
-        private Color TYPEDEF_COLOR = Color.blue.darker().darker().darker();
-        private boolean displayFQN;
+        private final Color TYPEDEF_COLOR = CsmFontColorManager.instance().getColor(FontColorProvider.Entity.TYPEDEF); //Color.blue.darker().darker().darker();
+        //private boolean displayFQN;
         
         public void setFormatTypedefName(String formatTypedefName){
             this.formatTypedefName = formatTypedefName;
+            
         }
         
         protected Color getColor(){
@@ -618,7 +619,7 @@ public abstract class CsmPaintComponent extends JPanel {
     }
     
     public static class FieldPaintComponent extends CsmPaintComponent{
-        private Color FIELD_COLOR = Color.blue.darker();
+        private Color FIELD_COLOR = CsmFontColorManager.instance().getColor(FontColorProvider.Entity.CLASS_FIELD);//Color.blue.darker();
         protected String typeName;
         protected Color typeColor;
         protected String fldName;
@@ -740,8 +741,8 @@ public abstract class CsmPaintComponent extends JPanel {
     }
     
     public static class MacroPaintComponent extends CsmPaintComponent{
-        private Color MACRO_NAME_COLOR = Color.green.darker().darker();
-        private Color MACRO_PARAMETER_NAME_COLOR = Color.magenta.darker();
+        private Color MACRO_NAME_COLOR = CsmFontColorManager.instance().getColor(FontColorProvider.Entity.USER_MACRO);//Color.green.darker().darker();
+        private Color MACRO_PARAMETER_NAME_COLOR = new Color(163, 102, 10);//Color.magenta.darker();
         private List params = null;
         private String name;
 
@@ -866,7 +867,7 @@ public abstract class CsmPaintComponent extends JPanel {
     public static class ConstructorPaintComponent extends CsmPaintComponent{
         
         private Color CONSTRUCTOR_COLOR = Color.orange.darker().darker();
-        private Color PARAMETER_NAME_COLOR = Color.magenta.darker();
+        private Color PARAMETER_NAME_COLOR = new Color(163, 102, 10);//Color.magenta.darker();
         private List params = new ArrayList();
         private List excs = new ArrayList();
         private String name;
@@ -1019,8 +1020,8 @@ public abstract class CsmPaintComponent extends JPanel {
     
     public static class MethodPaintComponent extends ConstructorPaintComponent {
         
-        private Color PARAMETER_NAME_COLOR = Color.magenta.darker();
-        private Color METHOD_COLOR = Color.red.darker().darker();
+        //private Color PARAMETER_NAME_COLOR = Color.magenta.darker();
+        private Color METHOD_COLOR = Color.black;//red.darker().darker();
         private String typeName;
         private Color typeColor;
         private boolean drawTypeAsPrefix = false;
@@ -1103,7 +1104,7 @@ public abstract class CsmPaintComponent extends JPanel {
     }
 
     public static class FileLocalFunctionPaintComponent extends MethodPaintComponent {
-        private Color FUN_COLOR = Color.red.darker().darker();
+        private Color FUN_COLOR = Color.black;//red.darker().darker();
         
         public FileLocalFunctionPaintComponent(){
             super();
@@ -1115,7 +1116,7 @@ public abstract class CsmPaintComponent extends JPanel {
     }
     
     public static class GlobalFunctionPaintComponent extends MethodPaintComponent {
-        private Color FUN_COLOR = Color.red.darker().darker();
+        private Color FUN_COLOR = Color.black;//.red.darker().darker();
         
         public GlobalFunctionPaintComponent(){
             super();

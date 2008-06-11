@@ -131,10 +131,12 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
     }
     
     @SuppressWarnings("unchecked")
+    @Override
     protected WizardDescriptor.Panel<WizardDescriptor>[] initializePanels() {
         panels = (WizardDescriptor.Panel<WizardDescriptor>[])new WizardDescriptor.Panel<?>[] {
             new DatabaseTablesPanel.WizardPanel(),
-            new EntityClassesPanel.WizardPanel()
+            new EntityClassesPanel.WizardPanel(),
+            new MappingOptionsPanel.WizardPanel(),
         };
         return panels;
     }
@@ -144,6 +146,7 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
      * each panel when it is needed, not in advance (which would cause
      * all the panels' components to be created prematurely).
      */
+    @Override
     public WizardDescriptor.Panel<WizardDescriptor> current() {
         WizardDescriptor.Panel<WizardDescriptor> panel = super.current();
         
@@ -151,6 +154,7 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
             mergeSteps(new String[] {
                 NbBundle.getMessage(RelatedCMPWizard.class, "LBL_DatabaseTables"),
                 NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ? "LBL_EntityBeansLocation" : "LBL_EntityClasses"),
+                NbBundle.getMessage(RelatedCMPWizard.class, "LBL_MappingOptions"),
             });
         }
         
@@ -163,9 +167,14 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
                 component.putClientProperty(WIZARD_PANEL_CONTENT_SELECTED_INDEX, new Integer(0));
                 // don't use an absolute step value like 1,
                 // since we dont' know how may steps there are before us
+                component.setName(steps[steps.length - 3]);
+            } else if (panel == panels[1]) {
+                component.putClientProperty(WIZARD_PANEL_CONTENT_SELECTED_INDEX, new Integer(1));
+                // don't use an absolute step value like 1,
+                // since we dont' know how may steps there are before us
                 component.setName(steps[steps.length - 2]);
             } else {
-                component.putClientProperty(WIZARD_PANEL_CONTENT_SELECTED_INDEX, new Integer(1));
+                component.putClientProperty(WIZARD_PANEL_CONTENT_SELECTED_INDEX, new Integer(2));
                 // don't use an absolute step value like 2,
                 // since we dont' know how may steps there are before us
                 component.setName(steps[steps.length - 1]);

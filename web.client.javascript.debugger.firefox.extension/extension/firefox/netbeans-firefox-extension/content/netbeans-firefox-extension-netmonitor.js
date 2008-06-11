@@ -59,6 +59,43 @@
       
     const NOTIFY_ALL= NetBeans.Constants.WebProgressIF.NOTIFY_ALL;
     
+    const mimeExtensionMap =
+    {
+        "txt": "text/plain",
+        "html": "text/html",
+        "htm": "text/html",
+        "xhtml": "text/html",
+        "xml": "text/xml",
+        "css": "text/css",
+        "js": "application/x-javascript",
+        "jss": "application/x-javascript",
+        "jpg": "image/jpeg",
+        "jpeg": "image/jpeg",
+        "gif": "image/gif",
+        "png": "image/png",
+        "bmp": "image/bmp",
+        "swf": "application/x-shockwave-flash"
+    };
+
+    const mimeCategoryMap =
+    {
+        "text/plain": "txt",
+        "application/octet-stream": "bin",
+        "text/html": "html",
+        "text/xml": "html",
+        "text/css": "css",
+        "application/x-javascript": "js",
+        "text/javascript": "js",
+        "application/javascript" : "js",
+        "image/jpeg": "image",
+        "image/gif": "image",
+        "image/png": "image",
+        "image/bmp": "image",
+        "application/x-shockwave-flash": "flash"
+    };
+
+
+    
     var netFeatures = {
         netFilterCategory: null,
         disableNetMonitor: false,
@@ -66,7 +103,10 @@
     };
     var socket;
     
+    var requests = [];
+    var topWindow;
     this.initMonitor = function  (context, browser, _socket) {
+        topWindow = context.window;
         if( !netFeatures.disableNetMonitor ){
             monitorContext(context, browser);
             if( !_socket ) 
@@ -79,12 +119,10 @@
         if (context.networkListener) {
             unmonitorContext(context, browser);
             socket = null;
+            topWindow = null;
         }
             
     }
-    
-    
-
     
     var NetObserver = 
     {
@@ -101,34 +139,50 @@
 
         // nsIObserver
         //@type {nsIHttpChannel} channel
-        observe: function(nsISupport, topic, data)
+        observe: function(aNsISupport, topic, data)
         {
-            var request = nsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
+           
             if (topic == "http-on-modify-request") {
-                this.onModifyRequest(request);
+                this.onModifyRequest(aNsISupport);
             } else if (topic == "http-on-examine-response") {
-                this.onExamineResponse(request);
+                this.onExamineResponse(aNsISupport);
             }
 
         },
-        
-        onModifyRequest: function (aRequest) {
-            var webProgress = getRequestWebProgress(aRequest, this);
-            var category = getRequestCategory(aRequest);
-            var win = webProgress ? safeGetWindow(webProgress) : null;
+        /*
+         * @param {nsISupport} aNsISupport
+         * @type {nsIHttpChannel} request
+         * @type {NetActivity} activity
+         */
+        onModifyRequest: function (aNsISupport) {
+            var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
 
-            //            var name = aRequest.URI.asciiSpec;
-            //	    var origName = aRequest.originalURI.asciiSpec;
-            //            var isRedirect = (name != origName);
-
-            sendNetRequest(aRequest, nowTime(), win, category);
+            if ( isRelevantWindow(request) ){
+                requests.push(request);
+                var activity = getHttpRequestHeaders(request);
+                activity.time = nowTime();
+                activity.category = getRequestCategory(request);
+                sendNetActivity(activity);
+            }
         },
         
-        onExamineResponse: function( request ){
-            sendExamineNetResponse(request, nowTime());
+        onExamineResponse: function( aNsISupport ){
+            
+            var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
+            if( isRelevantWindow(request) ){
+                var activity = getHttpResponseHeaders(request);
+                activity.time = nowTime();
+                sendExamineNetResponse(activity);
+            }
         }
         
         
+    }
+    
+    function isRelevantWindow(aRequest) {
+        var webProgress = getRequestWebProgress(aRequest)
+        var win = webProgress ? safeGetWindow(webProgress) : null;
+        return (topWindow == win || topWindow == win.parent);
     }
 
     function NetProgressListener(context)
@@ -151,7 +205,9 @@
         //void onProgressChange ( nsIWebProgress webProgress , nsIRequest request , PRInt32 curSelfProgress , PRInt32 maxSelfProgress , PRInt32 curTotalProgress , PRInt32 maxTotalProgress )   
         onProgressChange : function(progress, request, current, max, total, maxTotal)
         {
-        //NetBeans.Logger.log("On ProgressChange: " + Object.prototype.toString.apply(progress.wrappedJSObject) + " Request: " + Object.prototype.toString.apply(request));
+            if ( requests.indexOf(request) != -1){
+                sendProgressUpdate(progress, request, current, max, total, maxTotal);
+            }
         },
         //void onLocationChange ( nsIWebProgress webProgress , nsIRequest request , nsIURI location )  
         onLocationChange: function() {
@@ -203,7 +259,14 @@
         }
     }
     
-    function parseURLParmas( href ){
+    /*
+     * @param {String} href
+     * @return {String}
+     */
+    function parseURLParams( href ){
+        if (!href){
+            return "";
+        }
 
         var hrefPieces = href.split("?");
         if ( hrefPieces.length != 2 ) {
@@ -214,114 +277,183 @@
         return nvPairs;
     }
     
+    function NetActivity (){
+    }
+    
     /*
-     * On Observe when topic is "http-on-modify-request"
-     * @param {nsIHttpChannel} aRequest
-     * @param  aTime
-     * @param  aWin
-     * @param  aCategory
-     * @type {ACString} method;
-     * @type {nsLoadFlags} loadFlags;
-     * @type {nsIURI} referrer;
+     * @param {nsISupport} aRequest
+     * @type {nsIHttpChannel} http
+     * @return {NetActivity} activity
      */
-    function sendNetRequest (aRequest, aTime, aWin, aCategory ){
-        //  var httpChannel = nsISupport.QueryInterface(aRequest, NetBeans.Constants.HttpChannelIF);
+    function getHttpResponseHeaders(aRequest)
+    {
+        if ( DEBUG ) {
+            NetBeans.Logger.log("GetHttpResponseHeaders: ");
+        }
+        var activity = new NetActivity();
+        try
+        {
+            //var http = QI(request, nsIHttpChannel);
+            var http = aRequest.QueryInterface(NetBeans.Constants.HttpChannelIF);
+            var href = aRequest.name;
+            activity.method = http.requestMethod;
+            activity.status = aRequest.responseStatus;
+            activity.urlParams = parseURLParams(href);
 
-        var href = aRequest.name;
-        var referrer = aRequest.referrer;
-        //var status = aRequest.responseStatus;
-        //var statusText = aRequest.responseStatusText;
+            if (!activity.mimeType)
+                activity.mimeType = getMimeType(aRequest.contentType, href);
+
+            var responseHeaders = [];
+
+            http.visitResponseHeaders({
+                visitHeader: function(name, value)
+                {
+                    responseHeaders.push({
+                        name: name, 
+                        value: value
+                    });
+                }
+            });
+            activity.responseHeaders = responseHeaders;
+        }
+        catch (exc)
+        {
+            NetBeans.Logger.log("netmonitor.getHttpResponseHeaders: exception" + exc);
+            activity = null;
+        } finally {
+            return activity;
+        }
+    }
+
+
+    /*
+     * @param {nsISupport} aRequest
+     * @type {nsIHttpChannel} http
+     * @type {NetActivity} activity
+     */
+    function getHttpRequestHeaders( aRequest )
+    {
+        if( DEBUG ){
+            NetBeans.Logger.log("GetHttpRequestHeaders: ");
+        }
+        var activity = new NetActivity();
+        try
+        {
+            //var http = QI(request, nsIHttpChannel);
+            var http = aRequest.QueryInterface(NetBeans.Constants.HttpChannelIF);
+            activity.method = http.requestMethod;
+            //activity.status = aRequest.responseStatus;
+            activity.urlParams = parseURLParams(activity.href);
+
+            //if (!activity.mimeType && aRequest.contentType )
+            //     activity.mimeType = getMimeType(aRequest.contentType, aRequest.name);
+
+            var requestHeaders = [];
+
+            http.visitRequestHeaders({
+                visitHeader: function(name, value)
+                {
+                    requestHeaders.push({
+                        name: name, 
+                        value: value
+                    });
+                }
+            });
+            activity.requestHeaders = requestHeaders;
+        }
+        catch (exc)
+        {
+            NetBeans.Logger.log("netmonitor.getHttpRequestHeaders: exception" + exc);
+            activity = null;
+        } finally {
+            return activity;
+        }
         
-        var method = null;
-        var params = null;
-        if( aRequest.requestMethod  ){
-            method = aRequest.requestMethod;
-            if( method != "POST"){
-                params = parseURLParmas(href);
+    }
+  
+    function getMimeType(mimeType, uri)
+    {
+        if (!mimeType || !(mimeCategoryMap.hasOwnProperty(mimeType)))
+        {
+            var ext = getFileExtension(uri);
+            if( DEBUG ) {
+                NetBeans.Logger.log("netmonitor - getFileExtension: " + ext);
+            }
+            if (!ext)
+                return mimeType;
+            else
+            {
+                var extMimeType = mimeExtensionMap[ext.toLowerCase()];
+                return extMimeType ? extMimeType : mimeType;
             }
         }
-        
-        var loadFlags = null;
-        if( aRequest.loadFlags){
-            loadFlags = aRequest.loadFlags;
+        else
+            return mimeType;
+    }
+    
+    /*
+     * @param {string} uri
+     */
+    function getFileExtension( uri ){
+        var ext = "";
+        var index = uri.indexOf('.');
+        if ( index > -1 ) {
+            ext = uri.substr(index,uri.length());
         }
-        //var method = aRequest.requestMethod;
-        //var urlParams = parseURLParams(href);
+        return ext;
+    }
 
-
-        
+    /*
+     * On Observe when topic is "http-on-modify-request"
+     * @param {NetActivity} aActivity
+     */
+    function sendNetActivity ( aActivity ){
         if (DEBUG){
-            NetBeans.Logger.log("net.netprogress.sendNetRequest -->");
-            NetBeans.Logger.log(">   Request: " + aRequest);
-            NetBeans.Logger.log(">   Time " + aTime);
-            NetBeans.Logger.log(">   Win " + aWin);
-            NetBeans.Logger.log(">   Category " + aCategory);
-            NetBeans.Logger.log(">   Method " + method);
-            NetBeans.Logger.log(">   LoadFlags " + loadFlags);
-            NetBeans.Logger.log(">   Href " + href);
-            NetBeans.Logger.log(">   Referrer " + referrer);
-            NetBeans.Logger.log(">   Params " + params);
+            for( var key in aActivity ){
+                if ( key == "requestHeaders"){
+                    var headers = aActivity[key];
+                    NetBeans.Logger.log("   > Request Headers");
+                    for( var header in headers ){
+                        NetBeans.Logger.log("       " + headers[header].name + " : " + headers[header].value);
+                    }
+                } else {
+                    NetBeans.Logger.log("   >" + key + " : " + aActivity[key]);
+                }
+            }
         }
     }
     /*
      * On Observe when topic is "http-on-examine-request"
+     * @param {NetActivity} aActivity;
      */
-    function sendExamineNetResponse ( aRequest, aTime, aWin, aCategory ){
-        var href = aRequest.name;
-        var referrer = aRequest.referrer;
-        var status = aRequest.responseStatus;
-        var statusText = aRequest.responseStatusText;
-        
-        var method = null;
-        var params = null;
-        if( aRequest.requestMethod  ){
-            method = aRequest.requestMethod;
-            if( method != "POST"){
-                params = parseURLParmas(href);
+    function sendExamineNetResponse ( aActivity ){
+        if (DEBUG){
+            for( var key in aActivity ){
+                if ( key == "responseHeaders"){
+                    var headers = aActivity[key];
+                    NetBeans.Logger.log("   < Response Headers");
+                    for( var header in headers ){
+                        NetBeans.Logger.log("       " + headers[header].name + " : " + headers[header].value);
+                    }
+                } else {
+                    NetBeans.Logger.log("   <" + key + " : " + aActivity[key]);
+                }
             }
         }
-        
-        var loadFlags = null;
-        if( aRequest.loadFlags){
-            loadFlags = aRequest.loadFlags;
-        }
-        if (DEBUG){
-            NetBeans.Logger.log("   <-- net.netprogress.sendNetResponse");
-            NetBeans.Logger.log("   < Request: " + aRequest);
-            NetBeans.Logger.log("   < Time " + aTime);
-            NetBeans.Logger.log("   < Win " + aWin);
-            NetBeans.Logger.log("   < Category " + aCategory);
-            NetBeans.Logger.log("   < Method " + method);
-            NetBeans.Logger.log("   < LoadFlags " + loadFlags);
-            NetBeans.Logger.log("   < Href " + href);
-            NetBeans.Logger.log("   < Referrer " + referrer);
-            NetBeans.Logger.log("   < Params " + params);
-            NetBeans.Logger.log("   < Status " + status);
-            NetBeans.Logger.log("   < StatusText " + statusText);
-        }
-    }
-    /*
-     * On State Change when State is STATE_STOP
-     */
-    function sendNetStopRequest() {
-        if (DEBUG){
-            NetBeans.Logger.log("   <-- net.netprogress.sendNetStopResponse");
-        }
     }
     
-    function sendNetMainWindowResponded() {
-        if (DEBUG){
-            NetBeans.Logger.log("net.netprogress.sendNetMainWindowResponded");
-        }
-    }
-    
-    function sendProgressUpdate() {
+    function sendProgressUpdate(progress, request, current, max, total, maxTotal) {
         if( DEBUG ){
-            NetBeans.Logger.log("net.netprogress.sendProgressUpdate")
+            NetBeans.Logger.log("On ProgressChange: " + Object.prototype.toString.apply(progress.wrappedJSObject) + " Request: " + Object.prototype.toString.apply(request) + " current: " + current +" max: " + max + " total: " + total + " maxTotal: " + maxTotal);
         }
     }
     
     
+    /*
+     * getRequestWebProgress
+     * @param request
+     * @return {nsIWebProgress}
+     */
     function getRequestWebProgress(request)
     {
         try
@@ -350,6 +482,20 @@
         catch (exc) {}
     }
     
+    /*
+     * @param {nsIWebProgress} webProgress
+     */
+    function safeGetWindow(webProgress)
+    {
+        try
+        {
+            return webProgress.DOMWindow;
+        }
+        catch (exc)
+        {
+            return null;
+        }
+    }
     function getRequestCategory(request)
     {
         try
@@ -363,53 +509,7 @@
     }
     
     
-    function safeGetWindow(webProgress)
-    {
-        try
-        {
-            return webProgress.DOMWindow;
-        }
-        catch (exc)
-        {
-            return null;
-        }
-    }
     
-    //    function getTabIdForHttpChannel(httpChannel)
-    //    {
-    //        var win = null;
-    //        var progress = null;
-    //        try {
-    //            if (httpChannel.notificationCallbacks)
-    //            {
-    //                var interfaceRequestor = QueryInterface(httpChannel.notificationCallbacks, NetBeans.Constants.InterfaceRequestorIF);
-    //
-    //                try {
-    //                    win = GetInterface(interfaceRequestor, NetBeans.Constants.DOMWindowIF);
-    //                    if( !Firebug.getTabIdForWindow){
-    //                        NetBeans.Logger.log("Firebug.getTabIdFromWindow does not exist!")
-    //                    }
-    //                    
-    //                    var tabId = Firebug.getTabIdForWindow(win);
-    //                    if (tabId)
-    //                        return tabId;
-    //                }
-    //                catch (err) {}
-    //            }
-    //
-    //            progress = getRequestWebProgress(httpChannel);
-    //            win = safeGetWindow(progress);
-    //            return Firebug.getTabIdForWindow(win);
-    //        }
-    //        catch (err) 
-    //        {
-    //            if (DEBUG)
-    //                NetBeans.Logger.log("net.getTabIdForHttpChannel - " + err);
-    //        }
-    //
-    //        return null;
-    //    }
-
 
     
     function safeGetName(request)

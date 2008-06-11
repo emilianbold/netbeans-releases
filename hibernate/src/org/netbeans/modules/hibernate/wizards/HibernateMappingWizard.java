@@ -46,7 +46,7 @@ import java.util.Collections;
 
 import javax.swing.JComponent;
 import java.awt.Component;
-import java.util.ArrayList;
+import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Sources;
 
@@ -62,7 +62,7 @@ import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataObject;
 import org.netbeans.modules.hibernate.mapping.model.MyClass;
-import org.netbeans.modules.hibernate.service.HibernateEnvironment;
+import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.hibernate.spi.hibernate.HibernateFileLocationProvider;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -143,7 +143,7 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
         // and not like : hibernate.hbm<i>.xml
         if (wizard instanceof TemplateWizard) {
             HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
-            ArrayList<FileObject> mappingFiles = hibernateEnv.getAllHibernateMappingFileObjects();
+            List<FileObject> mappingFiles = hibernateEnv.getAllHibernateMappingFileObjects();
             String targetName = DEFAULT_MAPPING_FILENAME;
             if (!mappingFiles.isEmpty() && foundMappingFileInProject(mappingFiles, DEFAULT_MAPPING_FILENAME)) {
                 int mappingFilesCount = mappingFiles.size();
@@ -156,7 +156,7 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
         }
     }
 
-    private boolean foundMappingFileInProject(ArrayList<FileObject> mappingFiles, String mappingFileName) {
+    private boolean foundMappingFileInProject(List<FileObject> mappingFiles, String mappingFileName) {
         for (FileObject fo : mappingFiles) {
             if (fo.getName().equals(mappingFileName)) {
                 return true;

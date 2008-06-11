@@ -2,7 +2,6 @@ package org.netbeans.modules.iep.model;
 
 import java.util.List;
 
-import org.netbeans.modules.iep.model.lib.TcgComponentType;
 
 public interface OperatorComponent extends Component {
 
@@ -25,6 +24,8 @@ public interface OperatorComponent extends Component {
     public static final String PROP_TOPOSCORE = "topoScore";
 
     public static final String PROP_INPUTTYPE = "inputType";
+    
+    public static final String PROP_IS_RELATION_INPUT_STATIC = "isRelationInputStatic";
     
     public static final String PROP_INPUT_ID_LIST = "inputIdList";
 
@@ -95,6 +96,8 @@ public interface OperatorComponent extends Component {
     String getTopoScore();
     
     OperatorType getInputType();
+    
+    boolean isRelationInputStatic();
     
     OperatorType getOutputType();
     

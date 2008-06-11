@@ -46,6 +46,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.LinkedList;
 
+import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
+
 import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Catch;
@@ -108,7 +110,16 @@ public final class Validator extends BpelValidator {
     List<VariableInfo> infos = new LinkedList<VariableInfo>();
 
     for (Variable variable : variables) {
-      infos.add(new VariableInfo(variable));
+      VariableInfo info = new VariableInfo(variable);
+      Component type = getVariableType(variable);
+//out();
+//out("variable: " + getName(variable));
+//out("    type: " + getName(type));
+
+      if (type instanceof GlobalSimpleType) {
+        info.setInitialized();
+      }
+      infos.add(info);
     }
     findVariables(container.getParent(), infos);
 
@@ -129,9 +140,9 @@ public final class Validator extends BpelValidator {
       else if ( !isInitialized && isUsed) {
         addError("FIX_not_initialized_but_used", variable, name); // NOI18N
       }
-//      else if (isInitialized && !isUsed) {
-//todo r        addWarning("FIX_initialized_and_not_used", variable, name); // NOI18N
-//      }
+      else if (isInitialized && !isUsed) {
+        addWarning("FIX_initialized_and_not_used", variable, name); // NOI18N
+      }
     }
   }
 
@@ -177,11 +188,6 @@ public final class Validator extends BpelValidator {
     if (entity instanceof Throw) {
       checkInfoVariableDeclaration(((Throw) entity).getFaultVariable(), infos, true);
     }
-    //!
-// todo r
-//    if (entity instanceof OnMessage) {
-//      checkUsagesVariableReference((VariableReference) entity, infos);
-//    }
   }
 
   private void checkInitializationContent(ContentElement content, List<VariableInfo> infos) {

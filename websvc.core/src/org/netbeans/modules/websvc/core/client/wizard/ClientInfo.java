@@ -54,6 +54,8 @@ import java.awt.Dialog;
 import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.JFileChooser;
 import javax.swing.JRadioButton;
@@ -99,6 +101,7 @@ import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -1194,8 +1197,12 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
         if(provider != null){
             String serverInstanceID = provider.getServerInstanceID();
-            if(serverInstanceID != null && serverInstanceID.length() > 0) {
-                return Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+            if(serverInstanceID != null) {
+                try {
+                    return Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
+                } catch (InstanceRemovedException ex) {
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, "Failed to find J2eePlatform", ex);
+                }
             }
         }
         return null;

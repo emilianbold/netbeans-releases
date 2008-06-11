@@ -48,15 +48,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
-import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -139,16 +136,14 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
                     punit.setTransactionType("RESOURCE_LOCAL");
                 }
             }
-            
             if (descriptor.isNonDefaultProviderEnabled()) {
                 String providerClass = descriptor.getNonDefaultProvider();
                 punit.setProvider(providerClass);
                 
                 //Only add library for Hibernate in NB 6.5
                 if(providerClass.equals("org.hibernate.ejb.HibernatePersistence")){
-                    Library lib =  LibraryManager.getDefault().getLibrary("hibernate-support"); //NOI18N 
-                    if (lib != null) {
-                        Util.addLibraryToProject(project, lib);
+                    if (descriptor.getPersistenceLibrary() != null) {
+                        Util.addLibraryToProject(project, descriptor.getPersistenceLibrary());
                     }
                 }
             }
@@ -157,9 +152,8 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
             punit = ProviderUtil.buildPersistenceUnit(descriptor.getPersistenceUnitName(),
                     descriptor.getSelectedProvider(), descriptor.getPersistenceConnection());
             punit.setTransactionType("RESOURCE_LOCAL");
-            Library lib = PersistenceLibrarySupport.getLibrary(descriptor.getSelectedProvider());
-            if (lib != null){
-                Util.addLibraryToProject(project, lib);
+            if (descriptor.getPersistenceLibrary() != null){
+                Util.addLibraryToProject(project, descriptor.getPersistenceLibrary());
             }
         }
         punit.setName(descriptor.getPersistenceUnitName());

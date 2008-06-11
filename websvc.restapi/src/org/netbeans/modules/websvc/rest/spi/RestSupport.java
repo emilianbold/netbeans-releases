@@ -155,6 +155,11 @@ public abstract class RestSupport {
      */
     public abstract FileObject getPersistenceXml();
     
+    /**
+     * Get web.xml file
+     */
+    public abstract FileObject getWebXml();
+    
     public FileObject findSourceRoot() {
         return findSourceRoot(getProject());
     }

@@ -65,7 +65,7 @@
         </unzip>
         <exec dir="${xtest.tmpdir}/tests/qa-functional/" executable="cmd.exe">
             <arg value="/c"/>
-            <arg value="${ant.home}/bin/ant.bat -f xtest-all-qa-functional.xml -Dnetbeans.dest.dir=${xtest.tmpdir}/NetBeans"/>
+            <arg value="${ant.home}/bin/ant.bat -f xtest-all-qa-functional.xml -Dxtest.attribs=commit -Dnetbeans.dest.dir=${xtest.tmpdir}/NetBeans"/>
         </exec>
         <executeTests pluginname="jvm">
             <classpath>

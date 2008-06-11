@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
@@ -1114,31 +1115,30 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 break;
 
             case CsmCompletionExpression.ARRAY:
-                cont = resolveItem(item.getParameter(0), first, false, ExprKind.NONE);
-                if (cont) {
-                    cont = false;
-                    if (lastType != null) { // must be type
-                        if (item.getParameterCount() == 2) { // index in array follows
+//                cont = resolveItem(item.getParameter(0), first, false, ExprKind.NONE);
+                lastType = resolveType(item.getParameter(0));
+                cont = false;
+                if (lastType != null) { // must be type
+                    if (item.getParameterCount() == 2) { // index in array follows
 //                            CsmType arrayType = resolveType(item.getParameter(0));
 //                            if (arrayType != null && arrayType.equals(CsmCompletion.INT_TYPE)) {
-                               if (lastType.getArrayDepth() == 0) {
-                                   CsmClassifier cls = getClassifier(lastType);
-                                   if (cls != null) {
-                                       CsmFunction opArray = CsmBaseUtilities.getOperator(cls, CsmFunction.OperatorKind.ARRAY);
-                                       if (opArray != null) {
-                                           lastType = opArray.getReturnType();
-                                       }
+                           if (lastType.getArrayDepth() == 0) {
+                               CsmClassifier cls = getClassifier(lastType);
+                               if (cls != null) {
+                                   CsmFunction opArray = CsmBaseUtilities.getOperator(cls, CsmFunction.OperatorKind.ARRAY);
+                                   if (opArray != null) {
+                                       lastType = opArray.getReturnType();
                                    }
                                }
-                               lastType = CsmCompletion.getType(lastType.getClassifier(),
-                                                    Math.max(lastType.getArrayDepth() - 1, 0));
-                                cont = true;
-//                            }
-                        } else { // no index, increase array depth
-                            lastType = CsmCompletion.getType(lastType.getClassifier(),
-                                                              lastType.getArrayDepth() + 1);
+                           }
+                           lastType = CsmCompletion.getType(lastType.getClassifier(),
+                                                Math.max(lastType.getArrayDepth() - 1, 0));
                             cont = true;
-                        }
+//                            }
+                    } else { // no index, increase array depth
+                        lastType = CsmCompletion.getType(lastType.getClassifier(),
+                                                          lastType.getArrayDepth() + 1);
+                        cont = true;
                     }
                 }
                 break;
@@ -1152,8 +1152,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 CsmType typ = resolveType(item.getParameter(0));
                 if (typ != null) {
                     lastType = typ;
-                    break;
                 }
+                break;
             }
             case CsmCompletionExpression.GENERIC_TYPE_OPEN:
             case CsmCompletionExpression.OPERATOR:
@@ -1534,27 +1534,18 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             return ns;
         }
 
-        private CsmClass findExactClass(final String var, final int varPos) {
-            CsmClass cls = null;
+        private CsmClassifier findExactClass(final String var, final int varPos) {
+            CsmClassifier cls = null;
             compResolver.setResolveTypes(CompletionResolver.RESOLVE_CLASSES | CompletionResolver.RESOLVE_LIB_CLASSES);
             if (compResolver.refresh() && compResolver.resolve(varPos, var, true)) {
                 CompletionResolver.Result res = compResolver.getResult();
-                Iterator it = res.getProjectClassesifiersEnums().iterator();
-                while (it.hasNext()) {
-                    CsmObject obj = (CsmObject) it.next();
-                    if (CsmKindUtilities.isClass(obj)) {
-                        cls = (CsmClass)obj;
-                        break;
+                Collection<? extends CsmObject> allItems = res.addResulItemsToCol(new ArrayList());
+                for (CsmObject item : allItems) {
+                    if (CsmKindUtilities.isClassifier(item)) {
+                        cls = CsmBaseUtilities.getOriginalClassifier((CsmClassifier)item);
                     }
-                }
-                if (cls == null) {
-                    it = res.getLibClassifiersEnums().iterator();
-                    while (it.hasNext()) {
-                        CsmObject obj = (CsmObject) it.next();
-                        if (CsmKindUtilities.isClass(obj)) {
-                            cls = (CsmClass) obj;
-                            break;
-                        }
+                    if (cls != null) {
+                        break;
                     }
                 }
             }

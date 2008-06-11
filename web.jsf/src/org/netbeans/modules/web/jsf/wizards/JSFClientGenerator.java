@@ -139,7 +139,7 @@ public class JSFClientGenerator {
     
     private static String INDEX_PAGE = "index.jsp"; //NOI18N
     private static String WELCOME_JSF_PAGE = "welcomeJSF.jsp";  //NOI18N
-    private static String[] JSFCRUD_STYLESHEETS = {"jsfcrud.css", "jsfcrudlist.css"}; //NOI18N
+    private static String JSFCRUD_STYLESHEET = "jsfcrud.css"; //NOI18N
     private static String RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/resources/"; //NOI18N
     
     public static void generateJSFPages(Project project, final String entityClass, String jsfFolderBase, String jsfFolderName, final String controllerClass, FileObject pkg, FileObject controllerFileObject, final EmbeddedPkSupport embeddedPkSupport) throws IOException {
@@ -262,14 +262,13 @@ public class JSFClientGenerator {
             JSFFrameworkProvider.createFile(target, content, encoding.name());  //NOI18N
         }
         
-        FileObject jsfFolderBaseFileObject = jsfFolderBase.length() > 0 ? pagesRootFolder.getFileObject(jsfFolderBase) : pagesRootFolder;
-        for (int i = 0; i < JSFCRUD_STYLESHEETS.length; i++) {
-            if (jsfFolderBaseFileObject.getFileObject(JSFCRUD_STYLESHEETS[i]) == null) {
-                String content = JSFFrameworkProvider.readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + JSFCRUD_STYLESHEETS[i]), "UTF-8"); //NOI18N
-                FileObject target = FileUtil.createData(jsfFolderBaseFileObject, JSFCRUD_STYLESHEETS[i]);//NOI18N
-                JSFFrameworkProvider.createFile(target, content, "UTF-8");  //NOI18N
-            }
+        //FileObject jsfFolderBaseFileObject = jsfFolderBase.length() > 0 ? pagesRootFolder.getFileObject(jsfFolderBase) : pagesRootFolder;
+        if (pagesRootFolder.getFileObject(JSFCRUD_STYLESHEET) == null) {
+            String content = JSFFrameworkProvider.readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + JSFCRUD_STYLESHEET), "UTF-8"); //NOI18N
+            FileObject target = FileUtil.createData(pagesRootFolder, JSFCRUD_STYLESHEET);//NOI18N
+            JSFFrameworkProvider.createFile(target, content, "UTF-8");  //NOI18N
         }
+
             
         controllerFileObject = generateControllerClass(fieldName, pkg, idGetter.get(0), persistenceUnit, controllerClass, simpleConverterName, 
                 entityClass, simpleEntityName, toOneRelMethods, toManyRelMethods, isInjection, fieldAccess[0], controllerFileObject, embeddedPkSupport);
@@ -278,7 +277,8 @@ public class JSFClientGenerator {
         FileObject converter = generateConverter(controllerFileObject, pkg, simpleConverterName, controllerClass, simpleControllerName, entityClass, 
                 simpleEntityName, idGetter.get(0), managedBean, isInjection);
             
-        final String styleHrefPrefix = wm.getContextPath() + "/faces/" + (jsfFolderBase.length() > 0 ? jsfFolderBase + "/" : "");
+        //final String styleHrefPrefix = wm.getContextPath() + "/faces/" + (jsfFolderBase.length() > 0 ? jsfFolderBase + "/" : "");
+        final String styleHrefPrefix = wm.getContextPath() + "/faces/";
         final String indexJspToUse = addLinkToListJspIntoIndexJsp(wm, styleHrefPrefix, simpleEntityName);
         final String linkToIndex = indexJspToUse != null ? "<br />\n<a href=\"" + wm.getContextPath() + "/" + indexJspToUse + "\">Index</a>\n" : "";  //NOI18N
 
@@ -366,11 +366,11 @@ public class JSFClientGenerator {
         listSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
-                + "<html>\n<head>\n<link rel=\"stylesheet\" type=\"text/css\" href=\"" + styleHrefPrefix + "jsfcrudlist.css\" />\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=" + encoding.name() + "\" />\n"
+                + "<html>\n<head>\n<link rel=\"stylesheet\" type=\"text/css\" href=\"" + styleHrefPrefix + "jsfcrud.css\" />\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=" + encoding.name() + "\" />\n"
                 + "<title>Listing " + simpleEntityName + " Items</title>\n"
                 + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
         listSb.append("<h1>Listing " + simpleEntityName + " Items</h1>\n");
-        listSb.append("<h:form>\n");
+        listSb.append("<h:form styleClass=\"jsfcrud_list_form\">\n");
         listSb.append("<h:outputText escape=\"false\" value=\"(No " + simpleEntityName + " Items Found)<br />\" rendered=\"#{" + managedBean + ".itemCount == 0}\" />\n");
         listSb.append("<h:panelGroup rendered=\"#{" + managedBean + ".itemCount > 0}\">\n");
         listSb.append(MessageFormat.format("<h:outputText value=\"Item #'{'{0}.firstItem + 1'}'..#'{'{0}.lastItem'}' of #'{'{0}.itemCount}\"/>"
@@ -381,7 +381,7 @@ public class JSFClientGenerator {
                 + "&nbsp;\n"
                 + "<h:commandLink action=\"#'{'{0}.next'}'\" value=\"Remaining #'{'{0}.itemCount - {0}.lastItem'}'\"\n"
                 + "rendered=\"#'{'{0}.lastItem < {0}.itemCount && {0}.lastItem + {0}.batchSize > {0}.itemCount'}'\"/>\n", managedBean));
-        listSb.append("<h:dataTable value='#{" + managedBean + "." + fieldName + "s}' var='item' border=\"0\" cellpadding=\"2\" cellspacing=\"0\" rowClasses=\"jsfcrud_oddrow,jsfcrud_evenrow\" rules=\"all\" style=\"border:solid 1px\">\n");
+        listSb.append("<h:dataTable value='#{" + managedBean + "." + fieldName + "s}' var='item' border=\"0\" cellpadding=\"2\" cellspacing=\"0\" rowClasses=\"jsfcrud_odd_row,jsfcrud_even_row\" rules=\"all\" style=\"border:solid 1px\">\n");
         final  String commands = "<h:column>\n <f:facet name=\"header\">\n <h:outputText escape=\"false\" value=\"&nbsp;\"/>\n </f:facet>\n"
                 + "<h:commandLink value=\"Show\" action=\"#'{'" + managedBean + ".detailSetup'}'\">\n" 
                 + "<f:param name=\"jsfcrud.current" + simpleEntityName +"\" value=\"#'{'" + managedBean + ".asString[{0}]'}'\"/>\n"               
