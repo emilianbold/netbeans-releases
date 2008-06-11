@@ -805,16 +805,12 @@ private void urlFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event
         } else if (url != null && url.urlIsParsed()) {
             if (url.requiresToken(JdbcUrl.TOKEN_DB) && isEmpty(databaseField.getText())) {
                 displayError(getMessage("NewConnection.ERR_FieldRequired", url.getDatabaseLabel()));
-                databaseField.requestFocusInWindow();
             } else if (url.requiresToken(JdbcUrl.TOKEN_HOST) && isEmpty(hostField.getText())) {
                 displayError(getMessage("NewConnection.ERR_FieldRequired", hostLabel.getText()));
-                hostField.requestFocusInWindow();
             } else if (url.requiresToken(JdbcUrl.TOKEN_PORT) && isEmpty(portField.getText())) {
                 displayError(getMessage("NewConnection.ERR_FieldRequired", portLabel.getText()));
-                portField.requestFocusInWindow();
             } else if (url.requiresToken(JdbcUrl.TOKEN_SERVERNAME) && isEmpty(serverNameField.getText())) {
                 displayError(getMessage("NewConnection.ERR_FieldRequired", serverNameLabel.getText()));
-                serverNameField.requestFocusInWindow();
             } else {
                 clearError();
             }
