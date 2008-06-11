@@ -159,9 +159,6 @@ public final class EventSupport {
         EditorCookie.Observable ec = od.getCookie(EditorCookie.Observable.class);
         if (ec != null) {
             docListener = new DocListener (ec);
-        } else {
-            LOGGER.log(Level.WARNING,String.format("File: %s has no EditorCookie.Observable", //NOI18N
-                FileUtil.getFileDisplayName (od.getPrimaryFile())));      
         }
     }    
     
