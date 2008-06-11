@@ -45,7 +45,13 @@ made subject to such option by the copyright holder.
         <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
         <property name="run.jvmargs" value="" />
         <property name="application.args" value="" />
+        <nbjpdastart addressproperty="jpda.address" name="${classname}" stopclassname="" transport="dt_socket" listeningcp="${classpath}">
+            <classpath>
+                <path path="${classpath-translated}"/>
+            </classpath>
+        </nbjpdastart>
         <java classpath="${classpath-translated}" classname="${classname}">
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
             <jvmarg line="${run.jvmargs}" />
             <arg line="${application.args}" />
         </java>
