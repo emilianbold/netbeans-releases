@@ -41,60 +41,32 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import java.io.IOException;
-import java.util.Set;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.suite.SuiteProject;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import javax.swing.JComponent;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
 
 /**
- * Adding ability for a NetBeans Suite modules to provide a GUI customizer.
  *
- * @author Martin Krauskopf
+ * @author mkleint
  */
-public final class SuiteCustomizer extends BasicCustomizer {
+public class SuiteCustomizerWindowSystemBrandingFactory implements ProjectCustomizer.CompositeCategoryProvider {
     
-    // Programmatic names of categories
-    static final String SOURCES = "Sources"; // NOI18N
-    static final String LIBRARIES = "Libraries"; // NOI18N
-    public static final String APPLICATION = "Application"; // NOI18N
-    public static final String APPLICATION_CREATE_STANDALONE_APPLICATION = "standaloneApp"; // NOI18N
-    static final String SPLASH_SCREEN = "SplashScreen"; // NOI18N
-    static final String WINDOW_SYSTEM = "WindowSystem"; // NOI18N
-    
-    private final AntProjectHelper helper;
-    private final PropertyEvaluator evaluator;
-    
-    private SuiteProperties suiteProps;
-    
-    public SuiteCustomizer(Project project, AntProjectHelper helper,
-            PropertyEvaluator evaluator) {
-        super(project, "Projects/org-netbeans-modules-apisupport-project-suite/Customizer");
-        this.helper = helper;
-        this.evaluator = evaluator;
+    /** Creates a new instance of CustomizerCompilingFactory */
+    public SuiteCustomizerWindowSystemBrandingFactory() {
     }
     
-    void storeProperties() throws IOException {
-        suiteProps.triggerLazyStorages();
-        suiteProps.storeProperties();
+    public ProjectCustomizer.Category createCategory(Lookup context) {
+        return ProjectCustomizer.Category.create(
+                SuiteCustomizer.WINDOW_SYSTEM, 
+                NbBundle.getMessage(SuiteCustomizerWindowSystemBrandingFactory.class, "LBL_WinSysBranding"),
+                null);
     }
-    
-    void dialogCleanup() {
-        suiteProps = null;
-    }    
-    
-    void postSave() { /* nothing needs to be done for now */ }
-    
-    protected Lookup prepareData() {
-        Set<NbModuleProject> subModules = SuiteUtils.getSubProjects(getProject());
-        suiteProps = new SuiteProperties((SuiteProject) getProject(), helper, evaluator, subModules);
-        return Lookups.fixed(suiteProps, getProject());
-    }
-}
 
+    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
+        SuiteProperties props = context.lookup(SuiteProperties.class);
+        assert props != null;
+        return new SuiteCustomizerWindowSystemBranding(props, category);
+    }
+
+}
