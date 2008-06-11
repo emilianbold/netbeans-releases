@@ -73,6 +73,7 @@ import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.drawingarea.LabelManager;
 import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
+import org.netbeans.modules.uml.drawingarea.palette.NodeInitializer;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.MoveDropTargetDropEvent;
@@ -91,6 +92,7 @@ public class SceneConnectProvider implements ExConnectProvider
     private RelationValidator validator = new RelationValidator();
     private RelationshipFactory factory = null;
     private String stereotype = null;
+    private NodeInitializer defaultnodeinitializer;
 
     /**
      * Creates a new instance of SceneConnectProvider.  The provider will create
@@ -302,6 +304,10 @@ public class SceneConnectProvider implements ExConnectProvider
                 String type = getRelationshipFactory().getElementType();
                 if(isValidRelationship(from, namedElement, type, false) == true)
                 {   
+                    if(defaultnodeinitializer!=null)
+                    {
+                        defaultnodeinitializer.initialize(namedElement);
+                    }
                     IPresentationElement element = createNodePresentationElement(namedElement);
                     retVal = scene.addNode(element);
                     
@@ -427,6 +433,11 @@ public class SceneConnectProvider implements ExConnectProvider
     public void setRelationshipFactory(RelationshipFactory factory)
     {
         this.factory = factory;
+    }
+    
+    public void setDefaultNodeInitializer(NodeInitializer initializer)
+    {
+        this.defaultnodeinitializer=initializer;
     }
 
     protected IPresentationElement createNodePresentationElement(INamedElement element)

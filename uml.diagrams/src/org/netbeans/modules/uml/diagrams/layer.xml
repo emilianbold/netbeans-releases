@@ -1227,6 +1227,7 @@ made subject to such option by the copyright holder.
                 <file name="Derivation.context_palette_item" url="resources/context/Derivation.context_palette_item">
                     <attr name="factory" newvalue="org.netbeans.modules.uml.diagrams.edges.factories.DerivationFactory"/>
                     <attr name="default-node" stringvalue="Class"/>
+                    <attr name="default-node-initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.TemplateClassInitializer"/>
                     <attr name="position" intvalue="100"/>
                 </file>
                 <file name="NestedLink.shadow">
