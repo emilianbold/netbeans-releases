@@ -40,17 +40,14 @@
  */
 package org.netbeans.modules.uml.drawingarea.persistence.data;
 
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Paint;
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Hashtable;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 
 /**
  *
@@ -58,19 +55,19 @@ import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
  */
 public class NodeInfo
 {
-    private String PEID;
-    private String MEID;
-    private String viewName;
+    private String PEID = "";
+    private String MEID = "";
+    private String viewName = "";
     private Point position;
     private Dimension size;
     private Widget parentWidget;
     private Hashtable properties = new Hashtable();
-    private Paint background;
-    private Color foreground;
-    private Font font;
     private ArrayList<NodeLabel> nodeLabels=new ArrayList<NodeLabel>();
     private ArrayList<String> deviders=new ArrayList<String>();//used in combined fragment and may be in partitions/states
-
+    private IProject project;
+    private IPresentationElement presentationElement;
+    private IElement modelElement;
+    
     public NodeInfo()
     {
     }
@@ -99,6 +96,36 @@ public class NodeInfo
     public void setPEID(String PEID)
     {
         this.PEID = PEID;
+    }
+
+    public IProject getProject()
+    {
+        return project;
+    }
+
+    public void setProject(IProject project)
+    {
+        this.project = project;
+    }
+
+    public IPresentationElement getPresentationElement()
+    {
+        return presentationElement;
+    }
+
+    public void setPresentationElement(IPresentationElement presentationElement)
+    {
+        this.presentationElement = presentationElement;
+    }
+
+    public IElement getModelElement()
+    {
+        return modelElement;
+    }
+
+    public void setModelElement(IElement modelElement)
+    {
+        this.modelElement = modelElement;
     }
     
     public Widget getParentWidget() {
@@ -199,43 +226,7 @@ public class NodeInfo
     {
         return deviders;
     }
-    //it's not so simple as get(ResourceValue.BGCOLOR), keys are more complex then usual keys and need special handling
-    //--
-//    //access background
-//    public void setBackground(Paint background)
-//    {
-//        this.background=background;
-//    }
-//    
-//    public Paint getBackground()
-//    {
-//        return background!=null ? background : (Paint) properties.get(ResourceValue.BGCOLOR);//use default for meteora release if value isn't set directly
-//    }
-//    
-//    //--
-//    //access foreground
-//    public void setForeground(Color foreground)
-//    {
-//        this.foreground=foreground;
-//    }
-//    
-//    public Color getForeground()
-//    {
-//        return foreground!=null ? foreground : (Color) properties.get(ResourceValue.FGCOLOR);//use default for meteora release if value isn't set directly
-//    }
-//    
-//    //--
-//    //acess font
-//    public void setFont(Font font)
-//    {
-//        this.font=font;
-//    }
-//    
-//    public Font getFont()
-//    {
-//        return font!=null ? font : (Font) properties.get(ResourceValue.FONT);
-//    }
-    
+
     @Override
     public String toString()
     {        
