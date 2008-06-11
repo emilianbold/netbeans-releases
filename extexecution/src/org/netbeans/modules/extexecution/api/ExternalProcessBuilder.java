@@ -133,9 +133,6 @@ public final class ExternalProcessBuilder {
 
     public Process create() throws IOException {
         List<String> commandL = new ArrayList<String>();
-//        if (!descriptor.rebuildCmd) {
-//            commandL.add(cmd.getPath());
-//        }
 
         commandL.add(command);
 
@@ -159,10 +156,6 @@ public final class ExternalProcessBuilder {
         Map<String, String> pbEnv = pb.environment();
         Map<String, String> env = buildEnvironment(pbEnv);
         pbEnv.putAll(env);
-//        if (descriptor.addBinPath) {
-//            Map<String, String> env = pb.environment();
-//            setupProcessEnvironment(env);
-//        }
         adjustProxy(pb);
         return pb.start();
     }
@@ -232,7 +225,7 @@ public final class ExternalProcessBuilder {
                 if (!Utilities.isWindows()) {
                     javaHome = javaHome.replace(" ", "\\ "); // NOI18N
                 }
-                currentPath = currentPath + File.pathSeparator + javaHome;
+                currentPath = new File(javaHome).getAbsolutePath() + File.pathSeparator + currentPath;
             }
         }
 
