@@ -400,7 +400,7 @@ public class WsValidation extends WebServicesTestBase {
     }
     
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(WsValidation.class).addTest(
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(WsValidation.class),
                 "testCreateNewWs",
                 "testAddOperation",
                 "testStartServer",

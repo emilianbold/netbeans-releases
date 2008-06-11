@@ -94,12 +94,12 @@ public class FromWSDLTSuite extends WsValidation {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(FromWSDLTSuite.class).addTest("testWSFromWSDL", "testRefreshService", "testRefreshServiceAndReplaceWSDL").enableModules(".*").clusters(".*"));
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(FromWSDLTSuite.class), "testWSFromWSDL", "testRefreshService", "testRefreshServiceAndReplaceWSDL").enableModules(".*").clusters(".*"));
     }
     
     /** Creates suite from particular test cases. You can define order of testcases here. */
 //    public static TestSuite suite() {
-//        TestSuite suite = new NbTestSuite();
+//        TestSuite suite = new NbTestSuite(); 
 //        suite.addTest(new FromWSDLTSuite("testWSFromWSDL"));
 //        suite.addTest(new FromWSDLTSuite("testRefreshService"));
 //        suite.addTest(new FromWSDLTSuite("testRefreshServiceAndReplaceWSDL"));

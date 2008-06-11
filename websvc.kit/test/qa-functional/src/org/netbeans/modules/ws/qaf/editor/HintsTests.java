@@ -186,7 +186,7 @@ public class HintsTests extends WebServicesTestBase {
     }
     
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(HintsTests.class).addTest(
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(HintsTests.class),
                 "testEndpointInterface",
                 "testExceptions", 
                 "testHandlers",

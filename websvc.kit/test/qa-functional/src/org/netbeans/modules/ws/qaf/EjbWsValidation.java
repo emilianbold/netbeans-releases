@@ -98,7 +98,7 @@ public class EjbWsValidation extends WsValidation {
     }
     
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(EjbWsValidation.class).addTest(
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(EjbWsValidation.class),
                 "testCreateNewWs",
                 "testAddOperation",
                 "testStartServer",
