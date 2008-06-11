@@ -54,13 +54,18 @@ import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivity;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
+import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
+import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
 import org.netbeans.modules.uml.diagrams.nodes.ContainerNode;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
+import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
+import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
 import org.netbeans.modules.uml.drawingarea.view.ResourceType;
@@ -374,6 +379,53 @@ public class ActivityPartitionWidget extends UMLNodeWidget
     public IActivityPartition getParentPartition()
     {
         return parentPartition;
+    }
+
+    public SubPartitionWidget getSubPartitionWidget(IActivityPartition subPart)
+    {
+        if (subPart != null)
+        {
+            List<Widget> children = partitionPanel.getChildren();
+            if (children != null && children.size() > 0)
+            {
+                for (int i = 0; i < children.size(); i++)
+                {
+                    Widget w = children.get(i);
+                    if (w instanceof SubPartitionWidget)
+                    {
+                        if (PersistenceUtil.getModelElement(w).isSame(subPart))
+                            return (SubPartitionWidget)w;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    IElementLocator locator = new ElementLocator();
+    
+    @Override
+    public void load(NodeInfo nodeReader)
+    {
+        IElement elt = nodeReader.getModelElement();
+        if (elt == null)
+        {
+            elt = locator.findByID(nodeReader.getProject(), nodeReader.getMEID());
+        }   
+        if (elt != null && elt instanceof IActivityPartition)
+        {
+            if (elt.getOwner() instanceof IActivity)
+            {
+                super.load(nodeReader);                
+            }
+            SubPartitionWidget subPart = getSubPartitionWidget((IActivityPartition) elt);
+            if (subPart != null)
+            {
+                //fix the size/location/properties
+                subPart.setPreferredSize(nodeReader.getSize());
+                IPresentationElement pElt = PersistenceUtil.getPresentationElement(subPart);
+                nodeReader.setPresentationElement(pElt);
+            }
+        }
     }
 
     private class MainViewWidget extends CustomizableWidget

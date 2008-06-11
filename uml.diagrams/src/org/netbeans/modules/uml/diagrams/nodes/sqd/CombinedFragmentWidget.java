@@ -45,7 +45,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -90,8 +89,8 @@ import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.widgets.CombinedFragment;
 import org.netbeans.modules.uml.drawingarea.widgets.ContainerWidget;
 import org.netbeans.modules.uml.drawingarea.LabelManager;
-import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
-import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
+import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
+import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeReader;
 
 /**
  *
@@ -191,8 +190,7 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
             InteractionOperandWidget w=addOperand(i);
             getScene().validate();
         }
-    //
-
+    
     }
 
     @Override
@@ -806,33 +804,59 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
         this.cfAfterW=(CombinedFragmentWidget) cfW;
     }
 
+//    @Override
+//    public void load(NodeInfo nodeReader) {
+//        super.load(nodeReader);
+//        ArrayList<String> offsetsStr=nodeReader.getDevidersOffests();//currently deviders are used from ts import only, may be will be used in 6.5 loading later
+//        for(int i=0;i<offsetsStr.size();i++)
+//        {
+//            int offset=Integer.parseInt(offsetsStr.get(i));
+//            if(operandsContainer.getChildren().size()>(i+1))
+//            {
+//                Widget opW=operandsContainer.getChildren().get(i+1);//1st operand do not count
+//                Point opWLoc=opW.getPreferredLocation();
+//                opWLoc.y=offset;
+//                opW.setPreferredLocation(opWLoc);
+//            }
+//        }
+//        ArrayList<NodeInfo.NodeLabel> nodeLabels=nodeReader.getLabels();
+//        ArrayList<IElement> shownElements=new ArrayList<IElement>();
+//        for(int i=0;i<nodeLabels.size();i++)
+//        {
+//            NodeInfo.NodeLabel nL=nodeLabels.get(i);
+//            shownElements.add(nL.getElement());
+//        }
+//        for(IInteractionOperand io:operands.keySet())
+//        {
+//            if(shownElements.contains(io.getGuard().getSpecification()))
+//            {
+//                operands.get(io).show(LabeledWidget.TYPE.BODY);
+//            }
+//        }
+//    }
+     IElementLocator locator = new ElementLocator();
     @Override
-    public void load(NodeInfo nodeReader) {
-        super.load(nodeReader);
-        ArrayList<String> offsetsStr=nodeReader.getDevidersOffests();//currently deviders are used from ts import only, may be will be used in 6.5 loading later
-        for(int i=0;i<offsetsStr.size();i++)
+    public void load(NodeInfo nodeReader)
+    {
+        IElement elt = nodeReader.getModelElement();
+        if (elt == null)
         {
-            int offset=Integer.parseInt(offsetsStr.get(i));
-            if(operandsContainer.getChildren().size()>(i+1))
+            elt = locator.findByID(nodeReader.getProject(), nodeReader.getMEID());
+        }            
+        if (elt != null && elt instanceof ICombinedFragment)
+        {
+            super.load(nodeReader);            
+        } 
+        else if (elt != null && elt instanceof IInteractionOperand)
+        {
+            //find the proper operand,and set its size and other properties
+            System.out.println("hello");
+            InteractionOperandWidget iow = operands.get(elt);
+            if (iow != null && iow instanceof DiagramNodeReader)
             {
-                Widget opW=operandsContainer.getChildren().get(i+1);//1st operand do not count
-                Point opWLoc=opW.getPreferredLocation();
-                opWLoc.y=offset;
-                opW.setPreferredLocation(opWLoc);
-            }
-        }
-        ArrayList<NodeInfo.NodeLabel> nodeLabels=nodeReader.getLabels();
-        ArrayList<IElement> shownElements=new ArrayList<IElement>();
-        for(int i=0;i<nodeLabels.size();i++)
-        {
-            NodeInfo.NodeLabel nL=nodeLabels.get(i);
-            shownElements.add(nL.getElement());
-        }
-        for(IInteractionOperand io:operands.keySet())
-        {
-            if(shownElements.contains(io.getGuard().getSpecification()))
-            {
-                operands.get(io).show(LabeledWidget.TYPE.BODY);
+                IPresentationElement pElt = PersistenceUtil.getPresentationElement(iow);
+                nodeReader.setPresentationElement(pElt);
+                ((DiagramNodeReader)iow).load(nodeReader);
             }
         }
     }
@@ -840,12 +864,7 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
     @Override
     public void loadDependencies(NodeInfo nodeReader) {
         Collection nodeLabels = nodeReader.getLabels();
-        for (Iterator it = nodeLabels.iterator(); it.hasNext();)
-        {
-            NodeInfo.NodeLabel nodeLabel = (NodeInfo.NodeLabel)it.next();
-            InteractionOperandWidget iow = operands.get(nodeLabel.getDependentNode());
-            iow.show(LabeledWidget.TYPE.BODY);
-        }
+        //do we have any node labels here? guess not..
         System.out.println(" NodeLabels = "+nodeLabels.toString());
     }
     

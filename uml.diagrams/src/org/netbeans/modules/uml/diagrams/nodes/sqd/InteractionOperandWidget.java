@@ -49,8 +49,9 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
+import java.util.Collection;
 import java.util.Hashtable;
-import java.util.List;
+import java.util.Iterator;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
@@ -290,14 +291,23 @@ public class InteractionOperandWidget extends Widget implements DiagramNodeWrite
 
     public void load(NodeInfo nodeReader) {
         //get all the properties
-        Hashtable<String, String> props = nodeReader.getProperties();
-        //
+        Hashtable<String, String> props = nodeReader.getProperties();        //
         if(nodeReader.getPosition()!=null)setPreferredLocation(nodeReader.getPosition());
+        if (nodeReader.getSize() != null)
+        {
+            setPreferredSize(nodeReader.getSize());
+        }
     }
 
     public void loadDependencies(NodeInfo nodeReader)
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Collection nodeLabels = nodeReader.getLabels();
+        for (Iterator it = nodeLabels.iterator(); it.hasNext();)
+        {
+            NodeInfo.NodeLabel nodeLabel = (NodeInfo.NodeLabel)it.next();            
+            this.show(LabeledWidget.TYPE.BODY);
+        }
+        System.out.println(" NodeLabels = "+nodeLabels.toString());
     }
             
     protected void setNodeWriterValues(NodeWriter nodeWriter, Widget widget) {

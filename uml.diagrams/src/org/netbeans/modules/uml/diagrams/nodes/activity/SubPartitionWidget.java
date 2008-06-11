@@ -70,7 +70,9 @@ import org.netbeans.modules.uml.diagrams.nodes.state.CompartmentSeparatorWidget;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
+import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeReader;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
+import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
@@ -81,7 +83,7 @@ import org.openide.util.NbBundle;
  *
  * @author Thuy
  */
-public class SubPartitionWidget extends Widget implements PropertyChangeListener, DiagramNodeWriter
+public class SubPartitionWidget extends Widget implements PropertyChangeListener, DiagramNodeWriter, DiagramNodeReader
 {
     private Scene scene;
     private IActivityPartition subPartition;
@@ -434,5 +436,21 @@ public class SubPartitionWidget extends Widget implements PropertyChangeListener
         nodeWriter = PersistenceUtil.populateNodeWriter(nodeWriter, widget);
         nodeWriter.setHasPositionSize(true);
         PersistenceUtil.populateProperties(nodeWriter, widget);
+    }
+
+    public void addContainedChild(Widget widget)
+    {
+        widget.removeFromParent();
+        containerWidget.addChild(widget);
+    }
+
+    public void load(NodeInfo nodeReader)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void loadDependencies(NodeInfo nodeReader)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }
