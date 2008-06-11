@@ -42,8 +42,11 @@ import java.io.File;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import junit.framework.Test;
+import junit.framework.TestCase;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
+import org.netbeans.junit.NbModuleSuite;
 import static org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server.*;
 import static org.netbeans.junit.NbModuleSuite.Configuration;
 /**
@@ -62,7 +65,7 @@ public class J2eeTestCase extends JellyTestCase {
         super(name);
     }
 
-    protected static Configuration addGlassfishTests(Configuration conf, String... testNames) {
+    private static Configuration addGlassfishTests(Configuration conf, String... testNames) {
         Configuration result = conf;
         String glassfishPath = System.getProperty("j2ee.appserver.path");
         if (isValidPath(glassfishPath) && isValidPath(glassfishPath + "/domains/domain1")) {
@@ -76,7 +79,7 @@ public class J2eeTestCase extends JellyTestCase {
         return result;
     }
 
-    protected static Configuration addTomcatTests(Configuration conf, String... testNames) {
+    private static Configuration addTomcatTests(Configuration conf, String... testNames) {
         Configuration result = conf;
         String tomcatPath = System.getProperty("tomcat.home");
         if (isValidPath(tomcatPath)) {
@@ -91,7 +94,7 @@ public class J2eeTestCase extends JellyTestCase {
         return result;
     }
 
-    protected static Configuration addJBossTests(Configuration conf, String... testNames) {
+    private static Configuration addJBossTests(Configuration conf, String... testNames) {
         Configuration result = conf;
         String jbossPath = System.getProperty("jboss.home");
         if (isValidPath(jbossPath)) {
@@ -115,30 +118,78 @@ public class J2eeTestCase extends JellyTestCase {
         }
         return f.isDirectory();
     }
+    
+    /**
+     *
+     * Create all modules suite. 
+     * 
+     * @param server server needed for the suite
+     * @param clazz class object to create suite for
+     * @param testNames test names to add into suite
+     * @return executable Test instance 
+     */
+    protected static Test createAllModulesServerSuite(Server server, Class<? extends TestCase> clazz, String... testNames){
+        Configuration result = NbModuleSuite.createConfiguration(clazz);
+        result = addServerTests(server, result, testNames).enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(result);
+    }
 
+    /**
+     * Add tests into configuration. Tests are added only if it's sure there 
+     * is some server registered in the IDE.
+     * 
+     * @param conf test configuration
+     * @param testNames names of added tests
+     * @return clone of the test configuration
+     */
     protected static Configuration addServerTests(Configuration conf, String... testNames) {
-        if (isServerRegistered()) {
+        return addServerTests(ANY, conf, testNames);
+    }
+    
+    /**
+     * Add tests into configuration.
+     * Tests are added only if there is the server instance registered in the 
+     * IDE.
+     * 
+     * @param server server that is needed by tests
+     * @param conf test configuration
+     * @param testNames names of added tests
+     * @return clone of the test configuration
+     */
+    protected static Configuration addServerTests(Server server, Configuration conf, String... testNames) {
+        if (isRegistered(server)) {
             LOG.info("adding server tests");
             return conf.addTest(testNames);
         } else {
             Configuration result = conf;
-            result = addTomcatTests(conf, testNames);
-            if (isRegistered(TOMCAT)) {
-                return result;
+            if (server.equals(TOMCAT) || server.equals(ANY)){
+                result = addTomcatTests(conf, testNames);
+                if (isRegistered(TOMCAT)) {
+                    return result;
+                }
             }
-            result = addGlassfishTests(conf, testNames);
-            if (isRegistered(GLASSFISH)) {
-                return result;
+            if (server.equals(GLASSFISH) || server.equals(ANY)){
+                result = addGlassfishTests(conf, testNames);
+                if (isRegistered(GLASSFISH)) {
+                    return result;
+                }
             }
-            result = addJBossTests(conf, testNames);
-            if (isRegistered(JBOSS)) {
-                return result;
+            if (server.equals(JBOSS) || server.equals(ANY)){
+                result = addJBossTests(conf, testNames);
+                if (isRegistered(JBOSS)) {
+                    return result;
+                }
             }
             LOG.info("no server to add tests");
             return conf.addTest("testEmpty");
         }
     }
-
+    /**
+     * Returns <code>true</code> if given server is registered in the IDE, 
+     * <code>false</code> otherwise
+     * @param server to decide about
+     * @return <code>true</code> if the <code>server</code> is registered
+     */
     protected static boolean isRegistered(Server server) {
         Boolean result = isRegistered.get(server);
         if (result == null){
@@ -152,6 +203,16 @@ public class J2eeTestCase extends JellyTestCase {
                 case TOMCAT:
                     result = System.getProperty(TOMCAT_PATH) != null;
                     break;
+                case ANY:
+                    for (Server serv : Server.values()) {
+                        if (serv.equals(ANY)){
+                            continue;
+                        }
+                        if (isRegistered(serv)) {
+                            return true;
+                        }
+                    }
+                    return false;
                 default: 
                     throw new IllegalArgumentException("Unsupported server");
             }
@@ -160,15 +221,12 @@ public class J2eeTestCase extends JellyTestCase {
         return result;
     }
     
-    protected J2eeServerNode getServerNode(){
-        for (Server serv : Server.values()) {
-            if (isRegistered(serv)) {
-                return getServerNode(serv);
-            }
-        }
-        throw new IllegalArgumentException("No server is registred in IDE");
-    }
-    
+    /**
+     * Returns J2eeServerNode for given server
+     * 
+     * @param server 
+     * @return J2eeServerNode for given server
+     */
     protected J2eeServerNode getServerNode(Server server){
         if (!isRegistered(server)){
             throw new IllegalArgumentException("Server is not registred in IDE");
@@ -180,25 +238,29 @@ public class J2eeTestCase extends JellyTestCase {
                 return J2eeServerNode.invoke("JBoss");
             case TOMCAT:
                 return J2eeServerNode.invoke("Tomcat");
+            case ANY:
+                for (Server serv : Server.values()) {
+                    if (serv.equals(ANY)){
+                        continue;
+                    }
+                    if (isRegistered(serv)) {
+                        return getServerNode(serv);
+                    }
+                }
+                throw new IllegalArgumentException("No server is registred in IDE");
             default:
                 throw new IllegalArgumentException("Unsupported server");
         }
     }
     
-    protected static boolean isServerRegistered() {
-        for (Server serv : Server.values()) {
-            if (isRegistered(serv)) {
-                return true;
-            }
-        }
-        return false;
-    }
+    public static enum Server {
 
-    protected static enum Server {
-
-        TOMCAT, GLASSFISH, JBOSS
+        TOMCAT, GLASSFISH, JBOSS, ANY
     }
-    
+    /**
+     * Empty test is executed while there is missing server and other tests would 
+     * fail because of missing server.
+     */
     public void testEmpty(){
         // nothing to do
     }
