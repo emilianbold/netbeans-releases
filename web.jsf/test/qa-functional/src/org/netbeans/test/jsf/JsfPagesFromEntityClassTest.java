@@ -41,14 +41,14 @@
 package org.netbeans.test.jsf;
 
 import javax.swing.JComboBox;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import junit.framework.Test;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.jemmy.operators.JLabelOperator;
 
 /** Test creation of JSF pages from entity classes. We expect web application
@@ -58,28 +58,20 @@ import org.netbeans.jemmy.operators.JLabelOperator;
  * @author Lukasz Grela
  * @author Jiri Skrivanek
  */
-public class JsfPagesFromEntityClassTest extends JellyTestCase{
+public class JsfPagesFromEntityClassTest extends J2eeTestCase{
     public static final String PROJECT_NAME = "myjsfproject";
 
     public JsfPagesFromEntityClassTest(String s) {
         super(s);
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new JsfPagesFromEntityClassTest("testCreateEntityClassAndPU"));
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(JsfPagesFromEntityClassTest.class), "testCreateEntityClassAndPU"));
     }
     
+    @Override
     public void setUp() {
         System.out.println("### "+getName()+" ###");
-    }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
     }    
 
     /** Create Entity class and persistence unit. */
