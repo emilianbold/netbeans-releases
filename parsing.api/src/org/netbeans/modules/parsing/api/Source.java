@@ -164,10 +164,13 @@ public final class Source {
         try {
             DataObject dataObject = DataObject.find (fileObject);
             EditorCookie editorCookie = dataObject.getLookup().lookup (EditorCookie.class);
-            return editorCookie.getDocument ();
+            if (editorCookie != null) {
+                return editorCookie.getDocument ();
+            }            
         } catch (DataObjectNotFoundException ex) {
-            return null;
+            //Handled below
         }
+        return null;
     }
     
     /**
