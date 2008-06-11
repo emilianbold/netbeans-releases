@@ -48,6 +48,7 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.ws.qaf.WebServicesTestBase;
 import org.netbeans.modules.ws.qaf.designer.operators.WsDesignerOperator;
@@ -110,16 +111,20 @@ public class WebServiceDesignerTest extends WebServicesTestBase {
         new OpenAction().perform(n);
     }
     
-    /** Creates suite from particular test cases. You can define order of testcases here. */
     public static Test suite() {
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new WebServiceDesignerTest("testAddOperation"));
-        suite.addTest(new WebServiceDesignerTest("testRemoveOperation"));
-        return suite;
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(WebServiceDesignerTest.class).addTest("testAddOperation", "testRemoveOperation").enableModules(".*").clusters(".*"));
     }
-
-    /* Method allowing test execution directly from the IDE. */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
+    
+    /** Creates suite from particular test cases. You can define order of testcases here. */
+//    public static Test suite() {
+//        TestSuite suite = new NbTestSuite();
+//        suite.addTest(new WebServiceDesignerTest("testAddOperation"));
+//        suite.addTest(new WebServiceDesignerTest("testRemoveOperation"));
+//        return suite;
+//    }
+//
+//    /* Method allowing test execution directly from the IDE. */
+//    public static void main(java.lang.String[] args) {
+//        TestRunner.run(suite());
+//    }
 }

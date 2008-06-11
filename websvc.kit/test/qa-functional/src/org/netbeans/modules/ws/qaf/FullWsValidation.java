@@ -40,10 +40,8 @@
 package org.netbeans.modules.ws.qaf;
 
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 /**
  *
@@ -54,52 +52,112 @@ public class FullWsValidation extends NbTestCase {
     public FullWsValidation(String name) {
         super(name);
     }
-
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new WsValidation("testCreateNewWs")); //NOI18N
-        suite.addTest(new WsValidation("testAddOperation")); //NOI18N
-        suite.addTest(new WsValidation("testStartServer")); //NOI18N
-        suite.addTest(new WsValidation("testWsHandlers")); //NOI18N
-        suite.addTest(new WsValidation("testDeployWsProject")); //NOI18N
-        suite.addTest(new WsValidation("testCreateWsClient")); //NOI18N
-        suite.addTest(new WsValidation("testCallWsOperationInServlet")); //NOI18N
-        suite.addTest(new WsValidation("testCallWsOperationInJSP")); //NOI18N
-        suite.addTest(new WsValidation("testCallWsOperationInJavaClass")); //NOI18N
-        suite.addTest(new WsValidation("testWsClientHandlers")); //NOI18N
-        suite.addTest(new WsValidation("testRefreshClient"));  //NOI18N
-        suite.addTest(new WsValidation("testDeployWsClientProject")); //NOI18N
-        suite.addTest(new EjbWsValidation("testCreateNewWs")); //NOI18N
-        suite.addTest(new EjbWsValidation("testAddOperation")); //NOI18N
-        suite.addTest(new EjbWsValidation("testWsHandlers")); //NOI18N
-        suite.addTest(new EjbWsValidation("testDeployWsProject")); //NOI18N
-        suite.addTest(new EjbWsValidation("testCreateWsClient")); //NOI18N
-        suite.addTest(new EjbWsValidation("testCallWsOperationInSessionEJB")); //NOI18N
-        suite.addTest(new EjbWsValidation("testCallWsOperationInJavaClass")); //NOI18N
-        suite.addTest(new EjbWsValidation("testWsFromEJBinClientProject")); //NOI18N
-        suite.addTest(new EjbWsValidation("testWsClientHandlers")); //NOI18N
-        suite.addTest(new EjbWsValidation("testRefreshClientAndReplaceWSDL"));  //NOI18N
-        suite.addTest(new EjbWsValidation("testDeployWsClientProject")); //NOI18N
-        suite.addTest(new AppClientWsValidation("testCreateWsClient")); //NOI18N
-        suite.addTest(new AppClientWsValidation("testCallWsOperationInJavaMainClass")); //NOI18N
-        suite.addTest(new AppClientWsValidation("testCallWsOperationInJavaClass")); //NOI18N
-        suite.addTest(new AppClientWsValidation("testWsClientHandlers")); //NOI18N
-        suite.addTest(new AppClientWsValidation("testRefreshClient"));  //NOI18N
-        suite.addTest(new AppClientWsValidation("testRunWsClientProject")); //NOI18N
-        suite.addTest(new JavaSEWsValidation("testCreateWsClient")); //NOI18N
-        suite.addTest(new JavaSEWsValidation("testCallWsOperationInJavaMainClass")); //NOI18N
-        suite.addTest(new JavaSEWsValidation("testFixClientLibraries")); //NOI18N
-        suite.addTest(new JavaSEWsValidation("testWsClientHandlers")); //NOI18N
-        suite.addTest(new JavaSEWsValidation("testRefreshClientAndReplaceWSDL"));  //NOI18N
-        suite.addTest(new JavaSEWsValidation("testRunWsClientProject")); //NOI18N
-        suite.addTest(new WsValidation("testUndeployProjects")); //NOI18N
-        suite.addTest(new EjbWsValidation("testUndeployProjects")); //NOI18N
-        suite.addTest(new AppClientWsValidation("testUndeployClientProject")); //NOI18N
-        suite.addTest(new WsValidation("testStopServer")); //NOI18N
-        return suite;
-    }
     
-    public static void main(String... args) {
-        TestRunner.run(suite());
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+                .addTest(WsValidation.class,
+                    "testCreateNewWs", 
+                    "testAddOperation", 
+                    "testStartServer",
+                    "testWsHandlers", 
+                    "testDeployWsProject",
+                    "testCreateWsClient", 
+                    "testCallWsOperationInServlet", 
+                    "testCallWsOperationInJSP",
+                    "testCallWsOperationInJavaClass",
+                    "testWsClientHandlers",
+                    "testRefreshClient",
+                    "testDeployWsClientProject"
+                    )
+                .addTest(EjbWsValidation.class,
+                    "testCreateNewWs",
+                    "testAddOperation",
+                    "testWsHandlers",
+                    "testDeployWsProject",
+                    "testCreateWsClient",
+                    "testCallWsOperationInSessionEJB",
+                    "testCallWsOperationInJavaClass",
+                    "testWsFromEJBinClientProject",
+                    "testWsClientHandlers",
+                    "testRefreshClientAndReplaceWSDL",
+                    "testDeployWsClientProject"
+                    )
+                .addTest(AppClientWsValidation.class,
+                    "testCreateWsClient",
+                    "testCallWsOperationInJavaMainClass",
+                    "testCallWsOperationInJavaClass",
+                    "testWsClientHandlers",
+                    "testRefreshClient",
+                    "testRunWsClientProject"
+                    )
+                .addTest(JavaSEWsValidation.class,
+                    "testCreateWsClient",
+                    "testCallWsOperationInJavaMainClass",
+                    "testFixClientLibraries",
+                    "testWsClientHandlers",
+                    "testRefreshClientAndReplaceWSDL",
+                    "testRunWsClientProject"
+                    )
+                .addTest(WsValidation.class,
+                    "testUndeployProjects"
+                    )
+                .addTest(EjbWsValidation.class,
+                    "testUndeployProjects"
+                    )
+                .addTest(AppClientWsValidation.class,
+                    "testUndeployClientProject"
+                    )
+                .addTest(WsValidation.class,
+                    "testStopServer"
+                    )
+                .enableModules(".*").clusters(".*"));
     }
+
+//    public static Test suite() {
+//        TestSuite suite = new NbTestSuite();
+//        suite.addTest(new WsValidation("testCreateNewWs")); //NOI18N
+//        suite.addTest(new WsValidation("testAddOperation")); //NOI18N
+//        suite.addTest(new WsValidation("testStartServer")); //NOI18N
+//        suite.addTest(new WsValidation("testWsHandlers")); //NOI18N
+//        suite.addTest(new WsValidation("testDeployWsProject")); //NOI18N
+//        suite.addTest(new WsValidation("testCreateWsClient")); //NOI18N
+//        suite.addTest(new WsValidation("testCallWsOperationInServlet")); //NOI18N
+//        suite.addTest(new WsValidation("testCallWsOperationInJSP")); //NOI18N
+//        suite.addTest(new WsValidation("testCallWsOperationInJavaClass")); //NOI18N
+//        suite.addTest(new WsValidation("testWsClientHandlers")); //NOI18N
+//        suite.addTest(new WsValidation("testRefreshClient"));  //NOI18N
+//        suite.addTest(new WsValidation("testDeployWsClientProject")); //NOI18N
+//        suite.addTest(new EjbWsValidation("testCreateNewWs")); //NOI18N
+//        suite.addTest(new EjbWsValidation("testAddOperation")); //NOI18N
+//        suite.addTest(new EjbWsValidation("testWsHandlers")); //NOI18N
+//        suite.addTest(new EjbWsValidation("testDeployWsProject")); //NOI18N
+//        suite.addTest(new EjbWsValidation("testCreateWsClient")); //NOI18N
+//        suite.addTest(new EjbWsValidation("testCallWsOperationInSessionEJB")); //NOI18N
+//        suite.addTest(new EjbWsValidation("testCallWsOperationInJavaClass")); //NOI18N
+//        suite.addTest(new EjbWsValidation("testWsFromEJBinClientProject")); //NOI18N
+//        suite.addTest(new EjbWsValidation("testWsClientHandlers")); //NOI18N
+//        suite.addTest(new EjbWsValidation("testRefreshClientAndReplaceWSDL"));  //NOI18N
+//        suite.addTest(new EjbWsValidation("testDeployWsClientProject")); //NOI18N
+//        suite.addTest(new AppClientWsValidation("testCreateWsClient")); //NOI18N
+//        suite.addTest(new AppClientWsValidation("testCallWsOperationInJavaMainClass")); //NOI18N
+//        suite.addTest(new AppClientWsValidation("testCallWsOperationInJavaClass")); //NOI18N
+//        suite.addTest(new AppClientWsValidation("testWsClientHandlers")); //NOI18N
+//        suite.addTest(new AppClientWsValidation("testRefreshClient"));  //NOI18N
+//        suite.addTest(new AppClientWsValidation("testRunWsClientProject")); //NOI18N
+//        suite.addTest(new JavaSEWsValidation("testCreateWsClient")); //NOI18N
+//        suite.addTest(new JavaSEWsValidation("testCallWsOperationInJavaMainClass")); //NOI18N
+//        suite.addTest(new JavaSEWsValidation("testFixClientLibraries")); //NOI18N
+//        suite.addTest(new JavaSEWsValidation("testWsClientHandlers")); //NOI18N
+//        suite.addTest(new JavaSEWsValidation("testRefreshClientAndReplaceWSDL"));  //NOI18N
+//        suite.addTest(new JavaSEWsValidation("testRunWsClientProject")); //NOI18N
+//        suite.addTest(new WsValidation("testUndeployProjects")); //NOI18N
+//        suite.addTest(new EjbWsValidation("testUndeployProjects")); //NOI18N
+//        suite.addTest(new AppClientWsValidation("testUndeployClientProject")); //NOI18N
+//        suite.addTest(new WsValidation("testStopServer")); //NOI18N
+//        return suite;
+//    }
+//    
+//    public static void main(String... args) {
+//        TestRunner.run(suite());
+//    }
 }
