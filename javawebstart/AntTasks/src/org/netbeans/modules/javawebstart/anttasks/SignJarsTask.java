@@ -1,10 +1,5 @@
-/*
- * SignJarsTask.java
- *
- * Created on April 17, 2007, 12:27 PM
- */
 
-package org.netbeans.modules.javawebstart.signtask;
+package org.netbeans.modules.javawebstart.anttasks;
 
 import java.io.File;
 import java.io.IOException;

@@ -41,8 +41,11 @@
 
 package org.netbeans.api.project.ant;
 
-import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -51,16 +54,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.project.ant.AntBuildExtenderAccessor;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -87,15 +101,24 @@ import org.w3c.dom.NodeList;
  * @since org.netbeans.modules.project.ant 1.16
  */
 public final class AntBuildExtender {
+    
     private HashMap<String, Extension> extensions;
     private AntBuildExtenderImplementation implementation;
-
+    private ReferenceHelper refHelper;
+    
+    public static final String ANT_CUSTOMTASKS_LIBS_PROPNAME = "ant.customtasks.libs";
+    
     static {
         AntBuildExtenderAccessorImpl.createAccesor();
     }
 
     AntBuildExtender(AntBuildExtenderImplementation implementation) {
         this.implementation = implementation;
+    }
+    
+    AntBuildExtender(AntBuildExtenderImplementation implementation, ReferenceHelper refHlpr) {
+        this.implementation = implementation;
+        this.refHelper = refHlpr;
     }
     
     /**
@@ -135,6 +158,7 @@ public final class AntBuildExtender {
         updateProjectMetadata();
         return ex;
     }
+    
     /**
      * Remove an existing build script extension. Make sure to remove the extension's script file
      * before/after removing the extension.
@@ -172,6 +196,104 @@ public final class AntBuildExtender {
         }
         ext.addAll(extensions.values());
         return ext;
+    }
+    
+    /**
+     * Copies global library to the shared library folder of the project if the
+     * project is sharable and adds library name to the list of libraries needed 
+     * to run Ant script. In the case of non-sharable project only the name is 
+     * added to the list and the library is copied when the project is made sharable.
+     * 
+     * @param library global library to be copied to shared library folder of the project
+     * @throws java.io.IOException exception thrown when properties cannot be loaded or saved
+     */
+    public void addLibrary(Library library) throws IOException {
+        if (library == null) {
+            throw new NullPointerException("null library passed to addLibrary");
+        }
+        setValueOfProperty(ANT_CUSTOMTASKS_LIBS_PROPNAME, library.getName(), true);
+        if (refHelper != null && refHelper.getProjectLibraryManager() != null) {
+            if (refHelper.getProjectLibraryManager().getLibrary(library.getName()) == null) {
+                try {
+                    refHelper.copyLibrary(library);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
+    
+    /**
+     * Removes library name from the list of libraries needed to run Ant script
+     * 
+     * @param library either global or shared library to be removed from list of 
+     *     libraries needed for running Ant script; cannot be null
+     * @throws java.io.IOException exception thrown when properties cannot be loaded or saved
+     */
+    public void removeLibrary(Library library) throws IOException {
+        if (library == null) {
+            throw new NullPointerException("null library passed to removeLibrary");
+        }
+        setValueOfProperty(ANT_CUSTOMTASKS_LIBS_PROPNAME, library.getName(), false);
+    }
+    
+    private void setValueOfProperty(final String propName, final String value, final boolean add) throws IOException {
+        try {
+            final FileObject projPropsFO = implementation.getOwningProject().getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            final InputStream is = projPropsFO.getInputStream();
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws Exception {
+                    EditableProperties editableProps = new EditableProperties(true);
+                    
+                    try {
+                        editableProps.load(is);
+                    } finally {
+                        if (is != null) {
+                            is.close();
+                        }
+                    }
+                    
+                    String libIDs[] = new String[0];
+                    String savedPropVal = editableProps.getProperty(propName);
+                    if (savedPropVal != null) {
+                        libIDs = PropertyUtils.tokenizePath(savedPropVal);
+                    }
+                    Set libIDSet = new TreeSet(Arrays.asList(libIDs));
+                    if (add) {
+                        libIDSet.add(value);
+                    } else {
+                        libIDSet.remove(value);
+                    }
+                    String newLibIDs[] = (String[]) libIDSet.toArray(new String[libIDSet.size()]);
+                    StringBuilder propValue = new StringBuilder();
+                    for (String newLibID : newLibIDs) {
+                        propValue.append(newLibID);
+                        propValue.append(";");
+                    }
+                    propValue.delete(propValue.length() - 1, propValue.length());
+                    
+                    editableProps.setProperty(propName, propValue.toString());
+                    
+                    OutputStream os = null;
+                    FileLock lock = null;
+                    try {
+                        lock = projPropsFO.lock();
+                        os = projPropsFO.getOutputStream(lock);
+                        editableProps.store(os);
+                    } finally {
+                        if (lock != null) {
+                            lock.releaseLock();
+                        }
+                        if (os != null) {
+                            os.close();
+                        }
+                    }
+                    return null;
+                }
+            });
+        } catch (MutexException mux) {
+            throw (IOException) mux.getException();
+        }
     }
     
     private static final DocumentBuilder db;
