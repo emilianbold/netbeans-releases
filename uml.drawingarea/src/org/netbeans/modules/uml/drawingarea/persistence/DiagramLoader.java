@@ -116,7 +116,7 @@ class DiagramLoader
     //list of all connectors for this graph
     private List<ConnectorInfo> connectorList = new ArrayList<ConnectorInfo>();
     //model element which has connectors eg, class , interface, etc..
-    private Stack<String> prevNonContainerModelElt = new Stack();
+    private Stack<String> prevModelElt = new Stack();
     //this is the PE of the graph node which has connectors
     private Stack<String> prevGraphNodePEID = new Stack();
     
@@ -579,11 +579,15 @@ class DiagramLoader
                         graphNodeReaderStack.push(gnReader); 
                         if (nodeInfo.getPresentationElement() != null)
                         {
-                            //store this in a temp var until you come across anchorage
-                            prevNonContainerModelElt.push(nodeInfo.getMEID()); //stored for anchorage ref
-                            prevGraphNodePEID.push(nodeInfo.getPEID()); // stored for anchorage ref
                             //add this PE to the presLIst
                             presEltList.add(nodeInfo.getPresentationElement());
+                            //if there is a widget attached to this nodeInfo,
+                            //store it until you come across anchorage
+                            if (scene.findWidget(nodeInfo.getPresentationElement()) != null)
+                            {
+                                prevModelElt.push(nodeInfo.getMEID()); //stored for anchorage ref
+                                prevGraphNodePEID.push(nodeInfo.getPEID()); // stored for anchorage ref
+                            }
                         }
                     
 //                        addNodeToScene(nodeInfo);
@@ -666,8 +670,9 @@ class DiagramLoader
                     if (reader.getName().getLocalPart().equalsIgnoreCase("GraphConnector")) {
                         connDet = new ConnectorInfo(); //create new conn det object
                         connDet.setConnectorID(reader.getAttributeValue(null, "xmi.id"));
-                        if (!prevNonContainerModelElt.empty()) {
-                            connDet.setNodeMEID(prevNonContainerModelElt.peek());
+                        
+                        if (!prevModelElt.empty()) {
+                            connDet.setNodeMEID(prevModelElt.peek());
                         }
                         if (!prevGraphNodePEID.empty()) {
                             connDet.setNodePEID(prevGraphNodePEID.peek());
@@ -696,7 +701,7 @@ class DiagramLoader
                             //we have reached the end of anchors list     
                             //pop both stacks if they have been used above
                             if (connDet != null && connDet.getNodeMEID().trim().length() > 0) {
-                                prevNonContainerModelElt.pop();
+                                prevModelElt.pop();
                                 prevGraphNodePEID.pop();
                             }
                             return;
