@@ -49,6 +49,7 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
+import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
@@ -123,7 +124,7 @@ public final class TestUnitRunner implements TestRunner {
         String charsetName = null;
         desc = new ExecutionDescriptor(platform, name, FileUtil.toFile(project.getProjectDirectory()), targetPath);
         desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
-        desc.initialArgs("-Ilib:test"); //NOI18N
+        desc.initialArgs(RubyProjectUtil.getLoadPath(project)); //NOI18N
 
         desc.debug(debug);
         desc.allowInput();
