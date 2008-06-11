@@ -1313,6 +1313,11 @@ public class UMLDiagramTopComponent extends TopComponent
             // A secondary element is a child element of the chagned element.
             // For example, an attribute would be a secondary element.
             List<IPresentationElement> presentations = getPresentationElements(elementToNotify);
+            for(IElement el=elementToNotify.getOwner();el!=null && !(el instanceof IProject) && (presentations==null || presentations.size()==0);el=el.getOwner())
+            {
+                presentations=getPresentationElements(el);//sometimes child elements are presented on a diagram but do not have presentations, update parent to get child updated
+                //for example binding elements are childs on template binding, and updated this way
+            }
             
             Object oldValue = null;
             Object newValue = null;
