@@ -42,6 +42,7 @@
 package org.netbeans.modules.ruby;
 
 import org.jruby.ast.Node;
+import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 
@@ -79,7 +80,7 @@ public class RubyParserTest extends RubyTestBase {
             assertTrue(lineOffset != -1);
 
             caretOffset = lineOffset + caretDelta;
-            ((TestCompilationInfo)info).setCaretOffset(caretOffset);
+            ((GsfTestCompilationInfo)info).setCaretOffset(caretOffset);
         }
 
         Node root = AstUtilities.getRoot(info);
