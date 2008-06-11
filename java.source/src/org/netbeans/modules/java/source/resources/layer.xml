@@ -203,6 +203,13 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
         </folder>
+        <folder name="application">
+            <folder name="x-class-file">
+                <file name="ClassParser.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.parsing.ClassParserFactory"/>
+                </file>
+            </folder>
+        </folder>
     </folder>
                 
 </filesystem>

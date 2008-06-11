@@ -87,10 +87,19 @@ public final class CompilationInfoImpl {
     final JavaFileObject jfo;    
     private final Snapshot snapshot;
     private final JavacParser parser;
+    private final boolean isClassFile;
     boolean needsRestart;
     JavaSource.Phase parserCrashed = JavaSource.Phase.UP_TO_DATE;      //When javac throws an error, the moveToPhase sets this to the last safe phase        
         
-    
+    /**
+     * Creates a new CompilationInfoImpl for given source file
+     * @param parser used to parse the file
+     * @param file to be parsed
+     * @param root the owner of the parsed file
+     * @param javacTask used javac or null if new one should be created
+     * @param snapshot rendered content of the file
+     * @throws java.io.IOException
+     */
     CompilationInfoImpl (final JavacParser parser,
                          final FileObject file,
                          final FileObject root,
@@ -106,8 +115,13 @@ public final class CompilationInfoImpl {
         assert file == null || (root != null && snapshot != null);
         this.jfo = file != null ? JavacParser.jfoProvider.createJavaFileObject(file, root, JavaFileFilterQuery.getFilter(file), snapshot.getText()) : null;
         this.javacTask = javacTask;
+        this.isClassFile = false;
     }
     
+    /**
+     * Creates a new CompilationInfoImpl for classpaths
+     * @param cpInfo classpaths
+     */
     public CompilationInfoImpl (final ClasspathInfo cpInfo) {
         assert cpInfo != null;
         this.parser = null;
@@ -116,6 +130,28 @@ public final class CompilationInfoImpl {
         this.jfo = null;
         this.snapshot = null;
         this.cpInfo = cpInfo;
+        this.isClassFile = false;
+    }
+    
+    /**
+     * Creates a new CompilationInfoImpl for a class file
+     * @param cpInfo classpaths
+     * @param file to be analyzed
+     * @param root the owner of analyzed file
+     */
+    public CompilationInfoImpl (final ClasspathInfo cpInfo,
+                                final FileObject file,
+                                final FileObject root) throws IOException {
+        assert cpInfo != null;
+        assert file != null;
+        assert root != null;
+        this.parser = null;
+        this.file = file;
+        this.root = root;
+        this.jfo = FileObjects.nbFileObject(file, root);
+        this.snapshot = null;
+        this.cpInfo = cpInfo;
+        this.isClassFile = true;
     }
     
     public Snapshot getSnapshot () {
@@ -154,7 +190,7 @@ public final class CompilationInfoImpl {
      * @return String the java source
      */
     public String getText() {
-        if (this.jfo == null) {
+        if (!hasSource()) {
             throw new IllegalStateException ();
         }
         try {
@@ -171,7 +207,7 @@ public final class CompilationInfoImpl {
      * @return lexer TokenHierarchy
      */
     public TokenHierarchy<?> getTokenHierarchy() {
-        if (this.jfo == null) {
+        if (!hasSource()) {
             throw new IllegalStateException ();
         }
         try {
@@ -240,8 +276,7 @@ public final class CompilationInfoImpl {
     }
     
     public boolean isClassFile () {
-        //tzezula todo: implement me. Probably separate parser for class files
-        return false;
+        return this.isClassFile;
     }
     
     /**
@@ -292,7 +327,7 @@ public final class CompilationInfoImpl {
         if (phase == JavaSource.Phase.MODIFIED) {
             throw new IllegalArgumentException( "Invalid phase: " + phase );    //NOI18N
         }
-        if (jfo == null) {
+        if (!hasSource()) {
             JavaSource.Phase currentPhase = getPhase();
             if (currentPhase.compareTo(phase)<0) {
                 setPhase(phase);
@@ -343,6 +378,10 @@ public final class CompilationInfoImpl {
                     this.parser, new DiagnosticListenerImpl(this.jfo), null);
         }
 	return javacTask;
+    }
+    
+    private boolean hasSource () {
+        return this.jfo != null && !isClassFile;
     }
     
     

@@ -227,7 +227,7 @@ public class JavacParser extends Parser {
         }
         this.filterListener = filter != null ? new FilterListener (filter) : null;
         this.listener = ec != null ? new DocListener(ec) : null;
-        this.cpInfoListener = new ClasspathInfoListener ();
+        this.cpInfoListener = new ClasspathInfoListener (listeners);
     }
     
     private void init (final Snapshot snapshot, final Task task, final boolean singleSource) {
@@ -1001,14 +1001,5 @@ public class JavacParser extends Parser {
         public void stateChanged(ChangeEvent event) {
             listeners.fireChange();
         }
-    }
-    
-    private final class ClasspathInfoListener implements ChangeListener {
-
-        public void stateChanged(ChangeEvent e) {
-            listeners.fireChange();
-        }
-        
-    }
-    
+    }        
 }
