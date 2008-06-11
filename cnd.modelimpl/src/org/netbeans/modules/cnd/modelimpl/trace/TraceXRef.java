@@ -53,6 +53,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JEditorPane;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -239,7 +240,7 @@ public class TraceXRef extends TraceModel {
         return false;
     }
     
-    public static void traceProjectRefsStatistics(NativeProject prj, StatisticsParameters params, PrintWriter printOut, OutputWriter printErr, CsmProgressListener callback) {
+    public static void traceProjectRefsStatistics(NativeProject prj, StatisticsParameters params, PrintWriter printOut, OutputWriter printErr, CsmProgressListener callback, AtomicBoolean canceled) {
         CsmProject csmPrj = CsmModelAccessor.getModel().getProject(prj);
         XRefResultSet bag = new XRefResultSet();
         Collection<CsmFile> allFiles = csmPrj.getAllFiles();
@@ -251,6 +252,9 @@ public class TraceXRef extends TraceModel {
                 callback.fileParsingStarted(file);
             }
             analyzeFile(file, params, bag, printOut, printErr);
+            if (canceled.get()) {
+                break;
+            }
         }
         if (callback != null) {
             callback.projectParsingFinished(csmPrj);
