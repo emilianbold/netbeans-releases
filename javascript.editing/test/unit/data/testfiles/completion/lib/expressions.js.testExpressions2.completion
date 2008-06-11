@@ -1,4 +1,6 @@
-Results for toE with queryType=COMPLETION and nameKind=PREFIX
+Code completion result for source line:
+"foo".big().charCodeAt(50).|toExponential(fractionDigits);
+(QueryType=COMPLETION, NameKind=PREFIX)
 METHOD     toExponential(fractionDigits)              Number
 METHOD     toFixed(digits) : String                   Number
 METHOD     toLocaleString() : void                    Number
