@@ -41,19 +41,16 @@
 package org.netbeans.modules.quicksearch.recent;
 
 import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
-import org.netbeans.spi.quicksearch.CategoryDescription;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
     
 /**
  * Recent searches
  * @author  Jan Becicka
  */
-public class RecentProvider implements SearchProvider, CategoryDescription {
+public class RecentProvider implements SearchProvider {
 
     public void evaluate(SearchRequest request, SearchResponse response) {
         for (ItemResult itemR : RecentSearches.getDefault().getSearches()) {
@@ -65,22 +62,5 @@ public class RecentProvider implements SearchProvider, CategoryDescription {
             }
         }
     }
-    
-    public Lookup getLookup() {
-        return Lookups.fixed(this);
-    }
-
-    public String getDisplayName() {
-        return "Recent Searches";
-    }
-    
-    public String getCommandPrefix() {
-        return "recent";
-    }
-
-    public String getHint() {
-        return null;
-    }
-
 
 }

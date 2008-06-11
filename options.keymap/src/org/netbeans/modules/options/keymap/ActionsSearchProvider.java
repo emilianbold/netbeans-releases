@@ -38,11 +38,10 @@
  */
 
 
-package org.netbeans.modules.jumpto.quicksearch;
+package org.netbeans.modules.options.keymap;
 
 import java.awt.event.ActionEvent;
 import java.lang.reflect.Field;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.swing.Action;
@@ -51,7 +50,6 @@ import javax.swing.KeyStroke;
 import javax.swing.text.TextAction;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.spi.KeymapManager;
-import org.netbeans.spi.quicksearch.CategoryDescription;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
@@ -59,14 +57,13 @@ import org.openide.cookies.EditorCookie;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 
 /**
  * SearchProvider for all actions. 
  * @author  Jan Becicka
  */
-public class ActionsSearchProvider implements SearchProvider, CategoryDescription {
+public class ActionsSearchProvider implements SearchProvider {
 
     /**
      * Iterates through all found KeymapManagers and their sets of actions
@@ -163,23 +160,5 @@ public class ActionsSearchProvider implements SearchProvider, CategoryDescriptio
             command.actionPerformed(event);
         }
     }
-
-    public Lookup getLookup() {
-        return Lookups.fixed(this);
-    }
-    
-    public String getDisplayName() {
-        return "Actions";
-    }
-    
-    public String getCommandPrefix() {
-        return "a";
-    }
-
-    public String getHint() {
-        return null;
-    }
-
-
 
 }

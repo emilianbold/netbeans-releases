@@ -42,17 +42,14 @@ package org.netbeans.modules.jumpto.quicksearch;
 
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
-import org.netbeans.spi.quicksearch.CategoryDescription;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author  Jan Becicka
  */
-public class JavaTypeSearchProvider implements SearchProvider, CategoryDescription {
+public class JavaTypeSearchProvider implements SearchProvider {
 
     public void evaluate(SearchRequest request, SearchResponse response) {
         GoToTypeWorker worker = new GoToTypeWorker(request.getText());
@@ -75,22 +72,6 @@ public class JavaTypeSearchProvider implements SearchProvider, CategoryDescripti
         public void run() {
             command.open();
         }
-    }
-
-    public Lookup getLookup() {
-        return Lookups.fixed(this);
-    }
-
-    public String getDisplayName() {
-        return "Go To Type";
-    }
-    
-    public String getCommandPrefix() {
-        return "t";
-    }
-
-    public String getHint() {
-        return null;
     }
 
 }

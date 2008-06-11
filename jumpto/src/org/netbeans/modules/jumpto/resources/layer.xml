@@ -120,13 +120,11 @@ Contributor(s): Andrei Badea, Leon Chiver
     </folder>
     
     <folder name="QuickSearch">
-        <folder name="Actions">
-            <file name="org-netbeans-modules-jumpto-quicksearch-ActionsSearchProvider.instance"/>
-            <attr name="position" intvalue="200"/>
-        </folder>
         <folder name="GoToType">
-            <file name="org-netbeans-modules-jumpto-quicksearch-JavaTypeSearchProvider.instance"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jumpto.resources.Bundle"/>
+            <attr name="command" stringvalue="t"/>
             <attr name="position" intvalue="300"/>
+            <file name="org-netbeans-modules-jumpto-quicksearch-JavaTypeSearchProvider.instance"/>
         </folder>            
     </folder>
 </filesystem>

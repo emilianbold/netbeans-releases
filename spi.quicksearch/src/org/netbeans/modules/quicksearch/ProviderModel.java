@@ -41,9 +41,7 @@ package org.netbeans.modules.quicksearch;
 
 import java.util.HashSet;
 import java.util.List;
-import org.netbeans.spi.quicksearch.CategoryDescription;
 import org.netbeans.spi.quicksearch.SearchProvider;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -88,12 +86,14 @@ final class ProviderModel {
     
     static class Category {
         
-        private String name;
+        private String name, displayName, commandPrefix;
         
         private List<SearchProvider> providers;
 
-        public Category(String name, List<SearchProvider> providers) {
+        public Category(String name, String displayName, String commandPrefix, List<SearchProvider> providers) {
             this.name = name;
+            this.displayName = displayName;
+            this.commandPrefix = commandPrefix;
             this.providers = providers;
         }
         
@@ -114,40 +114,20 @@ final class ProviderModel {
         }
         
         public String getDisplayName() {
-            for (SearchProvider prov : providers) {
-                CategoryDescription desc = getCatDesc(prov);
-                if (desc != null) {
-                    String displayName = desc.getDisplayName();
-                    if (displayName != null) {
-                        return displayName;
-                    }
-                }
-            }
-            // fallback if no provider specifies display name
-            return null;
+            return displayName;
         }
 
         public String getCommandPrefix() {
-            for (SearchProvider prov : providers) {
-                CategoryDescription desc = getCatDesc(prov);
-                if (desc != null) {
-                    String prefix = desc.getCommandPrefix();
-                    if (prefix != null) {
-                        return prefix;
-                    }
-                }
-            }
-            // fallback if no provider specifies display name
-            return null;
+            return commandPrefix;
         }
         
-        private static CategoryDescription getCatDesc (SearchProvider provider) {
+        /*private static CategoryDescription getCatDesc (SearchProvider provider) {
             Lookup lkp = provider.getLookup();
             if (lkp == null) {
                 return null;
             }
             return lkp.lookup(CategoryDescription.class);
-        }
+        }*/
 
         
     } // end of Category

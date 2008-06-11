@@ -51,6 +51,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 /**
@@ -68,8 +69,9 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     /** Creates new form SilverLightComboBar */
     public QuickSearchComboBar() {
         initComponents();
+        
+        setShowHint(true);
 
-        origForeground = command.getForeground();
         command.getDocument().addDocumentListener(new DocumentListener() {
 
             public void insertUpdate(DocumentEvent arg0) {
@@ -258,17 +260,29 @@ private void commandFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_
             popup = null;
         }
     }
-    command.setForeground(command.getDisabledTextColor());
-    command.setText("Search in NetBeans IDE");
+    
+    setShowHint(true);
 }//GEN-LAST:event_commandFocusLost
 
 private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_commandFocusGained
-// TODO add your handling code here:
-    command.setForeground(origForeground);
-    command.setText("");
+    setShowHint(false);
 }//GEN-LAST:event_commandFocusGained
 
+    private void setShowHint (boolean showHint) {
+        // remember orig color on first invocation
+        if (origForeground == null) {
+            origForeground = command.getForeground();
+        }
+        if (showHint) {
+            command.setForeground(command.getDisabledTextColor());
+            command.setText(NbBundle.getMessage(QuickSearchComboBar.class, "MSG_DiscoverabilityHint"));
+        } else {
+            command.setForeground(origForeground);
+            command.setText("");        
+        }
+    }
 
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea command;
     private javax.swing.JLabel jLabel2;

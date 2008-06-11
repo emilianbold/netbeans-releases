@@ -55,9 +55,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <p>
     Clients that want to extend Quick Search capabilities and provide data to search in
-    are expected to implement <api group="java" name="SearchProvider" category="devel" type="export" url="@TOP@/org/netbeans/spi/quicksearch/SearchProvider.html" />
-    SPI and choose category in which results will be shown by implementing
-    <api group="java" name="CategoryDescription" category="devel" type="export" url="@TOP@/org/netbeans/spi/quicksearch/CategoryDescription.html"  />
+    are expected to implement <api group="java" name="SearchProvider" category="official" type="export" url="@TOP@/org/netbeans/spi/quicksearch/SearchProvider.html" />
     SPI.</p>
     
     <p>SearchProvider implementations are registered through module's xml layer file,
@@ -66,8 +64,8 @@ Microsystems, Inc. All Rights Reserved.
     </p>
     
     <p>Main task of SearchProvider implementations is to evaluate input 
-<api group="java" name="SearchRequest" category="devel" type="export" url="@TOP@/org/netbeans/spi/quicksearch/SearchRequest.html" />,
-        perform search in its data model and feed <api group="java" name="SearchResponse" category="devel" type="export" url="@TOP@/org/netbeans/spi/quicksearch/SearchResponse.html" />
+<api group="java" name="SearchRequest" category="official" type="export" url="@TOP@/org/netbeans/spi/quicksearch/SearchRequest.html" />,
+        perform search in its data model and feed <api group="java" name="SearchResponse" category="official" type="export" url="@TOP@/org/netbeans/spi/quicksearch/SearchResponse.html" />
         response object by results apropriate for given request.
     </p>
  </answer>
@@ -139,59 +137,57 @@ Microsystems, Inc. All Rights Reserved.
       In order to plug in a new Quick Search provider and new category of results,
       module writers need to complete following steps:
 
-      <ol>
-        <li><b>Implement <a href="@TOP@/org/netbeans/spi/quicksearch/SearchProvider.html">SearchProvider</a>
-         interface.</b></li>
-        <li><b>Describe new category of results by implementing <a href="@TOP@/org/netbeans/spi/quicksearch/CategoryDescription.html">CategoryDescription</a>
-         interface.</b></li>
-        <li><b>Register implementation class in xml layer</b></li>
-      </ol>
-
-      <h5>1. Implementing SearchProvider</h5>
+      <h5>1. Implement <a href="@TOP@/org/netbeans/spi/quicksearch/SearchProvider.html">SearchProvider</a></h5>
         <ul>
             <li>Implement body of <b><code>SearchProvider.evaluate</code></b> method
             like suggested in its <a href="@TOP@/org/netbeans/spi/quicksearch/SearchProvider.html#evaluate">javadoc</a>.
             </li>
-            <li>Implement getLookup() method by creating some <a href="@org-openide-util@/org/openide/util/Lookup.html">Lookup</a>
-            that will contain instance of CategoryDescription that you will create in step 2. below.
-            Use for example <a href="@org-openide-util@/org/openide/util/lookup/Lookups.html#fixed">Lookups.fixed</a>
-            utility for Lookup creation.
-            </li>
         </ul>
       
-      
-      <h5>2. Implementing CategoryDescription</h5>
-            Implement CategoryDescription methods easily like suggested in its 
-            <a href="@TOP@/org/netbeans/spi/quicksearch/CategoryDescription.html">javadoc</a>.
-            Note that display name and hint should be localized strings as they are
-            shown in QuickSearch UI.
-      
-      <h5>3. Registering SearchProvider</h5>
+      <h5>2. Register SearchProvider implementation in xml layer</h5>
             Register your SearchProvider implementation in your module's xml layer file under
-            main "/QuickSearch" folder. Registration xml syntax is following:
+            main <b>"/QuickSearch"</b> folder. Registration xml syntax is following:
             
             <pre>
               &lt;folder name="QuickSearch"&gt;
                   &lt;folder name="Category1_ID"&gt;
+                      &lt;attr name="position" intvalue="300"/&gt;
                       &lt;file name="org-netbeans-module1-package1-Provider1Impl.instance"/&gt;
                   &lt;/folder&gt;
                   &lt;folder name="Category2_ID"&gt;
-                      &lt;file name="org-netbeans-module2-package2-Provider2Impl.instance"/&gt;
-                      &lt;attr name="position" intvalue="300"/&gt;
-                      &lt;file name="org-netbeans-module2-package3-Provider3Impl.instance"/&gt;
+                      &lt;!--Attribute for localization - provide localized display name of category!--&gt;
+                      &lt;attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.yourmodule.YourBundle"/>
+                      &lt;!--Attribute for command prefix - used to narrow search to this category only!--&gt;
+                      &lt;attr name="command" stringvalue="p"/>
+                      &lt;!--Attribute for category ordering!--&gt;
                       &lt;attr name="position" intvalue="200"/&gt;
+                      &lt;!--Note that multiple providers can contribute to one category!--&gt;
+                      &lt;file name="org-netbeans-module2-package2-Provider2Impl.instance"/&gt;
+                      &lt;file name="org-netbeans-module2-package3-Provider3Impl.instance"/&gt;
                   &lt;/folder&gt;
               &lt;/folder&gt;
             </pre>
             
-            <b>Notes:</b>
+            <b>Syntax explanation:</b>
             <ul>
                 <li>Subfolders of "QuickSearch" define search result categories and their order.</li>
                 <li>Providers can share category by putting themselves under same subfolder.</li>
-                <li>Ordering is done through NetBeans standard FileSystem API ordering attribute.</li>
-                <li>While ID and order of result categories is defined in xml,
-                    localized display name and hint of each category is defined in CategoryDescription
-                    implementation.</li>
+                <li>Ordering of categories is done through NetBeans standard FileSystem API ordering 
+                "position" attribute</li>
+                <li>Display name of category folder uses NetBeans standard FileSystem API
+                "SystemFileSystem.localizingBundle" attribute.</li>
+                <li>"command" attribute defines command prefix for category, which is used
+                to narrow Quick Search to only one category. Provide short prefix, ideally
+                containing one or two prefix, that will serve as command to narrow search
+                only this category. In above syntax example, if
+                user types 'p' and space key and then text, only "Category2_ID" category
+                will be searched.</li>
+                <li>If several providers share one category, then only one provider needs to
+                specify above attributes. Note however that if your provider shares
+                category with provider from different module, you should have dependency
+                on module which actually define those attributes. Dependency assures
+                there will always be category "description" for category that you are
+                sharing.</li>
             </ul>
         
    </usecase> 
@@ -834,8 +830,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-lookup">
   <p>
-    Infrastructure requests providers to create own lookup and is searching in
-    it for capabilities (description) which are then displayed in QuickSearch UI.
+    No lookup usage.
   </p>
  </answer>
 
@@ -852,7 +847,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-register">
   <p>
-        No, see lookup answer.
+        No lookup registration.
   </p>
  </answer>
 
@@ -882,7 +877,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-exit">
   <p>
-   XXX no answer for perf-exit
+    No.
   </p>
  </answer>
 

@@ -43,11 +43,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.spi.quicksearch.CategoryDescription;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
-import org.openide.util.Lookup;
 
 /**
  * Command Evaluator. It evaluates commands from toolbar and creates results
@@ -101,15 +99,9 @@ public class CommandEvaluator {
             SearchResponse sResponse = Accessor.DEFAULT.createResponse(catResult);
             for (SearchProvider provider : cat.getProviders()) {
                 if (commandString != null) {
-                    Lookup lkp = provider.getLookup();
-                    if (lkp != null) {
-                        CategoryDescription catDesc = lkp.lookup(CategoryDescription.class);
-                        if (catDesc != null) {
-                            String commandPrefix = catDesc.getCommandPrefix();
-                            if (commandPrefix != null && commandPrefix.equalsIgnoreCase(commandString)) {
-                                provider.evaluate(sRequest, sResponse);
-                            }
-                        }
+                    String commandPrefix = cat.getCommandPrefix();
+                    if (commandPrefix != null && commandPrefix.equalsIgnoreCase(commandString)) {
+                        provider.evaluate(sRequest, sResponse);
                     }
                 } else {
                     provider.evaluate(sRequest, sResponse);

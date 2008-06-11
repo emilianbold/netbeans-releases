@@ -46,8 +46,10 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.Lookups;
 
 
@@ -59,6 +61,7 @@ final class ProviderRegistry {
     
     /** folder in layer file system where provider of fast access content are searched for */
     private static final String SEARCH_PROVIDERS_FOLDER = "/QuickSearch"; //NOI18N
+    private static final String COMMAND_PREFIX = "command"; //NOI18N
     
     private ProviderModel providers;
     
@@ -95,11 +98,27 @@ final class ProviderRegistry {
         for (FileObject curFO : sortedCats) {
             System.out.println("category is " + curFO);            
             
+            String displayName = null;
+            try {
+                displayName = curFO.getFileSystem().getStatus().annotateName(
+                        curFO.getNameExt(), Collections.singleton(curFO));
+            } catch (FileStateInvalidException ex) {
+                // TBD - log it
+            }
+            
+            String commandPrefix = null;
+            Object cpAttr = curFO.getAttribute(COMMAND_PREFIX);
+            if (cpAttr instanceof String) {
+                commandPrefix = (String)cpAttr;
+            }
+            
             Collection<? extends SearchProvider> catProviders = 
                     Lookups.forPath(curFO.getPath()).lookupAll(SearchProvider.class);
             
             categories.add(new ProviderModel.Category(
                     curFO.getNameExt(),
+                    displayName,
+                    commandPrefix,
                     new ArrayList<SearchProvider>(catProviders)));
         }
 
