@@ -75,6 +75,7 @@ public class CloneTest extends JellyTestCase {
     }
 
     public void testCloneProject() throws Exception {
+        System.out.println("DEBUG: testCloneProject - start");
         long timeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
         try {
             JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 15000);
@@ -134,6 +135,7 @@ public class CloneTest extends JellyTestCase {
             // do not remove it as following tests will work on the project
 //            TestKit.closeProject(PROJECT_NAME);
         }
+        System.out.println("DEBUG: testCloneProject - finish");
     }
 }
 

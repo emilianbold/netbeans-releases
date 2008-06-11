@@ -56,7 +56,8 @@ public class IgnoreTest extends JellyTestCase {
         
     public void testIgnoreUnignoreFile() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);  
+        System.out.println("DEBUG: testIgnoreUnignoreFile - start");
         try {
             
             OutputOperator oo = OutputOperator.invoke();
@@ -109,7 +110,8 @@ public class IgnoreTest extends JellyTestCase {
             throw new Exception("Test failed: " + e);
         } finally {
 //            TestKit.closeProject(PROJECT_NAME);
-        }    
+        }
+        System.out.println("DEBUG: testIgnoreUnignoreFile - finish");
     }
     
     public void testFinalRemove() throws Exception {
