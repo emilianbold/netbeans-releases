@@ -116,6 +116,8 @@ public final class Workspace {
             ".metadata/.plugins/org.eclipse.core.runtime/.settings/";
     static final String CORE_PREFERENCE =
             RUNTIME_SETTINGS + "org.eclipse.jdt.core.prefs";
+    static final String RESOURCES_PREFERENCE =
+            RUNTIME_SETTINGS + "org.eclipse.core.resources.prefs";
     static final String LAUNCHING_PREFERENCES =
             RUNTIME_SETTINGS + "org.eclipse.jdt.launching.prefs";
     
@@ -126,11 +128,13 @@ public final class Workspace {
             "org.eclipse.jdt.launching.JRE_CONTAINER";
     
     private File corePrefFile;
+    private File resourcesPrefFile;
     private File launchingPrefsFile;
     private File resourceProjectsDir;
     private File workspaceDir;
     
     private Set<Variable> variables;
+    private Set<Variable> resourcesVariables;
     private Set projects = new HashSet();
     private Map jreContainers;
     private Map<String, List<String>> userLibraries;
@@ -157,6 +161,7 @@ public final class Workspace {
     private Workspace(File workspaceDir) {
         this.workspaceDir = workspaceDir;
         corePrefFile = new File(workspaceDir, CORE_PREFERENCE);
+        resourcesPrefFile = new File(workspaceDir, RESOURCES_PREFERENCE);
         launchingPrefsFile = new File(workspaceDir, LAUNCHING_PREFERENCES);
         resourceProjectsDir = new File(workspaceDir, RESOURCE_PROJECTS_DIR);
     }
@@ -167,6 +172,10 @@ public final class Workspace {
     
     File getCorePreferenceFile() {
         return corePrefFile;
+    }
+    
+    File getResourcesPreferenceFile() {
+        return resourcesPrefFile;
     }
     
     File getLaunchingPrefsFile() {
@@ -184,8 +193,19 @@ public final class Workspace {
         variables.add(var);
     }
     
+    void addResourcesVariable(Variable var) {
+        if (resourcesVariables == null) {
+            resourcesVariables = new HashSet<Variable>();
+        }
+        resourcesVariables.add(var);
+    }
+    
     Set<Variable> getVariables() {
         return variables;
+    }
+    
+    Set<Variable> getResourcesVariables() {
+        return resourcesVariables;
     }
     
     void setJREContainers(Map jreContainers) {
