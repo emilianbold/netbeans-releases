@@ -15,19 +15,21 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="cbEnableDnd" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="cbEnableMinimumSize" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="cbEnableFloating" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="cbEnableSliding" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="cbEnableMaximization" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="cbEnableViewClosing" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="cbEnableEditorClosing" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="cbEnableResizing" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbEnableMinimumSize" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbEnableMaximization" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="cbEnableDnd" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="55" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -35,7 +37,10 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="cbEnableDnd" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="cbEnableDnd" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="cbEnableFloating" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -50,7 +55,7 @@
               <Component id="cbEnableResizing" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="cbEnableMinimumSize" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace pref="32" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -109,6 +114,13 @@
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/customizer/Bundle.properties" key="LBL_EnableMaximization" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabel1">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/customizer/Bundle.properties" key="SuiteCustomizerWindowSystemBranding.jLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>

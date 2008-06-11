@@ -130,6 +130,7 @@ public class SuiteCustomizerWindowSystemBranding extends NbPropertyPanel.Suite {
         cbEnableResizing = new javax.swing.JCheckBox();
         cbEnableMinimumSize = new javax.swing.JCheckBox();
         cbEnableMaximization = new javax.swing.JCheckBox();
+        jLabel1 = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(cbEnableDnd, org.openide.util.NbBundle.getMessage(SuiteCustomizerWindowSystemBranding.class, "LBL_EnableDnD")); // NOI18N
 
@@ -147,28 +148,34 @@ public class SuiteCustomizerWindowSystemBranding extends NbPropertyPanel.Suite {
 
         org.openide.awt.Mnemonics.setLocalizedText(cbEnableMaximization, org.openide.util.NbBundle.getMessage(SuiteCustomizerWindowSystemBranding.class, "LBL_EnableMaximization")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SuiteCustomizerWindowSystemBranding.class, "SuiteCustomizerWindowSystemBranding.jLabel1.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(cbEnableDnd)
+                    .add(cbEnableMinimumSize)
                     .add(cbEnableFloating)
                     .add(cbEnableSliding)
+                    .add(cbEnableMaximization)
                     .add(cbEnableViewClosing)
                     .add(cbEnableEditorClosing)
                     .add(cbEnableResizing)
-                    .add(cbEnableMinimumSize)
-                    .add(cbEnableMaximization))
-                .addContainerGap(55, Short.MAX_VALUE))
+                    .add(cbEnableDnd))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(cbEnableDnd)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel1)
+                    .add(cbEnableDnd))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbEnableFloating)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -183,7 +190,7 @@ public class SuiteCustomizerWindowSystemBranding extends NbPropertyPanel.Suite {
                 .add(cbEnableResizing)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbEnableMinimumSize)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(32, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
             
@@ -197,6 +204,7 @@ public class SuiteCustomizerWindowSystemBranding extends NbPropertyPanel.Suite {
     private javax.swing.JCheckBox cbEnableResizing;
     private javax.swing.JCheckBox cbEnableSliding;
     private javax.swing.JCheckBox cbEnableViewClosing;
+    private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
     
     private BasicBrandingModel getBrandingModel() {
