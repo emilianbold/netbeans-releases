@@ -167,3 +167,4 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-modules-websvc-serverapi@" value="${javadoc.docs.org-netbeans-modules-websvc-serverapi}"/>
 <replacefilter token="@org-netbeans-modules-extexecution@" value="${javadoc.docs.org-netbeans-modules-extexecution}"/>
 <replacefilter token="@org-netbeans-modules-print@" value="${javadoc.docs.org-netbeans-modules-print}"/>
+<replacefilter token="@org-netbeans-modules-xml-core@" value="${javadoc.docs.org-netbeans-modules-xml-core}"/>

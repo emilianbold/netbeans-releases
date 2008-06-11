@@ -55,8 +55,8 @@ import javax.swing.Action;
  *
  * If the data is a Swing component which extends
  * <code>javax.swing.JComponent</code> and is shown in a
- * <code>org.openide.windows.TopComponent<code>,
- * not <code>null</code> key <code>"java.awt.print.Printable.class"<code>
+ * <code>org.openide.windows.TopComponent</code>,
+ * not <code>null</code> key <code>"java.awt.print.Printable.class"</code>
  * in the component should be set, see example:
  *
  * <blockquote><pre>
