@@ -70,7 +70,7 @@ public class ClassPathContainerResolver {
      * 
      * This method is called after .classpath file was parsed.
      */
-    public static boolean resolve(DotClassPathEntry entry) {
+    public static boolean resolve(Workspace workspace, DotClassPathEntry entry) {
         assert entry.getKind() == DotClassPathEntry.Kind.CONTAINER : entry;
         
         String container = entry.getRawPath();
@@ -115,7 +115,6 @@ public class ClassPathContainerResolver {
      */
     public static void setup(Workspace workspace, DotClassPathEntry entry, List<String> importProblems) throws IOException {
         assert entry.getKind() == DotClassPathEntry.Kind.CONTAINER : entry;
-        assert entry.getContainerMapping() != null : entry;
         
         String container = entry.getRawPath();
        
@@ -127,8 +126,13 @@ public class ClassPathContainerResolver {
                 return;
             }
             Map<String,List<URL>> content = new HashMap<String,List<URL>>();
+            if (workspace == null) {
+                importProblems.add("User library '"+library+"' cannot be created because project is being imported without Eclipse workspace.");
+                return;
+            }
             content.put("classpath", workspace.getJarsForUserLibrary(container.substring(USER_LIBRARY_CONTAINER.length())));
             lm.createLibrary("j2se", library, content);
+            assert entry.getContainerMapping() != null : entry;
         }
     }
         

@@ -43,7 +43,7 @@
           <Group type="102" attributes="0">
               <Component id="projectListLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="projectTableSP" pref="319" max="32767" attributes="0"/>
+              <Component id="projectTableSP" pref="302" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
                   <Group type="103" alignment="1" groupAlignment="3" attributes="0">

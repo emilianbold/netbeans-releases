@@ -134,17 +134,19 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         return ProjectFactorySupport.calculateKey(model);
     }
 
-    public void update(Project project, ProjectImportModel model, String oldKey) throws IOException {
+    public String update(Project project, ProjectImportModel model, String oldKey, List<String> importProblems) throws IOException {
         String newKey = calculateKey(model);
         
         // update project classpath
-        ProjectFactorySupport.synchronizeProjectClassPath(project, ((J2SEProject)project).getAntProjectHelper(), model, oldKey, newKey, new ArrayList<String>());
+        String actualKey = ProjectFactorySupport.synchronizeProjectClassPath(project, ((J2SEProject)project).getAntProjectHelper(), model, oldKey, newKey, importProblems);
         
         // TODO:
         // update source roots and platform
         
         // save project
         ProjectManager.getDefault().saveProject(project);
+        
+        return actualKey;
     }
 
     public Icon getProjectTypeIcon() {

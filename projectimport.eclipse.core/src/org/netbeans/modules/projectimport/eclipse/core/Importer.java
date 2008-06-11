@@ -90,10 +90,6 @@ final class Importer {
     private boolean done;
     private List<String> warnings = new ArrayList<String>();
     
-    private JavaPlatform[] nbPlfs; // All netbeans platforms
-    private List<JavaPlatform> justCreatedPlatforms = new ArrayList<JavaPlatform>(); // platforms created during import
-    private File nbDefPlfFile; // NetBeans default platform directory
-    
     /**
      * 
      * @param eclProjects list of eclipse projects to import
@@ -112,15 +108,6 @@ final class Importer {
      * information about current progress.
      */
     void startImporting() {
-        nbPlfs = JavaPlatformManager.getDefault().getInstalledPlatforms();
-        JavaPlatform defPlf = JavaPlatformManager.getDefault().getDefaultPlatform();
-        Collection installFolder = defPlf.getInstallFolders();
-        if (installFolder.isEmpty()) {
-            logWarning(NbBundle.getMessage(Importer.class, "MSG_NotValidPlatformsInNB")); // NOI18N
-            return;
-        } else {
-            nbDefPlfFile = FileUtil.toFile((FileObject) installFolder.toArray()[0]);
-        }
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 ProjectManager.mutex().writeAccess(new Runnable() {
@@ -200,7 +187,8 @@ final class Importer {
         } else {
             dest = FileUtil.normalizeFile(new File(destination+File.separator+eclProject.getDirectory().getName())).getAbsolutePath();
         }
-        ProjectImportModel model = new ProjectImportModel(eclProject, dest, getJavaPlatform(eclProject), nbProjects);
+        ProjectImportModel model = new ProjectImportModel(eclProject, dest, 
+                JavaPlatformSupport.getJavaPlatformSupport().getJavaPlatform(eclProject, projectImportProblems), nbProjects);
         Project p;
         if (alreadyImported != null) {
             p = alreadyImported;
@@ -213,96 +201,18 @@ final class Importer {
                 String key = updater.calculateKey(model);
                 EclipseProjectReference ref = new EclipseProjectReference(p, 
                         eclProject.getDirectory().getAbsolutePath(), 
-                        eclProject.getWorkspace().getDirectory().getAbsolutePath(), "0", key);
+                        eclProject.getWorkspace() != null ? eclProject.getWorkspace().getDirectory().getAbsolutePath() : null, "0", key);
                 EclipseProjectReference.write(p, ref);
             }
             assert p != null;
         }
-        for (String s : projectImportProblems) {
-            importProblems.add(""+eclProject.getName()+": "+s);
+        if (projectImportProblems.size() > 0) {
+            importProblems.add("Project "+eclProject.getName()+" import problems:");
+            for (String s : projectImportProblems) {
+                importProblems.add(" "+s);
+            }
         }
         return p;
-    }
-    
-    /** Sets <code>JavaPlatform</code> for the given project */
-    private JavaPlatform getJavaPlatform(EclipseProject eclProject) throws IOException {
-        //        progressInfo = "Setting JDK for \"" + eclProject.getName() + "\"";
-        String eclPlfDir = eclProject.getJDKDirectory();
-        // eclPlfDir can be null in a case when a JDK was set for an eclipse
-        // project in Eclipse then the directory with JDK was deleted from
-        // filesystem and then a project is imported into NetBeans
-        if (eclPlfDir == null) {
-            return null;
-        }
-        File eclPlfFile = FileUtil.normalizeFile(new File(eclPlfDir));
-        if (eclPlfFile.equals(nbDefPlfFile)) { // use default platform
-            return null;
-        }
-        JavaPlatform nbPlf = null;
-        List<JavaPlatform> all = new ArrayList<JavaPlatform>(justCreatedPlatforms);
-        all.addAll(Arrays.<JavaPlatform>asList(nbPlfs));
-        for (JavaPlatform current : all) {
-            Collection instFolders = current.getInstallFolders();
-            if (instFolders.isEmpty()) {
-                logger.fine("Java platform \"" + current.getDisplayName() + // NOI18N
-                        "\" is not valid. Skipping..."); // NOI18N
-                continue;
-            }
-            File nbPlfDir = FileUtil.toFile((FileObject) instFolders.toArray()[0]);
-            if (nbPlfDir.equals(eclPlfFile)) {
-                nbPlf = current;
-                // found
-                break;
-            }
-        }
-        // If we are not able to find any platform let's use the "broken
-        // platform" which can be easily added by user with "Resolve Reference
-        // Problems" feature. Such behaviour is much better then using a default
-        // platform when user imports more projects.
-        if (nbPlf == null) {
-            logger.fine("Creating new platform: " + eclPlfFile.getAbsolutePath()); // NOI18N
-            FileObject fo = FileUtil.toFileObject(eclPlfFile);
-            if (fo != null) {
-                NewJ2SEPlatform plat = NewJ2SEPlatform.create(fo);
-                plat.run();
-                if (plat.isValid()) {
-                    if (plat.findTool("javac")!= null) {    //NOI18N
-                        String displayName = createPlatformDisplayName(plat);
-                        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(displayName, null);
-                        if (platforms.length > 0) {
-                            return platforms[0];
-                        }
-                        String antName = createPlatformAntName(displayName);
-                        plat.setDisplayName(displayName);
-                        plat.setAntName(antName);
-                        FileObject platformsFolder = Repository.getDefault().
-                                getDefaultFileSystem().findResource(
-                                "Services/Platforms/org-netbeans-api-java-Platform"); //NOI18N
-                        assert platformsFolder != null;
-                        DataObject dobj = PlatformConvertor.create(plat,
-                                DataFolder.findFolder(platformsFolder), antName);
-                        nbPlf = (JavaPlatform) dobj.getNodeDelegate().getLookup().
-                                lookup(JavaPlatform.class);
-                        justCreatedPlatforms.add(nbPlf);
-                        // update installed platform
-                        nbPlfs = JavaPlatformManager.getDefault().getInstalledPlatforms();
-                    } else {
-                        logWarning(NbBundle.getMessage(Importer.class, "MSG_JRECannotBeUsed", // NOI18N
-                                eclProject.getName()), true);
-                    }
-                } else {
-                    // tzezula: TODO: User should be notified in the UI and
-                    // probably default platform is used (not sure if it is
-                    // according to UI spec)
-                    logWarning( "Cannot create new J2SE platform, the " + // NOI18N
-                            "default platform will be used."); // NOI18N
-                }
-            } else {
-                logWarning(NbBundle.getMessage(Importer.class, "MSG_JDKDoesnExistUseDefault", // NOI18N
-                        eclProject.getName(), eclPlfFile.getAbsolutePath()), true);
-            }
-        }
-        return nbPlf;
     }
     
     private void logWarning(String message) {
@@ -318,46 +228,6 @@ final class Importer {
             warnings.add(message);
         }
         logger.warning(message);
-    }
-    
-    
-    private static String createPlatformDisplayName(JavaPlatform plat) {
-        Map<String, String> m = plat.getSystemProperties();
-        String vmVersion = m.get("java.specification.version");        //NOI18N
-        StringBuffer displayName = new StringBuffer("JDK ");
-        if (vmVersion != null) {
-            displayName.append(vmVersion);
-        }
-        return displayName.toString();
-    }
-    
-    private String createPlatformAntName(String displayName) {
-        assert displayName != null && displayName.length() > 0;
-        String antName = PropertyUtils.getUsablePropertyName(displayName);
-        if (platformExists(antName)) {
-            String baseName = antName;
-            int index = 1;
-            antName = baseName + Integer.toString(index);
-            while (platformExists(antName)) {
-                index ++;
-                antName = baseName + Integer.toString(index);
-            }
-        }
-        return antName;
-    }
-    
-    /**
-     * Checks if the platform of given antName is already installed
-     */
-    private boolean platformExists(String antName) {
-        assert antName != null && antName.length() > 0;
-        for (int i=0; i< nbPlfs.length; i++) {
-            String otherName = (String) nbPlfs[i].getProperties().get("platform.ant.name");  //NOI18N
-            if (antName.equals(otherName)) {
-                return true;
-            }
-        }
-        return false;
     }
 
 }

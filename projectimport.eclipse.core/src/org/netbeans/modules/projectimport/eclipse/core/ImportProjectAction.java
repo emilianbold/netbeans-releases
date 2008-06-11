@@ -100,19 +100,7 @@ public class ImportProjectAction extends CallableSystemAction {
                     progressTimer.stop();
                     progressDialog.setVisible(false);
                     progressDialog.dispose();
-                    List<String> warnings = importer.getWarnings();
-                    if (warnings.size() > 0) {
-                        StringBuffer messages = new StringBuffer(
-                                NbBundle.getMessage(ImportProjectAction.class,
-                                "MSG_ProblemsOccured")); // NOI18N
-                        messages.append("\n\n"); // NOI18N
-                        for (String message : warnings) {
-                            messages.append(" - " + message + "\n"); // NOI18N
-                        }
-                        NotifyDescriptor d = new DialogDescriptor.Message(
-                                messages.toString(), NotifyDescriptor.WARNING_MESSAGE);
-                        DialogDisplayer.getDefault().notify(d);
-                    }
+                    ImportProblemsPanel.showReport("Import Issues", importer.getWarnings());
                     // open created projects when importing finished
                     if (importer.getProjects().length > 0) {
                         OpenProjects.getDefault().open(importer.getProjects(), true);

@@ -154,7 +154,8 @@ public class ProjectFactorySupportTest extends NbTestCase {
             "var=MAVEN_REPOPO/commons-cli/commons-cli/1.0/commons-cli-1.0.jar;" +
             "file=/home/dev/hibernate-annotations-3.3.1.GA/lib/ejb3-persistence.jar;" +
             "ant=libs.junit.classpath;" +
-            "prj=JavaLibrary1;";
+            "prj=JavaLibrary1;"+
+            "jre="+JavaPlatform.getDefault().getDisplayName()+";";
         String result = ProjectFactorySupport.calculateKey(model);
         assertEquals(expResult, result);
     }
@@ -221,7 +222,8 @@ public class ProjectFactorySupportTest extends NbTestCase {
             "var=MAVEN_REPOPO/commons-cli/commons-cli/1.0/commons-cli-1.0.jar;" +
             "file=/home/dev/hibernate-annotations-3.3.1.GA/lib/ejb3-persistence.jar;" +
             "ant=libs.junit.classpath;" +
-            "prj=JavaLibrary1;", oldKey);
+            "prj=JavaLibrary1;"+
+            "jre="+JavaPlatform.getDefault().getDisplayName()+";", oldKey);
         
         // add some items to classpath:
         eclipse = getTestableProject(2, getWorkDir());
@@ -236,7 +238,8 @@ public class ProjectFactorySupportTest extends NbTestCase {
             "ant=libs.junit.classpath;" +
             "ant=libs.david.classpath;" +
             "prj=JavaLibrary1;" +
-            "prj=jlib;", newKey);
+            "prj=jlib;"+
+            "jre="+JavaPlatform.getDefault().getDisplayName()+";", newKey);
         ProjectFactorySupport.synchronizeProjectClassPath(p, helper, model, oldKey, newKey, importProblems);
         ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         assertEquals(
@@ -260,7 +263,8 @@ public class ProjectFactorySupportTest extends NbTestCase {
             "var=MAVEN_REPOPO/some/other.jar;" +
             "file=/some/other.jar;" +
             "ant=libs.david.classpath;" +
-            "prj=jlib;", newKey);
+            "prj=jlib;"+
+            "jre="+JavaPlatform.getDefault().getDisplayName()+";", newKey);
         ProjectFactorySupport.synchronizeProjectClassPath(p, helper, model, oldKey, newKey, importProblems);
         ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         assertEquals(
@@ -271,4 +275,33 @@ public class ProjectFactorySupportTest extends NbTestCase {
             ep.getProperty("javac.classpath").replace(';', ':'));
         
     }
+    
+    public void testUpdateProjectClassPathForNonExistingRequiredProject() throws IOException {
+        EclipseProject eclipse = getTestableProject(1, getWorkDir());
+        File prj = new File(getWorkDirPath()+File.separator+"nb");
+        ProjectImportModel model = new ProjectImportModel(eclipse, prj.getAbsolutePath()+File.separator+"test", 
+                JavaPlatform.getDefault(), Arrays.<Project>asList(new Project[0]));
+        final AntProjectHelper helper = J2SEProjectGenerator.createProject(
+                new File(prj, "test"), "test", model.getEclipseSourceRootsAsFileArray(), 
+                model.getEclipseTestSourceRootsAsFileArray(), null, null, null);
+        
+        List<String> importProblems = new ArrayList<String>();
+        ProjectFactorySupport.updateProjectClassPath(helper, model, importProblems);
+        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        // required project "JavaLibrary1" is not available and therefore should not be
+        // on classpath nor in key
+        assertEquals(
+            "${var.MAVEN_REPOPO}/commons-cli/commons-cli/1.0/commons-cli-1.0.jar:" +
+            "${file.reference.ejb3-persistence.jar}:" +
+            "${libs.junit.classpath}", 
+            ep.getProperty("javac.classpath").replace(';', ':'));
+        String oldKey = ProjectFactorySupport.calculateKey(model);
+        assertEquals(
+            "src=src;" +
+            "var=MAVEN_REPOPO/commons-cli/commons-cli/1.0/commons-cli-1.0.jar;" +
+            "file=/home/dev/hibernate-annotations-3.3.1.GA/lib/ejb3-persistence.jar;" +
+            "ant=libs.junit.classpath;"+
+            "jre="+JavaPlatform.getDefault().getDisplayName()+";", oldKey);
+    }
+    
 }

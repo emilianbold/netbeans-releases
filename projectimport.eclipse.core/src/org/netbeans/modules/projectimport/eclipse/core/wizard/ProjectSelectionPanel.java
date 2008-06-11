@@ -225,7 +225,7 @@ final class ProjectSelectionPanel extends JPanel {
         String parent = destination.getText();
         if (!parent.equals(projects[0].getWorkspace().getDirectory().getAbsolutePath())) {
             for (EclipseProject prj : allProjects()) {
-                String destDir = parent + "/" + prj.getName(); // NOI18N
+                String destDir = parent + "/" + prj.getDirectory().getName(); // NOI18N
                 if (new File(destDir).exists()) {
                     setErrorMessage(ProjectImporterWizard.getMessage(
                             "MSG_ProjectExist", prj.getName())); // NOI18N

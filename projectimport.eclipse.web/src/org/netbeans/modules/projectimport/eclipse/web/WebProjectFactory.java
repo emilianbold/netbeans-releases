@@ -108,7 +108,9 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         createData.setServerInstanceID(Deployment.getDefault().getServerInstanceIDs()[0]);
         createData.setJavaEEVersion("1.5");
         createData.setSourceLevel("1.5");
-        createData.setJavaPlatformName(model.getJavaPlatform().getDisplayName());
+        if (model.getJavaPlatform() != null) {
+            createData.setJavaPlatformName(model.getJavaPlatform().getDisplayName());
+        }
         createData.setServerLibraryName(null);
 
         FileObject root = FileUtil.toFileObject(model.getEclipseProjectFolder());
@@ -193,17 +195,19 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         return ProjectFactorySupport.calculateKey(model) + "web=" + webData.webRoot + ";" + "context=" + webData.contextRoot + ";";
     }
 
-    public void update(Project project, ProjectImportModel model, String oldKey) throws IOException {
+    public String update(Project project, ProjectImportModel model, String oldKey, List<String> importProblems) throws IOException {
         String newKey = calculateKey(model);
         
         // update project classpath
-        ProjectFactorySupport.synchronizeProjectClassPath(project, ((WebProject)project).getAntProjectHelper(), model, oldKey, newKey, new ArrayList<String>());
+        String actualKey = ProjectFactorySupport.synchronizeProjectClassPath(project, ((WebProject)project).getAntProjectHelper(), model, oldKey, newKey, importProblems);
         
         // TODO:
         // update source roots and platform and server and web root and context
         
         // save project
         ProjectManager.getDefault().saveProject(project);
+        
+        return actualKey;
     }
 
     public Icon getProjectTypeIcon() {
