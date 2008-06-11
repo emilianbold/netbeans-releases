@@ -511,17 +511,33 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             if (rspec.isRSpecInstalled() && RSpecSupport.isSpecFile(file)) {
                 // Save all files first - this rake file could be accessing other files
                 LifecycleManager.getDefault().saveAll();
-                rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context, project), true,
-                        COMMAND_DEBUG_SINGLE.equals(command));
+                 // not using the UI test runner for debugging for now, see #136930
+                /* 
+                TestRunner rspecRunner = getTestRunner(TestRunner.TestType.RSPEC);
+                if (rspecRunner != null) {
+                    rspecRunner.runTest(file, COMMAND_DEBUG_SINGLE.equals(command));
+                } else {
+                 */
+                    rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context, project), true,
+                            COMMAND_DEBUG_SINGLE.equals(command));
+                //}
                 return;
             }
             
             saveFile(file);
             
             //String target = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),file), file);
-            runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(),
-                    file.getNameExt(), context, COMMAND_DEBUG_SINGLE.equals(command), null);
-            return;
+            if (file.getName().endsWith("_test")) { // NOI18N
+                // Run test normally - don't pop up browser
+                TestRunner testRunner = getTestRunner(TestRunner.TestType.TEST_UNIT);
+                if (testRunner != null) {
+                    testRunner.getInstance().runTest(file, COMMAND_DEBUG_SINGLE.equals(command));
+                } else {
+                    runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(),
+                            file.getNameExt(), context, COMMAND_DEBUG_SINGLE.equals(command), null);
+                }
+                return;
+            }
         } else if (COMMAND_REBUILD.equals(command) || COMMAND_BUILD.equals(command) || COMMAND_CLEAN.equals(command)) {
             RakeRunner runner = new RakeRunner(project);
             runner.showWarnings(true);
@@ -615,8 +631,9 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             RSpecSupport rspec = new RSpecSupport(project);
             if (rspec.isRSpecInstalled() && RSpecSupport.isSpecFile(file)) {
                 TestRunner rspecRunner = getTestRunner(TestRunner.TestType.RSPEC);
-                if (rspecRunner != null) {
-                    rspecRunner.runTest(file);
+                 // not using the UI test runner for debugging for now, see #136930
+                if (rspecRunner != null && !isDebug) {
+                    rspecRunner.runTest(file, isDebug);
                 } else {
                     rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context, project), true,
                             isDebug);
@@ -626,7 +643,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             
             TestRunner testRunner = getTestRunner(TestRunner.TestType.TEST_UNIT);
             if (testRunner != null) {
-                testRunner.getInstance().runTest(file);
+                testRunner.getInstance().runTest(file, isDebug);
             } else {
                 runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(),
                         file.getNameExt(), context, isDebug, new OutputRecognizer[]{new TestNotifier(true, true)});
@@ -636,7 +653,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         if (COMMAND_TEST.equals(command)) {
             TestRunner testRunner = getTestRunner(TestRunner.TestType.TEST_UNIT);
             if (testRunner != null) {
-                testRunner.getInstance().runAllTests(project);
+                testRunner.getInstance().runAllTests(project, false);
             } else {
                 File pwd = FileUtil.toFile(project.getProjectDirectory());
                 RakeRunner runner = new RakeRunner(project);
@@ -652,7 +669,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         if (COMMAND_RSPEC.equals(command)) {
             TestRunner testRunner = getTestRunner(TestRunner.TestType.RSPEC);
             if (testRunner != null) {
-                testRunner.getInstance().runAllTests(project);
+                testRunner.getInstance().runAllTests(project, false);
             } else {
                 File pwd = FileUtil.toFile(project.getProjectDirectory());
                 RakeRunner runner = new RakeRunner(project);

@@ -61,9 +61,10 @@ public enum Platform {
     SOLARIS_SPARC(OS_FAMILY_SOLARIS, HARDWARE_SPARC, null, null, "Solaris SPARC"),
     
     MACOSX(OS_FAMILY_MACOSX, null, null, null, "MacOS X"),
-    MACOSX_X86(OS_FAMILY_MACOSX, HARDWARE_X86, null, null, "MacOS X Intel"),
-    MACOSX_X64(OS_FAMILY_MACOSX, HARDWARE_X64, null, null, "MacOS X Intel X64"),
-    MACOSX_PPC(OS_FAMILY_MACOSX, HARDWARE_PPC, null, null, "MacOS X PowerPC"),
+    MACOSX_X86(OS_FAMILY_MACOSX, HARDWARE_X86, null, null, "Mac OS X Intel"),
+    MACOSX_X64(OS_FAMILY_MACOSX, HARDWARE_X64, null, null, "Mac OS X Intel X64"),
+    MACOSX_PPC(OS_FAMILY_MACOSX, HARDWARE_PPC, null, null, "Mac OS X PowerPC"),
+    MACOSX_PPC64(OS_FAMILY_MACOSX, HARDWARE_PPC64, null, null, "Mac OS X PowerPC X64"),
     ;
     
     /////////////////////////////////////////////////////////////////////////////////

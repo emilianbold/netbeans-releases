@@ -49,8 +49,10 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.WeakHashMap;
+import java.util.prefs.Preferences;
 
 import org.openide.text.Line;
+import org.openide.util.NbPreferences;
 import org.netbeans.modules.xml.validation.ValidateAction;
 import org.netbeans.modules.xml.validation.ValidateAction.RunAction;
 import org.netbeans.modules.xml.validation.ValidationOutputWindowController;
@@ -123,6 +125,13 @@ public final class Controller implements ComponentListener {
 
   public void triggerValidation() {
 //stackTrace();
+    log();
+    log("ALLOW Background Validation: " + isAllowBackgroundValidation()); // NOI18N
+    log();
+
+    if ( !isAllowBackgroundValidation()) {
+      return;
+    }
     log();
     log("TIMER-TRIGGER"); // NOI18N
     log();
@@ -226,6 +235,18 @@ public final class Controller implements ComponentListener {
     Validation.stop();
   }
 
+  private boolean isAllowBackgroundValidation() {
+    return get(ALLOW_BACKGROUND_VALIDATION, true);
+  }
+
+  private boolean get(String name, boolean defaultValue) {
+    return getPreferences().getBoolean(name, defaultValue);
+  }
+
+  private Preferences getPreferences() {
+    return NbPreferences.forModule(org.netbeans.modules.xml.schema.model.SchemaModel.class);
+  } 
+
   private void notifyListeners(List<ResultItem> items) {
     if (items == null) {
       return;
@@ -308,4 +329,5 @@ public final class Controller implements ComponentListener {
   private Map<Listener, Object> myListeners;
 
   private static final long DELAY = 5432L;
+  private static final String ALLOW_BACKGROUND_VALIDATION = "allow.background.validation"; // NOI18N
 }

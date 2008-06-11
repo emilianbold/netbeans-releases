@@ -97,8 +97,7 @@ public final class Option {
       myPageFormat = job.defaultPage();
 
       // restore
-      myPageFormat.setOrientation(
-        round(get(PAGE_ORIENTATION, PageFormat.PORTRAIT)));
+      myPageFormat.setOrientation(round(get(PAGE_ORIENTATION, PageFormat.PORTRAIT)));
       Paper paper = myPageFormat.getPaper();
 
       if (get(PAPER_WIDTH, null) != null && get(PAPER_HEIGHT, null) != null) {
@@ -162,8 +161,7 @@ public final class Option {
   }
 
   public int getFooterY() {
-    return getPageY() + getPageHeight() + round(getBound(
-      getFooterFont()).getHeight() - getBound(getFooterFont()).getMaxY());
+    return getPageY() + getPageHeight() + round(getBound(getFooterFont()).getHeight() - getBound(getFooterFont()).getMaxY());
   }
   
   public boolean hasBorder() {
@@ -173,7 +171,6 @@ public final class Option {
   public void setBorder(boolean value) {
     set(BORDER, value);
   }
-
 
   public boolean isAsEditor() {
     return get(AS_EDITOR, false);
@@ -473,13 +470,8 @@ public final class Option {
   public Graphics2D getGraphics(Graphics g) {
     Graphics2D graphics = (Graphics2D) g;
 
-    graphics.setRenderingHint(
-      RenderingHints.KEY_ANTIALIASING,
-      RenderingHints.VALUE_ANTIALIAS_ON);
-
-    graphics.setRenderingHint(
-      RenderingHints.KEY_FRACTIONALMETRICS,
-      RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+    graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    graphics.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
 
     return graphics;
   }
@@ -489,15 +481,10 @@ public final class Option {
   private static final Option DEFAULT = new Option();
   private static final double INCH = 72.0; // .pt
 
-  private static final Font DEFAULT_TITLE_FONT =
-    new Font("Serif", Font.PLAIN, 10); //NOI18N
+  public static final FontRenderContext FONT_RENDER_CONTEXT = new FontRenderContext(null, true, true);
 
-  private static final Font DEFAULT_TEXT_FONT =
-    new Font("Monospaced", Font.PLAIN, 10); // NOI18N
-
-  public static final FontRenderContext FONT_RENDER_CONTEXT
-    = new FontRenderContext(null, true, true);
-
+  private static final Font DEFAULT_TITLE_FONT = new Font("Serif", Font.PLAIN, 10); //NOI18N
+  private static final Font DEFAULT_TEXT_FONT = new Font("Monospaced", Font.PLAIN, 10); // NOI18N
   private static final Color DEFAULT_BACGROUND_COLOR = new Color(255, 250, 255);
 
   private static final String COMMA = ","; // NOI18N
@@ -507,11 +494,9 @@ public final class Option {
   private static final String HEADER_CENTER_TEXT = EMPTY;
   private static final String HEADER_RIGHT_TEXT = EMPTY;
 
-  private static final String FOOTER_LEFT_TEXT = getPageOfCount(
-    getRowColumn(Macro.ROW.getName(), Macro.COLUMN.getName()), Macro.COUNT.getName());
+  private static final String FOOTER_LEFT_TEXT = getPageOfCount(getRowColumn(Macro.ROW.getName(), Macro.COLUMN.getName()), Macro.COUNT.getName());
   private static final String FOOTER_CENTER_TEXT = EMPTY;
-  private static final String FOOTER_RIGHT_TEXT = Macro.MODIFIED_DATE.getName() +
-    "  " + Macro.MODIFIED_TIME.getName(); // NOI18N
+  private static final String FOOTER_RIGHT_TEXT = Macro.MODIFIED_DATE.getName() + "  " + Macro.MODIFIED_TIME.getName(); // NOI18N
 
   private static final String AS_EDITOR = "print.text.as.editor"; // NOI18N
   private static final String WRAP_LINES = "print.text.wrap.lines"; // NOI18N

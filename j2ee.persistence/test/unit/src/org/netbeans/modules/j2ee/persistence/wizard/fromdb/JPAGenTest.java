@@ -53,6 +53,7 @@ import org.netbeans.modules.dbschema.SchemaElementUtil;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.DbSchemaEjbGenerator;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityClass;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityMember;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.CollectionType;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.FetchType;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.GeneratedTables;
 import org.netbeans.modules.j2ee.persistence.sourcetestsupport.SourceTestSupport;
@@ -100,8 +101,8 @@ public class JPAGenTest extends SourceTestSupport{
         
         EntityClass user = getUserEntity();
         
-        EntityClass product = new EntityClass(false, "testGeneratTwoUnrelated_schema", null ,"PRODUCT", 
-                getWorkDirFO(), packageName, "Product", FetchType.DEFAULT, false);
+        EntityClass product = new EntityClass(false, null, null ,"PRODUCT", 
+                getWorkDirFO(), packageName, "Product", FetchType.DEFAULT, false, null, CollectionType.COLLECTION);
         product.usePkField(true);
         
         EntityMemberImpl description = new EntityMemberImpl();
@@ -142,7 +143,7 @@ public class JPAGenTest extends SourceTestSupport{
                 break;
             }
         }
-        GenerateTablesImpl genTables = new GenerateTablesImpl(schema.getSchema().getName(), schema.getCatalog().getName(), tables, packageName, getWorkDirFO());
+        GenerateTablesImpl genTables = new GenerateTablesImpl(schema.getCatalog().getName(), schema.getSchema().getName(), tables, packageName, getWorkDirFO());
         
         EntityClass[] beans = new DbSchemaEjbGenerator(genTables, schema).getBeans();
         
@@ -163,7 +164,7 @@ public class JPAGenTest extends SourceTestSupport{
         relatedTables.add("PRODUCT_CODE");
         relatedTables.add("MANUFACTURER");
         
-        GenerateTablesImpl genTables = new GenerateTablesImpl(schema.getSchema().getName(), schema.getCatalog().getName(), relatedTables, packageName, getWorkDirFO());
+        GenerateTablesImpl genTables = new GenerateTablesImpl(schema.getCatalog().getName(), schema.getSchema().getName(), relatedTables, packageName, getWorkDirFO());
         
         EntityClass[] beans = new DbSchemaEjbGenerator(genTables, schema).getBeans();
         
@@ -194,7 +195,9 @@ public class JPAGenTest extends SourceTestSupport{
     
     
     private EntityClass getUserEntity() throws IOException{
-        EntityClass user = new EntityClass(false, "TestUserEntity_schema", null, "USER", getWorkDirFO(), packageName, "User", FetchType.DEFAULT, false);
+        EntityClass user = new EntityClass(false, null, null, 
+                "USER", getWorkDirFO(), packageName, "User", FetchType.DEFAULT, 
+                false, null, CollectionType.COLLECTION);
         user.usePkField(true);
         
         EntityMemberImpl name = new EntityMemberImpl();
@@ -313,7 +316,7 @@ public class JPAGenTest extends SourceTestSupport{
         private String packageName;
         private FileObject rootFolder;
         
-        public GenerateTablesImpl(String schema, String catalog, Set<String> tableNames, String packageName,
+        public GenerateTablesImpl(String catalog, String schema, Set<String> tableNames, String packageName,
                 FileObject rootFolder) {
             this.schemaName = schema;
             this.catalogName = catalog;
@@ -356,6 +359,14 @@ public class JPAGenTest extends SourceTestSupport{
 
         public boolean isRegenSchemaAttrs() {
             return false;
+        }
+
+        public Set<List<String>> getUniqueConstraints(String tableName) {
+            return null;
+        }
+
+        public CollectionType getCollectionType() {
+            return CollectionType.COLLECTION;
         }
     }
     

@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -87,7 +88,6 @@ import org.netbeans.modules.xml.retriever.catalog.ProjectCatalogSupport;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.EmbeddableRoot;
 import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Nameable;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.NamedReferenceable;
@@ -101,7 +101,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
@@ -414,56 +413,72 @@ public class SharedUtils {
         }
     }
       
-      public static void showDeleteRefactoringUI(NamedReferenceable target) {
-          org.netbeans.modules.refactoring.spi.ui.RefactoringUI ui  = new DeleteRefactoringUI(target);
-          TopComponent activetc = TopComponent.getRegistry().getActivated();
-          if (activetc instanceof CloneableEditorSupport.Pane) {
-              //new RefactoringPanel(ui, activetc);
-              UI.openRefactoringUI(ui, activetc);
-          } else {
-              // new RefactoringPanel(ui);
-              UI.openRefactoringUI(ui);
-          }
+      public static void showDeleteRefactoringUI(final NamedReferenceable target) {
+          SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                org.netbeans.modules.refactoring.spi.ui.RefactoringUI ui  = new DeleteRefactoringUI(target);
+                TopComponent activetc = TopComponent.getRegistry().getActivated();
+                if (activetc instanceof CloneableEditorSupport.Pane) {
+                  //new RefactoringPanel(ui, activetc);
+                  UI.openRefactoringUI(ui, activetc);
+                } else {
+                  // new RefactoringPanel(ui);
+                  UI.openRefactoringUI(ui);
+                }
+            }
+          });
     }
       
       public static void showRenameRefactoringUI(Nameable target) {
           showRenameRefactoringUI(target, null);
     }
       
-       public static void showRenameRefactoringUI(Nameable target, String newName) {
-          org.netbeans.modules.refactoring.spi.ui.RefactoringUI ui  = new RenameRefactoringUI(target, newName);
-          TopComponent activetc = TopComponent.getRegistry().getActivated();
-          if (activetc instanceof CloneableEditorSupport.Pane) {
-              //new RefactoringPanel(ui, activetc);
-              UI.openRefactoringUI(ui, activetc);
-          } else {
-              // new RefactoringPanel(ui);
-              UI.openRefactoringUI(ui);
-          }
+       public static void showRenameRefactoringUI(final Nameable target, final String newName) {
+          SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                org.netbeans.modules.refactoring.spi.ui.RefactoringUI ui  = new RenameRefactoringUI(target, newName);
+                TopComponent activetc = TopComponent.getRegistry().getActivated();
+                if (activetc instanceof CloneableEditorSupport.Pane) {
+                  //new RefactoringPanel(ui, activetc);
+                  UI.openRefactoringUI(ui, activetc);
+                } else {
+                  // new RefactoringPanel(ui);
+                  UI.openRefactoringUI(ui);
+                }
+            }
+          });
     }
       
-      public static void showFileRenameRefactoringUI(Model target) {
-          org.netbeans.modules.refactoring.spi.ui.RefactoringUI ui  = new FileRenameRefactoringUI(target);
-          TopComponent activetc = TopComponent.getRegistry().getActivated();
-          if (activetc instanceof CloneableEditorSupport.Pane) {
-              //new RefactoringPanel(ui, activetc);
-              UI.openRefactoringUI(ui, activetc);
-          } else {
-              // new RefactoringPanel(ui);
-              UI.openRefactoringUI(ui);
-          }
+      public static void showFileRenameRefactoringUI(final Model target) {
+          SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                org.netbeans.modules.refactoring.spi.ui.RefactoringUI ui  = new FileRenameRefactoringUI(target);
+                TopComponent activetc = TopComponent.getRegistry().getActivated();
+                if (activetc instanceof CloneableEditorSupport.Pane) {
+                  //new RefactoringPanel(ui, activetc);
+                  UI.openRefactoringUI(ui, activetc);
+                } else {
+                  // new RefactoringPanel(ui);
+                  UI.openRefactoringUI(ui);
+                }
+            }
+          });
     }
 
-    public static void showFileRenameRefactoringUI(Model target, String newName) {
-          org.netbeans.modules.refactoring.spi.ui.RefactoringUI ui  = new FileRenameRefactoringUI(target, newName);
-          TopComponent activetc = TopComponent.getRegistry().getActivated();
-          if (activetc instanceof CloneableEditorSupport.Pane) {
-              //new RefactoringPanel(ui, activetc);
-              UI.openRefactoringUI(ui, activetc);
-          } else {
-              // new RefactoringPanel(ui);
-              UI.openRefactoringUI(ui);
-          }
+    public static void showFileRenameRefactoringUI(final Model target, final String newName) {
+          SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                org.netbeans.modules.refactoring.spi.ui.RefactoringUI ui  = new FileRenameRefactoringUI(target, newName);
+                TopComponent activetc = TopComponent.getRegistry().getActivated();
+                if (activetc instanceof CloneableEditorSupport.Pane) {
+                  //new RefactoringPanel(ui, activetc);
+                  UI.openRefactoringUI(ui, activetc);
+                } else {
+                  // new RefactoringPanel(ui);
+                  UI.openRefactoringUI(ui);
+                }
+            }
+          });
     }
       
        /**

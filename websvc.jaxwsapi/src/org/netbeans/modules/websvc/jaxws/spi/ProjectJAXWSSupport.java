@@ -90,8 +90,9 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
     }
     
     public void removeService(String serviceName) {
+        assert serviceName != null;
         JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
-        if (jaxWsModel!=null) {
+        if (jaxWsModel != null && serviceName != null) {
             Service service = jaxWsModel.findServiceByName(serviceName);
             if (service!=null) {
                 // remove the service element as well as the implementation class

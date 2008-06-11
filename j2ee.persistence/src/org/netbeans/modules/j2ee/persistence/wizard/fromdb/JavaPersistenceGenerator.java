@@ -158,7 +158,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             final RelatedCMPHelper helper,
             final FileObject dbSchemaFile,
             final ProgressContributor handle) throws IOException {
-
+        
         generateBeans(helper.getBeans(), helper.isGenerateFinderMethods(), handle, progressPanel);
     }
 
@@ -513,9 +513,20 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     columnAnnArguments.add(genUtils.createAnnotationArgument("nullable", false)); //NOI18N
                 }
                 Integer length = m.getLength();
-                if (entityClass.isRegenSchemaAttrs() && length != null && isCharacterType(memberType)) {
-                    columnAnnArguments.add(genUtils.createAnnotationArgument("length", length)); // NOI18N
+                Integer precision = m.getPrecision();
+                Integer scale = m.getScale();
+                if (entityClass.isRegenSchemaAttrs() ) {
+                    if(length != null && isCharacterType(memberType)) {
+                        columnAnnArguments.add(genUtils.createAnnotationArgument("length", length)); // NOI18N
+                    }
+                    if(precision != null && isDecimalType(memberType)) {
+                        columnAnnArguments.add(genUtils.createAnnotationArgument("precision", precision)); // NOI18N
+                    }
+                    if(scale != null && isDecimalType(memberType)) {
+                        columnAnnArguments.add(genUtils.createAnnotationArgument("scale", scale)); // NOI18N
+                    }
                 }
+                
                 annotations.add(genUtils.createAnnotation("javax.persistence.Column", columnAnnArguments)); //NOI18N
 
                 String temporalType = getMemberTemporalType(m);
@@ -554,6 +565,14 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     // (better to use TypeMirror)
                     return true;
                 } 
+                return false;
+            }
+            
+            private boolean isDecimalType(String type) {
+                if ("java.lang.Double".equals(type) || // NOI18N
+                    "java.lang.Float".equals(type) ) { // NOI18N
+                    return true;
+                }
                 return false;
             }
 
@@ -720,19 +739,37 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     newClassTree = genUtils.addImplementsClause(newClassTree, "java.io.Serializable"); // NOI18N
                 }
                 newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Entity")); // NOI18N
-                //ExpressionTree tableNameArgument = genUtils.createAnnotationArgument("name", dbMappings.getTableName()); // NOI18N
                 List<ExpressionTree> tableAnnArgs = new ArrayList<ExpressionTree>();
                 tableAnnArgs.add(genUtils.createAnnotationArgument("name", dbMappings.getTableName())); // NOI18N
                 if(entityClass.isFullyQualifiedTblNames()) {
                     String schemaName = entityClass.getSchemaName();
                     String catalogName = entityClass.getCatalogName();
-                    if(schemaName != null ) {
-                        tableAnnArgs.add(genUtils.createAnnotationArgument("schema", schemaName)); // NI18N
-                    }
                     if(catalogName != null) {
-                        tableAnnArgs.add(genUtils.createAnnotationArgument("catalog", catalogName)); // NI18N
+                        tableAnnArgs.add(genUtils.createAnnotationArgument("catalog", catalogName)); // NOI18N
+                    }
+                    if(schemaName != null ) {
+                        tableAnnArgs.add(genUtils.createAnnotationArgument("schema", schemaName)); // NOI18N
                     }
                 }
+                
+                // UniqueConstraint annotations for the table
+                if(entityClass.isRegenSchemaAttrs() && entityClass.getUniqueConstraints() != null &&
+                        entityClass.getUniqueConstraints().size() != 0) {
+                    List<ExpressionTree> uniqueConstraintAnnotations = new ArrayList<ExpressionTree>();
+                    for(List<String> constraintCols : entityClass.getUniqueConstraints()) {
+
+                        List<ExpressionTree> colArgs = new ArrayList<ExpressionTree>();
+                        for(String colName : constraintCols) {
+                            colArgs.add(genUtils.createAnnotationArgument(null, colName));
+                        }
+                        ExpressionTree columnNamesArg = genUtils.createAnnotationArgument("columnNames", colArgs); // NOI18N
+                        uniqueConstraintAnnotations.add(genUtils.createAnnotation("javax.persistence.UniqueConstraint", 
+                                Collections.singletonList(columnNamesArg))); //NOI18N
+                    }
+                    
+                    tableAnnArgs.add(genUtils.createAnnotationArgument("uniqueConstraints", uniqueConstraintAnnotations)); // NOI18N
+                }
+                
                 newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Table", tableAnnArgs));
 
                 if (needsPKClass) {
@@ -821,9 +858,22 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 String typeName = getRelationshipFieldType(role, entityClass.getPackage());
                 TypeMirror fieldType = copy.getElements().getTypeElement(typeName).asType();
                 if (role.isToMany()) {
-                    // XXX this will probably not resolve imports
-                    TypeElement collectionType = copy.getElements().getTypeElement("java.util.Collection"); // NOI18N
-                    fieldType = copy.getTypes().getDeclaredType(collectionType, fieldType);
+                    // Use the collection type the user wants
+                    String collectionType = "java.util.Collection"; // NOI18N
+
+                    switch (entityClass.getCollectionType()) {
+                        case LIST:
+                            collectionType = "java.util.List"; // NOI18N
+                            break;
+                        case SET:
+                            collectionType = "java.util.Set"; // NOI18N
+                            break;
+                        default:
+                            collectionType = "java.util.Collection"; // NOI18
+
+                    }
+                    TypeElement collectionTypeElem = copy.getElements().getTypeElement(collectionType);
+                    fieldType = copy.getTypes().getDeclaredType(collectionTypeElem, fieldType);
                 }
 
                 List<AnnotationTree> annotations = new ArrayList<AnnotationTree>();
@@ -900,7 +950,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 }
                 
                 if (!role.isToMany()) { // meaning ManyToOne or OneToOne
-                    // Add optional=false if the relationship is not optional/non-nullable 
+                    // Add optional=false on @ManyToOne or the owning side of @OneToOne
+                    // if the relationship is non-optional (or non-nuallable in other words)  
                     if(!role.isOptional() && (role.isMany() || role.equals(role.getParent().getRoleA())) ) {
                         annArguments.add(genUtils.createAnnotationArgument("optional", false)); // NOI18N
                     }

@@ -168,6 +168,8 @@ public class IDEValidation extends JellyTestCase {
     /** Setup called before every test case. */
     @Override
     public void setUp() {
+        //Enable logging from CloneableEditor to investigate hang
+        System.setProperty("editor.log.enabled","true");
         System.out.println("########  "+getName()+"  #######");
         // Close help window if any - it should not stay open between test cases.
         // Otherwise it can break next tests.
@@ -1416,6 +1418,7 @@ public class IDEValidation extends JellyTestCase {
         try {
             if (bcHandler.hasWhitelistStorage()) {
                 bcHandler.saveWhiteList();
+                bcHandler.saveWhiteList(getLog("whitelist.txt"));
                 bcHandler.reportDifference(getLog("diff.txt"));
                 assertTrue(bcHandler.reportViolations(getLog("violations.xml")) 
                         + bcHandler.reportDifference(), bcHandler.noViolations());

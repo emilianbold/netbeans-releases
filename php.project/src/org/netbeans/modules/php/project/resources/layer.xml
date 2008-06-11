@@ -88,7 +88,7 @@ made subject to such option by the copyright holder.
 
     <folder name="OptionsDialog">
         <folder name="Advanced">
-            <file name="ActionsPanel.instance">
+            <file name="PHP.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.ui.options.PhpAdvancedOption"/>
             </file>
         </folder>

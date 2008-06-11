@@ -41,11 +41,14 @@ package org.netbeans.modules.hibernate.wizards;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -55,7 +58,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.hibernate.loaders.reveng.HibernateRevengDataObject;
 import org.netbeans.modules.hibernate.reveng.model.HibernateReverseEngineering;
-import org.netbeans.modules.hibernate.service.HibernateEnvironment;
 import org.netbeans.modules.hibernate.spi.hibernate.HibernateFileLocationProvider;
 import org.netbeans.modules.hibernate.wizards.support.Table;
 import org.openide.WizardDescriptor;
@@ -76,6 +78,8 @@ import org.hibernate.tool.hbm2x.POJOExporter;
 import org.hibernate.util.XMLHelper;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
+import org.netbeans.modules.hibernate.util.CustomClassLoader;
+import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.openide.filesystems.FileUtil;
@@ -102,6 +106,8 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
     private final String resourceAttr = "resource";
     private XMLHelper xmlHelper;
     private EntityResolver entityResolver;
+    
+    private Logger logger = Logger.getLogger(HibernateRevengWizard.class.getName());
 
     public static HibernateRevengWizard create() {
         return new HibernateRevengWizard();
@@ -218,7 +224,7 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
         return res;
     }
 
-    private boolean foundRevengFileInProject(ArrayList<FileObject> revengFiles, String revengFileName) {
+    private boolean foundRevengFileInProject(List<FileObject> revengFiles, String revengFileName) {
         for (FileObject fo : revengFiles) {
             if (fo.getName().equals(revengFileName)) {
                 return true;
@@ -278,7 +284,7 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
         // and not like : hibernate.reveng<i>.xml.
         if (wiz instanceof TemplateWizard) {
             HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
-            ArrayList<FileObject> revengFiles = hibernateEnv.getAllHibernateReverseEnggFileObjects();
+            List<FileObject> revengFiles = hibernateEnv.getAllHibernateReverseEnggFileObjects();
             String targetName = DEFAULT_REVENG_FILENAME;
             if (!revengFiles.isEmpty() && foundRevengFileInProject(revengFiles, DEFAULT_REVENG_FILENAME)) {
                 int revengFilesCount = revengFiles.size();
@@ -306,9 +312,15 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
         File outputDir = FileUtil.toFile(helper.getLocation().getRootFolder());
 
         try {
+            
+            // Setup classloader.
+            logger.info("Setting up classloader");
+            HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
+            CustomClassLoader ccl = new CustomClassLoader(env.getProjectClassPath(revengFile).toArray(new URL[]{}), 
+                    getClass().getClassLoader());
             oldClassLoader = Thread.currentThread().getContextClassLoader();
-            Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
-
+            Thread.currentThread().setContextClassLoader(ccl);
+            
             // Configuring the reverse engineering strategy
             try {
 

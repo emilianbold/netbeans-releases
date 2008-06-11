@@ -104,8 +104,6 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
             // Take the schema component which corresponds to the last step.
             Set<GlobalType> lastStepTypes = getLastStepSchemaTypeSet(locationPath);
             if (lastStepTypes == null || lastStepTypes.isEmpty()) {
-                // Error. Can not resolve type of the last location path element.
-//vlv                myContext.addResultItem(ResultType.ERROR, "UNRESOLVED_XPATH_TAIL"); // NOI18N
                 return;
             } 
             if (lastStepTypes.size() == 1) {
@@ -337,8 +335,10 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
             CorrelationProperty cProp = cPropRef.get();
             if (cProp == null) {
                 // Error. Can not resolve the Correlation Property
-                myContext.addResultItem(ResultType.ERROR, "UNRESOLVED_CPROP",
-                        cProp.getName()); // NOI18N
+                if (myContext != null) {
+                    myContext.addResultItem(ResultType.ERROR, "UNRESOLVED_CPROP",
+                          cProp.getName()); // NOI18N
+                }
                 return null;
             }
             //
