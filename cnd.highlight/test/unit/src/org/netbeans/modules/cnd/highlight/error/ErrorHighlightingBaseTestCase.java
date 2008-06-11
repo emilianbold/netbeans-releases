@@ -40,14 +40,14 @@
 package org.netbeans.modules.cnd.highlight.error;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.util.Collection;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
-import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
+import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 
 /**
  * 
@@ -60,13 +60,29 @@ public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
     }
 
     protected final void performTest(String source) throws Exception {
+        String datafileName = source + ".dat";
         File testSourceFile = getDataFile(source);
+        File workDir = getWorkDir();
+        File output = new File(workDir, datafileName);
+        PrintStream out = new PrintStream(output);
+
+        File dataDir = getDataDir();
+        
+//        File goldenFile = getGoldenFile(datafileName);
+//        CndCoreTestUtils.copyToWorkDir(goldenFile); // NOI18N
+        File goldenFile = getGoldenFile(datafileName);
+        //CndCoreTestUtils.copyToFile(getGoldenFile(), goldenFile);
+        
         CsmFile csmFile = getCsmFile(testSourceFile);
         BaseDocument doc = getBaseDocument(testSourceFile);
         Collection<CsmErrorInfo> errorInfos = CsmErrorProvider.getDefault().getErrors(doc, csmFile);
         for (CsmErrorInfo info : errorInfos) {
-            outputWriter.printf(source, info.getSeverity(), info.getStartOffset(), info.getEndOffset(), info.getMessage());
+            String txt = String.format("%s %s [%d-%d]: %s", info.getSeverity(), source, info.getStartOffset(), info.getEndOffset(), info.getMessage());
+            out.printf("%s\n", txt);
+            System.out.printf("%s\n", txt);
         }
-        compareReferenceFiles();
+
+        //compareReferenceFiles();    
+        compareReferenceFiles(datafileName, datafileName);
     }   
 }
