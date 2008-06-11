@@ -41,7 +41,9 @@
 
 package org.netbeans.qa.form.refactoring;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import junit.framework.Test;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.qa.form.*;
@@ -49,6 +51,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Tests form refactoring, 1st scenarion : Rename component variable
@@ -68,24 +71,18 @@ public class RenameFormClassTest extends ExtJellyTestCase {
         super(testName);
     }
     
-    /**
-     * Method allowing to execute test directly from IDE.
-     * @param args
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
+    public void setUp() throws IOException{
+        openProject(_testProjectName);
     }
     
     /**
      * Creates suite from particular test cases.
      * @return nb test suite
      */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new RenameFormClassTest("testRefactoring")); // NOI18N
-        suite.addTest(new RenameFormClassTest("testChangesInJavaFile")); // NOI18N
-        suite.addTest(new RenameFormClassTest("testChangesInPropertiesFile")); // NOI18N
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(RenameFormClassTest.class)
+                .addTest("testRefactoring", "testChangesInJavaFile", "testChangesInPropertiesFile")
+                .clusters(".*").enableModules(".*").gui(true));
     }
 
     /** Runs refactoring  */
