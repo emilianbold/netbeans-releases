@@ -158,90 +158,43 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
     private IInteraction interaction;
     private RelationshipDiscovery relDiscovery = null;
     
-    public SequenceDiagramEngine()
-    {
-        super();
-    }
-    
     public SequenceDiagramEngine(DesignerScene scene) {
         super(scene);
-        
-//        //need to check if there interaction, it's specific to diagram so is handed in engine
-//        IDiagram dgr = getScene().getDiagram();
-//        INamespace ns = dgr.getNamespace();
-//        String type = ns.getExpandedElementType();
-//        if (!type.equalsIgnoreCase("interaction"))
-//        {
-//            //create interaction
-//            Object value = FactoryRetriever.instance().createType("Interaction",
-//                                                                  ns);
-//
-//            INamedElement inter = null;
-//            if (value instanceof INamedElement)
-//            {
-//                inter = (INamedElement) value;
-//            }
-//            //
-//            interaction = (IInteraction) inter;
-//            //
-//            inter.setName(dgr.getName());//by default the same as diagram
-//            //inter.setNamespace(ns);
-//            ns.addOwnedElement(inter);
-//            dgr.setNamespace((Namespace) inter);
-//        }
-//        else
-//        {
-//            interaction = (IInteraction) ns;
-//        }
-//        
-//        //fill settings, where to get default? some should be from preferences
-//        setSettingValue(SHOW_MESSAGE_NUMBERS, Boolean.FALSE);
-//        setSettingValue(SHOW_RETURN_MESSAGES, Boolean.TRUE);
-//        setSettingValue(SHOW_INTERACTION_BOUNDARY, Boolean.FALSE);
-//        
-//        scene.addObjectSceneListener(new SQDChangeListener(), ObjectSceneEventType.values());
-//
-//        relDiscovery = new UMLRelationshipDiscovery(scene);
-    }
+         //need to check if there interaction, it's specific to diagram so is handed in engine
+         IDiagram dgr=getScene().getDiagram();
+         INamespace ns=dgr.getNamespace();
+         String type=ns.getExpandedElementType();
+         if(! type.equalsIgnoreCase("interaction"))
+         {
+             //create interaction
+             Object value = FactoryRetriever.instance().createType("Interaction",
+             ns);
 
-    @Override
-    public void initialize(DesignerScene scene)
-    {
-        super.initialize(scene);
-        
-        IDiagram dgr = getScene().getDiagram();
-        INamespace ns = dgr.getNamespace();
-        String type = ns.getExpandedElementType();
-        if (!type.equalsIgnoreCase("interaction"))
-        {
-            //create interaction
-            Object value = FactoryRetriever.instance().createType("Interaction",
-                                                                  ns);
-
-            INamedElement inter = null;
-            if (value instanceof INamedElement)
-            {
-                inter = (INamedElement) value;
-            }
-            //
-            interaction = (IInteraction) inter;
-            //
-            inter.setName(dgr.getName());//by default the same as diagram
-            //inter.setNamespace(ns);
-            ns.addOwnedElement(inter);
-            dgr.setNamespace((Namespace) inter);
-        }
-        else
-        {
-            interaction = (IInteraction) ns;
-        }
-        
+             INamedElement inter = null;
+             if(value instanceof INamedElement)
+             {
+                 inter = (INamedElement)value;
+             }
+             //
+             interaction=(IInteraction) inter;
+             //
+             inter.setName(dgr.getName());//by default the same as diagram
+             //inter.setNamespace(ns);
+             ns.addOwnedElement(inter);
+             dgr.setNamespace((Namespace) inter);
+         }
+         else
+         {
+             interaction=(IInteraction) ns;
+         }
         //fill settings, where to get default? some should be from preferences
         setSettingValue(SHOW_MESSAGE_NUMBERS, Boolean.FALSE);
         setSettingValue(SHOW_RETURN_MESSAGES, Boolean.TRUE);
         setSettingValue(SHOW_INTERACTION_BOUNDARY, Boolean.FALSE);
+        //
+        scene.addObjectSceneListener(new SQDChangeListener(), ObjectSceneEventType.values());
         
-        getScene().addObjectSceneListener(new SQDChangeListener(), ObjectSceneEventType.values());
+        relDiscovery = new UMLRelationshipDiscovery(scene);
     }
     
     

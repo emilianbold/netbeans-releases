@@ -1871,7 +1871,7 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules.uml-diagrams-edges-factories-AbstractionConnectionFactory.instance"/>
             </folder>
             <folder name="NestedLink">
-                <file name="org-netbeans-modules.uml-diagrams-edges-factories-NestedLinkConnectionFactory.instAssance"/>
+                <file name="org-netbeans-modules.uml-diagrams-edges-factories-NestedLinkConnectionFactory.instance"/>
             </folder>
             <folder name="AssociationClass">
                 <file name="org-netbeans-modules.uml-diagrams-edges-factories-AssociationClassConnectionFactory.instance"/>

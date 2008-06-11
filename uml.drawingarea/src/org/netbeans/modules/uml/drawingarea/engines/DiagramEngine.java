@@ -124,20 +124,10 @@ abstract public class DiagramEngine {
     private HashMap<String,Object> diagramSettings=new HashMap<String,Object>();//diagram specific settings, should be filled with default on diagram creation
     private PopupMenuProvider menuProvider = new DiagramPopupMenuProvider();
     
-    public DiagramEngine()
-    {
-        mouseHoverAction = ActionFactory.createHoverAction(new UMLHoverProvider());
-    }
-    
     public DiagramEngine(DesignerScene scene)
     {
-        this();
-        initialize(scene);
-    }
-    
-    public void initialize(DesignerScene scene)
-    {
         this.scene=scene;
+        mouseHoverAction = ActionFactory.createHoverAction(new UMLHoverProvider());
         sceneSelectAction = scene.createSelectAction();
     }
     

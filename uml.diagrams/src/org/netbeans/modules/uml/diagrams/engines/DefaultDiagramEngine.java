@@ -96,19 +96,8 @@ public class DefaultDiagramEngine extends  DiagramEngine {
     
     private RelationshipDiscovery relDiscovery = null;
     
-    public DefaultDiagramEngine()
-    {
-        super();
-    }
-    
     public DefaultDiagramEngine(DesignerScene scene) {
         super(scene);
-    }
-
-    @Override
-    public void initialize(DesignerScene scene)
-    {
-        super.initialize(scene);
         
         if(DEFAULT_MOVE_STRATEGY == null)
         {
