@@ -86,6 +86,9 @@
             <file name="PersistenceService.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/PersistenceService.template">
                 <attr name="position" intvalue="0"/>
             </file>
+            <file name="PersistenceServiceNoJTA.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/PersistenceServiceNoJTA.template">
+                <attr name="position" intvalue="0"/>
+            </file>
             <file name="RestConnection.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/RestConnection.template">
                 <attr name="position" intvalue="0"/>
             </file>
