@@ -98,6 +98,10 @@ public final class GrailsProject implements Project {
     public FileObject getProjectDirectory() {
         return projectDir;
     }
+    
+    public ProjectState getProjectState() {
+        return projectState;
+    }
 
     public Lookup getLookup() {
         if (lookup == null) {

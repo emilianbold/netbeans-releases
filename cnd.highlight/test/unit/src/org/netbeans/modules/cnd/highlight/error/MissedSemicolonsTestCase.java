@@ -46,7 +46,7 @@ package org.netbeans.modules.cnd.highlight.error;
 public class MissedSemicolonsTestCase extends ErrorHighlightingBaseTestCase {
 
     static {
-        System.setProperty("cnd.parser.error.transparent", "true");
+        System.setProperty("cnd.parser.error.transparent", "false");
     }
     
     public MissedSemicolonsTestCase(String testName) {

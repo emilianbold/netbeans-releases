@@ -43,9 +43,9 @@ import java.io.IOException;
 import org.netbeans.modules.db.sql.execute.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 
@@ -54,9 +54,7 @@ import org.openide.util.Exceptions;
  * @author John Baker
  */
 public class SQLHistoryManager  {
-    
-    // XXX  move to the history package
-    
+    public static final String SQL_HISTORY_FOLDER = "Databases/SQLHISTORY"; // NOI18N
     private static SQLHistoryManager _instance = null;    
     private static final Logger LOGGER = Logger.getLogger(SQLHistory.class.getName());
     private List<SQLHistory> sqlList = new ArrayList<SQLHistory>();
@@ -88,8 +86,24 @@ public class SQLHistoryManager  {
     }
 
     public void save() {
-        LOGGER.log(Level.INFO, "SQL Saved (test message)");
+        // create a folder in the userdir for sql_history.xml file that maintains a list of executed SQL
+        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject tmpFo = root.getFileObject(SQL_HISTORY_FOLDER);
 
+        if (tmpFo == null) {
+            try {
+                tmpFo = FileUtil.createFolder(root, SQL_HISTORY_FOLDER);
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
+        } 
+        // Start managing the persistence of SQL statements that have been executed
+        try {
+            SQLHistoryPersistenceManager.getInstance().create(tmpFo, sqlList);
+            sqlList.clear();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     public List<SQLHistory> getSQLHistory() {
