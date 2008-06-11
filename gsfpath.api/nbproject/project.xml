@@ -151,6 +151,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.javascript.refactoring</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.php.editor</friend>
+                <friend>org.netbeans.modules.php.refactoring</friend>                
                 <friend>org.netbeans.modules.ruby.project</friend>
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>
                 <friend>org.netbeans.modules.ruby.refactoring</friend>
