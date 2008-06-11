@@ -8,7 +8,7 @@ or
 Download and install jMaki 1.0 NetBeans plugin from jMaki website 
 (https://ajax.dev.java.net/jmaki-plugin.html)
 
-2. Open NetBeans 6.0 IDE, then install the plugin by selecting "Downloaded" tab 
+2. Open NetBeans 6.1 IDE, then install the plugin by selecting "Downloaded" tab 
 after invoking Tools->Plugins.
 
 3. Create a web project, add "jMaki Ajax Framework" to this project on the wizard.

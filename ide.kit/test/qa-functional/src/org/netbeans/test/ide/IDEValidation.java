@@ -1418,6 +1418,7 @@ public class IDEValidation extends JellyTestCase {
         try {
             if (bcHandler.hasWhitelistStorage()) {
                 bcHandler.saveWhiteList();
+                bcHandler.saveWhiteList(getLog("whitelist.txt"));
                 bcHandler.reportDifference(getLog("diff.txt"));
                 assertTrue(bcHandler.reportViolations(getLog("violations.xml")) 
                         + bcHandler.reportDifference(), bcHandler.noViolations());

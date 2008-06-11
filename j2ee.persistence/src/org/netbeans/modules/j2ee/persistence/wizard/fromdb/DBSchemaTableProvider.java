@@ -103,10 +103,10 @@ public class DBSchemaTableProvider implements TableProvider {
                 }
             }
 
-            String schemaName = tableElement.getDeclaringSchema().getSchema().getName();
             String catalogName = tableElement.getDeclaringSchema().getCatalog().getName();
+            String schemaName = tableElement.getDeclaringSchema().getSchema().getName();
             String tableName = tableElement.getName().getName();
-            DBSchemaTable table = new DBSchemaTable(schemaName, catalogName, tableName, join, disabledReason, persistenceGen, tableElement.isTable());
+            DBSchemaTable table = new DBSchemaTable(catalogName, schemaName, tableName, join, disabledReason, persistenceGen, tableElement.isTable());
             
             // Set the unique constraints columns
             table.setUniqueConstraints(getUniqueConstraints(tableElement));
@@ -157,8 +157,8 @@ public class DBSchemaTableProvider implements TableProvider {
         return Collections.unmodifiableSet(result);
     }
     
-    private Set<String[]> getUniqueConstraints(TableElement tableElement) {
-        Set<String[]> uniqueConstraintsCols = new HashSet<String[]>();
+    private Set<List<String>> getUniqueConstraints(TableElement tableElement) {
+        Set<List<String>> uniqueConstraintsCols = new HashSet<List<String>>();
         UniqueKeyElement[] uks = tableElement.getUniqueKeys();
         for (int ukIx = 0; ukIx < uks.length; ukIx++) {
             if (!uks[ukIx].isPrimaryKey()) {
@@ -167,9 +167,9 @@ public class DBSchemaTableProvider implements TableProvider {
                     // bad one
                     continue;
                 }
-                String[] cols = new String[colElms.length];
+                List<String> cols = new ArrayList<String>();
                 for (int cIx = 0; cIx < colElms.length; cIx++) {
-                    cols[cIx] = colElms[cIx].getName().getName();
+                    cols.add( colElms[cIx].getName().getName());
                 }
                 uniqueConstraintsCols.add(cols);
             }
@@ -205,15 +205,15 @@ public class DBSchemaTableProvider implements TableProvider {
         private Set<Table> joinTables;
         
         // A set of unique constraints columns
-        private Set<String[]> uniqueConstraints;
+        private Set<List<String>> uniqueConstraints;
         
-        public DBSchemaTable(String schema, String catalog, String name, boolean join, DisabledReason disabledReason, PersistenceGenerator persistenceGen) {
-            super(schema, catalog, name, join, disabledReason);
+        public DBSchemaTable(String catalog, String schema, String name, boolean join, DisabledReason disabledReason, PersistenceGenerator persistenceGen) {
+            super(catalog, schema, name, join, disabledReason);
             this.persistenceGen = persistenceGen;
         }
         
-        public DBSchemaTable(String schema, String catalog, String name, boolean join, DisabledReason disabledReason, PersistenceGenerator persistenceGen, boolean isTable) {
-            super(schema, catalog, name, join, disabledReason, isTable);
+        public DBSchemaTable(String catalog, String schema, String name, boolean join, DisabledReason disabledReason, PersistenceGenerator persistenceGen, boolean isTable) {
+            super(catalog, schema, name, join, disabledReason, isTable);
             this.persistenceGen = persistenceGen;
         }
 
@@ -241,11 +241,11 @@ public class DBSchemaTableProvider implements TableProvider {
             this.joinTables = joinTables;
         }
         
-        public Set<String[]> getUniqueConstraints() {
+        public Set<List<String>> getUniqueConstraints() {
             return this.uniqueConstraints;
         }
         
-        public void setUniqueConstraints(Set<String[]> constraints) {
+        public void setUniqueConstraints(Set<List<String>> constraints) {
             this.uniqueConstraints = constraints;
         }
     }

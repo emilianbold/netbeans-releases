@@ -42,7 +42,7 @@ package org.netbeans.modules.cnd.remote.compilers;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetProvider;
 import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
-import org.netbeans.modules.cnd.remote.support.manager.CompilerSetScriptManager;
+import org.netbeans.modules.cnd.remote.support.managers.CompilerSetScriptManager;
 
 /**
  *
@@ -64,5 +64,4 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
     public CompilerSet getNextCompilerSet() {
         return null;
     }
-
 }

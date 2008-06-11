@@ -52,9 +52,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.EntityResolver;
 import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
@@ -97,9 +95,7 @@ public class ServerInstanceReader {
     }
     
     /**
-     * Gets a list of server instances in the server config file that meet our 
-     * assumption: no null data for host and location... see 
-     * AppserverJBIMgmtController.isCurrentInstance.
+     * Gets a list of server instances in the server config file.
      */
     public List<ServerInstance> getServerInstances() {
         if (instances == null) {
@@ -170,9 +166,7 @@ public class ServerInstanceReader {
                         }
                     }
                     
-                    if (instance.getHostName() != null && instance.getLocation() != null) {
-                        instances.add(instance);              
-                    }
+                    instances.add(instance);                    
                 }
             } catch (Exception e) {
                 e.printStackTrace(System.err);

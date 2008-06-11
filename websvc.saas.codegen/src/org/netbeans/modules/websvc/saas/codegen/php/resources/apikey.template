@@ -1,0 +1,10 @@
+<?php
+
+class ApiKeyProfile {
+    private $apiKey = "";    
+
+    function getApiKey() {
+        return $this->apiKey;
+    }
+}
+?>

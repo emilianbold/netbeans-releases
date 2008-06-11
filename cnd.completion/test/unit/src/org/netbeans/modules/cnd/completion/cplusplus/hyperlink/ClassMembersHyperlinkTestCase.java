@@ -311,6 +311,13 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ136140.cc", 17, 12, "IZ136140.cc", 11, 5);
     }
     
+    public void testIZ136894() throws Exception {
+        performTest("main.cc", 67, 35, "main.cc", 59, 5); // itd_state in state->ehci_itd_pool_addr->itd_state;
+        performTest("main.cc", 68, 35, "main.cc", 59, 5); // itd_state in state->ehci_itd_pool_addr[i].itd_state;
+        performTest("main.cc", 70, 19, "main.cc", 59, 5); // itd_state in pool_addr[i].itd_state;
+        performTest("main.cc", 71, 35, "main.cc", 59, 5); // itd_state in state->ehci_itd_pool_addr[0].itd_state;
+        performTest("main.cc", 72, 19, "main.cc", 59, 5); // itd_state in pool_addr[0].itd_state;
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
         

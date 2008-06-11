@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.CollectionType;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.FetchType;
 import org.openide.filesystems.FileObject;
 
@@ -55,15 +56,16 @@ import org.openide.filesystems.FileObject;
  */
 public class EntityClass {
     private final boolean fullyQualifiedTblNames;
-    private final String schemaName;
     private final String catalogName;
+    private final String schemaName;
     private final String tableName;
     private final FileObject rootFolder;
     private final String className;
     private final String packageName;
     private final FetchType fetchType;
     private final boolean regenSchemaAttrs;
-    private final Set<String[]> uniqueConstraints;
+    private final Set<List<String>> uniqueConstraints;
+    private final CollectionType collectionType;
     
     private List<RelationshipRole> roles;
     private List<EntityMember> fields;
@@ -73,12 +75,13 @@ public class EntityClass {
     
     private boolean forTable = true;  // false means forView
     
-    public EntityClass(boolean fullyQualifiedTblNames, String schemaName, String catalogName, String tableName, 
+    public EntityClass(boolean fullyQualifiedTblNames, String catalogName, String schemaName, String tableName, 
             FileObject rootFolder, String packageName, String className,
-            FetchType fetchType, boolean regenSchemaAttrs, Set<String[]> uniqueConstraints) {
+            FetchType fetchType, boolean regenSchemaAttrs, Set<List<String>> uniqueConstraints,
+            CollectionType collectionType) {
         this.fullyQualifiedTblNames = fullyQualifiedTblNames;
-        this.schemaName = schemaName;
         this.catalogName = catalogName;
+        this.schemaName = schemaName;
         this.tableName = tableName;
         this.rootFolder = rootFolder;
         this.packageName = packageName;
@@ -86,6 +89,7 @@ public class EntityClass {
         this.fetchType = fetchType;
         this.regenSchemaAttrs = regenSchemaAttrs;
         this.uniqueConstraints = uniqueConstraints;
+        this.collectionType = collectionType;
         
         roles = Collections.<RelationshipRole>emptyList();
         fields = new ArrayList<EntityMember>();
@@ -100,7 +104,7 @@ public class EntityClass {
         this.forTable = forTable;
     }
     
-    public Set<String[]> getUniqueConstraints() {
+    public Set<List<String>> getUniqueConstraints() {
         return this.uniqueConstraints;
     }
     
@@ -110,6 +114,10 @@ public class EntityClass {
 
     public boolean isRegenSchemaAttrs() {
         return regenSchemaAttrs;
+    }
+
+    public CollectionType getCollectionType() {
+        return collectionType;
     }
     
     public void addRole(RelationshipRole role) {
