@@ -20,12 +20,12 @@ package org.netbeans.modules.bpel.nodes;
 
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import java.awt.Image;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.properties.Constants;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
 import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 import org.netbeans.modules.bpel.properties.PropertyType;
-import org.netbeans.modules.bpel.properties.Util;
 import org.netbeans.modules.soa.ui.nodes.NodesTreeParams;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xam.Named;
@@ -73,7 +73,7 @@ public abstract class SchemaComponentNode<T extends SchemaComponent> extends Bpe
                 boolean isTargetNodeClass =
                         treeParams.isTargetNodeClass(this.getClass());
                 if (isTargetNodeClass) {
-                    result = Util.getAccentedString(result);
+                    result = EditorUtil.getAccentedString(result);
                 }
             }
         }

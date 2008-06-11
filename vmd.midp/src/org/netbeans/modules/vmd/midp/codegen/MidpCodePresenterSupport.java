@@ -54,7 +54,9 @@ import org.openide.util.Exceptions;
 import javax.swing.text.StyledDocument;
 import java.io.IOException;
 import java.util.Map;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSupport;
 
 /**
  * @author Karol Harezlak
@@ -64,24 +66,27 @@ public class MidpCodePresenterSupport {
     public static Presenter createAddImportPresenter(String... fullyNames) {
         return new CodePresenterSupport(fullyNames);
     }
-    
-    public static Presenter createAddImportPresenter(Map<String, String> dependencies) {
-        return new CodePresenterSupport(dependencies);
+
+
+    public static Presenter createAddImportDatabindingPresenter(String bindedProperty, String... fullyNames) {
+        assert bindedProperty != null;
+        return new CodePresenterSupport(fullyNames, bindedProperty);
     }
 
     private static class CodePresenterSupport extends CodeGlobalLevelPresenter {
 
         final private List<String> fullyNamesList;
-        final private Map<String, String> dependencies;
+       
+        final private String bindedProperty;
 
         private CodePresenterSupport(String[] fullyNames) {
             this.fullyNamesList = new ArrayList(Arrays.asList(fullyNames));
-            this.dependencies = null;
+            this.bindedProperty = null;
         }
 
-        private CodePresenterSupport(Map<String, String> dependencies) {
-            this.fullyNamesList = new ArrayList<String>(dependencies.keySet());
-            this.dependencies = dependencies;
+        private CodePresenterSupport(String[] fullyNames, String bindedProperty) {
+            this.fullyNamesList = new ArrayList<String>(Arrays.asList(fullyNames));
+            this.bindedProperty = bindedProperty;
         }
 
         @Override
@@ -102,10 +107,11 @@ public class MidpCodePresenterSupport {
                         if (!fullyNamesList.contains(typeFqn)) {
                             fullyNamesList.add(typeFqn);
                         }
+                        DesignComponent connector = MidpDatabindingSupport.getConnector(getComponent(), bindedProperty);
                         for (String fqn : fullyNamesList) {
-                            if (dependencies == null) {
+                            if (bindedProperty == null) {
                                 SourceUtils.resolveImport(parameter, new TreePath(parameter.getCompilationUnit()), fqn);
-                            } else if (getComponent().readProperty(dependencies.get(fqn)) != PropertyValue.createNull()) {
+                            } else if (connector != null) {
                                 SourceUtils.resolveImport(parameter, new TreePath(parameter.getCompilationUnit()), fqn);
                             }
                         }

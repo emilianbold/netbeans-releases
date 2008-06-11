@@ -37,6 +37,7 @@ import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.model.api.support.BpelXPathModelFactory;
 import org.netbeans.modules.bpel.model.api.support.XPathBpelVariable;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
+import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComp;
 import org.netbeans.modules.xml.xpath.ext.AbstractLocationPath;
 import org.netbeans.modules.xml.xpath.ext.XPathException;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
@@ -110,6 +111,7 @@ public class CopyToProcessor {
             BpelEntity contextEntity, To copyTo, 
             XPathExpression toExpr, 
             List<Cast> castList, 
+            List<PseudoComp> pseudoComps, 
             MapperModelFactory modelFactory) {
         //
         ArrayList<TreeItemFinder> finderList = new ArrayList<TreeItemFinder>();
@@ -191,8 +193,8 @@ public class CopyToProcessor {
         }
         case EXPRESSION: {
             if (toExpr == null) {
-                toExpr = constructExpression(
-                        contextEntity, copyTo, castList, modelFactory);
+                toExpr = constructExpression(contextEntity, copyTo, 
+                        castList, pseudoComps, modelFactory);
             }
             //
             if (toExpr != null) {
@@ -225,7 +227,8 @@ public class CopyToProcessor {
     }
     
     public static XPathExpression constructExpression(
-            BpelEntity contextEntity, To copyTo, List<Cast> castList, 
+            BpelEntity contextEntity, To copyTo, 
+            List<Cast> castList, List<PseudoComp> pseudoComps, 
             MapperModelFactory modelFactory) {
         //
         String exprLang = copyTo.getExpressionLanguage();
@@ -236,8 +239,8 @@ public class CopyToProcessor {
         // we can handle only xpath expressions.
         if (isXPathExpr && exprText != null && exprText.length() != 0) {
             try {
-                XPathModel newXPathModel = 
-                        BpelXPathModelFactory.create(contextEntity, castList);
+                XPathModel newXPathModel = BpelXPathModelFactory.create(
+                        contextEntity, castList, pseudoComps);
                 //
                 // Specify the Caching visitor for optimization!
                 if (modelFactory != null) {

@@ -17,19 +17,14 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.xml.xpath.ext.impl;
+package org.netbeans.modules.xml.xpath.ext.schema.resolver;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
-import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
-import org.netbeans.modules.xml.xpath.ext.schema.FindAllChildrenSchemaVisitor;
-import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
-import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.xpath.ext.XPathUtils;
 
 /**
  * The special context for wildcard location steps - '*', '*@', 'node()'.
@@ -45,7 +40,7 @@ public class WildcardSchemaContext implements XPathSchemaContext {
     
     // TO DO replace to weak reference
     private Set<SchemaCompPair> mSchemaCompPair = null;
-    private Set<SchemaComponent> mUsedSchemaCompSet;
+    private Set<SchemaCompHolder> mUsedSchemaCompSet;
     
     public WildcardSchemaContext(XPathSchemaContext parentContext, 
             XPathModel xPathModel, 
@@ -73,43 +68,18 @@ public class WildcardSchemaContext implements XPathSchemaContext {
         //
         if (mParentContext == null) {
             //
-            ExternalModelResolver exModelResolver = 
-                    mXPathModel.getExternalModelResolver();
-            //
-            if (exModelResolver != null) {
-                //
-                // Look for all available root elements (attributes) 
-                // in all available models
-                Collection<SchemaModel> sModels = exModelResolver.getVisibleModels();
-                for (SchemaModel sModel : sModels) {
-                    Schema schema = sModel.getSchema();
-                    FindAllChildrenSchemaVisitor visitor = 
-                            new FindAllChildrenSchemaVisitor(
-                            lookForElements, lookForAttributes, false);
-                    visitor.lookForSubcomponents(schema);
-                    //
-                    List<SchemaComponent> foundComps = visitor.getFound();
-                    for (SchemaComponent foundComp : foundComps) {
-                        SchemaCompPair newPair = new SchemaCompPair(foundComp, null);
-                        result.add(newPair);
-                    }
-                }
+            List<SchemaComponent> rootCompList = XPathUtils.findRootComponents(
+                    mXPathModel, lookForElements, lookForAttributes, false);
+            for (SchemaComponent foundComp : rootCompList) {
+                SchemaCompPair newPair = new SchemaCompPair(
+                        foundComp, (SchemaCompHolder)null);
+                result.add(newPair);
             }
         } else {
-            Set<SchemaCompPair> parentCompPairSet = mParentContext.getSchemaCompPairs(); 
-            for (SchemaCompPair parentCompPair : parentCompPairSet) {
-                SchemaComponent parentComp = parentCompPair.getComp();
-                FindAllChildrenSchemaVisitor visitor = 
-                        new FindAllChildrenSchemaVisitor(
-                        lookForElements, lookForAttributes, false);
-                visitor.lookForSubcomponents(parentComp);
-                //
-                List<SchemaComponent> foundComps = visitor.getFound();
-                for (SchemaComponent foundComp : foundComps) {
-                    SchemaCompPair newPair = new SchemaCompPair(foundComp, parentComp);
-                    result.add(newPair);
-                }
-            }
+            List<SchemaCompPair> scHolderList = XPathUtils.findSubcomponents(
+                    mXPathModel, mParentContext, 
+                    lookForElements, lookForAttributes, false);
+            result.addAll(scHolderList);
         }
         //
         return result;
@@ -120,9 +90,9 @@ public class WildcardSchemaContext implements XPathSchemaContext {
         //
         if (mUsedSchemaCompSet != null) {
             for (SchemaCompPair myCompPair : getSchemaCompPairs()) {
-                SchemaComponent myComponent = myCompPair.getComp();
-                for (SchemaComponent usdComp : mUsedSchemaCompSet) {
-                    if (myComponent.equals(usdComp)) {
+                SchemaCompHolder myCompHolder = myCompPair.getCompHolder();
+                for (SchemaCompHolder usdCompHolder : mUsedSchemaCompSet) {
+                    if (myCompHolder.equals(usdCompHolder)) {
                         resultSet.add(myCompPair);
                     }
                 }
@@ -132,7 +102,7 @@ public class WildcardSchemaContext implements XPathSchemaContext {
         return resultSet;
     }
 
-    public void setUsedSchemaComp(Set<SchemaComponent> compSet) {
+    public void setUsedSchemaCompH(Set<SchemaCompHolder> compSet) {
         mUsedSchemaCompSet = compSet;
     }
 

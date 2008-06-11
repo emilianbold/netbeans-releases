@@ -36,49 +36,20 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.vmd.midp.codegen;
 
-import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
-import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
+package org.netbeans.modules.soa.ui.tree;
+
+import java.util.List;
+import javax.swing.tree.TreeModel;
 
 /**
- * This presenters helps generate code to register DataSets based on the references to the particular DataSet
- * stored in the provided properties. 
+ * Extends standard TreeModel with the method, which returns 
+ * all childrent of a parent. It is necesary for the optimization.
+ * This interface is intended to be implemented by a phisical model 
+ * The logical model has another parameters in the getChildren method.
  * 
- * Code generation for DataSet with instance name "dataSet"
- * Example: "DataBinder.register(dataset, "dataset");" 
- * 
- * @author Karol Harezlak
+ * @author nk160297
  */
-public final class MIDPDataBinderRegisterCodePresenter {
-
-    /**
-     * @param propertyNames - property names with the references to the DataSets which 
-     * this class generates rigistration code for.
-     */
-    public static CodeClassInitHeaderFooterPresenter create(final String... propertyNames) {
-        assert propertyNames.length != 0;
-        return new CodeClassInitHeaderFooterPresenter() {
-            @Override
-            public void generateClassInitializationHeader(MultiGuardedSection section) {
-            }
-
-            @Override
-            public void generateClassInitializationFooter(MultiGuardedSection section) {
-                for (String propertyName : propertyNames) {
-                    DesignComponent dataSet = getComponent().readProperty(propertyName).getComponent();
-                    if (dataSet != null) {
-                        String codeAccess = CodeReferencePresenter.generateAccessCode(dataSet);
-                        String directAccess = CodeReferencePresenter.generateDirectAccessCode(dataSet);
-                        section.getWriter().write("    DataBinder.registerDataSet(" + codeAccess + ", \"" + directAccess + "\");"); //NOI18N
-                    }
-                }
-            }
-        };
-    }
-    
-    //Empty privae constructor
-    private MIDPDataBinderRegisterCodePresenter() {
-    }
+public interface ExtTreeModel<ItemType> extends TreeModel {
+    List<ItemType> getChildren(ItemType parent);
 }

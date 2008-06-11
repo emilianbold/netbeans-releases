@@ -28,7 +28,6 @@ import org.netbeans.modules.bpel.mapper.tree.actions.AddPredicateConditionAction
 import org.netbeans.modules.bpel.mapper.tree.models.SimpleTreeInfoProvider;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemInfoProvider;
 import org.openide.util.NbBundle;
 
@@ -60,8 +59,8 @@ public class PredicateExprTreeModel implements MapperTreeModel<Object> {
         return MapperTreeModel.TREE_ROOT;
     }
 
-    public List getChildren(RestartableIterator<Object> dataObjectPathItr) {
-        Object parent = dataObjectPathItr.next();
+    public List getChildren(Iterable<Object> dataObjectPathItr) {
+        Object parent = dataObjectPathItr.iterator().next();
         if (parent == TREE_ROOT) {
             ArrayList children = new ArrayList(mSize);
             // Fill the array list with the same element mSize times
@@ -99,7 +98,7 @@ public class PredicateExprTreeModel implements MapperTreeModel<Object> {
         @Override
         public List<Action> getMenuActions(MapperTcContext mapperTcContext, 
                 boolean inLeftTree, TreePath treePath, 
-                RestartableIterator<Object> dataObjectPathItr) {
+                Iterable<Object> dataObjectPathItrb) {
             Action action = new AddPredicateConditionAction(mapperTcContext, treePath);
             return Collections.singletonList(action);
         }

@@ -65,7 +65,7 @@ public class CastImpl extends EditorEntityImpl implements Cast {
             Attribute[] ret = new Attribute[] {
                 EditorAttributes.SOURCE,
                 EditorAttributes.PATH,
-                EditorAttributes.TYPE
+                EditorAttributes.TYPE, 
             };
             myAttributes.compareAndSet( null ,  ret);
         }
@@ -84,7 +84,11 @@ public class CastImpl extends EditorEntityImpl implements Cast {
         readLock();
         try {
             String str = getAttribute(EditorAttributes.SOURCE);
-            return Source.forString(str);
+            if (str == null) {
+                return Source.FROM;
+            } else {
+                return Source.forString(str);
+            }
         }
         finally {
             readUnlock();
@@ -117,7 +121,7 @@ public class CastImpl extends EditorEntityImpl implements Cast {
         removeAttribute(EditorAttributes.PATH);
     }
 
-    public SchemaReference<GlobalType> getType() {
+    public SchemaReference<? extends GlobalType> getType() {
         readLock();
         try {
             return getSchemaReference(EditorAttributes.TYPE, GlobalType.class);
@@ -127,7 +131,7 @@ public class CastImpl extends EditorEntityImpl implements Cast {
         }
     }
 
-    public void setType(SchemaReference<GlobalType> value) {
+    public void setType(SchemaReference<? extends GlobalType> value) {
         setSchemaReference(EditorAttributes.TYPE, value);
     }
 
@@ -184,5 +188,6 @@ public class CastImpl extends EditorEntityImpl implements Cast {
     public Reference[] getReferences() {
         return new Reference[] { getType()};
     }
+
 }
 
