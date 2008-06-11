@@ -80,6 +80,8 @@ public final class NewComponentDescriptor implements WizardDescriptor.Instantiat
                                                 = "Producer";                   // NOI18N 
     public static final String COMPONENT_DECRIPTOR_DEFAULT_PARENT
         = "org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD";// NOI18N 
+    public static final boolean COMPONENT_DECRIPTOR_DEFAULT_CAN_INSTANTIATE = true;
+    public static final boolean COMPONENT_DECRIPTOR_DEFAULT_CAN_BE_SUPER = true;
     
     // properties - common
     public static final String HELPER           = "custCompHelper";             // NOI18N 

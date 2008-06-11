@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="buttonGroup1">
     </Component>
@@ -12,11 +12,14 @@
   </Properties>
   <AccessibilityProperties>
     <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-      <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ui/customizer/Bundle.properties" key="AD_MainClassChooser" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
+      <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/execuiimpl/Bundle.properties" key="AD_MainClassChooser" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
     </Property>
   </AccessibilityProperties>
   <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -31,7 +34,7 @@
           <ComponentRef name="jMainClassList"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ui/customizer/Bundle.properties" key="CTL_AvaialableMainClasses" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/execuiimpl/Bundle.properties" key="CTL_AvaialableMainClasses" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AuxValues>
@@ -60,10 +63,10 @@
         <Component class="javax.swing.JList" name="jMainClassList">
           <AccessibilityProperties>
             <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ui/customizer/Bundle.properties" key="ACSN_jMainClassList" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class,&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/execuiimpl/Bundle.properties" key="ACSN_jMainClassList" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class,&quot;{key}&quot;)"/>
             </Property>
             <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ui/customizer/Bundle.properties" key="ACSD_jMainClassList" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/execuiimpl/Bundle.properties" key="ACSD_jMainClassList" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
         </Component>
@@ -76,7 +79,7 @@
         </Property>
         <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ui/customizer/Bundle.properties" key="LBL_RunAsMain" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/execuiimpl/Bundle.properties" key="LBL_RunAsMain" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
@@ -90,10 +93,10 @@
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ui/customizer/Bundle.properties" key="ACSN_CustomizerRun_Main" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class,&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/execuiimpl/Bundle.properties" key="ACSN_CustomizerRun_Main" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class,&quot;{key}&quot;)"/>
         </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ui/customizer/Bundle.properties" key="ACSD_CustomizerRun_Main" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class,&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/execuiimpl/Bundle.properties" key="ACSD_CustomizerRun_Main" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class,&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <AuxValues>
@@ -111,7 +114,7 @@
           <ComponentRef name="buttonGroup1"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ui/customizer/Bundle.properties" key="LBL_RunAsXlet" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/execuiimpl/Bundle.properties" key="LBL_RunAsXlet" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
@@ -125,10 +128,10 @@
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ui/customizer/Bundle.properties" key="ACSN_CustomizerRun_Xlet" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class,&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/execuiimpl/Bundle.properties" key="ACSN_CustomizerRun_Xlet" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class,&quot;{key}&quot;)"/>
         </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ui/customizer/Bundle.properties" key="ACSD_CustomizerRun_Xlet" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class,&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/execuiimpl/Bundle.properties" key="ACSD_CustomizerRun_Xlet" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class,&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <AuxValues>
@@ -146,7 +149,7 @@
           <ComponentRef name="buttonGroup1"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ui/customizer/Bundle.properties" key="LBL_RunAsApplet" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/execuiimpl/Bundle.properties" key="LBL_RunAsApplet" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
@@ -160,10 +163,10 @@
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ui/customizer/Bundle.properties" key="ACSN_CustomizerRun_Applet" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class,&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/execuiimpl/Bundle.properties" key="ACSN_CustomizerRun_Applet" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class,&quot;{key}&quot;)"/>
         </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ui/customizer/Bundle.properties" key="ACSD_CustomizerRun_Applet" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class,&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/execuiimpl/Bundle.properties" key="ACSD_CustomizerRun_Applet" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class,&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <AuxValues>
@@ -178,7 +181,7 @@
     <Component class="javax.swing.JCheckBox" name="multipleXlets">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ui/customizer/Bundle.properties" key="LBL_AllowMultipleXlets" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/execuiimpl/Bundle.properties" key="LBL_AllowMultipleXlets" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
@@ -192,10 +195,10 @@
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ui/customizer/Bundle.properties" key="ACSN_CustomizerRun_AllowMultiple" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class,&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/execuiimpl/Bundle.properties" key="ACSN_CustomizerRun_AllowMultiple" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class,&quot;{key}&quot;)"/>
         </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ui/customizer/Bundle.properties" key="ACSD_CustomizerRun_AllowMultiple" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class,&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/execuiimpl/Bundle.properties" key="ACSD_CustomizerRun_AllowMultiple" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class,&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <Events>

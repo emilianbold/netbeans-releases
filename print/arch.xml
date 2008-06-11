@@ -42,7 +42,7 @@
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
 <!ENTITY api-questions SYSTEM "../nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml">]>
 
-<api-answers question-version="1.26" author="yaroslavskiy@netbeans.org">
+<api-answers question-version="1.29" author="yaroslavskiy@netbeans.org">
   &api-questions;
 
   <!--
@@ -54,16 +54,14 @@
       What parts will be pluggable?
       How will plug-ins be registered? Please use <code>&lt;api type="export"/&gt;</code>
       to describe your general APIs.
-      If possible please provide 
-      simple diagrams. 
+      If possible please provide simple diagrams. 
       </hint>
   </question>
   -->
   <answer id="arch-overall">
   <p>
-      This module provides print preview functionality. It exposes a friend API
-      <api name="PrintAPI" category="friend" type="export" group="java"/>
-      to facilitate access to this functionality.
+      <api group="java" name="PrintAPI" type="export" category="friend"></api>
+      Provides print preview functionality.
   </p>
   </answer>
 
@@ -73,8 +71,7 @@
       of your code be tested and 
       how are future regressions going to be prevented?
       <hint>
-      What kind of testing do
-      you want to use? How much functionality, in which areas,
+      What kind of testing do you want to use? How much functionality, in which areas,
       should be covered by the tests? 
       </hint>
   </question>
@@ -106,7 +103,7 @@
   <question id="arch-usecases" when="init">
       <hint>
           Content of this answer will be displayed as part of page at
-          http://www.netbeans.org/download/dev/javadoc/usecases.html 
+          http://www.netbeans.org/download/dev/javadoc/usecases.html
           You can use tags &lt;usecase name="name&gt; regular html description &lt;/usecase&gt;
           and if you want to use an URL you can prefix if with @TOP@ to begin
           at the root of your javadoc
@@ -119,9 +116,27 @@
   </question>
   -->
   <answer id="arch-usecases">
-  <p>
-      The typical client of Print module can be any tool to print custom data. 
-  </p>
+      <p>The typical client of Print module can be any tool to print custom data.</p>
+
+      <p>The simple way to enable print preview for a custom data is:</p>
+
+      <p>If the data is a Swing component which extends <code>javax.swing.JComponent</code> and
+      is shown in a <code>org.openide.windows.TopComponent</code>, not <code>null</code> key
+      <code>"java.awt.print.Printable.class"</code> in the component should be set, see example:</p>
+
+      <pre>
+      public class CustomComponent extends JComponent {
+        public CustomComponent() {
+          ...
+          putClientProperty(java.awt.print.Printable.class, "&lt;name&gt;");
+        }
+        ...
+      }</pre>
+
+      <p>The second argument in method <code>putClientProperty</code> is a name, which is
+      shown at the top/bottom of the print preview as the header/footer, which can be
+      changed in the Print Options dialog. If empty name is passed, the display name
+      of the top component is shown.</p>
   </answer>
 
   <!--
@@ -304,7 +319,7 @@
   -->
   <answer id="deploy-jar">
   <p>
-      Just the module jar.
+      Just the one module jar.
   </p>
   </answer>
 
@@ -895,4 +910,44 @@
       No.
   </p>
  </answer>
+
+  <!--
+  <question id="compat-deprecation" when="init">
+      How the introduction of your project influences functionality
+      provided by previous version of the product?
+      <hint>
+      If you are planning to deprecate/remove/change any existing APIs,
+      list them here accompanied with the reason explaining why you
+      are doing so.
+      </hint>
+  </question>
+  -->
+  <answer id="compat-deprecation">
+  <p>
+     The module does not deprecate any existing APIs.
+  </p>
+  </answer>
+
+  <!--
+  <question id="resources-preferences" when="final">
+      Does your module uses preferences via Preferences API? Does your module use NbPreferences or
+      or regular JDK Preferences ? Does it read, write or both ? 
+      Does it share preferences with other modules ? If so, then why ?
+      <hint>
+          You may use
+              &lt;api type="export" group="preferences"
+              name="preference node name" category="private"&gt;
+              description of individual keys, where it is used, what it
+              influences, whether the module reads/write it, etc.
+              &lt;/api&gt;
+          Due to XML ID restrictions, rather than /org/netbeans/modules/foo give the "name" as org.netbeans.modules.foo.
+          Note that if you use NbPreferences this name will then be the same as the code name base of the module.
+      </hint>
+  </question>
+  -->
+  <answer id="resources-preferences">
+  <p>
+     Yes, print module uses Preferences API to read/write print options.
+  </p>
+  </answer>
 </api-answers>

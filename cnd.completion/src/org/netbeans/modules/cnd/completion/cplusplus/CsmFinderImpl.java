@@ -67,7 +67,9 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletion;
@@ -776,7 +778,12 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
             Collection<CsmReference> res = CsmLabelResolver.getDefault().getLabels((CsmFunctionDefinition) contextDeclaration, null, CsmLabelResolver.LabelKind.Definiton);
             List<CsmObject> out = new ArrayList<CsmObject>();
             for(CsmReference ref : res){
-                out.add(ref.getReferencedObject());
+                if (ref.getReferencedObject() instanceof CsmLabel){
+                    CsmLabel label = (CsmLabel) ref.getReferencedObject();
+                    if (CsmSortUtilities.matchName(label.getLabel(), name, exactMatch, caseSensitive)){
+                        out.add(label);
+                    }
+                }
             }
             return out;
         }
