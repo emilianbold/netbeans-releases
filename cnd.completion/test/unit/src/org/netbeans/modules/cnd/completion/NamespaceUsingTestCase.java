@@ -41,37 +41,26 @@
 
 package org.netbeans.modules.cnd.completion;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author Alexey Vladykin
  */
-public class CCCompletionTest extends BaseTestSuite {
+public class NamespaceUsingTestCase extends CompletionBaseTestCase {
     
-    public CCCompletionTest() {
-        super("C/C++ Completion");
-        
-        this.addTestSuite(CheckModelTestCase.class);
-        this.addTestSuite(CCBasicCompletionTestCase.class);
-        this.addTestSuite(ClassContentTestCase.class);
-        this.addTestSuite(TemplateSpecializationTestCase.class);
-        this.addTestSuite(NamespacesTestCase.class);
-        this.addTestSuite(NamespaceUsingTestCase.class);
-        this.addTestSuite(InheritanceTestCase.class);
-        this.addTestSuite(StaticMembersTestCase.class);
-        this.addTestSuite(FriendTestCase.class);
-        this.addTestSuite(EnumTestCase.class);
-        this.addTestSuite(LibrariesContentTestCase.class);
-        this.addTestSuite(TypedefTestCase.class);
-        this.addTestSuite(TemplateCompletionTestCase.class);
-        this.addTestSuite(TemplateInstantiationTestCase.class);
+    public NamespaceUsingTestCase(String testName) {
+        super(testName, true);
+    }
+    
+    public void testInFunc() throws Exception {
+        // IZ #133356: Code completion: cannot finish std::exit()
+        super.performTest("file.cc", 16, 5, "ns::");
+    }
+    
+    public void testInUsing() throws Exception {
+        // IZ #133356: Code completion: cannot finish std::exit()
+        super.performTest("file.cc", 21, 5, "ns::");
     }
 
-    public static Test suite() {
-        TestSuite suite = new CCCompletionTest();
-        return suite;
-    }
 }
