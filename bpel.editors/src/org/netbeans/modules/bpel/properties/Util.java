@@ -140,10 +140,6 @@ public class Util {
         return fromRelativePathPart.append(toRelativePathPart).toString();
     }
     
-    public static String getAccentedString(String message) {
-        return "<html><b>" + message + "</b></html>";// NOI18N
-    }
-    
     /**
      * Checks the characters of the given String to determine if they
      * syntactically match the production of an NCName as defined

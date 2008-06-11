@@ -24,7 +24,6 @@ import java.util.List;
 import org.netbeans.modules.bpel.mapper.cast.TypeCast;
 import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.support.XPathBpelVariable;
-import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.xpath.ext.AbstractLocationPath;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
@@ -37,10 +36,11 @@ import org.netbeans.modules.xml.xpath.ext.XPathExpressionPath;
 import org.netbeans.modules.xml.xpath.ext.XPathExtensionFunction;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
-import org.netbeans.modules.xml.xpath.ext.spi.CastSchemaContext;
-import org.netbeans.modules.xml.xpath.ext.spi.VariableSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.CastSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.VariableSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathVariable;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitorAdapter;
@@ -237,9 +237,9 @@ public class PredicateFinderVisitor extends XPathVisitorAdapter {
                 return;
             }
             //
-            SchemaComponent sComp =
-                    XPathSchemaContext.Utilities.getSchemaComp(xPathContext);
-            if (sComp == null) {
+            SchemaCompHolder sCompHolder =
+                    XPathSchemaContext.Utilities.getSchemaCompHolder(xPathContext);
+            if (sCompHolder == null) {
                 // Error. The location path contains a step with unknown schema type
                 // or multiple possible schema types. 
                 // The predicate manager can't continue analysing the path!
@@ -249,7 +249,7 @@ public class PredicateFinderVisitor extends XPathVisitorAdapter {
             //
             XPathPredicateExpression[] predArr = step.getPredicates();
             if (predArr == null || predArr.length == 0) {
-                objLocationPath.addFirst(sComp);
+                objLocationPath.addFirst(sCompHolder.getHeldComponent());
             } else {
                 AbstractPredicate newPredSComp = new XPathPredicate(step);
                 //
