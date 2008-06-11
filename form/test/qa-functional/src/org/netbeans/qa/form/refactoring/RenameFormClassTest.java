@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import junit.framework.Test;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.qa.form.*;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JButtonOperator;
