@@ -20,10 +20,12 @@ package org.netbeans.modules.soa.ui.form.valid;
 
 import java.awt.Container;
 import java.util.List;
+import java.util.concurrent.Callable;
 import org.netbeans.modules.soa.ui.UserNotification;
 import org.netbeans.modules.soa.ui.form.FormLifeCycle;
 import org.netbeans.modules.soa.ui.form.valid.Validator.Reason;
 import org.netbeans.modules.soa.ui.form.valid.Validator.Severity;
+import org.openide.ErrorManager;
 
 /**
  * The dialog descriptor which supports form life cycle and validation.
@@ -31,6 +33,8 @@ import org.netbeans.modules.soa.ui.form.valid.Validator.Severity;
  * @author nk160297
  */
 public class DefaultDialogDescriptor extends AbstractDialogDescriptor {
+    
+    private Callable<Boolean> mOkButtonProcessor;
     
     public DefaultDialogDescriptor(Object innerPane, String title) {
         super(innerPane, title);
@@ -55,7 +59,14 @@ public class DefaultDialogDescriptor extends AbstractDialogDescriptor {
             //        UserNotification.askConfirmation(reason);
             //    }
             // }
-            setOptionClosable(btnOk, true);
+            //
+            if (mOkButtonProcessor != null) {
+                if (callProcessor()) {
+                    setOptionClosable(btnOk, true);
+                }
+            } else {
+                setOptionClosable(btnOk, true);
+            }
         } else {
             Reason errorReason = vsManager.getFistReason(Severity.ERROR);
             if (errorReason != null) {
@@ -91,6 +102,29 @@ public class DefaultDialogDescriptor extends AbstractDialogDescriptor {
             flc.unsubscribeListeners();
             flc.afterClose();
         }
+    }
+    
+    /**
+     * Calls the Ok Button processor.
+     * @return returns success status
+     */
+    private boolean callProcessor() {
+        boolean success = true;
+        try {
+            success = mOkButtonProcessor.call();
+        } catch (java.lang.Exception ex) {
+            success = false;
+            ErrorManager.getDefault().notify(ex);
+        }
+        return success;
+    }
+    
+    public Callable<Boolean> getOkButtonProcessor() {
+        return mOkButtonProcessor;
+    }
+    
+    public void setOkButtonProcessor(Callable<Boolean> processor) {
+        this.mOkButtonProcessor = processor;
     }
     
     @Override

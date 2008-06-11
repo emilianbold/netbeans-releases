@@ -17,12 +17,11 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.xml.xpath.ext.impl;
+package org.netbeans.modules.xml.xpath.ext.schema.resolver;
 
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
-import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
 
 /**
@@ -34,7 +33,7 @@ public class MultiCompSchemaContext implements XPathSchemaContext {
 
     private XPathSchemaContext mParentContext;
     private Set<SchemaCompPair> mSchemaCompPairSet;
-    private Set<SchemaComponent> mUsedSchemaCompSet;
+    private Set<SchemaCompHolder> mUsedSchemaCompSet;
     
     public MultiCompSchemaContext(XPathSchemaContext parentContext, 
             Set<SchemaCompPair> compPairSet) {
@@ -55,9 +54,9 @@ public class MultiCompSchemaContext implements XPathSchemaContext {
         //
         if (mUsedSchemaCompSet != null) {
             for (SchemaCompPair myCompPair : mSchemaCompPairSet) {
-                SchemaComponent myComponent = myCompPair.getComp();
-                for (SchemaComponent usdComp : mUsedSchemaCompSet) {
-                    if (myComponent.equals(usdComp)) {
+                SchemaCompHolder myComponent = myCompPair.getCompHolder();
+                for (SchemaCompHolder usdCompHolder : mUsedSchemaCompSet) {
+                    if (myComponent.equals(usdCompHolder)) {
                         resultSet.add(myCompPair);
                     }
                 }
@@ -67,7 +66,7 @@ public class MultiCompSchemaContext implements XPathSchemaContext {
         return resultSet;
     }
 
-    public void setUsedSchemaComp(Set<SchemaComponent> compSet) {
+    public void setUsedSchemaCompH(Set<SchemaCompHolder> compSet) {
         mUsedSchemaCompSet = compSet;
     }
     
@@ -83,13 +82,14 @@ public class MultiCompSchemaContext implements XPathSchemaContext {
                     sb.append(" | ");
                 }
                 //
-                SchemaComponent parentComp = schemaCompPair.getParetnComp();
-                if (parentComp != null) {
-                    SchemaCompPair.appendCompName(sb, parentComp);
+                SchemaCompHolder parentCompHolder = 
+                        schemaCompPair.getParetnCompHolder();
+                if (parentCompHolder != null) {
+                    SchemaCompPair.appendCompName(sb, parentCompHolder);
                     sb.append(">");
                 }
-                SchemaComponent schemaComp = schemaCompPair.getComp();
-                SchemaCompPair.appendCompName(sb, schemaComp);
+                SchemaCompHolder schemaCompHolder = schemaCompPair.getCompHolder();
+                SchemaCompPair.appendCompName(sb, schemaCompHolder);
             }
         }
         //

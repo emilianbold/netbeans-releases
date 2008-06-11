@@ -20,10 +20,10 @@ package org.netbeans.modules.bpel.nodes;
 
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.properties.BpelStandardFaults;
 import org.netbeans.modules.bpel.properties.ResolverUtility;
-import org.netbeans.modules.bpel.properties.Util;
 import org.netbeans.modules.bpel.properties.editors.controls.filter.PreferredFaultFilter;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
@@ -69,7 +69,7 @@ public class FaultNode extends BpelNode<QName> {
             // the Reply property dialog
             QName faultName = getReference();
             if (filter.isFaultPreferred(faultName)) {
-                result = Util.getAccentedString(result);
+                result = EditorUtil.getAccentedString(result);
             }
         }
         //

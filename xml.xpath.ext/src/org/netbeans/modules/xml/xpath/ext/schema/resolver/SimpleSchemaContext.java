@@ -17,14 +17,15 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.xml.xpath.ext.spi;
+package org.netbeans.modules.xml.xpath.ext.schema.resolver;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
 
 /**
  * The schema context, which contains only one Schema component. 
@@ -73,13 +74,27 @@ public class SimpleSchemaContext implements XPathSchemaContext {
         //
         if (parentContext == null) {
             mParentContext = null;
-            mSchemaCompPair = new SchemaCompPair(sComp, null);
+            mSchemaCompPair = new SchemaCompPair(sComp, (SchemaCompHolder)null);
         } else {
             mParentContext = parentContext;
-            SchemaComponent parentComp = Utilities.getSchemaComp(mParentContext);
-            assert parentComp != null;
-            mSchemaCompPair = new SchemaCompPair(sComp, parentComp);
+            SchemaCompHolder parentCompHolder = 
+                    Utilities.getSchemaCompHolder(mParentContext);
+            assert parentCompHolder != null;
+            mSchemaCompPair = new SchemaCompPair(sComp, parentCompHolder);
         }
+    }
+
+    public SimpleSchemaContext(XPathSchemaContext parentContext, 
+            XPathPseudoComp pseudoComp) {
+        //
+        assert parentContext != null;
+        //
+        mParentContext = parentContext;
+        SchemaCompHolder parentCompHolder = 
+                Utilities.getSchemaCompHolder(mParentContext);
+        assert parentCompHolder != null;
+        SchemaCompHolder sCompHolder = SchemaCompHolder.Factory.construct(pseudoComp);
+        mSchemaCompPair = new SchemaCompPair(sCompHolder, parentCompHolder);
     }
 
     public XPathSchemaContext getParentContext() {
@@ -94,7 +109,7 @@ public class SimpleSchemaContext implements XPathSchemaContext {
         return getSchemaCompPairs();
     }
 
-    public void setUsedSchemaComp(Set<SchemaComponent> compSet) {
+    public void setUsedSchemaCompH(Set<SchemaCompHolder> compSet) {
         // Ignore the set because there is only one schema component 
         // in this context and it always is implied as used!
     }
@@ -102,8 +117,8 @@ public class SimpleSchemaContext implements XPathSchemaContext {
     public String toStringWithoutParent() {
         StringBuilder sb = new StringBuilder();
         if (mSchemaCompPair != null) {
-            SchemaComponent sComp = mSchemaCompPair.getComp();
-            SchemaCompPair.appendCompName(sb, sComp);
+            SchemaCompHolder sCompHolder = mSchemaCompPair.getCompHolder();
+            SchemaCompPair.appendCompName(sb, sCompHolder);
         }
         return sb.toString();
     }
@@ -130,10 +145,10 @@ public class SimpleSchemaContext implements XPathSchemaContext {
             //
             // Optimized comparison for this simple case
             SimpleSchemaContext other = (SimpleSchemaContext)obj;
-            SchemaComponent sComp1 = this.mSchemaCompPair.getComp();
-            SchemaComponent sComp2 = other.mSchemaCompPair.getComp();
+            SchemaCompHolder sCompH1 = this.mSchemaCompPair.getCompHolder();
+            SchemaCompHolder sCompH2 = other.mSchemaCompPair.getCompHolder();
             //
-            if (sComp1 != sComp2) {
+            if (!(sCompH1.equals(sCompH2))) {
                 return false;
             }
             //

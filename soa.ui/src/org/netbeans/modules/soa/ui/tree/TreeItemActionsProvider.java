@@ -17,34 +17,20 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.bpel.mapper.cast;
+package org.netbeans.modules.soa.ui.tree;
 
-import org.netbeans.modules.bpel.mapper.tree.search.SimpleFinder;
-import org.netbeans.modules.xml.schema.model.GlobalType;
+import java.util.List;
+import javax.swing.Action;
+import javax.swing.tree.TreePath;
 
 /**
- * Looks for a Global Type item in the SubtypeTreeModel.
+ * The SPI interface for rendering tree items.
+ * 
+ * An external code can provide an instance of such interface 
+ * to perform required view of tree items. 
  * 
  * @author nk160297
  */
-public class GTypeFinder extends SimpleFinder {
-
-    private GlobalType mGType;
-    
-    public GTypeFinder(GlobalType gType) {
-        mGType = gType;
-    }
-    
-    protected boolean isFit(Object treeItem) {
-        if (treeItem == mGType) {
-             // found!!!
-            return true;
-        }
-        return false;
-    }
-
-    protected boolean drillDeeper(Object treeItem) {
-        return true;
-    }
-
+public interface TreeItemActionsProvider {
+    public List<Action> getMenuActions(TreeItem treeItem, Object context, TreePath treePath);
 }

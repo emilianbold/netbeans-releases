@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.bpel.mapper.cast.AbstractTypeCast;
-import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.events.ArrayUpdateEvent;
 import org.netbeans.modules.bpel.model.api.events.ChangeEvent;

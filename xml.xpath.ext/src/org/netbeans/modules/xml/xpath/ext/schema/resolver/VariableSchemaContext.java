@@ -17,11 +17,12 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.xml.xpath.ext.spi;
+package org.netbeans.modules.xml.xpath.ext.schema.resolver;
 
+import org.netbeans.modules.xml.xpath.ext.spi.*;
 import java.util.Collections;
 import java.util.Set;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
 
@@ -53,7 +54,8 @@ public class VariableSchemaContext implements XPathSchemaContext {
     public synchronized Set<SchemaCompPair> getSchemaCompPairs() {
         if (mCompPairSet == null) {
             SchemaComponent varType = mXPathVar.getType();
-            SchemaCompPair sCompPair = new SchemaCompPair(varType, null);
+            SchemaCompPair sCompPair = 
+                    new SchemaCompPair(varType, (SchemaCompHolder)null);
             mCompPairSet = Collections.singleton(sCompPair);
         }
         //
@@ -64,7 +66,7 @@ public class VariableSchemaContext implements XPathSchemaContext {
         return getSchemaCompPairs();
     }
 
-    public void setUsedSchemaComp(Set<SchemaComponent> compSet) {
+    public void setUsedSchemaCompH(Set<SchemaCompHolder> compSet) {
         // Ignore the set because there is only one schema component 
         // in this context and it always is implied as used!
     }
