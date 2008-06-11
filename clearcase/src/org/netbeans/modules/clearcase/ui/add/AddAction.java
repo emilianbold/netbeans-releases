@@ -93,10 +93,11 @@ public class AddAction extends AbstractAction {
         FileStatusCache cache = Clearcase.getInstance().getFileStatusCache();
         Set<File> roots = context.getRootFiles();        
         for (File root : roots) {
+            FileInformation info = cache.getCachedInfo(root);
+            if (info != null && info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED) continue;
             if(root.isDirectory()) {
                 return true;
             }
-            FileInformation info = cache.getCachedInfo(root);            
             if(info != null && info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
                 return true;
             }
