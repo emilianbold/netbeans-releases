@@ -225,7 +225,8 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
             {
                 for(Widget child : children)
                 {
-                    Point location = container.convertSceneToLocal(child.getBounds().getLocation());
+//                    Point location = container.convertSceneToLocal(child.getBounds().getLocation());
+                    Point location = container.convertSceneToLocal(child.getLocation());
                     child.setPreferredLocation(location);
 
                     child.removeFromParent();
