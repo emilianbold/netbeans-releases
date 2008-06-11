@@ -86,6 +86,11 @@ public class SimpleSchemaContext implements XPathSchemaContext {
 
     public SimpleSchemaContext(XPathSchemaContext parentContext, 
             XPathPseudoComp pseudoComp) {
+        this(parentContext, SchemaCompHolder.Factory.construct(pseudoComp));
+    }
+
+    public SimpleSchemaContext(XPathSchemaContext parentContext, 
+            SchemaCompHolder sCompHolder) {
         //
         assert parentContext != null;
         //
@@ -93,7 +98,6 @@ public class SimpleSchemaContext implements XPathSchemaContext {
         SchemaCompHolder parentCompHolder = 
                 Utilities.getSchemaCompHolder(mParentContext);
         assert parentCompHolder != null;
-        SchemaCompHolder sCompHolder = SchemaCompHolder.Factory.construct(pseudoComp);
         mSchemaCompPair = new SchemaCompPair(sCompHolder, parentCompHolder);
     }
 
