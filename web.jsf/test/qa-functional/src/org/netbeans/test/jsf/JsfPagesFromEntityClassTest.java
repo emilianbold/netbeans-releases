@@ -66,7 +66,7 @@ public class JsfPagesFromEntityClassTest extends J2eeTestCase{
     }
     
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(JsfPagesFromEntityClassTest.class), "testCreateEntityClassAndPU"));
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(JsfPagesFromEntityClassTest.class), "testCreateEntityClassAndPU").enableModules(".*").clusters(".*"));
     }
     
     @Override
