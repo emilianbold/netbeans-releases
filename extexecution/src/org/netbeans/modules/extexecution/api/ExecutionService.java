@@ -281,7 +281,7 @@ public final class ExecutionService {
                             stopAction.setProcess(process);
                         }
 
-                        runIO(stopAction, process, io, null);
+                        runIO(stopAction, process, io);
 
                         try {
                             process.waitFor();
@@ -367,8 +367,7 @@ public final class ExecutionService {
         return task;
     }
 
-    private void runIO(final StopAction sa, Process process, InputOutput io, FileObject toRefresh) {
-
+    private void runIO(final StopAction sa, Process process, InputOutput io) {
         final ExecutorService executor = Executors.newFixedThreadPool(3);
         OutputWriter out = io.getOut();
         OutputWriter err = io.getErr();
@@ -391,12 +390,10 @@ public final class ExecutionService {
             process.destroy();
         } finally {
             AccessController.doPrivileged(new PrivilegedAction<Void>() {
-
                 public Void run() {
                     executor.shutdownNow();
                     return null;
                 }
-
             });
 
             out.close();
@@ -405,11 +402,6 @@ public final class ExecutionService {
                 in.close();
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, null, ex);
-            }
-
-            // remove this
-            if (toRefresh != null) {
-                FileUtil.refreshFor(FileUtil.toFile(toRefresh));
             }
         }
     }

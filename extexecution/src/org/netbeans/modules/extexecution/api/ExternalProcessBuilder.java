@@ -338,6 +338,8 @@ public final class ExternalProcessBuilder {
      * available.
      */
     private static String getNetBeansHttpProxy() {
+        // FIXME use ProxySelector
+        
         String host = System.getProperty("http.proxyHost"); // NOI18N
 
         if (host == null) {
