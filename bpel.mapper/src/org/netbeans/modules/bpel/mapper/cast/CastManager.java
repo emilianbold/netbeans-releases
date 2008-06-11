@@ -30,8 +30,8 @@ import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
+import org.netbeans.modules.bpel.mapper.tree.spi.IterableExpander;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.BPELElementsBuilder;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
@@ -43,6 +43,7 @@ import org.netbeans.modules.bpel.model.api.support.XPathBpelVariable;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 import org.netbeans.modules.bpel.model.ext.editor.api.Casts;
 import org.netbeans.modules.bpel.model.ext.editor.api.Editor;
+import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComp;
 import org.netbeans.modules.bpel.model.ext.editor.api.Source;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
@@ -92,10 +93,10 @@ public class CastManager {
     }
     
     // The cache of type cast.
-    private LinkedList<CachedCast> mCashedCastList;
+    private LinkedList<CachedCast> mCachedCastList;
     
     // The cache of casted variables.
-    private LinkedList<CashedVariableCast> mCashedCastedVarList;
+    private LinkedList<CachedVariableCast> mCachedCastedVarList;
     
     private boolean mInLeftMapperTree;
     private Object mSynchSource;
@@ -107,24 +108,23 @@ public class CastManager {
     public CastManager(boolean inLeftMapperTree, Object synchSource) {
         mInLeftMapperTree = inLeftMapperTree;
         mSynchSource = synchSource;
-        mCashedCastList = new LinkedList<CachedCast>();
-        mCashedCastedVarList = new LinkedList<CashedVariableCast>();
+        mCachedCastList = new LinkedList<CachedCast>();
+        mCachedCastedVarList = new LinkedList<CachedVariableCast>();
     }
     
     //-------------------------------------------------------
     
     public List<AbstractTypeCast> getTypeCast(
-            RestartableIterator<Object> paretnPath, SchemaComponent castedComp) {
+            Iterable<Object> paretnPathItrb, SchemaComponent castedComp) {
         //
         // Convert the iterator, which points to the paretn element to the 
         // iterator, which points to the casted component.
-        RestartableIterator.RestartableIteratorExpander<Object> baseCompItr = 
-                new RestartableIterator.RestartableIteratorExpander<Object>(
-                paretnPath, castedComp); 
+        IterableExpander<Object> baseCompItr = new IterableExpander<Object>(
+                paretnPathItrb, castedComp); 
         //
         ArrayList<AbstractTypeCast> result = new ArrayList<AbstractTypeCast>();
         //
-        for (CachedCast cCast : mCashedCastList) {
+        for (CachedCast cCast : mCachedCastList) {
             if (cCast.hasSameCastedCompLocation(baseCompItr)) {
                 result.add(cCast.getTypeCast());
             }
@@ -155,7 +155,7 @@ public class CastManager {
             return addCastedVariableImpl(xPathVar, cast);
         } else {
             //
-            for (CachedCast cCast : mCashedCastList) {
+            for (CachedCast cCast : mCachedCastList) {
                 if (cCast.hasSameCastedCompPath(castedCompPath) && cCast.hasSameCastTo(cast)) {
                     // the same cast already in cache
                     return false;
@@ -163,16 +163,16 @@ public class CastManager {
             }
             //
             CachedCast cCast = new CachedCast(castedCompPath, cast);
-            mCashedCastList.add(cCast);
+            mCachedCastList.add(cCast);
             return true;
         }
     }
 
-    public boolean addTypeCast(RestartableIterator<Object> castedCompItr, 
+    public boolean addTypeCast(Iterable<Object> castedCompItrb, 
             SyntheticTypeCast cast) {
         //
-        List<Object> castedCompPath = 
-                PathConverter.constructObjectLocationtList(castedCompItr, true);
+        List<Object> castedCompPath = PathConverter.constructObjectLocationtList(
+                castedCompItrb, true, false);
         //
         if (castedCompPath != null) {
             if (addTypeCastImpl(castedCompPath, cast)) {
@@ -196,10 +196,10 @@ public class CastManager {
             AbstractVariableDeclaration var, Part part) {
         //
         ArrayList<AbstractTypeCast> result = new ArrayList<AbstractTypeCast>();
-        if (mCashedCastedVarList != null && !mCashedCastedVarList.isEmpty()) {
+        if (mCachedCastedVarList != null && !mCachedCastedVarList.isEmpty()) {
             XPathBpelVariable xPathVar = new XPathBpelVariable(var, part);
             //
-            for (CashedVariableCast cVCast : mCashedCastedVarList) {
+            for (CachedVariableCast cVCast : mCachedCastedVarList) {
                 if (cVCast.getCastedVariableDecl().equals(xPathVar)) {
                     result.add(cVCast.getTypeCast());
                 }
@@ -219,15 +219,15 @@ public class CastManager {
     private boolean addCastedVariableImpl(XPathBpelVariable xPathVar, 
             AbstractTypeCast cast) {
         //
-        for (CashedVariableCast cVCast : mCashedCastedVarList) {
+        for (CachedVariableCast cVCast : mCachedCastedVarList) {
             if (cVCast.hasSameValues(xPathVar, cast) ) {
                 // the same cast already in cache
                 return false;
             }
         }
         //
-        CashedVariableCast cVCast = new CashedVariableCast(xPathVar, cast);
-        mCashedCastedVarList.add(cVCast);
+        CachedVariableCast cVCast = new CachedVariableCast(xPathVar, cast);
+        mCachedCastedVarList.add(cVCast);
         return true;
     }
 
@@ -311,8 +311,8 @@ public class CastManager {
         //
         if (!isEqualFound) {
             Cast newCast = builder.createExtensionEntity(Cast.class);
-            newTypeCast.populateCast(newCast, casts, mInLeftMapperTree);
             casts.addCast(newCast);
+            newTypeCast.populateCast(newCast, casts, mInLeftMapperTree);
         }
     }
     
@@ -346,8 +346,8 @@ public class CastManager {
             //
             if (!isEqualFound) {
                 Cast newCast = builder.createExtensionEntity(Cast.class);
-                typeCast.populateCast(newCast, casts, mInLeftMapperTree);
                 casts.addCast(newCast);
+                typeCast.populateCast(newCast, casts, mInLeftMapperTree);
             }
         }
     }
@@ -437,8 +437,9 @@ public class CastManager {
         int initialSize = children.size();
         int deletedChildCount = 0;
         for (BpelEntity child : children) {
-            if (child instanceof Cast) {
-                // it's strange, but the Cast extends the BpelContainer
+            if (child instanceof Cast || child instanceof PseudoComp) {
+                // The Cast and PseudoComp are leaf objects in the 
+                // Editor extension hierarchy extension tree. 
                 continue;
             }
             if (child instanceof BpelContainer) {
@@ -453,13 +454,13 @@ public class CastManager {
     }
     
     /**
-     * Removes the specified cast from the cashe.
+     * Removes the specified cast from the cache.
      * @param castToDelete
      */
     public void removeTypeCast(AbstractTypeCast castToDelete) {
-        ListIterator<CashedVariableCast> varItr = mCashedCastedVarList.listIterator();
+        ListIterator<CachedVariableCast> varItr = mCachedCastedVarList.listIterator();
         while (varItr.hasNext()) {
-            CashedVariableCast cVarCast = varItr.next();
+            CachedVariableCast cVarCast = varItr.next();
             AbstractTypeCast cast = cVarCast.getTypeCast();
             if (cast.equals(castToDelete)) {
                 varItr.remove();
@@ -467,7 +468,7 @@ public class CastManager {
             }
         }
         //
-        ListIterator<CachedCast> typeItr = mCashedCastList.listIterator();
+        ListIterator<CachedCast> typeItr = mCachedCastList.listIterator();
         while (typeItr.hasNext()) {
             CachedCast cCast = typeItr.next();
             AbstractTypeCast cast = cCast.getTypeCast();
@@ -481,18 +482,18 @@ public class CastManager {
     @Override
     public String toString() {
         return " inLeftTree:" + mInLeftMapperTree + 
-                "  TypeCastCount: " + mCashedCastList.size() + 
+                "  TypeCastCount: " + mCachedCastList.size() + 
                 "  ||  " + super.toString(); 
     }
     
-    public static class CashedVariableCast {
+    public static class CachedVariableCast {
         // The type cast.
         private XPathBpelVariable mVariable;
         
         // The type cast.
         private AbstractTypeCast mTypeCast;
         
-        public CashedVariableCast(XPathBpelVariable variable, 
+        public CachedVariableCast(XPathBpelVariable variable, 
                 AbstractTypeCast typeCast) {
             //
             assert variable != null && typeCast != null;
@@ -516,8 +517,8 @@ public class CastManager {
         
         @Override
         public  boolean equals(Object obj) {
-            if (obj instanceof CashedVariableCast) {
-                CashedVariableCast other = (CashedVariableCast)obj;
+            if (obj instanceof CachedVariableCast) {
+                CachedVariableCast other = (CachedVariableCast)obj;
                 return mVariable.equals(other.getCastedVariableDecl()) && 
                         mTypeCast.equals(other.getTypeCast());
             }
@@ -548,7 +549,8 @@ public class CastManager {
         // It is implied that it can contain a set of SchemaComponents and 
         // PredicatedSchemaComp, special steps or another type casts. 
         // And there is either a variable or a variable with a part at the end. 
-        // The first element is the parent of the type cast!
+        // The first element is the casted component! The second is the parent 
+        // of the casted and casting components (they are sibling).
         // The type cast component isn't in the list itself.
         // It it held in the separate attribute mTypeCast.
         private List<Object> mCastedCompPath;
@@ -584,13 +586,12 @@ public class CastManager {
         }
         
         public boolean hasSameCastTo(AbstractTypeCast cast) {
-            GlobalType gType = getTypeCast().getCastTo();
-            return gType.equals(cast.getCastTo());
+            GlobalType type = getTypeCast().getType();
+            return type.equals(cast.getType());
         }
         
-        public boolean hasSameCastedCompLocation(RestartableIterator castedCompItr) {
-            castedCompItr.restart();
-            return hasSameCastedCompPathImpl(castedCompItr);
+        public boolean hasSameCastedCompLocation(Iterable castedCompItrb) {
+            return hasSameCastedCompPathImpl(castedCompItrb.iterator());
         }
         
         public boolean hasSameCastedCompPath(List<Object> castedCompPath) {

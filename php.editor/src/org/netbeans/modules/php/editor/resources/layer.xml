@@ -97,6 +97,9 @@
                     <file name="format">
                         <attr name="position" intvalue="750" />
                     </file>
+                    <file name="generate-code">
+                        <attr name="position" intvalue="760" />
+                    </file>
                     <file name="SeparatorAfterFormat.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
                         <attr name="position" intvalue="780" />

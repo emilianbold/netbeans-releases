@@ -38,6 +38,9 @@
 # made subject to such option by the copyright holder.
     __start_guardedblock__   
     __instancename__ = new DataSet() {  
+    __stop_guardedblock__
+      // declaration field
+    __start_guardedblock__ 
         public Class getType(String type) throws DataBindingException {
         __stop_guardedblock__
             throw new IllegalStateException("Not implemented yet");

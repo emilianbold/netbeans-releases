@@ -22,7 +22,7 @@ package org.netbeans.modules.bpel.mapper.predicates;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContextHolder;
 import org.netbeans.modules.xml.xpath.ext.XPathUtils;
 

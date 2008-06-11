@@ -41,27 +41,24 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
-import java.util.*;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 
-import org.netbeans.modules.cnd.modelimpl.csm.*;
 
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
  * Implements ... statement
  * @author Vladimir Kvashin
  */
-public class LabelImpl extends StatementBase implements CsmStatement {
+public class LabelImpl extends StatementBase implements CsmStatement, CsmLabel {
 
     String label;
 
     public LabelImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
+        label = ast.getFirstChild().getText();
     }
     
     public CsmStatement.Kind getKind() {
