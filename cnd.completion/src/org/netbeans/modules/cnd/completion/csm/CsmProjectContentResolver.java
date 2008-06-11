@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
@@ -658,6 +659,8 @@ public final class CsmProjectContentResolver {
     
     private List getNamespaceVariables(CsmNamespace ns, String strPrefix, boolean match, boolean sort, boolean searchNested) {
         List res = getNamespaceMembers(ns, CsmDeclaration.Kind.VARIABLE, strPrefix, match, searchNested, false);
+        Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
+        filterDeclarations(used.iterator(), res, new CsmDeclaration.Kind[] {CsmDeclaration.Kind.VARIABLE}, strPrefix, match, false);
         res = filterVariables(res);
         if (sort && res != null) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
@@ -675,13 +678,15 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.FUNCTION_DEFINITION
         };
         List res = getNamespaceMembers(ns, memberKinds, strPrefix, match, searchNested, false);
+        Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
+        filterDeclarations(used.iterator(), res, memberKinds, strPrefix, match, false);
         res = filterFunctionDefinitions(res);
         if (sort && res != null) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
         return res;
     }
-    
+
     public List/*<CsmNamespace>*/ getNestedNamespaces(CsmNamespace ns, String strPrefix, boolean match) {
         List res = new ArrayList();
         // handle all nested namespaces
@@ -707,6 +712,8 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.TYPEDEF
         };
         List res = getNamespaceMembers(ns, classKinds, strPrefix, match, searchNested, false);
+        Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
+        filterDeclarations(used.iterator(), res, classKinds, strPrefix, match, false);
         if (!ns.getProject().isArtificial() && !ns.isGlobal()){
             for(CsmProject lib : ns.getProject().getLibraries()){
                 CsmNamespace n = lib.findNamespace(ns.getQualifiedName());
@@ -729,8 +736,10 @@ public final class CsmProjectContentResolver {
         CsmDeclaration.Kind classKinds[] =	{
             CsmDeclaration.Kind.ENUM,
             CsmDeclaration.Kind.TYPEDEF
-        };        
+        };
         List enumsAndTypedefs = getNamespaceMembers(ns, classKinds, "", false, searchNested, true);
+        Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
+        filterDeclarations(used.iterator(), enumsAndTypedefs, classKinds, "", false, true);
         List res = getEnumeratorsFromEnumsAndTypedefs(enumsAndTypedefs, match, strPrefix, sort);
         return res;
     }
