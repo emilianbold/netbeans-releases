@@ -45,25 +45,25 @@ public class RailsDeprecationsTest extends HintTestBase {
     
     public void testInstanceField() throws Exception {
         // Refers to @request
-        findHints(this, new RailsDeprecations(), "testfiles/projects/railsproj/app/controllers/foo_controller.rb", null);
+        checkHints(this, new RailsDeprecations(), "testfiles/projects/railsproj/app/controllers/foo_controller.rb", null);
     }
 
     public void testSkipNonRails() throws Exception {
         // Shouldn't find deprecations in files that aren't in Rails projects
-        findHints(this, new RailsDeprecations(), "testfiles/notrails.rb", null);
+        checkHints(this, new RailsDeprecations(), "testfiles/notrails.rb", null);
     }
 
     public void testFinders() throws Exception {
         // Shouldn't mistake Enumerations find_all methods for ActiveRecord ones
-        findHints(this, new RailsDeprecations(), "testfiles/projects/railsproj/app/controllers/findall.rb", null);
+        checkHints(this, new RailsDeprecations(), "testfiles/projects/railsproj/app/controllers/findall.rb", null);
     }
 
     public void testRenderTemplate() throws Exception {
         // Should identify render_template in non spec files
-        findHints(this, new RailsDeprecations(), "testfiles/projects/railsproj/app/controllers/rendertemplate.rb", null);
+        checkHints(this, new RailsDeprecations(), "testfiles/projects/railsproj/app/controllers/rendertemplate.rb", null);
     }
     public void testRSpec() throws Exception {
         // Shouldn't identify render_template in specs
-        findHints(this, new RailsDeprecations(), "testfiles/projects/railsproj/app/controllers/rendertemplate_spec.rb", null);
+        checkHints(this, new RailsDeprecations(), "testfiles/projects/railsproj/app/controllers/rendertemplate_spec.rb", null);
     }
 }

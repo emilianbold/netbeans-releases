@@ -58,9 +58,6 @@ public class ProprietarySCClientFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(ProprietarySCClientQName.SCCLIENTCONFIGURATION.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new SCClientConfigurationImpl(context.getModel()));
-        }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new SCClientConfigurationImpl(context.getModel(), element);
@@ -71,9 +68,6 @@ public class ProprietarySCClientFactories {
         @Override
         public Set<QName> getElementQNames() {
             return Collections.singleton(ProprietarySCClientQName.LIFETIME.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new LifeTimeClientImpl(context.getModel()));
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {

@@ -57,6 +57,7 @@ public interface InstanceCookie/*<T>*/ extends Node.Cookie {
      * The name of {@link #instanceClass}.
      * Should be the same as <code>instanceClass().getName()</code>
      * but may be able to avoid actually loading the class.
+     * <p><strong>Generally this method should not be used.</strong>
      * @return the instance class name
      */
     public String instanceName();
@@ -65,6 +66,12 @@ public interface InstanceCookie/*<T>*/ extends Node.Cookie {
      * The type that the instance is expected to be assignable to.
      * Can be used to test whether the instance is of an appropriate
      * class without actually creating it.
+     * <p><strong>Generally this method should not be used.</strong>
+     * To test whether the instance will be assignable to some type,
+     * use {@link InstanceCookie.Of#instanceOf} instead.
+     * To actually load instances, use {@link #instanceCreate}; if your
+     * objects are not naturally singletons (e.g. public no-argument constructor),
+     * the instances should rather be of some kind of <em>factory</em> you define.
      *
      * @return the type (or perhaps some interesting supertype) of the instance
      * @exception IOException if metadata about the instance could not be read, etc.

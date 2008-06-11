@@ -45,6 +45,7 @@ import groovy.lang.GroovyClassLoader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -87,7 +88,6 @@ import org.netbeans.modules.groovy.editor.elements.CommentElement;
 import org.netbeans.modules.groovy.editor.elements.GroovyElement;
 import org.netbeans.modules.groovy.editor.elements.IndexedElement;
 import org.netbeans.modules.groovy.editor.elements.KeywordElement;
-import org.netbeans.modules.gsf.spi.DefaultError;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -128,7 +128,7 @@ public class GroovyParser implements Parser {
                 CharSequence buffer = reader.read(file);
                 String source = asString(buffer);
                 int caretOffset = reader.getCaretOffset(file);
-                Context context = new Context(file, listener, source, caretOffset);
+                Context context = new Context(file, listener, source, caretOffset, AstUtilities.getBaseDocument(file.getFileObject(), true));
                 result = parseBuffer(context, Sanitize.NONE);
             } catch (IOException ioe) {
                 listener.exception(ioe);
@@ -535,9 +535,9 @@ public class GroovyParser implements Parser {
         }
         
         FileObject fo = context.file.getFileObject();
-        ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
-        ClassPath compilePath = ClassPath.getClassPath(fo, ClassPath.COMPILE);
-        ClassPath sourcePath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        ClassPath bootPath = fo == null ? ClassPathSupport.createClassPath(new URL[0]) : ClassPath.getClassPath(fo, ClassPath.BOOT);
+        ClassPath compilePath = fo == null ? ClassPathSupport.createClassPath(new URL[0]) : ClassPath.getClassPath(fo, ClassPath.COMPILE);
+        ClassPath sourcePath = fo == null ? ClassPathSupport.createClassPath(new URL[0]) : ClassPath.getClassPath(fo, ClassPath.SOURCE);
         ClassPath cp = ClassPathSupport.createProxyClassPath(bootPath, compilePath, sourcePath);
         
         ClassLoader parentLoader = cp.getClassLoader(true);
@@ -870,12 +870,12 @@ public class GroovyParser implements Parser {
         private Sanitize sanitized = Sanitize.NONE;
         private BaseDocument document;
         
-        public Context(ParserFile parserFile, ParseListener listener, String source, int caretOffset) {
+        public Context(ParserFile parserFile, ParseListener listener, String source, int caretOffset, BaseDocument doc) {
             this.file = parserFile;
             this.listener = listener;
             this.source = source;
             this.caretOffset = caretOffset;
-            this.document = AstUtilities.getBaseDocument(file.getFileObject(), true);
+            this.document = doc;//AstUtilities.getBaseDocument(file.getFileObject(), true);
         }
         
         @Override

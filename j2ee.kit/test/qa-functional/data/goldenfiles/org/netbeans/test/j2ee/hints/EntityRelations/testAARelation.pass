@@ -1,4 +1,4 @@
-25:7-25:9:warning:The entity relation is not defined.
+25:7-25:9:warning:The entity relationship is not defined.
 46:15-46:23:verifier:Add @Override Annotation
 52:19-52:25:verifier:Add @Override Annotation
 62:18-62:26:verifier:Add @Override Annotation

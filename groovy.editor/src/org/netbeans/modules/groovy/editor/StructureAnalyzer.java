@@ -248,6 +248,9 @@ public class StructureAnalyzer implements StructureScanner {
 
         try {
             BaseDocument doc = (BaseDocument)info.getDocument();
+            if (doc == null) {
+                return Collections.emptyMap();
+            }
             
             List<OffsetRange> commentfolds = new ArrayList<OffsetRange>();
             
@@ -379,12 +382,7 @@ public class StructureAnalyzer implements StructureScanner {
             this.node = node;
             this.kind = node.getKind();
             this.info = info;
-            
-            try {
-                this.doc = (BaseDocument) info.getDocument();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            this.doc = (BaseDocument) info.getDocument();
         }
 
         public String getName() {

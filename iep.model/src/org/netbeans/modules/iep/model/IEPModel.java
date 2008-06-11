@@ -78,9 +78,9 @@ public abstract class IEPModel extends AbstractDocumentModel<IEPComponent> imple
      
      public abstract void saveWsdl() throws Exception;
 
-     public abstract List<InputOperatorComponent> getInputList();
+     public abstract List<InputOperatorComponent> getInputList(boolean wsOnly);
 
-     public abstract List<OutputOperatorComponent> getOutputList();
+     public abstract List<OutputOperatorComponent> getOutputList(boolean wsOnly);
      
      /**
       * Get Qualified name for IEP file.

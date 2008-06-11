@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.bpel.mapper.tree;
 
+import java.awt.event.KeyEvent;
 import org.netbeans.modules.bpel.mapper.tree.spi.ExtTreeModel;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,6 +29,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.KeyStroke;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
@@ -39,6 +41,8 @@ import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemInfoProvider;
+import org.netbeans.modules.print.api.PrintManager;
+import org.netbeans.modules.soa.mappercore.model.GraphItem;
 
 /**
  * An internal tree model based on the Swing Tree Model. 
@@ -250,6 +254,28 @@ public class MapperSwingTreeModel implements ExtTreeModel<MapperTreeNode>,
         //
         return null;
     }
+    
+    public JPopupMenu getCanvasPopupMenu(GraphItem item) {
+        JPopupMenu newMenu = new JPopupMenu();
+
+//        JMenuItem newItem = new JMenuItem(new DeleteGraphSelectionAction(
+//                getMapperTcContext().getMapper()));
+//        newMenu.add(newItem);
+        JMenuItem newItem = new JMenuItem(PrintManager.getDefault().getPrintPreviewAction());
+        newItem.setText("Print Preview");
+        newItem.setMnemonic(KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK + 
+                KeyEvent.SHIFT_DOWN_MASK + KeyEvent.ALT_DOWN_MASK).getKeyCode());
+        newItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK + 
+                KeyEvent.SHIFT_DOWN_MASK + KeyEvent.ALT_DOWN_MASK));
+//        newMenu.addSeparator();
+        newMenu.add(newItem);
+//        //
+        return newMenu;
+    }
+        
+               
+    
+    
     
     public List<MapperTreeNode> getChildren(MapperTreeNode parent) {
         List<MapperTreeNode> childrenList = parent.getChildren();

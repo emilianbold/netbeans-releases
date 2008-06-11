@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.php.project.ui.customizer;
 
+import org.netbeans.modules.php.project.connections.ConfigManager;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;

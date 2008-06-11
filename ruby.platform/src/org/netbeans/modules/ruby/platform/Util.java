@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -70,7 +71,7 @@ public final class Util {
      * Regexp for matching version number in gem packages:  name-x.y.z (we need
      * to pull out x,y,z such that we can do numeric comparisons on them)
      */
-    private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(-\\S+)?"); // NOI18N
+    private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)(\\.(\\d+)(-\\S+)?)?"); // NOI18N
     
     private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
 
@@ -80,6 +81,14 @@ public final class Util {
     private static final String PROXY_AUTHENTICATION_PASSWORD = "proxyAuthenticationPassword"; // NOI18N
 
     private static final String FIRST_TIME_KEY = "platform-manager-called-first-time"; // NOI18N
+    private static final String FETCH_ALL_VERSIONS = "gem-manager-fetch-all-versions"; // NOI18N
+    private static final String FETCH_GEM_DESCRIPTIONS = "gem-manager-fetch-descriptions"; // NOI18N
+    
+    public static final Comparator<String> VERSION_COMPARATOR = new Comparator<String>() {
+        public int compare(String v1, String v2) {
+            return Util.compareVersions(v1, v2);
+        }
+    };
 
     private Util() {
     }
@@ -251,7 +260,43 @@ public final class Util {
     static boolean isFirstPlatformTouch() {
         return Util.getPreferences().getBoolean(FIRST_TIME_KEY, true);
     }
-    
+
+    /**
+     * Retrieves stored setting whether to fetch all versions of Gems or not,
+     * i.e. whether <em>-a</em> or <em>--all</em> respectively should be used
+     * for operation like 'gem list'.
+     */
+    public static boolean shallFetchAllVersions() {
+        return Util.getPreferences().getBoolean(FETCH_ALL_VERSIONS, false);
+    }
+
+    /**
+     * Stores setting whether to fetch all versions of Gems or not, i.e. whether
+     * <em>-a</em> or <em>--all</em> respectively should be used for operation
+     * like 'gem list'.
+     */
+    public static void setFetchAllVersions(boolean fetchAll) {
+        Util.getPreferences().putBoolean(FETCH_ALL_VERSIONS, fetchAll);
+    }
+
+    /**
+     * Retrieves stored setting whether to fetch detailed descriptions of Gems
+     * or not, i.e. whether <em>-d</em> or <em>--details</em> respectively should be
+     * used for operation like 'gem list'.
+     */
+    public static boolean shallFetchGemDescriptions() {
+        return Util.getPreferences().getBoolean(FETCH_GEM_DESCRIPTIONS, true);
+    }
+
+    /**
+     * Stores setting whether to fetch all detailed descriptions of Gems or not,
+     * i.e. whether <em>-d</em> or <em>--details</em> respectively should be
+     * used for operation like 'gem list'.
+     */
+    public static void setFetchGemDescriptions(boolean fetchDescriptions) {
+        Util.getPreferences().putBoolean(FETCH_GEM_DESCRIPTIONS, fetchDescriptions);
+    }
+
     public static String readAsString(final InputStream is) throws IOException {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -276,14 +321,14 @@ public final class Util {
         if (matcher1.matches()) {
             int major1 = Integer.parseInt(matcher1.group(1));
             int minor1 = Integer.parseInt(matcher1.group(2));
-            int micro1 = Integer.parseInt(matcher1.group(3));
+            int micro1 = matcher1.group(4) == null ? 0 : Integer.parseInt(matcher1.group(4));
 
             Matcher matcher2 = VERSION_PATTERN.matcher(version2);
 
             if (matcher2.matches()) {
                 int major2 = Integer.parseInt(matcher2.group(1));
                 int minor2 = Integer.parseInt(matcher2.group(2));
-                int micro2 = Integer.parseInt(matcher2.group(3));
+                int micro2 = matcher2.group(4) == null ? 0 : Integer.parseInt(matcher2.group(4));
 
                 if (major1 != major2) {
                     return major1 - major2;

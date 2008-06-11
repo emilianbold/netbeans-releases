@@ -42,9 +42,7 @@
 package org.netbeans.modules.websvc.wsitmodelext.rm.impl;
 
 import org.netbeans.modules.websvc.wsitmodelext.rm.InactivityTimeout;
-import org.netbeans.modules.websvc.wsitmodelext.rm.RMQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -60,15 +58,6 @@ public class InactivityTimeoutImpl extends RMComponentImpl implements Inactivity
         super(model, e);
     }
     
-    public InactivityTimeoutImpl(WSDLModel model){
-        this(model, createPrefixedElement(RMQName.INACTIVITYTIMEOUT.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
     public void setMilliseconds(String milliseconds) {
         setAttribute(MILLISECONDS_PROPERTY, RMAttribute.MILLISECONDS, milliseconds);        
     }

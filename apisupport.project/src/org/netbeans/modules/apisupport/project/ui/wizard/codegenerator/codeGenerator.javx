@@ -1,0 +1,43 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+package ${PACKAGE_NAME};
+
+${IMPORTS}
+
+public class ${CLASS_NAME} implements CodeGenerator {
+
+    JTextComponent textComp;
+
+    /**
+     * 
+     * @param context containing JTextComponent and possibly other items registered by {@link CodeGeneratorContextProvider}
+     */
+    private ${CLASS_NAME}(Lookup context) { // Good practice is not to save Lookup outside ctor
+        textComp = context.lookup(JTextComponent.class);
+    }
+
+    public static class Factory implements CodeGenerator.Factory {
+
+        public List<? extends CodeGenerator> create(Lookup context) {
+            return Collections.singletonList(new ${CLASS_NAME}(context));
+        }
+    }
+
+    /**
+     * The name which will be inserted inside Insert Code dialog
+     */
+    public String getDisplayName() {
+        return "Sample Generator";
+    }
+
+    /**
+     * This will be invoked when user chooses this Generator from Insert Code
+     * dialog
+     */
+    public void invoke() {
+    }
+
+}

@@ -361,13 +361,13 @@ public final class UiUtils {
                                                 } catch (InterruptedException e) {
                                                     return;
                                                 }
-                                                
+                                                final File lock = new File(Installer.getInstance().getLocalDirectory(), Installer.LOCK_FILE_NAME);
                                                 LogManager.log("\n... !!! WARNING !!!");
                                                 LogManager.log("... There are some big zip files on your desktop: " + StringUtils.asString(names));
                                                 LogManager.log("... In case installer UI does not appear for a long time:");
                                                 LogManager.log("...    1) kill the installer process");
                                                 LogManager.log("...    2) move those zip files somewhere from the desktop");
-                                                LogManager.log("...    3) delete " + new File(System.getProperty(Installer.LOCAL_DIRECTORY_PATH_PROPERTY), Installer.LOCK_FILE_NAME));
+                                                LogManager.log("...    3) delete " + lock);
                                                 LogManager.log("...    4) run installer again");                                                
                                                 LogManager.log("... For more details see the following bugs descriptions: ");
                                                 LogManager.log("... http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6372808");

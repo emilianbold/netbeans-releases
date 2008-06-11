@@ -41,17 +41,16 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.tokens.impl;
 
+import org.netbeans.modules.websvc.wsitmodelext.security.impl.SecurityPolicyComponentImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.KerberosToken;
-import org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokensQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author Martin Grebac
  */
-public class KerberosTokenImpl extends TokensComponentImpl implements KerberosToken {
+public class KerberosTokenImpl extends SecurityPolicyComponentImpl implements KerberosToken {
     
     /**
      * Creates a new instance of KerberosTokenImpl
@@ -60,13 +59,4 @@ public class KerberosTokenImpl extends TokensComponentImpl implements KerberosTo
         super(model, e);
     }
     
-    public KerberosTokenImpl(WSDLModel model){
-        this(model, createPrefixedElement(TokensQName.KERBEROSTOKEN.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
 }

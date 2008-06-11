@@ -4,8 +4,3 @@ OpenIDE-Module-Layer: org/netbeans/modules/javawebstart/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/javawebstart/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.2
 AutoUpdate-Show-In-Client: false
-
-Name: org/netbeans/modules/javawebstart/JnlpDataLoader.class
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject
-OpenIDE-Module-Class: Loader
-

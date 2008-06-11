@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.mercurial.ui.merge;
 
-import org.netbeans.modules.mercurial.ui.update.*;
 import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -61,8 +60,8 @@ public class MergeRevisions implements PropertyChangeListener {
     private JButton okButton;
     private JButton cancelButton;
     
-    public MergeRevisions(File repository) {
-        panel = new MergeRevisionsPanel(repository);
+    public MergeRevisions(File repository, File [] roots) {
+        panel = new MergeRevisionsPanel(repository, roots);
          okButton = new JButton(NbBundle.getMessage(MergeRevisions.class, 
                      "CTL_MergeForm_Action_Merge")); // NOI18N
          okButton.getAccessibleContext().setAccessibleDescription(

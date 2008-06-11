@@ -41,17 +41,16 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.algosuite.impl;
 
-import org.netbeans.modules.websvc.wsitmodelext.security.algosuite.AlgorithmSuiteQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.algosuite.TripleDesSha256;
+import org.netbeans.modules.websvc.wsitmodelext.security.impl.SecurityPolicyComponentImpl;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author Martin Grebac
  */
-public class TripleDesSha256Impl extends AlgorithmSuiteComponentImpl implements TripleDesSha256 {
+public class TripleDesSha256Impl extends SecurityPolicyComponentImpl implements TripleDesSha256 {
     
     /**
      * Creates a new instance of TripleDesSha256Impl
@@ -60,13 +59,4 @@ public class TripleDesSha256Impl extends AlgorithmSuiteComponentImpl implements 
         super(model, e);
     }
     
-    public TripleDesSha256Impl(WSDLModel model){
-        this(model, createPrefixedElement(AlgorithmSuiteQName.TRIPLEDESSHA256.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
 }

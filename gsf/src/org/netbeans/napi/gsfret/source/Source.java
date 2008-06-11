@@ -865,18 +865,12 @@ long parseTime = -1;
 // </editor-fold>
                 if (parser != null) {
                     if (model != null) {
-                        Document document;
-                        try {
-                            document = currentInfo.getDocument();
+                        Document document = currentInfo.getDocument();
                             
-                            if (document == null) {
-                                // Ensure document is forced open such that info.getDocument() will not yield null
-                                UiUtils.getDocument(currentInfo.getFileObject(), true);
-                                document = currentInfo.getDocument();
-                            }
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                            return null;
+                        if (document == null) {
+                            // Ensure document is forced open such that info.getDocument() will not yield null
+                            UiUtils.getDocument(currentInfo.getFileObject(), true);
+                            document = currentInfo.getDocument();
                         }
                         
                         if (document == null) {

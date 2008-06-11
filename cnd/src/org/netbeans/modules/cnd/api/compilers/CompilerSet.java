@@ -197,7 +197,7 @@ public class CompilerSet {
             list.add(Sun9);
             list.add(Sun8);
             list.add(Sun);
-            list.add(SunUCB);
+//            list.add(SunUCB);
 //            list.add(DJGPP);
 //            list.add(Interix);
 //            list.add(Unknown);
@@ -387,8 +387,8 @@ public class CompilerSet {
         } else {
             if (isSunCompilerDirectory(directory)) { 
                 return getBestSunStudioFlavor(CompilerFlavor.Sun, directory);
-            } else if (isSunUCBCompilerDirectory(directory)) { 
-                return CompilerFlavor.SunUCB;
+//            } else if (isSunUCBCompilerDirectory(directory)) { 
+//                return CompilerFlavor.SunUCB;
             } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS &&
                     (directory.equals("/usr/bin") || directory.equals("/bin"))) { // NOI18N
                 for (int i = 0; i < list.length; i++) {

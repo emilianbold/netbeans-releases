@@ -47,6 +47,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.NbBundle;
 
 /**
  * Helper class for getting preview of modifictions planned for adding 
@@ -56,6 +57,8 @@ import org.openide.filesystems.URLMapper;
  */
 public class JavaMELibsPreviewHelper extends JavaMELibsConfigurationHelper{
     
+    private static final String MSG_ERR_CANT_FIND_JAR = "MSG_ERR_CantFindLibJar";       // NOI18N
+        
     /**
      * parses library content. For each archive or folder registered 
      * in library prepares target path where this archive will be copied 
@@ -65,7 +68,9 @@ public class JavaMELibsPreviewHelper extends JavaMELibsConfigurationHelper{
      * @param libName library name
      * @return target path relative to project directory.
      */
-    public static List<String> extractLibraryJarsPaths(Library library, String libName){
+    public static List<String> extractLibraryJarsPaths(Library library, String libName)
+            throws LibraryParsingException
+    {
         List<String> list = new ArrayList<String>();
 
         Iterator<URL> it = null;
@@ -84,6 +89,7 @@ public class JavaMELibsPreviewHelper extends JavaMELibsConfigurationHelper{
     
     private static List<String> getFinalJarsPaths(Iterator<URL> it, 
             String pathPrefix, String libName) 
+            throws LibraryParsingException
     {
         List<String> archives = new ArrayList<String>();
         while (it.hasNext()) {
@@ -102,6 +108,7 @@ public class JavaMELibsPreviewHelper extends JavaMELibsConfigurationHelper{
      */
     private static String createFinalPath(URL originalURL, 
             String pathPrefix, String libName) 
+            throws LibraryParsingException
     {
         URL archivURL = FileUtil.getArchiveFile(originalURL);
         
@@ -112,10 +119,17 @@ public class JavaMELibsPreviewHelper extends JavaMELibsConfigurationHelper{
         }
     }
     
-    private static String createFinalPath4Archive(URL archivURL, String pathPrefix) {
+    private static String createFinalPath4Archive(URL archivURL, String pathPrefix) 
+            throws LibraryParsingException
+    {
         FileObject archiv = URLMapper.findFileObject(archivURL);
-        assert archiv != null : archivURL; // #129617
-
+        
+        // #129617
+        if (archiv == null){
+            String msg = getMessage(MSG_ERR_CANT_FIND_JAR, archivURL);
+            throw new JavaMELibsPreviewHelper.LibraryParsingException(msg);
+        }
+        
         String name = archiv.getNameExt();
         StringBuffer sb = new StringBuffer();
         sb.append(pathPrefix).append(name);
@@ -136,6 +150,18 @@ public class JavaMELibsPreviewHelper extends JavaMELibsConfigurationHelper{
             }
         }
         return null;
+    }
+    
+    private static String getMessage(String key, Object... args) {
+        return NbBundle.getMessage(JavaMELibsPreviewHelper.class, key, args);
+    }
+
+    public static class LibraryParsingException extends Exception {
+
+        // no need in other constructors. want only to set error message.
+        public LibraryParsingException(String message) {
+            super(message);
+        }
     }
 
 }

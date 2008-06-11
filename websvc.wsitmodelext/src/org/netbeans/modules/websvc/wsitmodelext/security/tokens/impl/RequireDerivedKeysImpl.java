@@ -41,17 +41,16 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.tokens.impl;
 
+import org.netbeans.modules.websvc.wsitmodelext.security.impl.SecurityPolicyComponentImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.RequireDerivedKeys;
-import org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokensQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author Martin Grebac
  */
-public class RequireDerivedKeysImpl extends TokensComponentImpl implements RequireDerivedKeys {
+public class RequireDerivedKeysImpl extends SecurityPolicyComponentImpl implements RequireDerivedKeys {
     
     /**
      * Creates a new instance of RequireDerivedKeysImpl
@@ -60,13 +59,4 @@ public class RequireDerivedKeysImpl extends TokensComponentImpl implements Requi
         super(model, e);
     }
     
-    public RequireDerivedKeysImpl(WSDLModel model){
-        this(model, createPrefixedElement(TokensQName.REQUIREDERIVEDKEYS.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
 }

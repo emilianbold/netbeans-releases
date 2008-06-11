@@ -59,7 +59,7 @@ public final class CallGraphPopupAction extends CookieAction {
         CallModel model = CallGraphModelFactory.getDefault().getModel(activatedNodes);
         if (model != null){
             CallGraphTopComponent view = CallGraphTopComponent.findInstance();
-            view.setModel(model); 
+            view.setModel(model, CallGraphModelFactory.getDefault().getUI(model)); 
             view.open();
             view.requestActive();
         }

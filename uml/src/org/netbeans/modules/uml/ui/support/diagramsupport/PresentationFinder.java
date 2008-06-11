@@ -47,12 +47,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Vector;
 
-import org.netbeans.modules.uml.ui.controls.drawingarea.IUIDiagram;
+//import org.netbeans.modules.uml.ui.controls.drawingarea.IUIDiagram;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
-import org.netbeans.modules.uml.ui.support.applicationmanager.ILabelPresentation;
+//import org.netbeans.modules.uml.ui.support.applicationmanager.ILabelPresentation;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProduct;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProductDiagramManager;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
+//import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
 
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
@@ -85,16 +85,13 @@ public class PresentationFinder implements IPresentationFinder
       
       ETList<IDiagram> openDiagrams  = null;
       IWorkspace         workspace    = null;
-      IProductDiagramManager manager  = null;
       if(product != null)
       {
          openDiagrams = product.getAllDrawingAreas();
          workspace    = product.getCurrentWorkspace();
-         manager  = ProductHelper.getProductDiagramManager();
          
          if((openDiagrams == null) ||
-            (workspace    == null) ||
-            (manager      == null))
+            (workspace    == null))
          {
             // TODO: Add Error Message.
          }
@@ -115,37 +112,37 @@ public class PresentationFinder implements IPresentationFinder
       for(long index = 0L; index < numOpenDiagrams; index++)
       {
          IDiagram curDiagram = openDiagrams.get((int)index);
-         if((curDiagram != null) && (curDiagram instanceof IUIDiagram))
-         {
-            IUIDiagram axDiagram = (IUIDiagram)curDiagram;
-            IDrawingAreaControl control = axDiagram.getDrawingArea();
-            
-            if(control != null)
-            {
-               ETList<IPresentationElement> presElements = curDiagram.getAllItems2(element);
-               
-               long numPresentationItems = 0;
-               if(presElements != null)
-               {
-                  numPresentationItems = presElements.size();
-               }
-               
-               // Don't include labels in the list.
-               for(int presIndex = 0; presIndex < numPresentationItems; presIndex++)
-               {
-                  IPresentationElement curElement = presElements.get(presIndex);
-                  if( !(curElement instanceof ILabelPresentation) )
-                  {
-                     IPresentationTarget target = new PresentationTarget();
-                     target.setPresentationID(curElement.getXMIID());
-                     target.setDiagramFilename(control.getFilename());
-                     target.setOpenDiagram(curDiagram);
-                     
-                     retVal.add(target);
-                  }
-               }
-            }
-         }
+//         if((curDiagram != null) && (curDiagram instanceof IUIDiagram))
+//         {
+//            IUIDiagram axDiagram = (IUIDiagram)curDiagram;
+//            IDrawingAreaControl control = axDiagram.getDrawingArea();
+//            
+//            if(control != null)
+//            {
+//               ETList<IPresentationElement> presElements = curDiagram.getAllItems2(element);
+//               
+//               long numPresentationItems = 0;
+//               if(presElements != null)
+//               {
+//                  numPresentationItems = presElements.size();
+//               }
+//               
+//               // Don't include labels in the list.
+//               for(int presIndex = 0; presIndex < numPresentationItems; presIndex++)
+//               {
+//                  IPresentationElement curElement = presElements.get(presIndex);
+//                  if( !(curElement instanceof ILabelPresentation) )
+//                  {
+//                     IPresentationTarget target = new PresentationTarget();
+//                     target.setPresentationID(curElement.getXMIID());
+//                     target.setDiagramFilename(control.getFilename());
+//                     target.setOpenDiagram(curDiagram);
+//                     
+//                     retVal.add(target);
+//                  }
+//               }
+//            }
+//         }
       }
       
       // Now go through the closed diagrams looking for the model element id.

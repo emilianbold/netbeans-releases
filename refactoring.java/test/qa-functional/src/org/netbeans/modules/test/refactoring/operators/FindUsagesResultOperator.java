@@ -40,7 +40,6 @@
 package org.netbeans.modules.test.refactoring.operators;
 
 import java.awt.Component;
-import java.util.Hashtable;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -51,13 +50,11 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.JViewport;
-import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JSplitPaneOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.modules.test.refactoring.RefactoringTestCase;
 
 /**
  *
@@ -71,9 +68,30 @@ public class FindUsagesResultOperator extends TopComponentOperator{
     private JToggleButton physical;
     private JButton prev;
     private JButton next;
+    private JButton cancel;
+    private JButton doRefactor;
     
     public FindUsagesResultOperator() {
         super(ResourceBundle.getBundle("org.netbeans.modules.refactoring.spi.impl.Bundle").getString("LBL_Usages"));
+    }
+    
+    public FindUsagesResultOperator(String windowTitle) {
+        super(windowTitle);
+    }
+    
+    public static FindUsagesResultOperator getFindUsagesResult() {
+        return new FindUsagesResultOperator(ResourceBundle.getBundle("org.netbeans.modules.refactoring.spi.impl.Bundle").getString("LBL_Usages"));
+    }
+    
+    public static FindUsagesResultOperator getPreview() {
+        return new FindUsagesResultOperator(ResourceBundle.getBundle("org.netbeans.modules.refactoring.spi.impl.Bundle").getString("LBL_Refactoring"));
+    }
+    
+    
+    public int getTabCount() {
+        JTabbedPane tabbedPane = getTabbedPane();
+        if(tabbedPane==null) return 0;
+        return tabbedPane.getTabCount();
     }
     
     public void selectTab(String name) {
@@ -88,6 +106,12 @@ public class FindUsagesResultOperator extends TopComponentOperator{
         }
     }
     
+    public JTabbedPane getTabbedPane() {
+        JComponent component = getContent();
+        if(component instanceof JTabbedPane) return (JTabbedPane) component;
+        else return null;        
+    }
+            
     public JPanel getRefactoringPanel() {
         JComponent content = getContent();
         
@@ -95,8 +119,7 @@ public class FindUsagesResultOperator extends TopComponentOperator{
         if(content instanceof JTabbedPane) {
             JTabbedPane tab = (JTabbedPane) content;
             return (JPanel) tab.getSelectedComponent();
-        }
-        test(content);
+        }        
         throw new IllegalArgumentException("Wrong structure "+ content.getClass().getName());
         
     }
@@ -119,12 +142,19 @@ public class FindUsagesResultOperator extends TopComponentOperator{
         }
     }
            
-    public void test(Component source) {        
-        Component[] components = ((JComponent) source).getComponents();
+    public void test(Component source,int level,int no) { 
+        if(level==0) System.out.println("--------------------------");
+        for(int j = 0;j<level;j++) System.out.print("  ");
+        System.out.print(no);
+        System.out.println(source.getClass().getName());
+        if(!(source instanceof JComponent)) return;                    
+        Component[] components = ((JComponent) source).getComponents();        
         for (int i = 0; i < components.length; i++) {
-            Component component = components[i];
-            System.out.println(component.getClass().getName());
+            Component component = components[i];            
+            test(component, level+1,i);
+            
         }                                
+        if(level==0) System.out.println("--------------------------");
     }
     
     public JToolBar getJToolbar() {

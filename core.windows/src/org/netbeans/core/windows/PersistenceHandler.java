@@ -214,7 +214,7 @@ final public class PersistenceHandler implements PersistenceObserver {
             }
             //some TopComponents want to be always active when the window system starts (e.g. welcome screen)
             for( TopComponent tc : mode.getOpenedTopComponents() ) {
-                Object val = tc.getClientProperty( "activateAtStartup" ); //NOI18N
+                Object val = tc.getClientProperty( Constants.ACTIVATE_AT_STARTUP );
                 if( null != val && val instanceof Boolean && ((Boolean)val).booleanValue() ) {
                     activeTopComponentOverride = tc;
                     break;
@@ -674,6 +674,10 @@ final public class PersistenceHandler implements PersistenceObserver {
             boolean opened = openedTcIDs.contains(tcID);
             if (opened) {
                 if (pm.isTopComponentNonPersistentForID(tcID)) {
+                    continue;
+                }
+                TopComponent tc = wm.findTopComponent(tcID);
+                if(tc == null || !pm.isTopComponentPersistent(tc)) {
                     continue;
                 }
             } else {

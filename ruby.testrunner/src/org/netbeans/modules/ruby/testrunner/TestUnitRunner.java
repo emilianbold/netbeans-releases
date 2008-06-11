@@ -66,7 +66,7 @@ import org.openide.modules.InstalledFileLocator;
 public final class TestUnitRunner implements TestRunner {
 
     private static final Logger LOGGER = Logger.getLogger(TestUnitRunner.class.getName());
-    private static final String MEDIATOR_SCRIPT = "nb_test_mediator.rb";
+    public static final String MEDIATOR_SCRIPT_NAME = "nb_test_mediator.rb";  //NOI18N
     private static final TestRunner INSTANCE = new TestUnitRunner();
 
     public TestRunner getInstance() {
@@ -74,24 +74,30 @@ public final class TestUnitRunner implements TestRunner {
     }
 
     public void runSingleTest(FileObject testFile, String testMethod) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        List<String> additionalArgs = getTestFileArgs(testFile);
+        additionalArgs.add("-m");
+        additionalArgs.add(testMethod);
+        run(FileOwnerQuery.getOwner(testFile), additionalArgs, testMethod);
     }
 
     public void runTest(FileObject testFile) {
+        run(FileOwnerQuery.getOwner(testFile), getTestFileArgs(testFile), testFile.getName());
+    }
+
+    private List<String> getTestFileArgs(FileObject testFile) {
         String testFilePath = FileUtil.toFile(testFile).getAbsolutePath();
         List<String> additionalArgs = new ArrayList<String>();
         additionalArgs.add("-f"); //NOI18N
         additionalArgs.add(testFilePath);
-        run(FileOwnerQuery.getOwner(testFile), additionalArgs, testFile.getName());
-
+        return additionalArgs;
     }
-
+    
     static File getMediatorScript() {
         File mediatorScript = InstalledFileLocator.getDefault().locate(
-                MEDIATOR_SCRIPT, "org.netbeans.modules.ruby.testrunner", false);  // NOI18N
+                MEDIATOR_SCRIPT_NAME, "org.netbeans.modules.ruby.testrunner", false);  // NOI18N
 
         if (mediatorScript == null) {
-            throw new IllegalStateException("Could not locate " + MEDIATOR_SCRIPT); // NOI18N
+            throw new IllegalStateException("Could not locate " + MEDIATOR_SCRIPT_NAME); // NOI18N
 
         }
         return mediatorScript;
@@ -117,6 +123,7 @@ public final class TestUnitRunner implements TestRunner {
         String charsetName = null;
         desc = new ExecutionDescriptor(platform, name, FileUtil.toFile(project.getProjectDirectory()), targetPath);
         desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
+        desc.initialArgs("-Ilib:test"); //NOI18N
 
         desc.debug(false);
         desc.allowInput();

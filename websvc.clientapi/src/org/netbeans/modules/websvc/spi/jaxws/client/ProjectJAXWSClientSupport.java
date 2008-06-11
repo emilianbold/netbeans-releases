@@ -247,7 +247,7 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
     }
     
     private void runWsimport(String finalClientName){
-        final FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+        final FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
         final String finalName = finalClientName;
 
         if (SwingUtilities.isEventDispatchThread()) {

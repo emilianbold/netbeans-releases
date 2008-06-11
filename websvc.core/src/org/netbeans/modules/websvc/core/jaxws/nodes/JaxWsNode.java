@@ -87,9 +87,10 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChainsProvide
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
+import org.netbeans.modules.websvc.core.ServerType;
+import org.netbeans.modules.websvc.core.WSStackUtils;
 import org.netbeans.modules.websvc.core.WebServiceReference;
 import org.netbeans.modules.websvc.core.WebServiceTransferable;
-import org.netbeans.modules.websvc.core.dev.wizard.PlatformUtil;
 import org.netbeans.modules.websvc.core.jaxws.actions.AddOperationAction;
 import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsRefreshAction;
 import org.netbeans.modules.websvc.core.jaxws.actions.WsTesterPageAction;
@@ -373,17 +374,20 @@ public class JaxWsNode extends AbstractNode implements
         Object moduleType = provider.getJ2eeModule().getModuleType();
         // need to compute from annotations
         String wsURI = null;
-        if (J2eeModule.WAR.equals(moduleType) && PlatformUtil.isJaxWsInJ2ee14Supported(project)) {
+        
+        WSStackUtils stackUtils = new WSStackUtils(project);
+        boolean isJsr109Supported = stackUtils.isJsr109Supported();
+        if (J2eeModule.WAR.equals(moduleType) && ServerType.JBOSS == stackUtils.getServerType()) {
             // JBoss type
             try {
                 wsURI = getUriFromDD(moduleType);
             } catch (UnsupportedEncodingException ex) {
                 // this shouldn't happen'
             }
-        } else if (J2eeModule.EJB.equals(moduleType) && PlatformUtil.isJaxWsInJ2ee14Supported(project)) {
+        } else if (J2eeModule.EJB.equals(moduleType) && ServerType.JBOSS == stackUtils.getServerType()) {
             // JBoss type
             wsURI = getNameFromPackageName(service.getImplementationClass());
-        } else if (isJsr109Supported(project) && Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project)) {
+        } else if (isJsr109Supported && Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project)) {
             try {
                 wsURI = getServiceUri(moduleType);
             } catch (UnsupportedEncodingException ex) {
@@ -408,7 +412,7 @@ public class JaxWsNode extends AbstractNode implements
                 //NOI18N
                 contextRoot = contextRoot.substring(1);
             }
-        } else if (J2eeModule.EJB.equals(moduleType) && PlatformUtil.isJaxWsInJ2ee14Supported(project)) {
+        } else if (J2eeModule.EJB.equals(moduleType) && ServerType.JBOSS == stackUtils.getServerType()) {
             // JBoss type
             contextRoot = project.getProjectDirectory().getName();
         }
@@ -593,7 +597,9 @@ public class JaxWsNode extends AbstractNode implements
      * get URL for Web Service Tester Page
      */
     public String getTesterPageURL() {
-        if (isJsr109Supported(project) && (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project))) {
+        WSStackUtils stackUtils = new WSStackUtils(project);
+        boolean isJsr109Supported = stackUtils.isJsr109Supported();
+        if (isJsr109Supported && (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project))) {
             return getWebServiceURL() + "?Tester"; //NOI18N
         } else {
             return getWebServiceURL(); //NOI18N
@@ -637,7 +643,7 @@ public class JaxWsNode extends AbstractNode implements
                         }
                     }
                     // cleaning java artifacts
-                    FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+                    FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
                     try {
                         ExecutorTask wsimportTask = ActionUtils.runTarget(buildImplFo, new String[]{"wsimport-service-clean-" + serviceName}, null); //NOI18N
                         wsimportTask.waitFinished();
@@ -789,21 +795,6 @@ public class JaxWsNode extends AbstractNode implements
             }
         }
         return null;
-    }
-
-    private boolean isJsr109Supported(Project project) {
-        JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-        if (wss != null) {
-            Map properties = wss.getAntProjectHelper().getStandardPropertyEvaluator().getProperties();
-            String serverInstance = (String) properties.get("j2ee.server.instance"); //NOI18N
-            if (serverInstance != null) {
-                J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
-                if (j2eePlatform != null) {
-                    return j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
-                }
-            }
-        }
-        return false;
     }
 
     void refreshImplClass() {

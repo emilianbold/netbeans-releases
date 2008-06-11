@@ -58,10 +58,11 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.groovy.editor.AstUtilities;
-import org.netbeans.modules.groovy.editor.hints.spi.EditList;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.api.java.source.ui.ElementIcons;
+import org.netbeans.modules.groovy.editor.NbUtilities;
+import org.netbeans.modules.gsf.api.EditList;
 
 /**
  *
@@ -122,19 +123,13 @@ public class FixImportsHelper {
         LOG.log(Level.FINEST, "Looking for class: " + missingClass);
 
         List<ImportCandidate> result = new ArrayList<ImportCandidate>();
-
-        ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
-        ClassPath compilePath = ClassPath.getClassPath(fo, ClassPath.COMPILE);
-        ClassPath srcPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-
-        if (bootPath == null || compilePath == null || srcPath == null) {
-            LOG.log(Level.FINEST, "bootPath    : " + bootPath);
-            LOG.log(Level.FINEST, "compilePath : " + compilePath);
-            LOG.log(Level.FINEST, "srcPath     : " + srcPath);
+        
+        ClasspathInfo pathInfo = NbUtilities.getClasspathInfoForFileObject(fo);
+        
+        if(pathInfo == null){
+            LOG.log(Level.FINEST, "Problem getting ClasspathInfo");
             return result;
         }
-
-        ClasspathInfo pathInfo = ClasspathInfo.create(bootPath, compilePath, srcPath);
 
         Set<org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement>> typeNames;
 

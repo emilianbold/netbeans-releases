@@ -78,9 +78,9 @@ public class MtomTest extends TestCase {
         Binding b = (Binding) d.getBindings().toArray()[0];
         
         assertFalse("MTOM enabled indicated on empty WSDL", TransportModelHelper.isMtomEnabled(b));
-        TransportModelHelper.enableMtom(b);
+        TransportModelHelper.enableMtom(b, true);
         assertTrue("MTOM not enabled correctly", TransportModelHelper.isMtomEnabled(b));
-        TransportModelHelper.disableMtom(b);
+        TransportModelHelper.enableMtom(b, false);
         assertFalse("MTOM enabled indicated", TransportModelHelper.isMtomEnabled(b));
       
         model.endTransaction();

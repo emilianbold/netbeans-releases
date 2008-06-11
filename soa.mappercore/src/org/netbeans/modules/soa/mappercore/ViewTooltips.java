@@ -277,23 +277,21 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
         Point p = SwingUtilities.convertPoint(view, 
                 pt.x, pt.y, tree);
 
-//        int row = tree.getClosestRowForLocation(
-//                p.x, p.y);
-
         TreePath path = tree.getTreePath(p.y);
+        if (path == null) {return; }
+        
         MapperNode node = tree.getMapper().getNode(path, true);
-        //node.get
-                
+                        
         node.getContentHeight();
         node.getLabelWidth();
         tree.getWidth();
         tree.getCanvas().toGraphY(p.y);
-        //tree.getL
+        
         int x = tree.getWidth() - node.getLabelWidth() - node.getIndent() - 2;
         int y = tree.getCanvas().toGraphY(p.y) + 
                 (node.getContentHeight() - 1 - node.getLabelHeight()) / 2;
         Rectangle bds = new Rectangle(x, y, node.getLabelWidth() + 2, node.getLabelHeight());
-        //Rectangle bds = tree.getPathBounds(path);
+        
         if (bds == null || !bds.contains(p)) {
             hide();
             return;

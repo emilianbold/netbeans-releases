@@ -28,6 +28,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.xml.transform.Source;
 import org.netbeans.modules.soa.validation.core.Controller;
+import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.multiview.TMapMultiViewSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
@@ -110,6 +111,13 @@ public class TMapDataObject extends MultiDataObject {
         getCookieSet().add(cookie);
     }
 
+    public void removeSaveCookie(){
+        Node.Cookie cookie = getCookie(SaveCookie.class);
+        if (cookie != null) {
+            getCookieSet().remove(cookie);
+        }
+    }
+
     @Override
     public void setModified( boolean modified )
     {
@@ -156,7 +164,10 @@ public class TMapDataObject extends MultiDataObject {
 
             list.add(Lookups.fixed( new Object[]{
                     super.getLookup(), 
-                    this}));
+                    this,
+                    getEditorSupport(),
+                    XmlFileEncodingQueryImpl.singleton()
+                }));
 
             list.add(getCookieSet().getLookup());
 

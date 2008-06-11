@@ -72,6 +72,19 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="OptionsDisplayerAPI.subcategory">
+        <api name="OptionsAPI"/>
+        <summary>API to open the options dialog with some subcategory pre-selected</summary>
+        <version major="1" minor="8"/>        
+        <date day="28" month="5" year="2008"/>
+        <author login="jskrivanek"/>
+        <compatibility addition="yes"/>        
+        <description>
+            Added API to open the options dialog with some subcategory pre-selected.
+        </description>
+        <class package="org.netbeans.api.options" name="OptionsDisplayer"/>                
+        <issue number="109538"/>
+    </change>
     <change id="OptionsDisplayerAPI">
         <api name="OptionsAPI"/>
         <summary>API to open the options dialog with some category pre-selected</summary>

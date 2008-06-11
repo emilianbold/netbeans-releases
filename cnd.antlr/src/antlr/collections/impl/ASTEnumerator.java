@@ -5,15 +5,13 @@ package antlr.collections.impl;
  * Software rights: http://www.antlr.org/license.html
  */
 
-import antlr.collections.impl.Vector;
-import antlr.collections.ASTEnumeration;
 import antlr.collections.AST;
 
 import java.util.NoSuchElementException;
 
 public class ASTEnumerator implements antlr.collections.ASTEnumeration {
     /** The list of root nodes for subtrees that match */
-    VectorEnumerator nodes;
+    private final VectorEnumerator nodes;
     int i = 0;
 
 

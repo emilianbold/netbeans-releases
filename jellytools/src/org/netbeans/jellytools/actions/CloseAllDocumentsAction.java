@@ -54,7 +54,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 public class CloseAllDocumentsAction extends Action {
     
     /** Window main menu item. */
-    private static final String windowItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", 
+    private static final String windowItem = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", 
                                                                     "Menu/Window");
     /** "Close All Documents" popup menu item. */
     private static final String popupPath = Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",

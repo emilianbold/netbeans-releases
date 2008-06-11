@@ -567,10 +567,9 @@ public class NamedElement extends Element implements INamedElement{
 	 *
 	 */
 	public void setNamespace(INamespace space) {
-            if (space != null)
-                space.addOwnedElement(this);
+        if (space != null)
+            space.addOwnedElement(this);
 	}
-
 
         /**
          * if there some associated elements that should be 

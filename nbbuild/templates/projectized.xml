@@ -880,12 +880,13 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
 
     <target name="-sigtest-init" depends="build-init">
         <property name="sigtest.basedir" location="nbproject"/>
+        <property name="sigtest.output.dir" location="build/test/sigtest/results"/>
         <mkdir dir="${sigtest.basedir}"/>
         <property name="sigtest.file" location="${sigtest.basedir}/${code.name.base.dashes}.sig"/>
         <property name="sigtest.public.packages" value="${public.packages}"/>
         <property name="sigtest.fail.on.error" value="true"/>
         <taskdef name="sigtest" classname="org.netbeans.nbbuild.Sigtest" classpath="${nb_all}/nbbuild/nbantext.jar"/>
-        <property name="sigtest.jar" location="${nb_all}/nbbuild/external/apitest-29.jar"/> 
+        <property name="sigtest.jar" location="${nb_all}/nbbuild/external/apitest.jar"/> 
         <property file="${manifest.mf}" prefix="mf."/>
         <condition property="mf.OpenIDE-Module-Specification-Version" value="${spec.version.base}"> <!-- fallback -->
             <isset property="spec.version.base"/>
@@ -933,12 +934,14 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
 
     <target name="check-sigtest" depends="-sigtest-init" unless="sigtest.skip.check.condition">
         <property name="sigtest.check.type" value="check"/>
+        <mkdir dir="${sigtest.output.dir}"/>
         <sigtest fileName="${sigtest.file}"
                  sigtestJar="${sigtest.jar}"
                  classpath="${sigtest.class.path}"
                  version="${mf.OpenIDE-Module-Specification-Version}"
                  action="${sigtest.check.type}"
                  packages="${sigtest.public.packages}"
+                 report="${sigtest.output.dir}/${code.name.base.dashes}.xml"
                  failonerror="${sigtest.fail.on.error}"
         />
     </target>

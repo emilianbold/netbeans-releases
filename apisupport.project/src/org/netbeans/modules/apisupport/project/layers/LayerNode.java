@@ -157,6 +157,7 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                         boolean context = false;
                         if (p != null) {
                             LayerUtils.LayerHandle h = LayerUtils.layerForProject(p);
+                            h.setAutosave(true); // #135376
                             if (h != null && layer.equals(h.getLayerFile())) {
                                 FileSystem _sfs = LayerUtils.getEffectiveSystemFilesystem(p);
                                 if (cp != null) { // has not been removeNotify()d yet

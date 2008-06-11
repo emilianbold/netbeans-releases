@@ -848,7 +848,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 showCompletion(this.explicitQuery, this.refreshedQuery, false, CompletionProvider.COMPLETION_ALL_QUERY_TYPE);
                 return;
             }
-            if (!explicitQuery && !refreshedQuery) {                
+            if (!explicitQuery) {                
                 hideAll();
                 return;
             }

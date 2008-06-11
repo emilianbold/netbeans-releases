@@ -57,6 +57,7 @@ public class RubyExecutionTest extends RubyTestBase {
         String[] expectedJars = {
             "bsf.jar",
             "jruby.jar",
+            "profile.jar",
         };
         Arrays.sort(expectedJars);
         File jrubyLib = new File(TestUtil.getXTestJRubyHome(), "lib");

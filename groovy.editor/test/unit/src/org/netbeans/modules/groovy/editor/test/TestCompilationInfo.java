@@ -77,7 +77,7 @@ public class TestCompilationInfo extends GsfTestCompilationInfo {
             sourceFiles.add(file);
             
 TranslatedSource translatedSource = null; // TODO            
-            GroovyParser.Context context = new GroovyParser.Context(file, listener, text, caretOffset);
+            GroovyParser.Context context = new GroovyParser.Context(file, listener, text, caretOffset, (BaseDocument) doc);
             GroovyParser parser = new GroovyParser();
             ParserResult parserResult = parser.parseBuffer(context, GroovyParser.Sanitize.NONE);
             for (Error error : listener.getErrors()) {

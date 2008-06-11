@@ -169,7 +169,7 @@ public class LicensesPanel extends WizardPanel {
                 }
                 final String licenseValue = SystemUtils.resolveString(
                         System.getProperty(OVERALL_LICENSE_RESOURCE_PROPERTY));
-                final String license = SystemUtils.resolveString("$R{" + licenseValue + "}");
+                final String license = SystemUtils.resolveString("$R{" + licenseValue + ";" + StringUtils.ENCODING_UTF8 + "}");
                 final String format = component.getProperty(OVERALL_LICENSE_FORMAT_PROPERTY);
                 text.append(StringUtils.format(format, license));
             } else {

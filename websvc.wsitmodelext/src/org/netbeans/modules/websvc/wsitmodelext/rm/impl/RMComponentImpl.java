@@ -41,9 +41,9 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.rm.impl;
 
+import org.netbeans.modules.websvc.wsitmodelext.GenericComponentImpl;
 import org.netbeans.modules.websvc.wsitmodelext.rm.RMQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
@@ -51,30 +51,24 @@ import org.w3c.dom.Element;
  *
  * @author MartinGrebac
  */
-public abstract class RMComponentImpl extends GenericExtensibilityElement {
+public abstract class RMComponentImpl extends GenericComponentImpl {
     
     /**
      * Creates a new instance of RMComponentImpl
      */
     public RMComponentImpl(WSDLModel model, Element e) {
         super(model, e);
+        cfgVersion = RMQName.getConfigVersion(this.getQName());
     }
 
     @Override
-    public abstract void accept(WSDLVisitor visitor);
-    
-     @Override
-     protected String getNamespaceURI() {
-        return RMQName.RM_NS_URI;
+    public void accept(WSDLVisitor visitor) {
+        visitor.visit(this);
+    }
+        
+    @Override
+    protected String getNamespaceURI() {
+        return RMQName.getNamespaceUri(cfgVersion);
     }
 
-    @Override
-    public String getAttribute(String attribute) {
-        throw new UnsupportedOperationException();
-    }
-    
-    @Override
-    public void setAttribute(String attribute, String value) {
-        throw new UnsupportedOperationException();
-    }    
 }

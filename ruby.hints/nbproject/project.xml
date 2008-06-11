@@ -327,7 +327,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.ruby.extrahints</friend>
                 <friend>org.netbeans.modules.ruby.cmdline</friend>
-                <package>org.netbeans.modules.ruby.hints.spi</package>
+                <package>org.netbeans.modules.ruby.hints.infrastructure</package>
             </friend-packages>
         </data>
     </configuration>

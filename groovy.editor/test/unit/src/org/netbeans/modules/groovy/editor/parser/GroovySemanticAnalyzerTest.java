@@ -44,7 +44,6 @@ package org.netbeans.modules.groovy.editor.parser;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 
 /**
  *
@@ -56,11 +55,6 @@ public class GroovySemanticAnalyzerTest extends GroovyTestBase {
         super(testName);
     }
     
-    @Override
-    protected SemanticAnalyzer getSemanticAnalyzer() {
-        return new GroovySemanticAnalyzer();
-    }
-
     @Override
     protected void setUp() throws Exception {
         super.setUp();

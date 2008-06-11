@@ -42,9 +42,7 @@
 package org.netbeans.modules.websvc.wsitmodelext.rm.impl;
 
 import org.netbeans.modules.websvc.wsitmodelext.rm.AcknowledgementInterval;
-import org.netbeans.modules.websvc.wsitmodelext.rm.RMQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -60,15 +58,6 @@ public class AcknowledgementIntervalImpl extends RMComponentImpl implements Ackn
         super(model, e);
     }
     
-    public AcknowledgementIntervalImpl(WSDLModel model){
-        this(model, createPrefixedElement(RMQName.ACKNOWLEDGEMENTINTERVAL.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
     public void setMilliseconds(String milliseconds) {
         setAttribute(MILLISECONDS_PROPERTY, RMAttribute.MILLISECONDS, milliseconds);        
     }

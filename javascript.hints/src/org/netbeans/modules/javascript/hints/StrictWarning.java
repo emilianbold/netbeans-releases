@@ -52,18 +52,20 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.EditList;
+import org.netbeans.modules.gsf.api.HintFix;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.PreviewableFix;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.javascript.editing.AstUtilities;
 import org.netbeans.modules.javascript.editing.BrowserVersion;
 import org.netbeans.modules.javascript.editing.SupportedBrowsers;
+import org.netbeans.modules.javascript.editing.embedding.JsModel;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
-import org.netbeans.modules.javascript.hints.spi.Description;
-import org.netbeans.modules.javascript.hints.spi.EditList;
-import org.netbeans.modules.javascript.hints.spi.ErrorRule;
-import org.netbeans.modules.javascript.hints.spi.Fix;
-import org.netbeans.modules.javascript.hints.spi.HintSeverity;
-import org.netbeans.modules.javascript.hints.spi.PreviewableFix;
-import org.netbeans.modules.javascript.hints.spi.RuleContext;
+import org.netbeans.modules.javascript.hints.infrastructure.JsErrorRule;
+import org.netbeans.modules.javascript.hints.infrastructure.JsRuleContext;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -83,7 +85,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tor Norbye
  */
-public class StrictWarning implements ErrorRule {
+public class StrictWarning extends JsErrorRule {
 
     public static final String ANON_NO_RETURN_VALUE = "msg.anon.no.return.value"; // NOI18N
     public static final String BAD_OCTAL_LITERAL = "msg.bad.octal.literal"; // NOI18N
@@ -99,7 +101,7 @@ public class StrictWarning implements ErrorRule {
     // Handled by separate hint implementation, AccidentalAssignment
     //"msg.equal.as.assign", // NOI18N
     /** Public only for testing infrastructure. Others should not touch!! */
-    public static final String[] KNOWN_STRICT_ERROR_KEYS = new String[]{
+    public static final String[] KNOWN_STRICT_ERROR_KEYS = new String[] {
         // NetBeans custom rule
         TRAILING_COMMA,
         BAD_OCTAL_LITERAL, 
@@ -123,7 +125,7 @@ public class StrictWarning implements ErrorRule {
         return Collections.singleton(key);
     }
 
-    public void run(RuleContext context, Error error, List<Description> result) {
+    public void run(JsRuleContext context, Error error, List<Hint> result) {
         CompilationInfo info = context.compilationInfo;
         BaseDocument doc = context.doc;
 
@@ -170,6 +172,15 @@ public class StrictWarning implements ErrorRule {
                 context.remove = true;
                 return;
             }
+            
+            if (node.getType() == Token.EXPR_VOID) {
+                Node firstChild = node.getFirstChild();
+                if (firstChild != null && firstChild.getType() == Token.NAME &&
+                        JsModel.isGeneratedIdentifier(firstChild.getString())) {
+                    context.remove = true;
+                    return;
+                }
+            }
 
             OffsetRange astRange = AstUtilities.getRange(node);
             range = LexUtilities.getLexerOffsets(info, astRange);
@@ -197,16 +208,16 @@ public class StrictWarning implements ErrorRule {
         if (range != OffsetRange.NONE) {
             range = limitErrorToLine(doc, range, lexOffset);
 
-            //Fix fix = new InsertParenFix(info, offset, callNode);
-            //List<Fix> fixList = Collections.singletonList(fix);
-            List<Fix> fixList;
+            //HintFix fix = new InsertParenFix(info, offset, callNode);
+            //List<HintFix> fixList = Collections.singletonList(fix);
+            List<HintFix> fixList;
             if (key.equals(TRAILING_COMMA)) { // NOI18N
 
-                fixList = new ArrayList<Fix>(2);
-                fixList.add(new RemoveTrailingCommaFix(info, lexOffset));
+                fixList = new ArrayList<HintFix>(2);
+                fixList.add(new RemoveTrailingCommaFix(context, lexOffset));
                 fixList.add(new MoreInfoFix(key));
             } else {
-                fixList = Collections.<Fix>singletonList(new MoreInfoFix(key));
+                fixList = Collections.<HintFix>singletonList(new MoreInfoFix(key));
             }
 
             String message = getDisplayName();
@@ -217,7 +228,7 @@ public class StrictWarning implements ErrorRule {
                 message = error.getDisplayName();
             }
 
-            Description desc = new Description(this, message, info.getFileObject(), range, fixList, 500);
+            Hint desc = new Hint(this, message, info.getFileObject(), range, fixList, 500);
             result.add(desc);
         }
     }
@@ -248,7 +259,7 @@ public class StrictWarning implements ErrorRule {
         return range;
     }
 
-    public boolean appliesTo(CompilationInfo compilationInfo) {
+    public boolean appliesTo(RuleContext context) {
         return true;
     }
 
@@ -287,11 +298,11 @@ public class StrictWarning implements ErrorRule {
 
     private static class RemoveTrailingCommaFix implements PreviewableFix {
 
-        private CompilationInfo info;
-        private int offset;
+        private final JsRuleContext context;
+        private final int offset;
 
-        public RemoveTrailingCommaFix(CompilationInfo info, int offset) {
-            this.info = info;
+        public RemoveTrailingCommaFix(JsRuleContext context, int offset) {
+            this.context = context;
             this.offset = offset;
         }
 
@@ -307,7 +318,7 @@ public class StrictWarning implements ErrorRule {
         }
 
         public EditList getEditList() throws Exception {
-            BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = context.doc;
             EditList list = new EditList(doc);
             list.replace(offset, 1, null, false, 0);
 

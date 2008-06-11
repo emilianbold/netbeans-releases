@@ -74,6 +74,7 @@ import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.MarkBlock;
@@ -282,7 +283,13 @@ public class Utilities {
         TypeMirror type = resolveCapturedTypeInt(info, tm);
         
         if (type.getKind() == TypeKind.WILDCARD) {
-            return ((WildcardType) type).getExtendsBound();
+            TypeMirror tmirr = ((WildcardType) type).getExtendsBound();
+            if (tmirr != null)
+                return tmirr;
+            else { //no extends, just '?'
+                return info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
+            }
+                
         }
         
         return type;

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import antlr.RecognitionException;
 import antlr.Token;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
@@ -58,6 +59,7 @@ import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.*;
+import java.util.ArrayList;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
@@ -91,6 +93,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.editor.BaseDocument;
 
 /**
  * CsmFile implementations
@@ -608,6 +611,43 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     };
     
+    public Collection<RecognitionException> getErrors() {
+        final Collection<RecognitionException> result = new ArrayList<RecognitionException>();
+        CPPParserEx.ErrorDelegate delegate = new CPPParserEx.ErrorDelegate() {
+            public void onError(RecognitionException e) {
+                result.add(e);
+            }
+        };
+        // FIXUP (up to the end of the function)
+        // should be changed with setting appropriate flag and using common parsing mechanism
+        // (Now doParse performs too many actions that should NOT be performed if parsing just for getting errors;
+        // making this actions conditional will make doParse code spaghetty-like. That's why I use this fixup)
+        // Another issue to be solved is threading and cancellation
+        if( TraceFlags.TRACE_ERROR_PROVIDER ) System.err.printf("\n\n>>> Start parsing (getting errors) %s \n", getName());
+        long time = TraceFlags.TRACE_ERROR_PROVIDER ? System.currentTimeMillis() : 0;
+        APTPreprocHandler preprocHandler = getPreprocHandler();
+        ProjectBase startProject = ProjectBase.getStartProject(preprocHandler.getState());
+        int flags = CPPParserEx.CPP_CPLUSPLUS;
+        if( ! TraceFlags.TRACE_ERROR_PROVIDER ) {
+            flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
+        }
+        try {
+            APTFile aptFull = APTDriver.getInstance().findAPT(this.getBuffer());
+            APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler);
+            CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter()), flags);
+            parser.setErrorDelegate(delegate);
+            parser.setLazyCompound(false);
+            parser.translation_unit();
+        } catch (IOException ex) {
+            DiagnosticExceptoins.register(ex);
+        } catch (Error ex){
+            System.err.println(ex.getClass().getName()+" at parsing file "+fileBuffer.getFile().getAbsolutePath()); // NOI18N
+            throw ex;
+        }
+        if( TraceFlags.TRACE_ERROR_PROVIDER ) System.err.printf("<<< Done parsing (getting errors) %s %d ms\n\n\n", getName(), System.currentTimeMillis() - time);
+        return result;
+    }
+    
     private AST doParse(APTPreprocHandler preprocHandler) {
 //        if( "cursor.hpp".equals(fileBuffer.getFile().getName()) ) {
 //            System.err.println("cursor.hpp");
@@ -879,7 +919,21 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         return decls;
     }
-    
+
+    public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFilter filter) {
+        if (!SKIP_UNNECESSARY_FAKE_FIXES) {
+            fixFakeRegistrations();
+        }
+        Iterator<CsmOffsetableDeclaration> out;
+        try {
+            declarationsLock.readLock().lock();
+            out = UIDCsmConverter.UIDsToDeclarationsFiltered(declarations.values(), filter);
+         } finally {
+            declarationsLock.readLock().unlock();
+         }
+         return out;
+    }
+
     public void addMacro(CsmMacro macro) {
         CsmUID<CsmMacro> macroUID = RepositoryUtils.put(macro);
         assert macroUID != null;
@@ -1043,7 +1097,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                     fixFakes = wait;
                 } else {
                     while( ! isParsed() ) {
-                        ParserQueue.instance().addFirst(this, ppState, false);
+                        ParserQueue.instance().add(this, ppState, ParserQueue.Position.HEAD);
                         //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("  !prs " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
                         if( wait ) {
                             stateLock.wait();
@@ -1056,7 +1110,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 }
             } else {
                 while( ! isParsed() ) {
-                    ParserQueue.instance().addFirst(this, ppState, false);
+                    ParserQueue.instance().add(this, ppState, ParserQueue.Position.HEAD);
                     //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("  !prs " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
                     if( wait ) {
                         stateLock.wait();
@@ -1090,8 +1144,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (fakeRegistrationUIDs.size() > 0) {
             List<CsmUID<FunctionImplEx>> fakes = new ArrayList<CsmUID<FunctionImplEx>>(fakeRegistrationUIDs);
             fakeRegistrationUIDs.clear();
-            for( CsmUID<? extends CsmDeclaration> uid : fakes ) {
-                CsmDeclaration curElem = uid.getObject();
+            for( CsmUID<? extends CsmDeclaration> fakeUid : fakes ) {
+                CsmDeclaration curElem = fakeUid.getObject();
                 if (curElem != null) {
                     if( curElem instanceof FunctionImplEx ) {
                         ((FunctionImplEx) curElem).fixFakeRegistration();

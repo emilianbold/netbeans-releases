@@ -54,14 +54,13 @@ import java.io.OutputStream;
 import java.nio.CharBuffer;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.groovy.editor.Formatter;
 import org.netbeans.modules.groovy.editor.GroovyIndex;
 import org.netbeans.modules.groovy.editor.GroovyLanguage;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.gsf.GsfTestBase;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
-import org.netbeans.modules.gsf.api.GsfLanguage;
-import org.netbeans.modules.gsf.api.Indexer;
-import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -90,7 +89,7 @@ public class GroovyTestBase extends GsfTestBase {
     }
 
     @Override
-    protected GsfLanguage getPreferredLanguage() {
+    protected DefaultLanguageConfig getPreferredLanguage() {
         return new GroovyLanguage();
     }
     
@@ -99,6 +98,22 @@ public class GroovyTestBase extends GsfTestBase {
         return GroovyTokenId.GROOVY_MIME_TYPE;
     }
 
+    @Override
+    public org.netbeans.modules.gsf.api.Formatter getFormatter(IndentPrefs preferences) {
+        if (preferences == null) {
+            preferences = new IndentPrefs(4,4);
+        }
+
+//        Preferences prefs = NbPreferences.forModule(JsFormatterTest.class);
+//        prefs.put(FmtOptions.indentSize, Integer.toString(preferences.getIndentation()));
+//        prefs.put(FmtOptions.continuationIndentSize, Integer.toString(preferences.getHangingIndentation()));
+//        CodeStyle codeStyle = CodeStyle.getTestStyle(prefs);
+        
+        Formatter formatter = new Formatter();//codeStyle, 80);
+        
+        return formatter;
+    }
+    
     @Override
     protected FileObject getTestFile(String relFilePath) {
         File wholeInputFile = new File(getDataDir(), relFilePath);
@@ -300,16 +315,4 @@ public class GroovyTestBase extends GsfTestBase {
             return cb.toString();
         }
     }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Indexing Tests
-    ////////////////////////////////////////////////////////////////////////////
-    public Indexer getIndexer() {
-        return null;
-    }
-
-    protected String prettyPrintValue(String key, String value) {
-        return value;
-    }
-
 }

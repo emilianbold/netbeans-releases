@@ -48,7 +48,6 @@ import org.openide.windows.TopComponent;
 import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.Diff;
 import org.netbeans.modules.versioning.util.NoContentPanel;
-import org.netbeans.modules.subversion.ui.diff.DiffStreamSource;
 import org.netbeans.modules.subversion.ui.diff.DiffSetupSource;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.AncestorEvent;
@@ -62,6 +61,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Shows Search History results in a table with Diff pane below it.
@@ -325,8 +325,10 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         @Override
         protected void perform() {
             final Diff diff = Diff.getDefault();
-            final DiffStreamSource s1 = new DiffStreamSource(header.getFile(), null, revision1, revision1);
-            final DiffStreamSource s2 = new DiffStreamSource(header.getFile(), null, revision2, revision2);
+            SVNUrl repotUrl = header.getLogInfoHeader().getRepositoryRootUrl();
+            SVNUrl fileUrl = repotUrl.appendPath(header.getChangedPath().getPath());
+            final DiffStreamSource s1 = new DiffStreamSource(header.getFile(), repotUrl, fileUrl, revision1, revision1);
+            final DiffStreamSource s2 = new DiffStreamSource(header.getFile(), repotUrl, fileUrl, revision2, revision2);
 
             // it's enqueued at ClientRuntime queue and does not return until previous request handled
             s1.getMIMEType();  // triggers s1.init()

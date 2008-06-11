@@ -47,7 +47,7 @@
 
 package org.netbeans.modules.css.actions;
 
-import org.netbeans.modules.css.visual.model.HtmlTags;
+import org.netbeans.modules.css.editor.model.HtmlTags;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.DefaultComboBoxModel;

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.callgraph.impl;
 
+import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -54,6 +55,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.graph.layout.GraphLayout;
 import org.netbeans.api.visual.graph.layout.GridGraphLayout;
@@ -71,18 +73,19 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.actions.Presenter;
+import org.openide.windows.TopComponent;
 
 /**
  *
  * @author Alexander Simon
  */
 public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider  {
-    private static final boolean SHOW_GRAPH = Boolean.getBoolean("cnd.callgraph.showgraph");
 
     private ExplorerManager explorerManager = new ExplorerManager();
     private AbstractNode root;
     private Action[] actions;
     private CallModel model;
+    private boolean showGraph;
     private boolean isCalls;
     public static final String IS_CALLS = "CallGraphIsCalls"; // NOI18N
 
@@ -91,19 +94,20 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     private static double dividerLocation = 0.5;
     
     /** Creates new form CallGraphPanel */
-    public CallGraphPanel() {
+    public CallGraphPanel(boolean showGraph) {
         initComponents();
         isCalls = NbPreferences.forModule(CallGraphPanel.class).getBoolean(IS_CALLS, true);
         getTreeView().setRootVisible(false);
         Children.Array children = new Children.SortedArray();
-        if (SHOW_GRAPH) {
+        this.showGraph = showGraph;
+        if (showGraph) {
             scene = new CallGraphScene();
-            actions = new Action[]{new RefreshAction(),
+            actions = new Action[]{new RefreshAction(), new FocusOnAction(),
                                    null, new WhoIsCalledAction(), new WhoCallsAction(),
                                    null, new ExportAction(scene, this)};
             scene.setExportAction(actions[actions.length-1]);
         } else {
-            actions = new Action[]{new RefreshAction(),
+            actions = new Action[]{new RefreshAction(), new FocusOnAction(),
                                    null, new WhoIsCalledAction(), new WhoCallsAction()};
             
         }
@@ -114,7 +118,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
             }
         };
         getExplorerManager().setRootContext(root);
-        if (SHOW_GRAPH) {
+        if (showGraph) {
             addComponentListener(new ComponentListener() {
                 public void componentResized(ComponentEvent e) {
                     jSplitPane1.setDividerLocation(dividerLocation);
@@ -162,6 +166,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
 
         jToolBar1 = new javax.swing.JToolBar();
         refresh = new javax.swing.JButton();
+        focusOn = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JToolBar.Separator();
         calls = new javax.swing.JToggleButton();
         callers = new javax.swing.JToggleButton();
@@ -186,6 +191,21 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
             }
         });
         jToolBar1.add(refresh);
+
+        focusOn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/focus.png"))); // NOI18N
+        focusOn.setToolTipText(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "FocusOnAction")); // NOI18N
+        focusOn.setFocusable(false);
+        focusOn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        focusOn.setMaximumSize(new java.awt.Dimension(28, 28));
+        focusOn.setMinimumSize(new java.awt.Dimension(28, 28));
+        focusOn.setPreferredSize(new java.awt.Dimension(28, 28));
+        focusOn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        focusOn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                focusOnActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(focusOn);
         jToolBar1.add(jSeparator1);
 
         calls.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/who_is_called.png"))); // NOI18N
@@ -240,6 +260,40 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         }
         setDirection(false);
     }//GEN-LAST:event_callersActionPerformed
+
+private void focusOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_focusOnActionPerformed
+        Node[] nodes = getExplorerManager().getSelectedNodes();
+        if (nodes == null || nodes.length != 1){
+            return;
+        }
+        Node node = nodes[0];
+        if (node instanceof FunctionRootNode){
+            update();
+        } else if (node instanceof CallNode){
+            Call call = ((CallNode)node).getCall();
+            if (isCalls) {
+                model.setRoot(call.getCallee());
+            } else {
+                model.setRoot(call.getCaller());
+            }
+            setName(model.getName());
+            setToolTipText(getName()+" - "+NbBundle.getMessage(getClass(), "CTL_CallGraphTopComponent")); // NOI18N
+            Container parent = getParent();
+            while (parent != null) {
+                if (parent instanceof JTabbedPane) {
+                    int i = ((JTabbedPane) parent).getSelectedIndex();
+                    if (i >=0) {
+                        ((JTabbedPane) parent).setTitleAt(i, getName() + "  "); // NOI18N
+                    }
+                    break;
+                } else if (parent instanceof TopComponent) {
+                    ((TopComponent) parent).setName(getToolTipText()); // NOI18N
+                    break;
+                }
+            }
+            update();
+        }
+}//GEN-LAST:event_focusOnActionPerformed
     
     private void setDirection(boolean direction){
         isCalls = direction;
@@ -256,7 +310,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     public void setModel(CallModel model) {
         this.model = model;
         //this.isCalls = model.isCalls();
-        if (SHOW_GRAPH) {
+        if (showGraph) {
             scene.setModel(model);
         }
         updateButtons();
@@ -264,10 +318,9 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     }
 
     private synchronized void update() {
-        if (SHOW_GRAPH) {
+        if (showGraph) {
             scene.clean();
         }
-        model.refresh();
         final Function function = model.getRoot();
         if (function != null){
             final Children children = root.getChildren();
@@ -323,6 +376,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton callers;
     private javax.swing.JToggleButton calls;
+    private javax.swing.JButton focusOn;
     private javax.swing.JScrollPane graphView;
     private javax.swing.JToolBar.Separator jSeparator1;
     private javax.swing.JSplitPane jSplitPane1;
@@ -348,6 +402,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
             return menuItem;
         }
     }
+
     private class WhoCallsAction extends AbstractAction implements Presenter.Popup {
         private JRadioButtonMenuItem menuItem;
         public WhoCallsAction() {
@@ -382,6 +437,24 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
 
         public final JMenuItem getPopupPresenter() {
             menuItem.setSelected(isCalls);
+            return menuItem;
+        }
+    }
+
+    private class FocusOnAction extends AbstractAction implements Presenter.Popup {
+        private JMenuItem menuItem;
+        public FocusOnAction() {
+            putValue(Action.NAME, NbBundle.getMessage(CallGraphPanel.class, "FocusOnAction"));  // NOI18N
+            putValue(Action.SMALL_ICON, focusOn.getIcon());
+            menuItem = new JMenuItem((String)getValue(Action.NAME)); 
+            menuItem.setAction(this);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            focusOnActionPerformed(e);
+        }
+
+        public final JMenuItem getPopupPresenter() {
             return menuItem;
         }
     }

@@ -42,11 +42,13 @@
 package org.netbeans.modules.cnd.completion.cplusplus;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmFinder;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateParameterResultItem;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolverImpl;
@@ -286,6 +288,10 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
 
         public CsmResultItem.NamespaceAliasResultItem createLibNamespaceAliasResultItem(CsmNamespaceAlias alias, boolean displayFullNamespacePath) {
             return new NbCsmResultItem.NbNamespaceAliasResultItem(alias, displayFullNamespacePath, LIB_NAMESPACE_ALIAS_PRIORITY);
+        }
+
+        public TemplateParameterResultItem createTemplateParameterResultItem(CsmTemplateParameter par) {
+            return new NbCsmResultItem.TemplateParameterResultItem(par, CLASS_ENUMERATOR_PRIORITY);
         }
     }
 }

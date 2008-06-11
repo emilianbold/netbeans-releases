@@ -39,6 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.gsfret.editor.semantic;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.gsf.api.CancellableTask;
 
 /**
@@ -52,75 +53,22 @@ import org.netbeans.modules.gsf.api.CancellableTask;
  */
 public abstract class ScanningCancellableTask<T> implements CancellableTask<T> {
 
-    private boolean canceled;
+    private AtomicBoolean cancel = new AtomicBoolean();
 
-    /** Creates a new instance of ScanningCancellableTask */
     protected ScanningCancellableTask() {
     }
 
     public final synchronized void cancel() {
-//        System.err.println("ScanningCancellableTask.cancel: Not yet implemented");
-        canceled = true;
-//        
-//        if (pathScanner != null) {
-//            pathScanner.cancel();
-//        }
-//        if (scanner != null) {
-//            scanner.cancel();
-//        }
+        cancel.set(true);
     }
 
     public abstract void run(T parameter) throws Exception;
     
     protected final synchronized boolean isCancelled() {
-        return canceled;
+        return cancel.get();
     }
     
     protected final synchronized void resume() {
-        canceled = false;
+        cancel.set(false);
     }
-    
-//    private CancellableTreePathScanner pathScanner;
-//    private CancellableTreeScanner     scanner;
-//    
-//    protected <R, P> R scan(CancellableTreePathScanner<R, P> scanner, Tree toScan, P p) {
-//        if (isCancelled())
-//            return null;
-//        
-//        try {
-//            synchronized (this) {
-//                this.pathScanner = scanner;
-//            }
-//            
-//            if (isCancelled())
-//                return null;
-//            
-//            return scanner.scan(toScan, p);
-//        } finally {
-//            synchronized (this) {
-//                this.pathScanner = null;
-//            }
-//        }
-//    }
-//
-//    protected <R, P> R scan(CancellableTreeScanner<R, P> scanner, Tree toScan, P p) {
-//        if (isCancelled())
-//            return null;
-//        
-//        try {
-//            synchronized (this) {
-//                this.scanner = scanner;
-//            }
-//            
-//            if (isCancelled())
-//                return null;
-//            
-//            return scanner.scan(toScan, p);
-//        } finally {
-//            synchronized (this) {
-//                this.scanner = null;
-//            }
-//        }
-//    }
-//    
 }

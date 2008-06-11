@@ -69,13 +69,18 @@ public class ModelObjectFactory {
         OperatorComponent opComponent = null;
     
         if(componentType != null) {
-            if(componentType.getPath().endsWith("Input")) {
+            
+            if(componentType.getPath().endsWith("TableInput")) {
+                opComponent = model.getFactory().createTableInputOperator(model);
+            } else if(componentType.getPath().endsWith("Input")) {
                 opComponent = model.getFactory().createInputOperator(model);
             } else if(componentType.getPath().endsWith("Output")) {
                 opComponent = model.getFactory().createOutputOperator(model);
             } else if(componentType.getPath().endsWith("InvokeStream")) {
-                                opComponent = model.getFactory().createInvokeStreamOperator(model);
-                        } else {
+                opComponent = model.getFactory().createInvokeStreamOperator(model);
+            } else if(componentType.getPath().endsWith("ExternalTablePollingStream")) {
+                opComponent = model.getFactory().createExternalTablePollingStreamOperator(model);
+            } else {
                 opComponent = model.getFactory().createOperator(model);
             }
             opComponent.setType(componentType.getPath());

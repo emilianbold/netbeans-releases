@@ -46,6 +46,7 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
@@ -78,7 +79,7 @@ public abstract class PersistenceUnitWizardPanel extends JPanel {
     }
     
     public abstract String getPersistenceUnitName();
-
+    
     public abstract String getTableGeneration();
     
     public abstract boolean isValidPanel();

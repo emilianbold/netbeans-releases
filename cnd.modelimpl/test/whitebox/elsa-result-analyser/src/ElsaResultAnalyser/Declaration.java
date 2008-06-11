@@ -60,12 +60,15 @@ public class Declaration {
     public Offset qualifierPos;
     public String fullName;
     ArrayList<Declaration> declarations = new ArrayList<Declaration>();
+    
+    public String decription;
 
-    public Declaration(String name, String nameLoc, String loc, TYPE type, int nameElsaLine) {
+    public Declaration(String name, String nameLoc, String loc, TYPE type, int nameElsaLine, String description) {
         this.name = name;
         namePos = new Offset(nameLoc, nameElsaLine);
         pos = new Offset(loc, 0);
         this.type = type;
+        this.decription = description;
     }
 
     @Override

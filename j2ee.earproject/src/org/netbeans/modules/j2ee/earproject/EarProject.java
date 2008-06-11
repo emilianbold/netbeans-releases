@@ -139,6 +139,7 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
     private final AntBasedProjectType abpt;
     private final UpdateHelper updateHelper;
     private final UpdateProjectImpl updateProject;
+    private final ClassPathProviderImpl cpProvider;
     private PropertyChangeListener j2eePlatformListener;
     private LibrariesLocationUpdater librariesLocationUpdater;
     
@@ -157,7 +158,8 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
         ear = EjbJarFactory.createEar(appModule);
         updateProject = new UpdateProjectImpl(this, this.helper, aux);
         updateHelper = new UpdateHelper(updateProject, helper);
-        lookup = createLookup(aux);
+        cpProvider = new ClassPathProviderImpl(helper, evaluator());
+        lookup = createLookup(aux, cpProvider);
         cs = new ClassPathSupport( eval, refHelper, 
                 updateHelper.getAntProjectHelper(), updateHelper, new ClassPathSupportCallbackImpl(helper));
         librariesLocationUpdater = new LibrariesLocationUpdater(this, updateHelper, eval, cs,
@@ -203,7 +205,7 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
         return helper;
     }
     
-    private Lookup createLookup(AuxiliaryConfiguration aux) {
+    private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         
         // XXX unnecessarily creates a SourcesHelper, which is then GC's
@@ -227,7 +229,7 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
             new J2eeArchiveLogicalViewProvider(this, updateHelper, evaluator(), refHelper, abpt),
             new MyIconBaseProvider(),
             new CustomizerProviderImpl(this, helper, refHelper, abpt),
-            LookupMergerSupport.createClassPathProviderMerger(new ClassPathProviderImpl(helper, evaluator())),
+            LookupMergerSupport.createClassPathProviderMerger(cpProvider),
             new ProjectXmlSavedHookImpl(),
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
             new EarSources(helper, evaluator()),
@@ -444,7 +446,6 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
             }
             
             // register project's classpaths to GlobalPathRegistry
-            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
             
@@ -547,7 +548,6 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
             }
             
             // unregister project's classpaths to GlobalPathRegistry
-            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
         }
@@ -604,14 +604,8 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
         FileObject metaInfFO = null;
         try {
             File prjDirF = FileUtil.toFile(getProjectDirectory());
-            File rootF = prjDirF;
-            while (rootF.getParentFile() != null) {
-                rootF = rootF.getParentFile();
-            }
             File metaInfF = PropertyUtils.resolveFile(prjDirF, metaInfProp);
-            String metaInfPropRel = PropertyUtils.relativizeFile(rootF, metaInfF);
-            assert metaInfPropRel != null;
-            metaInfFO = FileUtil.createFolder(FileUtil.toFileObject(rootF), metaInfPropRel);
+            metaInfFO = FileUtil.createFolder(metaInfF);
         } catch (IOException ex) {
             assert false : ex;
         }

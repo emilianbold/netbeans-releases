@@ -22,12 +22,16 @@ import java.awt.Cursor;
 import java.awt.Rectangle;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseEvent;
+import java.util.List;
+import javax.swing.JMenu;
+import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.model.Constant;
 import org.netbeans.modules.soa.mappercore.model.Function;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.GraphItem;
 import org.netbeans.modules.soa.mappercore.model.Link;
+import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.soa.mappercore.model.SourcePin;
 import org.netbeans.modules.soa.mappercore.model.TargetPin;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
@@ -69,6 +73,9 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
             }
         }
         reset();
+        if (e.isPopupTrigger() && getMapper().getNodeAt(e.getY()) != null) {
+            showPopupMenu(e);
+        }
     }
 
     public void mousePressed(MouseEvent e) {
@@ -297,6 +304,49 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
                 } 
                 getLinkTool().done();
             }
+        }
+    }
+    
+    private void showPopupMenu(MouseEvent event) {
+        MapperContext context = getMapper().getContext();
+        MapperModel model = getMapper().getModel();
+        
+        if (context == null || model == null) { return; }
+
+        TreePath treePath = getSelectionModel().getSelectedPath();
+        if (treePath == null) { return; }
+        
+        GraphItem item = null;
+        List<Link> links = getSelectionModel().getSelectedLinks();
+        if (links != null && !links.isEmpty()) {
+            item = links.get(0);
+        }
+        
+        List<Vertex> vertexes = getSelectionModel().getSelectedVerteces();
+        if (vertexes != null && !vertexes.isEmpty()) {
+            item = vertexes.get(0);
+        }
+        
+        JPopupMenu mapperMenu = MapperPopupMenuFactory.
+                createMapperPopupMenu(getCanvas(), item);           
+        
+        List<JMenu> listMenu = context.getMenuNewEllements(model);
+        JMenu newMenu = (JMenu) mapperMenu.getComponent(0);
+        for (JMenu m : listMenu) {
+            newMenu.add(m);
+        }
+
+        JPopupMenu menu = context.getCanvasPopupMenu(model, item);
+        
+        if (menu != null) {
+            mapperMenu.addSeparator();
+
+            for (int i = 0; i < menu.getComponentCount(); i++) {
+                mapperMenu.add(menu.getComponent(i));
+            }
+        }
+        if (mapperMenu != null) {
+            mapperMenu.show(getCanvas(), event.getX(), event.getY());
         }
     }
 }

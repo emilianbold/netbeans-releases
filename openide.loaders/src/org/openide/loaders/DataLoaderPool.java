@@ -41,7 +41,10 @@
 
 package org.openide.loaders;
 
+import java.awt.Image;
 import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,6 +54,7 @@ import org.openide.modules.ModuleInfo;
 import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /** Pool of data loaders.
  * Provides access to set of registered
@@ -94,6 +98,7 @@ implements java.io.Serializable {
     private transient DataLoader[] loaderArray;
     /** cache of loaders for allLoaders method */
     private transient List<DataLoader> allLoaders;
+    private transient List<DataLoader> prefLoaders;
     /** counts number of changes in the loaders pool */
     private transient int cntchanges;
     
@@ -155,6 +160,7 @@ implements java.io.Serializable {
             cntchanges++;
             loaderArray = null;
             allLoaders = null;
+            prefLoaders = null;
 
             if (listeners == null) return;            
             list = listeners.getListenerList();
@@ -256,10 +262,16 @@ implements java.io.Serializable {
      * @return enumeration of loaders
      */
     public final Enumeration<DataLoader> allLoaders () {
+        return computeLoaders(true);
+    }
+    
+    final Enumeration<DataLoader> computeLoaders(boolean computeAll) {
         List<DataLoader> all;
+        List<DataLoader> pref;
         int oldcnt;
         synchronized (this) {
             all = this.allLoaders;
+            pref = this.prefLoaders;
             oldcnt = this.cntchanges;
         }
         
@@ -273,16 +285,71 @@ implements java.io.Serializable {
             while(en.hasMoreElements()) {
                 all.add(en.nextElement());
             }
+            pref = new ArrayList<DataLoader>(all);
             all.addAll(Arrays.asList(getDefaultLoaders()));
             
             synchronized (this) {
                 if (oldcnt == this.cntchanges) {
                     this.allLoaders = all;
+                    this.prefLoaders = pref;
                 }
             }
         }
         
-        return Collections.enumeration(all);
+        return Collections.enumeration(computeAll ? all : pref);
+    }
+    
+    final Enumeration<DataObject.Factory> allLoaders(FileObject fo) {
+        class MimeEnum implements Enumeration<DataObject.Factory> {
+            final String mime;
+
+            public MimeEnum(String mime) {
+                this.mime = mime;
+            }
+            
+            Enumeration<? extends DataObject.Factory> delegate;
+            
+            private Enumeration<? extends DataObject.Factory> delegate() {
+                if (delegate == null) {
+                    String path = "Loaders/" + mime + "/Factories"; // NOI18N
+                    delegate = Collections.enumeration(Lookups.forPath(path).lookupAll(
+                        DataObject.Factory.class
+                    ));
+                }
+                return delegate;
+            }
+            
+            public boolean hasMoreElements() {
+                return delegate().hasMoreElements();
+            }
+
+            public DataObject.Factory nextElement() {
+                return delegate().nextElement();
+            }
+        }
+        String mime = fo.getMIMEType();
+        Enumeration<DataObject.Factory> mimeLoaders = new MimeEnum(mime);
+        mimeLoaders = Enumerations.concat(mimeLoaders, new MimeEnum("content/unknown")); // NOI18N
+        
+        Enumeration<DataLoader> first = computeLoaders(false);
+        try {
+            if (fo.getFileSystem().isDefault()) {
+                first = Enumerations.concat(
+                    first, 
+                    Enumerations.singleton(getFolderLoader())
+                );
+            }
+        } catch (FileStateInvalidException ex) {
+            // OK
+        }
+
+        return Enumerations.concat(
+            first,
+            Enumerations.concat(
+                mimeLoaders, 
+                Enumerations.array(getDefaultLoaders())
+            )
+        );
     }
     
     /** Get an array of loaders that are currently registered.
@@ -406,13 +473,24 @@ implements java.io.Serializable {
                 return obj;
             }
         }
-        
+
+        HashSet<FileObject> recognized = new HashSet<FileObject>();
         // scan through loaders
-        java.util.Enumeration en = allLoaders ();
+        Enumeration<? extends DataObject.Factory> en = allLoaders (fo);
         while (en.hasMoreElements ()) {
-            DataLoader l = (DataLoader)en.nextElement ();
-    
-            DataObject obj = l.findDataObject (fo, r);
+            DataObject.Factory l = en.nextElement ();
+            DataObject obj;
+            if (l instanceof DataLoader) {
+                obj = l.findDataObject (fo, recognized);
+            } else {
+                obj = DataObjectPool.handleFindDataObject(l, fo, recognized);
+            }
+            if (!recognized.isEmpty()) {
+                for (FileObject f : recognized) {
+                    r.markRecognized(f);
+                }
+                recognized.clear();
+            }
             if (obj != null) {
                 return obj;
             }
@@ -505,7 +583,42 @@ implements java.io.Serializable {
         }
         return null;
     }
-    
+
+    /** Factory method to create default implementation of a factory for
+     * data objects. It takes the class of the <code>DataObject</code> and
+     * is ready to call its constructor. The constructor needs to take two
+     * arguments: FileObject and MultiDataLoader. It can throw IOException as
+     * is usual among DataObject constructors.
+     * <p>
+     * You can also invoke this method from a layer by following definition:
+     * <pre>
+     * &lt;file name="nameofyourfile.instance"&gt;
+     *   &lt;attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/&gt;
+     *   &lt;attr name="dataObjectClass" stringvalue="org.your.pkg.YourDataObject"/&gt;
+     *   &lt;attr name="mimeType" stringvalue="yourmime/type"/&gt;
+     *   &lt;attr name="SystemFileSystem.localizingIcon" stringvalue="org/your/pkg/YourDataObject.png"/&gt;
+     * &lt;/file&gt;
+     * </pre>
+     * @param clazz the class of the data object to create. Must have appropriate
+     *    constructor.
+     * @param mimeType the mime type associated with the object, used for 
+     *    example to create the right actions for the object's node
+     * @param image icon to use by default for nodes representing data objects
+     *    created with this factory
+     * @return factory to be registered in <code>Loaders/mime/type/Factories</code>
+     *    in some module layer file
+     * @since 7.1
+     */
+    public static <T extends DataObject> DataObject.Factory factory(
+        Class<T> dataObjectClass, String mimeType, Image image
+    ) {
+        return new MimeFactory<T>(dataObjectClass, mimeType, image, null);
+    }
+    static <T extends DataObject> DataObject.Factory factory(
+        FileObject fo
+    ) throws ClassNotFoundException {
+        return MimeFactory.layer(fo);
+    }
     
     /** Lazy getter for system loaders.
      */
@@ -731,11 +844,7 @@ private static class InstanceLoader extends UniFileLoader {
         };
     }
 } // end of InstanceLoader
-
-
-
     
-
 /** Loader for file objects not recognized by any other loader */
 private static final class DefaultLoader extends MultiFileLoader {
     static final long serialVersionUID =-6761887227412396555L;

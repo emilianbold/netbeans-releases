@@ -141,7 +141,9 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
 
             public void itemStateChanged(ItemEvent e) {
                 int orientation = splitOrientation.isSelected() ? JSplitPane.VERTICAL_SPLIT : JSplitPane.HORIZONTAL_SPLIT;
-                ResultWindow.getDefault().addDisplayComponent(displayHandler.refreshDisplayComponent(orientation));
+                JSplitPane pane = displayHandler.getDisplayComponent();
+                pane.setOrientation(orientation);
+                ResultWindow.getDefault().addDisplayComponent(pane);
                 updateSplitOrientationLabel();
 
             }

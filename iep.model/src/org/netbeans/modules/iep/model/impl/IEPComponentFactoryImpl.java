@@ -22,6 +22,7 @@ package org.netbeans.modules.iep.model.impl;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.iep.model.Component;
 import org.netbeans.modules.iep.model.Documentation;
+import org.netbeans.modules.iep.model.ExternalTablePollingStreamOperatorComponent;
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPComponentFactory;
 import org.netbeans.modules.iep.model.IEPModel;
@@ -35,6 +36,7 @@ import org.netbeans.modules.iep.model.Property;
 import org.netbeans.modules.iep.model.SchemaAttribute;
 import org.netbeans.modules.iep.model.SchemaComponent;
 
+import org.netbeans.modules.iep.model.TableInputOperatorComponent;
 import org.w3c.dom.Element;
 
 /**
@@ -83,10 +85,17 @@ public class IEPComponentFactoryImpl implements IEPComponentFactory {
         return new OutputOperatorComponentImpl(model);
     }
 
+    public TableInputOperatorComponent createTableInputOperator(IEPModel model) {
+        return new TableInputOperatorComponentImpl(model);
+    }
+    
     public InvokeStreamOperatorComponent createInvokeStreamOperator(IEPModel model) {
         return new InvokeStreamOperatorComponentImpl(model);
     }
     
+    public ExternalTablePollingStreamOperatorComponent createExternalTablePollingStreamOperator(IEPModel model) {
+        return new ExternalTablePollingStreamOperatorComponentImpl(model);
+    }
     
     public LinkComponent createLink(IEPModel model) {
         return new LinkComponentImpl(model);

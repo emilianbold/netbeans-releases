@@ -56,8 +56,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.ui.Utils;
-import org.netbeans.modules.php.project.ui.customizer.ConfigManager.Configuration;
+import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.RunAsPanel.InsidePanel;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
@@ -89,13 +90,15 @@ public final class RunAsPanel extends JPanel {
     @Override
     public void addNotify() {
         super.addNotify();
-        Collection<InsidePanel> insidePanels = allInsidePanels.values();
-        initComboModel(insidePanels);
-        for (InsidePanel insidePanel : insidePanels) {
-            final JComboBox comboBox = insidePanel.getRunAsCombo();
-            comboBox.setModel(comboBoxModel);
+        if (!comboBoxModel.isInitialized) {
+            Collection<InsidePanel> insidePanels = allInsidePanels.values();
+            initComboModel(insidePanels);
+            for (InsidePanel insidePanel : insidePanels) {
+                final JComboBox comboBox = insidePanel.getRunAsCombo();
+                comboBox.setModel(comboBoxModel);
+            }
+            comboBoxModel.setAsInitialized();
         }
-        comboBoxModel.setAsInitialized();
     }
 
     private void initComboModel(Collection<InsidePanel> insidePanels) {
