@@ -284,10 +284,6 @@ public class RelatedCMPHelper {
         TableSource.put(project, tableSource);
         
         GenerateTablesImpl genTables = new GenerateTablesImpl();
-        genTables.setFullyQualifiedTableNames(isFullyQualifiedTableNames());
-        genTables.setFetchType(getFetchType());
-        genTables.setRegenSchemaAttrs(isRegenSchemaAttrs());
-        genTables.setCollectionType(getCollectionType());
         FileObject rootFolder = getLocation().getRootFolder();
         String pkgName = getPackageName();
 
@@ -324,17 +320,13 @@ public class RelatedCMPHelper {
     
     private static final class GenerateTablesImpl implements GeneratedTables {
         
-        private boolean fullyQualifiedTableNames; // not for per table
         private String catalog; // for all the tables
         private String schema; // for all the tables
         private final Set<String> tableNames = new HashSet<String>();
         private final Map<String, FileObject> rootFolders = new HashMap<String, FileObject>();
         private final Map<String, String> packageNames = new HashMap<String, String>();
         private final Map<String, String> classNames = new HashMap<String, String>();
-        private  FetchType fetchType; // global
-        private boolean regenSchemaAttrs; // global
         private final Map<String, Set<List<String>>> allUniqueConstraints = new HashMap<String, Set<List<String>>>();
-        private CollectionType collectionType; // global
         
         public Set<String> getTableNames() {
             return Collections.unmodifiableSet(tableNames);
@@ -352,14 +344,6 @@ public class RelatedCMPHelper {
             allUniqueConstraints.put(tableName, uniqueConstraints);
         }
         
-        public void setFullyQualifiedTableNames(boolean fullyQualifiedNames) {
-            this.fullyQualifiedTableNames = fullyQualifiedNames;
-        }
-        
-        public boolean isFullyQualifiedTableNames() {
-            return this.fullyQualifiedTableNames;
-        }
-
         public String getCatalog() {
             return catalog;
         }
@@ -380,32 +364,8 @@ public class RelatedCMPHelper {
             return classNames.get(tableName);
         }
         
-        public void setFetchType(FetchType type) {
-            fetchType = type;
-        }
-        
-        public FetchType getFetchType() {
-            return fetchType;
-        }
-
-        public boolean isRegenSchemaAttrs() {
-            return regenSchemaAttrs;
-        }
-
-        public void setRegenSchemaAttrs(boolean regenSchemaAttrs) {
-            this.regenSchemaAttrs = regenSchemaAttrs;
-        }
-
         public Set<List<String>> getUniqueConstraints(String tableName) {
             return this.allUniqueConstraints.get(tableName);
-        }
-
-        public CollectionType getCollectionType() {
-            return collectionType;
-        }
-
-        public void setCollectionType(CollectionType collectionType) {
-            this.collectionType = collectionType;
         }
     }
 }

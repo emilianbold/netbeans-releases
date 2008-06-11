@@ -90,7 +90,8 @@ public class JPAGenTest extends SourceTestSupport{
     public void testGenerateOneEntity() throws IOException{
         EntityClass user = getUserEntity();
         
-        generator.generateBeans(new EntityClass[]{user}, true, getProgressContributor(), null);
+        generator.generateBeans(new EntityClass[]{user}, true, false, false, 
+                FetchType.DEFAULT, CollectionType.COLLECTION, getProgressContributor(), null);
         assertEquals(1,generator.createdObjects().size());
         
         FileObject result = generator.createdObjects().iterator().next();
@@ -101,8 +102,8 @@ public class JPAGenTest extends SourceTestSupport{
         
         EntityClass user = getUserEntity();
         
-        EntityClass product = new EntityClass(false, null, null ,"PRODUCT", 
-                getWorkDirFO(), packageName, "Product", FetchType.DEFAULT, false, null, CollectionType.COLLECTION);
+        EntityClass product = new EntityClass( null, null ,"PRODUCT", 
+                getWorkDirFO(), packageName, "Product", null);
         product.usePkField(true);
         
         EntityMemberImpl description = new EntityMemberImpl();
@@ -123,7 +124,9 @@ public class JPAGenTest extends SourceTestSupport{
         product.setFields(fields);
         
         
-        generator.generateBeans(new EntityClass[]{user, product}, true, getProgressContributor(), null);
+        generator.generateBeans(new EntityClass[]{user, product}, true, 
+                false, false, FetchType.DEFAULT, CollectionType.COLLECTION,
+                getProgressContributor(), null);
         Set<FileObject> result = generator.createdObjects();
         assertEquals(2, result.size());
   
@@ -147,7 +150,7 @@ public class JPAGenTest extends SourceTestSupport{
         
         EntityClass[] beans = new DbSchemaEjbGenerator(genTables, schema).getBeans();
         
-        generator.generateBeans(beans, true, getProgressContributor(), null);
+        generator.generateBeans(beans, true, false, false, FetchType.DEFAULT, CollectionType.COLLECTION, getProgressContributor(), null);
         Set<FileObject> result = generator.createdObjects();
         assertEquals(1, result.size());
         
@@ -168,7 +171,7 @@ public class JPAGenTest extends SourceTestSupport{
         
         EntityClass[] beans = new DbSchemaEjbGenerator(genTables, schema).getBeans();
         
-        generator.generateBeans(beans, true, getProgressContributor(), null);
+        generator.generateBeans(beans, true, false, false, FetchType.DEFAULT, CollectionType.COLLECTION, getProgressContributor(), null);
         Set<FileObject> result = generator.createdObjects();
         assertEquals(3, result.size());
         
@@ -195,9 +198,8 @@ public class JPAGenTest extends SourceTestSupport{
     
     
     private EntityClass getUserEntity() throws IOException{
-        EntityClass user = new EntityClass(false, null, null, 
-                "USER", getWorkDirFO(), packageName, "User", FetchType.DEFAULT, 
-                false, null, CollectionType.COLLECTION);
+        EntityClass user = new EntityClass( null, null, 
+                "USER", getWorkDirFO(), packageName, "User", null);
         user.usePkField(true);
         
         EntityMemberImpl name = new EntityMemberImpl();
@@ -341,32 +343,16 @@ public class JPAGenTest extends SourceTestSupport{
             return EntityMember.makeClassName(tableName);
         }
 
+        public String getCatalog() {
+            return catalogName;
+        }
+        
         public String getSchema() {
             return schemaName;
         }
 
-        public String getCatalog() {
-            return catalogName;
-        }
-
-        public boolean isFullyQualifiedTableNames() {
-            return false;
-        }
-
-        public FetchType getFetchType() {
-            return FetchType.DEFAULT;
-        }
-
-        public boolean isRegenSchemaAttrs() {
-            return false;
-        }
-
         public Set<List<String>> getUniqueConstraints(String tableName) {
             return null;
-        }
-
-        public CollectionType getCollectionType() {
-            return CollectionType.COLLECTION;
         }
     }
     
