@@ -36,37 +36,53 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.vmd.midp.producers;
 
-import org.netbeans.modules.vmd.api.model.ComponentProducer;
+package org.netbeans.modules.vmd.midp.components.databinding;
+
+import java.util.Collection;
+import java.util.HashSet;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
-import org.netbeans.modules.vmd.midp.components.databinding.DataSetCD;
-import org.netbeans.modules.vmd.midp.palette.DatabindingPaletteProvider;
-import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
+import org.netbeans.modules.vmd.midp.components.categories.DatabindingCategoryCD;
 
 /**
  *
- * @author Karol Harezlak
+ * @author karolharezlak
  */
-public class DataSetProducer extends ComponentProducer {
+public class MidpDatabindingSupport {
 
-    public static final String DATABINDING_CATEGORY = NbBundle.getMessage(DatabindingPaletteProvider.class, "vmd-midp/palette/databinding");
-
-    public DataSetProducer() {
-        super(DataSetCD.TYPEID.toString(), DataSetCD.TYPEID, new PaletteDescriptor(DATABINDING_CATEGORY, "DataSet", "DataSet", DataSetCD.ICON_PATH, null));
+    private MidpDatabindingSupport() {
     }
-
-    @Override
-    public Result postInitialize(DesignDocument document, DesignComponent mainComponent) {
-        MidpProjectSupport.addLibraryToProject(document, "DataBindingME"); //NOI18N
-        return super.postInitialize(document, mainComponent);
+    
+    public static DesignComponent getConnector(DesignComponent bindedComponent, String bindedPropertyName) {
+        DesignComponent category = MidpDocumentSupport.getCategoryComponent(bindedComponent.getDocument(), DatabindingCategoryCD.TYPEID);
+        for (DesignComponent dataSet : category.getComponents()) {
+            for (DesignComponent connector : dataSet.getComponents()) {
+                String currentbindedPropertyName = (String) connector.readProperty(DataSetConnectorCD.PROP_BINDED_PROPERTY).getPrimitiveValue();
+                long id = (Long) connector.readProperty(DataSetConnectorCD.PROP_COMPONENT_ID).getPrimitiveValue();
+                if (currentbindedPropertyName.equals(bindedPropertyName) && bindedComponent.getComponentID() == id) {
+                    return connector;
+                }
+            }
+        }
+        return null;
     }
-
-    @Override
-    public Boolean checkValidity(DesignDocument document, boolean useCachedValue) {
-        return true;
+    
+     public static Collection<DesignComponent> getAllRelatedConnectors(DesignComponent bindedComponent) {
+        DesignComponent category = MidpDocumentSupport.getCategoryComponent(bindedComponent.getDocument(), DatabindingCategoryCD.TYPEID);
+        HashSet<DesignComponent> connectors = new HashSet<DesignComponent>(); 
+        for (DesignComponent dataSet : category.getComponents()) {
+            for (DesignComponent connector : dataSet.getComponents()) {
+                long id = (Long) connector.readProperty(DataSetConnectorCD.PROP_COMPONENT_ID).getPrimitiveValue();
+                if (bindedComponent.getComponentID() == id) {
+                    connectors.add(connector);
+                }
+            }
+        }
+        return connectors;
     }
+    
+    
+ 
+
 }
