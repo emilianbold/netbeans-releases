@@ -1278,7 +1278,7 @@ public class UMLDiagramTopComponent extends TopComponent
         {
             if (aNode != null && aNode instanceof DiagramModelElementNode)
             {
-                System.out.println("updateSaveCookie: node="+ aNode.getDisplayName() );
+                //System.out.println("updateSaveCookie: node="+ aNode.getDisplayName() );
                 if (action == ADD)
                 {
                     ((DiagramModelElementNode)aNode).addSaveCookie();
