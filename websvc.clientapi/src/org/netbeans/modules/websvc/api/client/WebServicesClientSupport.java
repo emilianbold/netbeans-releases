@@ -73,7 +73,7 @@ public final class WebServicesClientSupport {
 
     private WebServicesClientSupportImpl impl;
     private static final Lookup.Result implementations =
-        Lookup.getDefault().lookup(new Lookup.Template(WebServicesClientSupportProvider.class));
+        Lookup.getDefault().lookupResult(WebServicesClientSupportProvider.class);
 
     static  {
         WebServicesClientSupportAccessor.DEFAULT = new WebServicesClientSupportAccessor() {
@@ -224,7 +224,7 @@ public final class WebServicesClientSupport {
         return impl.getDeploymentDescriptor();
     }
 
-    public List/*StubDescriptor*/ getStubDescriptors() {
+    public List<ClientStubDescriptor> getStubDescriptors() {
         return impl.getStubDescriptors();
     }
 

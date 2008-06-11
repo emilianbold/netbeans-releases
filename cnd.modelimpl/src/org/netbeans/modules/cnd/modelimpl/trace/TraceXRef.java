@@ -238,11 +238,22 @@ public class TraceXRef extends TraceModel {
         }
         return false;
     }
-    
+
+    private static final int FACTOR = 1;
     public static void traceProjectRefsStatistics(NativeProject prj, StatisticsParameters params, PrintWriter printOut, OutputWriter printErr, CsmProgressListener callback) {
         CsmProject csmPrj = CsmModelAccessor.getModel().getProject(prj);
         XRefResultSet bag = new XRefResultSet();
-        Collection<CsmFile> allFiles = csmPrj.getAllFiles();
+        Collection<CsmFile> allFiles = new ArrayList<CsmFile>();
+        int i = 0;
+        for(CsmFile file : csmPrj.getAllFiles()) {
+            i++;
+            if (FACTOR > 1) {
+                if (i%FACTOR != 0){
+                    continue;
+                }
+            }
+            allFiles.add(file);
+        }
         if (callback != null) {
             callback.projectFilesCounted(csmPrj, allFiles.size());
         }
@@ -255,7 +266,7 @@ public class TraceXRef extends TraceModel {
         if (callback != null) {
             callback.projectParsingFinished(csmPrj);
         }
-        traceStatistics(bag, params, printOut);
+        traceStatistics(bag, params, printOut, printErr);
     }
     
     public static void traceRefs(Collection<CsmReference> out, CsmObject target, PrintStream streamOut) {
@@ -356,6 +367,15 @@ public class TraceXRef extends TraceModel {
                             XRefResultSet.ContextEntry entry = createEntry(objectsUsedInScope, params, ref, funContext, printOut, printErr);
                             if (entry != null) {
                                 bag.addEntry(funScope, entry);
+                                if (entry == XRefResultSet.ContextEntry.UNRESOLVED) {
+                                    CharSequence text = ref.getText();
+                                    UnresolvedEntry unres = bag.<UnresolvedEntry>getUnresolvedEntry(text);
+                                    if (unres == null) {
+                                        unres = new UnresolvedEntry(text, new RefLink(ref));
+                                        bag.addUnresolvedEntry(text, unres);
+                                    }
+                                    unres.increment();
+                                }
                             }
                         }
                     },
@@ -675,7 +695,7 @@ public class TraceXRef extends TraceModel {
         return null;
     }
 
-    private static void traceStatistics(XRefResultSet bag, StatisticsParameters params, PrintWriter printOut) {
+    private static void traceStatistics(XRefResultSet bag, StatisticsParameters params, PrintWriter printOut, OutputWriter printErr) {
         printOut.println("Number of analyzed contexts " + bag.getNumberOfAllContexts()); // NOI18N
         Collection<XRefResultSet.ContextScope> sortedContextScopes = XRefResultSet.sortedContextScopes(bag, false);
         int numProjectProints = 0;
@@ -693,6 +713,23 @@ public class TraceXRef extends TraceModel {
         String unresolvedStatistics = String.format("Unresolved %d (%.2f%%) of %d checkpoints", numUnresolvedPoints, unresolvedRatio, numProjectProints);
         printOut.println(unresolvedStatistics);
         if (!params.analyzeSmartAlgorith) {
+            // dump unresolved statistics
+            if (numUnresolvedPoints > 0) {
+                Collection<UnresolvedEntry> unresolvedEntries = bag.getUnresolvedEntries(new Comparator<UnresolvedEntry>() {
+                    public int compare(UnresolvedEntry o1, UnresolvedEntry o2) {
+                        return o2.getNrUnnamed() - o1.getNrUnnamed();
+                    }
+                });
+                for (UnresolvedEntry unresolvedEntry : unresolvedEntries) {
+                    double unresolvedEntryRatio = (100.0 * unresolvedEntry.getNrUnnamed())/ ((double) numUnresolvedPoints);
+                    String msg = String.format("%20s\t|%6s\t| %.2f%% ", unresolvedEntry.getName(), unresolvedEntry.getNrUnnamed(), unresolvedEntryRatio);
+                    try {
+                        printErr.println(msg, unresolvedEntry.getLink(), false);
+                    } catch (IOException ex) {
+                        // skip exception
+                    }
+                }
+            }
             return;
         }
         String contextFmt = "%20s\t|%6s\t| %2s |\n"; // NOI18N
@@ -1017,6 +1054,33 @@ public class TraceXRef extends TraceModel {
         public void outputLineCleared(OutputEvent ev) {
         }
         
+    }
+    
+    private final static class UnresolvedEntry {
+        private final RefLink link;
+        private int nrUnnamed;
+        private final CharSequence name;
+
+        public UnresolvedEntry(CharSequence name, RefLink link) {
+            this.link = link;
+            this.name = name;
+        }
+
+        public CharSequence getName() {
+            return name;
+        }
+
+        public int getNrUnnamed() {
+            return nrUnnamed;
+        }
+
+        public RefLink getLink() {
+            return link;
+        }
+
+        private void increment() {
+            nrUnnamed++;
+        }
     }
             
 }

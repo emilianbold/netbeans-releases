@@ -128,7 +128,7 @@ made subject to such option by the copyright holder.
 
     <target name="extract-derby" unless="derby.extracted">
         <mkdir dir="${derby.data.dir}"/>
-        <unzip src="../../db/external/derby-10.2.2.0.zip" dest="${derby.data.dir}"/>
+        <unzip src="../db/external/derby-10.2.2.0.zip" dest="${derby.data.dir}"/>
     </target>
 
     <target name="test-postinit">

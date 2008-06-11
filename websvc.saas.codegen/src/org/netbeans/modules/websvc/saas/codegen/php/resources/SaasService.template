@@ -1,0 +1,16 @@
+<?php
+
+    //namespace org::netbeans::saas;
+
+    class SaasService {
+    
+        public function SaasService() {
+            $this->__construct();
+        }
+
+        public function __construct() {
+        }
+    
+    }
+
+?>

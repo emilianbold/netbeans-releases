@@ -41,7 +41,6 @@
 
 package org.netbeans.api.project.ant;
 
-import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,6 +54,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.ant.AntBuildExtenderAccessor;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
@@ -213,12 +213,12 @@ public final class AntBuildExtender {
                 }
             }
         }
-        AuxiliaryConfiguration config = implementation.getOwningProject().getLookup().lookup(AuxiliaryConfiguration.class);
+        AuxiliaryConfiguration config = ProjectUtils.getAuxiliaryConfiguration(implementation.getOwningProject());
         config.putConfigurationFragment(root, true);
     }
     
     private void readProjectMetadata() {
-        AuxiliaryConfiguration config = implementation.getOwningProject().getLookup().lookup(AuxiliaryConfiguration.class);
+        AuxiliaryConfiguration config = ProjectUtils.getAuxiliaryConfiguration(implementation.getOwningProject());
         Element cfgEl = config.getConfigurationFragment(AntBuildExtenderAccessor.ELEMENT_ROOT, AntBuildExtenderAccessor.AUX_NAMESPACE, true);
         FileObject nbproj = implementation.getOwningProject().getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH).getParent();
         extensions = new HashMap<String, Extension>();

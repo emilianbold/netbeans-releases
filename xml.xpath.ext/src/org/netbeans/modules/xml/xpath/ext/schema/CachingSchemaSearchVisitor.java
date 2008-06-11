@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.modules.xml.schema.model.AnyAttribute;
+import org.netbeans.modules.xml.schema.model.AnyElement;
 import org.netbeans.modules.xml.schema.model.AttributeGroupReference;
 import org.netbeans.modules.xml.schema.model.AttributeReference;
 import org.netbeans.modules.xml.schema.model.ComplexExtension;
@@ -51,7 +53,7 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 
@@ -76,6 +78,9 @@ public class CachingSchemaSearchVisitor extends AbstractSchemaSearchVisitor {
     // Collects the found Schema components.
     private List<SchemaComponent> myFound;
 
+    private boolean mHasAny = false;
+    private boolean mHasAnyAttribute = false;
+    
     public CachingSchemaSearchVisitor() {
         mModelsCache = new HashMap<String, ArrayList<SchemaModel>>();
         myFound = new ArrayList<SchemaComponent>();
@@ -85,6 +90,14 @@ public class CachingSchemaSearchVisitor extends AbstractSchemaSearchVisitor {
         return myFound;
     }
 
+    public boolean hasAny() {
+        return mHasAny;
+    }
+    
+    public boolean hasAnyAttribute() {
+        return mHasAnyAttribute;
+    }
+    
     private boolean isChildFound() {
         return myFound.size() > 0;
     }
@@ -494,6 +507,12 @@ public class CachingSchemaSearchVisitor extends AbstractSchemaSearchVisitor {
                     }
                 }
             }
+        }
+        if (sc instanceof AnyElement) {
+            mHasAny = true;
+        }
+        if (sc instanceof AnyAttribute) {
+            mHasAnyAttribute = true;
         }
     }
 

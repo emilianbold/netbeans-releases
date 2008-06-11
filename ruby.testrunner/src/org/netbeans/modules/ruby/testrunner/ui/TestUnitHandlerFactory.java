@@ -40,7 +40,8 @@ package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FilteredOutput;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
 import org.netbeans.modules.ruby.testrunner.TestUnitRunner;
 
 /**
@@ -49,7 +50,7 @@ import org.netbeans.modules.ruby.testrunner.TestUnitRunner;
  *
  * @author Erno Mononen
  */
-public class TestUnitHandlerFactory extends OutputRecognizer {
+public class TestUnitHandlerFactory {
 
     public static List<TestRecognizerHandler> getHandlers() {
         List<TestRecognizerHandler> result = new ArrayList<TestRecognizerHandler>();

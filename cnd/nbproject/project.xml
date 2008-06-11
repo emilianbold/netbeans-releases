@@ -319,6 +319,7 @@
                 <package>org.netbeans.modules.cnd.api.compilers</package>
                 <package>org.netbeans.modules.cnd.api.execution</package>
                 <package>org.netbeans.modules.cnd.api.picklist</package>
+                <package>org.netbeans.modules.cnd.api.remote</package>
                 <package>org.netbeans.modules.cnd.api.utils</package>
                 <package>org.netbeans.modules.cnd.api.xml</package>
                 <package>org.netbeans.modules.cnd.builds</package>

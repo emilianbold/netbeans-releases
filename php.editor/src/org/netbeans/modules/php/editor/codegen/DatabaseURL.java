@@ -62,7 +62,9 @@ public abstract class DatabaseURL {
 
     public abstract Server getServer();
 
-    public abstract String getHostAndPort();
+    public abstract String getHost();
+
+    public abstract String getPort();
 
     public abstract String getDatabase();
 
@@ -72,6 +74,8 @@ public abstract class DatabaseURL {
 
         private final String url;
         private final Matcher matcher;
+        private String host;
+        private String port;
 
         public MySQLURL(String url) {
             this.url = url;
@@ -80,7 +84,21 @@ public abstract class DatabaseURL {
 
         @Override
         boolean matches() {
-            return matcher.matches();
+            boolean result = matcher.matches();
+            if (result) {
+                String hostAndPort = matcher.group(1);
+                if (hostAndPort != null) {
+                    String[] split = hostAndPort.split(":");
+                    host = split[0].trim();
+                    if (split.length > 1) {
+                        port = split[1].trim();
+                    }
+                }
+                if (host == null || host.length() == 0) {
+                    result = false;
+                }
+            }
+            return result;
         }
 
         @Override
@@ -89,15 +107,24 @@ public abstract class DatabaseURL {
         }
 
         @Override
-        public String getHostAndPort() {
-            return matcher.group(1);
+        public String getHost() {
+            return host;
+        }
+
+        @Override
+        public String getPort() {
+            return port;
         }
 
         @Override
         public String getDatabase() {
             String database = matcher.group(3);
-            if (database != null && database.length() == 0) {
-                database = null;
+            if (database == null) {
+                return null;
+            }
+            database = database.trim();
+            if (database.length() == 0) {
+                return null;
             }
             return database;
         }

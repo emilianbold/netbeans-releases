@@ -56,27 +56,18 @@ class NbTestMediator
       ["-m", "--testmethod", GetoptLong::OPTIONAL_ARGUMENT]
     )
     
-    
     loop do
       begin
         opt, arg = parser.get
         break if not opt
         case opt
+        # single file
         when "-f"
           add_to_suites arg
-          #          @filename = arg
-          #          require "#{@filename}"
-          #          last_slash = @filename.rindex("/")
-          #          test_class = @filename[last_slash + 1..@filename.length]
-          #          instance = Object.const_get(camelize(test_class))
-          #          if (instance.respond_to?(:suite))
-          #            @suite = instance.suite
-          #          else
-          #            @suite = instance
-          #          end
-          #        end
+        # directory
         when "-d"
           Rake::FileList["#{arg}/test/**/*.rb"].each { |file| add_to_suites(file) }
+        # single test method
         when "-m"
           if "-m" != ""
             @suites.each do |s| 
@@ -126,22 +117,8 @@ class NbTestMediator
     end
   end
 
-  def run_all
-    @test_files = Rake::FileList['test/**/*.rb']
-    @test_files.each do |t|
-      puts t
-    end
-  end
-  
-  def run
-    #      class_name = ARGV[0]
-    #      file_name = ARGV[1]
-    require "#{@filename}"
-    test_class = Object.const_get(class_name)
-    run_mediator
-  end
-  
   def run_mediator
+    parse_args
     
     @suites.each do |suite| 
       @mediator = Test::Unit::UI::TestRunnerMediator.new(suite)
@@ -207,7 +184,4 @@ class NbTestMediator
   end
 end
 
-tm = NbTestMediator.new
-tm.parse_args
-tm.run_mediator
-#tm.run_all
+NbTestMediator.new.run_mediator

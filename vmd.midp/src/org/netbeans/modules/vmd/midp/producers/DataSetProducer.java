@@ -42,7 +42,7 @@ import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
-import org.netbeans.modules.vmd.midp.components.DataSetCD;
+import org.netbeans.modules.vmd.midp.components.databinding.DataSetCD;
 import org.netbeans.modules.vmd.midp.palette.DatabindingPaletteProvider;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.openide.util.NbBundle;
