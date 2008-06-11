@@ -50,7 +50,7 @@ import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
 
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.midp.components.DataSetCD;
+import org.netbeans.modules.vmd.midp.components.databinding.DataSetCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.CategoryPC;
 import org.openide.util.NbBundle;
 /**

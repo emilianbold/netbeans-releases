@@ -78,7 +78,7 @@ import org.hibernate.tool.hbm2x.POJOExporter;
 import org.hibernate.util.XMLHelper;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
-import org.netbeans.modules.hibernate.service.CustomClassLoader;
+import org.netbeans.modules.hibernate.util.CustomClassLoader;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;

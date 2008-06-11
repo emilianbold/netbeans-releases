@@ -42,8 +42,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import java.util.Collection;
 import java.util.Set;
+import org.netbeans.modules.xml.schema.model.AnyAttribute;
+import org.netbeans.modules.xml.schema.model.AnyElement;
 import org.netbeans.modules.xml.schema.model.AttributeReference;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 
 /**
  * This schema visitor is inteneded to look for a children elements or attributes 
@@ -61,6 +63,9 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
     private boolean isAttribute; // hints that the sought object is an attribute
     
     private List<SchemaComponent> myFound = new ArrayList<SchemaComponent>();
+    
+    private boolean mHasAny = false;
+    private boolean mHasAnyAttribute = false;
     
 //    public FindChildrenSchemaVisitor(
 //            String soughtName, String soughtNamespace, boolean isAttribute) {
@@ -121,6 +126,14 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
     
     public List<SchemaComponent> getFound() {
         return myFound;
+    }
+    
+    public boolean hasAny() {
+        return mHasAny;
+    }
+    
+    public boolean hasAnyAttribute() {
+        return mHasAnyAttribute;
     }
     
     private boolean isChildFound() {
@@ -342,6 +355,12 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
                     }
                 }
             } 
+        }
+        if (sc instanceof AnyElement) {
+            mHasAny = true;
+        }
+        if (sc instanceof AnyAttribute) {
+            mHasAnyAttribute = true;
         }
     }
 

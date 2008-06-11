@@ -54,6 +54,7 @@ import org.openide.filesystems.*;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.dbschema.SchemaElement;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.CollectionType;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.FetchType;
 
 /**
@@ -93,6 +94,7 @@ public class RelatedCMPHelper {
     private boolean fullyQualifiedTableNames = false;
     private FetchType fetchType = FetchType.DEFAULT;
     private boolean regenSchemaAttrs = false;
+    private CollectionType collectionType = CollectionType.COLLECTION;
     
     public RelatedCMPHelper(Project project, FileObject configFilesFolder, PersistenceGenerator persistenceGen) {
         this.project = project;
@@ -267,6 +269,14 @@ public class RelatedCMPHelper {
         this.regenSchemaAttrs = regenSchemaAttrs;
     }
     
+    public CollectionType getCollectionType() {
+        return collectionType;
+    }
+    
+    public void setCollectionType(CollectionType type) {
+        collectionType = type;
+    }
+    
     /**
      * Public because used in J2EE functional tests.
      */
@@ -277,11 +287,12 @@ public class RelatedCMPHelper {
         genTables.setFullyQualifiedTableNames(isFullyQualifiedTableNames());
         genTables.setFetchType(getFetchType());
         genTables.setRegenSchemaAttrs(isRegenSchemaAttrs());
+        genTables.setCollectionType(getCollectionType());
         FileObject rootFolder = getLocation().getRootFolder();
         String pkgName = getPackageName();
 
         for (Table table : selectedTables.getTables()) {
-            genTables.addTable(table.getSchema(), table.getCatalog(), table.getName(), rootFolder, pkgName, 
+            genTables.addTable(table.getCatalog(), table.getSchema(), table.getName(), rootFolder, pkgName, 
                     selectedTables.getClassName(table), table.getUniqueConstraints());
         }
 
@@ -293,7 +304,7 @@ public class RelatedCMPHelper {
                 String fqClassName = exDisReason.getFQClassName();
                 SourceGroup sourceGroup = Util.getClassSourceGroup(getProject(), fqClassName); // NOI18N
                 if (sourceGroup != null) {
-                    genTables.addTable(table.getSchema(), table.getCatalog(), table.getName(), sourceGroup.getRootFolder(), 
+                    genTables.addTable(table.getCatalog(), table.getSchema(), table.getName(), sourceGroup.getRootFolder(), 
                             JavaIdentifiers.getPackageName(fqClassName), JavaIdentifiers.unqualify(fqClassName),
                             table.getUniqueConstraints());
                 }
@@ -315,25 +326,26 @@ public class RelatedCMPHelper {
         
         private boolean fullyQualifiedTableNames; // not for per table
         private final Set<String> tableNames = new HashSet<String>();
-        private final Map<String, String> schemas = new HashMap<String, String>();
         private final Map<String, String> catalogs = new HashMap<String, String>();
+        private final Map<String, String> schemas = new HashMap<String, String>();
         private final Map<String, FileObject> rootFolders = new HashMap<String, FileObject>();
         private final Map<String, String> packageNames = new HashMap<String, String>();
         private final Map<String, String> classNames = new HashMap<String, String>();
         private  FetchType fetchType; // global
         private boolean regenSchemaAttrs; // global
-        private final Map<String, Set<String[]>> allUniqueConstraints = new HashMap<String, Set<String[]>>();
+        private final Map<String, Set<List<String>>> allUniqueConstraints = new HashMap<String, Set<List<String>>>();
+        private CollectionType collectionType; // global
         
         public Set<String> getTableNames() {
             return Collections.unmodifiableSet(tableNames);
         }
         
-        private void addTable(String schemaName, String catalogName, String tableName, 
+        private void addTable(String catalogName, String schemaName, String tableName, 
                 FileObject rootFolder, String packageName, String className,
-                Set<String[]> uniqueConstraints) {
+                Set<List<String>> uniqueConstraints) {
             tableNames.add(tableName);
-            schemas.put(tableName, schemaName);
             catalogs.put(tableName, catalogName);
+            schemas.put(tableName, schemaName);
             rootFolders.put(tableName, rootFolder);
             packageNames.put(tableName, packageName);
             classNames.put(tableName, className);
@@ -384,8 +396,16 @@ public class RelatedCMPHelper {
             this.regenSchemaAttrs = regenSchemaAttrs;
         }
 
-        public Set<String[]> getUniqueConstraints(String tableName) {
+        public Set<List<String>> getUniqueConstraints(String tableName) {
             return this.allUniqueConstraints.get(tableName);
+        }
+
+        public CollectionType getCollectionType() {
+            return collectionType;
+        }
+
+        public void setCollectionType(CollectionType collectionType) {
+            this.collectionType = collectionType;
         }
     }
 }

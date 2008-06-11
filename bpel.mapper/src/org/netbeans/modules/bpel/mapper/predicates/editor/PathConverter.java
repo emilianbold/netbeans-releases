@@ -27,7 +27,6 @@ import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.mapper.cast.AbstractTypeCast;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableDeclarationWrapper;
-import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
@@ -42,12 +41,13 @@ import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathExpressionPath;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.XPathModelFactory;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
 import org.netbeans.modules.xml.xpath.ext.schema.SchemaModelsStack;
-import org.netbeans.modules.xml.xpath.ext.spi.CastSchemaContext;
-import org.netbeans.modules.xml.xpath.ext.spi.SimpleSchemaContext;
-import org.netbeans.modules.xml.xpath.ext.spi.VariableSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.CastSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.SimpleSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.VariableSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathVariable;
 
 /**
@@ -72,17 +72,22 @@ public class PathConverter {
      * @return
      */
     public static List<Object> constructObjectLocationtList(
-            RestartableIterator<Object> pathItr, boolean sameOrder) {
+            Iterable<Object> pathItrb, 
+            boolean sameOrder, boolean skipFirst) {
         //
-        pathItr.restart();
+        Iterator<Object> itr = pathItrb.iterator();
+        if (skipFirst && itr.hasNext()) {
+            // move forward one step if possible
+            itr.next();
+        }
         //
         LinkedList<Object> treeItemList = new LinkedList<Object>();
         //
         // Process the path
         ParsingStage stage = null;
         boolean needBreak = false;
-        while (pathItr.hasNext()) {
-            Object obj = pathItr.next();
+        while (itr.hasNext()) {
+            Object obj = itr.next();
             Object toAdd = null;
             if (obj instanceof SchemaComponent) {
                 if (!(stage == null || stage == ParsingStage.SCHEMA)) {
@@ -242,11 +247,11 @@ public class PathConverter {
     }
     
     public static XPathExpression constructXPath(BpelEntity base, 
-            RestartableIterator<Object> pathItr) {
+            Iterable<Object> pathItrb, boolean skipFirst) {
         //
         // It's necessary to have the order, oposite to the iterator. 
         // It's required for correct buildeing the XPath expression
-        List<Object> objList = constructObjectLocationtList(pathItr, false);
+        List<Object> objList = constructObjectLocationtList(pathItrb, false, skipFirst);
         //
         if (objList == null || objList.isEmpty()) {
             return null;
@@ -318,11 +323,11 @@ public class PathConverter {
         } 
     }
     
-    public static String toString(RestartableIterator<Object> pathItr) {
+    public static String toString(Iterable<Object> pathItrb) {
         LinkedList<Object> list = new LinkedList<Object>();
-        pathItr.restart();
-        while (pathItr.hasNext()) {
-            list.addFirst(pathItr.next());
+        Iterator itr = pathItrb.iterator();
+        while (itr.hasNext()) {
+            list.addFirst(itr.next());
         }
         //
         StringBuilder sb = new StringBuilder();
@@ -339,11 +344,18 @@ public class PathConverter {
         return sb.toString();
     }
 
+    /**
+     * Builds the new Schema context from the location on the tree. 
+     * @param pathItrb specifies the location
+     * @param skipFirstItem indicates if it necessary to ignore 
+     * the first location item. It is used to get context of the parent tree item.
+     * @return
+     */
     public static XPathSchemaContext constructContext(
-            RestartableIterator<Object> pathItr) {
+            Iterable<Object> pathItrb, boolean skipFirstItem) {
         //
         SchemaContextBuilder builder = new SchemaContextBuilder();
-        return builder.constructContext(pathItr, null);
+        return builder.constructContext(pathItrb, null, skipFirstItem);
     }
     
     public static class SchemaContextBuilder {
@@ -359,12 +371,17 @@ public class PathConverter {
          * @return
          */
         public XPathSchemaContext constructContext(
-                RestartableIterator<Object> pathItr, 
-                XPathSchemaContext initialContext) {
+                Iterable<Object> pathItrb, 
+                XPathSchemaContext initialContext, 
+                boolean skipFirst) {
             //
-            pathItr.restart();
+            Iterator itr = pathItrb.iterator();
             //
-            return constructContextImpl(pathItr, initialContext);
+            if (skipFirst) {
+                itr.next();
+            }
+            //
+            return constructContextImpl(itr, initialContext);
         }
 
         private VariableSchemaContext buildVariableSchemaContext() {
@@ -400,6 +417,10 @@ public class PathConverter {
                 return new SimpleSchemaContext(
                         constructContextImpl(pathItr, baseContext), 
                         (SchemaComponent)obj);
+            } else if (obj instanceof XPathPseudoComp) {
+                return new SimpleSchemaContext(
+                        constructContextImpl(pathItr, baseContext), 
+                        (XPathPseudoComp)obj);
             } else if (obj instanceof AbstractPredicate) {
                 return new SimpleSchemaContext(
                         constructContextImpl(pathItr, baseContext), 

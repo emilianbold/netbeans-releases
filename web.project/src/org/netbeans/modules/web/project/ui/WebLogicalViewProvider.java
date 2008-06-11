@@ -556,7 +556,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
                 boolean isLegacyProject = false;
                 
                 // Check if Web module is a visualweb 5.5.x or Creator project
-                AuxiliaryConfiguration ac = (AuxiliaryConfiguration)project.getLookup().lookup(AuxiliaryConfiguration.class);
+                AuxiliaryConfiguration ac = ProjectUtils.getAuxiliaryConfiguration(project);
                 Element auxElement = ac.getConfigurationFragment("creator-data", "http://www.sun.com/creator/ns", true); //NOI18N
                 
                 // if project is a visualweb or creator project then find out whether it is a legacy project

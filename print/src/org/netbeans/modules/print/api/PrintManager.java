@@ -43,6 +43,58 @@ package org.netbeans.modules.print.api;
 import javax.swing.Action;
 
 /**
+ * The Print manager is powerful functionality to preview and
+ * send data out to printer. Print Preview action from <code>File</code>
+ * menu (<code>Ctrl+Alt+Shift+P</code> shortcut) invokes Print Preview
+ * dialog for selected nodes or opened views. The Print Preview dialog
+ * provides page layout, the set of options including font, color, header,
+ * footer, printer settings such as paper size and orientation, number
+ * of copies, margins, collation and system properties.<p>
+ *
+ * There are several ways to enable print preview for a custom data:<p>
+ *
+ * If the data is a Swing component which extends
+ * <code>javax.swing.JComponent</code> and is shown in a
+ * <code>org.openide.windows.TopComponent</code>,
+ * not <code>null</code> key <code>"java.awt.print.Printable.class"</code>
+ * in the component should be set, see example:
+ *
+ * <blockquote><pre>
+ * public class CustomComponent extends JComponent {
+ *   public CustomComponent() {
+ *     ...
+ *     putClientProperty(java.awt.print.Printable.class, "&lt;name&gt;");
+ *   }
+ *   ...
+ * }</pre></blockquote>
+ *
+ * The second argument in method <code>putClientProperty</code> is a
+ * name, which is shown at the top/bottom of the print preview as the header/footer,
+ * which can be changed in the Print Options dialog. If empty name is passed,
+ * the display name of the top component is shown.<p>
+ *
+ * If the dimension of the custom component for printing differs from visual
+ * dimension, specify this:
+ *
+ * <blockquote><pre>
+ * putClientProperty(Dimension.class, new Dimension(printWidth, printHeight));</pre></blockquote>
+ *
+ * If custom data is presented by several components, all of them can be enabled
+ * in print preview. For this purpose, the order of the components
+ * (from the left to right) should be defined:
+ *
+ * <blockquote><pre>
+ * putClientProperty(java.lang.Integer.class, new Integer(<weight>));</pre></blockquote>
+ *
+ * where <code>weight</code> is integer value.<p>
+ *
+ * If custom data is presented by another classes, print provider
+ * (see <code>PrintProvider</code>) should be implemented and put it
+ * into the lookup of a node, data object or top component where the
+ * data lives.
+ *
+ * @see org.netbeans.modules.print.spi.PrintProvider
+ *
  * @author Vladimir Yaroslavskiy
  * @version 2005.12.12
  */
@@ -59,7 +111,17 @@ public final class PrintManager {
   }
 
   /**
-   * Returns Print Preview action.
+   * Returns Print Preview action. See example how to put
+   * Print Preview action on custom Swing tool bar:
+   *
+   * <blockquote><pre>
+   * JToolBar toolbar = new JToolBar();
+   * ...
+   * // print preview
+   * toolbar.addSeparator();
+   * toolbar.add(PrintManager.getDefault().getPrintPreviewAction());
+   * ...</pre></blockquote>
+   *
    * @return Print Preview action
    */
   public Action getPrintPreviewAction() {

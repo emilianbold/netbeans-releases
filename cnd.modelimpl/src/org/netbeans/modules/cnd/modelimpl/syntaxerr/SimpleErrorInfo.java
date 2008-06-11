@@ -49,11 +49,17 @@ public class SimpleErrorInfo implements CsmErrorInfo {
     private int startOffset;
     private int endOffset;
     private String text;
+    private Severity severity;
 
     public SimpleErrorInfo(int startOffset, int endOffset, String text) {
+        this(startOffset, endOffset, text, Severity.ERROR);
+    }
+
+    public SimpleErrorInfo(int startOffset, int endOffset, String text, Severity severity) {
         this.startOffset = startOffset;
         this.endOffset = endOffset;
         this.text = text;
+        this.severity = severity;
     }
 
     public int getStartOffset() {
@@ -69,6 +75,6 @@ public class SimpleErrorInfo implements CsmErrorInfo {
     }
 
     public Severity getSeverity() {
-        return Severity.ERROR;
+        return severity;
     }
 }
