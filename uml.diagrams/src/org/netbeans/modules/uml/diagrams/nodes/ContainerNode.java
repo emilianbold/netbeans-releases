@@ -96,7 +96,7 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
 
             AlignWithMoveStrategyProvider moveProvider = 
                     new AlignWithMoveStrategyProvider(new GraphSceneNodeAlignCollector (designerScene),
-                                                      designerScene.getConnectionLayer(),
+                                                      designerScene.getInterractionLayer(),
                                                       designerScene.getMainLayer(),
                                                       decorator,
                                                       false)
@@ -365,7 +365,6 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
                 width = (int) (testBounds.x + testBounds.width) - x;
             }
 
-            System.out.println(testBounds.y + " > " + topBounds + "== " + (testBounds.y > topBounds));
             if (testBounds.y > topBounds)
             {
                 y = (int) topBounds;

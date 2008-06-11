@@ -260,8 +260,6 @@ public class PackageWidget extends ContainerNode
         {
             try
             {
-                System.out.println("Name Widget Preferred Bounds: " + nameWidget.getPreferredBounds());
-
                 namePlaceholder.setPreferredSize(nameWidget.getPreferredBounds().getSize());
             }
             catch(NullPointerException e)

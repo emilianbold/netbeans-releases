@@ -1725,31 +1725,31 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="DiagramEngines">
             <folder name="Default">
-                <file name="org-netbeans-modules-uml-diagrams-engines-DefaultDiagramEngine.instance"/>
+                <file name="org-netbeans-modules-uml-diagrams-engines-DefaultDiagramEngineFactory.instance"/>
             </folder>
             <folder name="ActivityDiagram">
-                <file name="org-netbeans-modules-uml-diagrams-engines-DefaultDiagramEngine.instance"/>
+                <file name="org-netbeans-modules-uml-diagrams-engines-DefaultDiagramEngineFactory.instance"/>
             </folder>
             <folder name="ClassDiagram">
-                <file name="org-netbeans-modules-uml-diagrams-engines-DefaultDiagramEngine.instance"/>
+                <file name="org-netbeans-modules-uml-diagrams-engines-DefaultDiagramEngineFactory.instance"/>
             </folder>
             <folder name="CollaborationDiagram">
-                <file name="org-netbeans-modules-uml-diagrams-engines-DefaultDiagramEngine.instance"/>
+                <file name="org-netbeans-modules-uml-diagrams-engines-DefaultDiagramEngineFactory.instance"/>
             </folder>
             <folder name="ComponentDiagram">
-                <file name="org-netbeans-modules-uml-diagrams-engines-DefaultDiagramEngine.instance"/>
+                <file name="org-netbeans-modules-uml-diagrams-engines-DefaultDiagramEngineFactory.instance"/>
             </folder>
             <folder name="DeploymentDiagram">
-                <file name="org-netbeans-modules-uml-diagrams-engines-DefaultDiagramEngine.instance"/>
+                <file name="org-netbeans-modules-uml-diagrams-engines-DefaultDiagramEngineFactory.instance"/>
             </folder>
             <folder name="SequenceDiagram">
-                <file name="org-netbeans-modules-uml-diagrams-engines-SequenceDiagramEngine.instance"/>
+                <file name="org-netbeans-modules-uml-diagrams-engines-SequenceDiagramEngineFactory.instance"/>
             </folder>
             <folder name="StateDiagram">
-                <file name="org-netbeans-modules-uml-diagrams-engines-DefaultDiagramEngine.instance"/>
+                <file name="org-netbeans-modules-uml-diagrams-engines-DefaultDiagramEngineFactory.instance"/>
             </folder>
             <folder name="UseCaseDiagram">
-                <file name="org-netbeans-modules-uml-diagrams-engines-DefaultDiagramEngine.instance"/>
+                <file name="org-netbeans-modules-uml-diagrams-engines-DefaultDiagramEngineFactory.instance"/>
             </folder>
         </folder>
         <folder name="Nodes">
