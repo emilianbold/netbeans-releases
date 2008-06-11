@@ -48,7 +48,6 @@ import java.io.CharConversionException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -63,7 +62,6 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -89,6 +87,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
@@ -142,14 +141,7 @@ public class ProjectsRootNode extends AbstractNode {
         if (context || type == PHYSICAL_VIEW) {
             return new Action[0];
         } else {
-            List<Action> actions = new ArrayList<Action>();
-            for (Object o : Lookups.forPath(ACTIONS_FOLDER).lookupAll(Object.class)) {
-                if (o instanceof Action) {
-                    actions.add((Action) o);
-                } else if (o instanceof JSeparator) {
-                    actions.add(null);
-                }
-            }
+            List<? extends Action> actions = Utilities.actionsForPath(ACTIONS_FOLDER);
             return actions.toArray(new Action[actions.size()]);
         }
     }
