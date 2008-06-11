@@ -82,7 +82,7 @@ public class ServletDebuggingTest extends J2eeTestCase {
                 "testStepOver",
                 "testApplyCodeChanges",
                 "testStopServer"
-                ));
+                ).enableModules(".*").clusters(".*"));
     }
         
     /** Print test name and initialize status bar tracer. */

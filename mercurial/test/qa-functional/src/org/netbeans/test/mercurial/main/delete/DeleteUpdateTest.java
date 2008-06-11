@@ -16,6 +16,8 @@ import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -54,6 +56,7 @@ public class DeleteUpdateTest extends JellyTestCase {
     }
     
     public void testDeleteUpdate() throws Exception {
+        System.out.println("DEBUG: testDeleteUpdate - start");
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
         try {
@@ -88,16 +91,22 @@ public class DeleteUpdateTest extends JellyTestCase {
             }
             assertNotNull("TimeoutExpiredException should have been thrown. Deleted file can't be visible!!!", e);
             
+            System.out.println("DEBUG: testDeleteUpdate - 1");
             //update so the deleted file appears again
             String tabName=TestKit.getProjectAbsolutePath(PROJECT_NAME);
-            node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
+            new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp").select();
             Thread.sleep(1000);
-            node.performPopupActionNoBlock("Mercurial|Update...");
-            NbDialogOperator ndo = new NbDialogOperator("Update - "+PROJECT_NAME);
+            System.out.println("DEBUG: testDeleteUpdate - 2");
+            //node.performPopupActionNoBlock("Mercurial|Update..."); // the popup menu was removed...
+            new ActionNoBlock("Versioning|Mercurial|Update", null).perform();
+            System.out.println("DEBUG: testDeleteUpdate - 3");
+            System.out.println("Update Repository - "+PROJECT_NAME);
+            System.out.println("DEBUG: testDeleteUpdate - 4");
+            NbDialogOperator ndo = new NbDialogOperator("Update Repository - "+PROJECT_NAME);
             JButtonOperator jbo = new JButtonOperator(ndo, "Update");
             jbo.push();
             OutputTabOperator oto = new OutputTabOperator(tabName);
-//            oto.waitText("INFO: End of Update");
+            oto.waitText("INFO: End of Update");
             Thread.sleep(1000);
             
             e=null;
@@ -112,5 +121,6 @@ public class DeleteUpdateTest extends JellyTestCase {
             throw new Exception("Test failed: " + e);
         } finally {
         }    
+        System.out.println("DEBUG: testDeleteUpdate - finish");
     }
 }

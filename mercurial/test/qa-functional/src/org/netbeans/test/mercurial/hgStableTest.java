@@ -37,58 +37,33 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.test.refactoring;
+package org.netbeans.test.mercurial;
 
 import junit.framework.Test;
-import junit.textui.TestRunner;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.test.refactoring.actions.RenamePopupAction;
-import org.netbeans.modules.test.refactoring.operators.FindUsagesResultOperator;
-import org.netbeans.modules.test.refactoring.operators.RenameOperator;
+import org.netbeans.test.mercurial.main.commit.CloneTest;
+import org.netbeans.test.mercurial.main.commit.IgnoreTest;
+import org.netbeans.test.mercurial.main.commit.InitializeTest;
+import org.netbeans.test.mercurial.main.delete.DeleteUpdateTest;
 
 /**
  *
- * @author Jiri Prox Jiri.Prox@SUN.Com
+ * @author tester
  */
-public class RenameTest extends ModifyingRefactoring {
+public class hgStableTest extends JellyTestCase {
 
-    public RenameTest(String name) {
+    public hgStableTest(String name) {
         super(name);
-    }
-
-    public void testRenameClass() {       
-        String fileName = "Rename";        
-        openSourceFile("renameClass", fileName);        
-        EditorOperator editor = new EditorOperator(fileName);
-        editor.setCaretPosition(3, 17);
-        new RenamePopupAction().perform(editor);
-        new EventTool().waitNoEvent(1000);
-        RenameOperator ro = new  RenameOperator();
-        new EventTool().waitNoEvent(1000);
-        ro.getNewName().typeText("Renamed");
-        ro.getPreview().push();        
-        new EventTool().waitNoEvent(1000);                
-        FindUsagesResultOperator result = FindUsagesResultOperator.getPreview();
-        result.test(result.getSource(), 0, 0);
-        
-        JButtonOperator jbo = new JButtonOperator(result.getRefresh());
-        jbo.pushNoBlock();
-        new EventTool().waitNoEvent(1000);                
-        //result.test(result.getJToolbar(), 0, 0);
-        
-
-    }
-    
-    public static void main(String[] args) {
-        TestRunner.run(RenameTest.class);        
     }
     
     public static Test suite() {
-      return NbModuleSuite.create(
-              NbModuleSuite.createConfiguration(RenameTest.class).enableModules(".*").clusters(".*"));
-   }
+        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+                .addTest(InitializeTest.class, "testInitializeAndFirstCommit")
+                .addTest(CloneTest.class, "testCloneProject")
+                .addTest(IgnoreTest.class, "testIgnoreUnignoreFile")
+                .addTest(DeleteUpdateTest.class, "testDeleteUpdate")
+                .enableModules(".*").clusters(".*"));
+    }
 
 }

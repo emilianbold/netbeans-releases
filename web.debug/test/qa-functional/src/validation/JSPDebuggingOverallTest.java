@@ -104,7 +104,7 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
                     "testStartAnotherSession",
                     "testJavaSession",
                     "testStopServer"
-                    ));
+                    ).enableModules(".*").clusters(".*"));
         } else {
             return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(JSPDebuggingOverallTest.class),
                     "testOpenProjects",
@@ -118,7 +118,7 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
                     "testStartAnotherSession",
                     "testJavaSession",
                     "testStopServer"
-                    ));
+                    ).enableModules(".*").clusters(".*"));
         }
     }
     
