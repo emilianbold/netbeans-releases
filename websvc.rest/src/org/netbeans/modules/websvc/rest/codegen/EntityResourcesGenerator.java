@@ -58,6 +58,8 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.rest.codegen.Constants.MimeType;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBean;
@@ -69,7 +71,9 @@ import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.support.Inflector;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
 import org.netbeans.modules.websvc.rest.support.Utils;
+import org.netbeans.modules.websvc.rest.support.WebXmlHelper;
 import org.netbeans.modules.websvc.rest.wizard.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -91,6 +95,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
     private static final String URI_RESOLVER_TEMPLATE = "Templates/WebServices/UriResolver.java";  //NOI18N
     private static final String URI_RESOLVER = "UriResolver";
     private static final String PERSISTENCE_SERVICE_TEMPLATE = "Templates/WebServices/PersistenceService.java";    //NOI18N
+    private static final String PERSISTENCE_SERVICE_NOJTA_TEMPLATE = "Templates/WebServices/PersistenceServiceNoJTA.java";    //NOI18N
     private static final String PERSISTENCE_SERVICE = "PersistenceService";     //NOI18N
     
     private static final String DEFAULT_PU_FIELD = "DEFAULT_PU";        //NOI18N
@@ -150,24 +155,26 @@ public class EntityResourcesGenerator extends AbstractGenerator {
     private FileObject converterFolder;
     private String converterPackageName;
     private EntityResourceBeanModel model;
+    private Project project;
     
     /** Creates a new instance of EntityRESTServicesCodeGenerator */
-    public EntityResourcesGenerator(EntityResourceBeanModel model,
+    public EntityResourcesGenerator(EntityResourceBeanModel model, Project project,
             FileObject targetFolder, String targetPackageName, String persistenceUnitName) {
-        this(model, targetFolder, targetPackageName, null, null, persistenceUnitName);
+        this(model, project, targetFolder, targetPackageName, null, null, persistenceUnitName);
     }
     
     public EntityResourcesGenerator(EntityResourceBeanModel model,
             String resourcePackage, String converterPackage) {
-        this(model, null, null, resourcePackage, converterPackage, null);
+        this(model, null, null, null, resourcePackage, converterPackage, null);
     }
     
     /** Creates a new instance of EntityRESTServicesCodeGenerator */
-    public EntityResourcesGenerator(EntityResourceBeanModel model,
+    public EntityResourcesGenerator(EntityResourceBeanModel model, Project project,
             FileObject targetFolder, String targetPackageName,
             String resourcePackage, String converterPackage,
             String persistenceUnitName) {
         this.model = model;
+        this.project = project;
         this.persistenceUnitName = persistenceUnitName;
         this.targetFolder = targetFolder;
         this.targetPackageName = targetPackageName;
@@ -270,10 +277,20 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         }
     }
     
-    private void generatePersistenceService() {
+    private void generatePersistenceService() throws IOException {
         reportProgress(getPersistenceServiceClassType(), false);
         
-        JavaSource source = JavaSourceHelper.createJavaSource(PERSISTENCE_SERVICE_TEMPLATE,
+        String template = null;
+        boolean useResourceLocalTx = false;
+        
+        if (RestUtils.hasJTASupport(project)) {
+            template= PERSISTENCE_SERVICE_TEMPLATE;
+        } else {
+            template = PERSISTENCE_SERVICE_NOJTA_TEMPLATE;
+            useResourceLocalTx = true;
+        }
+      
+        JavaSource source = JavaSourceHelper.createJavaSource(template,
                 resourceFolder, getResourcePackageName(), PERSISTENCE_SERVICE);
         if (source == null) {
             return;
@@ -297,6 +314,12 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+                         
+        //Make necessary changes to the persistence.xml
+        PersistenceHelper.modifyPersistenceXml(project, useResourceLocalTx);
+        
+        // Add <persistence-unit-ref> to web.xml
+        WebXmlHelper.addPersistenceUnitRef(project, persistenceUnitName);
     }
     
     private void generateUriResolver() {

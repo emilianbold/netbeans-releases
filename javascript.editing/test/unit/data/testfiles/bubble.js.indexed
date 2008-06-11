@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/bubble.js
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   base : _setprops;webui.suntheme4_2.widget.bubble;_setProps;|DOCUMENTED|PRIVATE|FUNCTION|;props:Object;0;5367;;boolean;
   base : close;domNode;close;|DOCUMENTED|FUNCTION|;;0;2d6d;;;
   base : close;webui.suntheme4_2.widget.bubble;close;|DOCUMENTED|FUNCTION|;;0;671;;boolean;
@@ -47,4 +42,4 @@ Indexed:
   fqn : webui.suntheme4_2.widget.bubble.setprops;;webui.suntheme4_2.widget.bubble.setProps;|DOCUMENTED|FUNCTION|;props:Object,notify:boolean;0;4e3f;;boolean;
   fqn : webui.suntheme4_2.widget.bubble.widgetname;;webui.suntheme4_2.widget.bubble.widgetName;|PROPERTY|;;0;;;String;
 
-Not Indexed:
+Not Searchable Keys:

@@ -13,6 +13,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 import javax.persistence.Query;
 import javax.transaction.UserTransaction;
 
@@ -24,9 +25,20 @@ import javax.transaction.UserTransaction;
 public class PersistenceService {
     private static String DEFAULT_PU = "RESTDBApp5PU";
     
-   private static ThreadLocal<PersistenceService> instance = new ThreadLocal<PersistenceService>() {
+
+    private static EntityManagerFactory pmf;
+    
+    static {
+        try {
+            pmf = (EntityManagerFactory) new InitialContext().lookup("java:comp/env/persistence/" + DEFAULT_PU);
+        } catch (NamingException ex) {
+            pmf = Persistence.createEntityManagerFactory(DEFAULT_PU);
+        }  
+    }
+    
+    private static ThreadLocal<PersistenceService> instance = new ThreadLocal<PersistenceService>() {
         protected PersistenceService initialValue() {
-            return new PersistenceService(DEFAULT_PU);
+            return new PersistenceService();
         }
     };
     
@@ -34,9 +46,8 @@ public class PersistenceService {
     private EntityManager em;
     private UserTransaction utx;
     
-    private PersistenceService(String puName) { 
+    private PersistenceService() { 
         try {
-            EntityManagerFactory pmf = (EntityManagerFactory) new InitialContext().lookup("java:comp/env/persistence/" + puName);
             this.em = pmf.createEntityManager();
             this.utx = (UserTransaction) new InitialContext().lookup("java:comp/UserTransaction");
         } catch (NamingException ex) {

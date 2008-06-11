@@ -48,6 +48,11 @@ import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.Indexer;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.SourceFileReader;
+import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.gsf.spi.DefaultParserFile;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import org.netbeans.modules.gsfret.source.GlobalSourcePath;
@@ -62,7 +67,7 @@ import org.openide.util.Exceptions;
  *
  * @author tor
  */
-public abstract class GsfTestCompilationInfo extends CompilationInfo {
+public final class GsfTestCompilationInfo extends CompilationInfo {
     protected final String text;
     protected Document doc;
     protected Source source;
@@ -131,7 +136,47 @@ public abstract class GsfTestCompilationInfo extends CompilationInfo {
     }
     
     @Override
-    public abstract ParserResult getEmbeddedResult(String embeddedMimeType, int offset);
+    public ParserResult getEmbeddedResult(String embeddedMimeType, int offset) {
+        String mimeType = getPreferredMimeType();
+        assert embeddedMimeType.equals(mimeType);
+
+        if (embeddedResults.size() == 0) {
+            GsfTestParseListener listener = new GsfTestParseListener();
+            List<ParserFile> sourceFiles = new ArrayList<ParserFile>(1);
+            ParserFile file = new DefaultParserFile(getFileObject(), null, false);
+            sourceFiles.add(file);
+
+            Parser parser = test.getParser();
+            GsfTestBase.assertNotNull(parser);
+
+            SourceFileReader reader = new SourceFileReader() {
+
+                public CharSequence read(ParserFile file) throws IOException {
+                    return text;
+                }
+
+                public int getCaretOffset(ParserFile file) {
+                    return caretOffset;
+                }
+            };
+            TranslatedSource translatedSource = null;
+
+            Parser.Job request = new Parser.Job(sourceFiles, listener, reader, translatedSource);
+            parser.parseFiles(request);
+
+            ParserResult parserResult = listener.getParserResult();
+            if (parserResult != null) {
+                for (Error error : listener.getErrors()) {
+                    parserResult.addError(error);
+                }
+                embeddedResults.put(mimeType, parserResult);
+                parserResult.setInfo(this);
+            }
+            test.validateParserResult(parserResult);
+        }
+
+        return embeddedResults.get(embeddedMimeType);
+    }
 
     @Override
     public List<Error> getErrors() {
@@ -222,7 +267,8 @@ public abstract class GsfTestCompilationInfo extends CompilationInfo {
     }
 
     public static class GsfTestParseListener implements ParseListener {
-        final List<Error> errors = new ArrayList<Error>();
+        private final List<Error> errors = new ArrayList<Error>();
+        private ParserResult result;
 
         public void started(ParseEvent e) {
             errors.clear();
@@ -237,10 +283,15 @@ public abstract class GsfTestCompilationInfo extends CompilationInfo {
         }
 
         public void finished(ParseEvent e) {
+            result = e.getResult();
         }
         
         public List<Error> getErrors() {
             return errors;
+        }
+        
+        public ParserResult getParserResult() {
+            return result;
         }
     }
     

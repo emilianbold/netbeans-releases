@@ -1,4 +1,6 @@
-Results for document.b with queryType=COMPLETION and nameKind=PREFIX
+Code completion result for source line:
+document.b|
+(QueryType=COMPLETION, NameKind=PREFIX)
 PROPERTY   baseURI : String                           Node
 PROPERTY   bgColor                                    Document
 PROPERTY   body                                       Document
