@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -45,6 +45,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -164,17 +165,20 @@ final class NbEvents extends Events {
             setStatusText("");
         } else if (message == FAILED_INSTALL_NEW_UNEXPECTED) {
             Module m = (Module)args[0];
-            // ignore args[1]: InvalidException
+            List<Module> modules = new ArrayList<Module> ();
+            modules.add (m);
+            modules.addAll (NbCollections.checkedSetByCopy((Set) args[1], Module.class, true));
+            // ignore args[2]: InvalidException
             {
                 StringBuilder buf = new StringBuilder(NbBundle.getMessage(NbEvents.class, "MSG_failed_install_new_unexpected", m.getDisplayName()));
-                NbProblemDisplayer.problemMessagesForModules(buf, Collections.singleton(m), false);
+                NbProblemDisplayer.problemMessagesForModules(buf, modules, false);
                 buf.append('\n');
                 logger.log(Level.INFO, buf.toString());
             }
 
             {
                 StringBuilder buf = new StringBuilder(NbBundle.getMessage(NbEvents.class, "MSG_failed_install_new_unexpected", m.getDisplayName()));
-                NbProblemDisplayer.problemMessagesForModules(buf, Collections.singleton(m), true);
+                NbProblemDisplayer.problemMessagesForModules(buf, modules, true);
                 notify(buf.toString(), true);
             }
             setStatusText("");
