@@ -45,6 +45,7 @@ import java.awt.event.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
@@ -81,6 +82,7 @@ import org.openide.awt.Mnemonics;
  * @author Martin Matula, Jan Becicka
  */
 public class ParametersPanel extends JPanel implements ProgressListener, ChangeListener, InvalidationListener {
+    private static final Logger LOGGER = Logger.getLogger(ParametersPanel.class.getName());
     // refactoring elements that will be returned as a result of showDialog method
     private RefactoringSession result;
     
@@ -297,13 +299,16 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         }
     }//GEN-LAST:event_cancelActionPerformed
     private void refactor(final boolean previewAll) {
+        LOGGER.finest("refactor - currentState="+currentState);
         if (currentState == PRE_CHECK) {
+            LOGGER.finest("refactor - PRE_CHECK");
             //next is "Next>"
             placeCustomPanel();
             return;
         }
         
         if (currentState == POST_CHECK && previewAll && currentProblemAction!=null) {
+            LOGGER.finest("refactor - POST_CHECK - problems");
             Cancellable doCloseParent = new Cancellable() {
                 public boolean cancel() {
                     cancelActionPerformed(new ActionEvent(this,0,null));
@@ -324,6 +329,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         
         if (currentState != PRE_CHECK && currentState != POST_CHECK) {
             if (rui instanceof RefactoringUIBypass && ((RefactoringUIBypass) rui).isRefactoringBypassRequired()) {
+                LOGGER.finest("refactor - bypass");
                 try{
                     ((RefactoringUIBypass)rui).doRefactoringBypass();
                 } catch (final IOException ioe) {
@@ -348,7 +354,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         }
         
         //refactoring is done asynchronously
-        
+        LOGGER.finest("refactor - asynchronously");
         rp.post(new Runnable() {
             public void run() {
                 //inputState != currentState means, that panels changed and dialog will not be closed
