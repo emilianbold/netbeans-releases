@@ -58,7 +58,7 @@ made subject to such option by the copyright holder.
         <echo>Running modules: ${modules.list}</echo>
         <property name="extra.test.libs.dir" location="../extralibs"/>
         <property name="test.results.dir" location="results"/>
-        <subant buildpath="${modules.list}" genericantfile="../one-module.xml" >
+        <subant buildpath="${modules.list}" genericantfile="../one-module.xml" failonerror="false">
             <property name="test.disable.fails" value="true"/>
             <property name="test.timeout" value="${test.dist.timeout}"/>
         </subant>    
