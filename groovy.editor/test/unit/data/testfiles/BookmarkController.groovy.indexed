@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/BookmarkController.groovy
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   class : BookmarkController
   class-ig : bookmarkcontroller
   field : create
@@ -27,4 +22,4 @@ Indexed:
   method : getSuggestions(url,bookmark);02
   method : printParams(params,unusedParam);02
 
-Not Indexed:
+Not Searchable Keys:
