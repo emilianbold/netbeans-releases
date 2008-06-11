@@ -111,12 +111,12 @@ public class CustomizationTest extends FromWSDLTSuite {
     }
     
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(CustomizationTest.class).addTest("testCreateService", "testChangePortType", "testChangePortTypeOperation", "testChangePortTypeFault").enableModules(".*").clusters(".*"));
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(CustomizationTest.class), "testCreateService", "testChangePortType", "testChangePortTypeOperation", "testChangePortTypeFault").enableModules(".*").clusters(".*"));
     }
 
     /** Creates suite from particular test cases. You can define order of testcases here. */
 //    public static TestSuite suite() {
-//        TestSuite suite = new NbTestSuite();
+//        TestSuite suite = new NbTestSuite(); 
 //        suite.addTest(new CustomizationTest("testCreateService"));
 //        suite.addTest(new CustomizationTest("testChangePortType"));
 //        suite.addTest(new CustomizationTest("testChangePortTypeOperation"));

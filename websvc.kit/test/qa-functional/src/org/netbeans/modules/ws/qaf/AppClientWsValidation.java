@@ -40,12 +40,9 @@ package org.netbeans.modules.ws.qaf;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.ws.qaf.WebServicesTestBase.ProjectType;
 
 /**
@@ -74,7 +71,7 @@ public class AppClientWsValidation extends EjbWsValidation {
     }
     
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(AppClientWsValidation.class).addTest(
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(AppClientWsValidation.class),
                 "testCreateWsClient",
                 "testCallWsOperationInJavaMainClass",
                 "testCallWsOperationInJavaClass",

@@ -80,7 +80,7 @@ public class JavaSEWsValidation extends WsValidation {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(JavaSEWsValidation.class).addTest(
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(JavaSEWsValidation.class),
                 "testCreateWsClient",
                 "testCallWsOperationInJavaMainClass",
                 "testFixClientLibraries",

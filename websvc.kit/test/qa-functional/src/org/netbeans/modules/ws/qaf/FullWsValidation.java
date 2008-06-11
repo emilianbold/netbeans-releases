@@ -54,6 +54,7 @@ public class FullWsValidation extends NbTestCase {
     }
     
     public static Test suite() {
+        
         return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                 .addTest(WsValidation.class,
                     "testCreateNewWs", 

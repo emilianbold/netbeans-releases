@@ -112,7 +112,7 @@ public class WebServiceDesignerTest extends WebServicesTestBase {
     }
     
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(WebServiceDesignerTest.class).addTest("testAddOperation", "testRemoveOperation").enableModules(".*").clusters(".*"));
+        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(WebServiceDesignerTest.class), "testAddOperation", "testRemoveOperation").enableModules(".*").clusters(".*"));
     }
     
     /** Creates suite from particular test cases. You can define order of testcases here. */
