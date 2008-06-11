@@ -59,14 +59,16 @@ import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor;
+import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor.Destination;
+import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor.Source;
 import org.netbeans.mobility.antext.preprocessor.PreprocessorException;
 import org.netbeans.modules.mobility.project.J2MEProjectUtils;
 import org.netbeans.modules.mobility.project.TextSwitcher;
-import org.netbeans.modules.mobility.project.preprocessor.PPDocumentDestination;
-import org.netbeans.modules.mobility.project.preprocessor.PPDocumentSource;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
+import org.netbeans.modules.mobility.project.bridge.J2MEProjectUtilitiesProvider;
 import org.openide.ErrorManager;
 import org.openide.text.NbDocument;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -113,12 +115,15 @@ public class RecommentAction extends PreprocessorEditorContextAction {
         if (p != null) {
             final ProjectConfigurationsHelper pch = p.getLookup().lookup(ProjectConfigurationsHelper.class);
             if (pch != null && pch.isPreprocessorOn()) try {
-                final PPDocumentSource ppSource = new PPDocumentSource(doc);
-                final PPDocumentDestination ppDestination = new PPDocumentDestination((BaseDocument)doc);
+                J2MEProjectUtilitiesProvider utilProvider = Lookup.getDefault().lookup(J2MEProjectUtilitiesProvider.class);
+                if (utilProvider == null) return; //we do not run in full NetBeans, but this should not happen here (no editor)
+
+                final Source ppSource = utilProvider.createPPDocumentSource(doc);
+                final Destination ppDestination = utilProvider.createPPDocumentDestination(doc);
                 final ProjectConfiguration conf = pch.getActiveConfiguration();
                 final HashMap<String,String> identifiers=new HashMap<String,String>(pch.getAbilitiesFor(conf));
                 identifiers.put(conf.getDisplayName(),null);
-                final CommentingPreProcessor cpp =new CommentingPreProcessor(ppSource, ppDestination, identifiers) ;
+                final CommentingPreProcessor cpp =new CommentingPreProcessor(ppSource, ppDestination, identifiers);
                 //note: nbr transaction is already locked here
                 try {
                     doc.putProperty(TextSwitcher.SKIP_DUCUMENT_CHANGES, TextSwitcher.SKIP_DUCUMENT_CHANGES);

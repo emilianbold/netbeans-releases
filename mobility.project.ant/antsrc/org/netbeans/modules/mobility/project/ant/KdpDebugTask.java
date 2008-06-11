@@ -44,10 +44,7 @@
  */
 package org.netbeans.modules.mobility.project.ant;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -62,8 +59,6 @@ import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.openide.ErrorManager;
@@ -156,6 +151,7 @@ public class KdpDebugTask extends Task {
         this.name = name;
     }
     
+    @Override
     public void execute() throws BuildException {
         
         Project project = getProject();
@@ -305,6 +301,7 @@ public class KdpDebugTask extends Task {
             debuggers.add(debugger);
         }
         
+        @Override
         public void engineRemoved(DebuggerEngine engine) {
             JPDADebugger debugger = (JPDADebugger) engine.lookupFirst
                     (null, JPDADebugger.class);
