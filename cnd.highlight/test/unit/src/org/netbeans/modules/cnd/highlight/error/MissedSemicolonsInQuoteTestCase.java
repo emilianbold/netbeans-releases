@@ -40,20 +40,25 @@
 package org.netbeans.modules.cnd.highlight.error;
 
 /**
- * Error highlighting test case for missing semicolons
+ * Deletes all semicolons in Quote project,
+ * checks error mesages
  * @author Vladimir Kvashin
  */
-public class MissedSemicolonsTestCase extends ErrorHighlightingBaseTestCase {
+public class MissedSemicolonsInQuoteTestCase extends ErrorHighlightingBaseTestCase {
 
     static {
-        System.setProperty("cnd.parser.error.transparent", "false");
+        System.setProperty("cnd.parser.error.transparent", "true");
     }
-    
-    public MissedSemicolonsTestCase(String testName) {
+
+    public MissedSemicolonsInQuoteTestCase(String testName) {
         super(testName);
     }
     
-    public void testMissedSemicolonAfterClass() throws Exception {
-        performStaticTest("missed_semicolon_after_class.cc"); //NOI18N
+    public void testSimple() throws Exception {
+        //performStaticTest("missed_semicolon_simple.cc"); //NOI18N
+        //performStaticTest("missed_semicolon_simple.cc");
+        performDynamicTest("missed_semicolon_simple.cc", new MissedSemicolonsErrorMaker()); //NOI18N
     }
+    
+    
 }
