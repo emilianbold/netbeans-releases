@@ -102,6 +102,9 @@ public class CloneTest extends JellyTestCase {
             ndo = new NbDialogOperator("Clone Repository");
             bo = new JButtonOperator(ndo, "Clone");
             bo.push();
+            //* This line bellow was added in order to cover issue 136782
+            new ProjectsTabOperator().getProjectRootNode(TestKit.PROJECT_NAME + "_clone0").select();
+            //*/
             String outputTabName=s;
             System.out.println(outputTabName);
             oto = new OutputTabOperator(outputTabName);
