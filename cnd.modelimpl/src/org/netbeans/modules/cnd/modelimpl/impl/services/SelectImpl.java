@@ -44,10 +44,12 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -77,6 +79,22 @@ public class SelectImpl extends CsmSelect {
             return ((NamespaceImpl)namespace).getDeclarations(filter);
         }
         return namespace.getDeclarations().iterator();
+    }
+
+    @Override
+    public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmNamespaceDefinition namespace, CsmFilter filter) {
+        if (namespace instanceof NamespaceDefinitionImpl){
+            return ((NamespaceDefinitionImpl)namespace).getDeclarations(filter);
+        }
+        return namespace.getDeclarations().iterator();
+    }
+
+    @Override
+    public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFile file, CsmFilter filter) {
+        if (file instanceof FileImpl){
+            return ((FileImpl)file).getDeclarations(filter);
+        }
+        return file.getDeclarations().iterator();
     }
 
     private static interface Filter extends CsmFilter, UIDFilter {
@@ -131,4 +149,5 @@ public class SelectImpl extends CsmSelect {
             };
         }
     }
+
 }

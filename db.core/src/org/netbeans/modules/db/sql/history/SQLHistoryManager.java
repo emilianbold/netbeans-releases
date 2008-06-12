@@ -41,20 +41,11 @@ package org.netbeans.modules.db.sql.history;
 
 import java.io.IOException;
 import org.netbeans.modules.db.sql.execute.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.modules.db.sql.loader.SQLDataObject;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 
@@ -63,17 +54,13 @@ import org.openide.util.Exceptions;
  * @author John Baker
  */
 public class SQLHistoryManager  {
-    
-    // XXX  move to the history package
-    
+    public static final String SQL_HISTORY_FOLDER = "Databases/SQLHISTORY"; // NOI18N
     private static SQLHistoryManager _instance = null;    
     private static final Logger LOGGER = Logger.getLogger(SQLHistory.class.getName());
     private List<SQLHistory> sqlList = new ArrayList<SQLHistory>();
     
     private SQLHistoryManager() {
-        generateSerializedFilename();
-        SQLEditorRegistryListener editorRegistry = new SQLEditorRegistryListener();
-        editorRegistry.initialize();
+        generatePersistedFilename();
     }
     
     public static SQLHistoryManager getInstance() {
@@ -87,7 +74,7 @@ public class SQLHistoryManager  {
         sqlList.add(sqlStored);
     }
 
-    private void generateSerializedFilename()  {
+    private void generatePersistedFilename()  {
         FileObject databaseDir = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("Databases");
         try {
             if (databaseDir.getFileObject("sql_history", "xml") == null) {  // NOI18N
@@ -99,8 +86,24 @@ public class SQLHistoryManager  {
     }
 
     public void save() {
-        LOGGER.log(Level.INFO, "SQL Saved (test message)");
+        // create a folder in the userdir for sql_history.xml file that maintains a list of executed SQL
+        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject tmpFo = root.getFileObject(SQL_HISTORY_FOLDER);
 
+        if (tmpFo == null) {
+            try {
+                tmpFo = FileUtil.createFolder(root, SQL_HISTORY_FOLDER);
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
+        } 
+        // Start managing the persistence of SQL statements that have been executed
+        try {
+            SQLHistoryPersistenceManager.getInstance().create(tmpFo, sqlList);
+            sqlList.clear();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     public List<SQLHistory> getSQLHistory() {
@@ -138,76 +141,4 @@ public class SQLHistoryManager  {
         }
         return urls;
     }
-    
-     /**
-     * Editor Registry listener to detect when an SQL editor closes.  SQL History is then serialized
-     */
-    private final class SQLEditorRegistryListener implements PropertyChangeListener, DocumentListener {
-        private static final String SQL_MIME_TYPE = "text/x-sql"; // NOI18N
-        private Document currentDocument;
-        private String mimeType;
-        
-        public SQLEditorRegistryListener() {
-        }
-
-        public synchronized void initialize() {
-            EditorRegistry.addPropertyChangeListener(this);
-            JTextComponent newComponent = EditorRegistry.lastFocusedComponent();
-            currentDocument = newComponent != null ? newComponent.getDocument() : null;
-            if (currentDocument != null) {
-                SQLDataObject sqldo = (SQLDataObject)currentDocument.getProperty("stream");
-                FileObject fo = sqldo.getLookup().lookup(FileObject.class);
-                mimeType = fo.getMIMEType();
-                currentDocument.addDocumentListener(this);
-            }
-        }
-
-        public synchronized void propertyChange(PropertyChangeEvent evt) {
-            assert SwingUtilities.isEventDispatchThread(); 
-            JTextComponent newComponent = EditorRegistry.lastFocusedComponent();
-            Document newDocument = newComponent != null ? newComponent.getDocument() : null;
-            if (currentDocument == newDocument) {
-                return;
-            }
-            if (currentDocument != null) {
-                currentDocument.removeDocumentListener(this);
-            }
-            currentDocument = newDocument;
-            if (currentDocument != null) {
-                currentDocument.addDocumentListener(this);
-            }
-            
-            // XXX create a unit test 
-            
-            // Serialize SQL when an SQL Editor closes
-            if (evt.getPropertyName().equals(EditorRegistry.LAST_FOCUSED_REMOVED_PROPERTY)) {                
-                newComponent = EditorRegistry.lastFocusedComponent();
-                newDocument = newComponent != null ? newComponent.getDocument() : null;
-                
-                // Save the MIME type of the new document 
-                if (newDocument != null && newDocument.getProperty("stream").getClass().equals(SQLDataObject.class)) {
-                    SQLDataObject sqldo = (SQLDataObject) newDocument.getProperty("stream");
-                    FileObject fo = sqldo.getLookup().lookup(FileObject.class);
-                    mimeType = fo.getMIMEType();
-                    LOGGER.log(Level.INFO, "SQL HISTORY: NEW DOCUMENT = " + newDocument + ", MIME TYPE = " + mimeType);
-                }
-                if (mimeType.equals(SQL_MIME_TYPE)) {
-                    LOGGER.log(Level.INFO, "SQL HISTORY: SAVED");
-                    save();
-                }
-            }
-        }
-        
-        public void insertUpdate(DocumentEvent evt) {
-            // Unsupported
-        }
-
-        public void removeUpdate(DocumentEvent evt) {
-            // Unsupported
-        }
-
-        public void changedUpdate(DocumentEvent evt) {
-            // Unsupported
-        }
-    }  
 }

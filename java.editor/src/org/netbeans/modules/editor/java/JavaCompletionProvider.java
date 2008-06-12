@@ -3629,8 +3629,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (!mi.getTypeArguments().isEmpty()) {
                                 targs = new TypeMirror[mi.getTypeArguments().size()];
                                 j = 0;
-                                for (Tree t : mi.getTypeArguments())
-                                    targs[j++] = controller.getTrees().getTypeMirror(new TreePath(path, t));
+                                for (Tree t : mi.getTypeArguments()) {
+                                    TypeMirror ta = controller.getTrees().getTypeMirror(new TreePath(path, t));
+                                    if (ta == null)
+                                        return null;
+                                    targs[j++] = ta;
+                                }
                             }
                             Tree mid = mi.getMethodSelect();
                             path = new TreePath(path, mid);
@@ -3699,8 +3703,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (!nc.getTypeArguments().isEmpty()) {
                                 targs = new TypeMirror[nc.getTypeArguments().size()];
                                 j = 0;
-                                for (Tree t : nc.getTypeArguments())
-                                    targs[j++] = controller.getTrees().getTypeMirror(new TreePath(path, t));
+                                for (Tree t : nc.getTypeArguments()) {
+                                    TypeMirror ta = controller.getTrees().getTypeMirror(new TreePath(path, t));
+                                    if (ta == null)
+                                        return null;
+                                    targs[j++] = ta;
+                                }
                             }
                             Tree mid = nc.getIdentifier();
                             path = new TreePath(path, mid);

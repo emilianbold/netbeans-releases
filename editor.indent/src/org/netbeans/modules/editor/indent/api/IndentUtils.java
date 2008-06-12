@@ -51,6 +51,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.indent.CodeStylePreferences;
 import org.netbeans.modules.editor.indent.IndentImpl;
 
 /**
@@ -87,22 +88,19 @@ public final class IndentUtils {
      * @return &gt;=0 size of indentation level in spaces.
      */
     public static int indentLevelSize(Document doc) {
-        int indentLevel;
-        if (doc instanceof BaseDocument) {
-            indentLevel = ((BaseDocument)doc).getShiftWidth();
-        } else {
-            Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(doc)).lookup(Preferences.class);
-            indentLevel = prefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, -1);
-            if (indentLevel == -1) {
-                boolean expandTabs = prefs.getBoolean(SimpleValueNames.EXPAND_TABS, true);
-                if (expandTabs) {
-                    indentLevel = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4);
-                } else {
-                    indentLevel = prefs.getInt(SimpleValueNames.TAB_SIZE, 8);
-                }
+        Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+        int indentLevel = prefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, -1);
+        
+        if (indentLevel <= 0) {
+            boolean expandTabs = prefs.getBoolean(SimpleValueNames.EXPAND_TABS, true);
+            if (expandTabs) {
+                indentLevel = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4);
+            } else {
+                indentLevel = prefs.getInt(SimpleValueNames.TAB_SIZE, 8);
             }
         }
-        assert (indentLevel >= 0) : "Retrieved indentLevel=" + indentLevel + " < 0"; // NOI18N
+
+        assert indentLevel > 0 : "Invalid indentLevelSize " + indentLevel + " for " + doc; //NOI18N
         return indentLevel;
     }
 
@@ -112,14 +110,8 @@ public final class IndentUtils {
      * @return &gt;=0 size corresponding to '\t' character in spaces.
      */
     public static int tabSize(Document doc) {
-        int tabSize;
-        if (doc instanceof BaseDocument) {
-            tabSize = ((BaseDocument)doc).getTabSize();
-        } else {
-            Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(doc)).lookup(Preferences.class);
-            tabSize = prefs.getInt(SimpleValueNames.TAB_SIZE, 8);
-        }
-        assert (tabSize >= 0) : "Retrieved tabSize=" + tabSize + " < 0"; // NOI18N
+        int tabSize = CodeStylePreferences.get(doc).getPreferences().getInt(SimpleValueNames.TAB_SIZE, 8);
+        assert tabSize > 0 : "Invalid tabSize " + tabSize + " for " + doc; //NOI18N
         return tabSize;
     }
 
@@ -130,15 +122,7 @@ public final class IndentUtils {
      * @return true if the tabs should be expanded or false if not.
      */
     public static boolean isExpandTabs(Document doc) {
-        if (doc instanceof BaseDocument) {
-            Formatter formatter = ((BaseDocument)doc).getFormatter();
-            if (formatter != null) {
-                return formatter.expandTabs();
-            }
-        }
-        
-        Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(doc)).lookup(Preferences.class);
-        return prefs.getBoolean(SimpleValueNames.EXPAND_TABS, true);
+        return CodeStylePreferences.get(doc).getPreferences().getBoolean(SimpleValueNames.EXPAND_TABS, true);
     }
     
     /**

@@ -67,6 +67,12 @@ import org.openide.util.NbBundle;
  * as possible to make merging Retouche fixes back as simple as
  * possible. 
  *
+ * @todo The Java implementation changed to jumping to the
+ *   END of identifiers in this integration:
+ *    http://hg.netbeans.org/main/rev/8f417bdb256d
+ *  to handle bug 136665 - should we do the same to be
+ *  consistent?
+ *
  * @author Vladimir Voskresensky
  */
 public class GoToMarkOccurrencesAction extends BaseAction {

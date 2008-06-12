@@ -73,7 +73,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.PasteType;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 
 public class PackageViewTest extends NbTestCase {
     
@@ -87,14 +87,9 @@ public class PackageViewTest extends NbTestCase {
     
     private FileObject root;
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
-        // XXX *sometimes* (maybe 2/3 of the time) fails when you do this; no idea why:
-        //TestUtil.setLookup(new Object[] {new VQImpl()});
-        // Get "Wrong # or names of nodes expected:<[c.d, c.f, p.me.toolsx]> but was:<[c.d, c.f, p.me.tools, p.me.toolsx]>"
-        // from testRename after call to n.setName("p.me.toolsx")
-        // This however seems to work all the time:
-        TestUtil.setLookup( Lookups.fixed( new Object[] { new VQImpl(), PackageViewTest.class.getClassLoader() } ) ); 
+        MockLookup.setInstances(new VQImpl());
         root = TestUtil.makeScratchDir(this);
     }
     
@@ -1014,7 +1009,7 @@ public class PackageViewTest extends NbTestCase {
                 sense = !sense;
                 pcs.firePropertyChange(PROP_CONTAINERSHIP, null, null);
             }
-        };
+        }
         FileUtil.createData(r, "a/good/man/is/hard/to/Find.java");
         FileUtil.createData(r, "museum/of/contemporary/Art.java");
         FileUtil.createData(r, "museum/of/bad/Art.java");

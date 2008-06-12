@@ -300,6 +300,19 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
 
+            <folder name="x-java">
+                <folder name="text">
+                    <folder name="x-java-string">
+                        <folder name="CodeTemplates">
+                            <folder name="Defaults">
+                                <file name="codetemplates.shadow">
+                                    <attr name="originalFile" stringvalue="Editors/text/x-java"/>
+                                </file>
+                            </folder>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
         </folder>
 
         <folder name="AnnotationTypes">

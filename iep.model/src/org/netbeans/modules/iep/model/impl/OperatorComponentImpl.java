@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.netbeans.modules.iep.model.Component;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.IEPVisitor;
 import org.netbeans.modules.iep.model.ModelHelper;
@@ -16,11 +15,6 @@ import org.w3c.dom.Element;
 
 public class OperatorComponentImpl extends ComponentImpl implements OperatorComponent {
 
-    private OperatorType mAllowedInputType;
-    
-    private OperatorType mAllowedOutputType;
-    
-    
     public OperatorComponentImpl(IEPModel model,  Element e) {
             super(model, e);
         }
@@ -153,16 +147,15 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
     }
 
     public OperatorType getInputType() {
-        if(mAllowedInputType == null) {
-            Property p = getProperty(PROP_INPUTTYPE);
-            if(p != null) {
-                String value = p.getValue();
-                if(value != null) {
-                    mAllowedInputType = OperatorType.getType(value);
-                }
-            }
+        String value = getComponentType().getPropertyType(PROP_INPUTTYPE).getDefaultValueAsString();
+        if(value != null) {
+            return OperatorType.getType(value);
         }
-        return mAllowedInputType;
+        return OperatorType.OPERATOR_NONE;
+    }
+    
+    public boolean isRelationInputStatic() {
+        return (Boolean)getComponentType().getPropertyType(PROP_IS_RELATION_INPUT_STATIC).getDefaultValue();
     }
 
     public SchemaComponent getOutputSchemaId() {
@@ -197,17 +190,11 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
 
     
     public OperatorType getOutputType() {
-        if(mAllowedOutputType == null) {
-            Property p = getProperty(PROP_OUTPUTTYPE);
-            if(p != null) {
-                String value = p.getValue();
-                if(value != null) {
-                    mAllowedOutputType = OperatorType.getType(value);
-                }
-            }
+        String value = getComponentType().getPropertyType(PROP_OUTPUTTYPE).getDefaultValueAsString();
+        if(value != null) {
+            return OperatorType.getType(value);
         }
-        return mAllowedOutputType;
-        
+        return OperatorType.OPERATOR_NONE;
     }
 
     public List<OperatorComponent> getStaticInputTableList() {

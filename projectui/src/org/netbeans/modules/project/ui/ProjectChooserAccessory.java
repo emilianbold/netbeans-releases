@@ -61,13 +61,11 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileSystemView;
 import javax.swing.filechooser.FileView;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -505,12 +503,13 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         }
 
         FileUtil.preventFileChooserSymlinkTraversal(chooser, currDir);
-        chooser.setFileView( new ProjectFileView( chooser.getFileSystemView() ) );
+        new ProjectFileView(chooser);
 
         return chooser;
 
     }
 
+    @Override
     public void removeNotify() { // #72006
         super.removeNotify();
         if (modelUpdater != null) { // #101286 - might be already null
@@ -525,6 +524,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
     private static class ProjectFileChooser extends JFileChooser {
 
+        @Override
         public void approveSelection() {
             File dir = FileUtil.normalizeFile(getSelectedFile());
 
@@ -563,16 +563,19 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
     }
 
-    private static class ProjectFileView extends FileView {
+    private static class ProjectFileView extends FileView implements Runnable {
 
-        private static final Icon PROJECT = new ImageIcon(Utilities.loadImage("org/netbeans/modules/project/ui/resources/project.png", true)); // NOI18N
+        private final JFileChooser chooser;
+        private final Map<File,Icon> knownProjectIcons = new HashMap<File,Icon>();
+        private final RequestProcessor.Task task = RequestProcessor.getDefault().create(this);
+        private File lookingForIcon;
 
-        private FileSystemView fsv;
-
-        public ProjectFileView( FileSystemView fsv ) {
-            this.fsv = fsv;
+        public ProjectFileView(JFileChooser chooser) {
+            this.chooser = chooser;
+            chooser.setFileView(this);
         }
 
+        @Override
         public Icon getIcon(File _f) {
             if (!_f.exists()) {
                 // Can happen when a file was deleted on disk while project
@@ -582,13 +585,37 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             }
             File f = FileUtil.normalizeFile(_f);
             if ( isProjectDir( f ) ) {
-                return PROJECT;
+                synchronized (this) {
+                    Icon icon = knownProjectIcons.get(f);
+                    if (icon != null) {
+                        return icon;
+                    } else if (lookingForIcon == null) {
+                        lookingForIcon = f;
+                        task.schedule(0);
+                        // Only calculate one at a time.
+                        // When the view refreshes, the next unknown icon
+                        // should trigger the task to be reloaded.
+                    }
+                }
             }
-            else {
-                return fsv.getSystemIcon(f);
-            }
+            return chooser.getFileSystemView().getSystemIcon(f);
         }
 
+        public void run() {
+            Project p = OpenProjectList.fileToProject(lookingForIcon);
+            Icon icon;
+            if (p != null) {
+                icon = ProjectUtils.getInformation(p).getIcon();
+            } else {
+                // Could also badge with an error icon:
+                icon = chooser.getFileSystemView().getSystemIcon(lookingForIcon);
+            }
+            synchronized (this) {
+                knownProjectIcons.put(lookingForIcon, icon);
+                lookingForIcon = null;
+            }
+            chooser.repaint();
+        }
 
     }
 

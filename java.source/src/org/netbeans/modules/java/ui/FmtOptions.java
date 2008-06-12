@@ -48,7 +48,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -61,13 +60,16 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.java.source.CodeStyle;
+import static org.netbeans.api.java.source.CodeStyle.*;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.Exceptions;
 
-import static org.netbeans.api.java.source.CodeStyle.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -79,9 +81,9 @@ import org.openide.util.NbPreferences;
  */
 public class FmtOptions {
 
-    public static final String expandTabToSpaces = "expandTabToSpaces"; //NOI18N
-    public static final String tabSize = "tabSize"; //NOI18N
-    public static final String indentSize = "indentSize"; //NOI18N
+    public static final String expandTabToSpaces = SimpleValueNames.EXPAND_TABS;
+    public static final String tabSize = SimpleValueNames.TAB_SIZE;
+    public static final String indentSize = SimpleValueNames.INDENT_SHIFT_WIDTH;
     public static final String continuationIndentSize = "continuationIndentSize"; //NOI18N
     public static final String labelIndent = "labelIndent"; //NOI18N
     public static final String absoluteLabelIndent = "absoluteLabelIndent"; //NOI18N
@@ -223,10 +225,12 @@ public class FmtOptions {
     public static final String importsOrder = "importsOrder"; //NOI18N
     
     public static CodeStyleProducer codeStyleProducer;
-        
-    public static Preferences lastValues;
     
-    private static final String DEFAULT_PROFILE = "default"; // NOI18N
+    static final String CODE_STYLE_PROFILE = "CodeStyle"; // NOI18N
+    static final String DEFAULT_PROFILE = "default"; // NOI18N
+    static final String PROJECT_PROFILE = "project"; // NOI18N
+    static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
+    static final String usedProfile = "usedProfile"; // NOI18N
     
     private static final String JAVA = "text/x-java"; //NOI18N
     
@@ -242,10 +246,6 @@ public class FmtOptions {
         
     public static String getDefaultAsString(String key) {
         return defaults.get(key);
-    }
-    
-    public static Preferences getPreferences(String profileId) {
-        return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").node(profileId);
     }
     
     public static boolean getGlobalExpandTabToSpaces() {
@@ -268,24 +268,6 @@ public class FmtOptions {
         return prefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, getDefaultAsInt(rightMargin));
     }
     
-    public static void flush() {
-        try {
-            getPreferences( getCurrentProfileId()).flush();
-        }
-        catch(BackingStoreException e) {
-            Exceptions.printStackTrace(e);
-        }
-    }
-    
-    public static String getCurrentProfileId() {
-        return DEFAULT_PROFILE;
-    }
-    
-    public static CodeStyle createCodeStyle(Preferences p) {
-        CodeStyle.getDefault(null);
-        return codeStyleProducer.create(p);
-    }
-    
     public static boolean isInteger(String optionID) {
         String value = defaults.get(optionID);
         
@@ -297,11 +279,24 @@ public class FmtOptions {
         }
     }
     
-    public static String getLastValue(String optionID) {
-        Preferences p = lastValues == null ? getPreferences(getCurrentProfileId()) : lastValues;
-        return p.get(optionID, getDefaultAsString(optionID));
+    static Preferences getProjectPreferences(Project project) {
+        return ProjectUtils.getPreferences(project, IndentUtils.class, true).node(CODE_STYLE_PROFILE).node(PROJECT_PROFILE).node(JAVA_MIME_TYPE); //NOI18N
     }
- 
+    
+    static Preferences getGlobalPreferences() {
+        return NbPreferences.forModule(CodeStyle.class).node(CODE_STYLE_PROFILE).node(DEFAULT_PROFILE); //NOI18N
+    }
+
+    public static Preferences getPreferences(Project project) {
+        if (project != null) {
+            Preferences root = ProjectUtils.getPreferences(project, IndentUtils.class, true).node(CODE_STYLE_PROFILE);
+            String profile = root.get(usedProfile, DEFAULT_PROFILE);
+            if (PROJECT_PROFILE.equals(profile))
+                return root.node(PROJECT_PROFILE).node(JAVA_MIME_TYPE); //NOI18N
+        }
+        return NbPreferences.forModule(CodeStyle.class).node(CODE_STYLE_PROFILE).node(DEFAULT_PROFILE);
+    }
+
     // Private section ---------------------------------------------------------
     
     private static final String TRUE = "true";      // NOI18N
@@ -509,16 +504,18 @@ public class FmtOptions {
                 new ComboItem( WrapStyle.WRAP_NEVER.name(), "LBL_wrp_WRAP_NEVER" ) // NOI18N
             };
         
-        
         private String previewText = NbBundle.getMessage(FmtOptions.class, "SAMPLE_Default");
         private String forcedOptions[][];
         
         private boolean changed = false;
         private JPanel panel;
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        
+        protected Preferences preferences;
     
-        public CategorySupport(String nameKey, JPanel panel, String previewText, String[]... forcedOptions) {
+        public CategorySupport(Preferences preferences, String nameKey, JPanel panel, String previewText, String[]... forcedOptions) {
             super(nameKey);
+            this.preferences = preferences;
             this.panel = panel;            
             this.previewText = previewText == null ? this.previewText : previewText;
             this.forcedOptions = forcedOptions;
@@ -530,11 +527,15 @@ public class FmtOptions {
         }
         
         public void update() {
-            scan(panel, LOAD, null);
+            scan(panel, LOAD, preferences);
         }
 
         public void applyChanges() {
-            scan(panel, STORE, null);
+            scan(panel, STORE, preferences);
+        }
+
+        public void loadFrom(Preferences preferences) {
+            scan(panel, LOAD, preferences);
         }
 
         public void storeTo(Preferences preferences) {
@@ -556,7 +557,10 @@ public class FmtOptions {
                 // Ignore it
             }
             
-            CodeStyle codeStyle = FmtOptions.createCodeStyle(p);
+            try {
+                Class.forName(CodeStyle.class.getName(), true, CodeStyle.class.getClassLoader());
+            } catch (ClassNotFoundException cnfe) {}
+            CodeStyle codeStyle = codeStyleProducer.create(p);
             pane.setText(Reformatter.reformat(previewText, codeStyle));
         }
         
@@ -626,7 +630,7 @@ public class FmtOptions {
                     if ( o != null && o instanceof String ) {
                         switch( what ) {
                         case LOAD:
-                            loadData( jc, (String)o );
+                            loadData( jc, (String)o, p );
                             break;
                         case STORE:
                             storeData( jc, (String)o, p );
@@ -646,9 +650,7 @@ public class FmtOptions {
 
         /** Very smart method which tries to set the values in the components correctly
          */ 
-        private void loadData( JComponent jc, String optionID ) {
-            
-            Preferences node = getPreferences(getCurrentProfileId());
+        private void loadData( JComponent jc, String optionID, Preferences node ) {
             
             if ( jc instanceof JTextField ) {
                 JTextField field = (JTextField)jc;                
@@ -670,35 +672,42 @@ public class FmtOptions {
             
         }
         
-        private void storeData( JComponent jc, String optionID, Preferences p ) {
-            
-            Preferences node = p == null ? getPreferences(getCurrentProfileId()) : p;
+        private void storeData( JComponent jc, String optionID, Preferences node ) {
             
             if ( jc instanceof JTextField ) {
                 JTextField field = (JTextField)jc;
                 
                 String text = field.getText();
                 
+                // XXX test for numbers
                 if ( isInteger(optionID) ) {
                     try {
                         int i = Integer.parseInt(text);                        
                     } catch (NumberFormatException e) {
-                        text = getLastValue(optionID);
+                        return;
                     }
                 }
-                
-                
-                // XXX test for numbers
-                node.put(optionID, text);                
+                                
+                if (getDefaultAsString(optionID).equals(text))
+                    node.remove(optionID);
+                else
+                    node.put(optionID, text);
             }
             else if ( jc instanceof JCheckBox ) {
                 JCheckBox checkBox = (JCheckBox)jc;
-                node.putBoolean(optionID, checkBox.isSelected());
+                if (getDefaultAsBoolean(optionID) == checkBox.isSelected())
+                    node.remove(optionID);
+                else
+                    node.putBoolean(optionID, checkBox.isSelected());
             } 
             else if ( jc instanceof JComboBox) {
                 JComboBox cb  = (JComboBox)jc;
                 // Logger.global.info( cb.getSelectedItem() + " " + optionID);
-                node.put(optionID, ((ComboItem)cb.getSelectedItem()).value);
+                String value = ((ComboItem) cb.getSelectedItem()).value;
+                if (getDefaultAsString(optionID).equals(value))
+                    node.remove(optionID);
+                else
+                    node.put(optionID,value);
             }         
         }
         

@@ -108,6 +108,7 @@ options {
 	codeGenBitsetTestThreshold = 3;
 	noConstructors = true;
 	buildAST = true;
+        genASTClassMap = false;
 }
 
 //
@@ -424,7 +425,7 @@ tokens {
 
 	public void reportError(RecognitionException e) {
             // Do not report errors that we had reported already
-            if (lastRecoveryPosition == inputState.input.index()) {
+            if (lastRecoveryPosition == input.index()) {
                 return;
             }
 
@@ -463,7 +464,7 @@ tokens {
         private int lastRecoveryPosition = -1;
         
         public void recover(RecognitionException ex, BitSet tokenSet) {
-            if (lastRecoveryPosition == inputState.input.index()) {
+            if (lastRecoveryPosition == input.index()) {
                 if (recoveryCounter > RECOVERY_LIMIT) {
                     consume();
                     recoveryCounter = 0;
@@ -472,7 +473,7 @@ tokens {
                 }
             } else {
                 recoveryCounter = 0;
-                lastRecoveryPosition = inputState.input.index();
+                lastRecoveryPosition = input.index();
             }
             tokenSet.orInPlace(stopSet);
             consumeUntil(tokenSet);
@@ -2373,7 +2374,7 @@ template_parameter
 protected template_template_parameter
     :
 	LITERAL_template LESSTHAN tpl:template_parameter_list GREATERTHAN 
-	LITERAL_class ID
+	LITERAL_class ID (ASSIGNEQUAL assigned_type_name)?
 	{ #template_template_parameter = #(#[CSM_TEMPLATE_TEMPLATE_PARAMETER, "CSM_TEMPLATE_TEMPLATE_PARAMETER"], #template_template_parameter);}
 
     ;

@@ -29,7 +29,6 @@ import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.support.BpelXPathModelFactory;
 import org.netbeans.modules.soa.mappercore.LeftTree;
@@ -39,7 +38,7 @@ import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.xpath.ext.StepNodeTestType;
 import org.netbeans.modules.xml.xpath.ext.StepNodeTypeTest;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.openide.util.NbBundle;
 
 /**
@@ -47,7 +46,7 @@ import org.openide.util.NbBundle;
  *
  * @author nk160297
  */
-public class AddSpecialStepAction extends MapperAction<RestartableIterator<Object>> {
+public class AddSpecialStepAction extends MapperAction<Iterable<Object>> {
     
     private static final long serialVersionUID = 1L;
     
@@ -58,8 +57,8 @@ public class AddSpecialStepAction extends MapperAction<RestartableIterator<Objec
     public AddSpecialStepAction(StepNodeTestType stepType, 
             MapperTcContext mapperTcContext,
             boolean inLeftTree, TreePath treePath, 
-            RestartableIterator<Object> dataObjectPathItr) {
-        super(mapperTcContext, dataObjectPathItr);
+            Iterable<Object> dataObjectPathItrb) {
+        super(mapperTcContext, dataObjectPathItrb);
         mStepType = stepType;
         mTreePath = treePath;
         mInLeftTree = inLeftTree;
@@ -84,10 +83,10 @@ public class AddSpecialStepAction extends MapperAction<RestartableIterator<Objec
     }
     
     public void actionPerformed(ActionEvent e) {
-        RestartableIterator<Object> itr = getActionSubject();
+        Iterable<Object> itrb = getActionSubject();
         //
         // Construct a new Schema Context by the current element
-        XPathSchemaContext sContext = PathConverter.constructContext(itr);
+        XPathSchemaContext sContext = PathConverter.constructContext(itrb, false);
         if (sContext == null) {
             return;
         }
@@ -120,7 +119,7 @@ public class AddSpecialStepAction extends MapperAction<RestartableIterator<Objec
         if (varTreeModel != null) {
             SpecialStepManager sStepManager = varTreeModel.getSStepManager();
             if (sStepManager != null) {
-                sStepManager.addStep(itr, newStep);
+                sStepManager.addStep(itrb, newStep);
             }
         }
         //

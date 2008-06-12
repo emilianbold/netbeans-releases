@@ -160,7 +160,10 @@ public class CliValidateBpelProjectDelegate extends Task {
     private void validateFile(File file) throws BuildException {
       try {
         Model model = CliBpelCatalogModel.getDefault().getBPELModel(file.toURI());
-        myIsFoundErrors = new Controller(model).cliValidate(file);
+
+        if (new Controller(model).cliValidate(file)) {
+          myIsFoundErrors = true;
+        }
       }
       catch (Exception e) {
         throw new BuildException(e);

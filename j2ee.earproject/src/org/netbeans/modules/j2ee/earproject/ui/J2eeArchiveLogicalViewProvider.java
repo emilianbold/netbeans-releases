@@ -56,7 +56,6 @@ import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JSeparator;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -323,7 +322,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
             actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_RUN, bundle.getString( "LBL_RunAction_Name" ), null )); // NOI18N
             actions.add(ProjectSensitiveActions.projectCommandAction( EjbProjectConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_DeployAction_Name" ), null));
             actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_DEBUG, bundle.getString( "LBL_DebugAction_Name" ), null )); // NOI18N
-            addFromLayers(actions, "Projects/Profiler_Actions_temporary"); //NOI18N
+            actions.addAll(Utilities.actionsForPath("Projects/Profiler_Actions_temporary")); //NOI18N
                 
             actions.add(null);
             actions.add(CommonProjectActions.setAsMainProjectAction());
@@ -337,7 +336,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
             actions.add(null);
             actions.add(SystemAction.get( FindAction.class ));
             
-            addFromLayers(actions, "Projects/Actions"); //NOI18N
+            actions.addAll(Utilities.actionsForPath("Projects/Actions")); //NOI18N
 
             actions.add(null);
             
@@ -350,17 +349,6 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
             actions.add(CommonProjectActions.customizeProjectAction());
             return actions.toArray(new Action[actions.size()]);
         }
-        
-        private void addFromLayers(List<Action> actions, String path) {
-            Lookup look = Lookups.forPath(path);
-            for (Object next : look.lookupAll(Object.class)) {
-                if (next instanceof Action) {
-                    actions.add((Action) next);
-                } else if (next instanceof JSeparator) {
-                    actions.add(null);
-                }
-            }
-        }                   
         
         /** This action is created only when project has broken references.
          * Once these are resolved the action is disabled.

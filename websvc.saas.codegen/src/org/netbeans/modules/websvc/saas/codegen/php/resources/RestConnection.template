@@ -1,0 +1,107 @@
+<?php
+    
+    require_once "HTTP/Request.php";
+    require "RestResponse.php";
+
+    class RestConnection {
+
+        private $url = "";
+        private $response = "";
+        private $responseBody = "";
+        private $req = null;
+
+        public function RestConnection($url = "", $params = null) {
+            $this->__construct($url, $params);
+        }
+
+        public function __construct($url = "", $params = null) {
+            $this->url = $url;
+            if($params != null) {
+                foreach ($params as $key => $value) {
+                    $this->url = $this->url.$key."=".$value."&";
+                }
+            }
+            $this->req =& new HTTP_Request($this->url);
+        }
+    
+        public function get() {
+            return get(null);
+        }
+
+        public function get($headers = array("")) {
+            conn.setRequestMethod("GET");
+
+            return connect($headers, null);
+        }
+
+        public function put() {
+            return put(headers);
+        }
+    
+        public function put($headers = array(""), $data = "") {
+            conn.setRequestMethod("PUT");
+
+            return connect($headers,$data);
+        }
+
+        public function post($data) {
+            return post(null, data);
+        }
+    
+        public function post($headers = array(""), $data = "") {
+            conn.setRequestMethod("POST");
+
+            return connect(headers, new ByteArrayInputStream(data.getBytes("UTF-8")));
+        }
+    
+    /**
+     * Used by post method whose contents are like form input
+     */
+        public function post($params = array("")) {
+            return post(null, params);
+        }
+
+    /**
+     * Used by post method whose contents are like form input
+     */
+        public function post($headers = array(""), $params = array("")) {
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("ContentType", "application/x-www-form-urlencoded");
+            foreach ($params as $key => $value) {
+                $this->req->addPostData($key, $value);
+            }
+            return connect($headers);
+        }
+
+        public function delete() {
+            return delete(null);
+        }
+
+        public function delete($headers = array("")) {
+            conn.setRequestMethod("DELETE");
+
+            return connect($headers, null);
+        }
+
+        public function connect() {
+            $this->response = $this->req->sendRequest();
+
+            if (PEAR::isError($this->response)) {
+                echo $this->response->getMessage();
+                die();
+            } else {
+                $this->responseBody = $this->req->getResponseBody();
+            }
+            $response = new RestResponse();
+
+            $response->setResponseCode(conn.getResponseCode());
+            $response->setResponseMessage(conn.getResponseMessage());
+            $response->setContentType(conn.getContentType());
+            $response->setContentEncoding(conn.getContentEncoding());
+            $response->setLastModified(conn.getLastModified());
+            
+            return response;
+        }
+
+    }
+?>

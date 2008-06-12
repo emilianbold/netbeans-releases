@@ -44,11 +44,9 @@ package org.netbeans.modules.j2ee.archive.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.Action;
-import javax.swing.JSeparator;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.archive.project.ArchiveProject;
@@ -65,6 +63,7 @@ import org.openide.nodes.Node;
 //import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -128,22 +127,8 @@ public class RootNode extends org.openide.nodes.AbstractNode {
         actions.add(SystemAction.get( org.openide.actions.FindAction.class ));
         
         // honor 57874 contact
-        
- 
-        Lookup lookup = Lookups.forPath("Projects/Actions"); // NOI18N
-        Lookup.Template query = new Lookup.Template(Object.class);
-        Iterator it = lookup.lookup(query).allInstances().iterator();
-        if (it.hasNext()) {
-            actions.add(null);
-        }
-        while (it.hasNext()) {
-            Object next = it.next();
-            if (next instanceof Action) {
-                actions.add(next);
-            } else if (next instanceof JSeparator) {
-                actions.add(null);
-            }
-        }
+        actions.add(null);
+        actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
         
 //        actions.add(null);
 //        if (brokenLinksAction != null && brokenLinksAction.isEnabled()) {

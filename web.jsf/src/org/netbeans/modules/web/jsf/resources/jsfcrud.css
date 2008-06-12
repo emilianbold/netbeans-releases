@@ -13,11 +13,11 @@ a {
     color: #e33b06;
 }
 
-td table {
+table {
     empty-cells: show;
 }
 
-td th {
+form.jsfcrud_list_form th, td th {
     font-size: x-small;
     color: #4e6a71;
     border-top-style: solid;
@@ -47,7 +47,7 @@ td {
     font-size: small;
 }
 
-td td {
+form.jsfcrud_list_form td, td td {
     border-top-style: solid;
     border-bottom-style: solid;
     border-left-style: solid;
@@ -60,15 +60,23 @@ td td {
     border-bottom-color: #b2d5d6;
     border-left-color: #b2d5d6;
     border-right-color: #b2d5d6;
+    vertical-align: baseline;
+    padding-bottom: 0px;
 }
 
-td tr.jsfcrud_oddrow {
+tr.jsfcrud_odd_row {
     background-color: #fefeff;
     color: #4e6a71;
 }
 
 
-td tr.jsfcrud_evenrow {
+tr.jsfcrud_even_row {
     background-color: #eff5fa;
     color: #4e6a71;
+}
+
+#busyImage {
+    position: absolute;
+    left: 50%;
+    top: 50%;
 }

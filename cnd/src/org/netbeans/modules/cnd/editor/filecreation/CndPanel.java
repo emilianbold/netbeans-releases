@@ -235,7 +235,7 @@ public abstract class CndPanel implements WizardDescriptor.Panel<WizardDescripto
         }
         
         if (!isValidName(newObjectName)) {
-            return NbBundle.getMessage(org.netbeans.modules.cnd.ui.options.CndOptionsPanel.class, "NAME_INVALID", newObjectName);
+            return NbBundle.getMessage(CndPanel.class, "MSG_Invalid_File_Name");
         }
 
         // test whether the selected folder on selected filesystem already exists
@@ -268,6 +268,9 @@ public abstract class CndPanel implements WizardDescriptor.Panel<WizardDescripto
         return result;
     }
     
+    // if user would request support of wider array of symbols we can allow it by improving escaping symbols during Makefiles generation 
+    private static final String PROHIBITED = "\"$#\'*{}[]()";
+    
     /* package */ static boolean isValidName(String name) {
 	int len = name.length();
         
@@ -276,8 +279,7 @@ public abstract class CndPanel implements WizardDescriptor.Panel<WizardDescripto
 	}
 	for (int i = 0; i < len; i++) {
 	    char c = name.charAt(i);
-            // if user would request support of wider array of symbols we can allow it by improving escaping symbols during Makefiles generation 
-	    if (Character.isISOControl(c) || c == '"' | c == '$' || c == '#' || c == '\'') { 
+	    if (Character.isISOControl(c) || PROHIBITED.indexOf(c) > -1) { 
 		return false;
 	    }
 	}

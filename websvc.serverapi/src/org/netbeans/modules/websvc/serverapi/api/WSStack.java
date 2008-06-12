@@ -48,7 +48,7 @@ import org.netbeans.modules.websvc.serverapi.spi.WSStackSPI;
  *
  * @author mkuchtiak
  */
-public final class WSStack implements WSStackSPI {
+public final class WSStack {
     
     private WSStackSPI spi;
     private WSStackProvider stackProvider;

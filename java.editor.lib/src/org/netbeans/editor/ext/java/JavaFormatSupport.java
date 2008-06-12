@@ -48,6 +48,7 @@ import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.ext.FormatTokenPosition;
 import org.netbeans.editor.ext.ExtFormatSupport;
 import org.netbeans.editor.ext.FormatWriter;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 
@@ -982,6 +983,10 @@ public class JavaFormatSupport extends ExtFormatSupport {
         return changeLineIndent(pos, indent);
     }
 
+    public String getIndentString(int indent) {
+        return IndentUtils.createIndentString(getFormatWriter().getDocument(), indent);
+    }
+    
     /** Check whether the given semicolon is inside
      * the for() statement.
      * @param token token to check. It must be a semicolon.

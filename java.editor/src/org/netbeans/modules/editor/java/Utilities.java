@@ -487,6 +487,7 @@ public class Utilities {
     private static class TypeNameVisitor extends SimpleTypeVisitor6<StringBuilder,Boolean> {
         
         private boolean varArg;
+        private boolean insideCapturedWildcard = false;
         
         private TypeNameVisitor(boolean varArg) {
             super(new StringBuilder());
@@ -537,18 +538,22 @@ public class Utilities {
                     return DEFAULT_VALUE.append(name);
             }
             DEFAULT_VALUE.append("?"); //NOI18N
-            TypeMirror bound = t.getLowerBound();
-            if (bound != null && bound.getKind() != TypeKind.NULL) {
-                DEFAULT_VALUE.append(" super "); //NOI18N
-                visit(bound, p);
-            } else {
-                bound = t.getUpperBound();
+            if (!insideCapturedWildcard) {
+                insideCapturedWildcard = true;
+                TypeMirror bound = t.getLowerBound();
                 if (bound != null && bound.getKind() != TypeKind.NULL) {
-                    DEFAULT_VALUE.append(" extends "); //NOI18N
-                    if (bound.getKind() == TypeKind.TYPEVAR)
-                        bound = ((TypeVariable)bound).getLowerBound();
+                    DEFAULT_VALUE.append(" super "); //NOI18N
                     visit(bound, p);
+                } else {
+                    bound = t.getUpperBound();
+                    if (bound != null && bound.getKind() != TypeKind.NULL) {
+                        DEFAULT_VALUE.append(" extends "); //NOI18N
+                        if (bound.getKind() == TypeKind.TYPEVAR)
+                            bound = ((TypeVariable)bound).getLowerBound();
+                        visit(bound, p);
+                    }
                 }
+                insideCapturedWildcard = false;
             }
             return DEFAULT_VALUE;
         }

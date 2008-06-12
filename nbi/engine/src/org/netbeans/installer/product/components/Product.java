@@ -868,7 +868,7 @@ public final class Product extends RegistryNode implements StatusInterface {
         return PRODUCT_TAG_NAME;
     }
     
-    public Element saveToDom(final Element element) throws FinalizationException {
+    protected Element saveToDom(final Element element) throws FinalizationException {
         super.saveToDom(element);
         
         final Document document = element.getOwnerDocument();

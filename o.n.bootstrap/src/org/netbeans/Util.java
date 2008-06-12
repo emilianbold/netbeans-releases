@@ -242,8 +242,13 @@ public abstract class Util {
     
     /** Check whether a package dependency is met.
      * A classloader must be supplied to check in.
+     * @param dep a module dependency
+     * @param cl a package-accessible classloader
+     * @return true if a package dependency is met
+     * @throws IllegalArgumentException 
+     * @since 2.14
      */
-    static boolean checkPackageDependency(Dependency dep, ClassLoader cl) throws IllegalArgumentException {
+    public static boolean checkPackageDependency(Dependency dep, ClassLoader cl) throws IllegalArgumentException {
         if (dep.getType() != Dependency.TYPE_PACKAGE) {
             throw new IllegalArgumentException("Not a package dependency"); // NOI18N
         }

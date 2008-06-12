@@ -298,6 +298,7 @@
                         <code-name-base>org.netbeans.modules.gsf</code-name-base>
                         <recursive/>
                         <compile-dependency/>
+                        <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.lexer</code-name-base>
@@ -309,7 +310,13 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <public-packages>
+                <package>org.netbeans.modules.php.editor.index</package>
+                <package>org.netbeans.modules.php.editor.lexer</package>
+                <package>org.netbeans.modules.php.editor.parser</package>
+                <package>org.netbeans.modules.php.editor.parser.astnodes</package>
+                <package>org.netbeans.modules.php.editor.parser.astnodes.visitors</package>
+            </public-packages>
         </data>
     </configuration>
 </project>

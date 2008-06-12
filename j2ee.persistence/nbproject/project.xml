@@ -397,19 +397,20 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.j2ee.jpa.refactoring</friend>
                 <friend>org.netbeans.modules.j2ee.jpa.verification</friend>
                 <friend>org.netbeans.modules.profiler.j2ee</friend>
-                <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
+                <friend>org.netbeans.modules.web.project</friend>
+                <friend>org.netbeans.modules.websvc.rest</friend>
                 <package>org.netbeans.modules.j2ee.persistence.api.entity.generator</package>
-                <package>org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator</package>
                 <package>org.netbeans.modules.j2ee.persistence.dd</package>
                 <package>org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0</package>
                 <package>org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0</package>
                 <package>org.netbeans.modules.j2ee.persistence.entitygenerator</package>
                 <package>org.netbeans.modules.j2ee.persistence.provider</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.datasource</package>
+                <package>org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator</package>
+                <package>org.netbeans.modules.j2ee.persistence.spi.moduleinfo</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.provider</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.server</package>
-                <package>org.netbeans.modules.j2ee.persistence.spi.moduleinfo</package>
                 <package>org.netbeans.modules.j2ee.persistence.unit</package>
                 <package>org.netbeans.modules.j2ee.persistence.wizard</package>
                 <package>org.netbeans.modules.j2ee.persistence.wizard.fromdb</package>

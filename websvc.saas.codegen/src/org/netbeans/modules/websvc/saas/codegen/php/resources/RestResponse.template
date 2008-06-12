@@ -1,0 +1,63 @@
+<?php
+
+    //namespace org::netbeans::saas;
+
+    class RestResponse {
+    
+        private $contentType = "";
+        private $contentEncoding = "";
+        private $lastModified = "";
+        private $response = "";
+        private $responseBody = "";
+        private $responseCode = "";
+    
+        public function RestResponse() {
+            $this->__construct();
+        }
+
+        public function __construct() {
+        }
+
+        public function setContentType($contentType) {
+            $this->contentType = $contentType;
+        }
+    
+        public function getContentType() {
+            return $this->contentType;
+        }
+
+        public function setContentEncoding($contentEncoding) {
+            $this->contentEncoding = $contentEncoding;
+        }
+    
+        public function setResponseMessage($msg) {
+            $this->responseBody = $msg;
+        }
+    
+        public function getResponseMessage() {
+            return $this->responseBody;
+        }
+    
+        public function setResponseCode($code) {
+            $this->responseCode = $code;
+        }
+    
+        public function getResponseCode() {
+            return $this->responseCode;
+        }
+    
+        public function setLastModified($lastModified) {
+            $this->lastModified = $lastModified;
+        }
+    
+        public function getLastModified() {
+            return $this->lastModified;
+        }
+    
+        public function getDataAsString() {
+            return $this->responseBody;
+        }
+    
+    }
+
+?>

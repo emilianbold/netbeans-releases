@@ -35,10 +35,10 @@ public PreprocessorLexer(Reader in) {
 	this(new CharBuffer(in));
 }
 public PreprocessorLexer(InputBuffer ib) {
-	this(new LexerSharedInputState(ib));
+	this(new LexerSharedInputState(), ib);
 }
-public PreprocessorLexer(LexerSharedInputState state) {
-	super(state);
+public PreprocessorLexer(LexerSharedInputState state, InputBuffer ib) {
+	super(state, ib);
 	caseSensitiveLiterals = true;
 	setCaseSensitive(true);
 	literals = new Hashtable();

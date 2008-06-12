@@ -1,4 +1,6 @@
-Results for dur.t with queryType=COMPLETION and nameKind=PREFIX
+Code completion result for source line:
+dur.|t
+(QueryType=COMPLETION, NameKind=PREFIX)
 METHOD     toExponential(fractionDigits)              Number
 METHOD     toFixed(digits) : String                   Number
 METHOD     toLocaleString() : void                    Number

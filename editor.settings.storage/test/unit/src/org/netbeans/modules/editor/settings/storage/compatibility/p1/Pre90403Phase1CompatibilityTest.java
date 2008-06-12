@@ -81,6 +81,7 @@ public class Pre90403Phase1CompatibilityTest extends NbTestCase {
 
     protected @Override void setUp() throws Exception {
         super.setUp();
+        clearWorkDir();
     
         EditorTestLookup.setLookup(
             new URL[] {

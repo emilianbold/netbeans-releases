@@ -134,7 +134,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.9.1</specification-version>
+                        <specification-version>1.17</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -260,6 +260,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.cnd.modelui</friend>
+                <package>org.netbeans.modules.cnd.modelimpl.csm</package>
                 <package>org.netbeans.modules.cnd.modelimpl.csm.core</package>
                 <package>org.netbeans.modules.cnd.modelimpl.trace</package>
             </friend-packages>

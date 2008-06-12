@@ -24,6 +24,7 @@ import org.netbeans.modules.bpel.model.api.ExtensionEntity;
 /**
  *
  * @author Vitaly Bychkov
+ * @author nk160297
  * @version 1.0
  */
 public interface Editor extends ExtensionEntity, BpelContainer {
@@ -32,8 +33,14 @@ public interface Editor extends ExtensionEntity, BpelContainer {
 
     Casts getCasts();
 
-    void removeCasts( );
+    void removeCasts();
 
-    void setCasts( Casts casts);
+    void setCasts(Casts casts);
+
+    PseudoComps getPseudoComps();
+
+    void removePseudoComps();
+
+    void setPseudoComps(PseudoComps pseudoComps);
 
 }

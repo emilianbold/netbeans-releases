@@ -112,6 +112,7 @@
                 <friend>org.netbeans.modules.languages.php</friend>
                 <friend>org.netbeans.modules.php.devtools</friend>
                 <friend>org.netbeans.modules.php.editor</friend>
+                <friend>org.netbeans.modules.php.refactoring</friend>
                 <friend>org.netbeans.modules.python.editor</friend>
                 <friend>org.netbeans.modules.ruby</friend>
                 <friend>org.netbeans.modules.ruby.extrahints</friend>

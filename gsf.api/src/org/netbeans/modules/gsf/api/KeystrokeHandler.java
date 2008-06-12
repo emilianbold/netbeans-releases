@@ -104,7 +104,7 @@ public interface KeystrokeHandler {
 
     /**
      * Compute a range matching the caret position. If no eligible range
-     * is found, return {@link OffsetRange.NONE}.
+     * is found, return {@link OffsetRange#NONE}.
      */
     @NonNull
     OffsetRange findMatching(@NonNull Document doc, int caretOffset);

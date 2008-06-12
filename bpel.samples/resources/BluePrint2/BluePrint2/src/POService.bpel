@@ -106,8 +106,7 @@
                 <correlation set="POCorrelationSet" initiate="yes"/>
             </correlations>
         </invoke>
-        <pick name="Event_Based_Decision"
-              createInstance="no">
+        <pick name="Event_Based_Decision" createInstance="no">
             <onMessage partnerLink="inventoryRequesting"
                        portType="invs:inventoryServiceCallbackPortType"
                        operation="inventoryServiceResponse"

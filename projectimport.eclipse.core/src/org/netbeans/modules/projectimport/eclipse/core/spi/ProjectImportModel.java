@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
 
 /**
@@ -55,11 +56,13 @@ public final class ProjectImportModel {
     private EclipseProject project;
     private String projectLocation;
     private JavaPlatform platform;
+    private List<Project> alreadyImportedProjects;
 
-    public ProjectImportModel(EclipseProject project, String projectLocation, JavaPlatform platform) {
+    public ProjectImportModel(EclipseProject project, String projectLocation, JavaPlatform platform, List<Project> alreadyImportedProjects) {
         this.project = project;
         this.projectLocation = projectLocation;
         this.platform = platform;
+        this.alreadyImportedProjects = alreadyImportedProjects;
     }
 
     public String getProjectName() {
@@ -74,6 +77,10 @@ public final class ProjectImportModel {
         return project.getWorkspace().getDirectory();
     }
 
+    /**
+     * Folder in which to create NetBeans project. In case NetBeans projects are
+     * imported into the same location as Eclipse one the folder will already exist.
+     */
     public String getNetBeansProjectLocation() {
         return projectLocation;
     }
@@ -118,6 +125,14 @@ public final class ProjectImportModel {
         return project.getOutput();
     }
 
+    /**
+     * Returns list of already imported projects. Handy for resolving project
+     * dependencies.
+     */
+    public List<Project> getAlreadyImportedProjects() {
+        return Collections.<Project>unmodifiableList(alreadyImportedProjects);
+    }
+    
     private static File[] convertToFileArray(List<DotClassPathEntry> entries) {
         List<File> res = new ArrayList<File>();
         for (DotClassPathEntry entry : entries) {

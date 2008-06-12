@@ -40,6 +40,7 @@ package org.netbeans.modules.hibernate.framework;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
@@ -83,9 +84,9 @@ public class HibernateFrameworkProvider extends WebFrameworkProvider {
 
     @Override
     public File[] getConfigurationFiles(WebModule wm) {
-        ArrayList<File> configFiles = new ArrayList<File>();
+        List<File> configFiles = new ArrayList<File>();
         Project enclosingProject = Util.getEnclosingProjectFromWebModule(wm);
-        ArrayList<FileObject> configFileObjects = HibernateUtil.getAllHibernateConfigFileObjects(enclosingProject);
+        List<FileObject> configFileObjects = HibernateUtil.getAllHibernateConfigFileObjects(enclosingProject);
         for(FileObject fo : configFileObjects) {
             configFiles.add(FileUtil.toFile(fo));
         }

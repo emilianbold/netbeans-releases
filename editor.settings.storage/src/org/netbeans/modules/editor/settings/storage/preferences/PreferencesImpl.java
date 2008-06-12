@@ -241,7 +241,9 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
                     getLocal().get(bareKey).setJavaType(value);
                     asyncInvocationOfFlushSpi();
                 } else {
-                    getInherited().put(key, value);
+                    Preferences inheritedPrefs = getInherited();
+                    assert inheritedPrefs != null : mimePath;
+                    inheritedPrefs.put(key, value);
                 }
             }
         }
@@ -263,7 +265,8 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
             TypedValue typedValue = getLocal().get(bareKey);
             return returnValue ? typedValue.getValue() : typedValue.getJavaType();
         } else {
-            return getInherited().get(key, null);
+            Preferences inheritedPrefs = getInherited();
+            return inheritedPrefs != null ? inheritedPrefs.get(key, null) : null;
         }
     }
 

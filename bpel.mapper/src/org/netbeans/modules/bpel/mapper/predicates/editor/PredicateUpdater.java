@@ -34,7 +34,6 @@ import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.support.BpelXPathModelFactory;
 import org.netbeans.modules.soa.mappercore.LeftTree;
@@ -43,7 +42,7 @@ import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.schema.ToRelativePathConverter;
 import org.netbeans.modules.xml.xpath.ext.spi.SchemaContextBasedCastResolver;
 
@@ -76,7 +75,7 @@ public class PredicateUpdater extends AbstractBpelModelUpdater {
         mTreePath = treePath;
     }
 
-    public void addPredicate(RestartableIterator<Object> itr) {
+    public void addPredicate(Iterable<Object> itrb) {
         //
         // Create a new predicate and populate it
         mPred = new SyntheticPredicate(mSContext, null);
@@ -99,7 +98,7 @@ public class PredicateUpdater extends AbstractBpelModelUpdater {
                 PredicateManager.getPredicateManager(sourceModel);
         boolean predicateAdded = false;
         if (predManager != null) {
-            predicateAdded = predManager.addPredicate(itr, mPred);
+            predicateAdded = predManager.addPredicate(itrb, mPred);
         }
         //
         if (!predicateAdded) {
@@ -230,8 +229,8 @@ public class PredicateUpdater extends AbstractBpelModelUpdater {
         //
         GraphInfoCollector graphInfo = new GraphInfoCollector(graph);
         //
-        XPathExprList xPathExprList =
-                buildXPathExprList(xPathModel, graphInfo, null);
+        XPathExprList xPathExprList = buildXPathExprList(
+                xPathModel, graphInfo, null, null);
         //
         XPathExpression expr = xPathExprList.getConnectedExpression();
         if (expr != null) {

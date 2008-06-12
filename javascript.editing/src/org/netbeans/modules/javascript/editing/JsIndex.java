@@ -66,7 +66,8 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  */
 public class JsIndex {
-    public static final int MAX_SEARCH_ITEMS = 120;
+    // Non-final for test suite
+    static int MAX_SEARCH_ITEMS = 120;
     
     /** Set property to true to find ALL functions regardless of file includes */
     //private static final boolean ALL_REACHABLE = Boolean.getBoolean("javascript.findall");

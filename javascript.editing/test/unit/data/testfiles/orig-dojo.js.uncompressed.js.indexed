@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/orig-dojo.js.uncompressed.js
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   base : $=;attrs;$=;|FUNCTION|;attr,value;0;;;Function;
   base : $=;xPathAttrs;$=;|FUNCTION|;attr,value;0;;;;
   base : *;_queryFuncCache;*;|PROPERTY|;;0;;;;
@@ -732,4 +727,4 @@ Indexed:
   fqn : xpathattrs.|=;;xPathAttrs.|=;|FUNCTION|;attr,value;0;;;;
   fqn : xpathattrs.~=;;xPathAttrs.~=;|FUNCTION|;attr,value;0;;;;
 
-Not Indexed:
+Not Searchable Keys:
