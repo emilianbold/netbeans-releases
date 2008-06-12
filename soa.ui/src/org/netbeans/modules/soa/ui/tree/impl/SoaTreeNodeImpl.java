@@ -168,6 +168,14 @@ public final class SoaTreeNodeImpl implements DataObjectHolder<Object> {
             mTreeNode = treeNode;
         }
         
+        public TreeItem getParent() {
+            SoaTreeNodeImpl parentNode = mTreeNode.getParent();
+            if (parentNode != null) {
+                return new MyTreeItem(parentNode);
+            }
+            return null;
+        }
+        
         public Iterator<Object> iterator() {
             return new Iterator() {
 
