@@ -39,7 +39,6 @@
 package org.netbeans.modules.cnd.highlight.error;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Stack;
@@ -49,12 +48,11 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseDocumentEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.openide.loaders.DataObject;
 
 /**
  * 
@@ -82,7 +80,7 @@ public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
             String txt = String.format("%s %s [%d-%d]: %s", info.getSeverity(), sourceFileName, info.getStartOffset(), info.getEndOffset(), info.getMessage());
             out.printf("%s\n", txt);
             if (TRACE) {
-                System.out.printf("%s\n", txt);
+                System.err.printf("%s\n", txt);
             }
         }
         compareReferenceFiles(datafileName, datafileName);
@@ -152,6 +150,11 @@ public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
         File output = new File(workDir, datafileName);
         CsmFile csmFile = getCsmFile(testSourceFile);
         BaseDocument doc = getBaseDocument(testSourceFile);
+
+        // TODO: find more elegant solution than setting buffer explicitely
+        FileBufferDoc buffer = new FileBufferDoc(testSourceFile, doc);
+        ((FileImpl) csmFile).setBuffer(buffer);
+
         Collection<CsmErrorInfo> errorInfos;
         
         errorInfos = CsmErrorProvider.getDefault().getErrors(doc, csmFile);
@@ -162,7 +165,7 @@ public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
         errorMaker.init(doc, csmFile);
         while (errorMaker.change()) {
             if (TRACE) trace("\n\n==========", doc);
-            parseModifiedFile((DataObject) doc.getProperty(BaseDocument.StreamDescriptionProperty));
+            //parseModifiedFile((DataObject) doc.getProperty(BaseDocument.StreamDescriptionProperty));
             errorInfos = CsmErrorProvider.getDefault().getErrors(doc, csmFile);
             if (TRACE) trace("----------", errorInfos, sourceFileName);
             errorMaker.analyze(errorInfos);
@@ -175,15 +178,15 @@ public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
         }
     }
 
-    private static void parseModifiedFile(DataObject dob) throws IOException { 
-        CsmFile csmFile = CsmUtilities.getCsmFile(dob, false);
-        assert csmFile != null : "Must be csmFile for data object " + dob;
-        CsmProject prj = csmFile.getProject();
-        assert prj != null : "Must be project for csm file " + csmFile;
-        prj.waitParse();
-        assert csmFile.isParsed() : " file must be parsed: " + csmFile;
-        assert prj.isStable(null) : " full project must be parsed" + prj;
-    }
+//    private static void parseModifiedFile(DataObject dob) throws IOException { 
+//        CsmFile csmFile = CsmUtilities.getCsmFile(dob, false);
+//        assert csmFile != null : "Must be csmFile for data object " + dob;
+//        CsmProject prj = csmFile.getProject();
+//        assert prj != null : "Must be project for csm file " + csmFile;
+//        prj.waitParse();
+//        assert csmFile.isParsed() : " file must be parsed: " + csmFile;
+//        assert prj.isStable(null) : " full project must be parsed" + prj;
+//    }
     
 
     protected void trace(String title, BaseDocument doc) throws BadLocationException {
@@ -192,19 +195,19 @@ public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
 //        int lineNo = 1;
 //        while (tokenizer.hasMoreTokens()) {
 //            String lineText = tokenizer.nextToken();
-//            System.out.printf(" %s\n", lineNo, lineText);
+//            System.err.printf(" %s\n", lineNo, lineText);
 //        }
-        System.out.printf("%s\n%s\n", title, text);
+        System.err.printf("%s\n%s\n", title, text);
     }
     
     protected void trace(String title, Collection<CsmErrorInfo> errorInfos, String sourceFileName) {
-        System.out.printf("%s\n", title);
+        System.err.printf("%s\n", title);
         trace(errorInfos, sourceFileName);
     }
     
     protected void trace(Collection<CsmErrorInfo> errorInfos, String sourceFileName) {
         for (CsmErrorInfo info : errorInfos) {
-            System.out.printf("%s\n", toString(info, sourceFileName));
+            System.err.printf("%s\n", toString(info, sourceFileName));
         }
     }
 
