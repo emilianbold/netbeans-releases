@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/prototype-new.js
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   base : $$;;$$;|FUNCTION|;;0;;;;
   base : $;;$;|FUNCTION|;element;0;;;;
   base : $a;;$A;|FUNCTION|;iterable;0;;;;
@@ -809,4 +804,4 @@ Indexed:
   fqn : value.tostring;;value.toString;|FUNCTION|;;0;;;;
   fqn : value.valueof;;value.valueOf;|FUNCTION|;;0;;;;
 
-Not Indexed:
+Not Searchable Keys:

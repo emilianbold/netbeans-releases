@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/20080403222904_add_names.rb
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   class : AddNames
   class-ig : addnames
   extends : ActiveRecord::Migration
@@ -14,15 +9,15 @@ Indexed:
   method : down|STATIC|
   method : up|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
 
 
-Document 2
-Indexed:
+Document 1
+Searchable Keys:
   dbtable : posts
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : address;-
   dbcolumn : newaddress
   dbversion : 20080403222904

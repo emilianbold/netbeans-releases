@@ -19,12 +19,13 @@
 
 package org.netbeans.modules.bpel.mapper.predicates;
 
-import org.netbeans.modules.xml.schema.model.SchemaComponent;
-import org.netbeans.modules.xml.xam.Named;
+import org.netbeans.modules.bpel.mapper.cast.AbstractPseudoComp;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContextHolder;
 import org.netbeans.modules.xml.xpath.ext.XPathUtils;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
 
 /**
  * The base class for different kind of Predicated Schema components.
@@ -32,7 +33,7 @@ import org.netbeans.modules.xml.xpath.ext.XPathUtils;
  */
 public abstract class AbstractPredicate implements XPathSchemaContextHolder {
 
-    public abstract SchemaComponent getSComponent();
+    public abstract SchemaCompHolder getSCompHolder();
     
     public abstract XPathPredicateExpression[] getPredicates();
     
@@ -72,8 +73,8 @@ public abstract class AbstractPredicate implements XPathSchemaContextHolder {
         if (mySContext == null || comp2.getSchemaContext() == null) {
             // 
             // Compare Schema component
-            SchemaComponent mySchemaComp = getSComponent();
-            if (mySchemaComp != comp2.getSComponent()) {
+            SchemaCompHolder mySchemaCompHolder = getSCompHolder();
+            if (mySchemaCompHolder != comp2.getSCompHolder()) {
                 return false;
             }
         } else {
@@ -89,8 +90,16 @@ public abstract class AbstractPredicate implements XPathSchemaContextHolder {
     }
 
     public String getDisplayName() {
-        String sCompName = ((Named)getSComponent()).getName();
-        return sCompName + " " + getPredicatesText();
+        SchemaCompHolder sCompHolder = getSCompHolder();
+        String baseName = null;
+        if (sCompHolder.isPseudoComp()) {
+            XPathPseudoComp pseudo = (XPathPseudoComp)sCompHolder.getHeldComponent();
+            baseName = AbstractPseudoComp.getDisplayName(pseudo);
+        } else {
+            baseName = sCompHolder.getName();
+        }
+        //
+        return  baseName + " " + getPredicatesText();
     }
     
     @Override

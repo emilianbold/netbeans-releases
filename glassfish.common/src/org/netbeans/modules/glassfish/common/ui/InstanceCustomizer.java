@@ -41,7 +41,7 @@ package org.netbeans.modules.glassfish.common.ui;
 
 import java.io.File;
 import java.util.Map;
-import org.netbeans.spi.glassfish.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
 
 /**
  *

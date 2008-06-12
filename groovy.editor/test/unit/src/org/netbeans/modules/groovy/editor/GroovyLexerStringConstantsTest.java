@@ -63,6 +63,7 @@ public class GroovyLexerStringConstantsTest extends NbTestCase {
 
     public GroovyLexerStringConstantsTest(String testName) {
         super(testName);
+        LOG.setLevel(Level.OFF);
     }
 
     @Override

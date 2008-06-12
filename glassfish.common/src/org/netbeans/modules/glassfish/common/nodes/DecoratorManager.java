@@ -40,8 +40,8 @@
 package org.netbeans.modules.glassfish.common.nodes;
 
 import java.util.HashMap;
-import org.netbeans.spi.glassfish.Decorator;
-import org.netbeans.spi.glassfish.DecoratorFactory;
+import org.netbeans.modules.glassfish.spi.Decorator;
+import org.netbeans.modules.glassfish.spi.DecoratorFactory;
 import org.openide.util.lookup.Lookups;
 
 /**

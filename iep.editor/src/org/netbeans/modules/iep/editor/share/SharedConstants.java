@@ -299,5 +299,20 @@ public interface SharedConstants {
     //      "REF",
     //      "STRUCT",
   };
+  
+  //reserved column names  
+  public static final String COL_SEQID = "ems_seqid";
+  public static final String COL_TIMESTAMP = "ems_timestamp"; 
+  
+  
+  public static String[] RESERVED_COLUMN_NAMES = new String[] {
+      COL_SEQID,
+      COL_TIMESTAMP
+  };
+  
+  //default jndi name
+  public static final String DEFAULT_JNDINAME = "jdbc/iepseDerbyNonXA"; 
+  
+  
 }
     

@@ -42,7 +42,7 @@
 package org.netbeans.modules.glassfish.common.nodes.actions;
 
 import java.util.concurrent.Future;
-import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
+import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.openide.nodes.Node;
 
 
