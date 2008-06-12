@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.editor.indent;
 
+import java.util.logging.Logger;
+import java.util.prefs.AbstractPreferences;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -70,7 +72,9 @@ public final class CodeStylePreferences implements PreferenceChangeListener {
     
     public Preferences getPreferences() {
         synchronized (this) {
-            return useProject ? projectPrefs : globalPrefs;
+            Preferences prefs = useProject ? projectPrefs : globalPrefs;
+            // to support tests that don't use editor.mimelookup.impl
+            return prefs == null ? AbstractPreferences.systemRoot() : prefs;
         }
     }
     
@@ -90,6 +94,8 @@ public final class CodeStylePreferences implements PreferenceChangeListener {
     // private implementation
     // ----------------------------------------------------------------------
     
+    private static final Logger LOG = Logger.getLogger(CodeStylePreferences.class.getName());
+    
     private static final String NODE_CODE_STYLE = "CodeStyle"; //NOI18N
     private static final String PROP_USED_PROFILE = "usedProfile"; // NOI18N
     private static final String DEFAULT_PROFILE = "default"; // NOI18N
@@ -99,10 +105,11 @@ public final class CodeStylePreferences implements PreferenceChangeListener {
     private final Preferences projectPrefs;
     private final Preferences globalPrefs;
     private boolean useProject;
+    private final String filePath; // just for logging
     
     private CodeStylePreferences(Document doc) {
         String mimeType = (String) doc.getProperty("mimeType"); //NOI18N
-        
+    
         this.projectRoot = findProjectPreferences(doc);
         if (projectRoot != null) {
             // determine if we are using code style preferences from the project
@@ -119,20 +126,32 @@ public final class CodeStylePreferences implements PreferenceChangeListener {
         }
         
         this.globalPrefs = MimeLookup.getLookup(mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType)).lookup(Preferences.class);
+
+        // just logging
+        FileObject f = findFileObject(doc);
+        this.filePath = f == null ? "no file" : f.getPath(); //NOI18N
+        LOG.fine("file '" + filePath + "' is using " + (useProject ? "project" : "global") + " Preferences"); //NOI18N
     }
     
     private static final Preferences findProjectPreferences(Document doc) {
+        FileObject file = findFileObject(doc);
+        if (file != null) {
+            Project p = FileOwnerQuery.getOwner(file);
+            if (p != null) {
+                return ProjectUtils.getPreferences(p, IndentUtils.class, true).node(NODE_CODE_STYLE);
+            }
+        }
+        return null;
+    }
+
+    private static final FileObject findFileObject(Document doc) {
         Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
         if (sdp instanceof DataObject) {
-            sdp = ((DataObject) sdp).getPrimaryFile();
-        }
-        
-        Project p = sdp instanceof FileObject ? FileOwnerQuery.getOwner((FileObject) sdp) : null;
-        if (p != null) {
-            return ProjectUtils.getPreferences(p, IndentUtils.class, true).node(NODE_CODE_STYLE);
+            return ((DataObject) sdp).getPrimaryFile();
+        } else if (sdp instanceof FileObject) {
+            return (FileObject) sdp;
         } else {
             return null;
         }
     }
-
 }

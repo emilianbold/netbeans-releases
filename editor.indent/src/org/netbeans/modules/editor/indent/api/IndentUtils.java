@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.editor.indent.api;
 
+import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
@@ -84,7 +85,15 @@ public final class IndentUtils {
      * @return &gt;=0 size of indentation level in spaces.
      */
     public static int indentLevelSize(Document doc) {
-        int indentLevelSize = CodeStylePreferences.get(doc).getPreferences().getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, 4);
+        Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+        String isw = prefs.get(SimpleValueNames.INDENT_SHIFT_WIDTH, null);
+        
+        // spaces-per-tab and indent-shift-with got all mixed up, the only way
+        // this can work is to keep them both in sync
+        int indentLevelSize = isw != null ? 
+            prefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, 4) : 
+            prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4);
+        
         assert indentLevelSize > 0 : "Invalid indentLevelSize " + indentLevelSize + " for " + doc; //NOI18N
         return indentLevelSize;
     }
