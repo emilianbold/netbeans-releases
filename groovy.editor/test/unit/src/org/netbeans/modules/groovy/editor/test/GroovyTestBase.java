@@ -84,9 +84,10 @@ public class GroovyTestBase extends GsfTestBase {
 
     @Override
     public org.netbeans.modules.gsf.api.Formatter getFormatter(IndentPrefs preferences) {
+        /* Findbugs-removed: 
         if (preferences == null) {
-            preferences = new IndentPrefs(4,4);
-        }
+        preferences = new IndentPrefs(4,4);
+        }*/
 
 //        Preferences prefs = NbPreferences.forModule(JsFormatterTest.class);
 //        prefs.put(FmtOptions.indentSize, Integer.toString(preferences.getIndentation()));
