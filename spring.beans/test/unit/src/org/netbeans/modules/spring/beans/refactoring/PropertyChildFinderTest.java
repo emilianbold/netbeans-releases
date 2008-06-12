@@ -37,19 +37,42 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.xslt.core.text.completion;
+package org.netbeans.modules.spring.beans.refactoring;
 
-import javax.swing.text.JTextComponent;
-import org.netbeans.spi.editor.completion.CompletionTask;
-import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
+import javax.swing.text.BadLocationException;
+import junit.framework.TestCase;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.spring.beans.TestUtils;
+import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 
 /**
- * @author Alex Petrov (30.04.2008)
+ *
+ * @author Rohan Ranade
  */
-public class XSLTCompletionTask {
-    public CompletionTask createTask(JTextComponent textComponent) {
-        AsyncCompletionTask completionTask = new AsyncCompletionTask(new XSLTCompletionQuery(), 
-            textComponent);
-        return completionTask;
+public class PropertyChildFinderTest extends TestCase {
+    
+    public PropertyChildFinderTest(String testName) {
+        super(testName);
+    }
+
+    public void testFind() throws Exception {
+        final String contents = TestUtils.createXMLConfigText("<bean id='foo' class='org.example.Foo'><property name='foobar' value='sample'/></bean>");
+        BaseDocument doc = TestUtils.createSpringXMLConfigDocument(contents);
+        final XMLSyntaxSupport syntaxSupport = (XMLSyntaxSupport)doc.getSyntaxSupport();
+        
+        doc.render(new Runnable() {
+            public void run() {
+                int beanOffset = contents.indexOf("<bean ");
+                int propOffset = contents.indexOf("'foobar'");
+                PropertyChildFinder finder = new PropertyChildFinder(syntaxSupport, beanOffset);
+                try {
+                    assertTrue(finder.find("foobar"));
+                    assertEquals(propOffset, finder.getFoundOffset());
+                    assertEquals("'foobar'", finder.getValue());
+                } catch (BadLocationException e) {
+                    fail(e.toString());
+                }
+            }
+        });
     }
 }

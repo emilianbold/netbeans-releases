@@ -39,71 +39,63 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.api.beans.model;
+package org.netbeans.modules.groovy.editor;
 
-import java.util.List;
-import java.util.Set;
+import javax.swing.text.BadLocationException;
+import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 
 /**
- * Describes a single bean definition.
  *
- * @author Andrei Badea
+ * @author Matthias Schmidt
  */
-public interface SpringBean {
+public class GroovyUtilsTest extends GroovyTestBase {
 
-    /**
-     * Returns the id of this bean.
-     *
-     * @return the id or null.
-     */
-    String getId();
+    String TEST_LINE = "this is a testline\n";
+    int meaningOfLife = 42;
 
-    /**
-     * Returns the other names of this bean.
-     *
-     * @return the names; never null.
-     */
-    List<String> getNames();
+    public GroovyUtilsTest(String testName) {
+        super(testName);
+    }
 
-    /**
-     * Returns the implementation class of this bean.
-     *
-     * @return the implementation class or null.
-     */
-    String getClassName();
+    public void testBadLocationExceptionThrown1() {
+        try {
+            GroovyUtils.getRowLastNonWhite(TEST_LINE, meaningOfLife);
+        } catch (BadLocationException ex) {
+            verifyException(ex);
+            return;
+        }
+        assertTrue(false);
+    }
+    public void testBadLocationExceptionThrown2() {
+        try {
+            GroovyUtils.getRowStart(TEST_LINE, meaningOfLife);
+        } catch (BadLocationException ex) {
+            verifyException(ex);
+            return;
+        }
+        assertTrue(false);
+    }
+    public void testBadLocationExceptionThrown3() {
+        try {
+            GroovyUtils.isRowEmpty(TEST_LINE, meaningOfLife);
+        } catch (BadLocationException ex) {
+            verifyException(ex);
+            return;
+        }
+        assertTrue(false);
+    }
+    public void testBadLocationExceptionThrown4() {
+        try {
+            GroovyUtils.isRowWhite(TEST_LINE, meaningOfLife);
+        } catch (BadLocationException ex) {
+            verifyException(ex);
+            return;
+        }
+        assertTrue(false);
+    }
 
-    /**
-     * Returns the parent bean of this bean.
-     *
-     * @return the factory bean.
-     */
-    String getParent();
-
-    /**
-     * Returns the factory bean that creates this bean.
-     *
-     * @return the factory bean or null.
-     */
-    String getFactoryBean();
-
-    /**
-     * Returns the factory method that creates this bean.
-     *
-     * @return the factory method or null.
-     */
-    String getFactoryMethod();
+    void verifyException(BadLocationException ex){
+        assertEquals("Unexpected error-message", ex.getMessage(), String.valueOf(meaningOfLife) + " out of " + TEST_LINE.length());
+    }
     
-    /**
-     * Returns the list of properties defined in this bean
-     * 
-     * @return list of properties; never null
-     */
-    Set<SpringBeanProperty> getProperties();
-
-    /**
-     * Returns the location of this bean.
-     *
-     * @return the location or null.
-     */
-    Location getLocation();
 }

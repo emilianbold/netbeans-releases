@@ -56,6 +56,7 @@ import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.model.Location;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
+import org.netbeans.modules.spring.api.beans.model.SpringBeanProperty;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.beans.BeansAttributes;
@@ -90,6 +91,15 @@ public final class SpringXMLConfigEditorUtils {
     public static final String BEAN_NAME_DELIMITERS = ",; "; // NOI18N
 
     private SpringXMLConfigEditorUtils() {
+    }
+    
+    public static String getPNamespacePrefix(Document document, int offset) {
+        DocumentContext context = DocumentContext.create(document, offset);
+        if(context == null) {
+            return null;
+        }
+        
+        return context.getNamespacePrefix(ContextUtilities.P_NAMESPACE);
     }
     
     public static Map<String, String> getTagAttributes(Node node) {
@@ -383,6 +393,10 @@ public final class SpringXMLConfigEditorUtils {
         public Location getLocation() {
             return location;
         }
+
+        public Set<SpringBeanProperty> getProperties() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
         
     }
     
@@ -447,6 +461,10 @@ public final class SpringXMLConfigEditorUtils {
         public Location getLocation() {
             // Logical bean cannot have a location
             throw new UnsupportedOperationException();
+        }
+
+        public Set<SpringBeanProperty> getProperties() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
         
     }

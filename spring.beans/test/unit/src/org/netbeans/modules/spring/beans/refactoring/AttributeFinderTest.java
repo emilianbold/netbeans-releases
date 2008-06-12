@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,25 +37,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.xslt.core.text.completion;
+package org.netbeans.modules.spring.beans.refactoring;
 
-import javax.swing.text.JTextComponent;
-import org.netbeans.spi.editor.completion.CompletionTask;
-import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
+import javax.swing.text.BadLocationException;
+import junit.framework.TestCase;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.spring.beans.TestUtils;
+import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 
 /**
- * @author Alex Petrov (30.04.2008)
+ *
+ * @author Rohan Ranade
  */
-public class XSLTCompletionTask {
-    public CompletionTask createTask(JTextComponent textComponent) {
-        AsyncCompletionTask completionTask = new AsyncCompletionTask(new XSLTCompletionQuery(), 
-            textComponent);
-        return completionTask;
+public class AttributeFinderTest extends TestCase {
+
+    public AttributeFinderTest(String testName) {
+        super(testName);
+    }
+
+    public void testFind() throws Exception {
+        final String contents = TestUtils.createXMLConfigText("<bean id='foo' class='org.example.Foo'><ref></ref></bean>");
+        BaseDocument doc = TestUtils.createSpringXMLConfigDocument(contents);
+        final XMLSyntaxSupport syntaxSupport = (XMLSyntaxSupport)doc.getSyntaxSupport();
+        doc.render(new Runnable() {
+            public void run() {
+                int beanOffset = contents.indexOf("<bean ");
+                int classOffset = contents.indexOf("class");
+                AttributeFinder finder = new AttributeFinder(syntaxSupport, beanOffset);
+                try {
+                    assertTrue(finder.find("class"));
+                    assertEquals(classOffset, finder.getFoundOffset());
+                } catch (BadLocationException e) {
+                    fail(e.toString());
+                }
+            }
+        });
     }
 }

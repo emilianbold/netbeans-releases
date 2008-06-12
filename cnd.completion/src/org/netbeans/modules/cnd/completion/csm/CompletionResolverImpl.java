@@ -189,20 +189,46 @@ public class CompletionResolverImpl implements CompletionResolver {
             return;
         }
         ResultImpl resImpl = new ResultImpl();
-
         //long timeStart = System.nanoTime();
+        resolveContext(prj, resImpl, context, offset, strPrefix, match);
+        result = buildResult(context, resImpl);
+        //long timeEnd = System.nanoTime();
+        //System.out.println("get gesolve list time "+(timeEnd -timeStart)+" objects "+result.size()); //NOI18N
+        //System.out.println("get global macro time "+(timeGlobMacroEnd -timeGlobMacroStart)+" objects "+ //NOI18N
+        //        (globProjectMacros.size()+globLibMacros.size()));
+        if (TIMING_COMPLETION) {
+            time = System.currentTimeMillis() - time;
+            System.err.println("Resolving context took " + time + "ms");
+        }        
+    }
+    
+    private boolean isEnough(String strPrefix, boolean match){
+        return match && strPrefix != null && strPrefix.length() > 0;
+    }
+
+    private boolean isEnough(String strPrefix, boolean match, Collection collection){
+        if (isEnough(strPrefix, match) && collection != null){
+            return collection.size()>0;
+        }
+        return false;
+    }
+
+    private void resolveContext(CsmProject prj, ResultImpl resImpl, CsmContext context, int offset, String strPrefix, boolean match) {
         if (needClasses(context, offset)) {
             // list of classesEnumsTypedefs
             resImpl.classesEnumsTypedefs = getClassesEnums(context, prj, strPrefix, match, offset,false);
+            if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) return;
         } else if (needContextClasses(context, offset)) {
             resImpl.classesEnumsTypedefs = getClassesEnums(context, prj, strPrefix, match, offset,true);           
+            if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) return;
         }
-        
         if (needTemplateParameters(context, offset)) {
             resImpl.templateParameters = getTemplateParameters(context, strPrefix, match);
+            if (isEnough(strPrefix, match, resImpl.templateParameters)) return;
         }
         if (needLocalVars(context, offset)) {
             resImpl.fileLocalEnumerators = contResolver.getFileLocalEnumerators(context, strPrefix, match);            
+            if (isEnough(strPrefix, match, resImpl.fileLocalEnumerators)) return;
             CsmFunction fun = CsmContextUtilities.getFunction(context);
             boolean staticContext = fun == null ? true : CsmBaseUtilities.isStaticContext(fun);
             // get local variables from context
@@ -215,16 +241,19 @@ public class CompletionResolverImpl implements CompletionResolver {
                 for (CsmDeclaration elem : decls) {
                     if (CsmKindUtilities.isVariable(elem)) {
                         resImpl.localVars.add((CsmVariable) elem);
+                        if (isEnough(strPrefix, match)) return;
                     } if (needLocalClasses(context, offset) && CsmKindUtilities.isClassifier(elem)) {
                         if (resImpl.classesEnumsTypedefs == null) {
                             resImpl.classesEnumsTypedefs = new ArrayList<CsmClassifier>();
                         }
                         resImpl.classesEnumsTypedefs.add((CsmClassifier) elem);
+                        if (isEnough(strPrefix, match)) return;
                     } if (CsmKindUtilities.isEnumerator(elem)) {
                         if (resImpl.fileLocalEnumerators == null) {
                             resImpl.fileLocalEnumerators = new ArrayList<CsmEnumerator>();
                         }
                         resImpl.fileLocalEnumerators.add((CsmEnumerator) elem);
+                        if (isEnough(strPrefix, match)) return;
                     }
                 }
             }
@@ -234,12 +263,15 @@ public class CompletionResolverImpl implements CompletionResolver {
                 if (clazz != null) {
                     // get class variables visible in this method
                     resImpl.classFields = contResolver.getFields(clazz, fun, strPrefix, staticContext, match, true,false);
+                    if (isEnough(strPrefix, match, resImpl.classFields)) return;
 
                     // get class enumerators visible in this method
                     resImpl.classEnumerators = contResolver.getEnumerators(clazz, fun, strPrefix, match, true,false);
+                    if (isEnough(strPrefix, match, resImpl.classEnumerators)) return;
 
                     // get class methods visible in this method
                     resImpl.classMethods = contResolver.getMethods(clazz, fun, strPrefix, staticContext, match, true,false);
+                    if (isEnough(strPrefix, match, resImpl.classMethods)) return;
                     if (needNestedClassifiers(context, offset)) {
                         // get class nested classifiers visible in this context
                         List<CsmClassifier> innerCls = contResolver.getNestedClassifiers(clazz, fun, strPrefix, match, needClasses(context, offset));
@@ -247,11 +279,12 @@ public class CompletionResolverImpl implements CompletionResolver {
                             resImpl.classesEnumsTypedefs = new ArrayList<CsmClassifier>();
                         }
                         resImpl.classesEnumsTypedefs.addAll(innerCls);
+                        if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) return;
                     }                    
                 }
             }
         } else if (needClassElements(context, offset)) {
-             CsmFunction fun = CsmContextUtilities.getFunction(context);
+            CsmFunction fun = CsmContextUtilities.getFunction(context);
             CsmClass clazz = fun == null ? null : CsmBaseUtilities.getFunctionClass(fun);
             clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false);
             if (clazz != null) {
@@ -261,15 +294,18 @@ public class CompletionResolverImpl implements CompletionResolver {
                 if (needClassMethods(context, offset)) {
                     if (clazz != null) {
                         resImpl.classMethods = contResolver.getMethods(clazz, contextDeclaration, strPrefix, staticContext, match, true,false);
+                        if (isEnough(strPrefix, match, resImpl.classMethods)) return;
                     }
                 }
                 if (needClassFields(context, offset)) {
                     // get class variables visible in this context
                     resImpl.classFields = contResolver.getFields(clazz, contextDeclaration, strPrefix, staticContext, match, true,false);
+                    if (isEnough(strPrefix, match, resImpl.classFields)) return;
                 }
                 if (needClassEnumerators(context, offset)) {
                     // get class enumerators visible in this context
                     resImpl.classEnumerators = contResolver.getEnumerators(clazz, contextDeclaration, strPrefix, match, true,false);
+                    if (isEnough(strPrefix, match, resImpl.classEnumerators)) return;
                 }
                 if (needNestedClassifiers(context, offset)) {
                     // get class nested classifiers visible in this context
@@ -278,71 +314,80 @@ public class CompletionResolverImpl implements CompletionResolver {
                         resImpl.classesEnumsTypedefs = new ArrayList<CsmClassifier>();
                     }
                     resImpl.classesEnumsTypedefs.addAll(innerCls);
+                    if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) return;
                 }
             }
         }
         if (needFileLocalMacros(context, offset)) {
             resImpl.fileLocalMacros = contResolver.getFileLocalMacros(context, strPrefix, match);
+            if (isEnough(strPrefix, match, resImpl.fileLocalMacros)) return;
         }
         if (needFileLocalFunctions(context, offset)) {
             resImpl.fileLocalFunctions = getFileLocalFunctions(context, strPrefix, match);
+            if (isEnough(strPrefix, match, resImpl.fileLocalFunctions)) return;
         }            
         // file local variables
         if (needFileLocalVars(context, offset)) {
             resImpl.fileLocalVars = contResolver.getFileLocalVariables(context, strPrefix, match, queryScope == QueryScope.LOCAL_QUERY);
+            if (isEnough(strPrefix, match, resImpl.fileLocalVars)) return;
         }
         
         if (needFileIncludedMacros(context, offset)) {
             resImpl.fileProjectMacros = contResolver.getFileIncludedProjectMacros(context, strPrefix, match);
+            if (isEnough(strPrefix, match, resImpl.fileProjectMacros)) return;
         }
         if (needFileIncludedLibMacros(context, offset)) {
             resImpl.fileLibMacros = contResolver.getFileIncludeLibMacros(context, strPrefix, match);
+            if (isEnough(strPrefix, match, resImpl.fileLibMacros)) return;
         }
         if (needGlobalMacros(context, offset)) {
             resImpl.globProjectMacros = contResolver.getProjectMacros(context, strPrefix, match);
+            if (isEnough(strPrefix, match, resImpl.globProjectMacros)) return;
         }
         if (needGlobalLibMacros(context, offset)) {
             resImpl.globLibMacros = contResolver.getLibMacros(context, strPrefix, match);
+            if (isEnough(strPrefix, match, resImpl.globLibMacros)) return;
         } 
         
         if (needGlobalVariables(context, offset)) {
             resImpl.globVars = getGlobalVariables(context, prj, strPrefix, match, offset);
+            if (isEnough(strPrefix, match, resImpl.globVars)) return;
         }
         if (needGlobalEnumerators(context, offset)) {
             resImpl.globEnumerators = getGlobalEnumerators(context, prj, strPrefix, match, offset);
+            if (isEnough(strPrefix, match, resImpl.globEnumerators)) return;
         }
         if (needGlobalFunctions(context, offset)) {
             resImpl.globFuns = getGlobalFunctions(context, prj, strPrefix, match, offset);
+            if (isEnough(strPrefix, match, resImpl.globFuns)) return;
         }
         if (needGlobalNamespaces(context, offset)) {
             resImpl.globProjectNSs = getGlobalNamespaces(context, prj, strPrefix, match, offset);
+            if (isEnough(strPrefix, match, resImpl.globProjectNSs)) return;
             resImpl.projectNsAliases = getProjectNamespaceAliases(context, prj, strPrefix, match, offset);
+            if (isEnough(strPrefix, match, resImpl.projectNsAliases)) return;
         }        
         
         if (needLibClasses(context, offset)) {
             resImpl.libClasses = getLibClassesEnums(prj, strPrefix, match);
+            if (isEnough(strPrefix, match, resImpl.libClasses)) return;
         }
         if (needLibVariables(context, offset)) {
             resImpl.libVars = getLibVariables(prj, strPrefix, match);
+            if (isEnough(strPrefix, match, resImpl.libVars)) return;
         }
         if (needLibEnumerators(context, offset)) {
             resImpl.libEnumerators = getLibEnumerators(prj, strPrefix, match);
+            if (isEnough(strPrefix, match, resImpl.libEnumerators)) return;
         }
         if (needLibFunctions(context, offset)) {
             resImpl.libFuns = getLibFunctions(prj, strPrefix, match);
+            if (isEnough(strPrefix, match, resImpl.libFuns)) return;
         }
         if (needLibNamespaces(context, offset)) {
             resImpl.libNSs = getLibNamespaces(prj, strPrefix, match);
+            if (isEnough(strPrefix, match, resImpl.libNSs)) return;
 //            libNsAliases = getLibNamespaceAliases(prj, strPrefix, match, offset);
-        }        
-        this.result = buildResult(context, resImpl);
-        //long timeEnd = System.nanoTime();
-        //System.out.println("get gesolve list time "+(timeEnd -timeStart)+" objects "+result.size()); //NOI18N
-        //System.out.println("get global macro time "+(timeGlobMacroEnd -timeGlobMacroStart)+" objects "+ //NOI18N
-        //        (globProjectMacros.size()+globLibMacros.size()));
-        if (TIMING_COMPLETION) {
-            time = System.currentTimeMillis() - time;
-            System.err.println("Resolving context took " + time + "ms");
         }        
     }
 

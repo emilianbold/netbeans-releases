@@ -123,11 +123,12 @@ public class AstPath implements Iterable<ASTNode> {
      * passed in path list.
      */
     @SuppressWarnings("unchecked")
-    public ASTNode findPathTo(ASTNode node, int line, int column) {
+    private ASTNode findPathTo(ASTNode node, int line, int column) {
         
         assert line >=0 : "line number was negative: " + line;
         assert column >=0 : "column number was negative: " + column;
         assert node != null : "ASTNode should not be null";
+        assert node instanceof ModuleNode : "ASTNode must be a ModuleNode";
         
         path.addAll(find(node, line, column));
         path.add(0, node);
@@ -143,6 +144,7 @@ public class AstPath implements Iterable<ASTNode> {
         assert line >=0 : "line number was negative: " + line;
         assert column >=0 : "column number was negative: " + column;
         assert node != null : "ASTNode should not be null";
+        assert node instanceof ModuleNode : "ASTNode must be a ModuleNode";
         
         ModuleNode moduleNode = (ModuleNode) node;
         PathFinderVisitor pathFinder = new PathFinderVisitor(moduleNode.getContext(), line, column);
