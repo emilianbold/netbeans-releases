@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -51,13 +52,9 @@ import org.netbeans.junit.NbTestCase;
  */
 public class InputReadersReaderTest extends NbTestCase {
 
-    private static final byte[] TEST_BYTES = new byte[] {
-        0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x50
-    };
+    private static final char[] TEST_CHARS = "abcdefghij".toCharArray();
 
-    private static final long STARVATION_TIMEOUT = 2000;
-
-    private static final int MAX_RETRIES = TEST_BYTES.length * 2;
+    private static final int MAX_RETRIES = TEST_CHARS.length * 2;
 
     private static final Charset TEST_CHARSET = Charset.forName("UTF-8");
 
@@ -65,43 +62,22 @@ public class InputReadersReaderTest extends NbTestCase {
         super(name);
     }
 
-    public void testReadOutput() throws IOException {
+    public void testReadInput() throws IOException {
         Reader reader = new InputStreamReader(TestInputUtils.prepareInputStream(
-                TEST_BYTES), TEST_CHARSET);
-        InputReader outputReader = InputReaders.forReader(reader, TEST_CHARSET);
+                TEST_CHARS, TEST_CHARSET), TEST_CHARSET);
+        InputReader inputReader = InputReaders.forReader(reader);
         TestInputProcessor processor = new TestInputProcessor(false);
 
         int read = 0;
         int retries = 0;
-        while (read < TEST_BYTES.length && retries < MAX_RETRIES) {
-            read += outputReader.readOutput(processor);
+        while (read < TEST_CHARS.length && retries < MAX_RETRIES) {
+            read += inputReader.readInput(processor);
             retries++;
         }
 
-        assertEquals(read, TEST_BYTES.length);
+        assertEquals(read, TEST_CHARS.length);
         assertEquals(0, processor.getResetCount());
 
-        byte[] processed = processor.getBytesProcessed();
-        for (int i = 0; i < TEST_BYTES.length; i++) {
-            assertEquals(TEST_BYTES[i], processed[i]);
-        }
+        assertTrue(Arrays.equals(TEST_CHARS, processor.getCharsProcessed()));
     }
-
-
-//    public void testGreedy() throws IOException {
-//        Reader reader = new InputStreamReader(TestInputUtils.prepareInputStream(
-//                TEST_BYTES), TEST_CHARSET);
-//        InputReader outputReader = InputReaders.forReader(reader, TEST_CHARSET, false);
-//        TestInputProcessor processor = new TestInputProcessor(false);
-//
-//        int read = outputReader.readOutput(processor);
-//
-//        assertEquals(read, TEST_BYTES.length);
-//        assertEquals(0, processor.getResetCount());
-//
-//        byte[] processed = processor.getBytesProcessed();
-//        for (int i = 0; i < TEST_BYTES.length; i++) {
-//            assertEquals(TEST_BYTES[i], processed[i]);
-//        }
-//    }
 }

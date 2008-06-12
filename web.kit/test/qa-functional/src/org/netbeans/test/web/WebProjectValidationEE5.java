@@ -59,6 +59,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jellytools.actions.RedeployProjectAction;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
@@ -82,7 +83,6 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
         PROJECT_NAME = "WebJ2EE5Project"; // NOI18N
 //        PROJECT_FOLDER = PROJECT_LOCATION + File.separator + PROJECT_NAME;
     }
-
     protected TestURLDisplayer urlDisplayer;
     private ServerInstance server;
 
@@ -199,9 +199,9 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
 //        ProjectSupport.waitScanFinished();
 //        // XXX HACK
         WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
-        new Node(webPages,"index.jsp");//NOI18N
-        new Node(webPages,"WEB-INF|web.xml");//NOI18N
-        new Node(webPages,"WEB-INF|sun-web.xml");//NOI18N
+        new Node(webPages, "index.jsp");//NOI18N
+        new Node(webPages, "WEB-INF|web.xml");//NOI18N
+        new Node(webPages, "WEB-INF|sun-web.xml");//NOI18N
 //        new Node(webPages,"META-INF|context.xml");//NOI18N
         ref(Util.dumpProjectView(PROJECT_NAME));
         compareReferenceFiles();
@@ -225,16 +225,16 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
     //compareReferenceFiles();
     //compareDD();
     }
-    
+
     public void testRedeployProject() throws IOException {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
         Util.cleanStatusBar();
         new RedeployProjectAction().perform(rootNode);
         waitBuildSuccessful();
         logAndCloseOutputs();
-        //MainWindowOperator.getDefault().waitStatusText("Finished building");
+    //MainWindowOperator.getDefault().waitStatusText("Finished building");
     }
-    
+
     public void testStopServer() throws Exception {
         server.stop();
         //try { Thread.currentThread().sleep(5000); } catch (InterruptedException e) {}
@@ -242,11 +242,13 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
         URLConnection connection = url.openConnection();
         try {
             connection.connect();
-            fail("Connection to: "+url+" established, but the server" +
+            fail("Connection to: " + url + " established, but the server" +
                     " should not be running.");
-        } catch (ConnectException e) {  }
+        } catch (ConnectException e) {
+            System.out.println("Exception in testStopServer occured!");
+        }
     }
-    
+
     public void testStartServer() throws Exception {
         server.start();
         URL url = server.getServerURL();
@@ -255,7 +257,6 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
     }
 
     //********************************************************
-    
     protected void sleep(int milis) {
         try {
             Thread.sleep(milis);

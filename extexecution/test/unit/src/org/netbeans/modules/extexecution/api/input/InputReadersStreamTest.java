@@ -40,6 +40,8 @@
 package org.netbeans.modules.extexecution.api.input;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Arrays;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -48,56 +50,37 @@ import org.netbeans.junit.NbTestCase;
  */
 public class InputReadersStreamTest extends NbTestCase {
 
-    private static final byte[] TEST_BYTES = new byte[] {
-        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09
-    };
+    private static final char[] TEST_CHARS = "abcdefghij".toCharArray();
 
-    private static final int MAX_RETRIES = TEST_BYTES.length * 2;
+    private static final int MAX_RETRIES = TEST_CHARS.length * 2;
+
+    private static final Charset TEST_CHARSET = Charset.forName("UTF-8");
 
     public InputReadersStreamTest(String name) {
         super(name);
     }
 
-    public void testReadOutput() throws IOException {
-        InputReader outputReader = InputReaders.forStream(TestInputUtils.prepareInputStream(
-                TEST_BYTES));
+    public void testReadInput() throws IOException {
+        InputReader reader = InputReaders.forStream(TestInputUtils.prepareInputStream(
+                TEST_CHARS, TEST_CHARSET), TEST_CHARSET);
         TestInputProcessor processor = new TestInputProcessor(false);
 
         int read = 0;
         int retries = 0;
-        while (read < TEST_BYTES.length && retries < MAX_RETRIES) {
-            read += outputReader.readOutput(processor);
+        while (read < TEST_CHARS.length && retries < MAX_RETRIES) {
+            read += reader.readInput(processor);
             retries++;
         }
 
-        assertEquals(read, TEST_BYTES.length);
+        assertEquals(read, TEST_CHARS.length);
         assertEquals(0, processor.getResetCount());
 
-        byte[] processed = processor.getBytesProcessed();
-        for (int i = 0; i < TEST_BYTES.length; i++) {
-            assertEquals(TEST_BYTES[i], processed[i]);
-        }
+        assertTrue(Arrays.equals(TEST_CHARS, processor.getCharsProcessed()));
     }
-
-//    public void testGreedy() throws IOException {
-//        InputReader outputReader = InputReaders.forStream(TestInputUtils.prepareInputStream(
-//                TEST_BYTES), true);
-//        TestInputProcessor processor = new TestInputProcessor(false);
-//
-//        int read = outputReader.readOutput(processor);
-//
-//        assertEquals(read, TEST_BYTES.length);
-//        assertEquals(0, processor.getResetCount());
-//
-//        byte[] processed = processor.getBytesProcessed();
-//        for (int i = 0; i < TEST_BYTES.length; i++) {
-//            assertEquals(TEST_BYTES[i], processed[i]);
-//        }
-//    }
 
     public void testFactory() {
         try {
-            InputReaders.forStream(null);
+            InputReaders.forStream(null, TEST_CHARSET);
             fail("Accepts null stream"); // NOI18N
         } catch (NullPointerException ex) {
             // expected
@@ -106,11 +89,11 @@ public class InputReadersStreamTest extends NbTestCase {
 
     public void testClose() throws IOException {
         InputReader reader = InputReaders.forStream(TestInputUtils.prepareInputStream(
-                new byte[] {0x00, 0x01, 0x02}));
+                TEST_CHARS, TEST_CHARSET), TEST_CHARSET);
         reader.close();
 
         try {
-            reader.readOutput(null);
+            reader.readInput(null);
             fail("Reader not throw exception on read after closing it"); // NOI18N
         } catch (IllegalStateException ex) {
             // expected

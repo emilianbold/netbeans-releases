@@ -54,7 +54,7 @@ import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyParseResult;
-import org.netbeans.modules.ruby.StructureAnalyzer.AnalysisResult;
+import org.netbeans.modules.ruby.RubyStructureAnalyzer.AnalysisResult;
 import org.netbeans.modules.ruby.elements.AstAttributeElement;
 import org.netbeans.modules.ruby.elements.AstClassElement;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;

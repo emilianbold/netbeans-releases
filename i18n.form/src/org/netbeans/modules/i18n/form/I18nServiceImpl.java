@@ -64,8 +64,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -103,6 +101,26 @@ public class I18nServiceImpl implements I18nService {
         i18nString.setKey(key);
         i18nString.setValue(value);
         return i18nString;
+    }
+
+    /**
+     * Creates a copy of I18nValue, including data from all locales corresponding
+     * to the actual key. The copied value does not refer to the original
+     * properties file - i.e. can be added to another one.
+     * @param value I18nValue to be copied
+     * @return the copied I18nValue
+     */
+    public I18nValue copy(I18nValue value) {
+        FormI18nString i18nString = (FormI18nString) value;
+        FormI18nString copy = new FormI18nString(i18nString);
+        copy.getSupport().getResourceHolder().setResource(null);
+        if (i18nString.allData == null && i18nString.getKey() != null)  {
+            JavaResourceHolder jrh = (JavaResourceHolder) i18nString.getSupport().getResourceHolder();
+            copy.allData = jrh.getAllData(i18nString.getKey());
+        } else {
+            copy.allData = i18nString.allData;
+        }
+        return copy;
     }
 
     /**

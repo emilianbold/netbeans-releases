@@ -83,12 +83,14 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
+import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
@@ -100,7 +102,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
-import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -135,8 +136,19 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_TOKEN}
         );
     
+    private static final List<PHPTokenId[]> COMMENT_TOKENCHAINS = Arrays.asList(
+            new PHPTokenId[]{PHPTokenId.PHP_COMMENT_START},
+            new PHPTokenId[]{PHPTokenId.PHP_COMMENT},
+            new PHPTokenId[]{PHPTokenId.PHP_LINE_COMMENT}
+            );
+    
+    private static final List<PHPTokenId[]> PHPDOC_TOKENCHAINS = Arrays.asList(
+            new PHPTokenId[]{PHPTokenId.PHPDOC_COMMENT_START},
+            new PHPTokenId[]{PHPTokenId.PHPDOC_COMMENT}
+            );
+    
     private static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, STRING,
-        CLASS_MEMBER, STATIC_CLASS_MEMBER, UNKNOWN};
+        CLASS_MEMBER, STATIC_CLASS_MEMBER, PHPDOC, NONE};
 
     private final static String[] PHP_KEYWORDS = {"__FILE__", "exception",
         "__LINE__", "array()", "class", "const", "continue", "die()", "echo()", "empty()", "endif",
@@ -159,20 +171,24 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private static CompletionContext findCompletionContext(CompilationInfo info, int caretOffset){
         Document document = info.getDocument();
         if (document == null) {
-            return CompletionContext.UNKNOWN;
+            return CompletionContext.NONE;
         }
         TokenHierarchy th = TokenHierarchy.get(document);
         TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence();
         tokenSequence.move(caretOffset);
         if (!tokenSequence.moveNext()){
-            return CompletionContext.UNKNOWN;
+            return CompletionContext.NONE;
         }
 
         switch (tokenSequence.token().id()){
             case T_INLINE_HTML:
                 return CompletionContext.HTML;
             case PHP_CONSTANT_ENCAPSED_STRING:
-                return CompletionContext.STRING;
+                if (tokenSequence.token().text().charAt(0) == '"') {
+                    return CompletionContext.STRING;
+                } else {
+                    return CompletionContext.NONE;
+                }
             default:
         }
 
@@ -184,7 +200,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         } else if (acceptTokenChains(tokenSequence, STATIC_CLASS_MEMBER_TOKENCHAINS)){
             return CompletionContext.STATIC_CLASS_MEMBER;
-
+        } else if (acceptTokenChains(tokenSequence, COMMENT_TOKENCHAINS)){
+            return CompletionContext.NONE;
+        } else if (acceptTokenChains(tokenSequence, PHPDOC_TOKENCHAINS)){
+            return CompletionContext.PHPDOC;
         }
         
         return CompletionContext.EXPRESSION;
@@ -255,6 +274,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         
         CompletionContext context = findCompletionContext(info, caretOffset);
         
+        if (context == CompletionContext.NONE){
+            return CodeCompletionResult.NONE;
+        }
+        
         PHPCompletionItem.CompletionRequest request = new PHPCompletionItem.CompletionRequest();
         request.anchor = caretOffset - prefix.length();
         request.formatter = formatter;
@@ -291,6 +314,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             case STATIC_CLASS_MEMBER:
                 autoCompleteClassMembers(proposals, request, true);
                 break;
+            case PHPDOC:
+                PHPDOCCodeCompletion.complete(proposals, request);
+                break;
         }
         
         return new PHPCompletionResult(completionContext, proposals);
@@ -317,6 +343,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             boolean instanceContext = !staticContext;
             boolean includeInherited = true;
             boolean moreTokens = true;
+            int attrMask = Modifier.PUBLIC;
 
             if (tokenSequence.token().id() == PHPTokenId.WHITESPACE) {
                 moreTokens = tokenSequence.movePrevious();
@@ -334,6 +361,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     typeName = classDecl.getName().getName();
                     staticContext = instanceContext = true;
                     includeInherited = false;
+                    attrMask |= (Modifier.PROTECTED | Modifier.PRIVATE);
                 }
             } else if (varName.equals("parent")) { //NOI18N
                 ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
@@ -342,6 +370,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     if (superIdentifier != null) {
                         typeName = superIdentifier.getName();
                         staticContext = instanceContext = true;
+                        attrMask |= Modifier.PROTECTED;
                     }
                 }
             } else if (varName.equals("$this")) { //NOI18N
@@ -351,6 +380,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     staticContext = false;
                     instanceContext = true;
                     completeDollarPrefix = false;
+                    attrMask |= (Modifier.PROTECTED | Modifier.PRIVATE);
                 }
             } else {
                 if (staticContext) {
@@ -371,8 +401,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
             if (typeName != null){
                 Collection<IndexedFunction> methods = includeInherited ?
-                    request.index.getAllMethods(request.result, typeName, request.prefix, nameKind) :
-                    request.index.getMethods(request.result, typeName, request.prefix, nameKind);
+                    request.index.getAllMethods(request.result, typeName, request.prefix, nameKind, attrMask) :
+                    request.index.getMethods(request.result, typeName, request.prefix, nameKind, attrMask);
 
                 for (IndexedFunction method : methods){
                     if (staticContext && method.isStatic() || instanceContext && !method.isStatic()) {
@@ -381,8 +411,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 }
 
                 Collection<IndexedConstant> properties = includeInherited ?
-                    request.index.getAllProperties(request.result, typeName, request.prefix, nameKind) :
-                    request.index.getProperties(request.result, typeName, request.prefix, nameKind);
+                    request.index.getAllProperties(request.result, typeName, request.prefix, nameKind, attrMask) :
+                    request.index.getProperties(request.result, typeName, request.prefix, nameKind, attrMask);
 
                 for (IndexedConstant prop : properties){
                     if (staticContext && prop.isStatic() || instanceContext && !prop.isStatic()) {
@@ -477,27 +507,42 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return proposals;
     }
     
-    private void getLocalVariables_indexVariable(Expression expr,
+    private void getLocalVariables_indexVariable(Variable var,
+            Map<String, IndexedConstant> localVars,
+            String namePrefix, String localFileURL, String type) {
+
+        String varName = extractVariableName(var);
+        
+        if (isPrefix(varName, namePrefix)) {
+            IndexedConstant ic = new IndexedConstant(varName, null,
+                    null, localFileURL, -1, 0, type);
+
+            localVars.put(varName, ic);
+        }
+    }
+    
+    private boolean isPrefix(String name, String prefix){
+        return name != null && (name.startsWith(prefix) 
+                || nameKind == NameKind.CASE_INSENSITIVE_PREFIX && name.toLowerCase().startsWith(prefix.toLowerCase()));
+    }
+    
+    private void getLocalVariables_indexVariableInAssignment(Expression expr,
             Map<String, IndexedConstant> localVars,
             String namePrefix, String localFileURL) {
         
         if (expr instanceof Assignment) {
             Assignment assignment = (Assignment) expr;
-            String varName = extractVariableNameFromAssignment(assignment);
-            String varType = extractVariableTypeFromAssignment(assignment);
-
-            if (varName != null && (varName.startsWith(namePrefix) 
-                    || nameKind == NameKind.CASE_INSENSITIVE_PREFIX 
-                    && varName.toLowerCase().startsWith(namePrefix.toLowerCase()))) {
+            
+            if (assignment.getLeftHandSide() instanceof Variable) {
+                Variable variable = (Variable) assignment.getLeftHandSide();
+                String varType = extractVariableTypeFromAssignment(assignment);
                 
-                IndexedConstant ic = new IndexedConstant(varName, null,
-                        null, localFileURL, -1, 0, varType);
-
-                localVars.put(varName, ic);
+                getLocalVariables_indexVariable(variable, localVars, namePrefix, 
+                        localFileURL, varType);
             }
             
             if (assignment.getRightHandSide() instanceof Assignment){
-                getLocalVariables_indexVariable(assignment.getRightHandSide(),
+                getLocalVariables_indexVariableInAssignment(assignment.getRightHandSide(),
                         localVars, namePrefix, localFileURL);
             }
         }
@@ -513,7 +558,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             
             if (statement instanceof ExpressionStatement){
                 Expression expr = ((ExpressionStatement)statement).getExpression();
-                getLocalVariables_indexVariable(expr, localVars, namePrefix, localFileURL);
+                getLocalVariables_indexVariableInAssignment(expr, localVars, namePrefix, localFileURL);
                 
             } else if (!offsetWithinStatement(position, statement)){
                 continue;
@@ -527,7 +572,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 
             } else if (statement instanceof IfStatement){
                 IfStatement ifStmt = (IfStatement)statement;
-                getLocalVariables_indexVariable(ifStmt.getCondition(), localVars, namePrefix, localFileURL);
+                getLocalVariables_indexVariableInAssignment(ifStmt.getCondition(), localVars, namePrefix, localFileURL);
                 
                 if (offsetWithinStatement(position, ifStmt.getTrueStatement())) {
                     getLocalVariables_MergeResults(localVars,
@@ -541,7 +586,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 }
             } else if (statement instanceof WhileStatement) {
                 WhileStatement whileStatement = (WhileStatement) statement;
-                getLocalVariables_indexVariable(whileStatement.getCondition(), localVars, namePrefix, localFileURL);
+                getLocalVariables_indexVariableInAssignment(whileStatement.getCondition(), localVars, namePrefix, localFileURL);
                 
                 getLocalVariables_MergeResults(localVars,
                         getLocalVariables(Collections.singleton(whileStatement.getBody()), namePrefix, position, localFileURL));
@@ -554,11 +599,28 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 ForStatement forStatement = (ForStatement) statement;
                 
                 for (Expression expr : forStatement.getInitializers()){
-                    getLocalVariables_indexVariable(expr, localVars, namePrefix, localFileURL);
+                    getLocalVariables_indexVariableInAssignment(expr, localVars, namePrefix, localFileURL);
                 }
                 
                 getLocalVariables_MergeResults(localVars,
                         getLocalVariables(Collections.singleton(forStatement.getBody()), namePrefix, position, localFileURL));
+            } else if (statement instanceof ForEachStatement) {
+                ForEachStatement forEachStatement = (ForEachStatement) statement;
+                
+                if (forEachStatement.getKey() instanceof Variable) {
+                    Variable var = (Variable) forEachStatement.getKey();
+                    getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, null);
+                }
+                
+                if (forEachStatement.getValue() instanceof Variable) {
+                    Variable var = (Variable) forEachStatement.getValue();
+                    getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, null);
+                }
+                
+                getLocalVariables_indexVariableInAssignment(forEachStatement.getValue(), localVars, namePrefix, localFileURL);
+                
+                getLocalVariables_MergeResults(localVars,
+                        getLocalVariables(Collections.singleton(forEachStatement.getStatement()), namePrefix, position, localFileURL));
             } else if (statement instanceof FunctionDeclaration) {
                 FunctionDeclaration functionDeclaration = (FunctionDeclaration) statement;
 
@@ -566,10 +628,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     if (param.getParameterName() instanceof Variable) {
                         String varName = extractVariableName((Variable) param.getParameterName());
                         String type = param.getParameterType() != null ? param.getParameterType().getName() : null;
-                        IndexedConstant ic = new IndexedConstant(varName, null,
-                                null, localFileURL, -1, 0, type);
                         
-                        localVars.put(varName, ic);
+                        if (isPrefix(varName, namePrefix)) {
+                            IndexedConstant ic = new IndexedConstant(varName, null,
+                                    null, localFileURL, -1, 0, type);
+
+                            localVars.put(varName, ic);
+                        }
                     }
                 }
                 
@@ -602,17 +667,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     
     private static boolean offsetWithinStatement(int offset, Statement statement){
         return statement.getEndOffset() >= offset && statement.getStartOffset() <= offset;
-    }
-
-    private static String extractVariableNameFromAssignment(Assignment assignment) {
-        VariableBase variableBase = assignment.getLeftHandSide();
-
-        if (variableBase instanceof Variable) {
-            Variable var = (Variable) variableBase;
-            return extractVariableName(var);
-        }
-
-        return null;
     }
     
     private static String extractVariableTypeFromAssignment(Assignment assignment) {
@@ -719,7 +773,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
     
     private static final boolean isPHPIdentifierPart(char c){
-        return Character.isJavaIdentifierPart(c);// && c != '$';
+        return Character.isJavaIdentifierPart(c) || c == '@';
     }
 
     public String getPrefix(CompilationInfo info, int caretOffset, boolean upToOffset) {
@@ -839,7 +893,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             if(t.id() == PHPTokenId.PHP_OBJECT_OPERATOR
                     || t.id() == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM
                     || t.id() == PHPTokenId.PHP_TOKEN && lastChar == '$'
-                    || t.id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING && lastChar == '$') {
+                    || t.id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING && lastChar == '$'
+                    || t.id() == PHPTokenId.PHPDOC_COMMENT && lastChar == '@') {
                 return QueryType.ALL_COMPLETION;
             }
             

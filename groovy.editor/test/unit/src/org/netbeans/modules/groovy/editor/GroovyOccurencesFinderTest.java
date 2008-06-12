@@ -43,9 +43,7 @@ package org.netbeans.modules.groovy.editor;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.groovy.editor.parser.GroovyOccurrencesFinder;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import org.netbeans.modules.gsf.api.OccurrencesFinder;
 
 /**
  *
@@ -57,11 +55,6 @@ public class GroovyOccurencesFinderTest extends GroovyTestBase {
         super(testName);
     }
 
-    @Override
-    protected OccurrencesFinder getOccurrencesFinder() {
-        return new GroovyOccurrencesFinder();
-    }
-    
     @Override
     protected void setUp() throws Exception {
         super.setUp();

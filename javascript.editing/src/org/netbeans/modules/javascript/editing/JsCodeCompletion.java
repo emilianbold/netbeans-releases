@@ -124,6 +124,7 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class JsCodeCompletion implements CodeCompletionHandler {
+    static int MAX_COMPLETION_ITEMS = JsIndex.MAX_SEARCH_ITEMS;
     private static ImageIcon keywordIcon;
     private boolean caseSensitive;
     private static final String[] REGEXP_WORDS =
@@ -401,7 +402,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
 
         final Document document = info.getDocument();
         if (document == null) {
-            return null;
+            return CodeCompletionResult.NONE;
         }
         final BaseDocument doc = (BaseDocument)document;
 
@@ -414,7 +415,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             Node root = parseResult.getRootNode();
             final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
             if (astOffset == -1) {
-                return null;
+                return CodeCompletionResult.NONE;
             }
             final TokenHierarchy<Document> th = TokenHierarchy.get(document);
             final FileObject fileObject = info.getFileObject();
@@ -442,26 +443,33 @@ public class JsCodeCompletion implements CodeCompletionHandler {
 
             Token<? extends TokenId> token = LexUtilities.getToken(doc, lexOffset);
             if (token == null) {
-                return completionResult;
-            }
-            
-            TokenId id = token.id();
-            if (id == JsTokenId.LINE_COMMENT) {
-                // TODO - Complete symbols in comments?
-                return completionResult;
-            } else if (id == JsTokenId.BLOCK_COMMENT) {
-                try {
-                    completeComments(proposals, request);
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
+                if (JsUtils.isJsFile(fileObject)) {
+                    return completionResult;
                 }
-                return completionResult;
-            } else if (id == JsTokenId.STRING_LITERAL || id == JsTokenId.STRING_END) {
-                completeStrings(proposals, request);
-                return completionResult;
-            } else if (id == JsTokenId.REGEXP_LITERAL || id == JsTokenId.REGEXP_END) {
-                completeRegexps(proposals, request);
-                return completionResult;
+
+                // Embedding? Possibly in something like an EMPTY JAvaScript attribute,
+                // e.g.   <input onclick="|"> - there's no token here. We have to
+                // instead assume an empty prefix.
+                request.prefix = prefix = "";
+            } else {
+                TokenId id = token.id();
+                if (id == JsTokenId.LINE_COMMENT) {
+                    // TODO - Complete symbols in comments?
+                    return completionResult;
+                } else if (id == JsTokenId.BLOCK_COMMENT) {
+                    try {
+                        completeComments(proposals, request);
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    return completionResult;
+                } else if (id == JsTokenId.STRING_LITERAL || id == JsTokenId.STRING_END) {
+                    completeStrings(proposals, request);
+                    return completionResult;
+                } else if (id == JsTokenId.REGEXP_LITERAL || id == JsTokenId.REGEXP_END) {
+                    completeRegexps(proposals, request);
+                    return completionResult;
+                }
             }
             
             if (root != null) {
@@ -1222,13 +1230,13 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         if (fqn != null) {
             matches = index.getElements(prefix, fqn, kind, JsIndex.ALL_SCOPE, result);
         } else {
-//            if (prefix.length() == 0) {
-//                proposals.clear();
-//                proposals.add(new KeywordItem("", "Type more characters to see matches", request));
-//                return true;
-//            } else {
-                matches = index.getAllNames(prefix, kind, JsIndex.ALL_SCOPE, result);
-//            }
+            Pair<Set<IndexedElement>, Boolean> names = index.getAllNamesTruncated(prefix, kind, JsIndex.ALL_SCOPE, result);
+            matches = names.getA();
+            boolean isTruncated = names.getB();
+            if (isTruncated) {
+                request.completionResult.setTruncated(true);
+                includeNonFqn = false;
+            }
         }
         // Also add in non-fqn-prefixed elements
         if (includeNonFqn) {
@@ -1440,11 +1448,21 @@ public class JsCodeCompletion implements CodeCompletionHandler {
 //                    proposals.add(new KeywordItem("", "Type more characters to see matches", request));
 //                    return true;
 //                } else {
-                    elements = index.getAllNames(prefix, kind, JsIndex.ALL_SCOPE, result);
+                    Pair<Set<IndexedElement>, Boolean> names = index.getAllNamesTruncated(prefix, kind, JsIndex.ALL_SCOPE, result);
+                    elements = names.getA();
+                    boolean isTruncated = names.getB();
+                    if (isTruncated) {
+                        request.completionResult.setTruncated(true);
+                    }
 //                }
             }
 
             for (IndexedElement element : elements) {
+                if (proposals.size() >= MAX_COMPLETION_ITEMS) {
+                    request.completionResult.setTruncated(true);
+                    return true;
+                }
+
                 // Skip constructors - you don't want to call
                 //   x.Foo !
 //                if (element.getKind() == ElementKind.CONSTRUCTOR) {
@@ -1541,7 +1559,11 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                 }
 
                 if (token.id() == JsTokenId.NEW) {
-                    Set<IndexedElement> elements = index.getConstructors(prefix, kind, JsIndex.ALL_SCOPE);
+                    Pair<Set<IndexedElement>, Boolean> constructors = index.getConstructors(prefix, kind, JsIndex.ALL_SCOPE);
+                    Set<IndexedElement> elements = constructors.getA();
+                    if (constructors.getB()) {
+                        request.completionResult.setTruncated(true);
+                    }
                     String lhs = request.call.getLhs();
                     if (lhs != null && lhs.length() > 0) {
                         Set<IndexedElement> m = index.getElements(prefix, lhs, kind, JsIndex.ALL_SCOPE, null);
@@ -1570,6 +1592,11 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                     }
 
                     for (IndexedElement element : elements) {
+                        if (proposals.size() >= MAX_COMPLETION_ITEMS) {
+                            request.completionResult.setTruncated(true);
+                            return true;
+                        }
+
                         // Hmmm, is this necessary? Filtering should happen in the getInheritedMEthods call
                         if ((prefix.length() > 0) && !element.getName().startsWith(prefix)) {
                             continue;

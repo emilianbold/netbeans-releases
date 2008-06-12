@@ -44,7 +44,9 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.JarURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -151,6 +153,19 @@ public class JarClassLoaderTest extends NbTestCase {
         assertURLsContent(jcl.getResources("/package/resource.txt"), "content");
         assertURLsContent(jcl.getResources("resource.txt"), "content");
         assertURLsContent(jcl.getResources("/resource.txt"), "content");
+    }
+
+    public void testJarURLConnection() throws Exception {
+        File jar = new File(getWorkDir(), "default-package-resource.jar");
+        TestFileUtils.writeZipFile(jar, "META-INF/MANIFEST.MF:Manifest-Version: 1.0\nfoo: bar\n\n", "package/resource.txt:content");
+        JarClassLoader jcl = new JarClassLoader(Collections.singletonList(jar), new ProxyClassLoader[0]);
+        URLConnection conn = jcl.getResource("package/resource.txt").openConnection();
+        assertTrue(conn instanceof JarURLConnection);
+        JarURLConnection jconn = (JarURLConnection) conn;
+        assertEquals("package/resource.txt", jconn.getEntryName());
+        assertEquals(jar.toURI().toURL(), jconn.getJarFileURL());
+        assertEquals("bar", jconn.getMainAttributes().getValue("foo"));
+        assertEquals(jar.getAbsolutePath(), jconn.getJarFile().getName());
     }
 
     private void assertURLsContent(Enumeration<URL> urls, String ... contents) throws IOException {

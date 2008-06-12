@@ -165,7 +165,7 @@ class JavaCodeGenerator extends CodeGenerator {
     static final int LAYOUT_CODE_LIBRARY = 2;
 
     private static final String EVT_SECTION_PREFIX = "event_"; // NOI18N
-
+    private static final String EVT_VARIABLE_NAME = "evt"; // NOI18N
     private static final String DEFAULT_LISTENER_CLASS_NAME = "FormListener"; // NOI18N
 
     static final String CUSTOM_CODE_MARK = "\u001F"; // NOI18N
@@ -2202,6 +2202,15 @@ class JavaCodeGenerator extends CodeGenerator {
         if (properties == null) return;
 
 	CreationDescriptor.Creator creator = getPropertyCreator(propertyType, properties);
+        if (creator == null) { // Issue 136252
+            String message = "No Creator found for " + propertyType; // NOI18N
+            if (prop instanceof RADProperty) {
+                String component = ((RADProperty)prop).getRADComponent().getName();
+                message += "\nCheck " + prop.getName() + " property of " + component + " component."; // NOI18N
+            }
+            Logger.getLogger(getClass().getName()).log(Level.WARNING, message);
+            return;
+        }
 	java.util.List<FormProperty> creatorProperties = getCreatorProperties(creator, properties);
 															
 	java.util.List<FormProperty> remainingProperties = new ArrayList<FormProperty>();
@@ -2253,7 +2262,7 @@ class JavaCodeGenerator extends CodeGenerator {
     
     private CreationDescriptor.Creator getPropertyCreator(Class clazz, FormProperty[] properties) {	
 	CreationDescriptor creationDesc = CreationFactory.getDescriptor(clazz);
-	return creationDesc.findBestCreator(properties,
+	return (creationDesc == null) ? null : creationDesc.findBestCreator(properties,
 					    // XXX CHANGED_ONLY ???
 					    CreationDescriptor.CHANGED_ONLY | CreationDescriptor.PLACE_ALL);	
     }
@@ -3307,7 +3316,7 @@ class JavaCodeGenerator extends CodeGenerator {
         if (paramTypes.length == 1
             && EventObject.class.isAssignableFrom(paramTypes[0]))
         {
-            paramNames = new String[] { formSettings.getEventVariableName() };
+            paramNames = new String[] { EVT_VARIABLE_NAME };
         }
         else {
             paramNames = new String[paramTypes.length];
@@ -4373,7 +4382,7 @@ class JavaCodeGenerator extends CodeGenerator {
         
         @Override
         public PropertyEditor getPropertyEditor() {
-            return new FormLoaderSettingsBeanInfo.ListenerGenerationStyleEditor();
+            return new ListenerGenerationStyleEditor();
         }
         
     }
@@ -4428,8 +4437,57 @@ class JavaCodeGenerator extends CodeGenerator {
 
         @Override
         public PropertyEditor getPropertyEditor() {
-            return new FormLoaderSettingsBeanInfo.LayoutCodeTargetEditor(true);
+            return new LayoutCodeTargetEditor(true);
         }
 
+    }
+    
+    public final static class LayoutCodeTargetEditor
+                      extends org.netbeans.modules.form.editors.EnumEditor
+    {
+        public LayoutCodeTargetEditor() {
+            this(false);
+        }
+        public LayoutCodeTargetEditor(boolean specific) {
+            super(specific ?
+                new Object[] {
+                    FormUtils.getBundleString("CTL_LAYOUT_CODE_JDK6"), // NOI18N
+                    new Integer(JavaCodeGenerator.LAYOUT_CODE_JDK6),
+                    "", // NOI18N
+                    FormUtils.getBundleString("CTL_LAYOUT_CODE_LIBRARY"), // NOI18N
+                    new Integer(JavaCodeGenerator.LAYOUT_CODE_LIBRARY),
+                    "" // NOI18N
+                }
+                :
+                new Object[] {
+                    FormUtils.getBundleString("CTL_LAYOUT_CODE_AUTO"), // NOI18N
+                    new Integer(JavaCodeGenerator.LAYOUT_CODE_AUTO),
+                    "", // NOI18N
+                    FormUtils.getBundleString("CTL_LAYOUT_CODE_JDK6"), // NOI18N
+                    new Integer(JavaCodeGenerator.LAYOUT_CODE_JDK6),
+                    "", // NOI18N
+                    FormUtils.getBundleString("CTL_LAYOUT_CODE_LIBRARY"), // NOI18N
+                    new Integer(JavaCodeGenerator.LAYOUT_CODE_LIBRARY),
+                    "" // NOI18N
+                });
+        }
+    }
+    
+    public final static class ListenerGenerationStyleEditor
+                      extends org.netbeans.modules.form.editors.EnumEditor
+    {
+        public ListenerGenerationStyleEditor() {
+            super(new Object[] {
+                FormUtils.getBundleString("CTL_LISTENER_ANONYMOUS_CLASSES"), // NOI18N
+                new Integer(JavaCodeGenerator.ANONYMOUS_INNERCLASSES),
+                "", // NOI18N
+                FormUtils.getBundleString("CTL_LISTENER_CEDL_INNERCLASS"), // NOI18N
+                new Integer(JavaCodeGenerator.CEDL_INNERCLASS),
+                "", // NOI18N
+                FormUtils.getBundleString("CTL_LISTENER_CEDL_MAINCLASS"), // NOI18N
+                new Integer(JavaCodeGenerator.CEDL_MAINCLASS),
+                "" // NOI18N
+            });
+        }
     }
 }

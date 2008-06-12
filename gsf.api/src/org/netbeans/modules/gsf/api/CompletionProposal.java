@@ -54,7 +54,10 @@ import org.netbeans.modules.gsf.api.annotations.NonNull;
  * @author Tor Norbye
  */
 public interface CompletionProposal {
-    /** The offset at which the completion item substitution should begin */
+    /**
+     * The offset at which the completion item substitution should begin
+     * @return The anchor offset
+     */
     int getAnchorOffset();
 
     @CheckForNull
@@ -87,6 +90,7 @@ public interface CompletionProposal {
     /**
      * Return true iff this is a "smart" completion item - one that should be emphasized
      * (currently the IDE flushes these to the top and separates them with a line)
+     * @return True iff this item is a smart completion item and should be shown first
      */
     boolean isSmart();
 
@@ -105,14 +109,18 @@ public interface CompletionProposal {
     /**
      * Parameters to be inserted for this item, if any. Has no effect
      * if getCustomInsertTemplate() returns non null.
-     * @return
+     * @deprecated Use {@link #getCustomInsertTemplate} instead!
+     * @return A list of insert parameters
      */
+    @Deprecated
     @CheckForNull
     List<String> getInsertParams();
 
     /** The strings to be inserted to start and end a parameter list. Should be a String of length 2.
      * In Java we would expect {(,)}, and in Ruby it's either {(,)} or { ,}.
+     * @deprecated Use {@link #getCustomInsertTemplate} instead!
      */
+    @Deprecated
     @NonNull
     String[] getParamListDelimiters();
 }

@@ -60,6 +60,7 @@ import javax.lang.model.util.Elements;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.completion.Completion;
@@ -68,12 +69,14 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 
@@ -1342,8 +1345,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             boolean pairCompletion = Utilities.pairCharactersCompletion();
             if (inImport || params.isEmpty()) {
-                String add = inImport ? ";" : CodeStyle.getDefault(null).spaceBeforeMethodCallParen() ? " (" : "("; //NOI18N
-                if (pairCompletion)
+                String add = inImport ? ";" : getCodeStyle(c.getDocument()).spaceBeforeMethodCallParen() ? " (" : "("; //NOI18N
+                if (pairCompletion && !inImport)
                     add += ")"; //NOI18N
                 if (toAdd != null && !add.startsWith(toAdd))
                     add += toAdd;
@@ -1405,7 +1408,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 if (ctm != null) {
                     StringBuilder sb = new StringBuilder();
                     boolean guessArgs = Utilities.guessMethodArguments();
-                    if (CodeStyle.getDefault(null).spaceBeforeMethodCallParen())
+                    if (getCodeStyle(doc).spaceBeforeMethodCallParen())
                     sb.append(' '); //NOI18N
                     sb.append('('); //NOI18N
                     if (text.length() > 1) {
@@ -1887,7 +1890,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             } else {
                 toAdd = null;
             }
-            String text = CodeStyle.getDefault(null).spaceBeforeMethodCallParen() ? " " : ""; //NOI18N
+            String text = getCodeStyle(doc).spaceBeforeMethodCallParen() ? " " : ""; //NOI18N
             if (sequence == null) {
                 text += add;
                 add = null;
@@ -2081,7 +2084,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             String add = isAbstract ? "() {}" : Utilities.pairCharactersCompletion() ? "()" : "("; //NOI18N
             if (toAdd != null && !add.startsWith(toAdd))
                 add += toAdd;
-            String text = CodeStyle.getDefault(null).spaceBeforeMethodCallParen() ? " " : ""; //NOI18N
+            String text = getCodeStyle(doc).spaceBeforeMethodCallParen() ? " " : ""; //NOI18N
             if (sequence == null) {
                 text += add;
                 add = null;
@@ -3082,6 +3085,16 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
         }
         return null;
+    }
+    
+    private static CodeStyle getCodeStyle(Document doc) {
+        Object source = doc.getProperty(doc.StreamDescriptionProperty);
+        if (source instanceof DataObject) {
+            DataObject dObj = (DataObject) source;
+            if (dObj != null)
+                return CodeStyle.getDefault(FileOwnerQuery.getOwner(dObj.getPrimaryFile()));
+        }
+        return CodeStyle.getDefault(null);
     }
 
     static class ParamDesc {

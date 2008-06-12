@@ -75,7 +75,7 @@ import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
-import org.netbeans.modules.ruby.StructureAnalyzer.AnalysisResult;
+import org.netbeans.modules.ruby.RubyStructureAnalyzer.AnalysisResult;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

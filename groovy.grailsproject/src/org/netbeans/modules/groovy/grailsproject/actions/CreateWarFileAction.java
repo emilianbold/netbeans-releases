@@ -31,7 +31,6 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import org.netbeans.api.project.Project;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -39,7 +38,7 @@ import java.util.Enumeration;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.extexecution.api.DefaultDescriptor;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptorBuilder;
 import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.netbeans.modules.extexecution.api.input.InputProcessors;
 import org.netbeans.modules.extexecution.api.input.LineProcessor;
@@ -85,9 +84,15 @@ public class CreateWarFileAction extends AbstractAction implements LineProcessor
 
         Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
                 command, GrailsProjectConfig.forProject(prj)); // NOI18N
-        ExecutionService service = new ExecutionService(callable, displayName,
-                new DefaultDescriptor(prj, autodeploy ? InputProcessors.bridge(this, Charset.defaultCharset()) : null, null, false));
 
+        ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
+        builder.controllable(true).inputVisible(true).showProgress(true).frontWindow(true);
+        if (autodeploy) {
+            builder.outProcessor(InputProcessors.bridge(this));
+        }
+        builder.postExecution(new RefreshProjectRunnable(prj));
+
+        ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
         service.run();
     }
 

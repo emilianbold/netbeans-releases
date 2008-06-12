@@ -1,16 +1,11 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/unused.rb
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   class : Object
   class-ig : object
   fqn : Object
   method : foo(unusedparam,unusedparam2,usedparam)|TOPLEVEL|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|

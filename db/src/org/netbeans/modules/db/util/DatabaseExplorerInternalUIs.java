@@ -54,6 +54,7 @@ import javax.swing.JComboBox;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverSupport;
+import org.netbeans.modules.db.util.JdbcUrl;
 import org.openide.util.NbBundle;
 
 /**
@@ -84,15 +85,20 @@ public final class DatabaseExplorerInternalUIs {
         }
 
         public String getItemTooltipText(Object item) {
-            return ((JDBCDriver)item).toString();
+            JdbcUrl url = (JdbcUrl)item;
+            if (url.getDriver() == null) {
+                return "";
+            } else {
+                return url.getDriver().toString();
+            }
         }
 
         public String getItemDisplayName(Object item) {
-            return ((JDBCDriver)item).getDisplayName();
+            return ((JdbcUrl)item).getDisplayName();
         }
 
         public void newItemActionPerformed() {
-            Set oldDrivers = new HashSet(Arrays.asList(driverManager.getDrivers()));
+            Set<JDBCDriver> oldDrivers = new HashSet<JDBCDriver>(Arrays.asList(driverManager.getDrivers()));
             driverManager.showAddDriverDialog();
 
             // try to find the new driver
@@ -121,14 +127,14 @@ public final class DatabaseExplorerInternalUIs {
     private static final class DriverComboBoxModel extends AbstractListModel implements ComboBoxModel {
 
         private final JDBCDriverManager driverManager;
-        private final List driverList; // must be ArrayList
+        private final ArrayList<JdbcUrl> driverList; 
 
         private Object selectedItem; // can be anything, not just a database driver
 
         public DriverComboBoxModel(JDBCDriverManager driverManager, String driverClass) {
             this.driverManager = driverManager;
 
-            driverList = new ArrayList();
+            driverList = new ArrayList<JdbcUrl>();
             JDBCDriver[] drivers;
             if (driverClass != null) {
                 drivers = driverManager.getDrivers(driverClass);
@@ -136,11 +142,13 @@ public final class DatabaseExplorerInternalUIs {
                 drivers = driverManager.getDrivers();
             }
             for (int i = 0; i < drivers.length; i++) {
-                if (JDBCDriverSupport.isAvailable(drivers[i])) {
-                    driverList.add(drivers[i]);
+                JDBCDriver driver = drivers[i];
+                if (JDBCDriverSupport.isAvailable(driver)) {
+                    driverList.addAll(DriverListUtil.getJdbcUrls(driver));
                 }
             }
-            Collections.sort(driverList, new DriverComparator());
+            
+            Collections.sort(driverList, new DriverTypeComparator());
         }
 
         public void setSelectedItem(Object anItem) {
@@ -159,31 +167,32 @@ public final class DatabaseExplorerInternalUIs {
             return selectedItem;
         }
 
-        public void addSelectedDriver(JDBCDriver dbconn) {
-            selectedItem = dbconn;
-            driverList.add(dbconn);
-            Collections.sort(driverList, new DriverComparator());
+        public void addSelectedDriver(JDBCDriver driver) {
+            List<JdbcUrl> types = DriverListUtil.getJdbcUrls(driver);
+            
+            assert(! types.isEmpty());
+            driverList.addAll(types);
+            setSelectedItem(types.get(0));
+            
+            Collections.sort(driverList, new DriverTypeComparator());
             fireContentsChanged(this, 0, driverList.size());
         }
+        
     }
 
-    private static final class DriverComparator implements Comparator {
-
-        public boolean equals(Object that) {
-            return that instanceof DriverComparator;
-        }
-
-        public int compare(Object driver1, Object driver2) {
-            if (driver1 == null) {
-                return driver2 == null ? 0 : -1;
+    private static final class DriverTypeComparator implements Comparator {
+        public int compare(Object type1, Object type2) {
+            if (type1 == null) {
+                return type2 == null ? 0 : -1;
             } else {
-                if (driver2 == null) {
+                if (type2 == null) {
                     return 1;
                 }
             }
-
-            String dispName1 = ((JDBCDriver)driver1).getDisplayName();
-            String dispName2 = ((JDBCDriver)driver2).getDisplayName();
+            
+            String dispName1 = ((JdbcUrl)type1).getName();
+            String dispName2 = ((JdbcUrl)type2).getName();
+            
             if (dispName1 == null) {
                 return dispName2 == null ? 0 : -1;
             } else {

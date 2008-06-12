@@ -41,8 +41,10 @@ package org.netbeans.modules.extexecution.api.input;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.Callable;
+import java.nio.charset.Charset;
+import java.util.Arrays;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.extexecution.api.input.InputReaders.FileInput;
 
 /**
  *
@@ -50,15 +52,13 @@ import org.netbeans.junit.NbTestCase;
  */
 public class InputReadersFileTest extends NbTestCase {
 
-    private static final byte[] TEST_BYTES = new byte[] {
-        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09
-    };
+    private static final char[] TEST_CHARS = "abcdefghij".toCharArray();
 
-    private static final byte[] TEST_BYTES_ROTATE = new byte[] {
-        0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00
-    };
+    private static final char[] TEST_CHARS_ROTATE = "jihgfedcba".toCharArray();
 
-    private static final int MAX_RETRIES = TEST_BYTES.length * 2;
+    private static final Charset TEST_CHARSET = Charset.forName("UTF-8");
+
+    private static final int MAX_RETRIES = TEST_CHARS.length * 2;
 
     private File byteFile;
 
@@ -73,80 +73,71 @@ public class InputReadersFileTest extends NbTestCase {
         super.setUp();
 
         byteFile = TestInputUtils.prepareFile(
-                "testFile.txt", getWorkDir(), TEST_BYTES);
+                "testFile.txt", getWorkDir(), TEST_CHARS, TEST_CHARSET);
         byteFileRotate = TestInputUtils.prepareFile(
-                "testFileRotate.txt", getWorkDir(), TEST_BYTES_ROTATE);
+                "testFileRotate.txt", getWorkDir(), TEST_CHARS_ROTATE, TEST_CHARSET);
     }
 
-    public void testReadOutput() throws IOException {
-        InputReader outputReader = InputReaders.forFileGenerator(new Callable<File>() {
+    public void testReadInput() throws IOException {
+        final FileInput fileInput = new FileInput(byteFile, TEST_CHARSET);
+        InputReader reader = InputReaders.forFileInputProvider(new InputReaders.FileInput.Provider() {
 
-            public File call() throws Exception {
-                return byteFile;
+            public FileInput getFileInput() {
+                return fileInput;
             }
         });
         TestInputProcessor processor = new TestInputProcessor(false);
 
         int read = 0;
         int retries = 0;
-        while (read < TEST_BYTES.length && retries < MAX_RETRIES) {
-            read += outputReader.readOutput(processor);
+        while (read < TEST_CHARS.length && retries < MAX_RETRIES) {
+            read += reader.readInput(processor);
             retries++;
         }
 
-        assertEquals(read, TEST_BYTES.length);
+        assertEquals(read, TEST_CHARS.length);
         assertEquals(0, processor.getResetCount());
 
-        byte[] processed = processor.getBytesProcessed();
-        for (int i = 0; i < TEST_BYTES.length; i++) {
-            assertEquals(TEST_BYTES[i], processed[i]);
-        }
+        assertTrue(Arrays.equals(TEST_CHARS, processor.getCharsProcessed()));
     }
 
     public void testRotation() throws IOException {
-        TestCallable callable = new TestCallable();
-        callable.setFile(byteFile);
+        TestProvider provider = new TestProvider(byteFile, TEST_CHARSET);
 
-        InputReader outputReader = InputReaders.forFileGenerator(callable);
+        InputReader outputReader = InputReaders.forFileInputProvider(provider);
         TestInputProcessor processor = new TestInputProcessor(true);
 
         int read = 0;
         int retries = 0;
-        while (read < TEST_BYTES.length && retries < MAX_RETRIES) {
-            read += outputReader.readOutput(processor);
+        while (read < TEST_CHARS.length && retries < MAX_RETRIES) {
+            read += outputReader.readInput(processor);
             retries++;
         }
 
-        assertEquals(read, TEST_BYTES.length);
+        assertEquals(read, TEST_CHARS.length);
         assertEquals(0, processor.getResetCount());
 
-        byte[] processed = processor.getBytesProcessed();
-        for (int i = 0; i < TEST_BYTES.length; i++) {
-            assertEquals(TEST_BYTES[i], processed[i]);
-        }
+        assertTrue(Arrays.equals(TEST_CHARS, processor.getCharsProcessed()));
 
         // file rotation
-        callable.setFile(byteFileRotate);
+        provider.setFile(byteFileRotate);
 
         read = 0;
         retries = 0;
-        while (read < TEST_BYTES_ROTATE.length && retries < MAX_RETRIES) {
-            read += outputReader.readOutput(processor);
+        while (read < TEST_CHARS_ROTATE.length && retries < MAX_RETRIES) {
+            read += outputReader.readInput(processor);
             retries++;
         }
 
-        assertEquals(read, TEST_BYTES_ROTATE.length);
+        assertEquals(read, TEST_CHARS_ROTATE.length);
         assertEquals(1, processor.getResetCount());
 
-        processed = processor.getBytesProcessed();
-        for (int i = 0; i < TEST_BYTES_ROTATE.length; i++) {
-            assertEquals(TEST_BYTES_ROTATE[i], processed[i]);
-        }
+        assertTrue(Arrays.equals(TEST_CHARS_ROTATE, processor.getCharsProcessed()));
     }
 
     public void testFactory() {
         try {
-            InputReaders.forFile(null);
+            InputReaders.forFile(null, null);
             fail("Accepts null file generator"); // NOI18N
         } catch (NullPointerException ex) {
             // expected
@@ -154,32 +145,40 @@ public class InputReadersFileTest extends NbTestCase {
     }
 
     public void testClose() throws IOException {
-        InputReader reader = InputReaders.forFileGenerator(new Callable<File>() {
+        final FileInput fileInput = new FileInput(byteFile, TEST_CHARSET);
+        InputReader reader = InputReaders.forFileInputProvider(new InputReaders.FileInput.Provider() {
 
-            public File call() throws Exception {
-                return byteFile;
+            public FileInput getFileInput() {
+                return fileInput;
             }
         });
         reader.close();
 
         try {
-            reader.readOutput(null);
+            reader.readInput(null);
             fail("Reader not throw exception on read after closing it"); // NOI18N
         } catch (IllegalStateException ex) {
             // expected
         }
     }
 
-    private static class TestCallable implements Callable<File> {
+    private static class TestProvider implements InputReaders.FileInput.Provider {
 
-        private File file;
+        private final Charset charset;
 
-        public synchronized File call() throws Exception {
-            return file;
+        private FileInput fileInput;
+
+        public TestProvider(File file, Charset charset) {
+            this.charset = charset;
+            setFile(file);
         }
 
-        public synchronized void setFile(File file) {
-            this.file = file;
+        public final FileInput getFileInput() {
+            return fileInput;
+        }
+
+        public final void setFile(File file) {
+            this.fileInput = new FileInput(file, charset);
         }
 
     }

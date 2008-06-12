@@ -40,22 +40,21 @@ import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import org.openide.util.NbBundle;
 import java.io.File;
-import java.nio.charset.Charset;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import java.util.concurrent.Callable;
-import org.netbeans.modules.extexecution.api.Descriptor;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptorBuilder;
 import org.netbeans.modules.extexecution.api.ExecutionService;
-import org.netbeans.modules.extexecution.api.input.InputProcessor;
 import org.netbeans.modules.extexecution.api.input.InputProcessors;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.GrailsProjectSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.openide.util.Task;
-import org.openide.windows.InputOutput;
+import org.openide.util.Exceptions;
 
 
 
@@ -100,11 +99,22 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
             String displayName = "<new project> (create-app)"; // NOI18N
             Callable<Process> callable = ExecutionSupport.getInstance().createCreateApp(
                     (File) wiz.getProperty("projectFolder")); // NOI18N
-            ExecutionService service = new ExecutionService(callable, displayName,
-                    new CreateDescriptor(InputProcessors.bridge(new ProgressSnooper(handle, 100, 2), Charset.defaultCharset())));
-
-            Task task = service.run();
-            task.waitFinished();
+            
+            ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
+            builder.frontWindow(true).inputVisible(true);
+            builder.outProcessor(InputProcessors.bridge(new ProgressSnooper(handle, 100, 2)));
+            // TODO refresh
+            
+            ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
+            Future<Integer> future = service.run();
+            try {
+                // TODO handle return value
+                future.get();
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex.getCause());
+            }
         } finally {
             handle.progress(100);
         }
@@ -217,50 +227,4 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
 
     public void removeChangeListener(ChangeListener l) {}
 
-
-    private static class CreateDescriptor implements Descriptor {
-
-        private final InputProcessor processor;
-
-        public CreateDescriptor(InputProcessor processor) {
-            this.processor = processor;
-        }
-
-        public InputOutput getInputOutput() {
-            return null;
-        }
-
-        public FileObject getFileObject() {
-            return null;
-        }
-
-        public InputProcessor getOutputSnooper() {
-            return processor;
-        }
-
-        public Runnable getPostExecution() {
-            return null;
-        }
-
-        public boolean isFrontWindow() {
-            return true;
-        }
-
-        public boolean isInputVisible() {
-            return true;
-        }
-
-        public boolean showProgress() {
-            return false;
-        }
-
-        public boolean showSuspended() {
-            return false;
-        }
-
-        public boolean isControlable() {
-            return false;
-        }
-
-    }
 }

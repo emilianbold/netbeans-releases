@@ -278,7 +278,17 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     }
     
     private File getJavaFirstItemInTheList() {
-        return (jdkLocations.size() != 0) ? jdkLocations.get(0) : null;        
+        if(jdkLocations.size() == 0) {
+            return null;
+        }        
+        if(isJreAllowed()) {
+            for(File f : jdkLocations) {
+                if(!FileUtils.exists(f) || JavaUtils.isJdk(f)) {
+                    return f;                     
+                }
+            }            
+        }        
+        return jdkLocations.get(0);        
     }
          
 

@@ -318,6 +318,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
             };
 
             dlg = new ConnectionDialog(this, basePanel, schemaPanel, basePanel.getTitle(), new HelpCtx("new_db_save_password"), actionListener, changeTabListener);  // NOI18N
+            basePanel.setWindow(dlg.getWindow());
             dlg.setVisible(true);
             
             return ConnectionList.getDefault().getConnection(cinfo);

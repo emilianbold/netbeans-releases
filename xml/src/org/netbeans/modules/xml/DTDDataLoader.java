@@ -44,8 +44,6 @@ package org.netbeans.modules.xml;
 import org.netbeans.modules.xml.text.syntax.DTDKit;
 import org.openide.loaders.*;
 import org.openide.filesystems.FileObject;
-import org.openide.actions.*;
-import org.openide.util.*;
 
 
 /** Data loader which recognizes DTD files.
@@ -70,6 +68,7 @@ public final class DTDDataLoader extends UniFileLoader {
 
     /** Does initialization. Initializes display name,
     * extension list and the actions. */
+    @Override
     protected void initialize () {
         super.initialize();
         
@@ -81,6 +80,7 @@ public final class DTDDataLoader extends UniFileLoader {
         setExtensions (ext);
     }
     
+    @Override
     protected String actionsContext() {
         return "Loaders/text/x-dtd/Actions/";
     }
@@ -88,6 +88,7 @@ public final class DTDDataLoader extends UniFileLoader {
     /**
      * Lazy init name.
      */
+    @Override
     protected String defaultDisplayName () {
         return Util.THIS.getString ("PROP_DtdLoader_Name");        
     }
@@ -98,6 +99,7 @@ public final class DTDDataLoader extends UniFileLoader {
      * @param primaryFile primary file recognized by this loader
      * @return primary entry for that file
      */
+    @Override
     protected MultiDataObject.Entry createPrimaryEntry (MultiDataObject obj, FileObject primaryFile) {
         return new XMLDataLoader.XMLFileEntry (obj, primaryFile);  //adds smart templating
     }

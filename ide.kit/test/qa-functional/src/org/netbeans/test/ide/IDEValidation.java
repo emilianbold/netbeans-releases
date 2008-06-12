@@ -49,7 +49,6 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Logger;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
@@ -169,6 +168,8 @@ public class IDEValidation extends JellyTestCase {
     /** Setup called before every test case. */
     @Override
     public void setUp() {
+        //Enable logging from CloneableEditor to investigate hang
+        System.setProperty("editor.log.enabled","true");
         System.out.println("########  "+getName()+"  #######");
         // Close help window if any - it should not stay open between test cases.
         // Otherwise it can break next tests.
@@ -1415,7 +1416,15 @@ public class IDEValidation extends JellyTestCase {
             bcHandler.saveWhiteList(getLog("whitelist.txt"));
         }
         try {
-            assertTrue(bcHandler.listViolations(), bcHandler.noViolations());
+            if (bcHandler.hasWhitelistStorage()) {
+                bcHandler.saveWhiteList();
+                bcHandler.saveWhiteList(getLog("whitelist.txt"));
+                bcHandler.reportDifference(getLog("diff.txt"));
+                assertTrue(bcHandler.reportViolations(getLog("violations.xml")) 
+                        + bcHandler.reportDifference(), bcHandler.noViolations());
+            } else {
+                assertTrue(bcHandler.reportViolations(getLog("violations.xml")), bcHandler.noViolations());
+            }
         } finally {
             bcHandler.remove();
         }        

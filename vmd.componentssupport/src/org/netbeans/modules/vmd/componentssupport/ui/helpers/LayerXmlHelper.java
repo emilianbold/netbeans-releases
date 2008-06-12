@@ -39,65 +39,33 @@
 
 package org.netbeans.modules.vmd.componentssupport.ui.helpers;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  *
  * @author avk
  */
-public class LayerXmlHelper extends BaseHelper{
+public class LayerXmlHelper extends XmlHelper{
 
+    public static final String TEMPLATE_LAYER_XML   = "layer.xml"; //NOI18N
+    
     // browsing layer.xml dom tree
     //// names
     protected static final String LAYER_FILESYSTEM    = "filesystem";             //NOI18N
     protected static final String LAYER_FOLDER        = "folder";                 //NOI18N
+    protected static final String LAYER_FILE        = "file";                 //NOI18N
     protected static final String LAYER_NAME          = "name";                   //NOI18N
     protected static final String LAYER_URL           = "url";                    //NOI18N
         
     //// xpaths to tags
     private static final String LAYER_XPATH_FILESYSTEM 
                                                     = "/"+LAYER_FILESYSTEM;     //NOI18N
-
-    protected static Document parseXmlDocument(FileObject xmlFO) 
-            throws SAXException, IOException, FileNotFoundException 
-    {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        InputStream in = xmlFO.getInputStream();
-        try {
-            FileUtil.copy(in, baos);
-        } finally {
-            in.close();
-        }
-        return XMLUtil.parse(new InputSource(
-                new ByteArrayInputStream(baos.toByteArray())), 
-                false, false, null, null);
-    }
-
-    protected static void saveXmlDocument(Document doc, FileObject xmlFO) 
-            throws IOException 
-    {
-        OutputStream out = xmlFO.getOutputStream();
-        try {
-            XMLUtil.write(doc, out, UTF_8);
-        } finally {
-            out.close();
-        }
-    }
 
     protected static Node goToFilesystemNode(Document doc, XPath xpath, Node parent)
             throws XPathExpressionException 
@@ -109,6 +77,13 @@ public class LayerXmlHelper extends BaseHelper{
             parent.appendChild(fsNode);
         }
         return fsNode;
+    }
+    
+    protected static FileObject createLayerXml(FileObject prjDir, String layerXmlPath) 
+            throws IOException
+    {
+        FileObject template = getTemplate(TEMPLATE_LAYER_XML);
+        return doCopyFile(prjDir, layerXmlPath, template, null);
     }
     
 }

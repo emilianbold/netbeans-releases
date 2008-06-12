@@ -125,7 +125,7 @@ public abstract class CompletionResultItem implements CompletionItem {
         BaseDocument doc = (BaseDocument)component.getDocument();
         doc.atomicLock();
         try {
-            if(context.canReplace()) {
+            if(context.canReplace(text)) {
                 doc.remove( offset, len );
                 doc.insertString( offset, text, null);
             }

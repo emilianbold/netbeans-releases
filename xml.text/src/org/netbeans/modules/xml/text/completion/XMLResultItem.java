@@ -147,6 +147,9 @@ class XMLResultItem implements ResultItem, CompletionItem {
         doc.atomicLock();
         try {
             String currentText = doc.getText(offset, (doc.getLength() - offset) < text.length() ? (doc.getLength() - offset) : text.length()) ;
+            //fix for #86792
+            if(("<"+currentText+">").equals(("</")+text))
+                return true;                        
             if(!text.equals(currentText)) {
                 doc.remove( offset, len );
                 doc.insertString( offset, text, null);

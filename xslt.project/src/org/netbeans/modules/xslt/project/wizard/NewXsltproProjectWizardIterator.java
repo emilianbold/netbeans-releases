@@ -20,6 +20,7 @@ package org.netbeans.modules.xslt.project.wizard;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
@@ -36,8 +37,13 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.soa.ui.SoaUtil;
+import org.netbeans.modules.xslt.tmap.TMapDataLoader;
+import org.netbeans.modules.xslt.tmap.TMapDataObject;
 import org.openide.WizardDescriptor;
+import org.openide.loaders.DataLoader;
+import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 
 /**
  * Iterator for a wizard that needs to instantiate new xslt object.
@@ -118,6 +124,12 @@ public class NewXsltproProjectWizardIterator extends NewIcanproProjectWizardIter
             if (projectNamespace == null) {
                 LOGGER.log(Level.INFO,NbBundle.getMessage(NewXsltproProjectWizardIterator.class, "MSG_TMapNsPropertyNull", TMAP_NS_PROPERTY));
                 projectNamespace = TRANSFORMMAP_NS_PREFIX+ProjectUtils.getInformation(p).getName(); // NOI18N
+            }
+            DataLoader tmapDloader = DataLoader.getLoader(TMapDataLoader.class);
+            if (tmapDloader != null) {
+                DataLoaderPool.setPreferredLoader(tMapFo, tmapDloader);
+            } else {
+                LOGGER.log(Level.WARNING, NbBundle.getMessage(NewXsltproProjectWizardIterator.class, "MSG_TMapLoaderEmpty"));
             }
             Util.initialiseNamespace(tMapFo, projectNamespace);
             

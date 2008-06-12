@@ -125,7 +125,7 @@ public class BpelproProjectGenerator {
 
     private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
         File rootF = dir;
-        while (rootF.getParentFile() != null) {
+        while (rootF.getParentFile() != null /*UNC*/&& rootF.getParentFile().exists()) {
             rootF = rootF.getParentFile();
         }
         FileObject dirFO = FileUtil.toFileObject(rootF);
@@ -147,7 +147,7 @@ public class BpelproProjectGenerator {
         dir.mkdirs();
         File rootF = dir;
 
-        while (rootF.getParentFile() != null) {
+        while (rootF.getParentFile() != null /*UNC*/&& rootF.getParentFile().exists()) {
             rootF = rootF.getParentFile();
         }
         FileObject fo = FileUtil.toFileObject(rootF);
@@ -233,8 +233,7 @@ public class BpelproProjectGenerator {
 
         //============= Start of IcanPro========================================//
         ep.setProperty(IcanproProjectProperties.JBI_SE_TYPE, "sun-bpel-engine"); // NOI18N
-        ep.setProperty(IcanproProjectProperties.SERVICE_UNIT_DESCRIPTION, 
-                NbBundle.getMessage(BpelproProjectGenerator.class, "TXT_Service_Unit_Description")); // NOI18N
+        ep.setProperty(IcanproProjectProperties.SERVICE_UNIT_DESCRIPTION, NbBundle.getMessage(BpelproProjectGenerator.class, "TXT_Service_Unit_Description")); // NOI18N
 
         // vlv # 109451 todo r
         ep.setProperty("jbi.se.type", "sun-bpel-engine"); // NOI18N

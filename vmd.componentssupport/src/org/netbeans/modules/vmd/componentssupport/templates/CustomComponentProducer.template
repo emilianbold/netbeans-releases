@@ -7,9 +7,11 @@
 package ${package};
 
 </#if>
+import org.openide.util.NbBundle;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
+import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.netbeans.modules.vmd.midp.producers.MidpComponentProducer;
 import ${cdPackage}.${cdName};
@@ -28,8 +30,8 @@ public class ${producerName} extends MidpComponentProducer {
     public ${producerName}() {
         super(${cdName}.TYPEID, new PaletteDescriptor(
                 ${paletteCategory}, // Palette category
-                "${paletteDisplayName}", // Palette display name
-                "${paletteTooltip}", // Palette tooltip
+                NbBundle.getMessage(${producerName}.class, "${prefix}_paletteName"), // Palette display name
+                NbBundle.getMessage(${producerName}.class, "${prefix}_paletteTooltip"), // Palette tooltip                
                 ICON_PATH_SMALL, // Small icon
                 ICON_PATH_BIG) // Large icon
                 );

@@ -230,12 +230,16 @@ public class HibernateRevengCodeGenerationPanel extends javax.swing.JPanel {
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.jLabel1.text")); // NOI18N
 
+        chkDomain.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("HibernateRevengCodeGenerationPanel.chkDomain.mnemonic").charAt(0));
         chkDomain.setSelected(true);
         chkDomain.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.chkDomain.text")); // NOI18N
 
+        chkHbm.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("HibernateRevengCodeGenerationPanel.chkHbm.mnemonic").charAt(0));
         chkHbm.setSelected(true);
         chkHbm.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.chkHbm.text")); // NOI18N
 
+        jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("HibernateRevengCodeGenerationPanel.jLabel2.mnemonic").charAt(0));
+        jLabel2.setLabelFor(txtProject);
         jLabel2.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.jLabel2.text")); // NOI18N
 
         txtProject.setEditable(false);
@@ -246,6 +250,8 @@ public class HibernateRevengCodeGenerationPanel extends javax.swing.JPanel {
             }
         });
 
+        jLabel3.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("HibernateRevengCodeGenerationPanel.jLabel3.mnemonic").charAt(0));
+        jLabel3.setLabelFor(cmbLocation);
         jLabel3.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.jLabel3.text")); // NOI18N
 
         cmbLocation.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -255,6 +261,8 @@ public class HibernateRevengCodeGenerationPanel extends javax.swing.JPanel {
             }
         });
 
+        jLabel4.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("HibernateRevengCodeGenerationPanel.jLabel4.mnemonic").charAt(0));
+        jLabel4.setLabelFor(cmbPackage);
         jLabel4.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.jLabel4.text")); // NOI18N
 
         cmbPackage.setEditable(true);
@@ -262,6 +270,7 @@ public class HibernateRevengCodeGenerationPanel extends javax.swing.JPanel {
 
         jLabel5.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.jLabel5.text")); // NOI18N
 
+        chkJava.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("HibernateRevengCodeGenerationPanel.chkJava.mnemonic").charAt(0));
         chkJava.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.chkJava.text")); // NOI18N
         chkJava.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -269,6 +278,7 @@ public class HibernateRevengCodeGenerationPanel extends javax.swing.JPanel {
             }
         });
 
+        chkEjb.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("HibernateRevengCodeGenerationPanel.chkEjb.mnemonic").charAt(0));
         chkEjb.setText(org.openide.util.NbBundle.getMessage(HibernateRevengCodeGenerationPanel.class, "HibernateRevengCodeGenerationPanel.chkEjb.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -278,40 +288,23 @@ public class HibernateRevengCodeGenerationPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(chkEjb)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(chkJava)
-                        .addContainerGap())
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(layout.createSequentialGroup()
-                            .add(jLabel5)
-                            .addContainerGap(417, Short.MAX_VALUE))
-                        .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(jLabel2)
-                                .add(jLabel4)
-                                .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 72, Short.MAX_VALUE))
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(layout.createSequentialGroup()
-                                    .add(txtProject, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE)
-                                    .addContainerGap())
-                                .add(layout.createSequentialGroup()
-                                    .add(cmbPackage, 0, 414, Short.MAX_VALUE)
-                                    .addContainerGap())
-                                .add(layout.createSequentialGroup()
-                                    .add(cmbLocation, 0, 414, Short.MAX_VALUE)
-                                    .addContainerGap())))
-                        .add(layout.createSequentialGroup()
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(chkHbm)
-                                .add(chkDomain))
-                            .addContainerGap(303, Short.MAX_VALUE)))
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .addContainerGap(373, Short.MAX_VALUE))))
+                    .add(chkEjb)
+                    .add(chkJava)
+                    .add(jLabel5)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel2)
+                            .add(jLabel4)
+                            .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 72, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(txtProject, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE)
+                            .add(cmbPackage, 0, 414, Short.MAX_VALUE)
+                            .add(cmbLocation, 0, 414, Short.MAX_VALUE)))
+                    .add(chkHbm)
+                    .add(chkDomain)
+                    .add(jLabel1))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

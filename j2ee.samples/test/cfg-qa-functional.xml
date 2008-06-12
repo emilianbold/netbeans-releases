@@ -45,11 +45,10 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/test/j2ee/EnterpriseSamples.class"/>
-                <include name="org/netbeans/test/j2ee/VisualJSFSamples.class"/>
             </patternset>
         </testset>
     </testbag>
-    <testbag testattribs="stable,validationj2eevisualjsf" executor="ide-appserver" name="Enterprise Samples validation">
+    <testbag testattribs="stable,validationj2eevisualjsf" executor="ide-appserver" name="Visual JSF Samples validation">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/test/j2ee/VisualJSFSamples.class"/>

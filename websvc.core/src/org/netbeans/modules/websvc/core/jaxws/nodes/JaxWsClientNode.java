@@ -323,7 +323,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
                 }
             }
             // cleaning java artifacts
-            FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+            FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
             try {
                 ExecutorTask wsimportTask =
                         ActionUtils.runTarget(buildImplFo,

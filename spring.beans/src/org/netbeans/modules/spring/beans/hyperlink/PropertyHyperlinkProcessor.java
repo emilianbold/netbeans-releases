@@ -52,6 +52,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
 import org.netbeans.modules.spring.java.JavaUtils;
+import org.netbeans.modules.spring.java.MatchType;
 import org.netbeans.modules.spring.java.Property;
 import org.netbeans.modules.spring.java.PropertyFinder;
 import org.openide.util.Exceptions;
@@ -100,7 +101,7 @@ public class PropertyHyperlinkProcessor extends HyperlinkProcessor {
                         StringTokenizer tokenizer = new StringTokenizer(getterChain, "."); // NOI18N
                         while (tokenizer.hasMoreTokens() && startType != null) {
                             String propertyName = tokenizer.nextToken();
-                            Property[] props = new PropertyFinder(startType, propertyName, eu).findProperties();
+                            Property[] props = new PropertyFinder(startType, propertyName, eu, MatchType.PREFIX).findProperties();
 
                             // no matching element found
                             if (props.length == 0 || props[0].getGetter() == null) {
@@ -122,7 +123,7 @@ public class PropertyHyperlinkProcessor extends HyperlinkProcessor {
                     }
 
                     String setterProp = propChain.substring(dotIndex + 1);
-                    Property[] sProps = new PropertyFinder(startType, setterProp, eu).findProperties();
+                    Property[] sProps = new PropertyFinder(startType, setterProp, eu, MatchType.PREFIX).findProperties();
                     if (sProps.length > 0 && sProps[0].getSetter() != null) {
                         ElementOpen.open(cc.getClasspathInfo(), sProps[0].getSetter());
                     }

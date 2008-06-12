@@ -56,7 +56,6 @@ import org.openide.util.WeakSet;
  * displayed, closed etc.
  * <p/>
  * <i>This is a modified copy of <code>o.n.m.junit.output.Manager</code></i>.
- *
  * @author Marian Petras, Erno Mononen
  */
 public final class Manager {
@@ -337,5 +336,5 @@ public final class Manager {
         }
         displaysMap.put(session, Boolean.TRUE);
     }
-    
+
 }

@@ -46,6 +46,7 @@ import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
@@ -59,11 +60,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.Point2D;
 import java.awt.geom.RoundRectangle2D;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -71,7 +74,6 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -212,16 +214,16 @@ public class BalloonManager {
         //upper left corent
         } else {
             balloon.setArrowLocation( GridBagConstraints.NORTHWEST );
-            balloon.setBounds( ownerCompBounds.x-balloonSize.width+Balloon.ARC/2, 
+            balloon.setBounds( ownerCompBounds.x-balloonSize.width/*+Balloon.ARC/2*/, 
                     ownerCompBounds.y-balloonSize.height, balloonSize.width+Balloon.ARC, balloonSize.height );
         }
     }
 
     private static class Balloon extends JPanel {
 
-        private static final int Y_OFFSET = 16;
+        private static final int Y_OFFSET = 8;
         private static final int ARC = 15;
-        private static final int SHADOW_SIZE = 10;
+        private static final int SHADOW_SIZE = 3;
 
 
         private JComponent content;
@@ -231,6 +233,7 @@ public class BalloonManager {
         private float currentAlpha = 1.0f;
         private Timer dismissTimer;
         private int timeoutMillis;
+        private boolean isMouseOverEffect = false;
 
         public Balloon( final JComponent content, final Action defaultAction, int timeoutMillis ) {
             super( new GridBagLayout() );
@@ -246,9 +249,8 @@ public class BalloonManager {
                 }
             });
 
-            add( content, new GridBagConstraints(0,0,1,1,1.0,0.0,GridBagConstraints.NORTH,GridBagConstraints.BOTH,new Insets(4,4,4,4),0,0)); 
-            add( new JLabel(), new GridBagConstraints(0,1,1,1,0.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0)); 
-            add( btnDismiss, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.NORTHEAST,GridBagConstraints.NONE,new Insets(4,0,4,4),0,0)); 
+            add( content, new GridBagConstraints(0,0,1,1,1.0,1.0,GridBagConstraints.NORTH,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0)); 
+            add( btnDismiss, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.NORTHEAST,GridBagConstraints.NONE,new Insets(7,0,0,7),0,0)); 
 
             setOpaque( false );
 
@@ -277,10 +279,8 @@ public class BalloonManager {
                         if( Balloon.this.timeoutMillis > 0 )
                             startDismissTimer();
                     }
-
                 });
             }
-            setBorder( BorderFactory.createEmptyBorder(SHADOW_SIZE, 0, 0, SHADOW_SIZE));
             
             if( timeoutMillis > 0 ) {
                 SwingUtilities.invokeLater( new Runnable() {
@@ -289,6 +289,25 @@ public class BalloonManager {
                     }
                 });
             }
+            
+            MouseListener mouseOverAdapter = new MouseAdapter() {
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    isMouseOverEffect = true;
+                    stopDismissTimer();
+                    repaint();
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    isMouseOverEffect = false;
+                    repaint();
+                }
+            };
+            
+            addMouseListener(mouseOverAdapter);
+            content.addMouseListener(mouseOverAdapter);
+            btnDismiss.addMouseListener(mouseOverAdapter);
         }
         
         private static final float ALPHA_DECREMENT = 0.03f;
@@ -322,9 +341,9 @@ public class BalloonManager {
         void setArrowLocation( int arrowLocation) {
             this.arrowLocation = arrowLocation;
             if( arrowLocation == GridBagConstraints.NORTHEAST || arrowLocation == GridBagConstraints.NORTHWEST ) {
-                setBorder( BorderFactory.createEmptyBorder(SHADOW_SIZE, 0, 0, SHADOW_SIZE));
+                setBorder( BorderFactory.createEmptyBorder(0, 0, Y_OFFSET, btnDismiss.getWidth()));
             } else {
-                setBorder( BorderFactory.createEmptyBorder(Y_OFFSET, 0, 0, SHADOW_SIZE));
+                setBorder( BorderFactory.createEmptyBorder(Y_OFFSET, 0, 0, btnDismiss.getWidth()));
             }
         }
         
@@ -337,26 +356,26 @@ public class BalloonManager {
             case GridBagConstraints.SOUTHEAST: 
                 area = new Area(new RoundRectangle2D.Float(0, Y_OFFSET, w, h-Y_OFFSET-SHADOW_SIZE, ARC, ARC));
                 path.moveTo(ARC/2, 0);
-                path.lineTo(ARC/2+Y_OFFSET/2, Y_OFFSET);
-                path.lineTo(ARC/2+Y_OFFSET/2+Y_OFFSET, Y_OFFSET);
+                path.lineTo(ARC/2, Y_OFFSET);
+                path.lineTo(ARC/2+Y_OFFSET, Y_OFFSET);
                 break;
             case GridBagConstraints.NORTHEAST: 
                 area = new Area(new RoundRectangle2D.Float(0, SHADOW_SIZE, w, h-Y_OFFSET-SHADOW_SIZE, ARC, ARC));
                 path.moveTo(ARC/2, h-1);
-                path.lineTo(ARC/2+Y_OFFSET/2, h-1-Y_OFFSET);
-                path.lineTo(ARC/2+Y_OFFSET/2+Y_OFFSET, h-1-Y_OFFSET);
+                path.lineTo(ARC/2, h-1-Y_OFFSET);
+                path.lineTo(ARC/2+Y_OFFSET, h-1-Y_OFFSET);
                 break;
             case GridBagConstraints.SOUTHWEST: 
                 area = new Area(new RoundRectangle2D.Float(0, Y_OFFSET, w, h-Y_OFFSET-SHADOW_SIZE, ARC, ARC));
                 path.moveTo(w-ARC/2, 0);
-                path.lineTo(w-ARC/2-Y_OFFSET/2, Y_OFFSET);
-                path.lineTo(w-ARC/2-Y_OFFSET/2-Y_OFFSET, Y_OFFSET);
+                path.lineTo(w-ARC/2, Y_OFFSET);
+                path.lineTo(w-ARC/2-Y_OFFSET, Y_OFFSET);
                 break;
             case GridBagConstraints.NORTHWEST: 
                 area = new Area(new RoundRectangle2D.Float(0, SHADOW_SIZE, w, h-Y_OFFSET-SHADOW_SIZE, ARC, ARC));
                 path.moveTo(w-ARC/2, h-1);
-                path.lineTo(w-ARC/2-Y_OFFSET/2, h-1-Y_OFFSET);
-                path.lineTo(w-ARC/2-Y_OFFSET/2-Y_OFFSET, h-1-Y_OFFSET);
+                path.lineTo(w-ARC/2-Y_OFFSET, h-1-Y_OFFSET);
+                path.lineTo(w-ARC/2, h-1-Y_OFFSET);
                 break;
             }
                 
@@ -395,6 +414,12 @@ public class BalloonManager {
             
             g2d.setColor( UIManager.getColor( "ToolTip.background" ) ); //NOI18N
             g2d.setComposite( AlphaComposite.getInstance( AlphaComposite.SRC_OVER, currentAlpha ) );
+            Point2D p1 = s.getBounds().getLocation();
+            Point2D p2 = new Point2D.Double(p1.getX(), p1.getY()+s.getBounds().getHeight());
+            if( isMouseOverEffect )
+                g2d.setPaint( new GradientPaint( p2, mouseOverGradientStartColor, p1, mouseOverGradientFinishColor ) );
+            else
+                g2d.setPaint( new GradientPaint( p2, defaultGradientStartColor, p1, defaultGradientFinishColor ) );
             g2d.fill(s);
             g2d.setColor( Color.black );
             g2d.draw(s);
@@ -409,6 +434,12 @@ public class BalloonManager {
             super.paintChildren(g);
             g2d.setComposite( oldC );
         }
+        
+        private static final Color mouseOverGradientStartColor = new Color(224,224,185);
+        private static final Color mouseOverGradientFinishColor = new Color(255,255,241);
+        
+        private static final Color defaultGradientStartColor = new Color(225,225,225);
+        private static final Color defaultGradientFinishColor = new Color(255,255,255);
     }
     
     private static class DismissButton extends JButton {

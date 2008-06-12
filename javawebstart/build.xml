@@ -41,5 +41,20 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <project basedir="." default="netbeans" name="javawebstart">
+    
     <import file="../nbbuild/templates/projectized.xml"/>
+    
+    <target name="-jar-ant">
+	<ant dir="AntTasks" target="jar" inheritall="false" />
+	<mkdir dir="${cluster}/ant/extra/"/>
+        <copy file="AntTasks/dist/org-netbeans-modules-javawebstart-anttasks.jar" todir="${cluster}/ant/extra/" />
+    </target>
+				
+    <target name="netbeans-extra" depends="-jar-ant"/>
+
+    <target name="clean" depends="projectized-common.clean">
+        <ant dir="AntTasks" target="clean" inheritall="false" />
+        <delete file="${cluster}/ant/extra/org-netbeans-modules-javawebstart-anttasks.jar"/>
+    </target>
+    
 </project>

@@ -28,7 +28,6 @@ import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.mapper.tree.images.NodeIcons;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
-import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 
 /**
  * The implementation of the TreeItemInfoProvider for target tree 
@@ -78,11 +77,11 @@ public class SimpleTreeInfoProvider implements TreeItemInfoProvider {
 
     public List<Action> getMenuActions(MapperTcContext mapperTcContext, 
             boolean inLeftTree, TreePath treePath, 
-            RestartableIterator<Object> dataObjectPathItr) {
+            Iterable<Object> dataObjectPathItrb) {
         return null;
     }
 
-    public String getToolTipText(RestartableIterator<Object> dataObjectPathItr) {
+    public String getToolTipText(Iterable<Object> dataObjectPathItrb) {
         return null;
     }
 }

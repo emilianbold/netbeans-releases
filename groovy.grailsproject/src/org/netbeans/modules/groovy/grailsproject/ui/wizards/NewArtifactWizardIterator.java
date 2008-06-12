@@ -38,15 +38,16 @@ import org.openide.WizardDescriptor;
 import javax.swing.JComponent;
 import org.openide.util.NbBundle;
 import java.io.File;
-import java.nio.charset.Charset;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.api.progress.ProgressHandle;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.extexecution.api.DefaultDescriptor;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptorBuilder;
 import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.netbeans.modules.extexecution.api.input.InputProcessors;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
@@ -54,7 +55,8 @@ import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
-import org.openide.util.Task;
+import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -124,13 +126,22 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
 
                 Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
                         serverCommand, GrailsProjectConfig.forProject(project), pls.getDomainClassName());
-                ExecutionService service = new ExecutionService(callable, displayName,
-                        new DefaultDescriptor(project,
-                            InputProcessors.bridge(new ProgressSnooper(handle, 100, 2), Charset.defaultCharset()),
-                            null, false, false, true, true, false));
 
-                Task task = service.run();
-                task.waitFinished();
+                ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
+                builder.frontWindow(true).inputVisible(true);
+                builder.outProcessor(InputProcessors.bridge(new ProgressSnooper(handle, 100, 2)));
+                builder.postExecution(new RefreshProjectRunnable(project));
+
+                ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
+                Future<Integer> future = service.run();
+                try {
+                    // TODO handle return value
+                    future.get();
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex.getCause());
+                }
             } finally {
                 handle.progress(100);
             }

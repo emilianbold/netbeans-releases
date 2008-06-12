@@ -202,37 +202,4 @@ public final class WebModule {
     public MetadataModel<WebAppMetadata> getMetadataModel() {
         return impl.getMetadataModel();
     }
-    
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (!WebModule.class.isAssignableFrom(obj.getClass())) {
-            return false;
-        }
-        WebModule wm = (WebModule) obj;
-        if (!getDocumentBase().equals(wm.getDocumentBase())) {
-            return false;
-        }
-        if (!getJ2eePlatformVersion().equals(wm.getJ2eePlatformVersion())) {
-            return false;
-        }
-        String contextPath = getContextPath();
-        String wmContextPath = wm.getContextPath();
-        if (contextPath != null && wmContextPath != null) {
-            return contextPath.equals(wmContextPath);
-        }
-        return true;
-    }
-    
-    @Override
-    public int hashCode() {
-        int hashCode = getDocumentBase().getPath().hashCode();
-        String contextPath = getContextPath();
-        if (contextPath != null) {
-            hashCode += contextPath.hashCode();
-        }
-        return hashCode;
-    }
 }

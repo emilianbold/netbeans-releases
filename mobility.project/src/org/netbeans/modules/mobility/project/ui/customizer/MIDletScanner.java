@@ -60,31 +60,24 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.Types;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
+import org.netbeans.modules.mobility.project.bridge.J2MEProjectUtilitiesProvider;
 import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -273,8 +266,10 @@ public class MIDletScanner implements Runnable {
                         icons.add(name);
                     }
                 } else if (("java".equals(ext) || "class".equals(ext))) { // NOI18N
-                    //apply brute force (classpath independent if platform is not available)
-                    if (activePlatform != null ? isMIDlet2(root, fo): isMIDlet(fo)) synchronized (this) {
+                    J2MEProjectUtilitiesProvider utilProvider = Lookup.getDefault().lookup(J2MEProjectUtilitiesProvider.class);
+                    //apply brute force (classpath independent if platform or extensions are not available)
+                    if (activePlatform != null && utilProvider != null ? utilProvider.isFileObjectMIDlet( root, fo, activePlatform.getBootstrapLibraries()) : isMIDlet(fo)) 
+                        synchronized (this) {
                             String name = FileUtil.getRelativePath(root, fo);
                             midlets.add(name.substring(0, name.length() - ext.length() - 1).replace('/', '.').replace('\\', '.'));
                     }
@@ -300,49 +295,49 @@ public class MIDletScanner implements Runnable {
         return false;
     }
     
-    private boolean isMIDlet2(FileObject root, final FileObject file){
-        final Boolean[] result = new Boolean[]{false};
-        ClassPath boot = activePlatform.getBootstrapLibraries();
-        ClassPath rtm2 = ClassPath.getClassPath(root, ClassPath.EXECUTE);
-        ClassPath rtm1 = ClassPath.getClassPath(root, ClassPath.COMPILE);
-        ClassPath rtm = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(new ClassPath[]{rtm1, rtm2});
-        final ClassPath clp =  org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(
-                new ClassPath[]{ClassPath.getClassPath(root, ClassPath.SOURCE), rtm1});
-
-        ClasspathInfo cpInfo = ClasspathInfo.create(boot, rtm, clp);
-        JavaSource js = JavaSource.create(cpInfo);
-        try {
-
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-
-                public void run(CompilationController control) throws Exception {
-                    TypeElement type = control.getElements().getTypeElement("javax.microedition.midlet.MIDlet");
-                    if (type == null) {
-                        return;
-                    }
-                    String name = clp.getResourceName(file);
-                    if (name == null)
-                        return;
-                    name = name.substring(0, name.lastIndexOf('.')).replace('/', '.');
-                    TypeElement xtype = control.getElements().getTypeElement(name);
-                    if (xtype == null) {
-                        return;
-                    }
-                    Set<Modifier> modifiers = xtype.getModifiers();
-                    if (modifiers.contains(Modifier.ABSTRACT) || !modifiers.contains(Modifier.PUBLIC) ){
-                        return;
-                    }
-                    Types types = control.getTypes();
-                    result[0] = types.isSubtype(types.erasure(xtype.asType()), types.erasure(type.asType()));
-                }
-
-                public void cancel() {
-                }
-            }, true);
-        } catch (IOException ioe) {
-        }
-        
-        return result[0];
-    }
+//    private boolean isMIDlet2(FileObject root, final FileObject file){
+//        final Boolean[] result = new Boolean[]{false};
+//        ClassPath boot = activePlatform.getBootstrapLibraries();
+//        ClassPath rtm2 = ClassPath.getClassPath(root, ClassPath.EXECUTE);
+//        ClassPath rtm1 = ClassPath.getClassPath(root, ClassPath.COMPILE);
+//        ClassPath rtm = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(new ClassPath[]{rtm1, rtm2});
+//        final ClassPath clp =  org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(
+//                new ClassPath[]{ClassPath.getClassPath(root, ClassPath.SOURCE), rtm1});
+//
+//        ClasspathInfo cpInfo = ClasspathInfo.create(boot, rtm, clp);
+//        JavaSource js = JavaSource.create(cpInfo);
+//        try {
+//
+//            js.runUserActionTask(new CancellableTask<CompilationController>() {
+//
+//                public void run(CompilationController control) throws Exception {
+//                    TypeElement type = control.getElements().getTypeElement("javax.microedition.midlet.MIDlet");
+//                    if (type == null) {
+//                        return;
+//                    }
+//                    String name = clp.getResourceName(file);
+//                    if (name == null)
+//                        return;
+//                    name = name.substring(0, name.lastIndexOf('.')).replace('/', '.');
+//                    TypeElement xtype = control.getElements().getTypeElement(name);
+//                    if (xtype == null) {
+//                        return;
+//                    }
+//                    Set<Modifier> modifiers = xtype.getModifiers();
+//                    if (modifiers.contains(Modifier.ABSTRACT) || !modifiers.contains(Modifier.PUBLIC) ){
+//                        return;
+//                    }
+//                    Types types = control.getTypes();
+//                    result[0] = types.isSubtype(types.erasure(xtype.asType()), types.erasure(type.asType()));
+//                }
+//
+//                public void cancel() {
+//                }
+//            }, true);
+//        } catch (IOException ioe) {
+//        }
+//        
+//        return result[0];
+//    }
 }
 

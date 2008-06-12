@@ -48,7 +48,6 @@ import java.io.CharConversionException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -63,7 +62,6 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -73,6 +71,8 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStatusEvent;
@@ -87,7 +87,9 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.xml.XMLUtil;
@@ -139,14 +141,7 @@ public class ProjectsRootNode extends AbstractNode {
         if (context || type == PHYSICAL_VIEW) {
             return new Action[0];
         } else {
-            List<Action> actions = new ArrayList<Action>();
-            for (Object o : Lookups.forPath(ACTIONS_FOLDER).lookupAll(Object.class)) {
-                if (o instanceof Action) {
-                    actions.add((Action) o);
-                } else if (o instanceof JSeparator) {
-                    actions.add(null);
-                }
-            }
+            List<? extends Action> actions = Utilities.actionsForPath(ACTIONS_FOLDER);
             return actions.toArray(new Action[actions.size()]);
         }
     }
@@ -347,7 +342,7 @@ public class ProjectsRootNode extends AbstractNode {
         }
         
         final void refresh(Project p) {
-            refreshKey( new Pair(p, p.getProjectDirectory()) );
+            refreshKey(new Pair(p));
         }
                                 
         // Own methods ---------------------------------------------------------
@@ -360,7 +355,7 @@ public class ProjectsRootNode extends AbstractNode {
             
             for (int i = 0; i < projects.size(); i++) {
                 Project project = projects.get(i);
-                dirs.set(i, new Pair(project, project.getProjectDirectory()));
+                dirs.set(i, new Pair(project));
             }
 
             
@@ -371,13 +366,13 @@ public class ProjectsRootNode extends AbstractNode {
          * This allows to replace a LazyProject with real one without discarding
          * the nodes.
          */
-        private static final class Pair extends Object {
+        static final class Pair extends Object {
             public Project project;
             public final FileObject fo;
 
-            public Pair(Project project, FileObject fo) {
+            public Pair(Project project) {
                 this.project = project;
-                this.fo = fo;
+                this.fo = project.getProjectDirectory();
             }
 
             @Override
@@ -405,7 +400,7 @@ public class ProjectsRootNode extends AbstractNode {
                                                 
     }
         
-    private static final class BadgingNode extends FilterNode implements ChangeListener, PropertyChangeListener, Runnable, FileStatusListener {
+    static final class BadgingNode extends FilterNode implements ChangeListener, PropertyChangeListener, Runnable, FileStatusListener {
 
         private static String badgedNamePattern = NbBundle.getMessage(ProjectsRootNode.class, "LBL_MainProject_BadgedNamePattern");
         private final Object privateLock = new Object();
@@ -413,11 +408,12 @@ public class ProjectsRootNode extends AbstractNode {
         private Map<FileSystem,FileStatusListener> fileSystemListeners;
         private ChangeListener sourcesListener;
         private Map<SourceGroup,PropertyChangeListener> groupsListeners;
-        private RequestProcessor.Task task;
+        RequestProcessor.Task task;
         private boolean nameChange;
         private boolean iconChange;
         private final boolean logicalView;
         private final ProjectChildren.Pair pair;
+        private final Set<FileObject> projectDirsListenedTo = new WeakSet<FileObject>();
 
         public BadgingNode(ProjectChildren.Pair p, Node n, boolean addSearchInfo, boolean logicalView) {
             super(n, null, badgingLookup(n, addSearchInfo));
@@ -476,6 +472,16 @@ public class ProjectsRootNode extends AbstractNode {
                         if (owner != null && owner.getProjectDirectory() == projectDirectory) {
                             roots.add(kid);
                         }
+                    }
+                    if (projectDirsListenedTo.add(fo)) {
+                        fo.addFileChangeListener(new FileChangeAdapter() {
+                            public @Override void fileDataCreated(FileEvent fe) {
+                                setProjectFiles();
+                            }
+                            public @Override void fileFolderCreated(FileEvent fe) {
+                                setProjectFiles();
+                            }
+                        });
                     }
                 } else {
                     roots.add(fo);

@@ -41,9 +41,7 @@
 
 package org.netbeans.modules.extexecution.input;
 
-import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,18 +56,6 @@ public final class LineParsingHelper {
 
     public LineParsingHelper() {
         super();
-    }
-
-    public String[] parse(byte[] buffer, Charset charset) {
-        return parse(buffer, 0, buffer.length, charset);
-    }
-
-    public String[] parse(byte[] buffer, int offset, int limit, Charset charset) {
-        return parse(charset.decode(ByteBuffer.wrap(buffer, offset, limit)));
-    }
-
-    public String[] parse(ByteBuffer buffer, Charset charset) {
-        return parse(charset.decode(buffer));
     }
     
     public String[] parse(char[] buffer) {

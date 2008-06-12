@@ -78,6 +78,7 @@ public class RubyServerTest extends RubyTestBase {
         String webBrick2 = "=> Rails application started on http://localhost:3000";
         String webBrick_dos_line_end = "=> Rails application started on http://localhost:3000 \r\n";
         String webBrick_unix_line_end = "=> Rails application started on http://localhost:3000\n";
+        String webBrick_rails210 = "=> Rails 2.1.0 application started on http://0.0.0.0:3000";
         
         WEBrick webrickInstance = new WEBrick(RubyPlatformManager.addPlatform(setUpRubyWithGems()));
 
@@ -85,6 +86,7 @@ public class RubyServerTest extends RubyTestBase {
         assertTrue(webrickInstance.isStartupMsg(webBrick2));
         assertTrue(webrickInstance.isStartupMsg(webBrick_dos_line_end));
         assertTrue(webrickInstance.isStartupMsg(webBrick_unix_line_end));
+        assertTrue(webrickInstance.isStartupMsg(webBrick_rails210));
 
     }
 

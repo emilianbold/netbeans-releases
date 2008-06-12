@@ -162,6 +162,11 @@ public class RetoucheUtils {
             simpleName = AstUtilities.getCallName(node, false);
         } else if (node instanceof Node.StringNode) {
             name = node.getString();
+        } else if (node.getType() == org.mozilla.javascript.Token.FUNCTION) {
+            name = AstUtilities.getFunctionFqn(node, null);
+            if (name != null && name.indexOf('.') != -1) {
+                name = name.substring(name.indexOf('.')+1);
+            }
         } else {
             return new String[] { null, null};
         }
@@ -408,7 +413,11 @@ public class RetoucheUtils {
             if (fo!=null)
                 p=FileOwnerQuery.getOwner(fo);
             if (p!=null) {
-                URL sourceRoot = URLMapper.findURL(ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo), URLMapper.INTERNAL);
+                ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                if (classPath == null) {
+                    return null;
+                }
+                URL sourceRoot = URLMapper.findURL(classPath.findOwnerRoot(fo), URLMapper.INTERNAL);
                 dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
                 //for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(JsProject.SOURCES_TYPE_Js)) {
                 for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {

@@ -49,12 +49,9 @@ import org.openide.filesystems.URLMapper;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
-import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.RootObj;
-import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.openide.util.Exceptions;
 
 //TODO: JDK problems with URL, URI, File conversion for UNC
@@ -110,6 +107,10 @@ public final class FileBasedURLMapper extends URLMapper {
 
     public final FileObject[] getFileObjects(final URL url) {
         if (!"file".equals(url.getProtocol())) return null;  //NOI18N
+        // return null for UNC root
+        if(url.getPath().equals("//") || url.getPath().equals("////")) {  //NOI18N
+            return null;
+        }
         //TODO: review and simplify         
         FileObject retVal = null;
         File file;
@@ -126,7 +127,7 @@ public final class FileBasedURLMapper extends URLMapper {
             return null;
         }
         
-        retVal = FileBasedFileSystem.getInstance().getFileObject(file, FileObjectFactory.Caller.ToFileObject);
+        retVal = FileBasedFileSystem.getFileObject(file, FileObjectFactory.Caller.ToFileObject);
         return new FileObject[]{retVal};
     }
 

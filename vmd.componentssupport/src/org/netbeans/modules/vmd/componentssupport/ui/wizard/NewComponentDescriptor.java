@@ -79,13 +79,13 @@ public final class NewComponentDescriptor implements WizardDescriptor.Instantiat
     public static final String COMPONENT_PRODUCER_POSTFIX 
                                                 = "Producer";                   // NOI18N 
     public static final String COMPONENT_DECRIPTOR_DEFAULT_PARENT
-                                                = "DisplayableCD";              // NOI18N 
+        = "org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD";// NOI18N 
+    public static final boolean COMPONENT_DECRIPTOR_DEFAULT_CAN_INSTANTIATE = true;
+    public static final boolean COMPONENT_DECRIPTOR_DEFAULT_CAN_BE_SUPER = true;
     
     // properties - common
     public static final String HELPER           = "custCompHelper";             // NOI18N 
-    public static final String EXISTING_COMPONENTS   
-                                                = "existingComponents";         // NOI18N 
-    
+
     public static final String CC_PREFIX        = "prefix";                     // NOI18N 
     // properties - component descriptor step
     public static final String CD_CLASS_NAME    = "compDescrClassName";         // NOI18N 
@@ -114,16 +114,12 @@ public final class NewComponentDescriptor implements WizardDescriptor.Instantiat
     // properties - component presenters step
     // properties - final step
 
-    private NewComponentDescriptor() {
+    public NewComponentDescriptor() {
     }
     
     NewComponentDescriptor(WizardDescriptor mainWizard){
         myMainWizard = mainWizard;
         assert myMainWizard != null;
-    }
-    
-    public static NewComponentDescriptor instanceForProject(){
-        return new NewComponentDescriptor();
     }
     
     /* (non-Javadoc)
@@ -158,26 +154,29 @@ public final class NewComponentDescriptor implements WizardDescriptor.Instantiat
         wizardDescriptor.setTitle(
                 NbBundle.getMessage(NewLibraryDescriptor.class, WIZARD_TITLE));
         
+        initWizardData();
         
+    }
+
+    private void initWizardData(){
         
         if (myMainWizard != null){
-            // this is child wizard
+            // child wizard started from CustomComponentWizardIterator panels
             myCustCompHelper = new CustomComponentHelper.
                     InstantiationToWizardHelper(myMainWizard, myWizard);
-            wizardDescriptor.putProperty( EXISTING_COMPONENTS, 
-                myMainWizard.getProperty(
-                        CustomComponentWizardIterator.CUSTOM_COMPONENTS));
         } else {
-            Project project = Templates.getProject(wizardDescriptor);
+            // independent wizard started from existing project
+            Project project = Templates.getProject(myWizard);
             assert project != null;
+            
             myCustCompHelper = new CustomComponentHelper.
-                    RealInstantiationHelper(project, wizardDescriptor.getProperties());
+                    RealInstantiationHelper(project, myWizard);
         }
         assert myCustCompHelper != null;
         
-        wizardDescriptor.putProperty( HELPER, myCustCompHelper );
+        myWizard.putProperty( HELPER, myCustCompHelper );
     }
-
+    
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.InstantiatingIterator#instantiate()
      */
@@ -191,7 +190,6 @@ public final class NewComponentDescriptor implements WizardDescriptor.Instantiat
      */
     public void uninitialize( WizardDescriptor arg0 ) {
         myWizard.putProperty(HELPER, null);
-        myWizard.putProperty(EXISTING_COMPONENTS, null);
         
         myWizard.putProperty(CC_PREFIX, null);
         myWizard.putProperty(CD_CLASS_NAME, null);
