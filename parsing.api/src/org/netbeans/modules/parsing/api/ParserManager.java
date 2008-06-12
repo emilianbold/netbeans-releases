@@ -42,6 +42,7 @@ package org.netbeans.modules.parsing.api;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.netbeans.modules.parsing.impl.ResultIteratorAccessor;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.netbeans.modules.parsing.impl.UserTaskImpl;
@@ -118,10 +119,16 @@ public final class ParserManager {
         }
         TaskProcessor.runUserTask (new GenericUserTask () {
             public void run () throws Exception {
+                //tzezula: Wrong - doesn't work for multiple files!
                 for (Source source : sources) {
                     Snapshot snapshot = source.createSnapshot ();
-                    ResultIterator resultIterator = new ResultIterator (snapshot, userTask);
-                    userTask.run (resultIterator);
+                    final ResultIterator resultIterator = new ResultIterator (snapshot, userTask);
+                    try {
+                        userTask.run (resultIterator);
+                    } finally {
+                        ResultIteratorAccessor.getINSTANCE().invalidate(resultIterator);
+                    }
+                    
                 }
             }
         });

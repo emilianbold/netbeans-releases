@@ -232,7 +232,11 @@ public class TaskProcessor {
                     stack.push (currentResult);
                 }
                 try {
-                    userTask.run (currentResult, snapshot);                    
+                    try {
+                        userTask.run (currentResult, snapshot);
+                    } finally {
+                        ParserAccessor.getINSTANCE().invalidate(currentResult);
+                    }
                 } finally {
                     if (!shared) {
                         stack.pop ();
@@ -628,7 +632,11 @@ public class TaskProcessor {
                                             try {
                                                 final long startTime = System.currentTimeMillis();
                                                 if (r.task instanceof ParserResultTask) {
-                                                    ((ParserResultTask)r.task).run (currentResult,source.createSnapshot());
+                                                    try {
+                                                        ((ParserResultTask)r.task).run (currentResult,source.createSnapshot());
+                                                    } finally {
+                                                        ParserAccessor.getINSTANCE().invalidate(currentResult);
+                                                    }
                                                 }
                                                 else if (r.task instanceof EmbeddingProvider) {
                                                     //todo: What the embedding provider should do?

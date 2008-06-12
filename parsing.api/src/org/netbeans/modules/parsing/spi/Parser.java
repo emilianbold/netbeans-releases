@@ -41,8 +41,10 @@ package org.netbeans.modules.parsing.spi;
 
 import javax.swing.event.ChangeListener;
 
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.impl.ParserAccessor;
 
 
 /**
@@ -56,6 +58,10 @@ import org.netbeans.modules.parsing.api.Task;
  * @author Jan Jancura
  */
 public abstract class Parser {
+    
+    static {
+        ParserAccessor.setINSTANCE(new MyAccessor());
+    }
     
     /**
      * Called by infastructure when {@link org.netbeans.modules.parsing.api.Source} 
@@ -120,7 +126,18 @@ public abstract class Parser {
         /**
          * This method is called by Parsing API, when {@link Task} is finished.
          */
-        public abstract void invalidate ();
+        protected abstract void invalidate ();
+    }
+    
+    
+    private static class MyAccessor extends ParserAccessor {
+
+        @Override
+        public void invalidate(final Result result) {
+            assert result != null;
+            result.invalidate();
+        }        
+        
     }
 }
 

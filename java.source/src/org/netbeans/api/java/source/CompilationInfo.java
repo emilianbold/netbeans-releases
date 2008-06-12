@@ -61,6 +61,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.DocPositionRegion;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.JavacParserResult;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -364,7 +365,10 @@ public class CompilationInfo {
     }
     
     protected void doInvalidate () {
-        this.impl.getParser().resultFinished (true);
+        final JavacParser parser = this.impl.getParser();
+        if (parser != null) {
+            parser.resultFinished (true);
+        }
     }
     
     /**
