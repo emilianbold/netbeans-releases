@@ -299,5 +299,15 @@ public interface SharedConstants {
     //      "REF",
     //      "STRUCT",
   };
+  
+  //reserved column names  
+  public static final String COL_SEQID = "ems_seqid";
+  public static final String COL_TIMESTAMP = "ems_timestamp"; 
+  
+  
+  public static String[] RESERVED_COLUMN_NAMES = new String[] {
+      COL_SEQID,
+      COL_TIMESTAMP
+  };
 }
     
