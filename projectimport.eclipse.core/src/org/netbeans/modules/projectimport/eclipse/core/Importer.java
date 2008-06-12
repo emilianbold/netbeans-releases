@@ -116,7 +116,10 @@ final class Importer {
                             int pos = 0;
                             for (Iterator it = eclProjects.iterator(); it.hasNext(); ) {
                                 EclipseProject eclPrj = (EclipseProject) it.next();
-                                nbProjects.add(importProject(eclPrj, warnings));
+                                Project p = importProject(eclPrj, warnings);
+                                if (p != null) {
+                                    nbProjects.add(p);
+                                }
                             }
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
@@ -194,6 +197,10 @@ final class Importer {
             p = alreadyImported;
             projectImportProblems.add("Existing NetBeans project was found and will be used intead.");
         } else {
+            if (!eclProject.isImportSupported()) {
+                importProblems.add("Unkown project type - it cannot be imported.");
+                return null;
+            }
             p = eclProject.getProjectTypeFactory().createProject(model, projectImportProblems);
         
             if (eclProject.getProjectTypeFactory() instanceof ProjectTypeUpdater) {
