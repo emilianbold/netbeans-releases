@@ -39,71 +39,40 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.api.beans.model;
+package org.netbeans.modules.spring.beans.refactoring;
 
-import java.util.List;
-import java.util.Set;
+import javax.swing.text.BadLocationException;
+import junit.framework.TestCase;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.spring.beans.TestUtils;
+import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 
 /**
- * Describes a single bean definition.
  *
- * @author Andrei Badea
+ * @author Rohan Ranade
  */
-public interface SpringBean {
+public class AttributeFinderTest extends TestCase {
 
-    /**
-     * Returns the id of this bean.
-     *
-     * @return the id or null.
-     */
-    String getId();
+    public AttributeFinderTest(String testName) {
+        super(testName);
+    }
 
-    /**
-     * Returns the other names of this bean.
-     *
-     * @return the names; never null.
-     */
-    List<String> getNames();
-
-    /**
-     * Returns the implementation class of this bean.
-     *
-     * @return the implementation class or null.
-     */
-    String getClassName();
-
-    /**
-     * Returns the parent bean of this bean.
-     *
-     * @return the factory bean.
-     */
-    String getParent();
-
-    /**
-     * Returns the factory bean that creates this bean.
-     *
-     * @return the factory bean or null.
-     */
-    String getFactoryBean();
-
-    /**
-     * Returns the factory method that creates this bean.
-     *
-     * @return the factory method or null.
-     */
-    String getFactoryMethod();
-    
-    /**
-     * Returns the list of properties defined in this bean
-     * 
-     * @return list of properties; never null
-     */
-    Set<SpringBeanProperty> getProperties();
-
-    /**
-     * Returns the location of this bean.
-     *
-     * @return the location or null.
-     */
-    Location getLocation();
+    public void testFind() throws Exception {
+        final String contents = TestUtils.createXMLConfigText("<bean id='foo' class='org.example.Foo'><ref></ref></bean>");
+        BaseDocument doc = TestUtils.createSpringXMLConfigDocument(contents);
+        final XMLSyntaxSupport syntaxSupport = (XMLSyntaxSupport)doc.getSyntaxSupport();
+        doc.render(new Runnable() {
+            public void run() {
+                int beanOffset = contents.indexOf("<bean ");
+                int classOffset = contents.indexOf("class");
+                AttributeFinder finder = new AttributeFinder(syntaxSupport, beanOffset);
+                try {
+                    assertTrue(finder.find("class"));
+                    assertEquals(classOffset, finder.getFoundOffset());
+                } catch (BadLocationException e) {
+                    fail(e.toString());
+                }
+            }
+        });
+    }
 }

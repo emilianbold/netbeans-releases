@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,73 +31,19 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.spring.api.beans.model;
-
-import java.util.List;
-import java.util.Set;
+package org.netbeans.modules.spring.java;
 
 /**
- * Describes a single bean definition.
  *
- * @author Andrei Badea
+ * @author Rohan Ranade
  */
-public interface SpringBean {
-
-    /**
-     * Returns the id of this bean.
-     *
-     * @return the id or null.
-     */
-    String getId();
-
-    /**
-     * Returns the other names of this bean.
-     *
-     * @return the names; never null.
-     */
-    List<String> getNames();
-
-    /**
-     * Returns the implementation class of this bean.
-     *
-     * @return the implementation class or null.
-     */
-    String getClassName();
-
-    /**
-     * Returns the parent bean of this bean.
-     *
-     * @return the factory bean.
-     */
-    String getParent();
-
-    /**
-     * Returns the factory bean that creates this bean.
-     *
-     * @return the factory bean or null.
-     */
-    String getFactoryBean();
-
-    /**
-     * Returns the factory method that creates this bean.
-     *
-     * @return the factory method or null.
-     */
-    String getFactoryMethod();
-    
-    /**
-     * Returns the list of properties defined in this bean
-     * 
-     * @return list of properties; never null
-     */
-    Set<SpringBeanProperty> getProperties();
-
-    /**
-     * Returns the location of this bean.
-     *
-     * @return the location or null.
-     */
-    Location getLocation();
+public enum MatchType {
+    EXACT,
+    PREFIX
 }

@@ -53,6 +53,7 @@ import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.spring.java.JavaUtils;
+import org.netbeans.modules.spring.java.MatchType;
 import org.netbeans.modules.spring.java.Property;
 import org.netbeans.modules.spring.java.PropertyFinder;
 
@@ -85,7 +86,7 @@ public class PNamespaceCompletor extends Completor {
                     return;
                 }
                 ElementUtilities eu = cc.getElementUtilities();
-                Property[] props = new PropertyFinder(te.asType(), "", eu).findProperties(); // NOI18N
+                Property[] props = new PropertyFinder(te.asType(), "", eu, MatchType.PREFIX).findProperties(); // NOI18N
 
                 for (Property prop : props) {
                     if (prop.getSetter() == null) {
