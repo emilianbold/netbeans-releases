@@ -44,9 +44,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.extexecution.api.input.TestInputUtils;
-import org.openide.util.Task;
 
 /**
  *
@@ -59,21 +61,27 @@ public class ExecutionServiceTest extends NbTestCase {
     }
 
 
-    public void testSimpleRun() throws InterruptedException {
+    public void testSimpleRun() throws InterruptedException, ExecutionException {
         TestProcess process = new TestProcess(0);
         TestCallable callable = new TestCallable(process);
 
         ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
         ExecutionService service = ExecutionService.newService(callable, builder.create(), "Test");
 
-        Task task = service.run();
+        Future<Integer> task = service.run();
         assertNotNull(task);
         assertFalse(process.isFinished());
 
-        service.kill();
-        task.waitFinished();
+        task.cancel(true);
+        try {
+            task.get();
+        } catch (CancellationException ex) {
+            // expected
+        }
+
         // maybe it didn't get to execution
         if (process.isStarted()) {
+            process.waitFor();
             assertTrue(process.isFinished());
             assertEquals(0, process.exitValue());
         }
@@ -87,11 +95,35 @@ public class ExecutionServiceTest extends NbTestCase {
 
         // we want to test real started process
         process.waitStarted();
-        service.kill();
-        task.waitFinished();
+        task.cancel(true);
+        try {
+            task.get();
+        } catch (CancellationException ex) {
+            // expected
+        }
+        process.waitFor();
         assertTrue(process.isFinished());
         assertEquals(1, process.exitValue());
 
+    }
+
+    public void testMultipleRun() {
+        TestProcess process = new TestProcess(0);
+        TestCallable callable = new TestCallable(process);
+
+        ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
+        ExecutionService service = ExecutionService.newService(callable, builder.create(), "Test");
+
+        Future<Integer> task = service.run();
+        assertNotNull(task);
+        assertFalse(process.isFinished());
+
+        try {
+            service.run();
+            fail("Allows multiple concurrent runs");
+        } catch (IllegalStateException ex) {
+            // expected
+        }
     }
 
     private static class TestCallable implements Callable<Process> {

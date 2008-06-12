@@ -83,6 +83,7 @@ made subject to such option by the copyright holder.
                         <wsimport
                             xnocompile="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
+                            destdir="${{build.generated.dir}}/wsimport/client"
                             extension="true"
                             package="{$package_name}"
                             wsdl="${{basedir}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
@@ -115,6 +116,7 @@ made subject to such option by the copyright holder.
                         <wsimport
                             xnocompile="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
+                            destdir="${{build.generated.dir}}/wsimport/client"
                             extension="true"
                             wsdl="${{basedir}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
                             wsdlLocation="{$wsdl_url_actual}"
@@ -162,6 +164,9 @@ made subject to such option by the copyright holder.
                 <target name="wsimport-client-compile" depends="-pre-pre-compile">
                     <j2seproject3:depend srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{libs.jaxws21.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
                     <j2seproject3:javac srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{libs.jaxws21.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
+                    <copy todir="${{build.classes.dir}}">
+                        <fileset dir="${{build.generated.dir}}/wsimport/client" includes="**/*.xml"/>
+                    </copy>
                 </target>
                 
             </xsl:if>

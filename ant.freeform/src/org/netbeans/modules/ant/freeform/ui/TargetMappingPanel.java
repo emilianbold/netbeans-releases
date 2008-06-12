@@ -44,12 +44,15 @@ package org.netbeans.modules.ant.freeform.ui;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.ComboBoxModel;
@@ -60,8 +63,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 import javax.swing.table.AbstractTableModel;
+import org.apache.tools.ant.module.api.support.AntScriptUtils;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
-import org.netbeans.modules.ant.freeform.Util;
 import org.netbeans.modules.ant.freeform.spi.ProjectConstants;
 import org.netbeans.modules.ant.freeform.spi.TargetDescriptor;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -131,7 +134,11 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
         List<String> l = null;
         // #50933 - script can be null
         if (as != null) {
-            l = Util.getAntScriptTargetNames(as);
+            try {
+                l = AntScriptUtils.getCallableTargetNames(as);
+            } catch (IOException x) {
+                Logger.getLogger(TargetMappingPanel.class.getName()).log(Level.INFO, "Cannot parse: " + as, x);
+            }
         }
         if (l != null) {
             setTargetNames(l, false);
