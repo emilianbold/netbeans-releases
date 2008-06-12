@@ -53,11 +53,26 @@ import org.openide.filesystems.FileObject;
  * @author Andrei Badea
  */
 public interface GeneratedTables {
+    
+    /**
+     * Should fully qualified table names be used
+     */
+    public boolean isFullyQualifiedTableNames();
 
     /**
      * Returns the names of the tables which should be used to generate classes.
      */
     public Set<String> getTableNames();
+    
+    /**
+     * Returns the schema of the table
+     */
+    public String getSchema(String tableName);
+    
+    /**
+     * Returns the catalog of the table
+     */
+    public String getCatalog(String tableName);
 
     /**
      * Returns the root folder of the class which will be generated for
