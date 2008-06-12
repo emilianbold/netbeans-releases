@@ -49,6 +49,21 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="Utilities.actionsForPath">
+        <api name="util"/>
+        <summary>Added <code>Utilities.actionsForPath</code></summary>
+        <version major="7" minor="14"/>
+        <date day="11" month="6" year="2008"/>
+        <author login="jglick"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added utility method to construct a menu from a layer path.
+            </p>
+        </description>
+        <class package="org.openide.util" name="Utilities"/>
+        <issue number="136334"/>
+    </change>
     <change id="Mutex.Wrapper">
         <api name="util"/>
         <summary>Mutex made pluggable</summary>

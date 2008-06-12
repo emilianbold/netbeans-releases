@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/yui.sdoc
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   base : __getcfg;YAHOO.widget.CalendarNavigator;__getCfg;|DOCUMENTED|PRIVATE|FUNCTION|DOC_ONLY|;Case,true;0;37c85;;;
   base : __initprops;YAHOO.widget.AutoComplete;__initProps;|DOCUMENTED|PRIVATE|FUNCTION|DOC_ONLY|;;0;a29f;;;
   base : __isiequirks;YAHOO.widget.CalendarNavigator;__isIEQuirks;|DOCUMENTED|PRIVATE|PROPERTY|DOC_ONLY|;;0;356ab;;;
@@ -10402,4 +10397,4 @@ Indexed:
   fqn : yahoo_config;;YAHOO_config;|DOCUMENTED|FUNCTION|STATIC|DOC_ONLY|;;0;11dcc3;;;
   fqn : yahoo_config;;YAHOO_config;|DOCUMENTED|FUNCTION|STATIC|DOC_ONLY|;;0;1225d4;;;
 
-Not Indexed:
+Not Searchable Keys:

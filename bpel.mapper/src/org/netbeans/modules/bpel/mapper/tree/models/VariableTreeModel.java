@@ -55,6 +55,7 @@ import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext.SchemaCompPair;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
 
 /**
  * The implementation of the MapperTreeModel for the variables' tree.
@@ -234,8 +235,9 @@ public class VariableTreeModel implements MapperTreeExtensionModel<Object> {
         } else if (parent instanceof SchemaComponent) {
             return loadSchemaComponents(dataObjectPathItrb, (SchemaComponent)parent);
         } else if (parent instanceof AbstractPredicate) {
-            SchemaComponent sComp = ((AbstractPredicate)parent).getSComponent();
-            if (sComp != null) {
+            SchemaCompHolder sCompHolder = ((AbstractPredicate)parent).getSCompHolder();
+            if (sCompHolder != null) {
+                SchemaComponent sComp = sCompHolder.getSchemaComponent();
                 return loadSchemaComponents(dataObjectPathItrb, sComp);
             }
         } else if (parent instanceof LocationStep) {
@@ -327,9 +329,18 @@ public class VariableTreeModel implements MapperTreeExtensionModel<Object> {
         // children list.
         if (mPseudoCompManager != null) {
             // Look for the corresponding cast nodes.
-            List<AbstractPseudoComp> pseudoComp = 
+            List<XPathPseudoComp> pseudoCompList = 
                     mPseudoCompManager.getPseudoComp(dataObjectPathItrb);
-            allChildren.addAll(pseudoComp);
+            for (XPathPseudoComp pseudoComp : pseudoCompList) {
+                allChildren.add(pseudoComp);
+                //
+                if (mPredManager != null) {
+                    // Look for the corresponding predicated nodes.
+                    List<AbstractPredicate> predicates = mPredManager.
+                            getPredicates(dataObjectPathItrb, pseudoComp);
+                    allChildren.addAll(predicates);
+                }
+            }
         }
         //
         return allChildren;

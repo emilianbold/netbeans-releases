@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/SpryEffects.js
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   base : addnexteffect;Spry.Effect.Cluster;addNextEffect;|FUNCTION|;effect;0;;;void;
   base : addparalleleffect;Spry.Effect.Cluster;addParallelEffect;|FUNCTION|;effect;0;;;void;
   base : animate;Spry.Effect.Animator;animate;|FUNCTION|;position;0;;;void;
@@ -515,4 +510,4 @@ Indexed:
   fqn : spry;;Spry;|DOCUMENTED|PROPERTY|;;0;3b;;;
   fqn : spryregistry;;SpryRegistry;|PROPERTY|;;0;;;;
 
-Not Indexed:
+Not Searchable Keys:

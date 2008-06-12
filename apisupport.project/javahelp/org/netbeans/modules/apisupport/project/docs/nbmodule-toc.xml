@@ -24,9 +24,9 @@
             <tocitem text="Module Project Templates" >
                 <tocitem text="About Module Project Templates" target="apisupport_about_project_wizards" />
                 <tocitem text="Creating a Module Project" target="apisupport_create_module" />
-                <tocitem text="Creating a Library Wrapper Module Project" target="apisupport_create_library_wrapper_module" />
+                <tocitem text="Creating a Library Wrapper Module Project" target="apisupport_create_library_wrapper" />
                 <tocitem text="Creating a Module Suite Project" target="apisupport_create_module_suite" />
-                <tocitem text="Creating a NetBeans Platform Application" target="apisupport_create_platform_application" />
+                <tocitem text="Creating a NetBeans Platform Application" target="apisupport_create_platform_app" />
             </tocitem>
         </tocitem>
         <tocitem text="Using the NetBeans APIs" >
@@ -47,7 +47,7 @@
                 </tocitem>
                 <tocitem text="Language Support" >
                     <tocitem text="About Language Support" target="apisupport_about_language_support" />
-                    <tocitem text="Creating Language Support" target="apisupport_create_language support" />
+                    <tocitem text="Creating Language Support" target="apisupport_create_language_support" />
                 </tocitem>
                 <tocitem text="Module Installers" >
                     <tocitem text="About Module Installers" target="apisupport_about_module_installers" />
@@ -75,7 +75,7 @@
         </tocitem>
         <tocitem text="Bundling Supporting Items" >
             <tocitem text="About Bundling Supporting Items" target="apisupport_about_libs_jhelp" />
-            <tocitem text="Bundling a Library" target="apisupport_create_j2se_library_descriptor" />
+            <tocitem text="Bundling a Library" target="apisupport_create_j2se_library_desc" />
             <tocitem text="Bundling a Project Template or Sample" target="apisupport_create_project_template" />
             <tocitem text="Bundling an Update Center's URL" target="apisupport_create_update_center_declaration" />
             <tocitem text="Bundling a JavaHelp Help Set" target="apisupport_create_javahelp" />
@@ -104,7 +104,7 @@
             <tocitem text="About Update Centers" target="apisupport_about_update_centers" />
             <tocitem text="Generating an Autoupdate Descriptor" target="apisupport_generate_autoupdate_descriptor" />
             <tocitem text="Bundling an Update Center's URL" target="apisupport_create_update_center_declaration" />
-            <tocitem text="Manually Registering an Update Center URL" target="apisupport_create_update_centers_manually" />
+            <tocitem text="Manually Registering an Update Center URL" target="apisupport_create_uc_manually" />
         </tocitem>
         <tocitem text="Distributing Rich-Client Applications" >
             <tocitem text="About Distributing Rich-Client Applications" target="apisupport_distributing_rich" />

@@ -24,14 +24,12 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JSeparator;
 import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 
@@ -52,11 +50,9 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.netbeans.modules.bpel.project.IcanproConstants;
-import org.netbeans.modules.bpel.project.ProjectConstants;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -276,7 +272,7 @@ public class IcanproLogicalViewProvider implements LogicalViewProvider {
                 actions.add(null);
                 actions.add(SystemAction.get( org.openide.actions.FindAction.class ));
                 // add versioning support
-                addFromLayers(actions, "Projects/Actions"); //NOI18N
+                actions.addAll(Utilities.actionsForPath("Projects/Actions")); //NOI18N
 //                null,
 //                SystemAction.get(org.openide.actions.OpenLocalExplorerAction.class),
                 actions.add(null);
@@ -286,17 +282,6 @@ public class IcanproLogicalViewProvider implements LogicalViewProvider {
             return actions.toArray(new Action[actions.size()]);
         }
         
-        private void addFromLayers(List<Action> actions, String path) {
-            Lookup look = Lookups.forPath(path);
-            for (Object next : look.lookupAll(Object.class)) {
-                if (next instanceof Action) {
-                    actions.add((Action) next);
-                } else if (next instanceof JSeparator) {
-                    actions.add(null);
-                }
-            }
-        }        
-
         /** This action is created only when project has broken references.
          * Once these are resolved the action is disabled.
          */

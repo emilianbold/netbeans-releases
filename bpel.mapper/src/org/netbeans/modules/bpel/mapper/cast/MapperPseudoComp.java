@@ -50,6 +50,10 @@ public class MapperPseudoComp extends AbstractPseudoComp {
     
     public static XPathExpression getExpression(PseudoComp pseudoComp) {
         String pathText = pseudoComp.getParentPath();
+        if (pathText == null || pathText.length() == 0) {
+            return null;
+        }
+        //
         XPathModel xPathModel = BpelXPathModelFactory.create(pseudoComp);
         XPathExpression xPathExpr = null;
         try {
@@ -66,6 +70,9 @@ public class MapperPseudoComp extends AbstractPseudoComp {
         //
         SchemaReference<? extends GlobalType> typeRef = pseudoComp.getType();
         XPathExpression xPathExpr = getExpression(pseudoComp);
+        if (xPathExpr == null) {
+            return null;
+        }
         //
         if (typeRef == null) {
             ErrorManager.getDefault().log(ErrorManager.WARNING, 

@@ -130,7 +130,10 @@ public class RspecRunner implements TestRunner {
         
         ExecutionDescriptor desc = null;
         String charsetName = null;
-        desc = new ExecutionDescriptor(platform, name, FileUtil.toFile(project.getProjectDirectory()));
+        desc = new ExecutionDescriptor(platform, 
+                name, 
+                FileUtil.toFile(project.getProjectDirectory()), 
+                getSpec(project).getAbsolutePath());
         desc.additionalArgs(arguments.toArray(new String[arguments.size()]));
 
         desc.debug(debug);
@@ -142,7 +145,6 @@ public class RspecRunner implements TestRunner {
                 new TestSession(locator), 
                 RspecHandlerFactory.getHandlers());
         desc.addOutputRecognizer(recognizer);
-        desc.cmd(getSpec(project));
         new RubyExecution(desc, charsetName).run();
     }
 
