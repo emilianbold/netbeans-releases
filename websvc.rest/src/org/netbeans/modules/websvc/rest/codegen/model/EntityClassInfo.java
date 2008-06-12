@@ -351,6 +351,7 @@ public class EntityClassInfo {
         private String type;
         private String simpleTypeName;
         private String typeArg;
+        private String simpleTypeArgName;
         private List<String> annotations;
         private Collection<FieldInfo> fieldInfos;
 
@@ -388,10 +389,15 @@ public class EntityClassInfo {
 
         public void setTypeArg(String typeArg) {
             this.typeArg = typeArg;
+            this.simpleTypeArgName = typeArg.substring(typeArg.lastIndexOf(".") + 1);
         }
 
         public String getTypeArg() {
             return typeArg;
+        }
+        
+        public String getSimpleTypeArgName() {
+            return simpleTypeArgName;
         }
 
         public void addAnnotation(String annotation) {
