@@ -98,7 +98,7 @@ public class CreatingPropertiesFileFromExplorer1Test extends PropertiesEditorTes
         /*
          * 1st step of testcase
          * In explorer create new properties file. Right click on any directory and
-         * select in appeared context menu New|Other|Properties File.
+         * select in appeared context menu New|Other|Properties File. 
          */
         log(PACKAGE_PATH);
         SourcePackagesNode spn = new SourcePackagesNode(DEFAULT_PROJECT_NAME);
@@ -137,7 +137,8 @@ public class CreatingPropertiesFileFromExplorer1Test extends PropertiesEditorTes
     
     public void tearDown() {
         log("Teardown");
-      //  closePropertiesFile(FILE_NAME);
+        closeOpenedProjects();
+      //  closePropertiesFile(FILE_NAME); 
     }
     
     

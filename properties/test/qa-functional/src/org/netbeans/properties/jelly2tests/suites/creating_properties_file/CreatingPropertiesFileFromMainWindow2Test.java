@@ -142,10 +142,7 @@ public class CreatingPropertiesFileFromMainWindow2Test extends PropertiesEditorT
 
     public void tearDown() {
         log("Teardown");
-        //closePropertiesFile(FILE_NAME);
+        closeOpenedProjects();
+        //closePropertiesFile(FILE_NAME); 
     }
 }
-
-
-
-
