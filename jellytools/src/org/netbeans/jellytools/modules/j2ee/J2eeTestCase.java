@@ -39,8 +39,6 @@
 package org.netbeans.jellytools.modules.j2ee;
 
 import java.io.File;
-import java.util.EnumMap;
-import java.util.Map;
 import java.util.logging.Logger;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -55,7 +53,6 @@ import static org.netbeans.junit.NbModuleSuite.Configuration;
  */
 public class J2eeTestCase extends JellyTestCase {
 
-    private static Map<Server, Boolean> isRegistered = new EnumMap<Server, Boolean>(Server.class);
     private static final String GLASSFISH_PATH = "com.sun.aas.installRoot";
     private static final String TOMCAT_PATH = "org.netbeans.modules.tomcat.autoregister.catalinaHome";
     private static final String JBOSS_PATH = "org.netbeans.modules.j2ee.jboss4.installRoot";
@@ -65,43 +62,40 @@ public class J2eeTestCase extends JellyTestCase {
         super(name);
     }
 
-    private static Configuration addGlassfishTests(Configuration conf, String... testNames) {
+    private static Configuration addGlassfishTests(Configuration conf, Class<? extends TestCase> clazz, String... testNames) {
         Configuration result = conf;
         String glassfishPath = System.getProperty("j2ee.appserver.path");
         if (isValidPath(glassfishPath) && isValidPath(glassfishPath + "/domains/domain1")) {
             LOG.info("Setting server path " + glassfishPath);
             System.setProperty(GLASSFISH_PATH, glassfishPath);
-            isRegistered.put(GLASSFISH, true);
-            result = conf.addTest(testNames);
+            result = addTest(conf, clazz, testNames);
         }else{
             conf.addTest("testEmpty");
         }
         return result;
     }
 
-    private static Configuration addTomcatTests(Configuration conf, String... testNames) {
+    private static Configuration addTomcatTests(Configuration conf, Class<? extends TestCase> clazz, String... testNames) {
         Configuration result = conf;
         String tomcatPath = System.getProperty("tomcat.home");
         if (isValidPath(tomcatPath)) {
             LOG.info("Setting server path " + tomcatPath);
             System.setProperty(TOMCAT_PATH, tomcatPath);
             System.setProperty("org.netbeans.modules.tomcat.autoregister.token", "1");
-            result = conf.addTest(testNames);
-            isRegistered.put(TOMCAT, true);
+            result = addTest(conf, clazz, testNames);
         }else{
             conf.addTest("testEmpty");
         }
         return result;
     }
 
-    private static Configuration addJBossTests(Configuration conf, String... testNames) {
+    private static Configuration addJBossTests(Configuration conf, Class<? extends TestCase> clazz, String... testNames) {
         Configuration result = conf;
         String jbossPath = System.getProperty("jboss.home");
         if (isValidPath(jbossPath)) {
             LOG.info("Setting server path " + jbossPath);
             System.setProperty(JBOSS_PATH, jbossPath);
-            result = conf.addTest(testNames);
-            isRegistered.put(JBOSS, true);
+            result = addTest(conf, clazz, testNames);
         }else{
             conf.addTest("testEmpty");
         }
@@ -157,25 +151,40 @@ public class J2eeTestCase extends JellyTestCase {
      * @return clone of the test configuration
      */
     protected static Configuration addServerTests(Server server, Configuration conf, String... testNames) {
+        return addServerTests(server, conf, null, testNames);
+    }
+    
+    /**
+     * Add tests into configuration.
+     * Tests are added only if there is the server instance registered in the 
+     * IDE.
+     * 
+     * @param server server that is needed by tests
+     * @param conf test configuration
+     * @param clazz tested class
+     * @param testNames names of added tests
+     * @return clone of the test configuration
+     */
+    protected static Configuration addServerTests(Server server, Configuration conf, Class<? extends TestCase> clazz, String... testNames) {
         if (isRegistered(server)) {
             LOG.info("adding server tests");
-            return conf.addTest(testNames);
+            return addTest(conf, clazz, testNames);
         } else {
             Configuration result = conf;
             if (server.equals(TOMCAT) || server.equals(ANY)){
-                result = addTomcatTests(conf, testNames);
+                result = addTomcatTests(conf, clazz, testNames);
                 if (isRegistered(TOMCAT)) {
                     return result;
                 }
             }
             if (server.equals(GLASSFISH) || server.equals(ANY)){
-                result = addGlassfishTests(conf, testNames);
+                result = addGlassfishTests(conf, clazz, testNames);
                 if (isRegistered(GLASSFISH)) {
                     return result;
                 }
             }
             if (server.equals(JBOSS) || server.equals(ANY)){
-                result = addJBossTests(conf, testNames);
+                result = addJBossTests(conf, clazz, testNames);
                 if (isRegistered(JBOSS)) {
                     return result;
                 }
@@ -191,33 +200,30 @@ public class J2eeTestCase extends JellyTestCase {
      * @return <code>true</code> if the <code>server</code> is registered
      */
     protected static boolean isRegistered(Server server) {
-        Boolean result = isRegistered.get(server);
-        if (result == null){
-            switch (server){
-                case GLASSFISH:
-                    result =  System.getProperty(GLASSFISH_PATH) != null;
-                    break;
-                case JBOSS:
-                    result = System.getProperty(JBOSS_PATH) != null;
-                    break;
-                case TOMCAT:
-                    result = System.getProperty(TOMCAT_PATH) != null;
-                    break;
-                case ANY:
-                    for (Server serv : Server.values()) {
-                        if (serv.equals(ANY)){
-                            continue;
-                        }
-                        if (isRegistered(serv)) {
-                            return true;
-                        }
+        boolean result;
+        switch (server){
+            case GLASSFISH:
+                result =  System.getProperty(GLASSFISH_PATH) != null;
+                break;
+            case JBOSS:
+                result = System.getProperty(JBOSS_PATH) != null;
+                break;
+            case TOMCAT:
+                result = System.getProperty(TOMCAT_PATH) != null;
+                break;
+            case ANY:
+                for (Server serv : Server.values()) {
+                    if (serv.equals(ANY)){
+                        continue;
                     }
-                    return false;
-                default: 
-                    throw new IllegalArgumentException("Unsupported server");
-            }
+                    if (isRegistered(serv)) {
+                        return true;
+                    }
+                }
+                return false;
+            default: 
+                throw new IllegalArgumentException("Unsupported server");
         }
-        isRegistered.put(server, result);
         return result;
     }
     
@@ -264,4 +270,13 @@ public class J2eeTestCase extends JellyTestCase {
     public void testEmpty(){
         // nothing to do
     }
+    
+    private static Configuration addTest(Configuration conf, Class<? extends TestCase> clazz, String... testNames){
+        if (clazz == null){
+            return conf.addTest(testNames);
+        }else{
+            return conf.addTest(clazz, testNames);
+        }
+    }
+    
 }
