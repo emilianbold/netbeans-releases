@@ -74,11 +74,86 @@ Microsystems, Inc. All Rights Reserved.
       <code>"Editors/" + mimeType</code>. A new instance of Parser is always 
       created for some concrete Snapshot, or collection of Snapshots. One 
       instance of parser can be reused for more Snapshots created from the same 
-      Source. Parser computes 
-      <a href="org/netbeans/modules/parsing/spi/Parser.Result.html">Parser.Result</a> 
-      for given Snapshot. Parser.Result represents result of parsing (AST, semantic 
-      information).
+      Source. Result of parsing (AST, syntax errors, semantic information) is
+      represented by 
+      <a href="org/netbeans/modules/parsing/spi/Parser.Result.html">Parser.Result</a>
+      class. Parser creates a new instance of Parser.Result for each Task. 
+      Following example shows how to integrate parser to the NetBeans using
+      Parsing API:
+      
   </p>
+      <pre>
+      class FooParserFactory extends ParserFactory {
+      
+          public Parser createParser (
+              Collection&lt;Snapshot&gt; snapshots
+          ) {
+              return new FooParser ();
+          }
+          
+          private static class FooParser extends Parser {
+          
+              private boolean         cancelled = false;
+              private AST             ast;
+              
+              public void parse (
+                  Snapshot            snapshot, 
+                  Task                task, 
+                  SchedulerEvent      event
+              ) throws ParseException {
+                  cancelled = false;
+                  for (...) {
+                      // parsing snapshot.getText ();
+                      if (cancelled) return;
+                  }
+                  ast = ...;
+              }
+              
+              public abstract Result getResult (
+                  Task                task,
+                  SchedulerEvent      event
+              ) throws ParseException {
+                  return new FooResult (ast);
+              }
+
+              public void cancel () {
+                  cancelled = true;
+              }
+
+              public void addChangeListener (
+                  ChangeListener      changeListener
+              ) {
+              }
+
+              public void removeChangeListener (
+                  ChangeListener      changeListener
+              ) {
+              }
+          }
+          
+          public static class FooResult extends Result {
+            
+              private AST           ast;
+              private boolean       valid = true;
+              
+              FooResult (
+                  AST               ast
+              ) {
+                  this.ast = ast;
+              }
+              
+              public AST getAST () {
+                  if (!valid) throw new InvalidResultException ();
+                  return ast;
+              }
+              
+              public void invalidate () {
+                  valid = false;
+                  ast = null;
+              }
+          }
+      }
+      </pre>
   <p>
     Parsing API defines two basic kinds of 
     <a href="org/netbeans/modules/parsing/api/Task.html">Task</a>s. High priority 
@@ -101,7 +176,10 @@ Microsystems, Inc. All Rights Reserved.
     <a href="org/netbeans/modules/parsing/spi/TaskScheduler.html">TaskScheduler</a>.
     TaskScheduler defines when task shoud be started (for example
     when current editor is changed, when some nodes are selected in Project View, or
-    when cursor position is changed). Some specific tasks can define language 
+    when cursor position is changed). 
+  </p>
+  <p>
+    There are two specific tasks that can define language 
     embedding. So task implementator can recognize blocks of embedded languages.
     
     Parsing API contains support for high priority 
@@ -172,8 +250,6 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="arch-usecases">
-    <b>Parsing API implements two basic use cases:</b>
-
     <ol>
         <li>Parsing API Client can always ask for parser result. 
         This direct call has top level priority (stops all other requests). 
@@ -193,6 +269,16 @@ Microsystems, Inc. All Rights Reserved.
         calls all such registerred tasks. These calls has lower priority than
         UserTasks, and they should not block user interaction with IDE 
         (typing in editor).</li>
+
+        <li>Parsing API defines how to recognize embedded languages. It should
+        be possible to create snapshot of some file, call some recognizers that
+        finds blocks of embedded languages and run different parsers for embedded blocks.
+        It should be able to use the same parser for top level language and any
+        embedded block of code written in the same language. Embedding recognizer 
+        can add some virtual code (code that does not exists in top level source) 
+        to the embedded block. There should be some support for translation 
+        of offsets between top level source and virtual source generated 
+        for embedded piece of code.</li>
     </ol>
  </answer>
 

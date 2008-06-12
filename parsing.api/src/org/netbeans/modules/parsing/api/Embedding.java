@@ -77,7 +77,8 @@ public final class Embedding {
         String mimeType = null;
         Source source = null;
         StringBuilder sb = new StringBuilder ();
-        List<int[]> positions = new ArrayList<int[]> ();
+        List<int[]> currentToOriginal = new ArrayList<int[]> ();
+        List<int[]> originalToCurrent = new ArrayList<int[]> ();
         int offset = 0;
         for (Embedding embedding : embeddings) {
             Snapshot snapshot = embedding.getSnapshot ();
@@ -91,17 +92,35 @@ public final class Embedding {
                 source = snapshot.getSource ();
             }
             sb.append (snapshot.getText ());
-            int[][] p = snapshot.positions;
+            int[][] p = snapshot.currentToOriginal;
             for (int i = 0; i < p.length; i++) {
-                positions.add (new int[] {p [i] [0] + offset, p [i] [1], p[i][2]});
+                currentToOriginal.add (new int[] {p [i] [0] + offset, p [i] [1]});
+                if (p [i] [1] >= 0)
+                    originalToCurrent.add (new int[] {p [i] [1], p [i] [0] + offset});
+                else
+                if (!originalToCurrent.isEmpty ())
+                    originalToCurrent.add (new int[] {
+                        originalToCurrent.get (originalToCurrent.size () - 1) [0] + 
+                            p [i] [0] + offset - 
+                            originalToCurrent.get (originalToCurrent.size () - 1) [1], 
+                        -1
+                    });
             }
             offset +=snapshot.getText ().length ();
         }
+        if (originalToCurrent.get (originalToCurrent.size () - 1) [1] >= 0)
+            originalToCurrent.add (new int[] {
+                originalToCurrent.get (originalToCurrent.size () - 1) [0] + 
+                    sb.length () - 
+                    originalToCurrent.get (originalToCurrent.size () - 1) [1], 
+                -1
+            });
         Snapshot snapshot = new Snapshot (
             sb,
             source,
             mimeType,
-            positions.toArray (new int [positions.size ()] [])
+            currentToOriginal.toArray (new int [currentToOriginal.size ()] []),
+            originalToCurrent.toArray (new int [originalToCurrent.size ()] [])
         );
         return new Embedding (
             snapshot, 

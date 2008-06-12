@@ -164,9 +164,8 @@ public final class Source {
         try {
             DataObject dataObject = DataObject.find (fileObject);
             EditorCookie editorCookie = dataObject.getLookup().lookup (EditorCookie.class);
-            if (editorCookie != null) {
-                return editorCookie.getDocument ();
-            }            
+            if (editorCookie == null) return null;
+            return editorCookie.getDocument ();
         } catch (DataObjectNotFoundException ex) {
             //Handled below
         }
@@ -203,12 +202,12 @@ public final class Source {
                         ((AbstractDocument) document).readUnlock ();
                 }
                 return new Snapshot (
-                    text, this, mimeType, new int[][] {new int[] {0, 0, text.length()}}
+                    text, this, mimeType, new int[][] {new int[] {0, 0}}, new int[][] {new int[] {0, 0}}
                 );
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace (ex);
                 return new Snapshot (
-                    "", this, mimeType, new int[][] {new int[] {0, 0, 0}}
+                    "", this, mimeType, new int[][] {new int[] {0, 0}}, new int[][] {new int[] {0, 0}}
                 );
             }
         }
@@ -219,16 +218,18 @@ public final class Source {
             StringBuilder sb = new StringBuilder ();
             int i = bufferedReader.read (charBuffer);
             while (i > 0) {
+                charBuffer.flip();
                 sb.append (charBuffer);
+                charBuffer.clear();
                 i = bufferedReader.read (charBuffer);
             }
             return new Snapshot (
-                sb.toString (), this, mimeType, new int[][] {new int[] {0, 0, sb.length()}}
+                sb.toString (), this, mimeType, new int[][] {new int[] {0, 0}}, new int[][] {new int[] {0, 0}}
             );
         } catch (IOException ex) {
             Exceptions.printStackTrace (ex);
             return new Snapshot (
-                "", this, mimeType, new int[][] {new int[] {0, 0, 0}}
+                "", this, mimeType, new int[][] {new int[] {0, 0}}, new int[][] {new int[] {0, 0}}
             );
         }
     }

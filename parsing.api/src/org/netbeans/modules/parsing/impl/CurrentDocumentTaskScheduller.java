@@ -40,8 +40,6 @@
 package org.netbeans.modules.parsing.impl;
 
 import java.util.Collections;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
@@ -61,8 +59,6 @@ public class CurrentDocumentTaskScheduller extends CurrentEditorTaskScheduller {
     
     private Document        currentDocument;
     private Source          source;
-//    private DocumentListener 
-//                            documentListener = new ADocumentListener ();
     private TokenHierarchyListener
                             tokenHierarchyListener = new ATokenHierarchyListener ();
     
@@ -71,11 +67,9 @@ public class CurrentDocumentTaskScheduller extends CurrentEditorTaskScheduller {
         if (currentDocument == document) return;
         if (currentDocument != null)
             TokenHierarchy.get (document).removeTokenHierarchyListener (tokenHierarchyListener);
-//            currentDocument.removeDocumentListener (documentListener);
-        currentDocument = document;
+        currentDocument = document;            
         source = Source.create (currentDocument);
         scheduleTasks (Collections.singleton (source), new SchedulerEvent (this) {});
-        //document.addDocumentListener (documentListener);
         TokenHierarchy.get (document).addTokenHierarchyListener (tokenHierarchyListener);
     }
     
@@ -89,20 +83,6 @@ public class CurrentDocumentTaskScheduller extends CurrentEditorTaskScheduller {
         }
         
     }
-//    private class ADocumentListener implements DocumentListener {
-//
-//        public void insertUpdate (DocumentEvent e) {
-//            scheduleTasks (Collections.singleton (source), new SchedulerEvent (this) {});
-//        }
-//
-//        public void removeUpdate (DocumentEvent e) {
-//            scheduleTasks (Collections.singleton (source), new SchedulerEvent (this) {});
-//        }
-//
-//        public void changedUpdate (DocumentEvent e) {
-//            scheduleTasks (Collections.singleton (source), new SchedulerEvent (this) {});
-//        }
-//    }
 }
 
 

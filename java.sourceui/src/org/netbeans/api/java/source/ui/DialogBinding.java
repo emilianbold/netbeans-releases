@@ -84,6 +84,7 @@ public final class DialogBinding {
                 return js;
             }
         });
+        doc.putProperty(Document.StreamDescriptionProperty, fileObject);
         
         if (doc.getProperty(Language.class) == null) {
             doc.putProperty(Language.class, JavaTokenId.language());
