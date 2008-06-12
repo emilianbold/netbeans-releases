@@ -243,8 +243,32 @@ public class ContainerWidget extends Widget
                 {
                     // If a node is alreay contained by a container, the entire
                     // container needs to be added, not the child node.
+                    //
+                    // In the case of nested containers, I need to check if the
+                    // parent of the node is also the parent of 
+                    // contianer node that owns "this" container.
                     Widget parent = node.getParentWidget();
-                    if (!(parent instanceof ContainerWidget))
+                    
+                    boolean performContainment = true;
+                    if (parent instanceof ContainerWidget)
+                    {
+                        performContainment = false;
+                        
+                        // Check to see if both are contained by the same parent.
+                        // If the are not both contained by the same parent
+                        // then do not allow the containment.  The parent container
+                        // must be added, as described in the previous comment.
+                        
+                        Object myNodeData = scene.findObject(this);
+                        Widget myParentNode = scene.findWidget(myNodeData);
+                        
+                        if(myParentNode.getParentWidget() == parent)
+                        {
+                            performContainment = true;
+                        }
+                    }
+                    
+                    if(performContainment == true)
                     {
                         if(namespace!=null)
                         {
