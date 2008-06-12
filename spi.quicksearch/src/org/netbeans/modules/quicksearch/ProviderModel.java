@@ -47,7 +47,7 @@ import org.netbeans.spi.quicksearch.SearchProvider;
  *
  * @author Dafe Simonek
  */
-final class ProviderModel {
+public final class ProviderModel {
 
     private List<Category> categories;
     
@@ -84,7 +84,7 @@ final class ProviderModel {
         return null;
     }
     
-    static class Category {
+    public static class Category {
         
         private String name, displayName, commandPrefix;
         

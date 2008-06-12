@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -39,72 +39,64 @@
 
 package org.netbeans.modules.quicksearch;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
+import org.netbeans.junit.NbTest;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.spi.quicksearch.SearchProvider;
+import org.netbeans.spi.quicksearch.SearchRequest;
+import org.netbeans.spi.quicksearch.SearchResponse;
 
 /**
- * Thread safe model of provider results of asociated category.
- * 
- * @author  Jan Becicka, Dafe Simonek
+ *
+ * @author Dafe Simonek
  */
-public final class CategoryResult {
+public class CommandEvaluatorTest extends NbTestCase {
     
-    private static final int MAX_RESULTS = 7;
+    private static final int MAX_TIME = 1000;
     
-    private final Object LOCK = new Object();
+    private Exception exc = null;
     
-    private ProviderModel.Category category;
-    
-    private List<ItemResult> items;
-    
-    private int counter;
-    
-    private boolean obsolete;
-
-    CategoryResult (ProviderModel.Category category) {
-        this.category = category;
-        items = new ArrayList<ItemResult>(MAX_RESULTS);
+    public CommandEvaluatorTest() {
+        super("");
     }
     
-    public boolean addItem (ItemResult item) {
-        synchronized (LOCK) {
-            if (obsolete || items.size() >= MAX_RESULTS) {
-                return false;
+    public CommandEvaluatorTest(String testName) {
+        super(testName);
+    }
+    
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(suite());
+    }
+    
+    public static NbTest suite() {
+        NbTestSuite suite = new NbTestSuite(CommandEvaluatorTest.class);
+        return suite;
+    }
+    
+    public void testResponsiveness () throws Exception {
+        UnitTestUtils.prepareTest(new String [] { "/org/netbeans/modules/quicksearch/resources/testSlowProvider.xml" });
+
+        long startTime = System.currentTimeMillis();
+        
+        Iterable<? extends CategoryResult> results = CommandEvaluator.evaluate("sample text");
+        
+        long endTime = System.currentTimeMillis();
+        
+        assertFalse("Evaluator is slower then expected, max allowed time is " +
+                MAX_TIME + " millis, but was " + (endTime - startTime) + " millis.",
+                (endTime - startTime) > 1000);
+    }
+    
+    public static class SlowProvider implements SearchProvider {
+
+        public void evaluate(SearchRequest request, SearchResponse response) {
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException ex) {
+                System.err.println("SlowProvider interrupted...");
             }
-            items.add(item);
-            counter++;
         }
-        return true;
-    }
-    
-    /**
-     * Get the value of item
-     *
-     * @return the value of item
-     */
-    public List<ItemResult> getItems() {
-        List<ItemResult> rItems = null;
-        synchronized (LOCK) {
-            rItems = new ArrayList<ItemResult>(items);
-        }
-        return rItems;
-    }
-
-    /**
-     * Get the value of Category
-     *
-     * @return the value of Category
-     */
-    public ProviderModel.Category getCategory() {
-        return category;
-    }
-
-    public void setObsolete(boolean obsolete) {
-        synchronized (LOCK) {
-            this.obsolete = obsolete;
-        }
+        
     }
 
 }

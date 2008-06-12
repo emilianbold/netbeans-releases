@@ -49,7 +49,7 @@ import javax.swing.KeyStroke;
 public final class ResultsModel extends AbstractListModel {
 
     private Iterable<? extends CategoryResult> results;
-    private ArrayList ar = new ArrayList();
+    private ArrayList<ItemResult> ar = new ArrayList<ItemResult>();
     
     private Map<ItemResult, ProviderModel.Category> items2Cats = new HashMap<ItemResult, ProviderModel.Category>();
     
