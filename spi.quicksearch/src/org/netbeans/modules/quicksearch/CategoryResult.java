@@ -40,7 +40,6 @@
 package org.netbeans.modules.quicksearch;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
 
@@ -90,6 +89,15 @@ public final class CategoryResult {
             rItems = new ArrayList<ItemResult>(items);
         }
         return rItems;
+    }
+    
+    public boolean isFirstItem (ItemResult ir) {
+        synchronized (LOCK) {
+            if (items.size() > 0 && items.get(0).equals(ir)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

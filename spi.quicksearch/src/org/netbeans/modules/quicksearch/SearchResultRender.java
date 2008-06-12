@@ -50,11 +50,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
-import javax.swing.ListModel;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
-import org.openide.util.Utilities;
 
 /**
  * ListCellRenderer for SearchResults
@@ -97,10 +95,9 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
                 itemLabel.setBorder(null);
             }
             
-            ListModel model = list.getModel();
-            if (model instanceof ResultsModel && ((ResultsModel) model).isFirstinCat((ItemResult) value)) {
-                ProviderModel.Category cat = ((ResultsModel) model).getCategory((ItemResult) value);
-                categoryLabel.setText(cat.getDisplayName());
+            CategoryResult cr = ir.getCategory();
+            if (cr.isFirstItem(ir)) {
+                categoryLabel.setText(cr.getCategory().getDisplayName());
                 if (index > 0) {
                     JPanel x = new JPanel();
                     x.setBackground(QuickSearchComboBar.getShadowColor());

@@ -74,7 +74,7 @@ public final class SearchResponse {
      * SearchProvider.evaluate(...) immediatelly if false is returned.
      */
     public boolean addResult (Runnable action, String displayName) {
-        return catResult.addItem(new ResultsModel.ItemResult(action, displayName));
+        return addResult(action, displayName, null, null);
     }
     
     /**
@@ -93,7 +93,8 @@ public final class SearchResponse {
     public boolean addResult (Runnable action, String displayName,
                             KeyStroke shortcut, String displayHint) {
         return catResult.addItem(
-                new ResultsModel.ItemResult(action, displayName, shortcut, displayHint));
+                new ResultsModel.ItemResult(catResult, action,
+                displayName, shortcut, displayHint));
     }
 
 }

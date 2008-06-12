@@ -42,37 +42,20 @@ package org.netbeans.modules.quicksearch;
 import java.util.*;
 import javax.swing.AbstractListModel;
 import javax.swing.KeyStroke;
+
 /**
- * ListModel for SearchGroupResults 
+ * Model of search results. Works as ListModel for JList which is displaying
+ * results. Actual results data are stored in List of CategoryResult objects.
+ * 
  * @author Jan Becicka
  */
 public final class ResultsModel extends AbstractListModel {
 
     private Iterable<? extends CategoryResult> results;
-    private ArrayList<ItemResult> ar = new ArrayList<ItemResult>();
     
-    private Map<ItemResult, ProviderModel.Category> items2Cats = new HashMap<ItemResult, ProviderModel.Category>();
-    
-    private HashSet<ItemResult> isFirstInCat = new HashSet<ItemResult>();
-
     public ResultsModel(String text) {
         super();
         results = CommandEvaluator.evaluate(text);
-        for (CategoryResult cr : results) {
-            boolean first = true;
-            Iterator<? extends ItemResult> it = cr.getItems().iterator();
-            ItemResult curSr = null;
-            for (int i = 0; i < cr.getItems().size(); i++) {
-                curSr = it.next();
-                ar.add(curSr);
-                items2Cats.put(curSr, cr.getCategory());
-                if (first) {
-                    isFirstInCat.add(curSr);
-                    first=false;
-                }
-                
-            }
-        }
     }
 
     public int getSize() {
@@ -83,31 +66,36 @@ public final class ResultsModel extends AbstractListModel {
         return size;
     }
 
-    public Object getElementAt(int arg0) {
-        return ar.get(arg0);
+    public Object getElementAt (int index) {
+        // TBD - should probably throw AIOOBE if invalid index is on input
+        int catIndex = index;
+        int catSize = 0;
+        List<ItemResult> catItems = null;
+        for (CategoryResult cr : results) {
+            catItems = cr.getItems();
+            catSize = catItems.size();
+            if (catIndex < catSize) {
+                return catIndex >= 0 ? catItems.get(catIndex) : null;
+            }
+            catIndex -= catSize;
+        }
+        return null;
     }
     
-    public ProviderModel.Category getCategory (ItemResult sr) {
-        return items2Cats.get(sr);
-    } 
-    
-    public boolean isFirstinCat(ItemResult sr) {
-        return isFirstInCat.contains(sr);
-    }
-
     public static final class ItemResult {
     
+        private CategoryResult category;
         private Runnable action;
         private String displayName;
         private KeyStroke shortcut;
         private String displayHint;
 
-        public ItemResult (Runnable action, String displayName) {
-            this.action = action;
-            this.displayName = displayName;
+        public ItemResult (CategoryResult category, Runnable action, String displayName) {
+            this(category, action, displayName, null, null);
         }
 
-        public ItemResult (Runnable action, String displayName, KeyStroke shortcut, String displayHint) {
+        public ItemResult (CategoryResult category, Runnable action, String displayName, KeyStroke shortcut, String displayHint) {
+            this.category = category;
             this.action = action;
             this.displayName = displayName;
             this.shortcut = shortcut;
@@ -128,6 +116,10 @@ public final class ResultsModel extends AbstractListModel {
 
         public KeyStroke getShortcut() {
             return shortcut;
+        }
+
+        public CategoryResult getCategory() {
+            return category;
         }
     
     }
