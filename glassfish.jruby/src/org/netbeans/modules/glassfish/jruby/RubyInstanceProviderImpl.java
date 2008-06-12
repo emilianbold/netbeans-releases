@@ -43,7 +43,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstanceProvider;
-import org.netbeans.spi.glassfish.ServerUtilities;
+import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.util.ChangeSupport;
 

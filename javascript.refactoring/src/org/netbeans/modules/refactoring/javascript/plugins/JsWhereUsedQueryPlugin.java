@@ -348,7 +348,7 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
                 String sourceText = compiler.getText();
                 //System.out.println("Skipping file " + workingCopy.getFileObject());
                 // See if the document contains references to this symbol and if so, put a warning in
-                if (sourceText == null && sourceText.indexOf(targetName) != -1) {
+                if (sourceText != null && sourceText.indexOf(targetName) != -1) {
                     int start = 0;
                     int end = 0;
                     String desc = "Parse error in file which contains " + targetName + " reference - skipping it"; 

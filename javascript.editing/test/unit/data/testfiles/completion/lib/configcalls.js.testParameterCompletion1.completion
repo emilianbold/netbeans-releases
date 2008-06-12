@@ -1,4 +1,6 @@
-Results for somefunction({}, {}, {}); with queryType=COMPLETION and nameKind=PREFIX
+Code completion result for source line:
+somefunction({}, {|}, {});
+(QueryType=COMPLETION, NameKind=PREFIX)
 PARAMETER  bar                                        <i>Configuration bar for parameter bar</i>
 PARAMETER  foo                                        <i>Configuration foo for parameter def</i>
 CALL       somefunction(... , def, ...)               configcalls.js

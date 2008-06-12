@@ -50,11 +50,10 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor;
-import org.netbeans.modules.mobility.project.preprocessor.PPDocumentDestination;
-import org.netbeans.modules.mobility.project.preprocessor.PPDocumentSource;
-import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
+import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor.Destination;
+import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor.Source;
+import org.netbeans.modules.mobility.project.bridge.J2MEProjectUtilitiesProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -64,6 +63,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 
@@ -154,10 +154,12 @@ public class TextSwitcher implements PropertyChangeListener {
             if (ec == null) return false;
             try {
                 final StyledDocument doc = force ? ec.openDocument() : ec.getDocument();
-                if (!(doc instanceof BaseDocument)) return false;
+                J2MEProjectUtilitiesProvider utilProvider = Lookup.getDefault().lookup(J2MEProjectUtilitiesProvider.class);
+                if (utilProvider == null) return false; //we do not run in full NetBeans
+                if (!utilProvider.isBaseDocument(doc)) return false;
                 
-                final PPDocumentSource ppSrc = new PPDocumentSource(doc);
-                final PPDocumentDestination ppDest = new PPDocumentDestination((BaseDocument)doc);
+                final Source ppSrc = utilProvider.createPPDocumentSource(doc);
+                final Destination ppDest = utilProvider.createPPDocumentDestination(doc);
                 
                 final HashMap<String,String> identifiers=new HashMap<String,String>(pch.getActiveAbilities());
                 identifiers.put(pch.getActiveConfiguration().getDisplayName(),null);

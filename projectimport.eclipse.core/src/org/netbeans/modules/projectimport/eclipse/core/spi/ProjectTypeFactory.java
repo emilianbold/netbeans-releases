@@ -42,6 +42,7 @@ package org.netbeans.modules.projectimport.eclipse.core.spi;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import javax.swing.Icon;
 import org.netbeans.api.project.Project;
 
 /**
@@ -63,4 +64,14 @@ public interface ProjectTypeFactory {
      * <p>Always called under project write mutex.
      */
     Project createProject(ProjectImportModel model, List<String> importProblems) throws IOException;
+    
+    /**
+     * Returns project type icon.
+     */
+    Icon getProjectTypeIcon();
+
+    /**
+     * Returns project type name.
+     */
+    String getProjectTypeName();
 }

@@ -77,6 +77,8 @@ import org.netbeans.modules.xml.xpath.ext.XPathUtils;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.bpel.model.api.support.Roles;
 import org.netbeans.modules.xml.schema.model.Any;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
 
 /**
  * The implementation of the TreeItemInfoProvider for the variables' tree.
@@ -85,12 +87,6 @@ import org.netbeans.modules.xml.schema.model.Any;
  * @author AlexanderPermyakov
  */
 public class VariableTreeInfoProvider implements TreeItemInfoProvider {
-    
-    public static final String ANY_ELEMENT = 
-            NbBundle.getMessage(VariableTreeInfoProvider.class, "ANY_ELEMENT"); // NOI18N
-    
-    public static final String ANY_ATTRIBUTE = 
-            NbBundle.getMessage(VariableTreeInfoProvider.class, "ANY_ATTRIBUTE"); // NOI18N
     
     private static VariableTreeInfoProvider singleton = new VariableTreeInfoProvider();
     
@@ -136,21 +132,16 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
             return "(" + gType.getName() + ")" + getDisplayName(castableObject);
         }
         //
-        if (treeItem instanceof AbstractPseudoComp) {
-            AbstractPseudoComp pseudo = ((AbstractPseudoComp)treeItem);
-            if (pseudo.isAttribute()) {
-                return "(" + pseudo.getName() + ")" + ANY_ATTRIBUTE;
-            } else {
-                return "(" + pseudo.getName() + ")" + ANY_ELEMENT;
-            }
+        if (treeItem instanceof XPathPseudoComp) {
+            return AbstractPseudoComp.getDisplayName((XPathPseudoComp)treeItem);
         }
         //
         if (treeItem instanceof AnyElement) {
-            return ANY_ELEMENT;
+            return AbstractPseudoComp.ANY_ELEMENT;
         }
         //
         if (treeItem instanceof AnyAttribute) {
-            return ANY_ATTRIBUTE;
+            return AbstractPseudoComp.ANY_ATTRIBUTE;
         }
         //
         return null;
@@ -293,9 +284,9 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         }
         //
         if (treeItem instanceof AbstractPredicate) {
-            SchemaComponent sComp = 
-                    ((AbstractPredicate)treeItem).getSComponent();
-            return getIcon(sComp);
+            SchemaCompHolder sCompHolder = 
+                    ((AbstractPredicate)treeItem).getSCompHolder();
+            return getIcon(sCompHolder.getHeldComponent());
         }
         //
         if (treeItem instanceof AbstractTypeCast) {
@@ -303,8 +294,8 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
             return getIcon(castableObject);
         }
         //
-        if (treeItem instanceof AbstractPseudoComp) {
-            AbstractPseudoComp pseudo = (AbstractPseudoComp)treeItem;
+        if (treeItem instanceof XPathPseudoComp) {
+            XPathPseudoComp pseudo = (XPathPseudoComp)treeItem;
             if (pseudo.isAttribute()) {
                 return NodeIcons.ATTRIBUTE.getIcon();
             } else {

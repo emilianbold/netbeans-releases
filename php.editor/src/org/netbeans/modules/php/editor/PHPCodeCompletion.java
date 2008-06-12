@@ -315,7 +315,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 autoCompleteClassMembers(proposals, request, true);
                 break;
             case PHPDOC:
-                //TODO cc for PHPDoc
+                PHPDOCCodeCompletion.complete(proposals, request);
                 break;
         }
         
@@ -773,7 +773,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
     
     private static final boolean isPHPIdentifierPart(char c){
-        return Character.isJavaIdentifierPart(c);// && c != '$';
+        return Character.isJavaIdentifierPart(c) || c == '@';
     }
 
     public String getPrefix(CompilationInfo info, int caretOffset, boolean upToOffset) {

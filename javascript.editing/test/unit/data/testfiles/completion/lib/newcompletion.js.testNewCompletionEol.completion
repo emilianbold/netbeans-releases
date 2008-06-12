@@ -1,4 +1,6 @@
-Results for new  with queryType=COMPLETION and nameKind=PREFIX
+Code completion result for source line:
+editor = new |
+(QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
 CONSTRUCTO AbstractView                               DOM
 CONSTRUCTO Arguments                                  Core JS

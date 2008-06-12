@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/resolv.rb
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   attribute : aa
   attribute : additional
   attribute : answer
@@ -38,14 +33,14 @@ Indexed:
   method : initialize(id)|PRIVATE|
   method : new(id)|PRIVATE|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 2
-Indexed:
+Document 1
+Searchable Keys:
   attribute : address
   attribute : bitmap
   attribute : protocol
@@ -60,14 +55,14 @@ Indexed:
   method : initialize(address,protocol,bitmap)|PRIVATE|
   method : new(address,protocol,bitmap)|PRIVATE|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Resource::IN
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 3
-Indexed:
+Document 2
+Searchable Keys:
   attribute : address
   class : A
   class-ig : a
@@ -80,14 +75,14 @@ Indexed:
   method : initialize(address)|PRIVATE|
   method : new(address)|PRIVATE|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Resource::IN
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 4
-Indexed:
+Document 3
+Searchable Keys:
   attribute : address
   class : AAAA
   class-ig : aaaa
@@ -100,14 +95,14 @@ Indexed:
   method : initialize(address)|PRIVATE|
   method : new(address)|PRIVATE|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Resource::IN
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 5
-Indexed:
+Document 4
+Searchable Keys:
   attribute : address
   class : IPv4
   class-ig : ipv4
@@ -123,14 +118,14 @@ Indexed:
   method : to_name
   method : to_s
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 6
-Indexed:
+Document 5
+Searchable Keys:
   attribute : address
   class : IPv6
   class-ig : ipv6
@@ -150,14 +145,14 @@ Indexed:
   method : to_name
   method : to_s
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 7
-Indexed:
+Document 6
+Searchable Keys:
   attribute : cpu
   attribute : os
   class : HINFO
@@ -170,14 +165,14 @@ Indexed:
   method : initialize(cpu,os)|PRIVATE|
   method : new(cpu,os)|PRIVATE|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Resource
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 8
-Indexed:
+Document 7
+Searchable Keys:
   attribute : data
   class : Generic
   class-ig : generic
@@ -189,14 +184,14 @@ Indexed:
   method : initialize(data)|PRIVATE|
   method : new(data)|PRIVATE|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Resource
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 9
-Indexed:
+Document 8
+Searchable Keys:
   attribute : downcase
   attribute : string
   class : Str
@@ -210,14 +205,14 @@ Indexed:
   method : new(string)|PRIVATE|STATIC|
   method : to_s
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Label
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 10
-Indexed:
+Document 9
+Searchable Keys:
   attribute : emailbx
   attribute : rmailbx
   class : MINFO
@@ -230,14 +225,14 @@ Indexed:
   method : initialize(rmailbx,emailbx)|PRIVATE|
   method : new(rmailbx,emailbx)|PRIVATE|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Resource
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 11
-Indexed:
+Document 10
+Searchable Keys:
   attribute : exchange
   attribute : preference
   class : MX
@@ -250,14 +245,14 @@ Indexed:
   method : initialize(preference,exchange)|PRIVATE|
   method : new(preference,exchange)|PRIVATE|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Resource
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 12
-Indexed:
+Document 11
+Searchable Keys:
   attribute : expire
   attribute : minimum
   attribute : mname
@@ -275,14 +270,14 @@ Indexed:
   method : initialize(mname,rname,serial,refresh,retry_,expire,minimum)|PRIVATE|
   method : new(mname,rname,serial,refresh,retry_,expire,minimum)|PRIVATE|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Resource
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 13
-Indexed:
+Document 12
+Searchable Keys:
   attribute : name
   class : DomainName
   class-ig : domainname
@@ -293,14 +288,14 @@ Indexed:
   method : initialize(name)|PRIVATE|
   method : new(name)|PRIVATE|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Resource
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 14
-Indexed:
+Document 13
+Searchable Keys:
   attribute : port
   attribute : priority
   attribute : target
@@ -316,14 +311,14 @@ Indexed:
   method : initialize(priority,weight,port,target)|DOCUMENTED|PRIVATE|
   method : new(priority,weight,port,target)|DOCUMENTED|PRIVATE|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |DOCUMENTED|;1305
   in : Resolv::DNS::Resource::IN
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 15
-Indexed:
+Document 14
+Searchable Keys:
   attribute : queue
   class : Sender
   class-ig : sender
@@ -335,14 +330,14 @@ Indexed:
   method : new(msg,data,sock,queue)|PRIVATE|STATIC|
   method : recv(msg)
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Requester
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 16
-Indexed:
+Document 15
+Searchable Keys:
   attribute : strings
   class : TXT
   class-ig : txt
@@ -355,42 +350,42 @@ Indexed:
   method : initialize(first_string,*rest_strings)|PRIVATE|
   method : new(first_string,*rest_strings)|PRIVATE|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Resource
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 17
-Indexed:
+Document 16
+Searchable Keys:
   class : ANY
   class-ig : any
   constant : TypeValue
   extends : Query
   fqn : Resolv::DNS::Resource::ANY
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Resource
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 18
-Indexed:
+Document 17
+Searchable Keys:
   class : CNAME
   class-ig : cname
   constant : TypeValue
   extends : DomainName
   fqn : Resolv::DNS::Resource::CNAME
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Resource
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 19
-Indexed:
+Document 18
+Searchable Keys:
   class : Config
   class-ig : config
   constant : InitialTimeout
@@ -411,14 +406,14 @@ Indexed:
   method : resolv(name)
   method : single?
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 20
-Indexed:
+Document 19
+Searchable Keys:
   class : ConnectedUDP
   class-ig : connectedudp
   extends : Requester
@@ -432,14 +427,14 @@ Indexed:
   method : new(host,port)|PRIVATE|STATIC|
   method : sender(msg,data,queue,host,port)
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Requester
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 21
-Indexed:
+Document 20
+Searchable Keys:
   class : DNS
   class-ig : dns
   constant : DNSThreadGroup
@@ -466,40 +461,40 @@ Indexed:
   method : new(config_info)|PRIVATE|STATIC|
   method : open(*args)|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 22
-Indexed:
+Document 21
+Searchable Keys:
   class : DecodeError
   class-ig : decodeerror
   extends : StandardError
   fqn : Resolv::DNS::DecodeError
 
-Not Indexed:
+Not Searchable Keys:
+  attrs : |CLASS|
+  in : Resolv::DNS
+  requires : fcntl,socket,thread,timeout,win32/resolv
+
+
+Document 22
+Searchable Keys:
+  class : EncodeError
+  class-ig : encodeerror
+  extends : StandardError
+  fqn : Resolv::DNS::EncodeError
+
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 23
-Indexed:
-  class : EncodeError
-  class-ig : encodeerror
-  extends : StandardError
-  fqn : Resolv::DNS::EncodeError
-
-Not Indexed:
-  attrs : |CLASS|
-  in : Resolv::DNS
-  requires : fcntl,socket,thread,timeout,win32/resolv
-
-
-Document 24
-Indexed:
+Searchable Keys:
   class : Hosts
   class-ig : hosts
   constant : DefaultFileName
@@ -520,40 +515,40 @@ Indexed:
   method : lazy_initialize
   method : new(filename)|PRIVATE|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 25
-Indexed:
+Document 24
+Searchable Keys:
   class : IN
   class-ig : in
   constant : ClassValue
   fqn : Resolv::DNS::Resource::IN
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |DOCUMENTED|MODULE|;28
   in : Resolv::DNS::Resource
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 26
-Indexed:
+Document 25
+Searchable Keys:
   class : Label
   class-ig : label
   fqn : Resolv::DNS::Label
   method : split(arg)|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |MODULE|
   in : Resolv::DNS
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 27
-Indexed:
+Document 26
+Searchable Keys:
   class : MessageDecoder
   class-ig : messagedecoder
   field : data
@@ -573,14 +568,14 @@ Indexed:
   method : initialize(data)|PRIVATE|
   method : new(data)|PRIVATE|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Message
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 28
-Indexed:
+Document 27
+Searchable Keys:
   class : MessageEncoder
   class-ig : messageencoder
   field : data
@@ -598,41 +593,41 @@ Indexed:
   method : put_string_list(ds)
   method : to_s
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Message
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 29
-Indexed:
+Document 28
+Searchable Keys:
   class : NS
   class-ig : ns
   constant : TypeValue
   extends : DomainName
   fqn : Resolv::DNS::Resource::NS
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Resource
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 30
-Indexed:
+Document 29
+Searchable Keys:
   class : NXDomain
   class-ig : nxdomain
   extends : ResolvError
   fqn : Resolv::DNS::Config::NXDomain
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Config
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 31
-Indexed:
+Document 30
+Searchable Keys:
   class : Name
   class-ig : name
   field : absolute
@@ -651,14 +646,14 @@ Indexed:
   method : to_a
   method : to_s|DOCUMENTED|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 32
-Indexed:
+Document 31
+Searchable Keys:
   class : OpCode
   class-ig : opcode
   constant : IQuery
@@ -668,55 +663,55 @@ Indexed:
   constant : Update
   fqn : Resolv::DNS::OpCode
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |MODULE|
   in : Resolv::DNS
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 33
-Indexed:
+Document 32
+Searchable Keys:
   class : OtherResolvError
   class-ig : otherresolverror
   extends : ResolvError
   fqn : Resolv::DNS::Config::OtherResolvError
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Config
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 34
-Indexed:
+Document 33
+Searchable Keys:
   class : PTR
   class-ig : ptr
   constant : TypeValue
   extends : DomainName
   fqn : Resolv::DNS::Resource::PTR
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Resource
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 35
-Indexed:
+Document 34
+Searchable Keys:
   class : Query
   class-ig : query
   fqn : Resolv::DNS::Query
   method : decode_rdata(msg)|STATIC|
   method : encode_rdata(msg)
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 36
-Indexed:
+Document 35
+Searchable Keys:
   class : RCode
   class-ig : rcode
   constant : BADALG
@@ -739,27 +734,27 @@ Indexed:
   constant : YXRRSet
   fqn : Resolv::DNS::RCode
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |MODULE|
   in : Resolv::DNS
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 37
-Indexed:
+Document 36
+Searchable Keys:
   class : RequestError
   class-ig : requesterror
   extends : StandardError
   fqn : Resolv::DNS::Requester::RequestError
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Requester
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 38
-Indexed:
+Document 37
+Searchable Keys:
   class : Requester
   class-ig : requester
   field : senders
@@ -771,14 +766,14 @@ Indexed:
   method : initialize|PRIVATE|
   method : new|PRIVATE|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 39
-Indexed:
+Document 38
+Searchable Keys:
   class : Resolv
   class-ig : resolv
   constant : AddressRegex
@@ -800,39 +795,39 @@ Indexed:
   method : initialize(resolvers)|PRIVATE|
   method : new(resolvers)|PRIVATE|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 40
-Indexed:
+Document 39
+Searchable Keys:
   class : ResolvError
   class-ig : resolverror
   extends : StandardError
   fqn : Resolv::ResolvError
 
-Not Indexed:
+Not Searchable Keys:
+  attrs : |CLASS|
+  in : Resolv
+  requires : fcntl,socket,thread,timeout,win32/resolv
+
+
+Document 40
+Searchable Keys:
+  class : ResolvTimeout
+  class-ig : resolvtimeout
+  extends : TimeoutError
+  fqn : Resolv::ResolvTimeout
+
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 41
-Indexed:
-  class : ResolvTimeout
-  class-ig : resolvtimeout
-  extends : TimeoutError
-  fqn : Resolv::ResolvTimeout
-
-Not Indexed:
-  attrs : |CLASS|
-  in : Resolv
-  requires : fcntl,socket,thread,timeout,win32/resolv
-
-
-Document 42
-Indexed:
+Searchable Keys:
   class : Resource
   class-ig : resource
   constant : ClassHash
@@ -847,14 +842,14 @@ Indexed:
   method : get_class(type_value,class_value)|STATIC|
   method : hash
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 43
-Indexed:
+Document 42
+Searchable Keys:
   class : Sender
   class-ig : sender
   extends : Requester::Sender
@@ -865,42 +860,42 @@ Indexed:
   method : new(msg,data,sock,host,port,queue)|PRIVATE|STATIC|
   method : send
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Requester::UnconnectedUDP
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 44
-Indexed:
+Document 43
+Searchable Keys:
   class : Sender
   class-ig : sender
   extends : Requester::Sender
   fqn : Resolv::DNS::Requester::ConnectedUDP::Sender
   method : send
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Requester::ConnectedUDP
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 45
-Indexed:
+Document 44
+Searchable Keys:
   class : Sender
   class-ig : sender
   extends : Requester::Sender
   fqn : Resolv::DNS::Requester::TCP::Sender
   method : send
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Requester::TCP
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 46
-Indexed:
+Document 45
+Searchable Keys:
   class : TCP
   class-ig : tcp
   extends : Requester
@@ -915,14 +910,14 @@ Indexed:
   method : new(host,port)|PRIVATE|STATIC|
   method : sender(msg,data,queue,host,port)
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Requester
   requires : fcntl,socket,thread,timeout,win32/resolv
 
 
-Document 47
-Indexed:
+Document 46
+Searchable Keys:
   class : UnconnectedUDP
   class-ig : unconnectedudp
   extends : Requester
@@ -934,7 +929,7 @@ Indexed:
   method : new|PRIVATE|STATIC|
   method : sender(msg,data,queue,host,port)
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : Resolv::DNS::Requester
   requires : fcntl,socket,thread,timeout,win32/resolv

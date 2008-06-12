@@ -60,8 +60,12 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
  */
 public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
 
-    private boolean skipAnyAttribute = false;
+    // prevent processing for xsd:any attributes.
+    private boolean skipXsdAnyAttribute = false;
 
+    // prevent processing for all attributes.
+    private boolean skipAttributes = false;
+    
     public AbstractSchemaSearchVisitor() {
     }
 
@@ -74,12 +78,16 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
     // ----------------------------------------------
     @Override
     public void visit(LocalAttribute la) {
-        checkComponent(la);
+        if (!skipAttributes) {
+            checkComponent(la);
+        }
     }
 
     @Override
     public void visit(GlobalAttribute ga) {
-        checkComponent(ga);
+        if (!skipAttributes) {
+            checkComponent(ga);
+        }
     }
 
     @Override
@@ -100,7 +108,7 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
 
     @Override
     public void visit(AnyAttribute aa) {
-        if (!skipAnyAttribute) {
+        if (!skipAttributes && !skipXsdAnyAttribute) {
             checkComponent(aa);
         }
     }
@@ -126,6 +134,10 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
 
     @Override
     public void visit(AttributeReference ar) {
+        if (skipAttributes) {
+            return;
+        }
+        
         // # 105159, #130053
         if (!isXdmDomUsed(ar)) {
             checkComponent(ar);
@@ -143,8 +155,11 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
 
     @Override
     public void visit(AttributeGroupReference agr) {
+        if (skipAttributes) {
+            return;
+        }
+        //
         NamedComponentReference<GlobalAttributeGroup> gagRef = agr.getGroup();
-
         if (gagRef != null) {
             GlobalAttributeGroup gag = gagRef.get();
             if (gag != null) {
@@ -178,7 +193,9 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
 
     @Override
     public void visit(GlobalAttributeGroup gag) {
-        visitChildren(gag);
+        if (!skipAttributes) {
+            visitChildren(gag);
+        }
     }
 
     @Override
@@ -213,10 +230,10 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
     public void visit(ComplexExtension ce) {
         List<AnyAttribute> myAnyAttrList = ce.getChildren(AnyAttribute.class);
         //
-        boolean prevValue = skipAnyAttribute;
+        boolean prevValue = skipXsdAnyAttribute;
         try {
             if (!myAnyAttrList.isEmpty()) {
-                skipAnyAttribute = true;
+                skipXsdAnyAttribute = true;
             }
             NamedComponentReference<GlobalType> gtRef = ce.getBase();
             if (gtRef != null) {
@@ -226,7 +243,7 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
                 }
             }
         } finally {
-            skipAnyAttribute = prevValue;
+            skipXsdAnyAttribute = prevValue;
         }
         //
         visitChildren(ce);
@@ -254,14 +271,32 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
 
     @Override
     public void visit(ComplexContentRestriction ccr) {
-        visitChildren(ccr);
         //
-        List<AnyAttribute> myAnyAttrList = ccr.getChildren(AnyAttribute.class);
-        //
-        boolean prevValue = skipAnyAttribute;
+        // Nested attributes are collected separately.
+        boolean prevSkipAttrValue = skipAttributes;
         try {
-            if (!myAnyAttrList.isEmpty()) {
-                skipAnyAttribute = true;
+            skipAttributes = true;
+            visitChildren(ccr);
+        } finally {
+            skipAttributes = prevSkipAttrValue;
+        }
+        //
+        // Collects local attributes only!
+        CollectLocalAttributesVisitor localAttrSearch = 
+                new CollectLocalAttributesVisitor(skipXsdAnyAttribute);
+        localAttrSearch.collectFrom(ccr);
+        List<Attribute> localAttrList = localAttrSearch.getAttributes();
+        AnyAttribute localAnyAttr = localAttrSearch.getAnyAttribute();
+        //
+        for (Attribute localAttr : localAttrList) {
+            localAttr.accept(this);
+            // checkComponent(localAttr);
+        }
+        //
+        boolean prevSkipAnyValue = skipXsdAnyAttribute;
+        try {
+            if (localAnyAttr != null) {
+                skipXsdAnyAttribute = true;
             }
             //
             // According to the restriction rules, only the attributes are derived 
@@ -270,46 +305,69 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
             if (baseTypeRef != null) {
                 GlobalComplexType baseType = baseTypeRef.get();
                 if (baseType != null) {
-                    CollectAttributesVisitor attrSearch =
-                            new CollectAttributesVisitor(myAnyAttrList.isEmpty());
+                    CollectInheritedAttributesVisitor attrSearch =
+                            new CollectInheritedAttributesVisitor(skipXsdAnyAttribute);
                     attrSearch.collectFrom(baseType);
                     //
-                    // Process normal attributes.
-                    List<Attribute> myAttrList = ccr.getChildren(Attribute.class);
+                    // The folloing list contains all attributes derived from 
+                    // the restriction's base type
+                    List<Attribute> inheritedAttrList = attrSearch.getAttributes();
                     //
-                    List<Attribute> attrList = attrSearch.getAttributes();
-                    if (attrList != null) {
-                        for (Attribute attr : attrList) {
-                            if (!contains(attrList, attr)) {
-                                checkComponent(attr);
+                    // Now it's necessary to merge derived attributes with local ones.
+                    if (inheritedAttrList != null && localAttrList != null) {
+                        for (Attribute attr : inheritedAttrList) {
+                            //
+                            // Add a derived attribute if it isn't overloaded
+                            Attribute foundSame = getSameNameAttribute(
+                                    localAttrList, attr);
+                            if (foundSame == null) {
+                                attr.accept(this);
                             }
                         }
                     }
                     //
-                    // Process any attribute if specified. 
-                    if (!skipAnyAttribute) {
+                    // Process xsd:any attribute if specified. 
+                    if (!skipXsdAnyAttribute) {
                         AnyAttribute anyAttr = attrSearch.getAnyAttribute();
                         if (anyAttr != null) {
-                            checkComponent(anyAttr);
+                            anyAttr.accept(this);
                         }
                     }
                 }
             }
         } finally {
-            skipAnyAttribute = prevValue;
+            skipXsdAnyAttribute = prevSkipAnyValue;
         }
     }
 
     @Override
     public void visit(SimpleContentRestriction scr) {
-        visitChildren(scr);
         //
-        List<AnyAttribute> myAnyAttrList = scr.getChildren(AnyAttribute.class);
-        //
-        boolean prevValue = skipAnyAttribute;
+        // Nested attributes are collected separately.
+        boolean prevSkipAttrValue = skipAttributes;
         try {
-            if (!myAnyAttrList.isEmpty()) {
-                skipAnyAttribute = true;
+            skipAttributes = true;
+            visitChildren(scr);
+        } finally {
+            skipAttributes = prevSkipAttrValue;
+        }
+        //
+        // Collects local attributes only!
+        CollectLocalAttributesVisitor localAttrSearch = 
+                new CollectLocalAttributesVisitor(skipXsdAnyAttribute);
+        localAttrSearch.collectFrom(scr);
+        List<Attribute> localAttrList = localAttrSearch.getAttributes();
+        AnyAttribute localAnyAttr = localAttrSearch.getAnyAttribute();
+        //
+        for (Attribute localAttr : localAttrList) {
+            localAttr.accept(this);
+            // checkComponent(localAttr);
+        }
+        //
+        boolean prevSkipAnyValue = skipXsdAnyAttribute;
+        try {
+            if (localAnyAttr != null) {
+                skipXsdAnyAttribute = true;
             }
             //
             // According to the restriction rules, only the attributes are derived 
@@ -318,29 +376,38 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
             if (baseTypeRef != null) {
                 GlobalType baseType = baseTypeRef.get();
                 if (baseType != null) {
-                    CollectAttributesVisitor attrSearch =
-                            new CollectAttributesVisitor(myAnyAttrList.isEmpty());
+                    CollectInheritedAttributesVisitor attrSearch =
+                            new CollectInheritedAttributesVisitor(skipXsdAnyAttribute);
                     attrSearch.collectFrom(baseType);
                     //
-                    // Process normal attributes.
-                    List<Attribute> attrList = attrSearch.getAttributes();
-                    if (attrList != null) {
-                        for (Attribute attr : attrList) {
-                            checkComponent(attr);
+                    // The folloing list contains all attributes derived from 
+                    // the restriction's base type
+                    List<Attribute> inheritedAttrList = attrSearch.getAttributes();
+                    //
+                    // Now it's necessary to merge derived attributes with local ones.
+                    if (inheritedAttrList != null && localAttrList != null) {
+                        for (Attribute attr : inheritedAttrList) {
+                            //
+                            // Add a derived attribute if it isn't overloaded
+                            Attribute foundSame = getSameNameAttribute(
+                                    localAttrList, attr);
+                            if (foundSame == null) {
+                                attr.accept(this);
+                            }
                         }
                     }
                     //
-                    // Process any attribute if specified. 
-                    if (!skipAnyAttribute) {
+                    // Process xsd:any attribute if specified. 
+                    if (!skipXsdAnyAttribute) {
                         AnyAttribute anyAttr = attrSearch.getAnyAttribute();
                         if (anyAttr != null) {
-                            checkComponent(anyAttr);
+                            anyAttr.accept(this);
                         }
                     }
                 }
             }
         } finally {
-            skipAnyAttribute = prevValue;
+            skipXsdAnyAttribute = prevSkipAnyValue;
         }
     }
 
@@ -391,8 +458,8 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
     }
     
     /**
-     * Checks if the attributes' list contains the attribute. 
-     * Only name and namespace of the attribute is taken into consideration.
+     * Looks for an attribute in the attrList, which name and namespace are 
+     * the same as for specified attribute.
      * 
      * TODO: This method can work incorrectly if the attribute is located 
      * in a schema, which doesn't have targetNamespace specified. 
@@ -405,7 +472,9 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
      * @param attribute
      * @return 
      */
-    protected boolean contains(List<Attribute> attrList, Attribute attribute) {
+    protected Attribute getSameNameAttribute(List<Attribute> attrList, 
+            Attribute attribute) {
+        //
         String attrName = ((Named)attribute).getName();
         String namespace = attribute.getModel().getEffectiveNamespace(attribute);
         //
@@ -416,17 +485,17 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
                     // Names are the same
                     // Try compare namespaces
                     if (namespace == null) {
-                        return true;
+                        return attr;
                     } else {
                         String ns = attr.getModel().getEffectiveNamespace(attr);
                         if (ns != null && namespace.equals(ns)) {
-                            return true;
+                            return attr;
                         }
                     }
                 }
             }
         }
         //
-        return false;
+        return null;
     }
 }

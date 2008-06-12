@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.bpel.mapper.cast;
 
+import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeInfoProvider;
 import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
@@ -51,6 +52,7 @@ import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import org.netbeans.modules.xml.xpath.ext.schema.InvalidNamespaceException;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
+import org.openide.util.NbBundle;
 
 /**
  * The base class for different kind of Pseudo Schema components.
@@ -58,6 +60,12 @@ import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
  */
 public abstract class AbstractPseudoComp implements XPathPseudoComp {
 
+    public static final String ANY_ELEMENT = 
+            NbBundle.getMessage(AbstractPseudoComp.class, "ANY_ELEMENT"); // NOI18N
+    
+    public static final String ANY_ATTRIBUTE = 
+            NbBundle.getMessage(AbstractPseudoComp.class, "ANY_ATTRIBUTE"); // NOI18N
+    
     private DetachedPseudoComp mDPC;
 
     public AbstractPseudoComp(DetachedPseudoComp dpc) {
@@ -97,7 +105,7 @@ public abstract class AbstractPseudoComp implements XPathPseudoComp {
     public boolean equals(Object other) {
         if (other instanceof XPathPseudoComp) {
             XPathPseudoComp otherPC = (XPathPseudoComp)other;
-            if (!equalTypeName(otherPC)) {
+            if (!equalTypeName(otherPC, this)) {
                 return false;
             }
             //
@@ -116,19 +124,21 @@ public abstract class AbstractPseudoComp implements XPathPseudoComp {
      * @param other
      * @return
      */
-    public boolean equalTypeName(XPathPseudoComp otherPC) {
-        if (otherPC.isAttribute() != this.isAttribute()) {
+    public static boolean equalTypeName(
+            XPathPseudoComp onePC, XPathPseudoComp otherPC) {
+        //
+        if (otherPC.isAttribute() != onePC.isAttribute()) {
             return false;
         }
-        if (!(otherPC.getName().equals(this.getName()))) {
+        if (!(otherPC.getName().equals(onePC.getName()))) {
             // different name
             return false;
         } 
-        if (!(otherPC.getNamespace().equals(this.getNamespace()))) {
+        if (!(otherPC.getNamespace().equals(onePC.getNamespace()))) {
             // different namespace
             return false;
         } 
-        if (!(otherPC.getType().equals(this.getType()))) {
+        if (!(otherPC.getType().equals(onePC.getType()))) {
             // different type
             return false;
         }
@@ -190,6 +200,35 @@ public abstract class AbstractPseudoComp implements XPathPseudoComp {
         }
         //
         return true;
+    }
+
+    //------------------------------------------------------------------
+    
+    public static boolean populatePseudoComp(
+            XPathPseudoComp source, PseudoComp target, 
+            BpelEntity destination, boolean inLeftMapperTree) 
+            throws ExtRegistrationException {
+        //
+        if (!(source instanceof AbstractPseudoComp)) {
+            return ((AbstractPseudoComp)source).populatePseudoComp(
+                    target, destination, inLeftMapperTree);
+        } else {
+            MapperPseudoComp newSource = new MapperPseudoComp(source);
+            if (newSource != null) {
+                return newSource.populatePseudoComp(
+                    target, destination, inLeftMapperTree);
+            }
+        }
+        //
+        return false;
+    }
+    
+    public static String getDisplayName(XPathPseudoComp pseudo)  {
+        if (pseudo.isAttribute()) {
+            return "(" + pseudo.getName() + ")" + ANY_ATTRIBUTE;
+        } else {
+            return "(" + pseudo.getName() + ")" + ANY_ELEMENT;
+        }
     }
     
 }
