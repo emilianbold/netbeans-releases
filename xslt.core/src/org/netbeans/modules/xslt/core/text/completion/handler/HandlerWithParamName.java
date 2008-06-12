@@ -40,30 +40,34 @@
 package org.netbeans.modules.xslt.core.text.completion.handler;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.xml.text.syntax.dom.Tag;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xslt.core.text.completion.XSLTCompletionResultItem;
 import org.netbeans.modules.xslt.core.text.completion.XSLTCompletionUtil;
 import org.netbeans.modules.xslt.core.text.completion.XSLTEditorComponentHolder;
+import org.netbeans.modules.xslt.model.Param;
 import org.netbeans.modules.xslt.model.Stylesheet;
 import org.netbeans.modules.xslt.model.Template;
+import org.w3c.dom.Node;
 
 /**
  * @author Alex Petrov (06.06.2008)
  */
 public class HandlerWithParamName extends BaseCompletionHandler {
-    private static final String
+    protected static final String
+        XSLT_TAG_NAME_APPLY_TEMPLATES = "apply-templates",
         XSLT_TAG_NAME_WITH_PARAM = "with-param";
 
     @Override
     public List<XSLTCompletionResultItem> getResultItemList(
         XSLTEditorComponentHolder editorComponentHolder) {
         initHandler(editorComponentHolder);
-        if ((xslModel != null) && (xslModel.getState().equals(State.NOT_WELL_FORMED))) {
-            return getIncorrectDocumentResultItem();
-        }
         return getTemplatesParamNameList();
     }
     
@@ -77,10 +81,74 @@ public class HandlerWithParamName extends BaseCompletionHandler {
             return Collections.EMPTY_LIST;
         if (! attributeName.equals(XSLTCompletionUtil.ATTRIB_NAME))
             return Collections.EMPTY_LIST;
-/*        
 
-        return findNamedTemplates();
-*/
+        if ((xslModel != null) && (xslModel.getState().equals(State.NOT_WELL_FORMED))) {
+            return getIncorrectDocumentResultItem();
+        }
+        
+        Node parentTemplateNode = surroundTag.getParentNode();
+        if (! (parentTemplateNode instanceof Tag)) return Collections.EMPTY_LIST;
+        
+        tagName = ((Tag) parentTemplateNode).getTagName();
+        if (tagName.contains(HandlerCallTemplateName.XSLT_TAG_NAME_CALL_TEMPLATE)) {
+            String valueofAttributeName = ((Tag) parentTemplateNode).getAttribute(
+                XSLTCompletionUtil.ATTRIB_NAME);
+            if ((valueofAttributeName == null) || 
+                (valueofAttributeName.length() < 1)) return Collections.EMPTY_LIST;
+                
+            return getNamedTemplatesParamNameList(valueofAttributeName);
+        } else if (tagName.contains(XSLT_TAG_NAME_APPLY_TEMPLATES)) {
+//******????????return getUnnamedTemplatesParamNameList();
+        }
         return Collections.EMPTY_LIST;
     }
+    
+    private List<XSLTCompletionResultItem> getNamedTemplatesParamNameList(
+        String templateName) {
+        if (templateName == null) return Collections.EMPTY_LIST;
+        
+        Stylesheet stylesheet = xslModel.getStylesheet();
+        List<Template> templateList = stylesheet.getChildren(Template.class);
+        if (templateList.isEmpty()) return Collections.EMPTY_LIST;
+
+        Template namedTemplate = null;
+        for (Template template : templateList) {
+            QName valueofAttributeName = template.getName();
+            if ((valueofAttributeName != null) &&
+                (templateName.equals(valueofAttributeName.toString()))) {
+                namedTemplate = template;
+                break;
+            }   
+        }        
+        if (namedTemplate == null) return Collections.EMPTY_LIST;
+        
+        return getParamNameList(new ArrayList<Template>(Arrays.asList(
+                                new Template[] {namedTemplate})));
+    }
+    
+    private List<XSLTCompletionResultItem> getParamNameList(List<Template> templateList) {
+        if (templateList == null) return Collections.EMPTY_LIST;
+        
+        Set<String> resultItemSet = new TreeSet<String>();
+        for (Template template : templateList) {
+            List<Param> paramList = template.getChildren(Param.class);
+            if ((paramList == null) || (paramList.isEmpty())) return Collections.EMPTY_LIST;
+            
+            for (Param parameter : paramList) {
+                QName valueofAttributeName = parameter.getName();
+                if (valueofAttributeName != null) {
+                    resultItemSet.add(valueofAttributeName.toString());
+                }                
+            }
+        }
+        if (resultItemSet.isEmpty()) return Collections.EMPTY_LIST;
+        
+        List<XSLTCompletionResultItem> resultItemList = 
+            new ArrayList<XSLTCompletionResultItem>();
+        for (Object paramName : resultItemSet.toArray()) {
+            resultItemList.add(new XSLTCompletionResultItem((String) paramName, 
+                document, caretOffset));
+        }
+        return resultItemList;
+   }
 }
