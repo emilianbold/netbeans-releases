@@ -44,6 +44,7 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
@@ -71,7 +72,10 @@ public class WhereUsedQueryUI implements RefactoringUI {
 
     public WhereUsedQueryUI(JsElementCtx jmiObject, CompilationInfo info) {
         this.query = new WhereUsedQuery(Lookups.singleton(jmiObject));
-        this.query.getContext().add(RetoucheUtils.getClasspathInfoFor(jmiObject));
+        ClasspathInfo classpathInfoFor = RetoucheUtils.getClasspathInfoFor(jmiObject);
+        if (classpathInfoFor != null) {
+            this.query.getContext().add(classpathInfoFor);
+        }
         this.element = jmiObject;
         name = jmiObject.getName();
         kind = jmiObject.getKind();
