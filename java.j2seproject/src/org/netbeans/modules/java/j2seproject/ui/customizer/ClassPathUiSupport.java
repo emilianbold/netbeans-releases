@@ -244,7 +244,7 @@ public class ClassPathUiSupport {
         int[] indexes = new int[files.length];
         for( int i = 0, delta = 0; i+delta < files.length; ) {            
             int current = lastIndex + 1 + i;
-            ClassPathSupport.Item item = ClassPathSupport.Item.create( files[i+delta], null, variables[i+delta] );
+            ClassPathSupport.Item item = ClassPathSupport.Item.create( files[i+delta], null, variables != null ? variables[i+delta] : null);
             if ( !listModel.contains( item ) ) {
                 listModel.add( current, item );
                 indexes[delta + i] = current;

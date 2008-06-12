@@ -240,7 +240,7 @@ public final class ClassPathUiSupport {
         int[] indexes = new int[filePaths.length];
         for( int i = 0, delta = 0; i+delta < filePaths.length; ) {            
             int current = lastIndex + 1 + i;
-            ClassPathSupport.Item item = ClassPathSupport.Item.create( filePaths[i], base, null, variables[i]);
+            ClassPathSupport.Item item = ClassPathSupport.Item.create( filePaths[i], base, null, variables != null ? variables[i] : null);
             if (callback != null) {
                 callback.initItem(item);
             }
