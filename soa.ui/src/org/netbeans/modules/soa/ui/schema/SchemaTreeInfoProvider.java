@@ -20,6 +20,9 @@ package org.netbeans.modules.soa.ui.schema;
 
 import javax.swing.Icon;
 import javax.xml.namespace.QName;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.tree.TreeItem;
 import org.netbeans.modules.soa.ui.tree.TreeItemInfoProvider;
 import org.netbeans.modules.xml.xam.Named;
@@ -34,6 +37,8 @@ import org.netbeans.modules.xml.schema.model.GlobalComplexType;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.schema.model.Import;
+import org.netbeans.modules.xml.schema.model.Include;
 import org.netbeans.modules.xml.schema.model.LocalAttribute;
 import org.netbeans.modules.xml.schema.model.LocalElement;
 import org.netbeans.modules.xml.schema.model.Schema;
@@ -42,7 +47,11 @@ import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.TypeContainer;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -58,6 +67,17 @@ public class SchemaTreeInfoProvider implements TreeItemInfoProvider {
     public static final String ANY_ATTRIBUTE = 
             NbBundle.getMessage(SchemaTreeInfoProvider.class, "ANY_ATTRIBUTE"); // NOI18N
     
+    public static final String EMBEDED_SCHEMA = 
+            NbBundle.getMessage(SchemaTreeInfoProvider.class, "EMBEDED_SCHEMA"); // NOI18N
+    
+    public static final String IMPORTED_SCHEMA = 
+            NbBundle.getMessage(SchemaTreeInfoProvider.class, "IMPORTED_SCHEMA"); // NOI18N
+    
+    public static final String INCLUDED_SCHEMA = 
+            NbBundle.getMessage(SchemaTreeInfoProvider.class, "INCLUDED_SCHEMA"); // NOI18N
+
+    public static final String PRIMITIVE_TYPES = 
+            NbBundle.getMessage(SchemaTreeInfoProvider.class, "PRIMITIVE_TYPES"); // NOI18N
     
     private static SchemaTreeInfoProvider singleton = new SchemaTreeInfoProvider();
     
@@ -101,24 +121,57 @@ public class SchemaTreeInfoProvider implements TreeItemInfoProvider {
     }
     
     public String getDisplayName(TreeItem treeItem) {
-        Object dataObject = treeItem.getDataObject();
+        Object dataObj = treeItem.getDataObject();
         //
-        if (dataObject instanceof ElementReference) {
+        if (dataObj instanceof Schema) {
+            Schema schema = (Schema)dataObj;
+            //
+            Object parent = treeItem.getParent().getDataObject();
+            if (parent instanceof WSDLModel) {
+                return schema.getModel().getEffectiveNamespace(schema);
+            } else {
+                return getDisplayName(schema.getModel());
+            }
+        } 
+        //
+        if (dataObj instanceof Import) {
+            try {
+                SchemaModel sModel = ((Import)dataObj).resolveReferencedModel();
+                if (sModel != null) {
+                    return getDisplayName(sModel);
+                }
+            } catch (CatalogModelException ex) {
+                // the import cannot be resolved 
+            }
+        } 
+        //
+        if (dataObj instanceof Include) {
+            try {
+                SchemaModel sModel = ((Include)dataObj).resolveReferencedModel();
+                if (sModel != null) {
+                    return getDisplayName(sModel);
+                }
+            } catch (CatalogModelException ex) {
+                // the import cannot be resolved 
+            }
+        }
+        //
+        if (dataObj instanceof ElementReference) {
             NamedComponentReference<GlobalElement> elementRef = 
-                    ((ElementReference)dataObject).getRef();
+                    ((ElementReference)dataObj).getRef();
             QName qName = elementRef.getQName();
             return qName.getLocalPart();
         }
         //
-        if (dataObject instanceof Named) {
-            return ((Named)dataObject).getName();
+        if (dataObj instanceof Named) {
+            return ((Named)dataObj).getName();
         }
         //
-        if (dataObject instanceof AnyElement) {
+        if (dataObj instanceof AnyElement) {
             return ANY_ELEMENT;
         }
         //
-        if (dataObject instanceof AnyAttribute) {
+        if (dataObj instanceof AnyAttribute) {
             return ANY_ATTRIBUTE;
         }
         //
@@ -126,11 +179,11 @@ public class SchemaTreeInfoProvider implements TreeItemInfoProvider {
     }
 
     public Icon getIcon(TreeItem treeItem) {
-        Object dataObject = treeItem.getDataObject();
+        Object dataObj = treeItem.getDataObject();
         //
-        if (dataObject instanceof SchemaComponent) {
-            if (dataObject instanceof Element) {
-                Element element = (Element)dataObject;
+        if (dataObj instanceof SchemaComponent) {
+            if (dataObj instanceof Element) {
+                Element element = (Element)dataObj;
                 boolean isOptional = false;
                 boolean isRepeating = false;
                 String maxOccoursStr = null;
@@ -173,8 +226,8 @@ public class SchemaTreeInfoProvider implements TreeItemInfoProvider {
                 }
             } 
             //
-            if (dataObject instanceof Attribute) {
-                 Attribute attribute = (Attribute)dataObject;
+            if (dataObj instanceof Attribute) {
+                 Attribute attribute = (Attribute)dataObj;
                 if (attribute instanceof LocalAttribute) {
                     Use use = ((LocalAttribute)attribute).getUseEffective();
                     if (use == Use.OPTIONAL) {
@@ -187,15 +240,15 @@ public class SchemaTreeInfoProvider implements TreeItemInfoProvider {
                 }
             } 
             //
-            if (dataObject instanceof GlobalComplexType) {
+            if (dataObj instanceof GlobalComplexType) {
                 return SchemaIcons.COMPLEX_TYPE.getIcon();
             } 
-            if (dataObject instanceof GlobalSimpleType) {
+            if (dataObj instanceof GlobalSimpleType) {
                 return SchemaIcons.SIMPLE_TYPE.getIcon();
             } 
             //
-            if (dataObject instanceof AnyElement) {
-                AnyElement anyElement = (AnyElement)dataObject;
+            if (dataObj instanceof AnyElement) {
+                AnyElement anyElement = (AnyElement)dataObj;
                 boolean isOptional = anyElement.getMinOccursEffective() < 1;
                 String maxOccoursStr = anyElement.getMaxOccursEffective();
                 //
@@ -226,17 +279,26 @@ public class SchemaTreeInfoProvider implements TreeItemInfoProvider {
                 }
             }
             //
-            if (dataObject instanceof AnyAttribute) {
+            if (dataObj instanceof AnyAttribute) {
                 // The Any Attribute doesn't have multiplisity parameters
                 return SchemaIcons.ATTRIBUTE.getIcon();
             }
+            //
+            if (dataObj instanceof Import) {
+                return SchemaIcons.SCHEMA_FILE.getIcon();
+            }
+            //
+            if (dataObj instanceof Include) {
+                return SchemaIcons.SCHEMA_FILE.getIcon();
+            }    
+            //
         } 
         //
-        if (dataObject instanceof SchemaModel || dataObject instanceof Schema) {
+        if (dataObj instanceof SchemaModel || dataObj instanceof Schema) {
             return SchemaIcons.SCHEMA_FILE.getIcon();
         }
         //
-        if (dataObject instanceof WSDLModel || dataObject instanceof Definitions) {
+        if (dataObj instanceof WSDLModel || dataObj instanceof Definitions) {
             return SchemaIcons.WSDL_FILE.getIcon();
         }
         //
@@ -245,49 +307,87 @@ public class SchemaTreeInfoProvider implements TreeItemInfoProvider {
 
     public String getToolTipText(TreeItem treeItem) {
         String name = getDisplayName(treeItem);
-        Object dataObject = treeItem.getDataObject();
+        Object dataObj = treeItem.getDataObject();
         //
-        if (dataObject instanceof SchemaComponent) {
-            String nameSpase = ((SchemaComponent) dataObject).getModel().
-                    getEffectiveNamespace((SchemaComponent) dataObject);
+        if (dataObj instanceof SchemaComponent) {
+            String nameSpase = ((SchemaComponent) dataObj).getModel().
+                    getEffectiveNamespace((SchemaComponent) dataObj);
             //
             String type = null;
 
-            if (dataObject instanceof GlobalElement) {
-                if (((GlobalElement) dataObject).getType() != null) {
-                    type = ((GlobalElement) dataObject).getType().getRefString();
-                    return getColorTooltip(name, type, nameSpase);
+            if (dataObj instanceof GlobalElement) {
+                if (((GlobalElement) dataObj).getType() != null) {
+                    type = ((GlobalElement) dataObj).getType().getRefString();
+                    return getColorTooltip(null, name, type, nameSpase);
                 }
             }
 
-            if (dataObject instanceof LocalElement) {
-                if (((LocalElement) dataObject).getType() != null) {
-                    return getColorTooltip(name, ((LocalElement) dataObject).
+            if (dataObj instanceof LocalElement) {
+                if (((LocalElement) dataObj).getType() != null) {
+                    return getColorTooltip(null, name, ((LocalElement) dataObj).
                             getType().getRefString(), nameSpase);
                 }
             }
 
-            if (dataObject instanceof LocalAttribute) {
-                if (((LocalAttribute) dataObject).getType() != null) {
-                    return getColorTooltip(name, ((LocalAttribute) dataObject).
+            if (dataObj instanceof LocalAttribute) {
+                if (((LocalAttribute) dataObj).getType() != null) {
+                    return getColorTooltip(null, name, ((LocalAttribute) dataObj).
                             getType().getRefString(), nameSpase);
                 }
             }
 
-            if (dataObject instanceof GlobalAttribute) {
-                if (((GlobalAttribute) dataObject).getType() != null) {
-                    return getColorTooltip(name, ((GlobalAttribute) dataObject).
+            if (dataObj instanceof GlobalAttribute) {
+                if (((GlobalAttribute) dataObj).getType() != null) {
+                    return getColorTooltip(null, name, ((GlobalAttribute) dataObj).
                             getType().getRefString(), nameSpase);
                 }
             }
 
-            if (dataObject instanceof GlobalType) {
-                return getColorTooltip(name, ((GlobalType) dataObject).getName(), nameSpase);
+            if (dataObj instanceof GlobalType) {
+                return getColorTooltip(null, name, 
+                        ((GlobalType) dataObj).getName(), nameSpase);
             }
 
-            if (dataObject instanceof AnyElement || dataObject instanceof AnyAttribute) {
-                return getColorTooltip(name, "ANY_TYPE", nameSpase);
+            if (dataObj instanceof AnyElement || dataObj instanceof AnyAttribute) {
+                return getColorTooltip(null, name, "ANY_TYPE", nameSpase);
             }
+            
+            if (dataObj instanceof Schema) {
+                Schema schema = (Schema)dataObj;
+                //
+                Object parent = treeItem.getParent().getDataObject();
+                if (parent instanceof WSDLModel) {
+                    String ns = schema.getModel().getEffectiveNamespace(schema);
+                    return getColorTooltip(EMBEDED_SCHEMA, null, null, ns);
+                } else {
+                    return getDisplayName(schema.getModel());
+                }
+            }
+            //
+            if (dataObj instanceof Import) {
+                try {
+                    SchemaModel sModel = ((Import)dataObj).resolveReferencedModel();
+                    if (sModel != null) {
+                        String ns = sModel.getEffectiveNamespace(sModel.getSchema());
+                        return getColorTooltip(IMPORTED_SCHEMA, name, null, ns);
+                    }
+                } catch (CatalogModelException ex) {
+                    // the import cannot be resolved 
+                }
+            } 
+            //
+            if (dataObj instanceof Include) {
+                try {
+                    SchemaModel sModel = ((Include)dataObj).resolveReferencedModel();
+                    if (sModel != null) {
+                        String ns = sModel.getEffectiveNamespace(sModel.getSchema());
+                        return getColorTooltip(INCLUDED_SCHEMA, name, null, ns);
+                    }
+                } catch (CatalogModelException ex) {
+                    // the import cannot be resolved 
+                }
+            }
+            
             //
             String notNamedTypeLbl = NbBundle.getMessage(
                     SchemaTreeInfoProvider.class, "NOT_NAMED_TYPE"); // NOI18N
@@ -302,22 +402,59 @@ public class SchemaTreeInfoProvider implements TreeItemInfoProvider {
         return null;
     }
     
-    private String getColorTooltip(String name, String type, String nameSpace) {
-        String result;
-        result = "<html><body>";
-        if (name != null) {
-            result = result + name;
+    public static Project safeGetProject(Model model) {
+        FileObject fo = SoaUtil.getFileObjectByModel(model);
+        if (fo != null && fo.isValid()) {
+            return FileOwnerQuery.getOwner(fo);
+        } else {
+            return null;
         }
+    }
 
-        if (type != null) {
-            result = result + "<b><font color=#7C0000>" + " " + type + "</font></b>";
+    public static String getDisplayName(SchemaModel schemaModel) {
+        Project ownerProject = safeGetProject(schemaModel);
+        if (ownerProject == null) { 
+            return schemaModel.getEffectiveNamespace(schemaModel.getSchema());
+            // TODO: it can be null
+        } else {
+            FileObject projectDir = ownerProject.getProjectDirectory();
+            FileObject schemaFo = SoaUtil.getFileObjectByModel(schemaModel);
+            return FileUtil.getRelativePath(projectDir, schemaFo);
         }
+    }
+    
+    public static String getColorTooltip(
+            String title, String name, String type, String nameSpace) {
+        //
+        StringBuilder result = new StringBuilder();
+        //
+        if (title != null) {
+            result.append("<p align=\"center\"><b>" + title + "</b></p>");
+        }
+        //
+        if (name != null && type != null) {
+            if (result.length() != 0) {
+                result.append("<hr>");
+            }
+            //
+            if (name != null) {
+                result.append(name);
+            }
+            //
+            if (type != null) {
+                result.append("<b><font color=#7C0000>" + " " + type + "</font></b>");
+            }
+        }
+        //
         if (nameSpace != null) {
-            result = result + "<hr>" + "Namespace: " + nameSpace;
+            if (result.length() != 0) {
+                result.append("<hr>");
+            }
+            //
+            result.append("Namespace: " + nameSpace);
         }
-        result = result + "</body>";
-
-        return result;
+        //
+        return "<html><body>" + result.toString() + "</body>";
     }
     
 }

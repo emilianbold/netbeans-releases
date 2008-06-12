@@ -49,6 +49,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
@@ -141,11 +142,12 @@ public class RspecRunner implements TestRunner {
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
         
-        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(), 
-                new TestSession(locator), 
+        final ExecutionService execution = new RubyExecution(desc, charsetName);
+        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
+                locator,
                 RspecHandlerFactory.getHandlers());
         desc.addOutputRecognizer(recognizer);
-        new RubyExecution(desc, charsetName).run();
+        TestExecutionManager.getInstance().start(execution);
     }
 
     private File getSpec(Project project) {

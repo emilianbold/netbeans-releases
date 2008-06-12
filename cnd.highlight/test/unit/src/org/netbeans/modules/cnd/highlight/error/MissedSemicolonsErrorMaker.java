@@ -39,21 +39,18 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
+import java.util.Collection;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
+
 /**
- * Error highlighting test case for missing semicolons
+ *
  * @author Vladimir Kvashin
  */
-public class MissedSemicolonsTestCase extends ErrorHighlightingBaseTestCase {
+public class MissedSemicolonsErrorMaker extends SimpleDeletingErrorMaker  {
 
-    static {
-        System.setProperty("cnd.parser.error.transparent", "false");
-    }
-    
-    public MissedSemicolonsTestCase(String testName) {
-        super(testName);
-    }
-    
-    public void testMissedSemicolonAfterClass() throws Exception {
-        performStaticTest("missed_semicolon_after_class.cc"); //NOI18N
+    public MissedSemicolonsErrorMaker() {
+        super(";");
     }
 }

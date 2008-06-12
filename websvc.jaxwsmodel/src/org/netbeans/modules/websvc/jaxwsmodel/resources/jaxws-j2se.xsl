@@ -77,23 +77,13 @@ made subject to such option by the copyright holder.
                 <xsl:variable name="wsdl_url_actual" select="jaxws:wsdl-url"/>
                 <xsl:variable name="package_path" select = "translate($package_name,'.','/')"/>
                 <xsl:variable name="catalog" select = "jaxws:catalog-file"/>
-                <target name="wsimport-client-check-{$wsname}" depends="wsimport-init">
-                    <condition property="wsimport-client-{$wsname}.notRequired">
-                        <xsl:choose>
-                            <xsl:when test="jaxws:package-name">
-                                <available file="${{build.generated.dir}}/wsimport/client/{$package_path}" type="dir"/>    
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <available file="${{build.generated.dir}}/wsimport/client/dummy" type="dir"/>
-                            </xsl:otherwise>
-                        </xsl:choose>                       
-                    </condition>
-                </target>
-                <target name="wsimport-client-{$wsname}" depends="wsimport-init,wsimport-client-check-{$wsname}" unless="wsimport-client-{$wsname}.notRequired">
+                
+                <target name="wsimport-client-{$wsname}" depends="wsimport-init">
                     <xsl:if test="jaxws:package-name/@forceReplace">
                         <wsimport
                             xnocompile="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
+                            destdir="${{build.generated.dir}}/wsimport/client"
                             extension="true"
                             package="{$package_name}"
                             wsdl="${{basedir}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
@@ -119,12 +109,14 @@ made subject to such option by the copyright holder.
                                     </xsl:attribute>
                                 </binding>
                             </xsl:if>
+                            <produces dir="${{build.generated.dir}}/wsimport/client/{$package_path}" includes="{$wsname}.java" casesensitive="no"/>
                         </wsimport>
                     </xsl:if>
                     <xsl:if test="not(jaxws:package-name/@forceReplace)">
                         <wsimport
                             xnocompile="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
+                            destdir="${{build.generated.dir}}/wsimport/client"
                             extension="true"
                             wsdl="${{basedir}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
                             wsdlLocation="{$wsdl_url_actual}"
@@ -149,6 +141,7 @@ made subject to such option by the copyright holder.
                                     </xsl:attribute>
                                 </binding>
                             </xsl:if>
+                            <produces dir="${{build.generated.dir}}/wsimport/client/{$package_path}" includes="{$wsname}.java" casesensitive="no"/>
                         </wsimport>
                     </xsl:if>
                 </target>
@@ -171,6 +164,9 @@ made subject to such option by the copyright holder.
                 <target name="wsimport-client-compile" depends="-pre-pre-compile">
                     <j2seproject3:depend srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{libs.jaxws21.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
                     <j2seproject3:javac srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{libs.jaxws21.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
+                    <copy todir="${{build.classes.dir}}">
+                        <fileset dir="${{build.generated.dir}}/wsimport/client" includes="**/*.xml"/>
+                    </copy>
                 </target>
                 
             </xsl:if>

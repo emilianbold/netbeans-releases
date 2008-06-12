@@ -66,7 +66,7 @@
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/nodes/resources/restservice.png"/> 
             </file>
             <file name="RestServicesFromDatabase">
-                <attr name="position" intvalue="500"/>
+                <attr name="position" intvalue="450"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.fromdb.DatabaseResourceWizardIterator"/>
                 <attr name="template" boolvalue="true"/>

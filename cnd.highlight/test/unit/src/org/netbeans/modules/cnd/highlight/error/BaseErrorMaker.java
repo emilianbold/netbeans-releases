@@ -39,21 +39,61 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.openide.filesystems.FileLock;
+
 /**
- * Error highlighting test case for missing semicolons
+ * Base class for ErrorMaker implementations
  * @author Vladimir Kvashin
  */
-public class MissedSemicolonsTestCase extends ErrorHighlightingBaseTestCase {
+public abstract class BaseErrorMaker implements ErrorMaker  {
 
-    static {
-        System.setProperty("cnd.parser.error.transparent", "false");
+    private BaseDocument document;
+    private CsmFile csmFile;
+    
+    public void init(BaseDocument document, CsmFile csmFile) {
+        this.document = document;
+        this.csmFile = csmFile;
     }
     
-    public MissedSemicolonsTestCase(String testName) {
-        super(testName);
+    protected BaseDocument getDocument() {
+        return document;
     }
     
-    public void testMissedSemicolonAfterClass() throws Exception {
-        performStaticTest("missed_semicolon_after_class.cc"); //NOI18N
+    protected CsmFile getCsmFile() {
+        return csmFile;
     }
+
+    public void undone() {
+    }
+
+    protected void remove(int offs, int len) throws BadLocationException {
+        BaseDocument doc = getDocument();
+        try {
+            doc.atomicLock();
+            doc.remove(offs, len);
+        } finally {
+            Logger.getLogger(FileLock.class.getName()).setLevel(Level.SEVERE);
+            doc.atomicUnlock();
+        }
+    }
+    
+    protected void insert(int offset, String text) throws BadLocationException {
+        BaseDocument doc = getDocument();
+        try {
+            doc.atomicLock();
+            doc.insertString(offset, text, null);
+        } finally {
+            Logger.getLogger(FileLock.class.getName()).setLevel(Level.SEVERE);
+            doc.atomicUnlock();
+        }
+    }
+//    public void analyze(Collection<CsmErrorInfo> errors) {
+//    }
+    
+
 }
