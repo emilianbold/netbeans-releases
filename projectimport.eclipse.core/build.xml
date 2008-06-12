@@ -42,4 +42,11 @@ made subject to such option by the copyright holder.
 -->
 <project basedir="." default="netbeans" name="projectimport.eclipse.core">
     <import file="../nbbuild/templates/projectized.xml"/>
+    <target name="debug" depends="netbeans" description="Build related modules and debug them.">
+        <ant dir="../projectimport.eclipse.j2se" target="netbeans" inheritall="false" inheritrefs="false"/>
+        <ant dir="../projectimport.eclipse.web" target="netbeans" inheritall="false" inheritrefs="false"/>
+        <ant dir="../nbbuild" target="tryme-debug" inheritall="false" inheritrefs="false">
+            <property name="tryme.args" value="-J-Dnetbeans.exception.report.min.level=999999 -J-Dorg.netbeans.modules.projectimport.eclipse.level=0"/>
+        </ant>
+    </target>
 </project>
