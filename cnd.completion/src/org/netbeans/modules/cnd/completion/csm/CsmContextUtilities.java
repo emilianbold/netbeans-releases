@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 
@@ -145,16 +146,15 @@ public class CsmContextUtilities {
 
     private static List<CsmMacro> findMacros(CsmContext context, String strPrefix, 
             boolean match, boolean caseSensitive, int kind) {
-        List res = new ArrayList();
+        List<CsmMacro> res = new ArrayList<CsmMacro>();
         for (Iterator itContext = context.iterator(); itContext.hasNext();) {
             CsmContext.CsmContextEntry entry = (CsmContext.CsmContextEntry) itContext.next();
             CsmScope scope = entry.getScope();
-            int offsetInScope = entry.getOffset();
             if (CsmKindUtilities.isFile(scope)){
                 CsmFile file = (CsmFile)scope;
                 switch (kind) {
                     case FILE_LOCAL_MACROS:
-                        getFileLocalMacros(file, res, new HashSet(), strPrefix, match, caseSensitive);
+                        getFileLocalMacros(file, res, new HashSet<String>(), strPrefix, match, caseSensitive);
                         break;
                     case FILE_PROJECT_LOCAL_MACROS:
                         gatherProjectIncludedMacros(file, res, false, strPrefix, match, caseSensitive);
@@ -174,7 +174,8 @@ public class CsmContextUtilities {
         return res;
     }
     
-    private static void getFileLocalMacros(CsmFile file, List res, Set alredyInList, String strPrefix, boolean match, boolean caseSensitive){
+    private static void getFileLocalMacros(CsmFile file, List<CsmMacro> res, Set<String> alredyInList,
+            String strPrefix, boolean match, boolean caseSensitive){
         CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(strPrefix, match, caseSensitive, false);
         for (Iterator itFile = CsmSelect.getDefault().getMacros(file, filter); itFile.hasNext();) {
             CsmMacro macro = (CsmMacro) itFile.next();
@@ -189,24 +190,26 @@ public class CsmContextUtilities {
         }
     }
 
-    private static void gatherProjectIncludedMacros(CsmFile file, List res, boolean all, String strPrefix,  boolean match, boolean caseSensitive) {
+    private static void gatherProjectIncludedMacros(CsmFile file, List<CsmMacro> res,
+            boolean all, String strPrefix,  boolean match, boolean caseSensitive) {
         CsmProject prj = file.getProject();
         if (!all) {
-            gatherIncludeMacros(file, prj, true, new HashSet(), new HashSet(), res, strPrefix, match, caseSensitive);
+            gatherIncludeMacros(file, prj, true, new HashSet<CsmFile>(), new HashSet<String>(), res, strPrefix, match, caseSensitive);
         } else {
-            Set alredyInList = new HashSet();
+            Set<String> alredyInList = new HashSet<String>();
             for(Iterator i = prj.getHeaderFiles().iterator(); i.hasNext();){
                 getFileLocalMacros((CsmFile)i.next(), res, alredyInList, strPrefix, match, caseSensitive);
             }
         }
     }
 
-    private static void gatherLibIncludedMacros(CsmFile file, List res, boolean all, String strPrefix, boolean match, boolean caseSensitive) {
+    private static void gatherLibIncludedMacros(CsmFile file, List<CsmMacro> res, boolean all,
+            String strPrefix, boolean match, boolean caseSensitive) {
         CsmProject prj = file.getProject();
         if (!all) {
-            gatherIncludeMacros(file, prj, false, new HashSet(), new HashSet(), res, strPrefix, match, caseSensitive);
+            gatherIncludeMacros(file, prj, false, new HashSet<CsmFile>(), new HashSet<String>(), res, strPrefix, match, caseSensitive);
         } else {
-            Set alredyInList = new HashSet();
+            Set<String> alredyInList = new HashSet<String>();
             for(Iterator p = prj.getLibraries().iterator(); p.hasNext();){
                 CsmProject lib = (CsmProject)p.next();
                 for(Iterator i = lib.getHeaderFiles().iterator(); i.hasNext();){
@@ -217,8 +220,9 @@ public class CsmContextUtilities {
         }
     }
     
-    private static void gatherIncludeMacros(CsmFile file, CsmProject prj, boolean own, Set visitedFiles, Set alredyInList, 
-            List res, String strPrefix, boolean match, boolean caseSensitive) {
+    private static void gatherIncludeMacros(CsmFile file, CsmProject prj, boolean own,
+            Set<CsmFile> visitedFiles, Set<String> alredyInList, 
+            List<CsmMacro> res, String strPrefix, boolean match, boolean caseSensitive) {
         if( visitedFiles.contains(file) ) {
             return;
         }
@@ -278,6 +282,7 @@ public class CsmContextUtilities {
         return res;
     }
 
+    @SuppressWarnings("unchecked")
     private static List<CsmDeclaration> addEntryDeclarations(CsmContext.CsmContextEntry entry, List<CsmDeclaration> decls, CsmContext fullContext,
                                                                 String strPrefix, boolean match, boolean caseSensitive) {
         List<CsmDeclaration> newList = findEntryDeclarations(entry, fullContext, strPrefix, match, caseSensitive);
@@ -289,7 +294,7 @@ public class CsmContextUtilities {
         assert (entry != null) : "can't work on null entries";
         CsmScope scope = entry.getScope();
         int offsetInScope = entry.getOffset();
-        List resList = new ArrayList();
+        List<CsmDeclaration> resList = new ArrayList<CsmDeclaration>();
         for (Iterator it = scope.getScopeElements().iterator(); it.hasNext();) {
             CsmScopeElement scpElem = (CsmScopeElement) it.next();
             if (canBreak(offsetInScope, scpElem, fullContext)) {
@@ -316,8 +321,8 @@ public class CsmContextUtilities {
         return filter;
     }
 
-    public static List<CsmDeclaration> findFileLocalEnumerators(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
-        List<CsmDeclaration> res = new ArrayList<CsmDeclaration>();
+    public static List<CsmEnumerator> findFileLocalEnumerators(CsmContext context, String strPrefix, boolean match, boolean caseSensitive) {
+        List<CsmEnumerator> res = new ArrayList<CsmEnumerator>();
         for (Iterator itContext = context.iterator(); itContext.hasNext();) {
             CsmContext.CsmContextEntry entry = (CsmContext.CsmContextEntry) itContext.next();
             CsmScope scope = entry.getScope();
@@ -357,6 +362,7 @@ public class CsmContextUtilities {
         return res;
     }
 
+    @SuppressWarnings("unchecked")
     private static void addEnumerators(List resList, CsmEnum en, String strPrefix, boolean match, boolean caseSensitive){
         for(Iterator i = en.getEnumerators().iterator(); i.hasNext();){
             CsmNamedElement scpElem = (CsmNamedElement) i.next();
@@ -377,6 +383,7 @@ public class CsmContextUtilities {
         return isInContext(fullContext, elem);
     }
     
+    @SuppressWarnings("unchecked")
     private static List/*<CsmDeclaration>*/ mergeDeclarations(List/*<CsmDeclaration>*/ prevScopeDecls, List/*<CsmDeclaration>*/ newScopeDecls) {
         // new scope elements have priority 
         List res = new ArrayList();
@@ -430,7 +437,8 @@ public class CsmContextUtilities {
         return false;
     }
 
-    private static List/*<CsmDeclaration>*/ extractDeclarations(CsmScopeElement scpElem,
+    @SuppressWarnings("unchecked")
+    private static List<CsmDeclaration> extractDeclarations(CsmScopeElement scpElem,
                                                         String strPrefix, boolean match, boolean caseSensitive) {
         List list = new ArrayList();
         if (CsmKindUtilities.isDeclaration(scpElem)) {

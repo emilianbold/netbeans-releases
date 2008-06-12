@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/stub_dom_Window.js
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   base : addeventlistener;Window;addEventListener;|DOCUMENTED|FUNCTION|;type,listener,useCapture;0;7db5;;void;
   base : alert;Window;alert;|DOCUMENTED|FUNCTION|;message;0;9fd6;;void;
   base : atob;Window;atob;|DOCUMENTED|FUNCTION|;encodedData;0;abcd;;void;
@@ -258,4 +253,4 @@ Indexed:
   fqn : window;;Window;|DOCUMENTED|PROPERTY|;;0;0;;;
   fqn : window;;window;|DOCUMENTED|GLOBAL|;;0;61d8c;;Window;
 
-Not Indexed:
+Not Searchable Keys:

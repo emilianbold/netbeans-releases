@@ -262,10 +262,11 @@ public class TraceXRef extends TraceModel {
             if (callback != null) {
                 callback.fileParsingStarted(file);
             }
-            analyzeFile(file, params, bag, printOut, printErr);
+            analyzeFile(file, params, bag, printOut, printErr, canceled);
             if (canceled.get()) {
+                printOut.println("Cancelled");
                 break;
-            }
+            }            
         }
         if (callback != null) {
             callback.projectParsingFinished(csmPrj);
@@ -336,23 +337,26 @@ public class TraceXRef extends TraceModel {
         }            
     };  
 
-    private static void analyzeFile(CsmFile file, StatisticsParameters params, XRefResultSet bag, PrintWriter out, OutputWriter printErr) {
+    private static void analyzeFile(CsmFile file, StatisticsParameters params, XRefResultSet bag, PrintWriter out, OutputWriter printErr, AtomicBoolean canceled) {
         long time = System.currentTimeMillis();
-        visitDeclarations(file.getDeclarations(), params, bag, out, printErr);
+        visitDeclarations(file.getDeclarations(), params, bag, out, printErr, canceled);
         time = System.currentTimeMillis() - time;
         out.println(file.getAbsolutePath() + " took " + time + "ms"); // NOI18N
     }
     
     private static void visitDeclarations(Collection<? extends CsmOffsetableDeclaration> decls, StatisticsParameters params, XRefResultSet bag, 
-            PrintWriter printOut, OutputWriter printErr) {
+            PrintWriter printOut, OutputWriter printErr, AtomicBoolean canceled) {
         for (CsmOffsetableDeclaration decl : decls) {
             if (CsmKindUtilities.isFunctionDefinition(decl)) {
                 handleFunctionDefinition((CsmFunctionDefinition)decl, params, bag, printOut, printErr);
             } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
-                visitDeclarations(((CsmNamespaceDefinition)decl).getDeclarations(), params, bag, printOut, printErr);
+                visitDeclarations(((CsmNamespaceDefinition)decl).getDeclarations(), params, bag, printOut, printErr, canceled);
             } else if (CsmKindUtilities.isClass(decl)) {
-                visitDeclarations(((CsmClass)decl).getMembers(), params, bag, printOut, printErr);
+                visitDeclarations(((CsmClass)decl).getMembers(), params, bag, printOut, printErr, canceled);
             }
+            if (canceled.get()) {
+                break;
+            }            
         }
     }
     
