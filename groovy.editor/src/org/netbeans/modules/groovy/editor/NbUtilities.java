@@ -47,6 +47,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.JEditorPane;
@@ -263,7 +264,7 @@ public class NbUtilities {
         while ((je = jis.getNextEntry()) != null) {
             String name = je.getName();
 
-            if (name.toLowerCase().startsWith("meta-inf/")) {
+            if (name.toLowerCase(Locale.ENGLISH).startsWith("meta-inf/")) {
                 continue; // NOI18N
             }
 
@@ -313,8 +314,7 @@ public class NbUtilities {
         // every now and than groovy comes with tailing
         // semicolons. We got to get rid of them.
 
-        fqn.replace(";", "");
-        return fqn;
+        return fqn.replace(";", "");
     }
     
     public static ClasspathInfo getClasspathInfoForFileObject ( FileObject fo) {
