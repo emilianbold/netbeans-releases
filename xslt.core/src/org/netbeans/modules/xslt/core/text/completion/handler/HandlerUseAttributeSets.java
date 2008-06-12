@@ -47,55 +47,52 @@ import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xslt.core.text.completion.XSLTCompletionResultItem;
 import org.netbeans.modules.xslt.core.text.completion.XSLTCompletionUtil;
 import org.netbeans.modules.xslt.core.text.completion.XSLTEditorComponentHolder;
+import org.netbeans.modules.xslt.model.AttributeSet;
 import org.netbeans.modules.xslt.model.Stylesheet;
-import org.netbeans.modules.xslt.model.Template;
 
 /**
  * @author Alex Petrov (06.06.2008)
  */
-public class HandlerCallTemplateName extends BaseCompletionHandler {
+public class HandlerUseAttributeSets extends BaseCompletionHandler {
     protected static final String
-        XSLT_TAG_NAME_CALL_TEMPLATE = "call-template";
-    
+        XSLT_TAG_NAME_ATTRIBUTE_SET = "attribute-set",
+        ATTRIBUTE_NAME_USE_ATTRIBUTE_SETS = "use-attribute-sets";
+
     @Override
     public List<XSLTCompletionResultItem> getResultItemList(
         XSLTEditorComponentHolder editorComponentHolder) {
         initHandler(editorComponentHolder);
-        return getNamedTemplateNameList();
+        return getAttributeSetNameList();
     }
     
-    private List<XSLTCompletionResultItem> getNamedTemplateNameList() {
-        if ((schemaModel == null) || (surroundTag == null) || 
-            (attributeName == null) || (xslModel == null)) 
+    private List<XSLTCompletionResultItem> getAttributeSetNameList() {
+        if ((attributeName == null) || (xslModel == null)) 
             return Collections.EMPTY_LIST;
-        
-        String tagName = surroundTag.getTagName(); //getLocalName();
-        if (! tagName.contains(XSLT_TAG_NAME_CALL_TEMPLATE))
-            return Collections.EMPTY_LIST;
-        if (! attributeName.equals(XSLTCompletionUtil.ATTRIB_NAME))
-            return Collections.EMPTY_LIST;
+
+        if (! XSLTCompletionUtil.ignoreNamespace(attributeName).equals(
+            ATTRIBUTE_NAME_USE_ATTRIBUTE_SETS)) return Collections.EMPTY_LIST;
 
         if ((xslModel != null) && (xslModel.getState().equals(State.NOT_WELL_FORMED))) {
             return getIncorrectDocumentResultItem();
         }
-        return findNamedTemplates();
+        return findAttributeSetNames();
     }
     
-    private List<XSLTCompletionResultItem> findNamedTemplates() {
+    private List<XSLTCompletionResultItem> findAttributeSetNames() {
         Stylesheet stylesheet = xslModel.getStylesheet();
-        List<Template> templateList = stylesheet.getChildren(Template.class);
-        if (templateList.isEmpty()) return Collections.EMPTY_LIST;
+        List<AttributeSet> attributeSetList = stylesheet.getChildren(AttributeSet.class);
+        if (attributeSetList.isEmpty()) return Collections.EMPTY_LIST;
         
         List<XSLTCompletionResultItem> resultItemList = 
             new ArrayList<XSLTCompletionResultItem>();
-        for (Template template : templateList) {
-            QName valueofAttributeName = template.getName();
+        for (AttributeSet attributeSet : attributeSetList) {
+            QName valueofAttributeName = attributeSet.getName();
             if (valueofAttributeName != null) {
-                String templateName = valueofAttributeName.toString();
-                if ((templateName != null) && (templateName.length() > 0)) {
+                String atributeSetName = valueofAttributeName.toString();
+                if ((atributeSetName != null) && (atributeSetName.length() > 0)) {
                     
                     XSLTCompletionResultItem resultItem = new XSLTCompletionResultItem(
-                        templateName, document, caretOffset);
+                        atributeSetName, document, caretOffset);
                     resultItem.setSortPriority(resultItemList.size());
                     resultItemList.add(resultItem);
                 }
