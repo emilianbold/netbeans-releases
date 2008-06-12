@@ -93,7 +93,7 @@ public class RelatedCMPHelper {
     // Global mapping options added in NB 6.5
     private boolean fullyQualifiedTableNames = false;
     private FetchType fetchType = FetchType.DEFAULT;
-    private boolean regenSchemaAttrs = false;
+    private boolean regenTablesAttrs = false;
     private CollectionType collectionType = CollectionType.COLLECTION;
     
     public RelatedCMPHelper(Project project, FileObject configFilesFolder, PersistenceGenerator persistenceGen) {
@@ -261,12 +261,12 @@ public class RelatedCMPHelper {
         this.fetchType = fetchType;
     }
 
-    public boolean isRegenSchemaAttrs() {
-        return regenSchemaAttrs;
+    public boolean isRegenTablesAttrs() {
+        return regenTablesAttrs;
     }
 
-    public void setRegenSchemaAttrs(boolean regenSchemaAttrs) {
-        this.regenSchemaAttrs = regenSchemaAttrs;
+    public void setRegenTablesAttrs(boolean regenSchemaAttrs) {
+        this.regenTablesAttrs = regenSchemaAttrs;
     }
     
     public CollectionType getCollectionType() {

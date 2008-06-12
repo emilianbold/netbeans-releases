@@ -161,21 +161,21 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             final ProgressContributor handle) throws IOException {
         
         generateBeans(helper.getBeans(), helper.isGenerateFinderMethods(), 
-                helper.isCmpFieldsInInterface(), helper.isRegenSchemaAttrs(),
+                helper.isCmpFieldsInInterface(), helper.isRegenTablesAttrs(),
                 helper.getFetchType(), helper.getCollectionType(),
                 handle, progressPanel);
     }
 
     // package private for tests
     void generateBeans(EntityClass[] entityClasses, boolean generateNamedQueries, 
-            boolean fullyQualifiedTableNames, boolean regenSchemaAttrs,
+            boolean fullyQualifiedTableNames, boolean regenTablesAttrs,
             FetchType fetchType, CollectionType collectionType,
             ProgressContributor progressContributor, ProgressPanel panel) throws IOException {
 
         int progressMax = entityClasses.length * 2;
         progressContributor.start(progressMax);
         result = new Generator(entityClasses, generateNamedQueries, 
-                fullyQualifiedTableNames, regenSchemaAttrs,
+                fullyQualifiedTableNames, regenTablesAttrs,
                 fetchType, collectionType,
                 progressContributor, panel).run();
         addToPersistenceUnit(result);
@@ -273,20 +273,20 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         private final EntityClass[] entityClasses;
         private final boolean generateNamedQueries;
         private final boolean fullyQualifiedTableNames;
-        private final boolean regenSchemaAttrs;
+        private final boolean regenTablesAttrs;
         private final FetchType fetchType;
         private final CollectionType collectionType;
         private final Set<FileObject> generatedEntityFOs;
         private final Set<FileObject> generatedFOs;
 
         public Generator(EntityClass[] entityClasses, boolean generateNamedQueries,
-                boolean fullyQualifiedTableNames, boolean regenSchemaAttrs, 
+                boolean fullyQualifiedTableNames, boolean regenTablesAttrs, 
                 FetchType fetchType, CollectionType collectionType,
                 ProgressContributor progressContributor, ProgressPanel progressPanel) {
             this.entityClasses = entityClasses;
             this.generateNamedQueries = generateNamedQueries;
             this.fullyQualifiedTableNames = fullyQualifiedTableNames;
-            this.regenSchemaAttrs = regenSchemaAttrs;
+            this.regenTablesAttrs = regenTablesAttrs;
             this.fetchType = fetchType;
             this.collectionType = collectionType;
             this.progressContributor = progressContributor;
@@ -390,7 +390,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                             if (copy.getFileObject().equals(entityClassFO)) {
                                 EntityClassGenerator clsGen = new EntityClassGenerator(copy, 
                                         entityClass, generateNamedQueries,
-                                        fullyQualifiedTableNames, regenSchemaAttrs,
+                                        fullyQualifiedTableNames, regenTablesAttrs,
                                         fetchType, collectionType);
                                 clsGen.run();
                             } else {
@@ -532,13 +532,13 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 String columnName = (String) dbMappings.getCMPFieldMapping().get(memberName);
                 columnAnnArguments.add(genUtils.createAnnotationArgument("name", columnName)); //NOI18N
               
-                if (regenSchemaAttrs && !m.isNullable()) {
+                if (regenTablesAttrs && !m.isNullable()) {
                     columnAnnArguments.add(genUtils.createAnnotationArgument("nullable", false)); //NOI18N
                 }
                 Integer length = m.getLength();
                 Integer precision = m.getPrecision();
                 Integer scale = m.getScale();
-                if (regenSchemaAttrs ) {
+                if (regenTablesAttrs ) {
                     if(length != null && isCharacterType(memberType)) {
                         columnAnnArguments.add(genUtils.createAnnotationArgument("length", length)); // NOI18N
                     }
@@ -745,7 +745,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             private final boolean fullyQualifiedTableNames;        
             // Adds nullable (if false), length (for String), precision and scale (for decimal types)
             // on @Column and uniqueContraints on @Table if true
-            private final boolean regenSchemaAttrs;       
+            private final boolean regenTablesAttrs;       
             // Fetch type for relationships
             private final FetchType fetchType;            
             // The collection type used for OneToMany and ManyToMany cmr fields
@@ -756,12 +756,12 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             private String namedQueryPrefix;
 
             public EntityClassGenerator(WorkingCopy copy, EntityClass entityClass, boolean generateNamedQueries,
-                    boolean fullyQualifiedTableNames, boolean regenSchemaAttrs,
-                    FetchType fetchType, CollectionType collectionType ) throws IOException {
+                    boolean fullyQualifiedTableNames, boolean regenTablesAttrs,
+                    FetchType fetchType, CollectionType collectionType  ) throws IOException {
                 super(copy, entityClass);
                 this.generateNamedQueries = generateNamedQueries;
                 this.fullyQualifiedTableNames = fullyQualifiedTableNames;
-                this.regenSchemaAttrs = regenSchemaAttrs;
+                this.regenTablesAttrs = regenTablesAttrs;
                 this.fetchType = fetchType;
                 this.collectionType = collectionType;
                 entityClassName = entityClass.getClassName();
@@ -789,7 +789,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 }
                 
                 // UniqueConstraint annotations for the table
-                if(regenSchemaAttrs && entityClass.getUniqueConstraints() != null &&
+                if(regenTablesAttrs && entityClass.getUniqueConstraints() != null &&
                         entityClass.getUniqueConstraints().size() != 0) {
                     List<ExpressionTree> uniqueConstraintAnnotations = new ArrayList<ExpressionTree>();
                     for(List<String> constraintCols : entityClass.getUniqueConstraints()) {
