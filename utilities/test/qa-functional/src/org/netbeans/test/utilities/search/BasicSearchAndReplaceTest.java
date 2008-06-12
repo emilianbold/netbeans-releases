@@ -72,7 +72,6 @@ public class BasicSearchAndReplaceTest extends JellyTestCase {
     public void setUp() throws IOException{
         workdirpath = getWorkDir().getParentFile().getAbsolutePath();
         System.out.println("########  "+getName()+"  #######");
-        openDataProjects("projects/UtilitiesTestProjects");
     }
     
     /** Called after every test case. */

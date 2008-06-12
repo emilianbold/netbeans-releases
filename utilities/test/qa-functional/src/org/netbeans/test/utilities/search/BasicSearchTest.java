@@ -66,7 +66,7 @@ public class BasicSearchTest extends JellyTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        openDataProjects("projects/UtilitiesTestProjects");
+        openDataProjects("projects/" + DATA_PROJECT_NAME);
     }
     
     /** path to sample files */
