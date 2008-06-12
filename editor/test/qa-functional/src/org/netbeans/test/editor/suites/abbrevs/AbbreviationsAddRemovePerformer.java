@@ -61,7 +61,7 @@ import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
 //import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.test.editor.LineDiff;
+import org.netbeans.test.editor.lib.LineDiff;
 
 /**
  * Test adding/removing of abbreviation via advanced options panel

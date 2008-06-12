@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.editor.shortcuts;
 /*
  * Main.java
@@ -54,27 +53,26 @@ import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.junit.NbModuleSuite;
 
-
 /**
  *
  * @author  Petr Felenda
  */
-public class ReplaceInFileTest extends EditorTestCase {
+public class BasicShortcuts extends EditorTestCase {
 
-    private final String dialogTitle = Bundle.getStringTrimmed("org.netbeans.editor.Bundle","replace-title"); // Replace;
+    private final String dialogTitle = Bundle.getStringTrimmed("org.netbeans.editor.Bundle", "replace-title"); // Replace;
     private final int keyCode = KeyEvent.VK_H;
     private final int modifiers = KeyEvent.CTRL_MASK;
-      
+
     /** Creates a new instance of Main */
-    public ReplaceInFileTest(String testMethodName) {
+    public BasicShortcuts(String testMethodName) {
         super(testMethodName);
     }
 
-    public void testReplaceInFile(){
+    public void testReplaceInFile() {
         openDefaultProject();
         openDefaultSampleFile();
         try {
-        
+
             EditorOperator editor = getDefaultSampleEditorOperator();
 
             JEditorPaneOperator txtOper = editor.txtEditorPane();
@@ -85,13 +83,9 @@ public class ReplaceInFileTest extends EditorTestCase {
             closeFileWithDiscard();
         }
     }
-    
+
     public static Test suite() {
         return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(ReplaceInFileTest.class)
-            .enableModules(".*")
-            .clusters(".*")
-        );
-     }
-    
+                NbModuleSuite.createConfiguration(BasicShortcuts.class).enableModules(".*").clusters(".*"));
+    }
 }

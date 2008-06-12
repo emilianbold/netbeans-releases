@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.test.editor;
+package org.netbeans.test.editor.lib;
 
 import java.awt.Component;
 import java.io.File;

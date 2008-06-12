@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,69 +31,27 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.test.editor.shortcuts;
-/*
- * Main.java
- *
- * Created on 23. srpen 2004, 17:25
- */
+package org.netbeans.test.editor.suites;
 
-import java.awt.event.KeyEvent;
 import junit.framework.Test;
-import junit.textui.TestRunner;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.test.editor.lib.EditorTestCase;
-import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.junit.NbModuleSuite;
-
+import org.netbeans.test.editor.search.IncrementalSearchTest;
+import org.netbeans.test.editor.search.ReplaceTest;
 
 /**
  *
- * @author  Petr Felenda
+ * @author Jiri Prox Jiri.Prox@SUN.Com
  */
-public class FindInFileTest extends EditorTestCase {
+public class SearchSuite {
 
-    //private final String dialogTitle = Bundle.getStringTrimmed("org.netbeans.editor.Bundle","find-title"); // Find;
-    private final String dialogTitle = "Find in Projects";
-    private final int keyCode = KeyEvent.VK_F;
-    private final int modifiers = (KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-      
-    /** Creates a new instance of Main */
-    public FindInFileTest(String testMethodName) {
-        super(testMethodName);
-    }
-    
-    public void testFindInFile(){
-        openDefaultProject();
-        openDefaultSampleFile();
-        try {
-        
-            EditorOperator editor = getDefaultSampleEditorOperator();
-
-            JEditorPaneOperator txtOper = editor.txtEditorPane();
-            txtOper.pushKey(keyCode, modifiers);            
-            closeDialog(dialogTitle);
-
-        } finally {
-            closeFileWithDiscard();
-        }
-    }
-    
-    public static void main(String[] args) {
-        TestRunner.run(FindInFileTest.class);
-    }
-
-    
-     public static Test suite() {
+    public static Test suite() {
         return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(FindInFileTest.class)
-            .enableModules(".*")
-            .clusters(".*")
-        );
-     }
-
-    
-    
+                NbModuleSuite.createConfiguration(IncrementalSearchTest.class).addTest(IncrementalSearchTest.class).addTest(ReplaceTest.class));
+    }
 }

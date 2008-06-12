@@ -1,4 +1,4 @@
-package popup_menus.MainMenuTest;
+package org.netbeans.test.editor.popup.MainMenuTest;
 
 public class testMainMenu {
 
