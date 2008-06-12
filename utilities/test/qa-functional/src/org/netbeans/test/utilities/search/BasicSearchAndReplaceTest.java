@@ -39,6 +39,7 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
+import org.netbeans.jellytools.modules.web.NavigatorOperator;
 import org.netbeans.test.utilities.testcase.Utilities;
 
 /**
@@ -51,7 +52,7 @@ public class BasicSearchAndReplaceTest extends JellyTestCase {
     String workdirpath;
     public String DATA_PROJECT_NAME = "Sample";
     public String PACKAGE_NAME = "Source Package";
-    public String PROJECT_NAME = "General";
+    public String PROJECT_NAME = "Java";
     protected EditorOperator oper;
     
     
@@ -70,11 +71,12 @@ public class BasicSearchAndReplaceTest extends JellyTestCase {
     
     @Override
     public void setUp() throws IOException{
-        workdirpath = getWorkDir().getParentFile().getAbsolutePath();
+        workdirpath = getDataDir() + "/projects";
         System.out.println("########  "+getName()+"  #######");
     }
     
     /** Called after every test case. */
+    @Override
     public void tearDown() {
     }
     
@@ -98,8 +100,8 @@ public class BasicSearchAndReplaceTest extends JellyTestCase {
         }
     }
     private void sourceEdit(){
-        oper = new EditorOperator("Main");
-        oper.setCaretPosition(26, 44);
+        oper = new EditorOperator("Main.java");
+        oper.setCaretPosition(18, 18);
         end();
         enter();
         type("System.out.println(\"Hello\");");
@@ -156,11 +158,11 @@ public class BasicSearchAndReplaceTest extends JellyTestCase {
         Utilities.takeANap(100);
         
         // this section was added due to bug, when fixed,should be deleted
-        NbDialogOperator omyl = new NbDialogOperator("Question");
-        JButtonOperator rescan = new JButtonOperator(omyl,"rescan");
-        rescan.push();
-        Utilities.takeANap(100);
-        replace.push();
+//        NbDialogOperator omyl = new NbDialogOperator("Question");
+//        JButtonOperator rescan = new JButtonOperator(omyl,"rescan");
+//        rescan.push();
+//        Utilities.takeANap(100);
+//        replace.push();
         
         // Close Find/Replace dialog
         Utilities.takeANap(100);
