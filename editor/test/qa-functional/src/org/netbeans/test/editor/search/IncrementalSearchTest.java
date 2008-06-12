@@ -107,7 +107,7 @@ public class IncrementalSearchTest extends EditorTestCase{
     
     public void testSearchBackwards() {
         openDefaultProject();
-        openFile("Source Packages|search_replace.IncrementalSearchTest", "testSearchForward");
+        openFile("Source Packages|org.netbeans.test.editor.search.IncrementalSearchTest", "testSearchForward");
         EditorOperator editor = new EditorOperator("testSearchForward");
         editor.setCaretPosition(11, 1);
         openSearchBar(editor);        
@@ -132,7 +132,7 @@ public class IncrementalSearchTest extends EditorTestCase{
     
     public void testMatchCase() {
         openDefaultProject();
-        openFile("Source Packages|search_replace.IncrementalSearchTest", "match.txt");
+        openFile("Source Packages|org.netbeans.test.editor.search.IncrementalSearchTest", "match.txt");
         EditorOperator editor = new EditorOperator("match.txt");
         editor.setCaretPosition(1, 1);
         new EventTool().waitNoEvent(500);
@@ -161,7 +161,7 @@ public class IncrementalSearchTest extends EditorTestCase{
     
     public void testNextButton() {
         openDefaultProject();
-        openFile("Source Packages|search_replace.IncrementalSearchTest", "match.txt");
+        openFile("Source Packages|org.netbeans.test.editor.search.IncrementalSearchTest", "match.txt");
         EditorOperator editor = new EditorOperator("match.txt");
         editor.setCaretPosition(1, 1);
         openSearchBar(editor);        
@@ -183,7 +183,7 @@ public class IncrementalSearchTest extends EditorTestCase{
     
     public void testPrevButton() {
         openDefaultProject();
-        openFile("Source Packages|search_replace.IncrementalSearchTest", "match.txt");
+        openFile("Source Packages|org.netbeans.test.editor.search.IncrementalSearchTest", "match.txt");
         EditorOperator editor = new EditorOperator("match.txt");
         editor.setCaretPosition(3, 1);
         openSearchBar(editor);                
@@ -205,7 +205,7 @@ public class IncrementalSearchTest extends EditorTestCase{
     
     public void testCloseButton() {
         openDefaultProject();
-        openFile("Source Packages|search_replace.IncrementalSearchTest", "match.txt");
+        openFile("Source Packages|org.netbeans.test.editor.search.IncrementalSearchTest", "match.txt");
         EditorOperator editor = new EditorOperator("match.txt");
         editor.setCaretPosition(3, 1);
         openSearchBar(editor);        
@@ -225,7 +225,7 @@ public class IncrementalSearchTest extends EditorTestCase{
     
     public void testNotFound() {
         openDefaultProject();
-        openFile("Source Packages|search_replace.IncrementalSearchTest", "match.txt");
+        openFile("Source Packages|org.netbeans.test.editor.search.IncrementalSearchTest", "match.txt");
         EditorOperator editor = new EditorOperator("match.txt");
         editor.setCaretPosition(3, 1);
         openSearchBar(editor);        
@@ -250,7 +250,7 @@ public class IncrementalSearchTest extends EditorTestCase{
     
     public void testInvalidRegexp() {
         openDefaultProject();
-        openFile("Source Packages|search_replace.IncrementalSearchTest", "match.txt");
+        openFile("Source Packages|org.netbeans.test.editor.search.IncrementalSearchTest", "match.txt");
         EditorOperator editor = new EditorOperator("match.txt");
         editor.setCaretPosition(3, 1);
         openSearchBar(editor);        
@@ -277,7 +277,7 @@ public class IncrementalSearchTest extends EditorTestCase{
     
     public void testSearchForwardBackward() {
         openDefaultProject();
-        openFile("Source Packages|search_replace.IncrementalSearchTest", "match.txt");
+        openFile("Source Packages|org.netbeans.test.editor.search.IncrementalSearchTest", "match.txt");
         EditorOperator editor = new EditorOperator("match.txt");
         editor.setCaretPosition(2, 1);
         openSearchBar(editor);        
@@ -298,7 +298,7 @@ public class IncrementalSearchTest extends EditorTestCase{
     
     public void testWholeWords() {
         openDefaultProject();        
-        openFile("Source Packages|search_replace.IncrementalSearchTest", "match2.txt");
+        openFile("Source Packages|sorg.netbeans.test.editor.search.IncrementalSearchTest", "match2.txt");
         EditorOperator editor = new EditorOperator("match2.txt");        
         editor.setCaretPosition(1, 1);
         openSearchBar(editor);        
@@ -318,7 +318,7 @@ public class IncrementalSearchTest extends EditorTestCase{
 
     public void testRegularExpression() {
         openDefaultProject();        
-        openFile("Source Packages|search_replace.IncrementalSearchTest", "match2.txt");
+        openFile("Source Packages|org.netbeans.test.editor.search.IncrementalSearchTest", "match2.txt");
         EditorOperator editor = new EditorOperator("match2.txt");        
         editor.setCaretPosition(1, 1);
         openSearchBar(editor);        
@@ -342,7 +342,7 @@ public class IncrementalSearchTest extends EditorTestCase{
 
     public void testFindNext() {
         openDefaultProject();        
-        openFile("Source Packages|search_replace.IncrementalSearchTest", "match2.txt");
+        openFile("Source Packages|org.netbeans.test.editor.search.IncrementalSearchTest", "match2.txt");
         EditorOperator editor = new EditorOperator("match2.txt");        
         editor.setCaretPosition(1, 1);
         openSearchBar(editor);        
@@ -366,7 +366,7 @@ public class IncrementalSearchTest extends EditorTestCase{
     
     public void testFindPrev() {     
         openDefaultProject();        
-        openFile("Source Packages|search_replace.IncrementalSearchTest", "match2.txt");
+        openFile("Source Packages|org.netbeans.test.editor.search.IncrementalSearchTest", "match2.txt");
         EditorOperator editor = new EditorOperator("match2.txt");        
         editor.setCaretPosition(6, 1);
         openSearchBar(editor);        

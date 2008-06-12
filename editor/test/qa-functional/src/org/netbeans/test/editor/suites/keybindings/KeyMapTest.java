@@ -226,7 +226,7 @@ public class KeyMapTest extends JellyTestCase{
         try {
             kmo = KeyMapOperator.invoke();
             closed = false;
-            kmo.selectProfile("NetBeans55");
+            kmo.selectProfile("NetBeans 5.5");
             JTreeOperator tree =kmo.actions();
             exceptions = exceptionsNetBeans55;
             dump("",tree,kmo);
