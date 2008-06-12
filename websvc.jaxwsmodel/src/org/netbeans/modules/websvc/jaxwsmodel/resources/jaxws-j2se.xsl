@@ -77,19 +77,8 @@ made subject to such option by the copyright holder.
                 <xsl:variable name="wsdl_url_actual" select="jaxws:wsdl-url"/>
                 <xsl:variable name="package_path" select = "translate($package_name,'.','/')"/>
                 <xsl:variable name="catalog" select = "jaxws:catalog-file"/>
-                <target name="wsimport-client-check-{$wsname}" depends="wsimport-init">
-                    <condition property="wsimport-client-{$wsname}.notRequired">
-                        <xsl:choose>
-                            <xsl:when test="jaxws:package-name">
-                                <available file="${{build.generated.dir}}/wsimport/client/{$package_path}" type="dir"/>    
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <available file="${{build.generated.dir}}/wsimport/client/dummy" type="dir"/>
-                            </xsl:otherwise>
-                        </xsl:choose>                       
-                    </condition>
-                </target>
-                <target name="wsimport-client-{$wsname}" depends="wsimport-init,wsimport-client-check-{$wsname}" unless="wsimport-client-{$wsname}.notRequired">
+                
+                <target name="wsimport-client-{$wsname}" depends="wsimport-init">
                     <xsl:if test="jaxws:package-name/@forceReplace">
                         <wsimport
                             xnocompile="true"
@@ -119,6 +108,7 @@ made subject to such option by the copyright holder.
                                     </xsl:attribute>
                                 </binding>
                             </xsl:if>
+                            <produces dir="${{build.generated.dir}}/wsimport/client/{$package_path}" includes="{$wsname}.java" casesensitive="no"/>
                         </wsimport>
                     </xsl:if>
                     <xsl:if test="not(jaxws:package-name/@forceReplace)">
@@ -149,6 +139,7 @@ made subject to such option by the copyright holder.
                                     </xsl:attribute>
                                 </binding>
                             </xsl:if>
+                            <produces dir="${{build.generated.dir}}/wsimport/client/{$package_path}" includes="{$wsname}.java" casesensitive="no"/>
                         </wsimport>
                     </xsl:if>
                 </target>
