@@ -85,7 +85,8 @@ public final class CompilationInfoImpl {
     private final FileObject file;
     private final FileObject root;
     final JavaFileObject jfo;    
-    private final Snapshot snapshot;
+    //@NotThreadSafe    //accessed under parser lock
+    private Snapshot snapshot;
     private final JavacParser parser;
     private final boolean isClassFile;
     boolean needsRestart;
@@ -152,6 +153,12 @@ public final class CompilationInfoImpl {
         this.snapshot = null;
         this.cpInfo = cpInfo;
         this.isClassFile = true;
+    }
+    
+    void update (final Snapshot snapshot) throws IOException {
+        assert snapshot != null;
+        JavacParser.jfoProvider.update(this.jfo, snapshot.getText());
+        this.snapshot = snapshot;
     }
     
     public Snapshot getSnapshot () {

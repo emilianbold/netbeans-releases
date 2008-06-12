@@ -822,7 +822,7 @@ public class JavacParser extends Parser {
                     l.endPartialReparse();
                     l.useSource(prevLogged);
                 }
-                jfoProvider.update(ci.jfo, snapshot.getText());
+                ci.update(snapshot);
             } finally {
               if (treeLoader != null) {
                   treeLoader.endPartialReparse();
