@@ -88,5 +88,7 @@ made subject to such option by the copyright holder.
     <filter pattern="http://platform\.netbeans\.org/articles/.*" accept="true"/>
     <filter pattern="http://ui\.netbeans\.org/docs/ui/themes/themes\.html" accept="true"/>
     <filter pattern="http://wiki.netbeans.org/.*" accept="true"/>
+    <!-- Useful to point to open layer positions (see e.g. HOWTO-MIME.html): -->
+    <filter pattern="http://deadlock\.netbeans\.org/hudson/job/javadoc-nbms/lastSuccessfulBuild/artifact/nbbuild/build/generated/layers\.txt" accept="true"/>
     <!-- forbid the rest of NetBeans sites -->
     <filter pattern="http://.*netbeans\.org/.*" accept="false"/>
