@@ -40,14 +40,10 @@
 package org.netbeans.junit;
 
 
-import test.pkg.not.in.junit.NbModuleSuiteIns;
 import test.pkg.not.in.junit.NbModuleSuiteT;
-import java.io.File;
-import org.netbeans.testjunit.AskForOrgOpenideUtilEnumClass;
-import java.util.Properties;
-import java.util.Set;
 import junit.framework.Test;
 import junit.framework.TestCase;
+import junit.framework.TestResult;
 
 /**
  *
@@ -115,5 +111,11 @@ public class NbModuleSuite2Test extends TestCase {
             // ok
         }
     }
-    
+
+    public void testTestCount() throws Exception{
+        Test test  = NbModuleSuite.create(NbModuleSuite.createConfiguration(NbModuleSuiteT.class).gui(false));
+        assertEquals(0, test.countTestCases());
+        test.run(new TestResult());
+        assertEquals(2, test.countTestCases());
+    }
 }

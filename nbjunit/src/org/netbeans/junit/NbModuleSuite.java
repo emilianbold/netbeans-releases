@@ -357,9 +357,15 @@ public class NbModuleSuite {
     static final class S extends NbTestSuite {
         final Configuration config;
         private int invocations;
-
+        private int testCount = 0; 
+        
         public S(Configuration config) {
             this.config = config;
+        }
+
+        @Override
+        public int countTestCases() {
+            return testCount;
         }
 
         @Override
@@ -473,6 +479,7 @@ public class NbModuleSuite {
                         toRun.addTest(sndClazz.newInstance());
                     }
                 }
+                testCount = toRun.countTestCases();
                 toRun.run(result);
             } catch (ClassNotFoundException ex) {
                 result.addError(this, ex);
