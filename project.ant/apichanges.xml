@@ -124,8 +124,6 @@ is the proper place.
             <issue number="136623"/>
         </change>
 
-    <changes>
-
         <change id="AntProjectHelper-createAuxiliaryProperties">
             <api name="general"/>
             <summary>Added AntProjectHelper.createAuxiliaryProperties()</summary>
