@@ -42,6 +42,7 @@
 package org.netbeans.modules.apisupport.project.ui;
 
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -182,7 +183,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
         protected void addNotify() {
             super.addNotify();
             project.getHelper().addAntProjectListener(this);
-            refreshKeys();
+            refreshKeys(false);
         }
         
         protected void removeNotify() {
@@ -191,12 +192,12 @@ final class UnitTestLibrariesNode extends AbstractNode {
             super.removeNotify();
         }
         
-        private void refreshKeys() {
+        private void refreshKeys(final boolean asynch) {
             try {
                 ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Object>() {
                     public Object run() throws Exception {
                         ProjectXMLManager pxm = new ProjectXMLManager(project);
-                        List<Object> keys = new ArrayList<Object>();
+                        final List<Object> keys = new ArrayList<Object>();
                         if(isModuleInModuleList(JUNIT_CNB)) {
                             keys.add(JUNIT);
                         }
@@ -215,7 +216,16 @@ final class UnitTestLibrariesNode extends AbstractNode {
                             }
                             keys.addAll(deps);
                         }
-                        setKeys(Collections.unmodifiableList(keys));
+                        Runnable r = new Runnable() {
+                            public void run() {
+                                setKeys(Collections.unmodifiableList(keys));
+                            }
+                        };
+                        if (asynch) {
+                            EventQueue.invokeLater(r);
+                        } else {
+                            r.run();
+                        }
                         return null;
                     }
                 });
@@ -295,7 +305,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
             // XXX this is a little strange but happens during project move. Bad ordering.
             // Probably bug in moving implementation (our or in general Project API).
             if (project.getHelper().resolveFileObject(AntProjectHelper.PROJECT_XML_PATH) != null) {
-                refreshKeys();
+                refreshKeys(true);
             }
         }
         
