@@ -153,7 +153,7 @@ public class JellyTestCase extends NbTestCase {
             // screen capture is performed when test fails and in dependency on system property
             if (captureScreen) {
                 try {
-                    PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screen.png");
+                    PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screen.png", PNGEncoder.COLOR_MODE);
                 } catch (Exception e1) {}
             }
             // XML dump is performed when test fails and in dependency on system property

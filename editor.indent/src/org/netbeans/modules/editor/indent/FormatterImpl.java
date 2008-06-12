@@ -50,6 +50,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.GuardedException;
 import org.netbeans.editor.ext.ExtFormatter;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 
 /**
  * Indentation and code reformatting services for a swing text document.
@@ -58,14 +59,15 @@ import org.netbeans.editor.ext.ExtFormatter;
  */
 public final class FormatterImpl extends ExtFormatter {
     
-    private Formatter defaultFormatter;
-    
-    private IndentImpl indentImpl;
+    private final Document doc;
+    private final Formatter defaultFormatter;
+    private final IndentImpl indentImpl;
     
     FormatterImpl(Formatter defaultFormatter, Document doc) {
         super(defaultFormatter.getKitClass());
-        this.indentImpl = IndentImpl.get(doc);
         this.defaultFormatter = defaultFormatter;
+        this.doc = doc;
+        this.indentImpl = IndentImpl.get(doc);
         indentImpl.setDefaultFormatter(defaultFormatter);
     }
     
@@ -98,7 +100,7 @@ public final class FormatterImpl extends ExtFormatter {
 
     @Override
     public int getTabSize() {
-        return defaultFormatter.getTabSize();
+        return IndentUtils.tabSize(doc);
     }
 
     @Override
@@ -108,12 +110,12 @@ public final class FormatterImpl extends ExtFormatter {
 
     @Override
     public int getShiftWidth() {
-        return defaultFormatter.getShiftWidth();
+        return IndentUtils.indentLevelSize(doc);
     }
 
     @Override
     public boolean expandTabs() {
-        return defaultFormatter.expandTabs();
+        return IndentUtils.isExpandTabs(doc);
     }
 
     @Override

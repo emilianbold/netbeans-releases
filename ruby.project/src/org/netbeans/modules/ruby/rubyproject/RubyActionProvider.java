@@ -190,38 +190,14 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             options = null;
         }
 
-        // Set the load path from the source and test folders.
-        // Load paths are additive so users can add their own in the
-        // options field as well.
-        FileObject[] srcPath = project.getSourceRoots().getRoots();
-        FileObject[] testPath = project.getTestSourceRoots().getRoots();
-        StringBuilder sb = new StringBuilder();
-        if (srcPath != null && srcPath.length > 0) {
-            for (FileObject root : srcPath) {
-                if (sb.length() > 0) {
-                    sb.append(' ');
-                }
-                sb.append("-I\""); // NOI18N
-                sb.append(FileUtil.toFile(root).getAbsoluteFile());
-                sb.append("\""); // NOI18N
-            }
-        }
-        if (testPath != null && testPath.length > 0) {
-            for (FileObject root : testPath) {
-                if (sb.length() > 0) {
-                    sb.append(' ');
-                }
-                sb.append("-I\""); // NOI18N
-                sb.append(FileUtil.toFile(root).getAbsoluteFile());
-                sb.append("\""); // NOI18N
-            }
-        }
-        String includePath = sb.toString();
+        String includePath = RubyProjectUtil.getLoadPath(project);
         if (options != null) {
             options = includePath + " " + options; // NOI18N
         } else {
             options = includePath;
         }
+        FileObject[] srcPath = project.getSourceRoots().getRoots();
+        FileObject[] testPath = project.getTestSourceRoots().getRoots();
         
         target = locate(target, srcPath, testPath);
         
@@ -511,16 +487,13 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             if (rspec.isRSpecInstalled() && RSpecSupport.isSpecFile(file)) {
                 // Save all files first - this rake file could be accessing other files
                 LifecycleManager.getDefault().saveAll();
-                 // not using the UI test runner for debugging for now, see #136930
-                /* 
                 TestRunner rspecRunner = getTestRunner(TestRunner.TestType.RSPEC);
                 if (rspecRunner != null) {
                     rspecRunner.runTest(file, COMMAND_DEBUG_SINGLE.equals(command));
                 } else {
-                 */
                     rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context, project), true,
                             COMMAND_DEBUG_SINGLE.equals(command));
-                //}
+                }
                 return;
             }
             
@@ -631,8 +604,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             RSpecSupport rspec = new RSpecSupport(project);
             if (rspec.isRSpecInstalled() && RSpecSupport.isSpecFile(file)) {
                 TestRunner rspecRunner = getTestRunner(TestRunner.TestType.RSPEC);
-                 // not using the UI test runner for debugging for now, see #136930
-                if (rspecRunner != null && !isDebug) {
+                if (rspecRunner != null) {
                     rspecRunner.runTest(file, isDebug);
                 } else {
                     rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context, project), true,

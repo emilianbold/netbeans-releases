@@ -63,6 +63,7 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -144,6 +145,16 @@ public class RailsProject extends RubyBaseProject {
     /** Mainly for unit tests. */
     protected @Override void open() {
         super.open();
+    }
+
+    @Override
+    public FileObject[] getSourceRootFiles() {
+        return getSourceRoots().getRoots();
+    }
+
+    @Override
+    public FileObject[] getTestSourceRootFiles() {
+        return getTestSourceRoots().getRoots();
     }
 
     /**

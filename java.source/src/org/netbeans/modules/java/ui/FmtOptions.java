@@ -63,6 +63,7 @@ import javax.swing.text.EditorKit;
 
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.java.source.CodeStyle;
 import static org.netbeans.api.java.source.CodeStyle.*;
 import org.netbeans.api.project.Project;
@@ -85,9 +86,9 @@ import org.openide.util.NbPreferences;
  */
 public class FmtOptions {
 
-    public static final String expandTabToSpaces = "expandTabToSpaces"; //NOI18N
-    public static final String tabSize = "tabSize"; //NOI18N
-    public static final String indentSize = "indentSize"; //NOI18N
+    public static final String expandTabToSpaces = SimpleValueNames.EXPAND_TABS;
+    public static final String tabSize = SimpleValueNames.TAB_SIZE;
+    public static final String indentSize = SimpleValueNames.INDENT_SHIFT_WIDTH;
     public static final String continuationIndentSize = "continuationIndentSize"; //NOI18N
     public static final String labelIndent = "labelIndent"; //NOI18N
     public static final String absoluteLabelIndent = "absoluteLabelIndent"; //NOI18N
