@@ -83,6 +83,7 @@ made subject to such option by the copyright holder.
                         <wsimport
                             xnocompile="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
+                            destdir="${{build.generated.dir}}/wsimport/client"
                             extension="true"
                             package="{$package_name}"
                             wsdl="${{basedir}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
@@ -115,6 +116,7 @@ made subject to such option by the copyright holder.
                         <wsimport
                             xnocompile="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
+                            destdir="${{build.generated.dir}}/wsimport/client"
                             extension="true"
                             wsdl="${{basedir}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
                             wsdlLocation="{$wsdl_url_actual}"
@@ -142,6 +144,9 @@ made subject to such option by the copyright holder.
                             <produces dir="${{build.generated.dir}}/wsimport/client/{$package_path}" includes="{$wsname}.java" casesensitive="no"/>
                         </wsimport>
                     </xsl:if>
+                    <copy todir="${{build.classes.dir}}">
+                        <fileset dir="${{build.generated.dir}}/wsimport/client" includes="**/*.xml"/>
+                    </copy>
                 </target>
                 <target name="wsimport-client-clean-{$wsname}" depends="-init-project">
                     <delete dir="${{build.generated.dir}}/wsimport/client/{$package_path}"/>
