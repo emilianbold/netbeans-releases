@@ -45,9 +45,9 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
-import org.netbeans.spi.glassfish.Decorator;
-import org.netbeans.spi.glassfish.DecoratorFactory;
-import org.netbeans.spi.glassfish.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.Decorator;
+import org.netbeans.modules.glassfish.spi.DecoratorFactory;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.openide.util.Utilities;
 
 /**

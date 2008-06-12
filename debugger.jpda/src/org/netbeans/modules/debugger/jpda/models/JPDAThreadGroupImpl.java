@@ -115,11 +115,7 @@ public class JPDAThreadGroupImpl implements JPDAThreadGroup {
         if (tc == null) {
             return ;
         }
-        List<ThreadReference> threads = tc.getThreads(tgr);
-        for (Iterator it = threads.iterator(); it.hasNext(); ) {
-            JPDAThreadImpl thread = (JPDAThreadImpl) debugger.getThread((ThreadReference) it.next());
-            thread.notifyToBeResumed();
-        }
+        notifyToBeResumed(tc);
         tgr.resume ();
     }
     
@@ -130,10 +126,32 @@ public class JPDAThreadGroupImpl implements JPDAThreadGroup {
             return ;
         }
         tgr.suspend ();
+        notifySuspended(tc);
+    }
+    
+    void notifyToBeResumed(ThreadsCache tc) {
         List<ThreadReference> threads = tc.getThreads(tgr);
-        for (Iterator it = threads.iterator(); it.hasNext(); ) {
-            JPDAThreadImpl thread = (JPDAThreadImpl) debugger.getThread((ThreadReference) it.next());
+        for (ThreadReference threadRef : threads) {
+            JPDAThreadImpl thread = (JPDAThreadImpl) debugger.getThread(threadRef);
+            thread.notifyToBeResumed();
+        }
+        List<ThreadGroupReference> groups = tc.getGroups(tgr);
+        for (ThreadGroupReference groupRef : groups) {
+            JPDAThreadGroupImpl group = (JPDAThreadGroupImpl) debugger.getThreadGroup(groupRef);
+            group.notifyToBeResumed(tc);
+        }
+    }
+    
+    void notifySuspended(ThreadsCache tc) {
+        List<ThreadReference> threads = tc.getThreads(tgr);
+        for (ThreadReference threadRef : threads) {
+            JPDAThreadImpl thread = (JPDAThreadImpl) debugger.getThread(threadRef);
             thread.notifySuspended();
+        }
+        List<ThreadGroupReference> groups = tc.getGroups(tgr);
+        for (ThreadGroupReference groupRef : groups) {
+            JPDAThreadGroupImpl group = (JPDAThreadGroupImpl) debugger.getThreadGroup(groupRef);
+            group.notifySuspended(tc);
         }
     }
     

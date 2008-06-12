@@ -19,14 +19,13 @@
 
 package org.netbeans.modules.bpel.mapper.cast;
 
-import java.util.Iterator;
+import org.netbeans.modules.bpel.mapper.model.BpelMapperUtils;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.Variable;
+import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComp;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
-import org.netbeans.modules.xml.xpath.ext.schema.InvalidNamespaceException;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.openide.ErrorManager;
 
@@ -62,16 +61,8 @@ public class SyntheticPseudoComp extends AbstractPseudoComp {
         return mSContext;
     }
 
-    public Variable getBaseVariable() {
-        Iterator itr = mItrb.iterator();
-        while (itr.hasNext()) {
-            Object obj = itr.next();
-            if (obj instanceof Variable) {
-                return (Variable)obj;
-            }
-        }
-        //
-        return null;
+    public VariableDeclaration getBaseVariable() {
+        return BpelMapperUtils.getBaseVariable(mItrb);
     }
     
     public boolean populatePseudoComp(PseudoComp target, 
@@ -109,7 +100,8 @@ public class SyntheticPseudoComp extends AbstractPseudoComp {
      * @return
      */
     public XPathExpression getParentPathExpression() {
-        return PathConverter.constructXPath(getBaseVariable(), mItrb, true);
+        return PathConverter.constructXPath(
+                (BpelEntity)getBaseVariable(), mItrb, true);
     }
 
 } 

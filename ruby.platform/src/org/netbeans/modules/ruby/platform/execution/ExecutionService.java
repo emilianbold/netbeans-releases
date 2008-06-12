@@ -190,7 +190,7 @@ public class ExecutionService {
         }
     }
 
-    Task rerun() {
+    public Task rerun() {
         try {
             io.getOut().reset();
         } catch (IOException ex) {

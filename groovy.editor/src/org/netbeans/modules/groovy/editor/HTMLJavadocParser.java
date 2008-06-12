@@ -47,6 +47,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.Locale;
 import java.util.StringTokenizer;
 import javax.swing.text.ChangedCharSetException;
 import javax.swing.text.MutableAttributeSet;
@@ -66,10 +67,8 @@ class HTMLJavadocParser {
     private final Logger LOG = Logger.getLogger(HTMLJavadocParser.class.getName());
 
     public HTMLJavadocParser() {
-        // LOG.setLevel(Level.FINEST);
+        LOG.setLevel(Level.OFF);
     }
-    
-    
     
     /** Gets the javadoc text from the given URL
      *  @param url nbfs protocol URL
@@ -118,7 +117,7 @@ class HTMLJavadocParser {
                 ioe.printStackTrace();
                 break;
             }finally{
-                parser = null;
+                // Findbugs removed: parser = null;
                 if (is!=null) {
                     try{
                         is.close();
@@ -145,7 +144,7 @@ class HTMLJavadocParser {
             spec = spec.substring(index + 1);
         }
         
-        spec = spec.toLowerCase();
+        spec = spec.toLowerCase(Locale.ENGLISH);
         
         StringTokenizer st = new StringTokenizer(spec, " \t=", true); //NOI18N
         boolean foundCharSet = false;
@@ -177,27 +176,35 @@ class HTMLJavadocParser {
         
         if (url == null) return null;
         
-        if (startOffset>endOffset) throw new IOException();
+        if (startOffset > endOffset) {
+            throw new IOException();
+        }
         InputStream fis = url.openStream();
         InputStreamReader fisreader = charset == null ? new InputStreamReader(fis) : new InputStreamReader(fis, charset);
-        int len = endOffset - startOffset;
-        int bytesAlreadyRead = 0;
-        char buffer[] = new char[len];
-        int bytesToSkip = startOffset;
-        long bytesSkipped = 0;
-        do {
-            bytesSkipped = fisreader.skip(bytesToSkip);
-            bytesToSkip -= bytesSkipped;
-        } while ((bytesToSkip > 0) && (bytesSkipped > 0));
+        char buffer[];
+        try {
+            int len = endOffset - startOffset;
+            int bytesAlreadyRead = 0;
+            buffer = new char[len];
+            int bytesToSkip = startOffset;
+            long bytesSkipped = 0;
+            do {
+                bytesSkipped = fisreader.skip(bytesToSkip);
+                bytesToSkip -= bytesSkipped;
+            } while ((bytesToSkip > 0) && (bytesSkipped > 0));
 
-        do {
-            int count = fisreader.read(buffer, bytesAlreadyRead, len - bytesAlreadyRead);
-            if (count < 0){
-                break;
-            }
-            bytesAlreadyRead += count;
-        } while (bytesAlreadyRead < len);
-        fisreader.close();
+            do {
+                int count = fisreader.read(buffer, bytesAlreadyRead, len - bytesAlreadyRead);
+                if (count < 0) {
+                    break;
+                }
+                bytesAlreadyRead += count;
+            } while (bytesAlreadyRead < len);
+
+        } finally {
+            fisreader.close();
+        }
+        
         return new String(buffer);
     }
 
@@ -275,12 +282,10 @@ class HTMLJavadocParser {
         };        
 
         parser.parse(reader, callback, ignoreCharset);
-        callback = null;
+        // Findbugs-Removed: callback = null;
         return offset;
     }
 
-
-    
     
     /** Retrieves the position (start offset and end offset) of member javadoc info
       * in the raw html file */
@@ -425,7 +430,7 @@ class HTMLJavadocParser {
         };
 
         parser.parse(reader, callback, ignoreCharset);
-        callback = null;
+        // Findbugs-Removed: callback = null;
         return offset;
     }
 
@@ -479,7 +484,7 @@ class HTMLJavadocParser {
         };
 
         parser.parse(reader, callback, ignoreCharset);
-        callback = null;
+        // Findbugs-Removed: callback = null;
         return offset;
     }
     

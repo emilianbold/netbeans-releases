@@ -54,6 +54,6 @@ public class MissedSemicolonsTestCase extends ErrorHighlightingBaseTestCase {
     }
     
     public void testMissedSemicolonAfterClass() throws Exception {
-        performTest("missed_semicolon_after_class.cc"); //NOI18N
+        performStaticTest("missed_semicolon_after_class.cc"); //NOI18N
     }
 }

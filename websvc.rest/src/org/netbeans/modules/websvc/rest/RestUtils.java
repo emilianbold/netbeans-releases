@@ -156,6 +156,15 @@ public class RestUtils {
          wsModel.enablePropertyChangeListener();
     }
 
+    public static boolean hasJTASupport(Project project) {
+        RestSupport support = getRestSupport(project);
+        
+        if (support != null) {
+            return support.hasJTASupport(project);
+        }
+        
+        return false;
+    }
     //
     // TODO: The following methods don't belong here. Some of them should go into
     // JavaSourceHelper and the XML/DOM related methods should go into

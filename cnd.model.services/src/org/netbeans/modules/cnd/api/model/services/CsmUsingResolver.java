@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
 import org.openide.util.Lookup;
+import sun.awt.geom.AreaOp.CAGOp;
 
 /**
  * entry point to resolve using directives and using declarations
@@ -92,6 +93,14 @@ public abstract class CsmUsingResolver {
      * @return sorted unmodifiable collection of declarations visible for input offsetable element through "using" declarations
      */
     public abstract Collection<CsmDeclaration> findUsedDeclarations(CsmFile file, int offset, CsmProject onlyInProject);
+    
+    /**
+     * Finds all declarations visible in given namespace through "using" delcarations.
+     * 
+     * @param namespace  namespace of interest
+     * @return unmodifiable collection of declarations visible in given namespace through "using" declarations
+     */
+    public abstract Collection<CsmDeclaration> findUsedDeclarations(CsmNamespace namespace);
     
     /**
      * return all namespace visible for offsetable element, i.e.
@@ -163,6 +172,10 @@ public abstract class CsmUsingResolver {
         }
 
         public Collection<CsmDeclaration> findUsedDeclarations(CsmFile file, int offset, CsmProject onlyInProject) {
+            return Collections.<CsmDeclaration>emptyList();
+        }
+        
+        public Collection<CsmDeclaration> findUsedDeclarations(CsmNamespace namespace) {
             return Collections.<CsmDeclaration>emptyList();
         }
 

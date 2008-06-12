@@ -59,6 +59,7 @@ public class LayerXmlHelper extends XmlHelper{
     //// names
     protected static final String LAYER_FILESYSTEM    = "filesystem";             //NOI18N
     protected static final String LAYER_FOLDER        = "folder";                 //NOI18N
+    protected static final String LAYER_FILE        = "file";                 //NOI18N
     protected static final String LAYER_NAME          = "name";                   //NOI18N
     protected static final String LAYER_URL           = "url";                    //NOI18N
         

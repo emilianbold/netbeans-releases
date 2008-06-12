@@ -68,6 +68,7 @@ import org.netbeans.modules.xml.schema.model.Import;
 import org.netbeans.modules.xml.schema.model.Include;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -144,8 +145,14 @@ public class TypeChooserTreeModel implements SoaTreeModel,
                 result.addAll(refProj);
             }
             //
-            // TODO: Add a branch with primitive types here.
+            // Add a branch with primitive types here.
+            result.add(SchemaTreeInfoProvider.PRIMITIVE_TYPES);
             //
+        } else if (dataObj.equals(SchemaTreeInfoProvider.PRIMITIVE_TYPES)) {
+            Collection<GlobalSimpleType> primitiveTypes = 
+                    SchemaModelFactory.getDefault().getPrimitiveTypesModel().
+                    getSchema().getSimpleTypes();
+            result.addAll(primitiveTypes);
         } else if (dataObj instanceof Project) {
             Project project = (Project)dataObj;
             Collection<SchemaModel> projSchemas = getAllSchemasInProject(project);
@@ -153,6 +160,13 @@ public class TypeChooserTreeModel implements SoaTreeModel,
                 List<Object> children = getChildrenImpl(schemaModel);
                 if (children != null && !children.isEmpty()) {
                     result.add(schemaModel);
+                }
+            }
+            Collection<WSDLModel> projWsdls = getAllWsdlInProject(project);
+            for (WSDLModel wsdlModel : projWsdls) {
+                List<Object> children = getChildrenImpl(wsdlModel);
+                if (children != null && !children.isEmpty()) {
+                    result.add(wsdlModel);
                 }
             }
         } else if (dataObj instanceof SchemaModel) {
@@ -174,7 +188,7 @@ public class TypeChooserTreeModel implements SoaTreeModel,
             Collection<Import> imports = schema.getImports();
             Collection<Include> includes = schema.getIncludes();
             //
-            if (!imports.isEmpty() && !includes.isEmpty()) {
+            if (!imports.isEmpty() || !includes.isEmpty()) {
                 result.add(new ReferencedSchemaFolder(schema));
             }
             //
@@ -183,31 +197,29 @@ public class TypeChooserTreeModel implements SoaTreeModel,
             Schema schema = rsf.getOwner();
             //
             Collection<Import> imports = schema.getImports();
-            //
-            for (Import importObj : imports) {
-		try {
-                    SchemaModel sModel = importObj.resolveReferencedModel();
-                    if (sModel != null) {
-                        result.add(sModel);
-                    }
-		} catch (CatalogModelException ex) {
-		    // the import cannot be resolved 
-		}
-            }
+            result.addAll(imports);
             //
             Collection<Include> includes = schema.getIncludes();
+            result.addAll(includes);
             //
-            for (Include includeObj : includes) {
-		try {
-                    SchemaModel sModel = includeObj.resolveReferencedModel();
-                    if (sModel != null) {
-                        result.add(sModel);
-                    }
-		} catch (CatalogModelException ex) {
-		    // the include cannot be resolved 
-		}
+        } else if (dataObj instanceof Import) {
+            try {
+                SchemaModel sModel = ((Import)dataObj).resolveReferencedModel();
+                if (sModel != null) {
+                    result.addAll(getChildrenImpl(sModel));
+                }
+            } catch (CatalogModelException ex) {
+                // the import cannot be resolved 
             }
-            //
+        } else if (dataObj instanceof Include) {
+            try {
+                SchemaModel sModel = ((Include)dataObj).resolveReferencedModel();
+                if (sModel != null) {
+                    result.addAll(getChildrenImpl(sModel));
+                }
+            } catch (CatalogModelException ex) {
+                // the import cannot be resolved 
+            }
         } else if (dataObj instanceof WSDLModel) {
             WSDLModel wsdlModel = (WSDLModel)dataObj;
             Definitions def = wsdlModel.getDefinitions();
@@ -274,15 +286,7 @@ public class TypeChooserTreeModel implements SoaTreeModel,
             result = SchemaTreeInfoProvider.getInstance().getDisplayName(treeItem);
         } else if (dataObj instanceof SchemaModel) {
             SchemaModel schemaModel = (SchemaModel)dataObj;
-            Project ownerProject = Utils.safeGetProject(schemaModel);
-            if (ownerProject == null) { 
-                result = schemaModel.getEffectiveNamespace(schemaModel.getSchema());
-                // TODO: it can be null
-            } else {
-                FileObject projectDir = ownerProject.getProjectDirectory();
-                FileObject schemaFo = SoaUtil.getFileObjectByModel(schemaModel);
-                result = FileUtil.getRelativePath(projectDir, schemaFo);
-            }
+            result = SchemaTreeInfoProvider.getDisplayName(schemaModel);
         } else if (dataObj instanceof WSDLModel) {
             WSDLModel wsdlModel = (WSDLModel)dataObj;
             Project ownerProject = Utils.safeGetProject(wsdlModel);
@@ -304,6 +308,8 @@ public class TypeChooserTreeModel implements SoaTreeModel,
                     result = node.getDisplayName();
                 }
             }
+        } else if (dataObj instanceof ReferencedSchemaFolder) {
+            result = ReferencedSchemaFolder.REFERENCED_SCHEMA_FOLDER;
         }
         //
         if (result == null) {

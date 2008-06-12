@@ -143,7 +143,7 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
                 new SourceFileReader() {
                     public CharSequence read(ParserFile file)
                         throws IOException {
-                        Document doc = NbUtilities.getBaseDocument(fo, true);
+                        Document doc = AstUtilities.getBaseDocument(fo, true);
 
                         if (doc == null) {
                             return "";
