@@ -82,7 +82,7 @@ final class IndentationModel {
     boolean isExpandTabs() {
         Preferences prefs = MimeLookup.getLookup(EXAMPLE_MIME_TYPE).lookup(Preferences.class);
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("~~~ " + SimpleValueNames.EXPAND_TABS + "=" + prefs.get(SimpleValueNames.EXPAND_TABS, null));
+            LOG.fine("Reading " + SimpleValueNames.EXPAND_TABS + "=" + prefs.get(SimpleValueNames.EXPAND_TABS, null));
         }
         return prefs.getBoolean(SimpleValueNames.EXPAND_TABS, false);
     }
@@ -91,7 +91,7 @@ final class IndentationModel {
         Preferences prefs = MimeLookup.getLookup(EXAMPLE_MIME_TYPE).lookup(Preferences.class);
         prefs.putBoolean(SimpleValueNames.EXPAND_TABS, expand);
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("~~~ setting " + SimpleValueNames.EXPAND_TABS + "=" + expand);
+            LOG.fine("Writing " + SimpleValueNames.EXPAND_TABS + "=" + expand);
         }
         updateChanged ();
     }
@@ -99,7 +99,7 @@ final class IndentationModel {
     int getSpacesPerTab() {
         Preferences prefs = MimeLookup.getLookup(EXAMPLE_MIME_TYPE).lookup(Preferences.class);
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("~~~ " + SimpleValueNames.SPACES_PER_TAB + "=" + prefs.get(SimpleValueNames.SPACES_PER_TAB, null));
+            LOG.fine("Reading " + SimpleValueNames.SPACES_PER_TAB + "=" + prefs.get(SimpleValueNames.SPACES_PER_TAB, null));
         }
         return prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4);
     }
@@ -108,8 +108,9 @@ final class IndentationModel {
         assert spaces > 0 : "Invalid 'spaces per tab': " + spaces; //NOI18N
         Preferences prefs = MimeLookup.getLookup(EXAMPLE_MIME_TYPE).lookup(Preferences.class);
         prefs.putInt(SimpleValueNames.SPACES_PER_TAB, spaces);
+        prefs.putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, spaces);
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("~~~ setting " + SimpleValueNames.SPACES_PER_TAB + "=" + spaces);
+            LOG.fine("Writing " + SimpleValueNames.SPACES_PER_TAB + "=" + spaces + " and " + SimpleValueNames.INDENT_SHIFT_WIDTH + "=" + spaces);
         }
         updateChanged();
     }
@@ -117,7 +118,7 @@ final class IndentationModel {
     int getTabSize() {
         Preferences prefs = MimeLookup.getLookup(EXAMPLE_MIME_TYPE).lookup(Preferences.class);
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("~~~ " + SimpleValueNames.TAB_SIZE + "=" + prefs.get(SimpleValueNames.TAB_SIZE, null));
+            LOG.fine("Reading" + SimpleValueNames.TAB_SIZE + "=" + prefs.get(SimpleValueNames.TAB_SIZE, null));
         }
         return prefs.getInt(SimpleValueNames.TAB_SIZE, 4);
     }
@@ -127,7 +128,7 @@ final class IndentationModel {
         Preferences prefs = MimeLookup.getLookup(EXAMPLE_MIME_TYPE).lookup(Preferences.class);
         prefs.putInt(SimpleValueNames.TAB_SIZE, tabSize);
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("~~~ setting " + SimpleValueNames.TAB_SIZE + "=" + tabSize);
+            LOG.fine("Writing " + SimpleValueNames.TAB_SIZE + "=" + tabSize);
         }
         updateChanged ();
     }
@@ -135,7 +136,7 @@ final class IndentationModel {
     Integer getRightMargin () {
         Preferences prefs = MimeLookup.getLookup(EXAMPLE_MIME_TYPE).lookup(Preferences.class);
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("~~~ " + SimpleValueNames.TEXT_LIMIT_WIDTH + "=" + prefs.get(SimpleValueNames.TEXT_LIMIT_WIDTH, null));
+            LOG.fine("Reading " + SimpleValueNames.TEXT_LIMIT_WIDTH + "=" + prefs.get(SimpleValueNames.TEXT_LIMIT_WIDTH, null));
         }
         return prefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80);
     }
@@ -145,7 +146,7 @@ final class IndentationModel {
         Preferences prefs = MimeLookup.getLookup(EXAMPLE_MIME_TYPE).lookup(Preferences.class);
         prefs.putInt(SimpleValueNames.TEXT_LIMIT_WIDTH, textLimit);
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("~~~ setting " + SimpleValueNames.TEXT_LIMIT_WIDTH + "=" + textLimit);
+            LOG.fine("Writing " + SimpleValueNames.TEXT_LIMIT_WIDTH + "=" + textLimit);
         }
         updateChanged ();
     }
@@ -158,6 +159,7 @@ final class IndentationModel {
         if (!changed) return; // no changes
         applyParameterToAll(SimpleValueNames.EXPAND_TABS, isExpandTabs(), "setExpandTabs", Boolean.TYPE); //NOI18N
         applyParameterToAll(SimpleValueNames.SPACES_PER_TAB, getSpacesPerTab(), "setSpacesPerTab", Integer.TYPE); //NOI18N
+        applyParameterToAll(SimpleValueNames.INDENT_SHIFT_WIDTH, getSpacesPerTab(), null, Integer.TYPE); //NOI18N
         applyParameterToAll(SimpleValueNames.TAB_SIZE, getTabSize(), "setTabSize", Integer.TYPE); //NOI18N
         applyParameterToAll(SimpleValueNames.TEXT_LIMIT_WIDTH, getRightMargin(), "setTextLimitWidth", Integer.TYPE); //NOI18N
         
@@ -217,8 +219,8 @@ final class IndentationModel {
                 assert false : "Unexpected setting value: settingName='" + settingName + "', settingValue=" + settingValue; //NOI18N
             }
             
-            if (mimeType.length() > 0) {
-                IndentEngine indentEngine = hacksForBaseOptionsAndIndentEngine(mimeType, settingName, settingValue, settingType);
+            if (mimeType.length() > 0 && baseOptionsSetter != null) {
+                IndentEngine indentEngine = hacksForBaseOptionsAndIndentEngine(mimeType, baseOptionsSetter, settingValue, settingType);
                 if (indentEngine != null) {
                     mimeTypeBoundEngines.add(indentEngine);
                 }
@@ -227,19 +229,20 @@ final class IndentationModel {
         
         // There can be other engines that are not currently hooked up with
         // BaseOptions/mime-type.
-        
-        Collection allEngines = Lookup.getDefault().lookupAll(IndentEngine.class);
-        for (Iterator it = allEngines.iterator(); it.hasNext(); ) {
-            IndentEngine indentEngine = (IndentEngine) it.next();
-            if (!mimeTypeBoundEngines.contains(indentEngine)) {
-                try {
-                    Method method = indentEngine.getClass().getMethod(
-                        baseOptionsSetter,
-                        new Class [] { settingType }
-                    );
-                    method.invoke(indentEngine, new Object [] { settingValue });
-                } catch (Exception e) {
-                    // ignore
+        if (baseOptionsSetter != null) {
+            Collection allEngines = Lookup.getDefault().lookupAll(IndentEngine.class);
+            for (Iterator it = allEngines.iterator(); it.hasNext(); ) {
+                IndentEngine indentEngine = (IndentEngine) it.next();
+                if (!mimeTypeBoundEngines.contains(indentEngine)) {
+                    try {
+                        Method method = indentEngine.getClass().getMethod(
+                            baseOptionsSetter,
+                            new Class [] { settingType }
+                        );
+                        method.invoke(indentEngine, new Object [] { settingValue });
+                    } catch (Exception e) {
+                        // ignore
+                    }
                 }
             }
         }

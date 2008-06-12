@@ -41,14 +41,13 @@
 
 package org.netbeans.modules.editor.indent.api;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.indent.CodeStylePreferences;
@@ -62,6 +61,7 @@ import org.netbeans.modules.editor.indent.IndentImpl;
 public final class IndentUtils {
     
     private static final int MAX_CACHED_INDENT = 80;
+    private static final Logger LOG = Logger.getLogger(IndentUtils.class.getName());
     
     private static final String[] cachedSpacesStrings = new String[MAX_CACHED_INDENT + 1];
     static {
@@ -89,6 +89,15 @@ public final class IndentUtils {
      */
     public static int indentLevelSize(Document doc) {
         Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("INDENT_SHIFT_WIDTH='" + prefs.get(SimpleValueNames.INDENT_SHIFT_WIDTH, null) //NOI18N
+                    + "', EXPAND_TABS='" + prefs.get(SimpleValueNames.EXPAND_TABS, null) //NOI18N
+                    + "', SPACES_PER_TAB='" + prefs.get(SimpleValueNames.SPACES_PER_TAB, null)//NOI18N
+                    + "', TAB_SIZE='" + prefs.get(SimpleValueNames.TAB_SIZE, null) //NOI18N
+                    + "' for " + doc //NOI18N
+            );
+        }
+        
         int indentLevel = prefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, -1);
         
         if (indentLevel <= 0) {
