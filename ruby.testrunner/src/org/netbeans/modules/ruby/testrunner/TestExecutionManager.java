@@ -36,52 +36,84 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ruby.testrunner.ui;
 
-import java.util.List;
-import org.netbeans.modules.ruby.platform.execution.FileLocator;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+package org.netbeans.modules.ruby.testrunner;
+
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.ruby.platform.execution.ExecutionService;
+import org.openide.util.ChangeSupport;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 
 /**
+ * Handles running and re-running of test executions.
  *
  * @author Erno Mononen
  */
-public final class TestRecognizer extends OutputRecognizer {
+public final class TestExecutionManager {
 
-    private final Manager manager;
-    private TestSession session;
-    private final FileLocator fileLocator;
-            
-    private final List<TestRecognizerHandler> handlers;
-
-    public TestRecognizer(Manager manager, FileLocator fileLocator, List<TestRecognizerHandler> handlers) {
-        this.manager = manager;
-        this.fileLocator = fileLocator;
-        this.handlers = handlers;
+    /**
+     * The current execution.
+     */
+    private ExecutionService execution;
+    /**
+     * Indicates whether the current execution has finished.
+     */
+    private boolean finished;
+    private ChangeSupport changeSupport = new ChangeSupport(this);
+    
+    private static final TestExecutionManager INSTANCE = new TestExecutionManager();
+    
+    private TestExecutionManager() {
     }
 
-    @Override
-    public void start() {
-        this.session = new TestSession(fileLocator);
-        manager.testStarted(session);
+    public static TestExecutionManager getInstance() {
+        return INSTANCE;
     }
+    
+    /**
+     * Runs the given <code>executionService</code>.
+     * 
+     * @param executionService
+     */
+    synchronized void start(ExecutionService executionService) {
+        execution = executionService;
+        finished = false;
+        handleTask(execution.run());
+    }
+    
+    private void handleTask(Task task) {
+        // workaround for not being able to attach listeners
+        // directly to execution service
+        task.addTaskListener(new TaskListener() {
 
-    @Override
-    public RecognizedOutput processLine(String line) {
-
-        for (TestRecognizerHandler handler : handlers) {
-            if (handler.matches(line)) {
-                handler.updateUI(manager, session);
-                return handler.getRecognizedOutput();
+            public void taskFinished(Task task) {
+                finished = true;
+                changeSupport.fireChange();
             }
-        }
-
-        manager.displayOutput(session, line, false);
-        return null;
+        });
+        finished = task.isFinished();
+        changeSupport.fireChange();
+    }
+    
+    public synchronized boolean isFinished() {
+        return finished;
+    }
+    
+    /**
+     * Re-runs the last run test execution.
+     */
+    public synchronized void rerun() {
+        finished = false;
+        handleTask(execution.rerun());
     }
 
-    @Override
-    public void finish() {
-        manager.sessionFinished(session);
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
     }
+    
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
+    }
+    
 }
