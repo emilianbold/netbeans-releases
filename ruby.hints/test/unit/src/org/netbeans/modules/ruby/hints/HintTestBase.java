@@ -71,13 +71,13 @@ public abstract class HintTestBase extends RubyTestBase {
         "lib/ruby/1.8/net/http.rb",
         "lib/ruby/1.8/cgi.rb",
         "lib/ruby/1.8/net/imap.rb",
-         // Biggest files in Rails
-        "lib/ruby/gems/1.8/gems/activerecord-2.0.2/test/associations_test.rb",
-        "lib/ruby/gems/1.8/gems/actionmailer-2.0.2/lib/action_mailer/vendor/text-format-0.6.3/text/format.rb",
-        "lib/ruby/gems/1.8/gems/actionpack-2.0.2/test/controller/routing_test.rb",
-        "lib/ruby/gems/1.8/gems/activerecord-2.0.2/lib/active_record/associations.rb",
-        "lib/ruby/gems/1.8/gems/activerecord-2.0.2/lib/active_record/base.rb",
-        "lib/ruby/gems/1.8/gems/actionpack-2.0.2/test/template/date_helper_test.rb",
+         // Some of the biggest files in Rails
+        "lib/ruby/gems/1.8/gems/activerecord-2.1.0/test/cases/associations_test.rb",
+        "lib/ruby/gems/1.8/gems/actionmailer-2.1.0/lib/action_mailer/vendor/text-format-0.6.3/text/format.rb",
+        "lib/ruby/gems/1.8/gems/actionpack-2.1.0/test/controller/routing_test.rb",
+        "lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/associations.rb",
+        "lib/ruby/gems/1.8/gems/activerecord-2.1.0/lib/active_record/base.rb",
+        "lib/ruby/gems/1.8/gems/actionpack-2.1.0/test/template/date_helper_test.rb",
     };
     
     protected List<FileObject> getBigSourceFiles() {

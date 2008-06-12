@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.j2me.cdc.project;
 
+import org.netbeans.modules.j2me.cdc.project.execui.MainClassChooser;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -59,6 +60,7 @@ import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySup
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.MouseUtils;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 
@@ -80,9 +82,12 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
     private VisualPropertySupport vps;
     private ProjectProperties prop;
     
+    private MainClassChooser chooser;
+    
     public CustomizerRun() {
         initComponents();
-        jTextHidden=new javax.swing.JTextField();        
+        jTextHidden=new javax.swing.JTextField();  
+        chooser = Lookup.getDefault().lookup(org.netbeans.modules.j2me.cdc.project.execui.MainClassChooser.class);
     }
     public void initValues(ProjectProperties props, String configuration) {
         vps = VisualPropertySupport.getDefault(props);
@@ -107,7 +112,7 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
         jLabelVMOptions.setEnabled(!useDefault);
         jLabelVMOptionsExample.setEnabled(!useDefault);
         jButtonMainClass.setEnabled(!useDefault);
-        jTextFieldMainClass.setEditable(false);
+        jTextFieldMainClass.setEditable(chooser == null); //enable inserting main, if chooser isi not available
     }
     
     /** This method is called from within the constructor to
@@ -263,30 +268,37 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
         /** Handles button events
          */        
         public void actionPerformed( ActionEvent e ) { 
-            // only chooseMainClassButton can be performed
-            final MainClassChooser panel = new MainClassChooser (prop.getSourceRoot(),
+            if (chooser == null)
+                return; //do nothing
+            
+            chooser.inicialize(prop.getSourceRoot(),
                     CDCProjectUtil.getExecutionModes(prop),(String)prop.get("platform.bootclasspath"));
+            // only chooseMainClassButton can be performed
+//            final MainClassChooser panel = new MainClassChooser (prop.getSourceRoot(),
+//                    CDCProjectUtil.getExecutionModes(prop),(String)prop.get("platform.bootclasspath"));
 
             Object[] options = new Object[] {
                 okButton,
                 DialogDescriptor.CANCEL_OPTION
             };
 
-            panel.setSelectedMainClass(mainClassTextField.getText());
-            panel.addChangeListener (new ChangeListener () {
+            ChangeListener cl = new ChangeListener () {
                public void stateChanged(ChangeEvent e) {
                    if ((e.getSource () instanceof MouseEvent) && 
                            MouseUtils.isDoubleClick (((MouseEvent)e.getSource ())) ) {
                        // click button and finish the dialog with selected class
                        okButton.doClick ();
                    } else {
-                       okButton.setEnabled (panel.getSelectedMainClass () != null);
+                       okButton.setEnabled (chooser.getSelectedMainClass () != null);
                    }
                }
-            });
+            };
+            chooser.setSelectedMainClass(mainClassTextField.getText());
+            
+            chooser.addChangeListener (cl);
             okButton.setEnabled (false);
             DialogDescriptor desc = new DialogDescriptor (
-                panel,
+                chooser,
                 NbBundle.getMessage (CustomizerRun.class, "LBL_ChooseMainClass_Title" ),
                 true, 
                 options, 
@@ -298,12 +310,12 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
             Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
             dlg.setVisible (true);
             if (desc.getValue() == options[0]) {
-               mainClassTextField.setText (panel.getSelectedMainClass ());
-               if (panel.isAppletExecution())
+               mainClassTextField.setText (chooser.getSelectedMainClass ());
+               if (chooser.isAppletExecution())
                {
                    jTextHidden.setText("applet");
                }
-               else if (panel.isXletExecution())
+               else if (chooser.isXletExecution())
                {
                    jTextHidden.setText("xlet");
                }
@@ -312,6 +324,7 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
                    jTextHidden.setText("main");
                }
             } 
+            chooser.removeChangeListener (cl);
             dlg.dispose();
             
         }                

@@ -89,14 +89,14 @@ is the proper place.
 -->
 <apichanges>
     <apidefs>
-        <apidef name="PrintAPI">Print Module API</apidef>
+        <apidef name="PrintAPI">Print API</apidef>
     </apidefs>
 
     <changes>
         <change id="print-initial-version">
             <api name="general"/>
             <summary>Initial version of the Print API</summary>
-            <version major="1" minor="7.0"/>
+            <version major="1" minor="1.1"/>
             <date day="14" month="6" year="2008"/>
             <author login="yaroslavskiy"/>
             <compatibility>
@@ -114,7 +114,7 @@ is the proper place.
     </changes>
 
     <htmlcontents>
-<!--
+    <!--
                             NO NO NO NO NO!
 
          ==============>    DO NOT EDIT ME!  <==============
@@ -122,18 +122,14 @@ is the proper place.
           AUTOMATICALLY GENERATED FROM APICHANGES.XML, DO NOT EDIT
 
                 SEE print/apichanges.xml
--->
-      <head>
-        <title>Change History for the Print module API</title>
-        <link rel="stylesheet" href="prose.css" type="text/css"/>
-      </head>
-      <body>
-        <p class="overviewlink"><a href="overview-summary.html">Overview</a></p>
-        <h1>Introduction</h1>
-        <p>This document lists changes made to the <a href="overview-summary.html">Print API</a></p>
-        <hr/>
-        <standard-changelists module-code-name="print"/>
-        <hr/><p>@FOOTER@</p>
+    -->
+    <head>
+      <title>Change history for the Print API</title>
+      <link rel="stylesheet" href="prose.css" type="text/css"/>
+    </head>
+    <body>
+      <p class="overviewlink"><a href="overview-summary.html">Overview</a></p>
+      <h1>No changes</h1>
     </body>
   </htmlcontents>
 </apichanges>

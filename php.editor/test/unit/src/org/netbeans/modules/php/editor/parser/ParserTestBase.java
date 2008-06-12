@@ -74,17 +74,6 @@ public class ParserTestBase extends GsfTestBase {
         super.tearDown();
     }
     
-    protected static final FileObject copyStringToFileObject(FileObject fo, String content) throws IOException {
-        OutputStream os = fo.getOutputStream();
-        try {
-            InputStream is = new ByteArrayInputStream(content.getBytes("UTF-8"));
-            FileUtil.copy(is, os);
-            return fo;
-        } finally {
-            os.close();
-        }
-    }
-    
     protected void performFileParserTest(String filename) throws Exception {
         // parse the file
         String result = parseFile(new File(getDataDir(), "testfiles/" + filename + ".php"));

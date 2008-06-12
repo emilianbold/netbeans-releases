@@ -48,7 +48,7 @@ public interface CreateFromTemplateAttributesProvider {
      * template instantiation.
      * 
      * @param template the template that is being processed
-     * @param target the destition folder
+     * @param target the destination folder
      * @param name the name of the object to create
      * @return map of named objects, or null
      */

@@ -40,12 +40,9 @@ import java.util.Arrays;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Collections;
-import java.util.StringTokenizer;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JSeparator;
 import org.netbeans.modules.sql.project.SQLproProject;
 
 import org.openide.nodes.*;
@@ -64,14 +61,10 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
-import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.netbeans.modules.compapp.projects.base.ui.IcanproLogicalViewProvider;
 import org.netbeans.modules.sql.project.wsdl.GenFiles;
-import org.netbeans.modules.sql.project.wsdl.ActionImpl;
-import org.netbeans.modules.compapp.projects.base.IcanproConstants;
 import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.Lookup;
 
@@ -199,7 +192,7 @@ public class SQLproLogicalViewProvider implements LogicalViewProvider {
 				generateWSDL(actions);
 				actions.add(null);
                 actions.add(SystemAction.get( org.openide.actions.FindAction.class ));
-				addFromLayers(actions, "Projects/Actions");
+                actions.addAll(Utilities.actionsForPath("Projects/Actions"));
                 actions.add(null);
                 actions.add(brokenLinksAction);
                 actions.add(CommonProjectActions.customizeProjectAction());
@@ -234,17 +227,6 @@ public class SQLproLogicalViewProvider implements LogicalViewProvider {
             )};*/
         }
 
-        private void addFromLayers(List<Action> actions, String path) {
-            Lookup look = Lookups.forPath(path);
-            for (Object next : look.lookupAll(Object.class)) {
-                if (next instanceof Action) {
-                    actions.add((Action) next);
-                } else if (next instanceof JSeparator) {
-                    actions.add(null);
-                }
-            }
-        }  
-        
         private void generateWSDL(List<Action> actions) {
         	Object genFiles = SystemAction.findObject(GenFiles.class, true);
         	try {
