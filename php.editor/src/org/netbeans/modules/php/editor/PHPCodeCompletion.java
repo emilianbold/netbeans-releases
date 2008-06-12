@@ -893,7 +893,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             if(t.id() == PHPTokenId.PHP_OBJECT_OPERATOR
                     || t.id() == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM
                     || t.id() == PHPTokenId.PHP_TOKEN && lastChar == '$'
-                    || t.id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING && lastChar == '$') {
+                    || t.id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING && lastChar == '$'
+                    || t.id() == PHPTokenId.PHPDOC_COMMENT && lastChar == '@') {
                 return QueryType.ALL_COMPLETION;
             }
             
