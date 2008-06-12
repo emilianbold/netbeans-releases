@@ -52,11 +52,8 @@ import javax.swing.JButton;
 import javax.swing.table.TableModel;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OptionsOperator;
-import org.netbeans.jellytools.properties.Property;
-import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.drivers.lists.JTabAPIDriver;
 import org.netbeans.jemmy.operators.*;
 
 /**

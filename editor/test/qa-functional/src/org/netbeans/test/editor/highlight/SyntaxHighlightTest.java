@@ -67,7 +67,7 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.editor.lib2.highlighting.SyntaxHighlighting;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
-import org.netbeans.test.editor.LineDiff;
+import org.netbeans.test.editor.lib.LineDiff;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
