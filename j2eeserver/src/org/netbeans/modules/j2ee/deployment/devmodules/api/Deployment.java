@@ -86,6 +86,8 @@ import org.openide.util.Parameters;
  */
 public final class Deployment {
 
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(Deployment.class.getName());
+            
     private static boolean alsoStartTargets = true;    //TODO - make it a property? is it really needed?
     
     private static Deployment instance = null;
@@ -514,6 +516,8 @@ public final class Deployment {
         if (j2eeProvider instanceof J2eeApplicationProvider) {
             Collections.addAll(providers, ((J2eeApplicationProvider) j2eeProvider).getChildModuleProviders());
         }
+        
+        List<URL> urls = new ArrayList<URL>();
         for (J2eeModuleProvider provider : providers) {
             for (FileObject file : provider.getSourceFileMap().getSourceRoots()) {         
                 try {
@@ -521,7 +525,11 @@ public final class Deployment {
                     for (URL binary : binaries) {
                         FileObject object = URLMapper.findFileObject(binary);
                         if (object != null) {
-                            BuildArtifactMapper.addArtifactsUpdatedListener(file.getURL(), new ArtifactsUpdatedListenerImpl(j2eeProvider));
+                            URL url = URLMapper.findURL(file, URLMapper.EXTERNAL); 
+                            if (url != null) {
+                                urls.add(url);
+                            }
+                            //BuildArtifactMapper.addArtifactsUpdatedListener(file.getURL(), new ArtifactsUpdatedListenerImpl(j2eeProvider));
                         }
                     }
                 } catch (IOException ex) {
@@ -529,20 +537,43 @@ public final class Deployment {
                 }
             }
         }
+        
+        ArtifactsUpdatedListenerImpl listener = new ArtifactsUpdatedListenerImpl(j2eeProvider, urls);
+        for (URL url :urls) {
+            BuildArtifactMapper.addArtifactsUpdatedListener(url, listener);
+        }
     }
     
     private static final class ArtifactsUpdatedListenerImpl implements ArtifactsUpdated {
 
         private final J2eeModuleProvider provider;
 
-        public ArtifactsUpdatedListenerImpl(J2eeModuleProvider provider) {
+        private final List<URL> registered;
+        
+        public ArtifactsUpdatedListenerImpl(J2eeModuleProvider provider, List<URL> registered) {
             this.provider = provider;
+            this.registered = registered;
         }
         
         public void artifactsUpdated(Iterable<File> artifacts) {
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                StringBuilder builder = new StringBuilder("Artifacts updated: [");
+                for (File file : artifacts) {
+                    builder.append(file.getAbsolutePath()).append(",");
+                }
+                builder.setLength(builder.length() - 1);
+                builder.append("]");
+                LOGGER.log(Level.FINEST, builder.toString());
+            }
+            
             DeploymentTargetImpl deploymentTarget = new DeploymentTargetImpl(provider, null);
             TargetServer server = new TargetServer(deploymentTarget);
-            server.notifyArtifactsUpdated(artifacts);
+            boolean keep = server.notifyArtifactsUpdated(artifacts);
+            if (!keep) {
+                for (URL url : registered) {
+                    BuildArtifactMapper.removeArtifactsUpdatedListener(url, this);
+                }
+            }
         }
         
     }    
