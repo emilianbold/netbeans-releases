@@ -330,7 +330,7 @@ public final class ClassPathSupport {
     }
     
     public static boolean isVariableBasedReference(String ref) {
-        return ref != null && ref.startsWith("${var.");
+        return ref != null && ref.startsWith("${var."); // NOI18N
     }
         
     // Innerclasses ------------------------------------------------------------
@@ -737,8 +737,6 @@ public final class ClassPathSupport {
             RelativePath rp = (RelativePath)object;
             rp.filePath = value;
             
-            //TODO these should be encapsulated in the Item class 
-            // but that means we need to pass evaluator and antProjectHelper there.
             String ref = getSourceProperty();
             if (ref != null) {
                 value = ep.getProperty(ref);
@@ -856,22 +854,16 @@ public final class ClassPathSupport {
         private final File base;
         private final File resolvedFile;
 
-        private RelativePath(String filePath, File base, File resolvedFile) {
+        private RelativePath(String filePath, File base) {
             Parameters.notNull("filePath", filePath);
-            if (base == null && resolvedFile == null) {
-                throw new NullPointerException("one of base or resolvedFile mus be non-null");
-            }
+            Parameters.notNull("base", base);
             this.filePath = filePath;
             this.base = base;
-            this.resolvedFile = resolvedFile != null ? resolvedFile : PropertyUtils.resolveFile(base, filePath);
+            this.resolvedFile = PropertyUtils.resolveFile(base, filePath);
         }
 
         public static RelativePath createRelativePath(String filePath, File base) {
-            return new RelativePath(filePath, base, null);
-        }
-        
-        public static RelativePath createVariableBasedPath(String filePath, File resolveFile) {
-            return new RelativePath(filePath, null, resolveFile);
+            return new RelativePath(filePath, base);
         }
         
         public String getFilePath() {
@@ -884,7 +876,7 @@ public final class ClassPathSupport {
 
         @Override
         public int hashCode() {
-            return filePath.hashCode() + resolvedFile.hashCode();
+            return filePath.hashCode() + base.hashCode();
         }
 
         @Override
@@ -893,7 +885,7 @@ public final class ClassPathSupport {
                 return false;
             }
             RelativePath other = (RelativePath)obj;
-            return filePath.equals(other.filePath) && resolvedFile.equals(other.resolvedFile);
+            return filePath.equals(other.filePath) && base.equals(other.base);
         }
         
     }

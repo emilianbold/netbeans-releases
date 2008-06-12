@@ -103,6 +103,7 @@ public class FileChooserAccessory extends javax.swing.JPanel
         } else {
             rbAbsolute.setSelected(true);
         }
+        enableVariableBasedSelection(enableVariableBasedSelection);
     }
     
     /**
@@ -140,6 +141,7 @@ public class FileChooserAccessory extends javax.swing.JPanel
             rbCopy.setVisible(false);
             copyTo.setVisible(false);
         }
+        enableVariableBasedSelection(enableVariableBasedSelection);
     }
 
     public void enableVariableBasedSelection(boolean enable) {
@@ -284,10 +286,13 @@ public class FileChooserAccessory extends javax.swing.JPanel
         StringBuffer variable = new StringBuffer();
         boolean isRelative = true;
         for (File file : files) {
+            String varPath = getVariablesModel().getRelativePath(file, true);
             if (absolute.length() != 0) {
                 absolute.append(", ");
                 relative.append(", ");
-                variable.append(", ");
+                if (varPath != null) {
+                    variable.append(", ");
+                }
             }
             absolute.append(file.getAbsolutePath());
             String s = PropertyUtils.relativizeFile(baseFolder, file);
@@ -296,7 +301,6 @@ public class FileChooserAccessory extends javax.swing.JPanel
             }
             relative.append(s);
             
-            String varPath = getVariablesModel().getRelativePath(file, true);
             if (varPath != null) {
                 variable.append(varPath);
             }

@@ -85,9 +85,9 @@ public class VariablesPanel extends javax.swing.JPanel implements ExplorerManage
         JPanel inset = new JPanel(new BorderLayout());
         inset.setBorder(new EmptyBorder(12,12,0,12));
         inset.add(this);
-        DialogDescriptor dd = new DialogDescriptor(inset, NbBundle.getMessage(VariablesPanel.class, "TITLE_Manage_Variables"));
+        DialogDescriptor dd = new DialogDescriptor(inset, NbBundle.getMessage(VariablesPanel.class, "TITLE_Manage_Variables")); // NOI18N
         dd.setModal(true);
-        final JButton ok = new JButton(NbBundle.getMessage(VariablesPanel.class, "BUTTON_OK"));
+        final JButton ok = new JButton(NbBundle.getMessage(VariablesPanel.class, "BUTTON_OK")); // NOI18N
         ok.setDefaultCapable(true);
         explorer.addPropertyChangeListener(new PropertyChangeListener() {
            public void propertyChange(PropertyChangeEvent evt) {
@@ -178,7 +178,7 @@ public class VariablesPanel extends javax.swing.JPanel implements ExplorerManage
 
 private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
     VariablePanel p = new VariablePanel(model, null);
-    DialogDescriptor dd = new DialogDescriptor (p, NbBundle.getMessage(VariablesPanel.class, "DIALOG_Add_New_Variable"),
+    DialogDescriptor dd = new DialogDescriptor (p, NbBundle.getMessage(VariablesPanel.class, "DIALOG_Add_New_Variable"), // NOI18N
         true, DialogDescriptor.OK_CANCEL_OPTION, null, null);
     p.setDialogDescriptor(dd);
     Dialog dlg = DialogDisplayer.getDefault().createDialog (dd);
@@ -200,7 +200,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
     Variable var = explorer.getSelectedNodes()[0].getLookup().lookup(Variable.class);
     VariablePanel p = new VariablePanel(model, var);
-    DialogDescriptor dd = new DialogDescriptor (p, NbBundle.getMessage(VariablesPanel.class, "DIALOG_Edit_Variable"),
+    DialogDescriptor dd = new DialogDescriptor (p, NbBundle.getMessage(VariablesPanel.class, "DIALOG_Edit_Variable"), // NOI18N
         true, DialogDescriptor.OK_CANCEL_OPTION, null, null);
     p.setDialogDescriptor(dd);
     Dialog dlg = DialogDisplayer.getDefault().createDialog (dd);

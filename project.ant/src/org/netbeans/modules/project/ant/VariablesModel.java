@@ -184,7 +184,7 @@ public class VariablesModel {
 
         @Override
         public String toString() {
-            return "var["+getName()+"="+getValue().getAbsolutePath()+"]";
+            return "var["+getName()+"="+getValue().getAbsolutePath()+"]"; // NOI18N
         }
         
         

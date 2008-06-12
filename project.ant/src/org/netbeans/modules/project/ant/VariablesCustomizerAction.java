@@ -58,7 +58,7 @@ public class VariablesCustomizerAction extends CallableSystemAction {
     }
 
     public String getName() {
-        return NbBundle.getBundle(VariablesCustomizerAction.class).getString("ACTION_NAME_Variables");
+        return NbBundle.getBundle(VariablesCustomizerAction.class).getString("ACTION_NAME_Variables"); // NOI18N
     }
 
     public HelpCtx getHelpCtx() {

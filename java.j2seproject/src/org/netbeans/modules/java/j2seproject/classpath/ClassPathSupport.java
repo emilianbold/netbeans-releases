@@ -655,8 +655,6 @@ public class ClassPathSupport {
             String value = ep.getProperty(CommonProjectUtils.getAntPropertyName(getReference()));
             object = value;
 
-            //TODO these should be encapsulated in the Item class 
-            // but that means we need to pass evaluator and antProjectHelper there.
             String ref = getSourceProperty();
             if (ref != null) {
                 value = ep.getProperty(ref);

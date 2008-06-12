@@ -50,9 +50,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JList;
 
 import org.netbeans.api.java.platform.PlatformsCustomizer;
-import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ui.VariablesSupport;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.filesystems.FileUtil;

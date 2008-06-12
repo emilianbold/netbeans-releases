@@ -188,7 +188,7 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
                                 if (filePath2.startsWith("${var.")) { // NOI18N
                                     filePath2 = eval.evaluate(filePath);
                                 }
-                                ClassPathSupport.Item item = ClassPathSupport.Item.create( filePath2, projectFolderFile, null, filePath.startsWith("${var.") ? filePath : null);
+                                ClassPathSupport.Item item = ClassPathSupport.Item.create( filePath2, projectFolderFile, null, filePath.startsWith("${var.") ? filePath : null); // NOI18N
                                 cpUiSupportCallback.initItem(item);
                                 if ((operation == ADD || operation == ADD_NO_HEURISTICS) && !resources.contains(item)) {
                                     resources.add (item);
