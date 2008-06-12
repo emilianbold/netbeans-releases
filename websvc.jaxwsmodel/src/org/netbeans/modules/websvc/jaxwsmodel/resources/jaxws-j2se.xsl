@@ -144,9 +144,6 @@ made subject to such option by the copyright holder.
                             <produces dir="${{build.generated.dir}}/wsimport/client/{$package_path}" includes="{$wsname}.java" casesensitive="no"/>
                         </wsimport>
                     </xsl:if>
-                    <copy todir="${{build.classes.dir}}">
-                        <fileset dir="${{build.generated.dir}}/wsimport/client" includes="**/*.xml"/>
-                    </copy>
                 </target>
                 <target name="wsimport-client-clean-{$wsname}" depends="-init-project">
                     <delete dir="${{build.generated.dir}}/wsimport/client/{$package_path}"/>
@@ -167,6 +164,9 @@ made subject to such option by the copyright holder.
                 <target name="wsimport-client-compile" depends="-pre-pre-compile">
                     <j2seproject3:depend srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{libs.jaxws21.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
                     <j2seproject3:javac srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{libs.jaxws21.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
+                    <copy todir="${{build.classes.dir}}">
+                        <fileset dir="${{build.generated.dir}}/wsimport/client" includes="**/*.xml"/>
+                    </copy>
                 </target>
                 
             </xsl:if>
