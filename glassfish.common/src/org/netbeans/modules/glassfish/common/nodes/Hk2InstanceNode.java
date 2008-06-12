@@ -59,7 +59,7 @@ import org.netbeans.modules.glassfish.common.actions.ViewAdminConsoleAction;
 import org.netbeans.modules.glassfish.common.actions.ViewUpdateCenterAction;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesAction;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
-import org.netbeans.spi.glassfish.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.Mutex;

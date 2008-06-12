@@ -37,7 +37,7 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.spi.glassfish;
+package org.netbeans.modules.glassfish.spi;
 
 import java.io.File;
 import java.util.Map;

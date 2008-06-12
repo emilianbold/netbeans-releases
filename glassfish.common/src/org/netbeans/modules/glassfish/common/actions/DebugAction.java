@@ -42,8 +42,8 @@
 package org.netbeans.modules.glassfish.common.actions;
 
 import java.awt.event.ActionEvent;
-import org.netbeans.spi.glassfish.GlassfishModule;
-import org.netbeans.spi.glassfish.GlassfishModule.ServerState;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;

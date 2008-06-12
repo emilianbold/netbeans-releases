@@ -2,10 +2,10 @@ package org.netbeans.modules.bpel.mapper.model;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.editors.api.EditorUtil;
-import org.netbeans.modules.bpel.mapper.cast.AbstractPseudoComp;
 import org.netbeans.modules.bpel.mapper.cast.PseudoCompManager;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
@@ -41,6 +41,7 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContextHolder;
 import org.netbeans.modules.xml.xpath.ext.schema.FindChildrenSchemaVisitor;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
 
 /**
  *
@@ -385,7 +386,7 @@ public final class BpelMapperUtils {
             PseudoCompManager pseudoManager = PseudoCompManager.
                     getPseudoCompManager(bpelMapperModel, leftTree);
             if (pseudoManager != null) {
-                AbstractPseudoComp pseudo = pseudoManager.getPseudoComp(
+                XPathPseudoComp pseudo = pseudoManager.getPseudoComp(
                         compLocationPath, true, 
                         soughtName, soughtNamespace, isAttribute);
                 return pseudo != null;
@@ -394,5 +395,25 @@ public final class BpelMapperUtils {
         //
         return false;
     }
+    
+    /**
+     * Returns a variable, which is the first in the location path
+     * @param itrb
+     * @return
+     */
+    public static VariableDeclaration getBaseVariable(Iterable<Object> location) {
+        Iterator itr = location.iterator();
+        while (itr.hasNext()) {
+            Object obj = itr.next();
+            if (obj instanceof VariableDeclaration) {
+                return (VariableDeclaration)obj;
+            }
+        }
+        //
+        return null;
+    }
+    
+
+            
     
 }

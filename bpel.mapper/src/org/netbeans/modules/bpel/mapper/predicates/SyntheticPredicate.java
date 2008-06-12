@@ -19,8 +19,8 @@
 
 package org.netbeans.modules.bpel.mapper.predicates;
 
-import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 
 /**
@@ -50,8 +50,8 @@ public class SyntheticPredicate extends AbstractPredicate {
         return mPredicateArr;
     }
     
-    public SchemaComponent getSComponent() {
-        return XPathSchemaContext.Utilities.getSchemaComp(mSContext);
+    public SchemaCompHolder getSCompHolder() {
+        return XPathSchemaContext.Utilities.getSchemaCompHolder(mSContext);
     }
     
     public void setPredicates(XPathPredicateExpression[] newPArr) {

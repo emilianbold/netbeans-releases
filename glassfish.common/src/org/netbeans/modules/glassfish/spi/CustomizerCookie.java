@@ -37,88 +37,26 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.spi.glassfish;
+package org.netbeans.modules.glassfish.spi;
 
-import java.awt.Image;
+import java.util.Collection;
+import javax.swing.JPanel;
 
 /**
  *
  * @author Peter Williams
  */
-public abstract class Decorator {
+public interface CustomizerCookie {
+    
+    /**
+     * Called when the the server instance customizer is being displayed.
+     * 
+     * Addon modules should implement this if they need to provide any pages on
+     * the server instance customizer.
+     * 
+     * @return Collection of JPanels which will be displayed as tabs on the
+     *   customizer.
+     */
+    public Collection<JPanel> getCustomizerPages();
 
-    /**
-     * Returns the badge to be used to decorate the default icon for this node.
-     * 
-     * @return badge to apply to default icon for this node.
-     */
-    public Image getIconBadge() {
-        return null;
-    }
-
-    /**
-     * Find an icon for this node (closed).
-     * 
-     * @param type constant from BeanInfo
-     * @return icon used to represent the node
-     */
-    public Image getIcon(int type) {
-        return null;
-    }
-    
-    /**
-     * Find an icon for this node (opened).
-     * 
-     * @param type constant from BeanInfo
-     * @return icon used to represent the node
-     */
-    public Image getOpenedIcon(int type) {
-        return null;
-    }
-    
-    /**
-     * Should a refresh action be displayed for this node.
-     * 
-     * @return true if refresh is supported.
-     */
-    public boolean isRefreshable() {
-        return false;
-    }
-    
-    /**
-     * Can this node be deployed to?
-     * 
-     * @return true if deploy is supported (typically folder or instance nodes only.)
-     */
-    public boolean canDeployTo() {
-        return false;
-    }
-    
-    /**
-     * Can this node be undeployed?
-     * 
-     * @return true if undeploy is supported.
-     */
-    public boolean canUndeploy() {
-        return false;
-    }
-
-    /**
-     * Can this node be undeployed?
-     * 
-     * @return true if undeploy is supported.
-     */
-    public boolean canUnregister() {
-        return false;
-    }
-
-    /**
-     * Can this node be executed to show a browser page?
-     * 
-     * @return true if can be shown by a browser.
-     */
-    public boolean canShowBrowser() {
-        return false;
-    }
-    
 }

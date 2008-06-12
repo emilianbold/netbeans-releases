@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.spi.glassfish;
+package org.netbeans.modules.glassfish.spi;
 
 import java.io.BufferedInputStream;
 import java.io.File;

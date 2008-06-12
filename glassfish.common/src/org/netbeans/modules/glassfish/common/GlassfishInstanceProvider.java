@@ -50,7 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
-import org.netbeans.spi.glassfish.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.filesystems.FileObject;
