@@ -56,6 +56,7 @@ import org.netbeans.jellytools.actions.FindAction;
 import org.netbeans.jellytools.modules.editor.Find;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
+import org.netbeans.test.editor.lib.EditorTestCase;
 
 /**
  * Basic Editor Find and Replace Tests
@@ -64,7 +65,7 @@ import org.netbeans.jemmy.operators.JEditorPaneOperator;
  */
 
 
-public class SearchAndReplaceTest extends org.netbeans.test.editor.lib.EditorTestCase{
+public class SearchAndReplaceTest extends EditorTestCase{
     
     // private PrintStream wrapper for System.out
     private PrintStream systemOutPSWrapper = new PrintStream(System.out);

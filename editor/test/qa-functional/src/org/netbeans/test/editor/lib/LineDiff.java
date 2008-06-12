@@ -45,7 +45,7 @@
  * Created on March 28, 2002, 9:49 AM
  */
 
-package org.netbeans.test.editor;
+package org.netbeans.test.editor.lib;
 
 import org.netbeans.junit.diff.Diff;
 import java.io.File;
