@@ -107,6 +107,22 @@ is the proper place.
 
     <changes>
 
+        <change id="AntScriptUtils">
+            <api name="general"/>
+            <summary>Added <code>AntScriptUtils</code></summary>
+            <version major="3" minor="31"/>
+            <date day="12" month="6" year="2008"/>
+            <author login="jglick"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added a new convenience class for getting some common information from Ant scripts.
+                </p>
+            </description>
+            <class package="org.apache.tools.ant.module.api.support" name="AntScriptUtils"/>
+            <issue number="136597"/>
+        </change>
+
         <change id="AntEvent-references">
             <api name="general"/>
             <summary>Ant loggers can now inspect Ant reference objects</summary>
