@@ -78,7 +78,7 @@ public final class TestExecutionManager {
      */
     synchronized void start(ExecutionService executionService) {
         execution = executionService;
-        finished = false;
+        setFinished(false);
         handleTask(execution.run());
     }
     
@@ -88,23 +88,31 @@ public final class TestExecutionManager {
         task.addTaskListener(new TaskListener() {
 
             public void taskFinished(Task task) {
-                finished = true;
-                changeSupport.fireChange();
+                setFinished(true);
             }
         });
-        finished = task.isFinished();
-        changeSupport.fireChange();
+        setFinished(task.isFinished());
     }
     
+    /**
+     * Checks whether the current execution is finished.
+     * 
+     * @return true if the current execution has finished, 
+     * false otherwise.
+     */
     public synchronized boolean isFinished() {
         return finished;
     }
     
+    private void setFinished(boolean finished) {
+        this.finished = finished;
+        changeSupport.fireChange();
+    }
     /**
      * Re-runs the last run test execution.
      */
     public synchronized void rerun() {
-        finished = false;
+        setFinished(false);
         handleTask(execution.rerun());
     }
 
