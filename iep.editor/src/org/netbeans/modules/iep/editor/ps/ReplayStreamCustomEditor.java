@@ -447,10 +447,7 @@ public class ReplayStreamCustomEditor extends DefaultCustomEditor {
                     
                     List<ColumnInfo> remainingColumns = new ArrayList<ColumnInfo>(columns);
                     Set<String> usedupNames = new HashSet<String>();
-                    for(int i = 0; i < SharedConstants.RESERVED_COLUMN_NAMES.length; i++) {
-                        usedupNames.add(RESERVED_COLUMN_NAMES[i]);
-                        
-                    }
+                    
                     
                     int counter = 0;
                     //go through user selected columns
