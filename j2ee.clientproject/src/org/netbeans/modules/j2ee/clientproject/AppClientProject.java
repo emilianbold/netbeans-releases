@@ -325,6 +325,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             QuerySupport.createTemplateAttributesProvider(helper, encodingQuery),
             new RecommendedTemplatesImpl(this.updateHelper),
             classPathExtender,
+            cpMod,
             buildExtender,
             AppClientProject.this, // never cast an externally obtained Project to AppClientProject - use lookup instead
             new AppClientProjectOperations(this),
