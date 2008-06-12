@@ -360,7 +360,7 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                                 }
                                 filePaths[i] = f.getPath();
                             }
-                            WarIncludesUiSupport.addJarFiles(filePaths, projectFolderFile, addModel);
+                            WarIncludesUiSupport.addJarFiles(filePaths, projectFolderFile, null, addModel);
                             int count = addModel.getRowCount();
                             for (int i = 0; i < filePaths.length; i++) {
                                 ClassPathSupport.Item item = (ClassPathSupport.Item) addModel.getValueAt(count - i - 1, 0);
@@ -399,7 +399,7 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                                 if (f == null ) {
                                     throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
                                 }
-                                ClassPathSupport.Item item = ClassPathSupport.Item.create( f.getPath(), projectFolderFile, null);
+                                ClassPathSupport.Item item = ClassPathSupport.Item.create( f.getPath(), projectFolderFile, null, null);
                                 item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, path);
                                 if (resources.contains(item)) {
                                     resources.remove(item);
@@ -462,7 +462,7 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                             if (f == null ) {
                                 throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
                             }
-                            ClassPathSupport.Item item = ClassPathSupport.Item.create( f.getPath(), projectFolderFile, null);
+                            ClassPathSupport.Item item = ClassPathSupport.Item.create( f.getPath(), projectFolderFile, null, null);
                             if (operation == ADD && !resources.contains(item)) {
                                 resources.add(item);
                                 changed = true;
