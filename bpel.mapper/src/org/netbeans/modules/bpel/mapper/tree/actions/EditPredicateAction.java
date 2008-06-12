@@ -22,6 +22,7 @@ package org.netbeans.modules.bpel.mapper.tree.actions;
 import java.awt.event.ActionEvent;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.cast.CastManager;
+import org.netbeans.modules.bpel.mapper.cast.PseudoCompManager;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PredicateEditor;
@@ -29,9 +30,8 @@ import org.netbeans.modules.bpel.mapper.predicates.editor.PredicateMapperModelFa
 import org.netbeans.modules.bpel.mapper.predicates.editor.PredicateUpdater;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
-import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.openide.util.NbBundle;
 
 /**
@@ -39,7 +39,7 @@ import org.openide.util.NbBundle;
  *
  * @author nk160297
  */
-public class EditPredicateAction extends MapperAction<RestartableIterator<Object>> {
+public class EditPredicateAction extends MapperAction<Iterable<Object>> {
     
     private static final long serialVersionUID = 1L;
     
@@ -48,8 +48,8 @@ public class EditPredicateAction extends MapperAction<RestartableIterator<Object
     
     public EditPredicateAction(MapperTcContext mapperTcContext, 
             boolean inLeftTree, TreePath treePath, 
-            RestartableIterator<Object> doItr) {
-        super(mapperTcContext, doItr);
+            Iterable<Object> doItrb) {
+        super(mapperTcContext, doItrb);
         mTreePath = treePath;
         mInLeftTree = inLeftTree;
         postInit();
@@ -62,27 +62,28 @@ public class EditPredicateAction extends MapperAction<RestartableIterator<Object
     }
     
     public void actionPerformed(ActionEvent e) {
-        RestartableIterator<Object> itr = getActionSubject();
-        itr.restart();
-        Object nextObj = itr.next();
+        Iterable<Object> itrb = getActionSubject();
+        Object nextObj = itrb.iterator().next();
         assert nextObj instanceof AbstractPredicate;
         AbstractPredicate pred = (AbstractPredicate)nextObj;
         //
         XPathSchemaContext sContext = pred.getSchemaContext();
         if (sContext == null) {
-            sContext = PathConverter.constructContext(itr);
+            sContext = PathConverter.constructContext(itrb, false);
         }
         //
         // Create new mapper TC context
         MapperTcContext wrapper = new MapperTcContext.Wrapper(mMapperTcContext);
         //
-        // Obtain CastManager from the main mapper's left tree
+        // Obtain CastManager and PseudoCompManager from the main mapper's left tree
         MapperModel mm = getContext().getMapper().getModel();
         CastManager castManager = CastManager.getCastManager((BpelMapperModel)mm, true);
+        PseudoCompManager pseudoCompManager = 
+                PseudoCompManager.getPseudoCompManager((BpelMapperModel)mm, true);
         //
         PredicateMapperModelFactory modelFactory = new PredicateMapperModelFactory();
         BpelMapperModel predMModel = modelFactory.constructModel(
-                wrapper, sContext, pred, castManager);
+                wrapper, sContext, pred, castManager, pseudoCompManager);
         //
         PredicateEditor editor = new PredicateEditor(sContext, pred, predMModel);
         wrapper.setMapper(editor.getMapper());

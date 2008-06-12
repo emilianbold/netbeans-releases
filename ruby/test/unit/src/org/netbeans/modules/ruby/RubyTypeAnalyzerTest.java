@@ -139,10 +139,10 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
 //        assertEquals("Product", instance.getType("@product"));
 //    }
 
-    public void testComplex2() throws Exception {
-        RubyTypeAnalyzer instance = getAnalyzer("testfiles/types3.rb", "^caret", true);
-        assertEquals("ActiveRecord::ConnectionAdapters::TableDefinition", instance.getType("t"));
-    }
+//    public void testComplex2() throws Exception {
+//        RubyTypeAnalyzer instance = getAnalyzer("testfiles/types3.rb", "^caret", true);
+//        assertEquals("ActiveRecord::ConnectionAdapters::TableDefinition", instance.getType("t"));
+//    }
 
     //public void testComplex3() throws Exception {
     //    // XXX TODO 

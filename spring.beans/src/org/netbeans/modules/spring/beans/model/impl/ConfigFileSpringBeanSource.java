@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,14 +57,17 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.api.beans.model.Location;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
+import org.netbeans.modules.spring.api.beans.model.SpringBeanProperty;
 import org.netbeans.modules.spring.beans.BeansAttributes;
 import org.netbeans.modules.spring.beans.BeansElements;
+import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.spring.beans.model.SpringBeanSource;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -135,6 +139,8 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
 
         private final File file;
         private final Document document;
+        
+        private static final String REF_SUFFIX = "-ref"; // NOI18N
 
         public DocumentParser(File file, Document document) {
             this.file = file;
@@ -185,7 +191,8 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
             String factoryMethod = getTrimmedAttr(node, BeansAttributes.FACTORY_METHOD); 
             Tag tag = (Tag)node;
             Location location = new ConfigFileLocation(file, tag.getElementOffset());
-            ConfigFileSpringBean bean = new ConfigFileSpringBean(id, names, clazz, parent, factoryBean, factoryMethod, location);
+            Set<SpringBeanProperty> properties = parseBeanProperties(node);
+            ConfigFileSpringBean bean = new ConfigFileSpringBean(id, names, clazz, parent, factoryBean, factoryMethod, properties, location);
             if (id != null) {
                 addBeanID(id, bean);
             }
@@ -193,6 +200,39 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
                 addBeanName(each, bean);
             }
             beans.add(bean);
+        }
+        
+        private Set<SpringBeanProperty> parseBeanProperties(Node node) {
+            Map<String, SpringBeanProperty> name2Properties = new HashMap<String, SpringBeanProperty>();
+            NodeList nl = node.getChildNodes();
+            for(int i=0; i < nl.getLength(); i++) {
+                Node n = nl.item(i);
+                if(BeansElements.PROPERTY.equals(n.getNodeName())) {
+                    String name = getTrimmedAttr(n, BeansAttributes.NAME);
+                    if(StringUtils.hasText(name) && !name2Properties.containsKey(name)) {
+                        name2Properties.put(name, new ConfigFileSpringBeanProperty(name));
+                    }
+                }
+            }
+            
+            // P Namespace items
+            String prefix = SpringXMLConfigEditorUtils.getPNamespacePrefix(document, ((Tag)node).getElementOffset());
+            if(prefix != null) {
+                NamedNodeMap attribs = node.getAttributes();
+                for(int i = 0; i < attribs.getLength(); i++) {
+                    Node attribNode = attribs.item(i);
+                    String attribName = attribNode.getNodeName();
+                    if(attribName.length() > prefix.length() + 1 && prefix.equals(ContextUtilities.getPrefixFromNodeName(attribName))) {
+                        int endIndex = attribName.endsWith(REF_SUFFIX) ? attribName.lastIndexOf(REF_SUFFIX) : attribName.length(); 
+                        String name = attribName.substring(prefix.length() + 1, endIndex);
+                        if(StringUtils.hasText(name) && !name2Properties.containsKey(name)) {
+                            name2Properties.put(name, new ConfigFileSpringBeanProperty(name));
+                        }
+                    }
+                }
+            }
+            
+            return Collections.unmodifiableSet(new HashSet<SpringBeanProperty>(name2Properties.values()));
         }
 
         private void addBeanID(String id, ConfigFileSpringBean bean) {

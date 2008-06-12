@@ -59,7 +59,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>createXMLHttpRequest</String> = <Fun
 	catch (e) { req = null;	}
 
 	if (!req)
-		<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Failed to create an XMLHttpRequest object!"</String> )</Spry.Debug.reportError>;
+		<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"Failed to create an XMLHttpRequest object!"</String> )</Spry.Debug.reportError>;
 
 	return req;
 }</Function>;
@@ -71,7 +71,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>loadURL</String> = <Function>functio
 	<Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.<String>url</String> = url;
 	<Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.<String>async</String> = async;
 	<Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.<String>successCallback</String> = callback;
-	<Spry.Utils.setOptions>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.setOptions>setOptions</Spry.Utils.setOptions>(<Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>, opts)</Spry.Utils.setOptions>;
+	<Spry.Utils.setOptions>Spry.<Spry.Utils>Utils</Spry.Utils>.<void>setOptions</void>(<Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>, opts)</Spry.Utils.setOptions>;
 	
 	try
 	{
@@ -79,10 +79,10 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>loadURL</String> = <Function>functio
 		if (!<Spry.Utils.loadURL.Request.xhRequest><Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.xhRequest</Spry.Utils.loadURL.Request.xhRequest>)
 			return null;
 
-		if (<Spry.Utils.loadURL.Request.async><Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.async</Spry.Utils.loadURL.Request.async>)
-			<Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.<Spry.Utils.loadURL.Request.xhRequest>xhRequest</Spry.Utils.loadURL.Request.xhRequest>.<String>onreadystatechange</String> = <Function>function() { <Spry.Utils.loadURL.callback>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.loadURL>loadURL</Spry.Utils.loadURL>.<Spry.Utils.loadURL.callback>callback</Spry.Utils.loadURL.callback>(req)</Spry.Utils.loadURL.callback>; }</Function>;
+		if (<Boolean><Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.async</Boolean>)
+			<Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.<Spry.Utils.loadURL.Request.xhRequest>xhRequest</Spry.Utils.loadURL.Request.xhRequest>.<String>onreadystatechange</String> = <Function>function() { <Spry.Utils.loadURL.callback>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.loadURL>loadURL</Spry.Utils.loadURL>.<void>callback</void>(req)</Spry.Utils.loadURL.callback>; }</Function>;
 
-		<Spry.Utils.loadURL.Request.xhRequest.open><Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.<Spry.Utils.loadURL.Request.xhRequest>xhRequest</Spry.Utils.loadURL.Request.xhRequest>.<Spry.Utils.loadURL.Request.xhRequest.open>open</Spry.Utils.loadURL.Request.xhRequest.open>(<Spry.Utils.loadURL.Request.method><Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.method</Spry.Utils.loadURL.Request.method>, <Spry.Utils.loadURL.Request.url><Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.url</Spry.Utils.loadURL.Request.url>, <Spry.Utils.loadURL.Request.async><Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.async</Spry.Utils.loadURL.Request.async>, <Spry.Utils.loadURL.Request.username><Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.username</Spry.Utils.loadURL.Request.username>, <Spry.Utils.loadURL.Request.password><Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.password</Spry.Utils.loadURL.Request.password>)</Spry.Utils.loadURL.Request.xhRequest.open>;
+		<Spry.Utils.loadURL.Request.xhRequest.open><Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.<Spry.Utils.loadURL.Request.xhRequest>xhRequest</Spry.Utils.loadURL.Request.xhRequest>.<Spry.Utils.loadURL.Request.xhRequest.open>open</Spry.Utils.loadURL.Request.xhRequest.open>(<String><Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.method</String>, <Spry.Utils.loadURL.Request.url><Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.url</Spry.Utils.loadURL.Request.url>, <Boolean><Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.async</Boolean>, <Spry.Utils.loadURL.Request.username><Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.username</Spry.Utils.loadURL.Request.username>, <Spry.Utils.loadURL.Request.password><Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.password</Spry.Utils.loadURL.Request.password>)</Spry.Utils.loadURL.Request.xhRequest.open>;
 		
 		if (<Spry.Utils.loadURL.Request.headers><Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.headers</Spry.Utils.loadURL.Request.headers>)
 		{
@@ -92,10 +92,10 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>loadURL</String> = <Function>functio
 
 		<Spry.Utils.loadURL.Request.xhRequest.send><Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.<Spry.Utils.loadURL.Request.xhRequest>xhRequest</Spry.Utils.loadURL.Request.xhRequest>.<Spry.Utils.loadURL.Request.xhRequest.send>send</Spry.Utils.loadURL.Request.xhRequest.send>(<Spry.Utils.loadURL.Request.postData><Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.postData</Spry.Utils.loadURL.Request.postData>)</Spry.Utils.loadURL.Request.xhRequest.send>;
 
-		if (!<Spry.Utils.loadURL.Request.async><Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.async</Spry.Utils.loadURL.Request.async>)
-			<Spry.Utils.loadURL.callback>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.loadURL>loadURL</Spry.Utils.loadURL>.<Spry.Utils.loadURL.callback>callback</Spry.Utils.loadURL.callback>(<Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>)</Spry.Utils.loadURL.callback>;
+		if (!<Boolean><Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.async</Boolean>)
+			<Spry.Utils.loadURL.callback>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.loadURL>loadURL</Spry.Utils.loadURL>.<void>callback</void>(<Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>)</Spry.Utils.loadURL.callback>;
 	}
-	catch(e) { req = null; <Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Exception caught while loading "</String> + url + <String>": "</String> + <e.message>e.message</e.message>)</Spry.Debug.reportError>; }
+	catch(e) { req = null; <Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"Exception caught while loading "</String> + url + <String>": "</String> + <e.message>e.message</e.message>)</Spry.Debug.reportError>; }
 
 	return req;
 }</Function>;
@@ -155,7 +155,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.loadURL>loadURL</Spry.Utils.load
 	if (this.headers)
 	{
 		<Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.<String>headers</String> = {};
-		<Spry.Utils.setOptions>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.setOptions>setOptions</Spry.Utils.setOptions>(<Spry.Utils.loadURL.Request.headers><Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.headers</Spry.Utils.loadURL.Request.headers>, this.headers)</Spry.Utils.setOptions>;
+		<Spry.Utils.setOptions>Spry.<Spry.Utils>Utils</Spry.Utils>.<void>setOptions</void>(<Spry.Utils.loadURL.Request.headers><Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>.headers</Spry.Utils.loadURL.Request.headers>, this.headers)</Spry.Utils.setOptions>;
 	}
 	return <Spry.Utils.loadURL.Request>req</Spry.Utils.loadURL.Request>;
 }</Function>;
@@ -438,7 +438,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>stringToXMLDoc</String> = <Function>
 		}
 		catch (e)
 		{
-			<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Caught exception in Spry.Utils.stringToXMLDoc(): "</String> + e + <String>"\n"</String>)</Spry.Debug.reportError>;
+			<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"Caught exception in Spry.Utils.stringToXMLDoc(): "</String> + e + <String>"\n"</String>)</Spry.Debug.reportError>;
 			xmlDoc = null;
 		}
 	}
@@ -481,7 +481,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>getNodesByFunc</String> = <Function>
 	}
 	
 	if (<Array>nodeStack</Array> &amp;&amp; <Boolean><Array.length><Array>nodeStack</Array>.length</Array.length> &gt; <Number>0</Number></Boolean>)
-		<Spry.Debug.trace>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.trace>trace</Spry.Debug.trace>(<String>"-- WARNING: Spry.Utils.getNodesByFunc() failed to traverse all nodes!\n"</String>)</Spry.Debug.trace>;
+		<Spry.Debug.trace>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>trace</void>(<String>"-- WARNING: Spry.Utils.getNodesByFunc() failed to traverse all nodes!\n"</String>)</Spry.Debug.trace>;
 
 	return <Array>resultArr</Array>;
 }</Function>;
@@ -556,12 +556,12 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>getNodeText</String> = <Function>fun
 					txt += <Spry.Utils.encodeEntities>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.encodeEntities>encodeEntities</Spry.Utils.encodeEntities>(<node.firstChild.data><node.firstChild>child</node.firstChild>.data</node.firstChild.data>)</Spry.Utils.encodeEntities>;
 				else if (<Boolean><node.firstChild.nodeType><node.firstChild>child</node.firstChild>.nodeType</node.firstChild.nodeType> == <Number>4</Number></Boolean> /* CDATA_SECTION_NODE */)
 					txt += <node.firstChild.data><node.firstChild>child</node.firstChild>.data</node.firstChild.data>;
-			} catch (e) { <Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Spry.Utils.getNodeText() exception caught: "</String> + e + <String>"\n"</String>)</Spry.Debug.reportError>; }
+			} catch (e) { <Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"Spry.Utils.getNodeText() exception caught: "</String> + e + <String>"\n"</String>)</Spry.Debug.reportError>; }
 
 			<node.firstChild.nextSibling>child</node.firstChild.nextSibling> = <node.firstChild.nextSibling.nextSibling><node.firstChild.nextSibling>child</node.firstChild.nextSibling>.nextSibling</node.firstChild.nextSibling.nextSibling>;
 		}
 	}
-	catch (e) { <Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Spry.Utils.getNodeText() exception caught: "</String> + e + <String>"\n"</String>)</Spry.Debug.reportError>; }
+	catch (e) { <Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"Spry.Utils.getNodeText() exception caught: "</String> + e + <String>"\n"</String>)</Spry.Debug.reportError>; }
   
 	return txt;
 }</Function>;
@@ -587,7 +587,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>CreateObjectForNode</String> = <Func
 					<Object>obj</Object> = <Object>new Object()</Object>;
 					if (!<Object>obj</Object>)
 					{
-						<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Spry.Utils.CreateObjectForNode(): Object creation failed!"</String>)</Spry.Debug.reportError>;
+						<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"Spry.Utils.CreateObjectForNode(): Object creation failed!"</String>)</Spry.Debug.reportError>;
 						return null;
 					}
 				}
@@ -598,7 +598,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>CreateObjectForNode</String> = <Func
 	}
 	catch (e)
 	{
-		<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Spry.Utils.CreateObjectForNode() caught exception while accessing attributes: "</String> + e + <String>"\n"</String>)</Spry.Debug.reportError>;
+		<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"Spry.Utils.CreateObjectForNode() caught exception while accessing attributes: "</String> + e + <String>"\n"</String>)</Spry.Debug.reportError>;
 	}
   
 	var <node.firstChild>child = <node.firstChild>node.firstChild</node.firstChild></node.firstChild>;
@@ -614,7 +614,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>CreateObjectForNode</String> = <Func
 			<Object>obj</Object> = <Object>new Object()</Object>;
 			if (!<Object>obj</Object>)
 			{
-				<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Spry.Utils.CreateObjectForNode(): Object creation failed!"</String>)</Spry.Debug.reportError>;
+				<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"Spry.Utils.CreateObjectForNode(): Object creation failed!"</String>)</Spry.Debug.reportError>;
 				return null;
 			}
 		}
@@ -630,7 +630,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>CreateObjectForNode</String> = <Func
 	
 		if (<Boolean><node.firstChild.nodeType><node.firstChild>child</node.firstChild>.nodeType</node.firstChild.nodeType> == <Number>1</Number></Boolean> /* Node.ELEMENT_NODE */)
 		{
-			if (!<Spry.Utils.nodeContainsElementNode>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.nodeContainsElementNode>nodeContainsElementNode</Spry.Utils.nodeContainsElementNode>(<node.firstChild>child</node.firstChild>)</Spry.Utils.nodeContainsElementNode>)
+			if (!<Spry.Utils.nodeContainsElementNode>Spry.<Spry.Utils>Utils</Spry.Utils>.<Boolean>nodeContainsElementNode</Boolean>(<node.firstChild>child</node.firstChild>)</Spry.Utils.nodeContainsElementNode>)
 			{
 				var txt = <Spry.Utils.getNodeText>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.getNodeText>getNodeText</Spry.Utils.getNodeText>(<node.firstChild>child</node.firstChild>)</Spry.Utils.getNodeText>;
 				if (!<Object>obj</Object>)
@@ -638,7 +638,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>CreateObjectForNode</String> = <Func
 					<Object>obj</Object> = <Object>new Object()</Object>;
 					if (!<Object>obj</Object>)
 					{
-						<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Spry.Utils.CreateObjectForNode(): Object creation failed!"</String>)</Spry.Debug.reportError>;
+						<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"Spry.Utils.CreateObjectForNode(): Object creation failed!"</String>)</Spry.Debug.reportError>;
 						return null;
 					}
 				}
@@ -660,7 +660,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>CreateObjectForNode</String> = <Func
 				}
 				catch (e)
 				{
-					<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Spry.Utils.CreateObjectForNode() caught exception while accessing attributes: "</String> + e + <String>"\n"</String>)</Spry.Debug.reportError>;
+					<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"Spry.Utils.CreateObjectForNode() caught exception while accessing attributes: "</String> + e + <String>"\n"</String>)</Spry.Debug.reportError>;
 				}
         
 			}
@@ -714,7 +714,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<String>getRecordSetFromXMLDoc</String> = <F
 		var rowObj = null;
 	
 		if (<Boolean>isDOMNodeArray</Boolean>)
-			rowObj = <Spry.Utils.CreateObjectForNode>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.CreateObjectForNode>CreateObjectForNode</Spry.Utils.CreateObjectForNode>(nodeArray[<Number>i</Number>])</Spry.Utils.CreateObjectForNode>;
+			<Spry.Utils.CreateObjectForNode>rowObj</Spry.Utils.CreateObjectForNode> = <Spry.Utils.CreateObjectForNode>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.CreateObjectForNode>CreateObjectForNode</Spry.Utils.CreateObjectForNode>(nodeArray[<Number>i</Number>])</Spry.Utils.CreateObjectForNode>;
 		else // Must be a Node.ATTRIBUTE_NODE array.
 		{
 			<Object>rowObj</Object> = <Object>new Object</Object>;
@@ -783,8 +783,8 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.SelectionManager>SelectionManage
 			{
 				if (<Boolean><selObj.className>selObj.className</selObj.className> != className</Boolean>)
 				{
-					<Spry.Utils.removeClassName>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.removeClassName>removeClassName</Spry.Utils.removeClassName>(<HTMLElement>element</HTMLElement>, <selObj.className>selObj.className</selObj.className>)</Spry.Utils.removeClassName>;
-					<Spry.Utils.addClassName>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.addClassName>addClassName</Spry.Utils.addClassName>(<HTMLElement>element</HTMLElement>, className)</Spry.Utils.addClassName>;
+					<Spry.Utils.removeClassName>Spry.<Spry.Utils>Utils</Spry.Utils>.<void>removeClassName</void>(<HTMLElement>element</HTMLElement>, <selObj.className>selObj.className</selObj.className>)</Spry.Utils.removeClassName>;
+					<Spry.Utils.addClassName>Spry.<Spry.Utils>Utils</Spry.Utils>.<void>addClassName</void>(<HTMLElement>element</HTMLElement>, className)</Spry.Utils.addClassName>;
 				}
 				return;
 			}
@@ -797,7 +797,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.SelectionManager>SelectionManage
 	<Object>selObj</Object>.<String>element</String> = <HTMLElement>element</HTMLElement>;
 	<Object>selObj</Object>.<String>className</String> = className;
 	this.selectedElements.push(<Object>selObj</Object>);
-	<Spry.Utils.addClassName>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.addClassName>addClassName</Spry.Utils.addClassName>(<HTMLElement>element</HTMLElement>, className)</Spry.Utils.addClassName>;
+	<Spry.Utils.addClassName>Spry.<Spry.Utils>Utils</Spry.Utils>.<void>addClassName</void>(<HTMLElement>element</HTMLElement>, className)</Spry.Utils.addClassName>;
 }</Function>;
 
 Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.SelectionManager>SelectionManager</Spry.Utils.SelectionManager>.<Spry.Utils.SelectionManager.SelectionGroup>SelectionGroup</Spry.Utils.SelectionManager.SelectionGroup>.<Spry.Utils.SelectionManager.SelectionGroup.prototype>prototype</Spry.Utils.SelectionManager.SelectionGroup.prototype>.<String>unSelect</String> = <Function>function(<HTMLElement>element</HTMLElement>)
@@ -808,7 +808,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.SelectionManager>SelectionManage
 	
 		if (<Boolean><selObj.element>selObj.element</selObj.element> == <HTMLElement>element</HTMLElement></Boolean>)
 		{
-			<Spry.Utils.removeClassName>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.removeClassName>removeClassName</Spry.Utils.removeClassName>(<selObj.element>selObj.element</selObj.element>, <selObj.className>selObj.className</selObj.className>)</Spry.Utils.removeClassName>;
+			<Spry.Utils.removeClassName>Spry.<Spry.Utils>Utils</Spry.Utils>.<void>removeClassName</void>(<selObj.element>selObj.element</selObj.element>, <selObj.className>selObj.className</selObj.className>)</Spry.Utils.removeClassName>;
 			return;
 		}
 	}
@@ -822,7 +822,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.SelectionManager>SelectionManage
 	{
 		selObj = this.selectedElements.shift();
 		if (selObj)
-			<Spry.Utils.removeClassName>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.removeClassName>removeClassName</Spry.Utils.removeClassName>(<selObj.element>selObj.element</selObj.element>, <selObj.className>selObj.className</selObj.className>)</Spry.Utils.removeClassName>;
+			<Spry.Utils.removeClassName>Spry.<Spry.Utils>Utils</Spry.Utils>.<void>removeClassName</void>(<selObj.element>selObj.element</selObj.element>, <selObj.className>selObj.className</selObj.className>)</Spry.Utils.removeClassName>;
 	}
 	while (selObj);
 }</Function>;
@@ -962,7 +962,7 @@ Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.Notifier>Notifier</Spry.Utils.No
 	if (<Boolean>--this.suppressNotifications &lt; <Number>0</Number></Boolean>)
 	{
 		this.<String>suppressNotifications</String> = <Number>0</Number>;
-		<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Unbalanced enableNotifications() call!\n"</String>)</Spry.Debug.reportError>;
+		<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"Unbalanced enableNotifications() call!\n"</String>)</Spry.Debug.reportError>;
 	}
 }</Function>;
 
@@ -1012,7 +1012,7 @@ Spry.<Spry.Debug>Debug</Spry.Debug>.<String>debugOut</String> = <Function>functi
 {
 	if (!<Spry.Debug.debugWindow>Spry.<Spry.Debug>Debug</Spry.Debug>.debugWindow</Spry.Debug.debugWindow>)
 	{
-		<Spry.Debug.createDebugWindow>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.createDebugWindow>createDebugWindow</Spry.Debug.createDebugWindow>()</Spry.Debug.createDebugWindow>;
+		<Spry.Debug.createDebugWindow>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>createDebugWindow</void>()</Spry.Debug.createDebugWindow>;
 		if (!<Spry.Debug.debugWindow>Spry.<Spry.Debug>Debug</Spry.Debug>.debugWindow</Spry.Debug.debugWindow>)
 			return;
 	}
@@ -1026,12 +1026,12 @@ Spry.<Spry.Debug>Debug</Spry.Debug>.<String>debugOut</String> = <Function>functi
 
 Spry.<Spry.Debug>Debug</Spry.Debug>.<String>trace</String> = <Function>function(str)
 {
-	<Spry.Debug.debugOut>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.debugOut>debugOut</Spry.Debug.debugOut>(str)</Spry.Debug.debugOut>;
+	<Spry.Debug.debugOut>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>debugOut</void>(str)</Spry.Debug.debugOut>;
 }</Function>;
 
 Spry.<Spry.Debug>Debug</Spry.Debug>.<String>reportError</String> = <Function>function(str)
 {
-	<Spry.Debug.debugOut>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.debugOut>debugOut</Spry.Debug.debugOut>(str, <String>"red"</String>)</Spry.Debug.debugOut>;
+	<Spry.Debug.debugOut>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>debugOut</void>(str, <String>"red"</String>)</Spry.Debug.debugOut>;
 }</Function>;
 
 //////////////////////////////////////////////////////////////////////
@@ -1074,20 +1074,20 @@ Spry.<Spry.Data>Data</Spry.Data>.<String>initRegions</String> = <Function>functi
 					if (!attr || !<attr.value>attr.value</attr.value>)
 					{
 						// The node is missing an id attribute so add one.
-						<node.setAttribute>node.<node.setAttribute>setAttribute</node.setAttribute>(<String>"id"</String>, <String>"spryregion"</String> + (++<Spry.Data.initRegions.nextUniqueRegionID>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.initRegions>initRegions</Spry.Data.initRegions>.nextUniqueRegionID</Spry.Data.initRegions.nextUniqueRegionID>))</node.setAttribute>;
+						<node.setAttribute>node.<node.setAttribute>setAttribute</node.setAttribute>(<String>"id"</String>, <String>"spryregion"</String> + (++<void.nextUniqueRegionID>Spry.<Spry.Data>Data</Spry.Data>.<void>initRegions</void>.nextUniqueRegionID</void.nextUniqueRegionID>))</node.setAttribute>;
 					}
 	
 					return <Boolean>true</Boolean>;
 				}
 				else
-					<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>attrName</String> + <String>" attributes require one or more data set names as values!"</String>)</Spry.Debug.reportError>;
+					<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>attrName</String> + <String>" attributes require one or more data set names as values!"</String>)</Spry.Debug.reportError>;
 			}
 		}
 		catch(e) {}
 		return <Boolean>false</Boolean>;
 	}</Function>)</Spry.Utils.getNodesByFunc>;
 
-	var name, dataSets, i;
+	var name, dataSets, <MyObj>i</MyObj>;
   
 	for (<Number>i</Number> = <Number>0</Number>; <Boolean><Number>i</Number> &lt; <regions.length>regions.length</regions.length></Boolean>; <Number>i</Number>++)
 	{
@@ -1107,7 +1107,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<String>initRegions</String> = <Function>functi
 
 		if (!<attr.value>attr.value</attr.value>)
 		{
-			<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"spry:region and spry:detailregion attributes require one or more data set names as values!"</String>)</Spry.Debug.reportError>;
+			<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"spry:region and spry:detailregion attributes require one or more data set names as values!"</String>)</Spry.Debug.reportError>;
 			continue;
 		}
 
@@ -1116,14 +1116,14 @@ Spry.<Spry.Data>Data</Spry.Data>.<String>initRegions</String> = <Function>functi
 		<rgn.attributes.removeNamedItem>rgn.<rgn.attributes>attributes</rgn.attributes>.<rgn.attributes.removeNamedItem>removeNamedItem</rgn.attributes.removeNamedItem>(<attr.nodeName>attr.nodeName</attr.nodeName>)</rgn.attributes.removeNamedItem>;
 
 		// Remove the hiddenRegionCSS class from the rgn.
-		<Spry.Utils.removeClassName>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.removeClassName>removeClassName</Spry.Utils.removeClassName>(rgn, <Spry.Data.Region.hiddenRegionClassName>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.hiddenRegionClassName</Spry.Data.Region.hiddenRegionClassName>)</Spry.Utils.removeClassName>;
+		<Spry.Utils.removeClassName>Spry.<Spry.Utils>Utils</Spry.Utils>.<void>removeClassName</void>(rgn, <Spry.Data.Region.hiddenRegionClassName>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.hiddenRegionClassName</Spry.Data.Region.hiddenRegionClassName>)</Spry.Utils.removeClassName>;
 
 		// Get the DataSets that should be bound to the region.
 		dataSets = <Spry.Data.Region.strToDataSetsArray>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Spry.Data.Region.strToDataSetsArray>strToDataSetsArray</Spry.Data.Region.strToDataSetsArray>(<attr.value>attr.value</attr.value>)</Spry.Data.Region.strToDataSetsArray>;
 
 		if (!<dataSets.length>dataSets.length</dataSets.length>)
 		{
-			<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"spry:region or spry:detailregion attribute has no data set!"</String>)</Spry.Debug.reportError>;
+			<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"spry:region or spry:detailregion attribute has no data set!"</String>)</Spry.Debug.reportError>;
 			continue;
 		}
 	
@@ -1223,18 +1223,18 @@ Spry.<Spry.Data>Data</Spry.Data>.<String>initRegions</String> = <Function>functi
 		if (<Window.ActiveXObject><Window>window</Window>.ActiveXObject</Window.ActiveXObject> &amp;&amp; !<Spry.Data.Region.disableIEInnerHTMLFixUp>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.disableIEInnerHTMLFixUp</Spry.Data.Region.disableIEInnerHTMLFixUp> &amp;&amp; <Boolean><rgn.innerHTML.search><rgn.innerHTML>dataStr</rgn.innerHTML>.<rgn.innerHTML.search>search</rgn.innerHTML.search>(<RegExp>/=\{/)</RegExp></rgn.innerHTML.search> != -<Number>1</Number></Boolean>)
 		{
 			if (<Spry.Data.Region.debug>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.debug</Spry.Data.Region.debug>)
-				<Spry.Debug.trace>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.trace>trace</Spry.Debug.trace>(<String>"&lt;hr /&gt;Performing IE innerHTML fix up of Region: "</String> + name + <String>"&lt;br /&gt;&lt;br /&gt;"</String> + <Spry.Utils.encodeEntities>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.encodeEntities>encodeEntities</Spry.Utils.encodeEntities>(<rgn.innerHTML>dataStr</rgn.innerHTML>)</Spry.Utils.encodeEntities>)</Spry.Debug.trace>;
+				<Spry.Debug.trace>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>trace</void>(<String>"&lt;hr /&gt;Performing IE innerHTML fix up of Region: "</String> + name + <String>"&lt;br /&gt;&lt;br /&gt;"</String> + <Spry.Utils.encodeEntities>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.encodeEntities>encodeEntities</Spry.Utils.encodeEntities>(<rgn.innerHTML>dataStr</rgn.innerHTML>)</Spry.Utils.encodeEntities>)</Spry.Debug.trace>;
 
 			dataStr = <Spry.Utils.fixUpIEInnerHTML>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.fixUpIEInnerHTML>fixUpIEInnerHTML</Spry.Utils.fixUpIEInnerHTML>(dataStr)</Spry.Utils.fixUpIEInnerHTML>;
 		}
 
 		if (<Spry.Data.Region.debug>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.debug</Spry.Data.Region.debug>)
-			<Spry.Debug.trace>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.trace>trace</Spry.Debug.trace>(<String>"&lt;hr /&gt;Region template markup for '"</String> + name + <String>"':&lt;br /&gt;&lt;br /&gt;"</String> + <Spry.Utils.encodeEntities>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.encodeEntities>encodeEntities</Spry.Utils.encodeEntities>(dataStr)</Spry.Utils.encodeEntities>)</Spry.Debug.trace>;
+			<Spry.Debug.trace>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>trace</void>(<String>"&lt;hr /&gt;Region template markup for '"</String> + name + <String>"':&lt;br /&gt;&lt;br /&gt;"</String> + <Spry.Utils.encodeEntities>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.encodeEntities>encodeEntities</Spry.Utils.encodeEntities>(dataStr)</Spry.Utils.encodeEntities>)</Spry.Debug.trace>;
 
 		if (!<Boolean>hasSpryContent</Boolean>)
 		{
 			// Clear the region.
-			<Spry.Utils.removeAllChildren>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.removeAllChildren>removeAllChildren</Spry.Utils.removeAllChildren>(rgn)</Spry.Utils.removeAllChildren>;
+			<Spry.Utils.removeAllChildren>Spry.<Spry.Utils>Utils</Spry.Utils>.<void>removeAllChildren</void>(rgn)</Spry.Utils.removeAllChildren>;
 		}
 
 		// Create a Spry.Data.Region object for this region.
@@ -1242,10 +1242,10 @@ Spry.<Spry.Data>Data</Spry.Data>.<String>initRegions</String> = <Function>functi
 		Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.regionsArray>regionsArray</Spry.Data.regionsArray>[<Spry.Data.Region.name><Spry.Data.Region>region</Spry.Data.Region>.name</Spry.Data.Region.name>] = <Spry.Data.Region>region</Spry.Data.Region>;
 	}
 
-	<Spry.Data.updateAllRegions>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.updateAllRegions>updateAllRegions</Spry.Data.updateAllRegions>()</Spry.Data.updateAllRegions>;
+	<Spry.Data.updateAllRegions>Spry.<Spry.Data>Data</Spry.Data>.<void>updateAllRegions</void>()</Spry.Data.updateAllRegions>;
 }</Function>;
 
-Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.initRegions>initRegions</Spry.Data.initRegions>.<String>nextUniqueRegionID</String> = <Number>0</Number>;
+Spry.<Spry.Data>Data</Spry.Data>.<void>initRegions</void>.<String>nextUniqueRegionID</String> = <Number>0</Number>;
 
 Spry.<Spry.Data>Data</Spry.Data>.<String>updateRegion</String> = <Function>function(regionName)
 {
@@ -1253,7 +1253,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<String>updateRegion</String> = <Function>funct
 		return;
 
 	try { Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.regionsArray>regionsArray</Spry.Data.regionsArray>[regionName].updateContent(); }
-	catch(e) { <Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Spry.Data.updateRegion("</String> + regionName + <String>") caught an exception: "</String> + e + <String>"\n"</String>)</Spry.Debug.reportError>; }
+	catch(e) { <Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"Spry.Data.updateRegion("</String> + regionName + <String>") caught an exception: "</String> + e + <String>"\n"</String>)</Spry.Debug.reportError>; }
 }</Function>;
 
 Spry.<Spry.Data>Data</Spry.Data>.<String>getRegion</String> = <Function>function(regionName)
@@ -1268,7 +1268,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<String>updateAllRegions</String> = <Function>f
 		return;
 
 	for (var regionName in <Spry.Data.regionsArray>Spry.<Spry.Data>Data</Spry.Data>.regionsArray</Spry.Data.regionsArray>)
-		<Spry.Data.updateRegion>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.updateRegion>updateRegion</Spry.Data.updateRegion>(regionName)</Spry.Data.updateRegion>;
+		<Spry.Data.updateRegion>Spry.<Spry.Data>Data</Spry.Data>.<void>updateRegion</void>(regionName)</Spry.Data.updateRegion>;
 }</Function>;
 
 //////////////////////////////////////////////////////////////////////
@@ -1420,7 +1420,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.DataSet>DataSet</Spry.Data.DataSet>.
 {
 	if (!this.data || <Boolean>rowNumber &gt;= this.data.length</Boolean>)
 	{
-		<Spry.Debug.trace>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.trace>trace</Spry.Debug.trace>(<String>"Invalid row number: "</String> + rowNumber + <String>"\n"</String>)</Spry.Debug.trace>;
+		<Spry.Debug.trace>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>trace</void>(<String>"Invalid row number: "</String> + rowNumber + <String>"\n"</String>)</Spry.Debug.trace>;
 		return;
 	}
 
@@ -1513,7 +1513,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.DataSet>DataSet</Spry.Data.DataSet>.
 
 	if (<Boolean><String>sortOrder</String> != <String>"ascending"</String></Boolean> &amp;&amp; <Boolean><String>sortOrder</String> != <String>"descending"</String></Boolean>)
 	{
-		<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Invalid sort order type specified: "</String> + <String>sortOrder</String> + <String>"\n"</String>)</Spry.Debug.reportError>;
+		<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"Invalid sort order type specified: "</String> + <String>sortOrder</String> + <String>"\n"</String>)</Spry.Debug.reportError>;
 		return;
 	}
 
@@ -1528,9 +1528,9 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.DataSet>DataSet</Spry.Data.DataSet>.
 	var cname = <Array>columnNames</Array>[<Array.length><Array>columnNames</Array>.length</Array.length> - <Number>1</Number>];
 	var sortfunc = <Spry.Data.DataSet.prototype.sort.getSortFunc>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.DataSet>DataSet</Spry.Data.DataSet>.<Spry.Data.DataSet.prototype>prototype</Spry.Data.DataSet.prototype>.<Spry.Data.DataSet.prototype.sort>sort</Spry.Data.DataSet.prototype.sort>.<Spry.Data.DataSet.prototype.sort.getSortFunc>getSortFunc</Spry.Data.DataSet.prototype.sort.getSortFunc>(cname, this.getColumnType(cname), <String>sortOrder</String>)</Spry.Data.DataSet.prototype.sort.getSortFunc>;
 
-	for (var i = <Array.length><Array>columnNames</Array>.length</Array.length> - <Number>2</Number>; <Boolean>i &gt;= <Number>0</Number></Boolean>; i--)
+	for (var <MyObj>i = <Array.length><Array>columnNames</Array>.length</Array.length> - <Number>2</Number></MyObj>; <Boolean><MyObj>i</MyObj> &gt;= <Number>0</Number></Boolean>; <MyObj>i</MyObj>--)
 	{
-		cname = <Array>columnNames</Array>[i];
+		cname = <Array>columnNames</Array>[<MyObj>i</MyObj>];
 		sortfunc = <Spry.Data.DataSet.prototype.sort.buildSecondarySortFunc>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.DataSet>DataSet</Spry.Data.DataSet>.<Spry.Data.DataSet.prototype>prototype</Spry.Data.DataSet.prototype>.<Spry.Data.DataSet.prototype.sort>sort</Spry.Data.DataSet.prototype.sort>.<Spry.Data.DataSet.prototype.sort.buildSecondarySortFunc>buildSecondarySortFunc</Spry.Data.DataSet.prototype.sort.buildSecondarySortFunc>(<Spry.Data.DataSet.prototype.sort.getSortFunc>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.DataSet>DataSet</Spry.Data.DataSet>.<Spry.Data.DataSet.prototype>prototype</Spry.Data.DataSet.prototype>.<Spry.Data.DataSet.prototype.sort>sort</Spry.Data.DataSet.prototype.sort>.<Spry.Data.DataSet.prototype.sort.getSortFunc>getSortFunc</Spry.Data.DataSet.prototype.sort.getSortFunc>(cname, this.getColumnType(cname), <String>sortOrder</String>)</Spry.Data.DataSet.prototype.sort.getSortFunc>, sortfunc)</Spry.Data.DataSet.prototype.sort.buildSecondarySortFunc>;
 	}
 
@@ -1770,7 +1770,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<String>XMLDataSet</String> = <Function>functio
 			this.requestInfo.headers[<String>'Content-Type'</String>] = <String>"application/x-www-form-urlencoded; charset=UTF-8"</String>;
 	}
 
-	<Spry.Utils.setOptions>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.setOptions>setOptions</Spry.Utils.setOptions>(this, dataSetOptions, <Boolean>true</Boolean>)</Spry.Utils.setOptions>;
+	<Spry.Utils.setOptions>Spry.<Spry.Utils>Utils</Spry.Utils>.<void>setOptions</void>(this, dataSetOptions, <Boolean>true</Boolean>)</Spry.Utils.setOptions>;
 	
 	this.recalculateDataSetDependencies();
 
@@ -1944,7 +1944,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XML
 {
 	if (this.pendingRequest)
 	{
-		<Spry.Data.XMLDataSet.LoadManager.cancelLoadData>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XMLDataSet>.<Spry.Data.XMLDataSet.LoadManager>LoadManager</Spry.Data.XMLDataSet.LoadManager>.<Spry.Data.XMLDataSet.LoadManager.cancelLoadData>cancelLoadData</Spry.Data.XMLDataSet.LoadManager.cancelLoadData>(this.pendingRequest.data, this)</Spry.Data.XMLDataSet.LoadManager.cancelLoadData>;
+		<Spry.Data.XMLDataSet.LoadManager.cancelLoadData>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XMLDataSet>.<Spry.Data.XMLDataSet.LoadManager>LoadManager</Spry.Data.XMLDataSet.LoadManager>.<void>cancelLoadData</void>(this.pendingRequest.data, this)</Spry.Data.XMLDataSet.LoadManager.cancelLoadData>;
 		this.<String>pendingRequest</String> = null;
 	}
 }</Function>;
@@ -1985,7 +1985,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XML
 
 	if (!rs)
 	{
-		<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Spry.Data.XMLDataSet.setDataFromDoc() failed to create dataSet '"</String> + this.name + <String>"'for '"</String> + this.xpath + <String>"' - "</String> + this.url + <String>"\n"</String>)</Spry.Debug.reportError>;
+		<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"Spry.Data.XMLDataSet.setDataFromDoc() failed to create dataSet '"</String> + this.name + <String>"'for '"</String> + this.xpath + <String>"' - "</String> + this.url + <String>"\n"</String>)</Spry.Debug.reportError>;
 		return;
 	}
 
@@ -2116,12 +2116,12 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XML
 
 	var reqInfo = this.reqInfo.clone();
 	reqInfo.<String>successCallback</String> = <Function>function(req) { <self.loadDataCallback>self.<self.loadDataCallback>loadDataCallback</self.loadDataCallback>(req)</self.loadDataCallback>; }</Function>;
-	reqInfo.<String>errorCallback</String> = <reqInfo.successCallback>reqInfo.successCallback</reqInfo.successCallback>;
+	reqInfo.<String>errorCallback</String> = <void>reqInfo.successCallback</void>;
 
 	this.<String>timer</String> = <setTimeout>setTimeout(<Function>function()
 	{
 		self.<String>timer</String> = null;
-		<Spry.Utils.loadURL>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.loadURL>loadURL</Spry.Utils.loadURL>(<reqInfo.method>reqInfo.method</reqInfo.method>, <reqInfo.url>reqInfo.url</reqInfo.url>, <reqInfo.async>reqInfo.async</reqInfo.async>, <reqInfo.successCallback>reqInfo.successCallback</reqInfo.successCallback>, reqInfo)</Spry.Utils.loadURL>;
+		<Spry.Utils.loadURL>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.loadURL>loadURL</Spry.Utils.loadURL>(<reqInfo.method>reqInfo.method</reqInfo.method>, <reqInfo.url>reqInfo.url</reqInfo.url>, <reqInfo.async>reqInfo.async</reqInfo.async>, <void>reqInfo.successCallback</void>, reqInfo)</Spry.Utils.loadURL>;
 	}</Function>, <Number>0</Number>)</setTimeout>;  
 }</Function>;
 
@@ -2189,14 +2189,14 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XML
 
 			// Add an observer that will remove the cacheObj from the cache
 			// if there is a load request failure.
-			<Spry.Data.XMLDataSet.LoadManager.CachedRequest.addObserver><Spry.Data.XMLDataSet.LoadManager.CachedRequest>cacheObj</Spry.Data.XMLDataSet.LoadManager.CachedRequest>.<Spry.Data.XMLDataSet.LoadManager.CachedRequest.addObserver>addObserver</Spry.Data.XMLDataSet.LoadManager.CachedRequest.addObserver>({ onRequestError: <Function>function() { Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XMLDataSet>.<Spry.Data.XMLDataSet.LoadManager>LoadManager</Spry.Data.XMLDataSet.LoadManager>.<Spry.Data.XMLDataSet.LoadManager.cache>cache</Spry.Data.XMLDataSet.LoadManager.cache>[cacheKey] = undefined; }</Function>})</Spry.Data.XMLDataSet.LoadManager.CachedRequest.addObserver>;
+			<Spry.Data.XMLDataSet.LoadManager.CachedRequest.addObserver><Spry.Data.XMLDataSet.LoadManager.CachedRequest>cacheObj</Spry.Data.XMLDataSet.LoadManager.CachedRequest>.<void>addObserver</void>({ onRequestError: <Function>function() { Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.XMLDataSet>XMLDataSet</Spry.Data.XMLDataSet>.<Spry.Data.XMLDataSet.LoadManager>LoadManager</Spry.Data.XMLDataSet.LoadManager>.<Spry.Data.XMLDataSet.LoadManager.cache>cache</Spry.Data.XMLDataSet.LoadManager.cache>[cacheKey] = undefined; }</Function>})</Spry.Data.XMLDataSet.LoadManager.CachedRequest.addObserver>;
 		}
 	}
 
 	if (ds)
-		<Spry.Data.XMLDataSet.LoadManager.CachedRequest.addObserver><Spry.Data.XMLDataSet.LoadManager.CachedRequest>cacheObj</Spry.Data.XMLDataSet.LoadManager.CachedRequest>.<Spry.Data.XMLDataSet.LoadManager.CachedRequest.addObserver>addObserver</Spry.Data.XMLDataSet.LoadManager.CachedRequest.addObserver>(ds)</Spry.Data.XMLDataSet.LoadManager.CachedRequest.addObserver>;
+		<Spry.Data.XMLDataSet.LoadManager.CachedRequest.addObserver><Spry.Data.XMLDataSet.LoadManager.CachedRequest>cacheObj</Spry.Data.XMLDataSet.LoadManager.CachedRequest>.<void>addObserver</void>(ds)</Spry.Data.XMLDataSet.LoadManager.CachedRequest.addObserver>;
 
-	<Spry.Data.XMLDataSet.LoadManager.CachedRequest.loadData><Spry.Data.XMLDataSet.LoadManager.CachedRequest>cacheObj</Spry.Data.XMLDataSet.LoadManager.CachedRequest>.<Spry.Data.XMLDataSet.LoadManager.CachedRequest.loadData>loadData</Spry.Data.XMLDataSet.LoadManager.CachedRequest.loadData>()</Spry.Data.XMLDataSet.LoadManager.CachedRequest.loadData>;
+	<Spry.Data.XMLDataSet.LoadManager.CachedRequest.loadData><Spry.Data.XMLDataSet.LoadManager.CachedRequest>cacheObj</Spry.Data.XMLDataSet.LoadManager.CachedRequest>.<void>loadData</void>()</Spry.Data.XMLDataSet.LoadManager.CachedRequest.loadData>;
 
 	return <Spry.Data.XMLDataSet.LoadManager.CachedRequest>cacheObj</Spry.Data.XMLDataSet.LoadManager.CachedRequest>;
 }</Function>;
@@ -2230,7 +2230,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<String>Region</String> = <Function>function(re
 	this.<String>currentState</String> = null;
 	this.<String>states</String> = { ready: <Boolean>true</Boolean> };
 
-	<Spry.Utils.setOptions>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.setOptions>setOptions</Spry.Utils.setOptions>(this.states, regionStates)</Spry.Utils.setOptions>;
+	<Spry.Utils.setOptions>Spry.<Spry.Utils>Utils</Spry.Utils>.<void>setOptions</void>(this.states, regionStates)</Spry.Utils.setOptions>;
 
 	// Add the region as an observer to the dataSet!
 	for (var <Number>i = <Number>0</Number></Number>; <Boolean><Number>i</Number> &lt; this.dataSets.length</Boolean>; <Number>i</Number>++)
@@ -2242,7 +2242,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<String>Region</String> = <Function>function(re
 			if (ds)
 				<ds.addObserver>ds.<ds.addObserver>addObserver</ds.addObserver>(this)</ds.addObserver>;
 		}
-		catch(e) { <Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Failed to add '"</String> + this.name + <String>"' as a dataSet observer!\n"</String>)</Spry.Debug.reportError>; }
+		catch(e) { <Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"Failed to add '"</String> + this.name + <String>"' as a dataSet observer!\n"</String>)</Spry.Debug.reportError>; }
 	}
 }</Function>; // End of Spry.Data.Region() constructor.
 
@@ -2259,7 +2259,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<St
 		<Spry.Utils.Notifier>n</Spry.Utils.Notifier> = <Spry.Utils.Notifier>new <Spry.Utils.Notifier>Spry.<Spry.Utils>Utils</Spry.Utils>.Notifier</Spry.Utils.Notifier>()</Spry.Utils.Notifier>;
 		Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Spry.Data.Region.notifiers>notifiers</Spry.Data.Region.notifiers>[regionID] = <Spry.Utils.Notifier>n</Spry.Utils.Notifier>;
 	}
-	<Spry.Utils.Notifier.addObserver><Spry.Utils.Notifier>n</Spry.Utils.Notifier>.<Spry.Utils.Notifier.addObserver>addObserver</Spry.Utils.Notifier.addObserver>(observer)</Spry.Utils.Notifier.addObserver>;
+	<Spry.Utils.Notifier.addObserver><Spry.Utils.Notifier>n</Spry.Utils.Notifier>.<void>addObserver</void>(observer)</Spry.Utils.Notifier.addObserver>;
 }</Function>;
 
 Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<String>removeObserver</String> = <Function>function(regionID, observer)
@@ -2296,7 +2296,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 	if (this.states[stateName])
 	{
 		if (!suppressNotfications)
-			<Spry.Data.Region.notifyObservers>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Spry.Data.Region.notifyObservers>notifyObservers</Spry.Data.Region.notifyObservers>(<String>"onPreUpdate"</String>, this.name)</Spry.Data.Region.notifyObservers>;
+			<Spry.Data.Region.notifyObservers>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<void>notifyObservers</void>(<String>"onPreUpdate"</String>, this.name)</Spry.Data.Region.notifyObservers>;
 	
 		// Make the region transform the xml data. The result is
 		// a string that we need to parse and insert into the document.
@@ -2306,7 +2306,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 		// this.clearContent();
 	
 		if (<Spry.Data.Region.debug>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.debug</Spry.Data.Region.debug>)
-			<Spry.Debug.trace>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.trace>trace</Spry.Debug.trace>(<String>"&lt;hr /&gt;Generated region markup for '"</String> + this.name + <String>"':&lt;br /&gt;&lt;br /&gt;"</String> + <Spry.Utils.encodeEntities>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.encodeEntities>encodeEntities</Spry.Utils.encodeEntities>(str)</Spry.Utils.encodeEntities>)</Spry.Debug.trace>;
+			<Spry.Debug.trace>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>trace</void>(<String>"&lt;hr /&gt;Generated region markup for '"</String> + this.name + <String>"':&lt;br /&gt;&lt;br /&gt;"</String> + <Spry.Utils.encodeEntities>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.encodeEntities>encodeEntities</Spry.Utils.encodeEntities>(str)</Spry.Utils.encodeEntities>)</Spry.Debug.trace>;
 
 		// Now insert the new transformed content into the document.
 		this.regionNode.<String>innerHTML</String> = str;
@@ -2317,7 +2317,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 			this.attachBehaviors();
 	
 		if (!suppressNotfications)
-			<Spry.Data.Region.notifyObservers>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Spry.Data.Region.notifyObservers>notifyObservers</Spry.Data.Region.notifyObservers>(<String>"onPostUpdate"</String>, this.name)</Spry.Data.Region.notifyObservers>;
+			<Spry.Data.Region.notifyObservers>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<void>notifyObservers</void>(<String>"onPostUpdate"</String>, this.name)</Spry.Data.Region.notifyObservers>;
 	}
 }</Function>;
 
@@ -2372,7 +2372,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 {
 	if (<Boolean>this.currentState != <String>"error"</String></Boolean>)
 		this.setState(<String>"error"</String>);
-	<Spry.Data.Region.notifyObservers>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Spry.Data.Region.notifyObservers>notifyObservers</Spry.Data.Region.notifyObservers>(<String>"onError"</String>, this.name)</Spry.Data.Region.notifyObservers>;
+	<Spry.Data.Region.notifyObservers>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<void>notifyObservers</void>(<String>"onError"</String>, this.name)</Spry.Data.Region.notifyObservers>;
 }</Function>;
 
 Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Spry.Data.Region.prototype>prototype</Spry.Data.Region.prototype>.<String>onCurrentRowChanged</String> = <Function>function(dataSet, data)
@@ -2403,10 +2403,10 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 		if (!selectGroupName)
 			<String>selectGroupName</String> = <String>"default"</String>;
 
-		<Spry.Utils.addEventListener>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.addEventListener>addEventListener</Spry.Utils.addEventListener>(node, <String>"click"</String>, <Function>function(<Event>event</Event>) { <Spry.Utils.SelectionManager.select>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.SelectionManager>SelectionManager</Spry.Utils.SelectionManager>.<Spry.Utils.SelectionManager.select>select</Spry.Utils.SelectionManager.select>(selectGroupName, node, value)</Spry.Utils.SelectionManager.select>; }</Function>, <Boolean>false</Boolean>)</Spry.Utils.addEventListener>;
+		<Spry.Utils.addEventListener>Spry.<Spry.Utils>Utils</Spry.Utils>.<void>addEventListener</void>(node, <String>"click"</String>, <Function>function(<Event>event</Event>) { <Spry.Utils.SelectionManager.select>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.SelectionManager>SelectionManager</Spry.Utils.SelectionManager>.<void>select</void>(selectGroupName, node, value)</Spry.Utils.SelectionManager.select>; }</Function>, <Boolean>false</Boolean>)</Spry.Utils.addEventListener>;
 		
 		if (<node.attributes.getNamedItem>node.<node.attributes>attributes</node.attributes>.<node.attributes.getNamedItem>getNamedItem</node.attributes.getNamedItem>(<String>"spry:selected"</String>)</node.attributes.getNamedItem>)
-			<Spry.Utils.SelectionManager.select>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.SelectionManager>SelectionManager</Spry.Utils.SelectionManager>.<Spry.Utils.SelectionManager.select>select</Spry.Utils.SelectionManager.select>(<String>selectGroupName</String>, node, value)</Spry.Utils.SelectionManager.select>;
+			<Spry.Utils.SelectionManager.select>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.SelectionManager>SelectionManager</Spry.Utils.SelectionManager>.<void>select</void>(<String>selectGroupName</String>, node, value)</Spry.Utils.SelectionManager.select>;
 	}</Function>
 };
 
@@ -2414,8 +2414,8 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 {
 	attach: <Function>function(node, value)
 	{
-		<Spry.Utils.addEventListener>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.addEventListener>addEventListener</Spry.Utils.addEventListener>(node, <String>"mouseover"</String>, <Function>function(<Event>event</Event>){ <Spry.Utils.addClassName>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.addClassName>addClassName</Spry.Utils.addClassName>(node, value)</Spry.Utils.addClassName>; }</Function>, <Boolean>false</Boolean>)</Spry.Utils.addEventListener>;
-		<Spry.Utils.addEventListener>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.addEventListener>addEventListener</Spry.Utils.addEventListener>(node, <String>"mouseout"</String>, <Function>function(<Event>event</Event>){ <Spry.Utils.removeClassName>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.removeClassName>removeClassName</Spry.Utils.removeClassName>(node, value)</Spry.Utils.removeClassName>; }</Function>, <Boolean>false</Boolean>)</Spry.Utils.addEventListener>;
+		<Spry.Utils.addEventListener>Spry.<Spry.Utils>Utils</Spry.Utils>.<void>addEventListener</void>(node, <String>"mouseover"</String>, <Function>function(<Event>event</Event>){ <Spry.Utils.addClassName>Spry.<Spry.Utils>Utils</Spry.Utils>.<void>addClassName</void>(node, value)</Spry.Utils.addClassName>; }</Function>, <Boolean>false</Boolean>)</Spry.Utils.addEventListener>;
+		<Spry.Utils.addEventListener>Spry.<Spry.Utils>Utils</Spry.Utils>.<void>addEventListener</void>(node, <String>"mouseout"</String>, <Function>function(<Event>event</Event>){ <Spry.Utils.removeClassName>Spry.<Spry.Utils>Utils</Spry.Utils>.<void>removeClassName</void>(node, value)</Spry.Utils.removeClassName>; }</Function>, <Boolean>false</Boolean>)</Spry.Utils.addEventListener>;
 	}</Function>
 };
 
@@ -2452,7 +2452,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 
 	if (!dsArray || <Boolean><dsArray.length>dsArray.length</dsArray.length> &lt; <Number>1</Number></Boolean>)
 	{
-		<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"updateContent(): Region '"</String> + this.name + <String>"' has no data set!\n"</String>)</Spry.Debug.reportError>;
+		<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"updateContent(): Region '"</String> + this.name + <String>"' has no data set!\n"</String>)</Spry.Debug.reportError>;
 		return;
 	}
 
@@ -2475,7 +2475,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 
 	if (!<Boolean>allDataSetsReady</Boolean>)
 	{
-		<Spry.Data.Region.notifyObservers>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Spry.Data.Region.notifyObservers>notifyObservers</Spry.Data.Region.notifyObservers>(<String>"onLoadingData"</String>, this.name)</Spry.Data.Region.notifyObservers>;
+		<Spry.Data.Region.notifyObservers>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<void>notifyObservers</void>(<String>"onLoadingData"</String>, this.name)</Spry.Data.Region.notifyObservers>;
 
 		// Just return, this method will get called again automatically
 		// as each data set load completes!
@@ -2487,7 +2487,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 
 Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Spry.Data.Region.prototype>prototype</Spry.Data.Region.prototype>.<String>clearContent</String> = <Function>function()
 {
-	<Spry.Utils.removeAllChildren>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.removeAllChildren>removeAllChildren</Spry.Utils.removeAllChildren>(this.regionNode)</Spry.Utils.removeAllChildren>;
+	<Spry.Utils.removeAllChildren>Spry.<Spry.Utils>Utils</Spry.Utils>.<void>removeAllChildren</void>(this.regionNode)</Spry.Utils.removeAllChildren>;
 }</Function>;
 
 Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<String>processContentPI</String> = <Function>function(inStr)
@@ -2517,7 +2517,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<St
 		{
 			--<Number>processingContentTag</Number>;
 			if (<Number>processingContentTag</Number>)
-				<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Nested spry:content regions are not allowed!\n"</String>)</Spry.Debug.reportError>;
+				<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"Nested spry:content regions are not allowed!\n"</String>)</Spry.Debug.reportError>;
 		}
 		else
 		{
@@ -2628,7 +2628,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 				//      on the top of the token stack!
 				if (<Boolean><Array>tokenStack</Array>[<Array.length><Array>tokenStack</Array>.length</Array.length> - <Number>1</Number>].tokenType != <Spry.Data.Region.Token.PROCESSING_INSTRUCTION_TOKEN>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Spry.Data.Region.Token>Token</Spry.Data.Region.Token>.PROCESSING_INSTRUCTION_TOKEN</Spry.Data.Region.Token.PROCESSING_INSTRUCTION_TOKEN></Boolean>)
 				{
-					<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Invalid processing instruction close tag: "</String> + piName + <String>" -- "</String> + results[<Number>0</Number>] + <String>"\n"</String>)</Spry.Debug.reportError>;
+					<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"Invalid processing instruction close tag: "</String> + piName + <String>" -- "</String> + results[<Number>0</Number>] + <String>"\n"</String>)</Spry.Debug.reportError>;
 					return null;
 				}
 
@@ -2660,7 +2660,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 							}
 							catch (e)
 							{
-								<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Caught exception in tokenizeData() while trying to retrieve data set ("</String> + selectedDataSetName + <String>"): "</String> + e + <String>"\n"</String>)</Spry.Debug.reportError>;
+								<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"Caught exception in tokenizeData() while trying to retrieve data set ("</String> + selectedDataSetName + <String>"): "</String> + e + <String>"\n"</String>)</Spry.Debug.reportError>;
 								dataSet = null;
 								<String>selectedDataSetName</String> = <String>""</String>;
 							}
@@ -2694,14 +2694,14 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 				}
 				else
 				{
-					<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Unsupported region processing instruction: "</String> + results[<Number>0</Number>] + <String>"\n"</String>)</Spry.Debug.reportError>;
+					<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"Unsupported region processing instruction: "</String> + results[<Number>0</Number>] + <String>"\n"</String>)</Spry.Debug.reportError>;
 					return null;
 				}
 			}
 		}
 		else
 		{
-			<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Invalid region token: "</String> + results[<Number>0</Number>] + <String>"\n"</String>)</Spry.Debug.reportError>;
+			<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"Invalid region token: "</String> + results[<Number>0</Number>] + <String>"\n"</String>)</Spry.Debug.reportError>;
 			return null;
 		}
 
@@ -2769,7 +2769,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 					var dsContext = <Spry.Data.Region.ProcessingContext.getDataSetContext><Spry.Data.Region.ProcessingContext>processContext</Spry.Data.Region.ProcessingContext>.<Spry.Data.Region.ProcessingContext.getDataSetContext>getDataSetContext</Spry.Data.Region.ProcessingContext.getDataSetContext>(dataSet)</Spry.Data.Region.ProcessingContext.getDataSetContext>;
 					if (!dsContext)
 					{
-						<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"processTokens() failed to get a data set context!\n"</String>)</Spry.Debug.reportError>;
+						<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"processTokens() failed to get a data set context!\n"</String>)</Spry.Debug.reportError>;
 						break;
 					}
 
@@ -2787,7 +2787,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 							try { testVal = <Spry.Utils.eval>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.eval>eval</Spry.Utils.eval>(jsExpr)</Spry.Utils.eval>; }
 							catch(e)
 							{
-								<Spry.Debug.trace>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.trace>trace</Spry.Debug.trace>(<String>"Caught exception in Spry.Data.Region.prototype.processTokens while evaluating: "</String> + jsExpr + <String>"\n    Exception:"</String> + e + <String>"\n"</String>)</Spry.Debug.trace>;
+								<Spry.Debug.trace>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>trace</void>(<String>"Caught exception in Spry.Data.Region.prototype.processTokens while evaluating: "</String> + jsExpr + <String>"\n    Exception:"</String> + e + <String>"\n"</String>)</Spry.Debug.trace>;
 								<Boolean>testVal</Boolean> = <Boolean>true</Boolean>;
 							}
 						}
@@ -2810,7 +2810,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 					try { testVal = <Spry.Utils.eval>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.eval>eval</Spry.Utils.eval>(jsExpr)</Spry.Utils.eval>; }
 					catch(e)
 					{
-						<Spry.Debug.trace>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.trace>trace</Spry.Debug.trace>(<String>"Caught exception in Spry.Data.Region.prototype.processTokens while evaluating: "</String> + jsExpr + <String>"\n    Exception:"</String> + e + <String>"\n"</String>)</Spry.Debug.trace>;
+						<Spry.Debug.trace>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>trace</void>(<String>"Caught exception in Spry.Data.Region.prototype.processTokens while evaluating: "</String> + jsExpr + <String>"\n    Exception:"</String> + e + <String>"\n"</String>)</Spry.Debug.trace>;
 						<Boolean>testVal</Boolean> = <Boolean>true</Boolean>;
 					}
 				}
@@ -2843,7 +2843,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 								try { testVal = <Spry.Utils.eval>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.eval>eval</Spry.Utils.eval>(jsExpr)</Spry.Utils.eval>; }
 								catch(e)
 								{
-									<Spry.Debug.trace>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.trace>trace</Spry.Debug.trace>(<String>"Caught exception in Spry.Data.Region.prototype.processTokens while evaluating: "</String> + jsExpr + <String>"\n    Exception:"</String> + e + <String>"\n"</String>)</Spry.Debug.trace>;
+									<Spry.Debug.trace>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>trace</void>(<String>"Caught exception in Spry.Data.Region.prototype.processTokens while evaluating: "</String> + jsExpr + <String>"\n    Exception:"</String> + e + <String>"\n"</String>)</Spry.Debug.trace>;
 									<Boolean>testVal</Boolean> = <Boolean>false</Boolean>;
 								}
 
@@ -2876,7 +2876,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 			}
 			else
 			{
-				<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"processTokens(): Unknown processing instruction: "</String> + <token.data.name>token.<token.data>data</token.data>.name</token.data.name> + <String>"\n"</String>)</Spry.Debug.reportError>;
+				<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"processTokens(): Unknown processing instruction: "</String> + <token.data.name>token.<token.data>data</token.data>.name</token.data.name> + <String>"\n"</String>)</Spry.Debug.reportError>;
 				return <String>""</String>;
 			}
 			break;
@@ -2892,14 +2892,14 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 			}
 			if (!dataSet)
 			{
-				<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"processTokens(): Value reference has no data set specified: "</String> + <token.regionStr>token.regionStr</token.regionStr> + <String>"\n"</String>)</Spry.Debug.reportError>;
+				<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"processTokens(): Value reference has no data set specified: "</String> + <token.regionStr>token.regionStr</token.regionStr> + <String>"\n"</String>)</Spry.Debug.reportError>;
 				return <String>""</String>;
 			}
 
 			var dsContext = <Spry.Data.Region.ProcessingContext.getDataSetContext><Spry.Data.Region.ProcessingContext>processContext</Spry.Data.Region.ProcessingContext>.<Spry.Data.Region.ProcessingContext.getDataSetContext>getDataSetContext</Spry.Data.Region.ProcessingContext.getDataSetContext>(dataSet)</Spry.Data.Region.ProcessingContext.getDataSetContext>;
 			if (!dsContext)
 			{
-				<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"processTokens: Failed to get a data set context!\n"</String>)</Spry.Debug.reportError>;
+				<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"processTokens: Failed to get a data set context!\n"</String>)</Spry.Debug.reportError>;
 				return <String>""</String>;
 			}
 
@@ -2931,7 +2931,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 			}
 			break;
 		default:
-			<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"processTokens(): Invalid token type: "</String> + <token.regionStr>token.regionStr</token.regionStr> + <String>"\n"</String>)</Spry.Debug.reportError>;
+			<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"processTokens(): Invalid token type: "</String> + <token.regionStr>token.regionStr</token.regionStr> + <String>"\n"</String>)</Spry.Debug.reportError>;
 			break;
 	}
 
@@ -2969,7 +2969,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 
 	if (!<String>jsExpr</String>)
 	{
-		<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(piName + <String>" attribute requires a JavaScript expression that returns true or false!\n"</String>)</Spry.Debug.reportError>;
+		<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(piName + <String>" attribute requires a JavaScript expression that returns true or false!\n"</String>)</Spry.Debug.reportError>;
 		return <String>""</String>;
 	}
 
@@ -3006,7 +3006,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 
 	if (!<String>selectAttrStr</String>)
 	{
-		<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(piName + <String>" attribute requires a data set name!\n"</String>)</Spry.Debug.reportError>;
+		<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(piName + <String>" attribute requires a data set name!\n"</String>)</Spry.Debug.reportError>;
 		return <String>""</String>;
 	}
 
@@ -3044,7 +3044,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 
 	if (!<String>dataRefStr</String>)
 	{
-		<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(piName + <String>" attribute requires a data reference!\n"</String>)</Spry.Debug.reportError>;
+		<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(piName + <String>" attribute requires a data reference!\n"</String>)</Spry.Debug.reportError>;
 		return <String>""</String>;
 	}
 
@@ -3263,7 +3263,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<St
 	
 		if (<Boolean>curRowIndex &lt; <Number>0</Number></Boolean> || <Boolean>curRowIndex &gt; <data.length>data.length</data.length></Boolean>)
 		{
-			<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Invalid index used in Spry.Data.Region.DSContext.getCurrentRow()!\n"</String>)</Spry.Debug.reportError>;
+			<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"Invalid index used in Spry.Data.Region.DSContext.getCurrentRow()!\n"</String>)</Spry.Debug.reportError>;
 			return null;
 		}
 	
@@ -3284,7 +3284,7 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<St
 		if (<Boolean><m_curRowIndexArray.length>m_curRowIndexArray.length</m_curRowIndexArray.length> &lt; <Number>2</Number></Boolean>)
 		{
 			// Our array should always have at least one element in it!
-			<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<Spry.Debug.reportError>reportError</Spry.Debug.reportError>(<String>"Stack underflow in Spry.Data.Region.DSContext.popState()!\n"</String>)</Spry.Debug.reportError>;
+			<Spry.Debug.reportError>Spry.<Spry.Debug>Debug</Spry.Debug>.<void>reportError</void>(<String>"Stack underflow in Spry.Data.Region.DSContext.popState()!\n"</String>)</Spry.Debug.reportError>;
 			return;
 		}
 		<m_curRowIndexArray.pop>m_curRowIndexArray.<m_curRowIndexArray.pop>pop</m_curRowIndexArray.pop>()</m_curRowIndexArray.pop>;
@@ -3379,4 +3379,4 @@ Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.Region>Region</Spry.Data.Region>.<Sp
 	this.<String>regionState</String> = regionState;
 }</Function>;
 
-<Spry.Utils.addLoadListener>Spry.<Spry.Utils>Utils</Spry.Utils>.<Spry.Utils.addLoadListener>addLoadListener</Spry.Utils.addLoadListener>(<Function>function() { <setTimeout>setTimeout(<Function>function() { <Spry.Data.initRegions>Spry.<Spry.Data>Data</Spry.Data>.<Spry.Data.initRegions>initRegions</Spry.Data.initRegions>()</Spry.Data.initRegions>; }</Function>, <Number>0</Number>)</setTimeout>; }</Function>)</Spry.Utils.addLoadListener>;
+<Spry.Utils.addLoadListener>Spry.<Spry.Utils>Utils</Spry.Utils>.<void>addLoadListener</void>(<Function>function() { <setTimeout>setTimeout(<Function>function() { <Spry.Data.initRegions>Spry.<Spry.Data>Data</Spry.Data>.<void>initRegions</void>()</Spry.Data.initRegions>; }</Function>, <Number>0</Number>)</setTimeout>; }</Function>)</Spry.Utils.addLoadListener>;

@@ -43,6 +43,7 @@ import antlr.RecognitionException;
 import java.util.Collection;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
+import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
 
 /**
@@ -52,7 +53,7 @@ import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
  */
 public class TransparentParserErrorFilter extends BaseParserErrorFilter {
 
-    private static final boolean ENABLE = Boolean.getBoolean("cnd.parser.error.transparent");
+    private static final boolean ENABLE = DebugUtils.getBoolean("cnd.parser.error.transparent", true);
     private static final boolean ONLY_WARNINGS = Boolean.getBoolean("cnd.parser.error.transparent.warnings");
 
     @Override

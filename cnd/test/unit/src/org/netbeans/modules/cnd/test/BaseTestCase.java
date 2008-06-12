@@ -176,7 +176,7 @@ public abstract class BaseTestCase extends NbTestCase {
                 fail("Files differ; diff " +testFile.getAbsolutePath()+ " "+ goldenDataFileCopy); // NOI18N
             }             
         } catch (IOException ioe) {
-            fail("Could not obtain working direcory " + ioe); // NOI18N
+            fail("Error comparing files: " + ioe); // NOI18N
         }
     }    
     

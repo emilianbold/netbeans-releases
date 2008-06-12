@@ -58,8 +58,6 @@ public class SQLHistory implements Serializable {
         this.url = url;
         this.sql = sql;
         this.date = date;
-        // XXX temporary for testing functionality
-        LOGGER.log(Level.INFO, "URL = " + url + ", SQL = " + sql + ", Date = " + date);
     }
     
     public String getUrl() {

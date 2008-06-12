@@ -53,11 +53,14 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
+import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
+import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport;
 import org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
@@ -813,6 +816,14 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
             collectLibs(uiProperties.JAVAC_TEST_CLASSPATH_MODEL, libs, jars);
             collectLibs(uiProperties.RUN_CLASSPATH_MODEL, libs, jars);
             collectLibs(uiProperties.RUN_TEST_CLASSPATH_MODEL, libs, jars);
+            libs.add("CopyLibs"); // #132201 - copylibs is integral part of j2seproject
+            String customTasksLibs = uiProperties.getProject().evaluator().getProperty(AntBuildExtender.ANT_CUSTOMTASKS_LIBS_PROPNAME);
+            if (customTasksLibs != null) {
+                String libIDs[] = PropertyUtils.tokenizePath(customTasksLibs);
+                for (String libID : libIDs) {
+                    libs.add(libID.trim());
+                }
+            }
             boolean result = SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);
             if (result) {
                 isSharable = true;

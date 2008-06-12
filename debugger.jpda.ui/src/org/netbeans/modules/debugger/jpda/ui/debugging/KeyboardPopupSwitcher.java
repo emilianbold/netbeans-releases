@@ -65,6 +65,7 @@ import javax.swing.Timer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -78,7 +79,7 @@ import org.openide.util.Utilities;
 public final class KeyboardPopupSwitcher implements WindowFocusListener {
     
     /** Number of milliseconds to show popup if interruption didn't happen. */
-    private static final int TIME_TO_SHOW = 200;
+    private static final int TIME_TO_SHOW = 300;
     
     /** Singleton */
     private static KeyboardPopupSwitcher instance;
@@ -281,7 +282,8 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
             // set popup to be always on top to be in front of all
             // floating separate windows
             
-            DialogDescriptor descr = new DialogDescriptor(pTable, "Threads History");
+            String title = NbBundle.getMessage(KeyboardPopupSwitcher.class, "CTL_THREADS_CHOOSER");
+            DialogDescriptor descr = new DialogDescriptor(pTable, title);
             descr.setOptions(new Object[0]);
             descr.setClosingOptions(new Object [0]);
             

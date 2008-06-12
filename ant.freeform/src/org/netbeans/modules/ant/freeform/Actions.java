@@ -63,7 +63,6 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JSeparator;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.ant.freeform.ui.TargetMappingPanel;
@@ -82,8 +81,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 
 /**
@@ -480,7 +479,7 @@ public final class Actions implements ActionProvider {
                 }
             }
         }
-        addFromLayers(actions, "Projects/Profiler_Actions_temporary"); //NOI18N
+        actions.addAll(Utilities.actionsForPath("Projects/Profiler_Actions_temporary")); //NOI18N
         // Back to generic actions.
         actions.add(null);
         actions.add(CommonProjectActions.setAsMainProjectAction());
@@ -495,22 +494,11 @@ public final class Actions implements ActionProvider {
         actions.add(SystemAction.get(FindAction.class));
         
         // honor #57874 contract, see #58624:
-        addFromLayers(actions, "Projects/Actions");
+        actions.addAll(Utilities.actionsForPath("Projects/Actions"));
         
         actions.add(null);
         actions.add(CommonProjectActions.customizeProjectAction());
         return actions.toArray(new Action[actions.size()]);
-    }
-    
-    private static void addFromLayers(List<Action> actions, String path) {
-        Lookup look = Lookups.forPath(path);
-        for (Object next : look.lookupAll(Object.class)) {
-            if (next instanceof Action) {
-                actions.add((Action) next);
-            } else if (next instanceof JSeparator) {
-                actions.add(null);
-            }
-        }
     }
     
     private static final class CustomAction extends AbstractAction {

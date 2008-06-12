@@ -26,6 +26,8 @@ import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import org.netbeans.modules.xml.xpath.ext.schema.InvalidNamespaceException;
 import org.netbeans.modules.xml.xpath.ext.schema.SchemaModelsStack;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
 import org.openide.ErrorManager;
 
 /**
@@ -65,6 +67,100 @@ public class StepNodeNameTest extends StepNodeTest {
                 namespaceURI = SchemaModelsStack.getEffectiveNamespace(sComp, sms);
             }
             assert namespaceURI != null;
+            //
+            NamespaceContext nsContext = xPathModel.getNamespaceContext();
+            if (nsContext != null) {
+                nsPrefix = nsContext.getPrefix(namespaceURI);
+                //
+                if (nsPrefix == null) {
+                    if (nsContext instanceof ExNamespaceContext) {
+                        try {
+                            nsPrefix = ((ExNamespaceContext) nsContext).
+                                    addNamespace(namespaceURI);
+                        } catch (InvalidNamespaceException ex) {
+                            ErrorManager.getDefault().notify(ex);
+                        }
+                    }
+                }
+                //
+                // Log a warning if prefix still not accessible 
+                if (nsPrefix == null) {
+                    ErrorManager.getDefault().log(ErrorManager.WARNING, 
+                            "A prefix has to be declared for the namespace " +
+                            "\"" + namespaceURI + "\""); // NOI18N
+                }
+            }
+            //
+            if (nsPrefix == null || nsPrefix.length() == 0) {
+                sCompQName = new QName(componentName);
+            } else {
+                sCompQName = new QName(namespaceURI, componentName, nsPrefix);
+            }
+        } else {
+            sCompQName = new QName(componentName);
+        }
+        mNodeName = sCompQName;
+    }
+    
+    public StepNodeNameTest(XPathModel xPathModel, XPathPseudoComp pseudo, 
+            SchemaModelsStack sms) {
+        super();
+        String componentName = pseudo.getName();
+        QName sCompQName = null;
+        //
+        String namespaceURI = pseudo.getNamespace();
+        boolean prefixRequired = namespaceURI != null && namespaceURI.length() != 0;
+        //
+        if (prefixRequired) {
+            //
+            String nsPrefix = null;
+            //
+            NamespaceContext nsContext = xPathModel.getNamespaceContext();
+            if (nsContext != null) {
+                nsPrefix = nsContext.getPrefix(namespaceURI);
+                //
+                if (nsPrefix == null) {
+                    if (nsContext instanceof ExNamespaceContext) {
+                        try {
+                            nsPrefix = ((ExNamespaceContext) nsContext).
+                                    addNamespace(namespaceURI);
+                        } catch (InvalidNamespaceException ex) {
+                            ErrorManager.getDefault().notify(ex);
+                        }
+                    }
+                }
+                //
+                // Log a warning if prefix still not accessible 
+                if (nsPrefix == null) {
+                    ErrorManager.getDefault().log(ErrorManager.WARNING, 
+                            "A prefix has to be declared for the namespace " +
+                            "\"" + namespaceURI + "\""); // NOI18N
+                }
+            }
+            //
+            if (nsPrefix == null || nsPrefix.length() == 0) {
+                sCompQName = new QName(componentName);
+            } else {
+                sCompQName = new QName(namespaceURI, componentName, nsPrefix);
+            }
+        } else {
+            sCompQName = new QName(componentName);
+        }
+        mNodeName = sCompQName;
+    }
+    
+    public StepNodeNameTest(XPathModel xPathModel, SchemaCompHolder sCompHolder, 
+            SchemaModelsStack sms) {
+        super();
+        String componentName = sCompHolder.getName();
+        QName sCompQName = null;
+        //
+        String namespaceURI = sCompHolder.getNamespace(sms);
+        boolean prefixRequired = namespaceURI != null && namespaceURI.length() != 0;
+        //
+        if (prefixRequired) {
+            //
+            String nsPrefix = null;
             //
             NamespaceContext nsContext = xPathModel.getNamespaceContext();
             if (nsContext != null) {

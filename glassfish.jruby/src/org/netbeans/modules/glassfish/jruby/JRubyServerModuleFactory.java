@@ -44,8 +44,8 @@ import java.util.Properties;
 import java.util.Set;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
-import org.netbeans.spi.glassfish.GlassfishModule;
-import org.netbeans.spi.glassfish.GlassfishModuleFactory;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.GlassfishModuleFactory;
 import org.openide.util.Lookup;
 
 /**

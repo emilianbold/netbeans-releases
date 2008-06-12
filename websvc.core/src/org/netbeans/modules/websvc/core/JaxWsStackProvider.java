@@ -101,8 +101,8 @@ public class JaxWsStackProvider {
                 String releaseVersion = java_version.substring(index+1);
                 try {
                     Integer rv = Integer.valueOf(releaseVersion);
-                    if (rv >=4) return "2.1";
-                    else return "2.0";
+                    if (rv >=4) return "2.1.1"; //NOI18N
+                    else return "2.0"; //NOI18N
                 } catch (NumberFormatException ex) {
                     // return null for some strange jdk versions
                     return null;
@@ -114,7 +114,7 @@ public class JaxWsStackProvider {
         } else {
             try {
                 Float version = Float.valueOf(java_version.substring(0,3));
-                if (version > 1.6) return "2.1";
+                if (version > 1.6) return "2.1.3"; //NOI18N
                 else return null;
             } catch (NumberFormatException ex) {
                 // return null for some strange jdk versions

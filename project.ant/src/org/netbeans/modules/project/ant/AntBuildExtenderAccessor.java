@@ -41,12 +41,12 @@
 
 package org.netbeans.modules.project.ant;
 
-import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 
 /**
@@ -104,6 +104,8 @@ public abstract class AntBuildExtenderAccessor {
     }    
     
     public abstract AntBuildExtender createExtender(AntBuildExtenderImplementation impl);
+    
+    public abstract AntBuildExtender createExtender(AntBuildExtenderImplementation impl, ReferenceHelper refHelper);
     
     public abstract Set<AntBuildExtender.Extension> getExtensions(AntBuildExtender ext);
     

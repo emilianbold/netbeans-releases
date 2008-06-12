@@ -168,8 +168,14 @@ public class CsmCompletionExpression {
     /** dereference "*" or address-of "&" operators in the '((A)*' or '((A)&'*/
     public static final int MEMBER_POINTER_OPEN = 33;    
 
+    /** 'goto' keyword */
+    public static final int GOTO = 34;
+
+    /** 'goto' keyword */
+    public static final int LABEL = 35;
+
     /** Last used id of the expression ids. */
-    private static final int LAST_ID = MEMBER_POINTER_OPEN;
+    private static final int LAST_ID = LABEL;
 
     private static final int cppTokenIDsLength
         = CCTokenContext.context.getTokenIDs().length;

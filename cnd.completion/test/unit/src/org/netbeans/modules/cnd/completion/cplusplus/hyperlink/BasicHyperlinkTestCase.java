@@ -140,10 +140,13 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
     }
 
     public void testIZ131555() throws Exception {
-        // See IZ136481
         for (int i = 5; i <=13; i++ ) {
             performTest("IZ131555.c", i, 16, "IZ131555.c", 2, 5);
         }
+    }
+
+    public void testIZ136730() throws Exception {
+        performTest("IZ136730.c", 2, 11, "IZ136730.c", 3, 1);
     }
     
     public static class Failed extends HyperlinkBaseTestCase {

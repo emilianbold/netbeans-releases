@@ -54,7 +54,10 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.spring.api.beans.SpringScope;
 import org.netbeans.modules.spring.beans.refactoring.Occurrences;
+import org.netbeans.modules.spring.beans.refactoring.Occurrences.Occurrence;
 import org.netbeans.modules.spring.beans.refactoring.SpringRefactoringElement;
+import org.netbeans.modules.spring.beans.refactoring.SpringRefactorings;
+import org.netbeans.modules.spring.beans.refactoring.SpringRefactorings.RenamedProperty;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -89,9 +92,18 @@ public class SpringFindUsagesPlugin implements RefactoringPlugin {
             return null;
         }
         final TreePathHandle treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
-        if (treePathHandle == null || treePathHandle.getKind() != Kind.CLASS) {
-            return null;
+        if (treePathHandle != null && treePathHandle.getKind() == Kind.METHOD) {
+            return prepareMethodRefactoring(refactoringElementsBag, treePathHandle);
         }
+        
+        if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS) {
+            return prepareClassRefactoring(refactoringElementsBag, treePathHandle);
+        }
+        
+        return null;
+    }
+    
+    private Problem prepareClassRefactoring(RefactoringElementsBag refactoringElementsBag, final TreePathHandle treePathHandle) {
         FileObject fo = treePathHandle.getFileObject();
         SpringScope scope = SpringScope.getSpringScope(fo);
         if (scope == null) {
@@ -117,6 +129,36 @@ public class SpringFindUsagesPlugin implements RefactoringPlugin {
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }
+        return null;
+    }
+    
+    private Problem prepareMethodRefactoring(RefactoringElementsBag refactoringElements, final TreePathHandle treePathHandle) {
+        FileObject fo = treePathHandle.getFileObject();
+
+        try {
+            RenamedProperty prop = null;
+            JavaSource js = JavaSource.forFileObject(fo);
+            if (js != null) {
+                prop = SpringRefactorings.getRenamedProperty(treePathHandle, js, null);
+            }
+
+            SpringScope scope = SpringScope.getSpringScope(fo);
+            if (scope == null) {
+                return null;
+            }
+
+            if (prop != null) {
+                String oldName = prop.getOldName();
+                if (oldName != null) {
+                    for (Occurrence occurrence : Occurrences.getPropertyOccurrences(prop, js, scope)) {
+                        refactoringElements.add(refactoring, SpringRefactoringElement.create(occurrence));
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
         return null;
     }
 }
