@@ -135,13 +135,8 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
         }
     }
 
-    public void ref(String ref) {
-        if (isInFramework) {
-            getRef().println(ref);
-            getRef().flush();
-        } else {
-            System.out.println("TEST_OUTPUT:" + ref);
-        }
+    public void ref(String ref) {        
+            getRef().println(ref);        
     }
 
     public void log(String log) {
@@ -153,6 +148,7 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
         }
     }
 
+    @Override
     public void setUp() {
         isInFramework = true;
         log("Starting abbreviations test.");
@@ -164,8 +160,10 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
         }
     }
 
+    @Override
     public void tearDown() throws Exception {
-        log("Finishing abbreviations test.");
+        getRef().flush();
+        log("Finishing abbreviations test.");        
         assertFile("Output does not match golden file.", getGoldenFile(), new File(getWorkDir(), this.getName() + ".ref"),
                 new File(getWorkDir(), this.getName() + ".diff"), new LineDiff(false));
         isInFramework = false;
