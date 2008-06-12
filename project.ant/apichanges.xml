@@ -152,26 +152,6 @@ is the proper place.
             <issue number="136623"/>
         </change>
 
-
-        <change id="libraries-for-ant">
-            <api name="general"/>
-            <summary>Support for adding/copying libraries used by build process only</summary>
-            <version major="1" minor="21"/>
-            <date day="9" month="6" year="2008"/>
-            <author login="mkubec"/>
-            <compatibility addition="yes"/>
-            <description>
-                <p>
-                    Added methods for adding/copying global libraries that are needed 
-                    for Ant build script. Added methods:
-                    <code>AntBuildExtender.addLibrary</code>,
-                    <code>AntBuildExtender.removeLibrary</code>
-                </p>
-            </description>
-            <class package="org.netbeans.api.project.ant" name="AntBuildExtender"/>
-            <issue number="136623"/>
-        </change>
-
         <change id="AntProjectHelper-createAuxiliaryProperties">
             <api name="general"/>
             <summary>Added AntProjectHelper.createAuxiliaryProperties()</summary>
