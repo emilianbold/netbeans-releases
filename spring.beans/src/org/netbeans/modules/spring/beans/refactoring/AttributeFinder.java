@@ -36,20 +36,56 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.spring.beans.refactoring;
 
-package org.netbeans.modules.xslt.core.text.completion;
-
-import javax.swing.text.JTextComponent;
-import org.netbeans.spi.editor.completion.CompletionTask;
-import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
+import javax.swing.text.BadLocationException;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.TokenID;
+import org.netbeans.editor.TokenItem;
+import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
+import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 
 /**
- * @author Alex Petrov (30.04.2008)
+ *
+ * @author Rohan Ranade
  */
-public class XSLTCompletionTask {
-    public CompletionTask createTask(JTextComponent textComponent) {
-        AsyncCompletionTask completionTask = new AsyncCompletionTask(new XSLTCompletionQuery(), 
-            textComponent);
-        return completionTask;
+public class AttributeFinder {
+
+    private final XMLSyntaxSupport syntaxSupport;
+    private final int start;
+    private int foundOffset = -1;
+
+    public AttributeFinder(XMLSyntaxSupport syntaxSupport, int start) {
+        this.syntaxSupport = syntaxSupport;
+        this.start = start;
+    }
+
+    public boolean find(String attrName) throws BadLocationException {
+        foundOffset = -1;
+        BaseDocument doc = syntaxSupport.getDocument();
+        TokenItem item = syntaxSupport.getTokenChain(start, Math.min(start + 1, doc.getLength()));
+        if (item == null || item.getTokenID() != XMLDefaultTokenContext.TAG) {
+            return false;
+        }
+        item = item.getNext();
+        String currentAttrName = null;
+        while (item != null) {
+            TokenID id = item.getTokenID();
+            if (id == XMLDefaultTokenContext.ARGUMENT) {
+                currentAttrName = item.getImage();
+                if (currentAttrName != null && currentAttrName.equals(attrName)) {
+                    foundOffset = item.getOffset();
+                    return true;
+                }
+            } else if (id == XMLDefaultTokenContext.TAG) {
+                break;
+            }
+            item = item.getNext();
+        }
+        return false;
+    }
+
+    public int getFoundOffset() {
+        return foundOffset;
     }
 }

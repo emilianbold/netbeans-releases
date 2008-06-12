@@ -54,16 +54,13 @@ import org.netbeans.modules.xslt.model.Template;
  * @author Alex Petrov (06.06.2008)
  */
 public class HandlerCallTemplateName extends BaseCompletionHandler {
-    private static final String
+    protected static final String
         XSLT_TAG_NAME_CALL_TEMPLATE = "call-template";
     
     @Override
     public List<XSLTCompletionResultItem> getResultItemList(
         XSLTEditorComponentHolder editorComponentHolder) {
         initHandler(editorComponentHolder);
-        if ((xslModel != null) && (xslModel.getState().equals(State.NOT_WELL_FORMED))) {
-            return getIncorrectDocumentResultItem();
-        }
         return getNamedTemplateNameList();
     }
     
@@ -78,6 +75,9 @@ public class HandlerCallTemplateName extends BaseCompletionHandler {
         if (! attributeName.equals(XSLTCompletionUtil.ATTRIB_NAME))
             return Collections.EMPTY_LIST;
 
+        if ((xslModel != null) && (xslModel.getState().equals(State.NOT_WELL_FORMED))) {
+            return getIncorrectDocumentResultItem();
+        }
         return findNamedTemplates();
     }
     

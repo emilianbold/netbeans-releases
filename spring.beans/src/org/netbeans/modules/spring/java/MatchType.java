@@ -37,19 +37,13 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.xslt.core.text.completion;
-
-import javax.swing.text.JTextComponent;
-import org.netbeans.spi.editor.completion.CompletionTask;
-import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
+package org.netbeans.modules.spring.java;
 
 /**
- * @author Alex Petrov (30.04.2008)
+ *
+ * @author Rohan Ranade
  */
-public class XSLTCompletionTask {
-    public CompletionTask createTask(JTextComponent textComponent) {
-        AsyncCompletionTask completionTask = new AsyncCompletionTask(new XSLTCompletionQuery(), 
-            textComponent);
-        return completionTask;
-    }
+public enum MatchType {
+    EXACT,
+    PREFIX
 }
