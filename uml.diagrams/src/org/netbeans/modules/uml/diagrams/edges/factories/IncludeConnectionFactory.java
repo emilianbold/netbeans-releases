@@ -36,20 +36,22 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.uml.diagrams.edges.factories;
 
-package org.netbeans.modules.uml.diagrams.nodes.activity;
-
+import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.modules.uml.diagrams.nodes.JoinForkWidget;
+import org.netbeans.modules.uml.diagrams.edges.IncludeConnector;
+import org.netbeans.modules.uml.drawingarea.ConnectionWidgetFactory;
 
 /**
  *
- * @author thuy
+ * @author treyspiva
  */
-public class HorizontalJoinForkWidget extends JoinForkWidget 
+public class IncludeConnectionFactory implements ConnectionWidgetFactory
 {
-    public HorizontalJoinForkWidget(Scene scene)
+
+    public ConnectionWidget createConnection(Scene scene)
     {
-        super(scene, DEFAULT_WIDTH, DEFAULT_HEIGHT, "UML/context-palette/ActivityFork");
+        return new IncludeConnector(scene);
     }
 }

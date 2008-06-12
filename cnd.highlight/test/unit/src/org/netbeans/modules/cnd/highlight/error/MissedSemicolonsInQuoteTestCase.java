@@ -47,18 +47,20 @@ package org.netbeans.modules.cnd.highlight.error;
 public class MissedSemicolonsInQuoteTestCase extends ErrorHighlightingBaseTestCase {
 
     static {
-        System.setProperty("cnd.parser.error.transparent", "true");
+        System.setProperty("cnd.parser.error.transparent", "false");
+        System.setProperty("cnd.modelimpl.trace.error.provider", "true");
+        System.setProperty("parser.report.errors", "true");
     }
 
     public MissedSemicolonsInQuoteTestCase(String testName) {
         super(testName);
     }
     
-    public void testSimple() throws Exception {
-        //performStaticTest("missed_semicolon_simple.cc"); //NOI18N
-        //performStaticTest("missed_semicolon_simple.cc");
-        performDynamicTest("missed_semicolon_simple.cc", new MissedSemicolonsErrorMaker()); //NOI18N
-    }
+//    public void testSimple() throws Exception {
+//        //performStaticTest("missed_semicolon_simple.cc"); //NOI18N
+//        //performStaticTest("missed_semicolon_simple.cc");
+//        performDynamicTest("missed_semicolon_simple.cc", new MissedSemicolonsErrorMaker()); //NOI18N
+//    }
     
     
 }

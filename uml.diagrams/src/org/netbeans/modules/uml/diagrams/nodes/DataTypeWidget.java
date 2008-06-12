@@ -53,6 +53,7 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IDataType;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
@@ -69,6 +70,7 @@ public class DataTypeWidget extends UMLNodeWidget implements PropertyChangeListe
     public DataTypeWidget(Scene scene)
     {
         super(scene, true);
+        addToLookup(initializeContextPalette());
     }
     
     public DataTypeWidget(Scene scene, IPresentationElement pe)
@@ -76,8 +78,16 @@ public class DataTypeWidget extends UMLNodeWidget implements PropertyChangeListe
         this(scene);
         this.pe = pe;
         initializeNode(pe);
+        addToLookup(initializeContextPalette());
     }
 
+    protected DefaultContextPaletteModel initializeContextPalette()
+    {
+        DefaultContextPaletteModel paletteModel = new DefaultContextPaletteModel(this);
+        paletteModel.initialize("UML/context-palette/DataType");
+        return paletteModel;
+    }
+    
     @Override
     public void initializeNode(IPresentationElement presentation)
     {
