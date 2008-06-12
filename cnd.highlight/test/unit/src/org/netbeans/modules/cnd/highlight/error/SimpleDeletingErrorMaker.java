@@ -39,21 +39,42 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
+import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
+import org.openide.filesystems.FileLock;
+
 /**
- * Error highlighting test case for missing semicolons
+ * An ErrorMaker that searches for and deletes a string
+ * (for example, ";" or "{")
  * @author Vladimir Kvashin
  */
-public class MissedSemicolonsTestCase extends ErrorHighlightingBaseTestCase {
+public abstract class SimpleDeletingErrorMaker extends BaseErrorMaker {
 
-    static {
-        System.setProperty("cnd.parser.error.transparent", "false");
+    private String textToDelete;
+    private int searchFrom = 0;
+
+    public SimpleDeletingErrorMaker(String textToDelete) {
+        this.textToDelete = textToDelete;
     }
-    
-    public MissedSemicolonsTestCase(String testName) {
-        super(testName);
+
+    public void analyze(Collection<CsmErrorInfo> errors) {
     }
-    
-    public void testMissedSemicolonAfterClass() throws Exception {
-        performStaticTest("missed_semicolon_after_class.cc"); //NOI18N
-    }
+
+    public boolean change() throws BadLocationException {
+        BaseDocument doc = getDocument();
+        String text = doc.getText(searchFrom,  doc.getLength() - searchFrom);
+        int pos = text.indexOf(textToDelete);
+        if( pos < 0 ) {
+            return false;
+        } else {
+            pos += searchFrom;
+            searchFrom = pos + 1;
+            remove(pos, 1);
+            return true;
+        }
+    }    
 }
