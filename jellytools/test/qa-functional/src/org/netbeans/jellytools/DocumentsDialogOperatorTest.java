@@ -100,22 +100,15 @@ public class DocumentsDialogOperatorTest extends JellyTestCase {
         return suite;
          */
         return (NbTest) NbModuleSuite.create(
-                updateConfig(NbModuleSuite.emptyConfiguration().enableModules(".*").clusters(".*")));
-    }
-    
-    static NbModuleSuite.Configuration updateConfig(NbModuleSuite.Configuration in) {
-        return in.addTest(
-            DocumentsDialogOperatorTest.class, 
-            "testInvoke"
-            "testVerify",
-            "testSelectDocument",
-            "testSelectDocuments",
-            "testGetDescription",
-            "testSaveDocuments",
-            "testCloseDocuments",
-            "testSwitchToDocument"
-        );
-        
+                NbModuleSuite.createConfiguration(DocumentsDialogOperatorTest.class).
+                    addTest("testInvoke").
+                    addTest("testVerify").
+                    addTest("testSelectDocument").
+                    addTest("testSelectDocuments").
+                    addTest("testGetDescription").
+                    addTest("testSaveDocuments").
+                    addTest("testCloseDocuments").
+                    addTest("testSwitchToDocument").enableModules(".*").clusters(".*"));
     }
     
     /** Print out test name. */
