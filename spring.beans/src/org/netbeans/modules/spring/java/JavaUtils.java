@@ -40,6 +40,9 @@
 package org.netbeans.modules.spring.java;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,6 +53,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.SimpleElementVisitor6;
@@ -57,10 +61,12 @@ import javax.swing.text.Document;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -77,8 +83,124 @@ import org.openide.util.NbBundle;
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
 public final class JavaUtils {
+
     private JavaUtils() {
         
+    }
+
+    public static Collection<ExecutableElement> getMethodsFromHandles(CompilationInfo ci, Collection<ElementHandle<ExecutableElement>> methodHandles) {
+        List<ExecutableElement> methods = new ArrayList<ExecutableElement>(methodHandles.size());
+        for(ElementHandle<ExecutableElement> handle : methodHandles) {
+            ExecutableElement ee = handle.resolve(ci);
+            if(ee != null) {
+                methods.add(ee);
+            }
+        }
+        
+        return methods;
+    }
+    
+    private static final String GET_PREFIX = "get"; // NOI18N
+    private static final String SET_PREFIX = "set"; // NOI18N
+    private static final String IS_PREFIX = "is"; // NOI18N
+    
+    public static boolean isGetter(ExecutableElement ee) {
+        String methodName = ee.getSimpleName().toString();
+        TypeMirror retType = ee.getReturnType();
+
+        // discard private and static methods
+        if (ee.getModifiers().contains(Modifier.PRIVATE) || ee.getModifiers().contains(Modifier.STATIC)) {
+            return false;
+        }
+        
+        
+        boolean retVal = methodName.startsWith(GET_PREFIX) && methodName.length() > GET_PREFIX.length() && retType.getKind() != TypeKind.VOID;
+        retVal = retVal || methodName.startsWith(IS_PREFIX) && methodName.length() > IS_PREFIX.length() && retType.getKind() == TypeKind.BOOLEAN;
+        
+        return retVal;
+    }
+    
+    public static boolean isSetter(ExecutableElement ee) {
+        String methodName = ee.getSimpleName().toString();
+        TypeMirror retType = ee.getReturnType();
+        
+        // discard private and static methods
+        if (ee.getModifiers().contains(Modifier.PRIVATE) || ee.getModifiers().contains(Modifier.STATIC)) {
+            return false;
+        }
+        
+        return methodName.startsWith(SET_PREFIX) && methodName.length() > SET_PREFIX.length() 
+                && retType.getKind() == TypeKind.VOID && ee.getParameters().size() == 1;
+    }
+    
+    public static String getPropertyName(String methodName) {
+        if(methodName == null) {
+            return null;
+        }
+        
+        if(methodName.startsWith(GET_PREFIX) || methodName.startsWith(SET_PREFIX)) {
+            return convertToPropertyName(methodName.substring(3));
+        } else if(methodName.startsWith(IS_PREFIX)) {
+            return convertToPropertyName(methodName.substring(2));
+        }
+        
+        return null;
+    }
+    
+    private static String convertToPropertyName(String name) {
+        char[] vals = name.toCharArray();
+        vals[0] = Character.toLowerCase(vals[0]);
+        return String.valueOf(vals);
+    }
+    
+    public static Collection<ElementHandle<ExecutableElement>> getOverridenMethodsAsHandles(ExecutableElement e, CompilationInfo info) {
+        Collection<ExecutableElement> methods = getOverridenMethods(e, info);
+        if(methods.isEmpty()) {
+            return Collections.emptyList();
+        }
+        
+        Collection<ElementHandle<ExecutableElement>> handles = new ArrayList<ElementHandle<ExecutableElement>>(methods.size());
+        for(ExecutableElement ee : methods) {
+            handles.add(ElementHandle.create(ee));
+        }
+        
+        return handles;
+    }
+    
+    public static Collection<ExecutableElement> getOverridenMethods(ExecutableElement e, CompilationInfo info) {
+        return getOverridenMethods(e, SourceUtils.getEnclosingTypeElement(e), info);
+    }
+
+    private static Collection<ExecutableElement> getOverridenMethods(ExecutableElement e, TypeElement parent, CompilationInfo info) {
+        ArrayList<ExecutableElement> result = new ArrayList<ExecutableElement>();
+        
+        TypeMirror sup = parent.getSuperclass();
+        if (sup.getKind() == TypeKind.DECLARED) {
+            TypeElement next = (TypeElement) ((DeclaredType)sup).asElement();
+            ExecutableElement overriden = getMethod(e, next, info);
+                result.addAll(getOverridenMethods(e,next, info));
+            if (overriden!=null) {
+                result.add(overriden);
+            }
+        }
+        for (TypeMirror tm:parent.getInterfaces()) {
+            TypeElement next = (TypeElement) ((DeclaredType)tm).asElement();
+            ExecutableElement overriden2 = getMethod(e, next, info);
+            result.addAll(getOverridenMethods(e,next, info));
+            if (overriden2!=null) {
+                result.add(overriden2);
+            }
+        }
+        return result;
+    }    
+    
+    private static ExecutableElement getMethod(ExecutableElement method, TypeElement type, CompilationInfo info) {
+        for (ExecutableElement met: ElementFilter.methodsIn(type.getEnclosedElements())){
+            if (info.getElements().overrides(method, met, type)) {
+                return met;
+            }
+        }
+        return null;
     }
     
     public static ElementHandle<ExecutableElement> findMethod(FileObject fileObject, final String classBinName,
