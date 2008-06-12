@@ -46,6 +46,8 @@ import junit.framework.Test;
 import org.netbeans.junit.AssertionFailedErrorException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.web.FileObjectFilter;
 import org.netbeans.test.web.RecurrentSuiteFactory;
 import org.openide.filesystems.FileObject;
@@ -66,18 +68,28 @@ public class IndentationTest extends CompletionTest {
     }
 
     public static Test suite() {
-        // find folder with test projects and define file objects filter
-        File datadir = new IndentationTest(null, null).getDataDir();
-        File projectsDir = new File(datadir, "IndentationTestProjects");
-        FileObjectFilter filter = new FileObjectFilter() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf.addTest(SuiteCreator.class));
+    }
 
-                    public boolean accept(FileObject fObject) {
-                        String ext = fObject.getExt();
-                        String name = fObject.getName();
-                return name.startsWith("test") && (XML_EXTS.contains(ext) || JSP_EXTS.contains(ext));
-                    }
-                };
-        return RecurrentSuiteFactory.createSuite(IndentationTest.class, projectsDir, filter);
+    public static final class SuiteCreator extends NbTestSuite {
+
+        public SuiteCreator() {
+            super();
+            // find folder with test projects and define file objects filter
+            File datadir = new IndentationTest(null, null).getDataDir();
+            File projectsDir = new File(datadir, "IndentationTestProjects");
+            FileObjectFilter filter = new FileObjectFilter() {
+
+                public boolean accept(FileObject fObject) {
+                    String ext = fObject.getExt();
+                    String name = fObject.getName();
+                    return name.startsWith("test") && (XML_EXTS.contains(ext) || JSP_EXTS.contains(ext));
+                }
+            };
+            addTest(RecurrentSuiteFactory.createSuite(IndentationTest.class, projectsDir, filter));
+        }
     }
 
     @Override
@@ -113,7 +125,7 @@ public class IndentationTest extends CompletionTest {
 
     private Possition getNextPossition(String text, int actual) {
         int minStart = Integer.MAX_VALUE,
-         len = -1;
+                len = -1;
         for (int i = 0; i < START_STEPS.length; i++) {
             int pos = text.indexOf(START_STEPS[i], actual);
             if ((pos != -1) && (pos < minStart)) {
@@ -126,7 +138,7 @@ public class IndentationTest extends CompletionTest {
             return new Possition(minStart, len);
         } else {
             return null;
-    }
+        }
     }
 
     private class Possition {

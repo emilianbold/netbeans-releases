@@ -46,6 +46,8 @@ import java.io.File;
 import junit.framework.Test;
 import org.netbeans.junit.AssertionFailedErrorException;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.web.FileObjectFilter;
 import org.netbeans.test.web.RecurrentSuiteFactory;
 import org.openide.filesystems.FileObject;
@@ -55,29 +57,38 @@ import org.openide.filesystems.FileObject;
  * @author Jindrich Sedek
  */
 public class ReformatingTest extends CompletionTest {
+
     private static final String reformatSimplePrefix = "reformatTest";
     private static final String reformatSelection = "reformatSelection";
     private static final String reformatTwice = "reformatTwice";
-    
+
     /** Creates a new instance of IndentationTest */
     public ReformatingTest(String name, FileObject testFileObj) {
         super(name, testFileObj);
     }
 
     public static Test suite() {
-        // find folder with test projects and define file objects filter
-        File datadir = new IndentationTest(null, null).getDataDir();
-        File projectsDir = new File(datadir, "IndentationTestProjects");
-        FileObjectFilter filter = new FileObjectFilter() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf.addTest(SuiteCreator.class));
+    }
 
-            public boolean accept(FileObject fObject) {
-                String ext = fObject.getExt();
-                String name = fObject.getName();
-                return (name.startsWith(reformatSimplePrefix) || name.startsWith(reformatSelection) 
-                        || name.startsWith(reformatTwice)) && (XML_EXTS.contains(ext) || JSP_EXTS.contains(ext));
-            }
-        };
-        return RecurrentSuiteFactory.createSuite(ReformatingTest.class, projectsDir, filter);
+    public static final class SuiteCreator extends NbTestSuite {
+
+        public SuiteCreator() {
+            super();
+            File datadir = new IndentationTest(null, null).getDataDir();
+            File projectsDir = new File(datadir, "IndentationTestProjects");
+            FileObjectFilter filter = new FileObjectFilter() {
+
+                public boolean accept(FileObject fObject) {
+                    String ext = fObject.getExt();
+                    String name = fObject.getName();
+                    return (name.startsWith(reformatSimplePrefix) || name.startsWith(reformatSelection) || name.startsWith(reformatTwice)) && (XML_EXTS.contains(ext) || JSP_EXTS.contains(ext));
+                }
+            };
+            addTest(RecurrentSuiteFactory.createSuite(ReformatingTest.class, projectsDir, filter));
+        }
     }
 
     @Override
@@ -88,17 +99,17 @@ public class ReformatingTest extends CompletionTest {
             EditorOperator eOperator = new EditorOperator(fileName);
             if (fileName.startsWith(reformatSimplePrefix)) {
                 eOperator.pushKey(KeyEvent.VK_F, InputEvent.ALT_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK);
-            }else if (fileName.startsWith(reformatTwice)){
+            } else if (fileName.startsWith(reformatTwice)) {
                 eOperator.pushKey(KeyEvent.VK_F, InputEvent.ALT_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK);
                 eOperator.waitModified(true);
                 String str = eOperator.getText();
                 eOperator.pushKey(KeyEvent.VK_F, InputEvent.ALT_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK);
                 assertEquals(eOperator.getText(), str);//no change should be done during second reformating
-            }else{// reformat selection
+            } else {// reformat selection
                 String text = eOperator.getText();
                 int firstIndex = text.indexOf(':');
                 String first = text.substring(0, firstIndex);
-                String second = text.substring(firstIndex+1, text.indexOf(':', firstIndex+1));
+                String second = text.substring(firstIndex + 1, text.indexOf(':', firstIndex + 1));
                 eOperator.select(Integer.parseInt(first), Integer.parseInt(second));
                 eOperator.pushKey(KeyEvent.VK_F, InputEvent.ALT_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK);
             }

@@ -65,6 +65,7 @@ import junit.framework.Test;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.CompletionQuery.ResultItem;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.util.PNGEncoder;
@@ -74,6 +75,8 @@ import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.test.web.FileObjectFilter;
 import org.netbeans.test.web.RecurrentSuiteFactory;
@@ -116,7 +119,7 @@ import org.openide.util.actions.SystemAction;
  * @author ms113234
  *
  */
-public class CompletionTest extends JellyTestCase {
+public class CompletionTest extends J2eeTestCase {
 
     private static boolean GENERATE_GOLDEN_FILES = false;//generate golden files, or test
     protected FileObject testFileObj;
@@ -137,22 +140,31 @@ public class CompletionTest extends JellyTestCase {
     }
 
     public static Test suite() {
-        // find folder with test projects and define file objects filter
-        File datadir = new CompletionTest(null, null).getDataDir();
-        File projectsDir = new File(datadir, "CompletionTestProjects");
-        FileObjectFilter filter = new FileObjectFilter() {
-
-            public boolean accept(FileObject fo) {
-                String ext = fo.getExt();
-                String name = fo.getName();
-                return (name.startsWith("test") || name.startsWith("Test")) &&
-                        (XML_EXTS.contains(ext) || JSP_EXTS.contains(ext) || JS_EXTS.contains(ext));
-            }
-        };
-        return RecurrentSuiteFactory.createSuite(CompletionTest.class,
-                projectsDir, filter);
+        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf.addTest(SuiteCreator.class));
     }
 
+    public static final class SuiteCreator extends NbTestSuite {
+
+        public SuiteCreator() {
+            super();
+            File datadir = new CompletionTest(null, null).getDataDir();
+            File projectsDir = new File(datadir, "CompletionTestProjects");
+            FileObjectFilter filter = new FileObjectFilter() {
+
+                public boolean accept(FileObject fo) {
+                    String ext = fo.getExt();
+                    String name = fo.getName();
+                    return (name.startsWith("test") || name.startsWith("Test")) &&
+                            (XML_EXTS.contains(ext) || JSP_EXTS.contains(ext) || JS_EXTS.contains(ext));
+                }
+            };
+            addTest(RecurrentSuiteFactory.createSuite(CompletionTest.class,
+                projectsDir, filter));
+        }
+    }
+    
     @Override
     public void runTest() throws Exception {
         String ext = testFileObj.getExt();
@@ -540,7 +552,7 @@ public class CompletionTest extends JellyTestCase {
         return method;
     }
 
-    protected void assertInstanceOf(Class expectedType, Object actual) {
+    protected void assertInstanceOf(Class<?> expectedType, Object actual) {
         if (!expectedType.isAssignableFrom(actual.getClass())) {
             fail("Expected type: " + expectedType.getName() + "\nbut was: " +
                     actual.getClass().getName());
