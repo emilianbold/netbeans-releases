@@ -39,6 +39,10 @@
 
 package org.netbeans.modules.cnd.remote.explorer.nodes;
 
+import java.beans.PropertyChangeEvent;
+import javax.swing.Action;
+import org.netbeans.modules.cnd.remote.actions.AddNewServerAction;
+import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.openide.util.NbBundle;
 
 /**
@@ -61,5 +65,20 @@ public class RootNode extends RemoteServicesNode {
         
         setDisplayName(name);
         setName(name);
+    }
+    
+    @Override
+    public Action[] getActions(boolean context) {
+        Action[] actions = { new AddNewServerAction() };
+        return actions;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        String prop = evt.getPropertyName();
+        
+        if (prop == RemoteServerList.PROP_ADD) {
+            
+        } else if (prop == RemoteServerList.PROP_REMOVE) {
+        }
     }
 }

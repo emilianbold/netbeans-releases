@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.remote.explorer.nodes;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 
@@ -46,14 +48,20 @@ import org.openide.nodes.Children;
  *
  * @author gordonp
  */
-public class RemoteServicesNode extends AbstractNode {
+public abstract class RemoteServicesNode extends AbstractNode implements PropertyChangeListener {
 
     public RemoteServicesNode() {
         super(Children.create(new RemoteServicesChildFactory(), true));
+    }
+    
+    public RemoteServicesNode(Children children) {
+        super(children);
     }
 
     @Override
     public boolean canRename() {
         return false;
     }
+
+    public abstract void propertyChange(PropertyChangeEvent evt);
 }

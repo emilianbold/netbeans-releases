@@ -41,17 +41,32 @@ package org.netbeans.modules.cnd.remote.explorer.nodes;
 
 import java.util.List;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.openide.nodes.ChildFactory;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author gordonp
  */
-public class RemoteServicesChildFactory extends ChildFactory<RemoteServerList> {
+public class RemoteServicesChildFactory extends ChildFactory<RemoteServerRecord> {
 
     @Override
-    protected boolean createKeys(List toPopulate) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    protected boolean createKeys(List<RemoteServerRecord> toPopulate) {
+        try {
+            toPopulate.add(RemoteServerList.getInstance().getLocalhostRecord());
+        } catch (Exception ie) {
+            return false;
+        }
+        return true;
     }
 
+    @Override
+    protected Node createNodeForKey(RemoteServerRecord record) {
+        if (record.isRemote()) {
+            return new RemoteServerNode(record);
+        } else {
+            return new LocalhostNode(record);
+        }
+    }
 }

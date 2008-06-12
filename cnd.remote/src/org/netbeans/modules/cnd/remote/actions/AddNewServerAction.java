@@ -37,57 +37,51 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.server;
+package org.netbeans.modules.cnd.remote.actions;
 
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.AbstractAction;
+import javax.swing.JButton;
+import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import org.netbeans.modules.cnd.remote.ui.AddServerDialog;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 /**
- * The definition of a remote server and login. 
- * 
+ *
  * @author gordonp
  */
-public class RemoteServerRecord implements ServerRecord {
+public class AddNewServerAction extends AbstractAction implements PropertyChangeListener {
     
-    private String name;
-    private String user;
-    private boolean editable;
-    private boolean active;
+    protected JButton ok;
     
-    protected RemoteServerRecord(String name, String user, boolean active) {
-        this.name = name;
-        this.user = user;
-        this.active = active;
-        editable = true;
-    }
-    
-    protected RemoteServerRecord() {
-        name = "localhost"; // NOI18N
-        user = null;
-        editable = false;
-        active = true;
-    }
-    
-    public boolean isEditable() {
-        return editable;
+    public AddNewServerAction() {
+        super(NbBundle.getMessage(AddNewServerAction.class, "LBL_AddNewServer"));
     }
 
-    public boolean isRemote() {
-        return !name.equals("localhost"); // NOI18N
+    public void actionPerformed(ActionEvent e) {
+        AddServerDialog dlg = new AddServerDialog();
+        dlg.addPropertyChangeListener(AddServerDialog.PROP_VALID, this);
+        ok = new JButton(NbBundle.getMessage(AddNewServerAction.class, "BTN_OK"));
+        ok.setEnabled(dlg.isOkValid());
+        DialogDescriptor dd = new DialogDescriptor((Object) dlg, NbBundle.getMessage(AddNewServerAction.class, "TITLE_AddNewServer"), true, 
+                    new Object[] { ok, DialogDescriptor.CANCEL_OPTION},
+                    DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.setVisible(true);
+        if (dd.getValue() == ok) {
+            RemoteServerList.getInstance().add(dlg.getServerName(), dlg.getLoginName(), dlg.isDefault());
+        }
     }
 
-    public boolean isActive() {
-        return active;
-    }
-    
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
-    public String getServerName() {
-        return name;
-    }
-
-    public String getUserName() {
-        return user;
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(AddServerDialog.PROP_VALID)) {
+            AddServerDialog dlg = (AddServerDialog) evt.getSource();
+            ok.setEnabled(dlg.isOkValid());
+        }
     }
 }

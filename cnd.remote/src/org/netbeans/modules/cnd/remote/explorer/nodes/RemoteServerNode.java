@@ -37,57 +37,60 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.server;
+package org.netbeans.modules.cnd.remote.explorer.nodes;
 
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import java.beans.PropertyChangeEvent;
+import javax.swing.Action;
+import org.netbeans.modules.cnd.remote.actions.SetDefaultAction;
+import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
+import org.openide.nodes.Children;
 
 /**
- * The definition of a remote server and login. 
- * 
+ *
  * @author gordonp
  */
-public class RemoteServerRecord implements ServerRecord {
+public class RemoteServerNode extends RemoteServicesNode {
     
-    private String name;
-    private String user;
-    private boolean editable;
     private boolean active;
-    
-    protected RemoteServerRecord(String name, String user, boolean active) {
-        this.name = name;
-        this.user = user;
-        this.active = active;
-        editable = true;
-    }
-    
-    protected RemoteServerRecord() {
-        name = "localhost"; // NOI18N
-        user = null;
-        editable = false;
-        active = true;
-    }
-    
-    public boolean isEditable() {
-        return editable;
-    }
+    private RemoteServerRecord record;
 
-    public boolean isRemote() {
-        return !name.equals("localhost"); // NOI18N
+    public RemoteServerNode(RemoteServerRecord record) {
+        super(Children.LEAF);
+        setName(record.getUserName() + '@' + record.getServerName());
+        setActive(record.isActive());
+        this.record = record;
     }
-
-    public boolean isActive() {
-        return active;
+    
+    public RemoteServerNode(Children children, RemoteServerRecord record) {
+        super(children);
+        this.record = record;
+    }
+    
+    @Override
+    public Action[] getActions(boolean context) {
+        Action[] actions = {
+            new SetDefaultAction(),
+        };
+        return actions;
+    }
+    
+    @Override
+    public String getHtmlDisplayName() {
+        return isActive() ? "<b>" + getName() + "</b>" : getName(); // NOI18N
     }
     
     public void setActive(boolean active) {
         this.active = active;
     }
-
-    public String getServerName() {
-        return name;
+    
+    public boolean isActive() {
+        return active;
     }
 
-    public String getUserName() {
-        return user;
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName() == RemoteServerList.PROP_ACTIVE) {
+            active = evt.getSource() == this;
+        }
     }
 }
