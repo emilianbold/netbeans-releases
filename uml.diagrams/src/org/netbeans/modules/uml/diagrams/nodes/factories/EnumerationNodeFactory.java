@@ -36,25 +36,22 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.uml.diagrams.nodes.factories;
 
-package org.netbeans.modules.uml.diagrams.nodes.initializers;
-
-import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IJoinForkNode;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.drawingarea.palette.NodeInitializer;
+import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.diagrams.nodes.EnumerationWidget;
+import org.netbeans.modules.uml.drawingarea.NodeWidgetFactory;
 
 /**
  *
- * @author Thuy
+ * @author treyspiva
  */
-public class VerticalJoinForkActivityInitializer implements NodeInitializer
+public class EnumerationNodeFactory implements NodeWidgetFactory
 {
-    public void initialize(IElement element)
+
+    public Widget createNode(Scene scene)
     {
-        if (element instanceof IJoinForkNode)
-        {
-            IJoinForkNode jfNode = (IJoinForkNode) element;
-            jfNode.setOrientation(jfNode.VERTICAL); 
-        }
+        return new EnumerationWidget(scene);
     }
 }

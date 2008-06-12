@@ -63,24 +63,27 @@ public class SyncPerfTest extends AbstractSyncTestCase {
      * SyncElementTest
      */
     public SyncPerfTest(String testName) {
-        super(testName, HL7_XSD, null);
+        super(testName, OTA_XSD, null);
     }
         
     public static Test suite() {
-        TestSuite suite = new TestSuite(SyncPerfTest.class);
+        TestSuite suite = new TestSuite();
+        suite.addTest(new SyncPerfTest("testOTASyncPerformance"));
+        //suite.addTest(new SyncPerfTest("testHealthcareSchemaSyncPerformance"));
         return suite;
     }
 
-    public void testHealthcareSchemaSyncPerformance() {
-        doRun(getSchemaModel(), getAXIModel(), false);
-        //doRun(getSchemaModel(), getAXIModel(), true);
+    public void testHealthcareSchemaSyncPerformance() throws Exception {
+        AXIModel aModel = getModel(HL7_XSD);
+        doRun(aModel.getSchemaModel(), aModel, false);
+        doRun(aModel.getSchemaModel(), aModel, true);
     }
     
-//    public void testOTASyncPerformance() throws Exception {
-//        AXIModel hlModel = getModel(OTA_XSD);
-//        doRun(hlModel.getSchemaModel(), hlModel, false);
-//        doRun(hlModel.getSchemaModel(), hlModel, true);
-//    }
+    public void testOTASyncPerformance() throws Exception {
+        AXIModel aModel = getModel(OTA_XSD);
+        doRun(aModel.getSchemaModel(), aModel, false);
+        doRun(aModel.getSchemaModel(), aModel, true);
+    }
     
     private void doRun(SchemaModel sModel, AXIModel aModel, boolean worstCase) {
         if(worstCase) {

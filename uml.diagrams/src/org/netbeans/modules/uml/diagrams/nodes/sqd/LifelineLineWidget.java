@@ -176,6 +176,10 @@ public class LifelineLineWidget extends CustomizableWidget implements DiagramNod
         nodeWriter.endGraphNode();
     }
 
+    public void saveChildren(Widget widget, NodeWriter nodeWriter) {
+        //not applicable
+    }
+    
     @Override
     public void update() {
         super.update();

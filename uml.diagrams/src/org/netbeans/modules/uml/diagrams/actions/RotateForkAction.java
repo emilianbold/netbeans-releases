@@ -43,9 +43,7 @@ package org.netbeans.modules.uml.diagrams.actions;
 
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.diagrams.nodes.JoinForkWidget;
-import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 
 /**
  *
@@ -73,9 +71,7 @@ public class RotateForkAction extends WidgetAction.LockedAdapter
          State state =  State.REJECTED;
          if (widget == joinFork)
          {
-            DesignerScene scene = (DesignerScene) joinFork.getScene();
-            IPresentationElement pE =( IPresentationElement) scene.findObject(joinFork);
-            joinFork.rotate(pE);
+            joinFork.rotate();
             joinFork = null;
             state = State.CONSUMED;
          }
