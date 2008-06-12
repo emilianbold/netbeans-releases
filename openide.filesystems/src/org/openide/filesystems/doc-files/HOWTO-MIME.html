@@ -219,14 +219,6 @@ suitable icon.</p>
 
 <h2>Using the MIME Resolver</h2>
 
-<p>In order to ensure that the current API implementation is capable
-of processing the resolver you should declare the manifest
-dependency:</p>
-
-<pre>
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.31
-</pre>
-
 <p>Now whenever matching files are encountered, they will be treated
 as having the MIME type <code>text/x-ant+xml</code> (in this example).
 The data loader should be made to be sensitive to the resolved MIME
