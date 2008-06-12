@@ -63,7 +63,9 @@ public class SAXFactoryImpl extends SAXParserFactory {
     private static Class<? extends SAXParserFactory> getFirst() {
         try {
             String name = System.getProperty("nb.backup." + SAXParserFactory_PROP); // NOI18N
-            return name == null ? null : Class.forName(name).asSubclass(SAXParserFactory.class);
+            return name == null ? null : Class.forName(
+                name, true, ClassLoader.getSystemClassLoader()
+            ).asSubclass(SAXParserFactory.class);
         } catch (ClassNotFoundException ex) {
             Exceptions.printStackTrace(ex);
             return null;
@@ -86,7 +88,7 @@ public class SAXFactoryImpl extends SAXParserFactory {
             ClassLoader orig = Thread.currentThread().getContextClassLoader();
             // Not app class loader. only ext and bootstrap
             try {
-               Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader().getParent());
+               Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader());
                System.setProperty("nb.backup." + SAXParserFactory_PROP,SAXParserFactory.newInstance().getClass().getName()); // NOI18N
             } finally {
                Thread.currentThread().setContextClassLoader(orig);            
@@ -112,7 +114,7 @@ public class SAXFactoryImpl extends SAXParserFactory {
 
     private SAXParser tryCreate() throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException {
         for (Iterator<Class<? extends SAXParserFactory>> it = 
-            new LazyIterator(getFirst(), SAXParserFactory.class, SAXFactoryImpl.class); 
+            new LazyIterator<SAXParserFactory>(getFirst(), SAXParserFactory.class, SAXFactoryImpl.class); 
             it.hasNext(); 
         ) {
             try {

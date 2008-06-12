@@ -57,10 +57,12 @@ import org.openide.util.Exceptions;
  */
 public class DOMFactoryImpl extends DocumentBuilderFactory {
 
-    private static Class getFirst() {
+    private static Class<? extends DocumentBuilderFactory> getFirst() {
         try {
             String name = System.getProperty("nb.backup." + Factory_PROP); // NOI18N
-            return name == null ? null : Class.forName(name, true, ClassLoader.getSystemClassLoader());
+            return name == null ? null : Class.forName(
+                name, true, ClassLoader.getSystemClassLoader()
+            ).asSubclass(DocumentBuilderFactory.class);
         } catch (ClassNotFoundException ex) {
             Exceptions.printStackTrace(ex);
             return null;
@@ -140,7 +142,7 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
     private DocumentBuilder tryCreate() throws ParserConfigurationException, IllegalArgumentException {
         for (
             Iterator<Class<? extends DocumentBuilderFactory>> it 
-                = new LazyIterator(getFirst(), DocumentBuilderFactory.class, DOMFactoryImpl.class); 
+                = new LazyIterator<DocumentBuilderFactory>(getFirst(), DocumentBuilderFactory.class, DOMFactoryImpl.class); 
             it.hasNext(); 
         ) {
             try {
