@@ -40,14 +40,14 @@
 package org.netbeans.modules.ws.qaf;
 
 import junit.framework.Test;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author lukas
  */
-public class FullWsValidation extends NbTestCase {
+public class FullWsValidation extends J2eeTestCase {
 
     public FullWsValidation(String name) {
         super(name);
@@ -55,8 +55,16 @@ public class FullWsValidation extends NbTestCase {
     
     public static Test suite() {
         
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                .addTest(WsValidation.class,
+        // This "nicely recursive" implementation is due to limitations in J2eeTestCase API
+        return NbModuleSuite.create(
+                addServerTests(Server.ANY,
+                addServerTests(Server.ANY,
+                addServerTests(Server.ANY,
+                addServerTests(Server.ANY,
+                addServerTests(Server.ANY,
+                addServerTests(Server.ANY,
+                addServerTests(Server.ANY,
+                addServerTests(Server.ANY, NbModuleSuite.emptyConfiguration(), WsValidation.class,
                     "testCreateNewWs", 
                     "testAddOperation", 
                     "testStartServer",
@@ -69,8 +77,7 @@ public class FullWsValidation extends NbTestCase {
                     "testWsClientHandlers",
                     "testRefreshClient",
                     "testDeployWsClientProject"
-                    )
-                .addTest(EjbWsValidation.class,
+                    ), EjbWsValidation.class,
                     "testCreateNewWs",
                     "testAddOperation",
                     "testWsHandlers",
@@ -82,38 +89,98 @@ public class FullWsValidation extends NbTestCase {
                     "testWsClientHandlers",
                     "testRefreshClientAndReplaceWSDL",
                     "testDeployWsClientProject"
-                    )
-                .addTest(AppClientWsValidation.class,
+                    ), AppClientWsValidation.class,
                     "testCreateWsClient",
                     "testCallWsOperationInJavaMainClass",
                     "testCallWsOperationInJavaClass",
                     "testWsClientHandlers",
                     "testRefreshClient",
                     "testRunWsClientProject"
-                    )
-                .addTest(JavaSEWsValidation.class,
+                    ), JavaSEWsValidation.class,
                     "testCreateWsClient",
                     "testCallWsOperationInJavaMainClass",
                     "testFixClientLibraries",
                     "testWsClientHandlers",
                     "testRefreshClientAndReplaceWSDL",
                     "testRunWsClientProject"
-                    )
-                .addTest(WsValidation.class,
+                    ), WsValidation.class,
                     "testUndeployProjects"
-                    )
-                .addTest(EjbWsValidation.class,
+                    ), EjbWsValidation.class,
                     "testUndeployProjects"
-                    )
-                .addTest(AppClientWsValidation.class,
+                    ), AppClientWsValidation.class,
                     "testUndeployClientProject"
-                    )
-                .addTest(WsValidation.class,
+                    ), WsValidation.class,
                     "testStopServer"
-                    )
-                .enableModules(".*").clusters(".*"));
+                    ).enableModules(".*").clusters(".*")
+                );
     }
+}
+        
+//  Note: Code commented out on 12.06.2008
+//  Test suite as it was rewritten without using J2eeTestCase as a base class
+//  - if you want to use this implementation, extend NbTestCase instead
+//  - if the tests are working with above implementation, this long and ugly comment can be deleted
+//        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+//                .addTest(WsValidation.class,
+//                    "testCreateNewWs", 
+//                    "testAddOperation", 
+//                    "testStartServer",
+//                    "testWsHandlers", 
+//                    "testDeployWsProject",
+//                    "testCreateWsClient", 
+//                    "testCallWsOperationInServlet", 
+//                    "testCallWsOperationInJSP",
+//                    "testCallWsOperationInJavaClass",
+//                    "testWsClientHandlers",
+//                    "testRefreshClient",
+//                    "testDeployWsClientProject"
+//                    )
+//                .addTest(EjbWsValidation.class,
+//                    "testCreateNewWs",
+//                    "testAddOperation",
+//                    "testWsHandlers",
+//                    "testDeployWsProject",
+//                    "testCreateWsClient",
+//                    "testCallWsOperationInSessionEJB",
+//                    "testCallWsOperationInJavaClass",
+//                    "testWsFromEJBinClientProject",
+//                    "testWsClientHandlers",
+//                    "testRefreshClientAndReplaceWSDL",
+//                    "testDeployWsClientProject"
+//                    )
+//                .addTest(AppClientWsValidation.class,
+//                    "testCreateWsClient",
+//                    "testCallWsOperationInJavaMainClass",
+//                    "testCallWsOperationInJavaClass",
+//                    "testWsClientHandlers",
+//                    "testRefreshClient",
+//                    "testRunWsClientProject"
+//                    )
+//                .addTest(JavaSEWsValidation.class,
+//                    "testCreateWsClient",
+//                    "testCallWsOperationInJavaMainClass",
+//                    "testFixClientLibraries",
+//                    "testWsClientHandlers",
+//                    "testRefreshClientAndReplaceWSDL",
+//                    "testRunWsClientProject"
+//                    )
+//                .addTest(WsValidation.class,
+//                    "testUndeployProjects"
+//                    )
+//                .addTest(EjbWsValidation.class,
+//                    "testUndeployProjects"
+//                    )
+//                .addTest(AppClientWsValidation.class,
+//                    "testUndeployClientProject"
+//                    )
+//                .addTest(WsValidation.class,
+//                    "testStopServer"
+//                    )
+//                .enableModules(".*").clusters(".*"));
+//    }
 
+        
+//    The very original test suite        
 //    public static Test suite() {
 //        TestSuite suite = new NbTestSuite();
 //        suite.addTest(new WsValidation("testCreateNewWs")); //NOI18N
@@ -161,4 +228,3 @@ public class FullWsValidation extends NbTestCase {
 //    public static void main(String... args) {
 //        TestRunner.run(suite());
 //    }
-}
