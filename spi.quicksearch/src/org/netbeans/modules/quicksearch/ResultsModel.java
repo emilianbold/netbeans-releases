@@ -48,7 +48,6 @@ import javax.swing.KeyStroke;
  */
 public final class ResultsModel extends AbstractListModel {
 
-    private static final int MAX_RESULTS = 5;
     private Iterable<? extends CategoryResult> results;
     private ArrayList ar = new ArrayList();
     
@@ -63,7 +62,7 @@ public final class ResultsModel extends AbstractListModel {
             boolean first = true;
             Iterator<? extends ItemResult> it = cr.getItems().iterator();
             ItemResult curSr = null;
-            for (int i = 0; i < Math.min(cr.getItems().size(), MAX_RESULTS); i++) {
+            for (int i = 0; i < cr.getItems().size(); i++) {
                 curSr = it.next();
                 ar.add(curSr);
                 items2Cats.put(curSr, cr.getCategory());
@@ -79,7 +78,7 @@ public final class ResultsModel extends AbstractListModel {
     public int getSize() {
         int size = 0;
         for (CategoryResult cr : results) {
-            size += Math.min(MAX_RESULTS, cr.getItems().size());
+            size += cr.getItems().size();
         }
         return size;
     }

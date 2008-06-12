@@ -49,9 +49,17 @@ import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
  */
 public final class CategoryResult {
     
+    private static final int MAX_RESULTS = 7;
+    
+    private final Object LOCK = new Object();
+    
     private ProviderModel.Category category;
     
     private List<ItemResult> items;
+    
+    private int counter;
+    
+    private boolean obsolete;
 
     CategoryResult (ProviderModel.Category category) {
         this.category = category;
@@ -59,25 +67,23 @@ public final class CategoryResult {
     }
     
     public boolean addItem (ItemResult item) {
-        items.add(item);
-        // TBD, return false if category is already full or whole this search
-        // was cancelled
+        //synchronized (LOCK) {
+            if (obsolete || items.size() >= MAX_RESULTS) {
+                return false;
+            }
+            items.add(item);
+            counter++;
+        //}
         return true;
     }
     
-    public boolean addAll (List<ItemResult> newItems) {
-        items.addAll(newItems);
-        // TBD, return false if category is already full or whole this search
-        // was cancelled
-        return true;
-    }
-
     /**
      * Get the value of item
      *
      * @return the value of item
      */
     public List<ItemResult> getItems() {
+        System.out.println("category " + category.getDisplayName() + " has " + counter + " items");
         return items;
     }
 
@@ -88,6 +94,12 @@ public final class CategoryResult {
      */
     public ProviderModel.Category getCategory() {
         return category;
+    }
+
+    public void setObsolete(boolean obsolete) {
+        synchronized (LOCK) {
+            this.obsolete = obsolete;
+        }
     }
 
 }
