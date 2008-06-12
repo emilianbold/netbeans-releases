@@ -68,9 +68,11 @@ public class BasicSearchAndReplaceTest extends JellyTestCase {
                 NbModuleSuite.createConfiguration(BasicSearchAndReplaceTest.class));
     }
     
+    @Override
     public void setUp() throws IOException{
         workdirpath = getWorkDir().getParentFile().getAbsolutePath();
         System.out.println("########  "+getName()+"  #######");
+        openDataProjects("projects/UtilitiesTestProjects");
     }
     
     /** Called after every test case. */
