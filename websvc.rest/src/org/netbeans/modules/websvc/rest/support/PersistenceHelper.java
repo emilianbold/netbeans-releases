@@ -120,6 +120,12 @@ public class PersistenceHelper {
         writeDocument(fobj, document);
     }
     
+    public static void unsetExcludeEnlistedClasses(Project project) throws IOException{
+        FileObject fobj = getPersistenceXML(project);
+        Document document = getDocument(fobj);
+        unsetExcludeEnlistedClasses(document);
+    }
+    
     private static void unsetExcludeEnlistedClasses(Document document) throws IOException {
         Element puElement = getPersistenceUnitElement(document);
         NodeList nodes = puElement.getElementsByTagName(EXCLUDE_UNLISTED_CLASSES_TAG);
