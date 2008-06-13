@@ -163,4 +163,7 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         return "Java Project";
     }
     
+    public boolean prepare() {
+        return true;
+    }
 }

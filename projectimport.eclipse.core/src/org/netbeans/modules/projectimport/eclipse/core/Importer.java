@@ -206,7 +206,7 @@ final class Importer {
             }
             p = eclProject.getProjectTypeFactory().createProject(model, projectImportProblems);
         
-            if (eclProject.getProjectTypeFactory() instanceof ProjectTypeUpdater) {
+            if (p != null && eclProject.getProjectTypeFactory() instanceof ProjectTypeUpdater) {
                 ProjectTypeUpdater updater = (ProjectTypeUpdater)eclProject.getProjectTypeFactory();
                 String key = updater.calculateKey(model);
                 EclipseProjectReference ref = new EclipseProjectReference(p, 
@@ -214,7 +214,6 @@ final class Importer {
                         eclProject.getWorkspace() != null ? eclProject.getWorkspace().getDirectory().getAbsolutePath() : null, "0", key);
                 EclipseProjectReference.write(p, ref);
             }
-            assert p != null;
         }
         if (projectImportProblems.size() > 0) {
             importProblems.add("Project "+eclProject.getName()+" import problems:");

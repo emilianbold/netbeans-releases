@@ -74,4 +74,12 @@ public interface ProjectTypeFactory {
      * Returns project type name.
      */
     String getProjectTypeName();
+    
+    /**
+     *  TODO: temporary workaround for factory to setup stuff prior to project
+     * import. Should be replaced with ability to enhance import wizard. 
+     * TBD for M2.
+     * @return false to abort import process
+     */
+    boolean prepare();
 }
