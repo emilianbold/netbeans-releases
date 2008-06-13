@@ -50,12 +50,12 @@ import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.client.tools.projectsupport.BrowserUtilities;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -119,22 +119,18 @@ public class NbJsDebugStart extends Task {
             log("Client URL: " + webUrl);
 
             URI clientUrl = new URI(webUrl);
-            HtmlBrowser.Factory htmlBrowserFactory = getHtmlBrowserFactory();
+            
+            // hard-code Firefox until additional browsers are supported
+            HtmlBrowser.Factory browser = BrowserUtilities.getFirefoxBrowser();
+            
+            if (browser == null) {
+                throw new BuildException("The configured debugging browser could not be found");
+            }
+            
             //NbJSDebugger.startDebugging(clientUrl, htmlBrowserFactory, debugLookup);
         }catch (Exception ex) {
             throw new BuildException(ex);
         }
-    }
-
-    private static HtmlBrowser.Factory getHtmlBrowserFactory() {
-        Collection<? extends Factory> htmlBrowserFactories = Lookup.getDefault().lookupAll(HtmlBrowser.Factory.class);
-        for (HtmlBrowser.Factory factory : htmlBrowserFactories) {
-            // Hardcode Firfox
-            if (factory.getClass().getName().equals("org.netbeans.modules.extbrowser.FirefoxBrowser")) { // NOI18N
-                return factory;
-            }
-        }
-        return htmlBrowserFactories.iterator().next();
     }
 
     private String getWebBaseUrl() {

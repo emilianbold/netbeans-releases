@@ -50,10 +50,8 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Socket;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -87,11 +85,10 @@ import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
+import org.netbeans.modules.web.client.tools.projectsupport.BrowserUtilities;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /**
  * Support for the builtin Ruby on Rails web server: WEBrick, Mongrel, Lighttpd
@@ -448,7 +445,10 @@ public final class RailsServerManager {
                 // launch browser with clientside debugger
                 FileObject projectDocBase = project.getRakeProjectHelper().resolveFileObject("public"); // NOI18N
                 String hostPrefix = "http://localhost:" + port + "/"; // NOI18N
-                                  
+                
+                // hardcode firefox browser until additional browsers are supported
+                HtmlBrowser.Factory browser = BrowserUtilities.getFirefoxBrowser();
+                
                 /* TODO replace with new API
                 IdentityURLMapper mapper = new IdentityURLMapper(hostPrefix, projectDocBase, null);
                 Lookup debugLookup = Lookups.fixed(mapper, project);
@@ -459,17 +459,6 @@ public final class RailsServerManager {
         } catch (MalformedURLException ex) {
             ErrorManager.getDefault().notify(ex);
         }
-    }
-
-    private static HtmlBrowser.Factory getHtmlBrowserFactory() {
-        Collection<? extends HtmlBrowser.Factory> htmlBrowserFactories = Lookup.getDefault().lookupAll(HtmlBrowser.Factory.class);
-        for (HtmlBrowser.Factory factory : htmlBrowserFactories) {
-            // Hardcode Firefox
-            if (factory.getClass().getName().equals("org.netbeans.modules.extbrowser.FirefoxBrowser")) { // NOI18N
-                return factory;
-            }
-        }
-        return htmlBrowserFactories.iterator().next();
     }
     
     /**
