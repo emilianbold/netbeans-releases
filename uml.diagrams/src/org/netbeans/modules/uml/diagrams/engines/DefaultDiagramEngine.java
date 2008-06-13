@@ -90,7 +90,6 @@ public class DefaultDiagramEngine extends  DiagramEngine {
 
     protected MoveStrategy DEFAULT_MOVE_STRATEGY = null;
     protected MoveProvider DEFAULT_MOVE_PROVIDER = null;
-    protected SelectProvider DEFAULT_SELECT_PROVIDER = null;
     
     private final static PopupMenuProvider CONTEXT_MENU_PROVIDER = new DiagramPopupMenuProvider();
     public final static WidgetAction POPUP_ACTION = ActionFactory.createPopupMenuAction(CONTEXT_MENU_PROVIDER);

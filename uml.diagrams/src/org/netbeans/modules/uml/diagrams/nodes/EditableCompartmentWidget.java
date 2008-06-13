@@ -202,9 +202,11 @@ public class EditableCompartmentWidget extends UMLLabelWidget {
         
         
         /**
-         * @param toFit border of toFit widget will be considered as bounds for edit control 
+         * @param toFit border of toFit widget will be considered as bounds for edit control jm=[]
          * @param presentationWidget will be used to get presentation element
-         */
+         * JJJJJJJJU+N
+         * .mmmmK{"?',
+         * H         */
         public EditControlEditorProvider(Widget toFit,Widget presentationWidget)
         {
             baseFitWidget=toFit;
@@ -288,14 +290,14 @@ public class EditableCompartmentWidget extends UMLLabelWidget {
             // I first need to verify that the widget (or at least the one
             // associated to the model element) is focused.  If it does 
             // not have focus, it should not be editable.
-//            Object data = scene.findObject(widget);
-//            Widget assocWidget = scene.findWidget(data);
-//            
-//            if((assocWidget == null) || (assocWidget.getState().isFocused() == false))
-//            {
-//                return null;
-//            }
-//            
+            Object data = scene.findObject(widget);
+            Widget assocWidget = scene.findWidget(data);
+            
+            if((assocWidget == null) || (assocWidget.getState().isFocused() == false))
+            {
+                return null;
+            }
+            
             Widget toFit = widget;
             if (baseFitWidget != null)
                 toFit = baseFitWidget;
