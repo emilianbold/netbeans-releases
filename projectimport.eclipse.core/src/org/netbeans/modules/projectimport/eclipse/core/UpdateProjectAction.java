@@ -71,7 +71,7 @@ public final class UpdateProjectAction extends AbstractAction implements Context
     }
 
     public UpdateProjectAction(Lookup actionContext) {
-        super(NbBundle.getBundle(UpdateProjectAction.class).getString("UpdateProjectAction.Name"));
+        super(NbBundle.getMessage(UpdateProjectAction.class, "UpdateProjectAction.Name"));
         this.context = actionContext;
     }
 
@@ -84,15 +84,18 @@ public final class UpdateProjectAction extends AbstractAction implements Context
         }
         if (getUpgradableProject().isUpToDate(true)) {
             DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Message("Project are in synch and there is nothing to update."));
+                new NotifyDescriptor.Message(NbBundle.getMessage(UpdateProjectAction.class, "UpdateProjectAction.already-in-synch")));
         } else {
             try {
                 List<String> importProblems = new ArrayList<String>();
                 getUpgradableProject().update(importProblems);
                 if (importProblems.size() > 0) {
-                    importProblems.add(0, "Following problems occured during sychronization with Eclipse project "+upgradable.getEclipseProjectFolder()+":");
+                    importProblems.add(0,
+                            NbBundle.getMessage(UpdateProjectAction.class, "UpdateProjectAction.problems-occurred", upgradable.getEclipseProjectFolder()));
                 }
-                ImportProblemsPanel.showReport("Update Issues", ImportProblemsPanel.indentAllButFirst(importProblems));
+                ImportProblemsPanel.showReport(
+                        NbBundle.getMessage(UpdateProjectAction.class, "UpdateProjectAction.update-issues"),
+                        ImportProblemsPanel.indentAllButFirst(importProblems));
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
