@@ -61,6 +61,7 @@ import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.Lookup;
 import org.openide.windows.CloneableOpenSupport;
 
 public class GsfDataObject extends MultiDataObject {
@@ -80,6 +81,11 @@ public class GsfDataObject extends MultiDataObject {
     
     public @Override Node createNodeDelegate() {
         return new GsfDataNode(this, language);
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
 
     public @Override <T extends Cookie> T getCookie(Class<T> type) {
@@ -210,54 +216,4 @@ public class GsfDataObject extends MultiDataObject {
             return super.close(ask);
         }
     }
-    
-    private static final class GsfEditor extends CloneableEditor {
-        
-        private static final long serialVersionUID = -1;
-        
-        public GsfEditor() {
-        }
-        
-        public GsfEditor(GenericEditorSupport sup) {
-            super(sup);
- //           initialize();
-        }
-        
-//        void associatePalette(GenericEditorSupport s) {
-//            DataObject dataObject = s.getDataObject();
-//            if (!(dataObject instanceof GsfDataObject)) {
-//                return;
-//            }
-//
-//            GsfDataObject gdo = (GsfDataObject)s.getDataObject();
-//            PaletteController pc = gdo.language.getPalette();
-//            if (pc == null) {
-//                return;
-//            }
-//
-//            Node nodes[] = { gdo.getNodeDelegate() };
-//            InstanceContent instanceContent = new InstanceContent();
-//            associateLookup(new ProxyLookup(new Lookup[] { new AbstractLookup(instanceContent), nodes[0].getLookup()}));
-//            instanceContent.add(getActionMap());
-//
-//            setActivatedNodes(nodes);
-//
-//            instanceContent.add(pc);
-//        }
-//        
-//        private void initialize() {
-//            associatePalette((GenericEditorSupport)cloneableEditorSupport());
-//        }
-//
-//        @Override
-//        public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-//            super.readExternal(in);
-//            //initialize();
-//        }
-    }
-
-//    private static ClassPath getClassPath( Document doc, String type ) {
-//        DataObject dObj = (DataObject)doc.getProperty(doc.StreamDescriptionProperty );
-//        return ClassPath.getClassPath( dObj.getPrimaryFile(), type );
-//    }
 }

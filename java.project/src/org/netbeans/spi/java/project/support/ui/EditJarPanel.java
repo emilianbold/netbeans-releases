@@ -197,6 +197,8 @@ class EditJarPanel extends javax.swing.JPanel {
         } else {
             chooser = new FileChooser(FileUtil.toFile(helper.getProjectDirectory()), null);
         }
+        chooser.enableVariableBasedSelection(true);
+        chooser.setFileHidingEnabled(false);
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setMultiSelectionEnabled(false);
@@ -206,7 +208,7 @@ class EditJarPanel extends javax.swing.JPanel {
         chooser.setFileFilter(new SimpleFileFilter(
                 "Javadoc Entry (folder, ZIP or JAR file)", 
                 new String[]{"ZIP", "JAR"}));   // NOI18N 
-        File curDir = helper.resolveFile(item.getJarFile());
+        File curDir = helper.resolveFile(helper.getStandardPropertyEvaluator().evaluate(item.getJarFile()));
         chooser.setCurrentDirectory(curDir);
         int option = chooser.showOpenDialog(SwingUtilities.getWindowAncestor(this)); // Sow the chooser
 
@@ -219,7 +221,7 @@ class EditJarPanel extends javax.swing.JPanel {
                 Exceptions.printStackTrace(ex);
                 return;
             }
-            txtJavadoc.setText(files[0]);
+            txtJavadoc.setText(chooser.getSelectedPathVariables() != null ? chooser.getSelectedPathVariables()[0] : files[0]);
         }
         
     }//GEN-LAST:event_btnJavadocActionPerformed
@@ -231,6 +233,8 @@ class EditJarPanel extends javax.swing.JPanel {
         } else {
             chooser = new FileChooser(FileUtil.toFile(helper.getProjectDirectory()), null);
         }
+        chooser.enableVariableBasedSelection(true);
+        chooser.setFileHidingEnabled(false);
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setMultiSelectionEnabled(false);
@@ -240,7 +244,7 @@ class EditJarPanel extends javax.swing.JPanel {
         chooser.setFileFilter(new SimpleFileFilter(
                 "Source Entry (folder, ZIP or JAR file)", 
                 new String[]{"ZIP", "JAR"}));   // NOI18N 
-        File curDir = helper.resolveFile(item.getJarFile());
+        File curDir = helper.resolveFile(helper.getStandardPropertyEvaluator().evaluate(item.getJarFile()));
         chooser.setCurrentDirectory(curDir);
         int option = chooser.showOpenDialog(SwingUtilities.getWindowAncestor(this)); // Sow the chooser
 
@@ -253,7 +257,7 @@ class EditJarPanel extends javax.swing.JPanel {
                 Exceptions.printStackTrace(ex);
                 return;
             }
-            txtSource.setText(files[0]);
+            txtSource.setText(chooser.getSelectedPathVariables() != null ? chooser.getSelectedPathVariables()[0] : files[0]);
         }
 
     }//GEN-LAST:event_btnSourceActionPerformed

@@ -41,12 +41,6 @@
 package org.netbeans.modules.uml.diagrams.edges;
 
 import org.netbeans.api.visual.widget.ConnectionWidget;
-//import org.netbeans.api.visual.widget.LabelWidget;
-import org.netbeans.api.visual.widget.LabelWidget;
-import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.uml.drawingarea.LabelManager.LabelType;
-import org.netbeans.modules.uml.drawingarea.support.ModelElementBridge;
-import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 
 
 /**
@@ -55,63 +49,20 @@ import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
  */
 public class KeywordLabelManager extends BasicUMLLabelManager
 {
-    private static final String KEYWORD = "keyword"; //NOI18N
-    
-    private String keyword = "";
-    
     public KeywordLabelManager(ConnectionWidget widget, String keyword)
     {
-        super(widget);
-        
-        this.keyword = keyword;
+        super(widget,keyword);
     }
     
     //////////////////////////////////////////////////////////////////
     // LableManager Overrides
     
+    /**
+     * keywords are shown by default, so overriing this method
+     */
     @Override
     public void createInitialLabels()
     {
-        showLabel(KEYWORD);
+        showLabel(STEREOTYPE);
     }
-    
-    //////////////////////////////////////////////////////////////////
-    // ProepertyChangeListener Implementation
-    
-    
-    //////////////////////////////////////////////////////////////////
-    // AbstractLabelManager Overrides
-    
-    @Override
-    protected Widget createLabel(String name, LabelType type)
-    {
-        String text = "";
-        Widget retVal = null;
-        
-        if(name.equals(KEYWORD) == true)
-        {
-            retVal = new UMLLabelWidget(getScene(), getKeyword());
-        }
-        else
-        {
-            retVal = super.createLabel(name, type);
-        }
-        
-        
-        return retVal;
-    }
-    
-    //////////////////////////////////////////////////////////////////
-    // Helper Methods
-    
-    /**
-     * Retrieves the keyword that should be displayed.
-     * 
-     * @return The keyword
-     */
-    public String getKeyword()
-    {
-        return "<<" + keyword + ">>";
-    }
-    
 }

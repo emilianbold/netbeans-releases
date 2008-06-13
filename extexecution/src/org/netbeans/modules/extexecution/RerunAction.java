@@ -42,6 +42,7 @@ package org.netbeans.modules.extexecution;
 
 import java.awt.event.ActionEvent;
 
+import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -51,7 +52,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptor.RerunCondition;
 import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.openide.util.NbBundle;
-import org.openide.util.Task;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
@@ -131,7 +131,7 @@ public final class RerunAction extends AbstractAction implements ChangeListener 
             return accessor;
         }
 
-        public abstract Task rerun(ExecutionService service);
+        public abstract Future<Integer> rerun(ExecutionService service);
 
     }
 }

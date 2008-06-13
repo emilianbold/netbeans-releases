@@ -1,4 +1,6 @@
-Results for e // complete on editor members etc with queryType=COMPLETION and nameKind=PREFIX
+Code completion result for source line:
+e| // complete on editor members etc
+(QueryType=COMPLETION, NameKind=PREFIX)
 METHOD     encodeURI(URI) : void                      Core JS
 METHOD     encodeURIComponent(String) : v             Core JS
 METHOD     eval(string, object) : void                Core JS

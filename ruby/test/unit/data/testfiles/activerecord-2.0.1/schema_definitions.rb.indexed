@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/schema_definitions.rb
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   attribute : columns
   class : TableDefinition
   class-ig : tabledefinition
@@ -22,14 +17,14 @@ Indexed:
   method : timestamps|DOCUMENTED|
   method : to_sql|DOCUMENTED|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |DOCUMENTED|;113
   in : ActiveRecord::ConnectionAdapters
   requires : bigdecimal,bigdecimal/util,date
 
 
-Document 2
-Indexed:
+Document 1
+Searchable Keys:
   attribute : default
   attribute : limit
   attribute : name
@@ -70,25 +65,25 @@ Indexed:
   method : value_to_boolean(value)|DOCUMENTED|STATIC|
   method : value_to_decimal(value)|DOCUMENTED|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |DOCUMENTED|;48
   in : ActiveRecord::ConnectionAdapters
   requires : bigdecimal,bigdecimal/util,date
 
 
-Document 3
-Indexed:
+Document 2
+Searchable Keys:
   class : ActiveRecord
   class-ig : activerecord
   fqn : ActiveRecord
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |MODULE|
   requires : bigdecimal,bigdecimal/util,date
 
 
-Document 4
-Indexed:
+Document 3
+Searchable Keys:
   class : ColumnDefinition
   class-ig : columndefinition
   extends : new
@@ -97,53 +92,53 @@ Indexed:
   method : sql_type
   method : to_sql
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : ActiveRecord::ConnectionAdapters
   requires : bigdecimal,bigdecimal/util,date
 
 
-Document 5
-Indexed:
+Document 4
+Searchable Keys:
   class : ConnectionAdapters
   class-ig : connectionadapters
   fqn : ActiveRecord::ConnectionAdapters
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |MODULE|
   in : ActiveRecord
   requires : bigdecimal,bigdecimal/util,date
 
 
-Document 6
-Indexed:
+Document 5
+Searchable Keys:
   class : Format
   class-ig : format
   constant : ISO_DATE
   constant : ISO_DATETIME
   fqn : ActiveRecord::ConnectionAdapters::Column::Format
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |MODULE|
   in : ActiveRecord::ConnectionAdapters::Column
   requires : bigdecimal,bigdecimal/util,date
 
 
-Document 7
-Indexed:
+Document 6
+Searchable Keys:
   class : IndexDefinition
   class-ig : indexdefinition
   extends : new
   fqn : ActiveRecord::ConnectionAdapters::IndexDefinition
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : ActiveRecord::ConnectionAdapters
   requires : bigdecimal,bigdecimal/util,date
 
 
-Document 8
-Indexed:
+Document 7
+Searchable Keys:
   class : TableDefinition
   class-ig : tabledefinition
   fqn : ActiveRecord::ConnectionAdapters::TableDefinition
@@ -159,7 +154,7 @@ Indexed:
   method : time(names,options);00;;;options(=>limit|default:nil|null:bool|precision|scale)
   method : timestamp(names,options);00;;;options(=>limit|default:nil|null:bool|precision|scale)
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : ActiveRecord::ConnectionAdapters
   requires : bigdecimal,bigdecimal/util,date

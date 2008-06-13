@@ -86,7 +86,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     private Component customComponent;
     private JToolBar customToolbar;
     private DoInitialize doInitialize;
-
+    
+    private static final Logger LOG = Logger.getLogger("org.openide.text.CloneableEditor"); // NOI18N
+    
     /** For externalization of subclasses only  */
     public CloneableEditor() {
         this(null);
@@ -271,6 +273,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
             
         private void initNonVisual() {
+            if (System.getProperty("editor.log.enabled") != null) {
+                LOG.log(Level.INFO,"++ ++ DoInitialize.initNonVisual Enter"
+                + " Thread:" + Thread.currentThread().getName()
+                + " [" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+                + " Name:" + CloneableEditor.this.getName());
+            }
             Task prepareTask = support.prepareDocument();
 
             // load the doc synchronously
@@ -304,6 +312,19 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             synchronized (this) {
                 doc = support.getDocument();
                 kit = k;
+                if (System.getProperty("editor.log.enabled") != null) {
+                    LOG.log(Level.INFO,"++ ++ DoInitialize.initNonVisual doc and kit are set"
+                    + " Thread:" + Thread.currentThread().getName()
+                    + " [" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+                    + " this:[" + Integer.toHexString(System.identityHashCode(this)) + "]"
+                    + " Name:" + CloneableEditor.this.getName()
+                    + " doc:" + doc
+                    + " kit:" + kit);
+                    LOG.log(Level.INFO,"++ ++ DoInitialize.initNonVisual Call notifyAll"
+                    + " Thread:" + Thread.currentThread().getName()
+                    + " [" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+                    + " Name:" + CloneableEditor.this.getName());
+                }
                 notifyAll();
             }
         }
@@ -349,7 +370,24 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                         break;
                     }
                     try {
+                        if (System.getProperty("editor.log.enabled") != null) {
+                            LOG.log(Level.INFO,"++ ++ DoInitialize.initDocument Starting wait"
+                            + " Thread:" + Thread.currentThread().getName()
+                            + " [" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+                            + " this:[" + Integer.toHexString(System.identityHashCode(this)) + "]"
+                            + " Name:" + CloneableEditor.this.getName()
+                            + " doc:" + doc
+                            + " kit:" + kit);
+                        }
                         wait();
+                        if (System.getProperty("editor.log.enabled") != null) {
+                            LOG.log(Level.INFO,"++ ++ DoInitialize.initDocument Wait finished"
+                            + " Thread:" + Thread.currentThread().getName()
+                            + " [" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+                            + " Name:" + CloneableEditor.this.getName()
+                            + " doc:" + doc
+                            + " kit:" + kit);
+                        }
                     } catch (InterruptedException ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -368,7 +406,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             if (!initDocument()) {
                 return;
             }
-            
+            if (System.getProperty("editor.log.enabled") != null) {
+                LOG.log(Level.INFO,"++ ++ DoInitialize.initVisual Enter 2"
+                + " Thread:" + Thread.currentThread().getName()
+                + " [" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+                + " Name:" + CloneableEditor.this.getName());
+            }
             initCustomEditor();
             if (customComponent != null) {
                 add(support.wrapEditorComponent(customComponent), BorderLayout.CENTER);

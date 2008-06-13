@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -41,8 +42,10 @@ import org.netbeans.modules.iep.editor.wizard.database.DatabaseMetaDataHelper;
 import org.netbeans.modules.iep.editor.wizard.database.DatabaseTableWizardConstants;
 import org.netbeans.modules.iep.editor.wizard.database.TableInfo;
 import org.netbeans.modules.iep.editor.wizard.database.TablePollingStreamWizardHelper;
+import org.netbeans.modules.iep.editor.wizard.database.replaystream.ReplayStreamWizardHelper;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
+import org.netbeans.modules.iep.model.PlanComponent;
 import org.netbeans.modules.iep.model.Property;
 import org.netbeans.modules.iep.model.ReplayStreamOperatorComponent;
 import org.netbeans.modules.iep.model.SchemaAttribute;
@@ -67,10 +70,6 @@ public class ReplayStreamCustomEditor extends DefaultCustomEditor {
     
     private String mWhereClause;
     
-    private String[] mTimeUnitDisplayName = new String[] {};
-            
-    private String[] mTimeUnitCodeName = new String[] {};
-    
     
     /** Creates a new instance of InvokeStreamCustomEditor */
     public ReplayStreamCustomEditor() {
@@ -85,14 +84,8 @@ public class ReplayStreamCustomEditor extends DefaultCustomEditor {
     }
     
     private class MyCustomizer extends DefaultCustomizer {
-        protected PropertyPanel mPollingIntervalPanel;
-        protected PropertyPanel mPollingIntervalTimeUnitPanel;
-        protected PropertyPanel mPollingRecordSizePanel;
         protected JTextField mRecordIdentifyingColumnsTextField;
         protected PropertyPanel mDatabaseJndiNamePanel;
-        protected PropertyPanel mIsDeleteRecordsPanel;
-        
-        private SchemaComponent mRecordIdentifyingColumnsSchema;
         
         public MyCustomizer(TcgPropertyType propertyType, OperatorComponent component, PropertyEnv env) {
             super(propertyType, component, env);
@@ -174,7 +167,7 @@ public class ReplayStreamCustomEditor extends DefaultCustomEditor {
             
             
             JButton selectIEPProcessButton = new JButton(NbBundle.getMessage(ReplayStreamCustomEditor.class, "ExternalTablePollingStreamCustomEditor.SELECT_TABLES"));
-            selectIEPProcessButton.addActionListener(new SelectIEPProcessOperatorActionListener());
+            selectIEPProcessButton.addActionListener(new SelectReplayStreamTableActionListener());
             //selectIEPProcessButton.setAction(SystemAction.get(DatabaseTableSelectionWizardAction.class));
             gbc.gridx = 4;
             gbc.gridy = 0;
@@ -255,7 +248,7 @@ public class ReplayStreamCustomEditor extends DefaultCustomEditor {
                 }
             }
                     
-            String displayColumnNames = convertListToCommaSeperatedValues(columnList);
+            String displayColumnNames = GUIUtil.convertListToCommaSeperatedValues(columnList);
 //            mRecordIdentifyingColumnsPanel = PropertyPanel.createSingleLineTextPanelWithoutFilter(recordIdentifyingColumnsLabel, recordIdentifyingColumns, false);
 //            mRecordIdentifyingColumnsPanel.setStringValue();
             
@@ -338,9 +331,6 @@ public class ReplayStreamCustomEditor extends DefaultCustomEditor {
         public void validateContent(PropertyChangeEvent evt) throws PropertyVetoException {
             super.validateContent(evt);
             try {
-                mPollingIntervalPanel.validateContent(evt);
-                mPollingIntervalTimeUnitPanel.validateContent(evt);
-                mPollingRecordSizePanel.validateContent(evt);
                 mDatabaseJndiNamePanel.validateContent(evt);
 //                mRecordIdentifyingColumnsPanel.validateContent(evt);
                 
@@ -357,62 +347,42 @@ public class ReplayStreamCustomEditor extends DefaultCustomEditor {
         
         public void setValue() {
             super.setValue();
-            mPollingIntervalPanel.store();
-            mPollingIntervalTimeUnitPanel.store();
-            mPollingRecordSizePanel.store();
+            
 //            mRecordIdentifyingColumnsPanel.store();
             mDatabaseJndiNamePanel.store();
-            mIsDeleteRecordsPanel.store();
             
             
-            //store record identifying columns
-            Property recordIdentifyingColumnsSchema = mComponent.getProperty(ReplayStreamOperatorComponent.PROP_RECORD_IDENTIFIER_COLUMNS_SCHEMA);
-            String ridschemaName = recordIdentifyingColumnsSchema.getValue();
-            if(mRecordIdentifyingColumnsSchema != null) {
-                IEPModel model = getOperatorComponent().getModel();
-                model.startTransaction();
-                SchemaComponentContainer sc = model.getPlanComponent().getSchemaComponentContainer();
-                //remove previous record identifer schema component if
-                //any
-                if(ridschemaName != null && !ridschemaName.trim().equals("")) {
-                    SchemaComponent sComp = sc.findSchema(ridschemaName);
-                    if(sComp != null) {
-                        sc.removeSchemaComponent(sComp);
-                    }
-                }
-                sc.addSchemaComponent(mRecordIdentifyingColumnsSchema);
-                recordIdentifyingColumnsSchema.setValue(mRecordIdentifyingColumnsSchema.getName());
-                model.endTransaction();
-            } else {
-                IEPModel model = getOperatorComponent().getModel();
-                model.startTransaction();
+            IEPModel model = getOperatorComponent().getModel();
+            
+            //Store record identifying columns
+            String recordIdColumns = mRecordIdentifyingColumnsTextField.getText();
+            SchemaComponent recordIdSchema = GUIUtil.createRecordIdentifierSchema(recordIdColumns, mComponent, mOutputSchemaNamePanel.getStringValue(), mSelectPanel);
+            
+            if(recordIdSchema != null) {
                 
+                //existing record id schema should be removed
+                Property recordIdentifyingColumnsSchema = mComponent.getProperty(ReplayStreamOperatorComponent.PROP_RECORD_IDENTIFIER_COLUMNS_SCHEMA);
+                String ridschemaName = recordIdentifyingColumnsSchema.getValue();
                 if(ridschemaName != null && !ridschemaName.trim().equals("")) {
                     SchemaComponentContainer sc = model.getPlanComponent().getSchemaComponentContainer();
                     SchemaComponent sComp = sc.findSchema(ridschemaName);
                     if(sComp != null) {
+                        model.startTransaction();
                         sc.removeSchemaComponent(sComp);
+                        model.endTransaction();
                     }
                 }
                 
-                recordIdentifyingColumnsSchema.setValue("");
+                model.startTransaction();
+                SchemaComponentContainer sc = model.getPlanComponent().getSchemaComponentContainer();
+                sc.addSchemaComponent(recordIdSchema);
+                recordIdentifyingColumnsSchema.setValue(recordIdSchema.getName());
                 model.endTransaction();
-            }
+            } 
             
-//            String columns = mRecordIdentifyingColumnsPanel.getStringValue();
-//            StringTokenizer st = new StringTokenizer(columns, ",");
-//            List<String> cList = new ArrayList<String>();
-//            
-//            while(st.hasMoreElements()) {
-//                String c = (String) st.nextElement();
-//                cList.add(c);
-//            }
-//            
-//            String val = recordIdentifyingColumns.getPropertyType().getType().format(cList);
-//            mComponent.getModel().startTransaction();
-//            recordIdentifyingColumns.setValue(val);
-//            mComponent.getModel().endTransaction();
-//            
+            
+            
+            
             //store from clause
             
             if(mFromClause != null) {
@@ -436,57 +406,12 @@ public class ReplayStreamCustomEditor extends DefaultCustomEditor {
 
         }
         
-        private String convertListToCommaSeperatedValues(List<String> list) {
-            StringBuffer strBuf = new StringBuffer();
-            Iterator<String> it = list.iterator();
-            while(it.hasNext()) {
-                String value = it.next();
-                strBuf.append(value);
-                if(it.hasNext()) {
-                    strBuf.append(",");
-                }
-            }
-            
-            return strBuf.toString();
-        }
-        
-        
-       
-        
-        private String generateUniqueAsColumnName(ColumnInfo column, 
-                                                  Set<String> nameSet) {
-            String baseName = column.getColumnName();
-            
-            String newName = baseName;
-            
-            int counter = 0;
-            while(nameSet.contains(newName)) {
-                newName = baseName + "_" + counter;
-                counter++;
-            }
-            return newName;
-        
-        }
-        
-        private Set<String> getColumnNames(List<ColumnInfo> remainingColumns) {
-            Set<String> nameSet = new HashSet<String>();
-            
-            for (int i = 0; i < remainingColumns.size(); i++) {
-                ColumnInfo c = remainingColumns.get(i);
-                String colName = c.getColumnName();
-                nameSet.add(colName);
-            }
-            
-            return nameSet;
-        }
-        
-        
-        class SelectIEPProcessOperatorActionListener implements ActionListener {
+        class SelectReplayStreamTableActionListener implements ActionListener {
 
             public void actionPerformed(ActionEvent e) {
                 IEPModel model = getOperatorComponent().getModel();
                 
-                TablePollingStreamWizardHelper helper = new TablePollingStreamWizardHelper();
+                ReplayStreamWizardHelper helper = new ReplayStreamWizardHelper();
                 WizardDescriptor wizardDescriptor = helper.createWizardDescriptor();
                 
                 Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
@@ -497,23 +422,13 @@ public class ReplayStreamCustomEditor extends DefaultCustomEditor {
                     List<TableInfo> tables = (List) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_TABLES);
                     List<ColumnInfo> columns = (List) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_COLUMNS);
                     mWhereClause = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_JOIN_CONDITION);
-                    String pollingInterval = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_POLLING_INTERVAL);
-                    String pollingIntervalUnit = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_POLLING_INTERVAL_TIME_UNIT);
-                    String recordSize = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_POLLING_RECORD_SIZE);
                     String databaseJNDIName = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_JNDI_NAME);
-                    String isDeleteRecords = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_IS_DELETE_RECORDS);
                     List<ColumnInfo> recordIdentifyingColumns =  (List) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_POLLING_UNIQUE_RECORD_IDENTIFIER_COLUMNS);
                     
                     
-                    mPollingIntervalPanel.setStringValue(pollingInterval);
-                    mPollingIntervalTimeUnitPanel.setStringValue(pollingIntervalUnit);
-                    mPollingRecordSizePanel.setStringValue(recordSize);
-                    mDatabaseJndiNamePanel.setStringValue(databaseJNDIName);
-                    mIsDeleteRecordsPanel.setStringValue(isDeleteRecords);
                     
-                    if(pollingIntervalUnit != null) {
-                        mPollingIntervalTimeUnitPanel.setStringValue(pollingIntervalUnit);
-                    }
+                    mDatabaseJndiNamePanel.setStringValue(databaseJNDIName);
+                    
                     
                     Iterator<TableInfo> tableIt = tables.iterator();
                     List<String> fromList = new ArrayList<String>(); 
@@ -533,6 +448,7 @@ public class ReplayStreamCustomEditor extends DefaultCustomEditor {
                     List<ColumnInfo> remainingColumns = new ArrayList<ColumnInfo>(columns);
                     Set<String> usedupNames = new HashSet<String>();
                     
+                    
                     int counter = 0;
                     //go through user selected columns
                     Iterator<ColumnInfo> it = columns.iterator();
@@ -541,7 +457,7 @@ public class ReplayStreamCustomEditor extends DefaultCustomEditor {
                         remainingColumns.remove(column);
                         String asColumnName = null;
                         
-                        asColumnName = generateUniqueAsColumnName(column, usedupNames);
+                        asColumnName = GUIUtil.generateUniqueAsColumnName(column, usedupNames);
                             
                         usedupNames.add(asColumnName);
                         SchemaAttribute sa = DatabaseMetaDataHelper.createSchemaAttributeFromColumnInfo(column, asColumnName, model);
@@ -561,12 +477,6 @@ public class ReplayStreamCustomEditor extends DefaultCustomEditor {
                     }
                     
                     if(recordIdentifyingColumns != null && recordIdentifyingColumns.size() > 0) {
-                        List<String> skipSchemaNames = new ArrayList<String>();
-                        skipSchemaNames.add(mOutputSchemaNamePanel.getStringValue());
-                        String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer(), skipSchemaNames);
-                        mRecordIdentifyingColumnsSchema = model.getFactory().createSchema(model);
-                        mRecordIdentifyingColumnsSchema.setName(schemaName);
-                        
                         List<String> columnList = new ArrayList<String>();
                         attrs = new ArrayList<SchemaAttribute>();
                         
@@ -579,12 +489,10 @@ public class ReplayStreamCustomEditor extends DefaultCustomEditor {
                             columnList.add(sa.getAttributeName());
                         }
                         
-                        mRecordIdentifyingColumnsSchema.setSchemaAttributes(attrs);
-                        mRecordIdentifyingColumnsTextField.setText(convertListToCommaSeperatedValues(columnList));
+                        mRecordIdentifyingColumnsTextField.setText(GUIUtil.convertListToCommaSeperatedValues(columnList));
                         
 //                        mRecordIdentifyingColumnsPanel.setStringValue(convertListToCommaSeperatedValues(columnList));
                     } else {
-                        mRecordIdentifyingColumnsSchema = null;
                         mRecordIdentifyingColumnsTextField.setText("");
                     }
                     
@@ -592,8 +500,67 @@ public class ReplayStreamCustomEditor extends DefaultCustomEditor {
             }
         }
         
+        
+        class MySelectPanel extends SelectPanel {
+
+            /**
+             * 
+             */
+            private static final long serialVersionUID = -4195259789503600814L;
+
+            public MySelectPanel(IEPModel model, OperatorComponent component) {
+                super(model, component);
+            }
+
+            @Override
+            protected boolean isAddEmptyRow() {
+                return false;
+            }
+
+                    @Override
+                    protected boolean isShowButtons() {
+                        return false;
+                    }
+
+
+            @Override
+            protected DefaultMoveableRowTableModel createTableModel() {
+                return new MyTableModel();
+            }
+        }
+    
+        class MyTableModel extends DefaultMoveableRowTableModel {
+
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                if(column == 0 || column == 1) {
+                    return true;
+                }
+                return false;
+            }
+
+            @Override
+            public void setValueAt(Object aValue, int row, int column) {
+                //to column is changed
+                //we need to update record identifier column as well
+                if(column == 1) {
+                    String oldToColumn = (String) getValueAt(row, column);
+                    //update gui
+                    String recordIdColumns = mRecordIdentifyingColumnsTextField.getText();
+                    if(!recordIdColumns.equals("")) {
+                        recordIdColumns = recordIdColumns.replace(oldToColumn, (String) aValue);
+                        mRecordIdentifyingColumnsTextField.setText(recordIdColumns);
+                    }
+                        
+                }
+                super.setValueAt(aValue, row, column);
+            }
+
+
+        }
     }
     
+   
     
     class MyInputTableTreeModel extends DefaultTreeModel {
         
@@ -653,42 +620,5 @@ public class ReplayStreamCustomEditor extends DefaultCustomEditor {
         
     }
     
-    class MySelectPanel extends SelectPanel {
-
-        /**
-         * 
-         */
-        private static final long serialVersionUID = -4195259789503600814L;
-
-        public MySelectPanel(IEPModel model, OperatorComponent component) {
-            super(model, component);
-        }
-        
-        @Override
-        protected boolean isAddEmptyRow() {
-            return false;
-        }
-
-                @Override
-                protected boolean isShowButtons() {
-                    return false;
-                }
-        
-                
-        @Override
-        protected DefaultMoveableRowTableModel createTableModel() {
-            return new MyTableModel();
-        }
-    }
     
-    class MyTableModel extends DefaultMoveableRowTableModel {
-        
-        @Override
-        public boolean isCellEditable(int row, int column) {
-            if(column == 0 || column == 1) {
-                return true;
-            }
-            return false;
-        }
-    }
 }

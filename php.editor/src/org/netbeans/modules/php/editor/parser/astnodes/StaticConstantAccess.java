@@ -67,4 +67,9 @@ public class StaticConstantAccess extends StaticDispatch {
     public ASTNode getMember() {
         return getConstant();
     }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }        
 }

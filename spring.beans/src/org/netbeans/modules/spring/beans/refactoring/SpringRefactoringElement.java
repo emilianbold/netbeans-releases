@@ -68,6 +68,10 @@ public class SpringRefactoringElement extends SimpleRefactoringElementImplementa
     public static SpringRefactoringElement createJavaElementRefModification(Occurrence occurrence, Modifications mods, String oldSimpleName, String newBinaryName) {
         return new JavaElementRefModification(occurrence, mods, oldSimpleName, newBinaryName);
     }
+    
+    public static SpringRefactoringElement createPropertyRefModification(Occurrence occurrence, Modifications mods, String oldName, String newName) {
+        return new PropertyRefModification(occurrence, mods, oldName, newName);
+    }
 
     private SpringRefactoringElement(Occurrence occurrence) {
         this.occurrence = occurrence;
@@ -119,6 +123,56 @@ public class SpringRefactoringElement extends SimpleRefactoringElementImplementa
             mods.addDifference(occurrence.getFileObject(), diff);
         }
 
+        @Override
+        public String getDisplayText() {
+            if (oldSimpleName != null) {
+                return NbBundle.getMessage(JavaElementRefModification.class, "MSG_UpdateReference", oldSimpleName);
+            } else {
+                return NbBundle.getMessage(JavaElementRefModification.class, "MSG_Update");
+            }
+        }
+
+        @Override
+        public void setEnabled(boolean enabled) {
+            diff.setExcluded(!enabled);
+            newFileContent = null;
+            super.setEnabled(enabled);
+        }
+
+        @Override
+        protected String getNewFileContent() {
+            String content;
+            if (newFileContent != null) {
+                content = newFileContent.get();
+                if (content != null)
+                    return content;
+            }
+            try {
+                content = mods.getResultingSource(getParentFile());
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+            newFileContent = new WeakReference<String>(content);
+            return content;
+        }
+    }
+    
+    private static class PropertyRefModification extends SpringRefactoringElement {
+        protected final Modifications mods;
+        private final Difference diff;
+        private final String oldSimpleName;
+
+        private WeakReference<String> newFileContent;
+        
+        public PropertyRefModification(Occurrence occurrence, Modifications mods, String oldSimpleName, String newBinaryName) {
+            super(occurrence);
+            this.mods = mods;
+            this.oldSimpleName = oldSimpleName;
+            diff = new Difference(Kind.CHANGE, occurrence.getPosition(), newBinaryName);
+            mods.addDifference(occurrence.getFileObject(), diff);
+        }
+        
         @Override
         public String getDisplayText() {
             if (oldSimpleName != null) {

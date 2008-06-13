@@ -168,7 +168,7 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
         } else if (refactoring instanceof SingleCopyRefactoring) {
             FileObject file = refactoring.getRefactoringSource().lookup(FileObject.class);
             if (file != null && RefactoringInfo.isJavaFileOfForm(file) && isOnSourceClasspath(file)) {
-                // moving a java file (between packages)
+                // copying a java file
                 changeType = RefactoringInfo.ChangeType.CLASS_COPY;
                 primaryFile = file;
                 ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);

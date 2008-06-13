@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/stub_dom_XMLHttpRequest.js
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   base : abort;XMLHttpRequest;abort;|DOCUMENTED|FUNCTION|;;0;338d;;void;
   base : getallresponseheaders;XMLHttpRequest;getAllResponseHeaders;|DOCUMENTED|FUNCTION|;;0;340c;;String;
   base : getresponseheader;XMLHttpRequest;getResponseHeader;|DOCUMENTED|FUNCTION|;header;0;34bf;;String;
@@ -45,4 +40,4 @@ Indexed:
   fqn : xmlhttprequest;;XMLHttpRequest;|DOCUMENTED|CONSTRUCTOR|;;0;4122;IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ;XMLHttpRequest;
   fqn : xmlhttprequest;;XMLHttpRequest;|DOCUMENTED|PROPERTY|;;0;0;IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ;;
 
-Not Indexed:
+Not Searchable Keys:

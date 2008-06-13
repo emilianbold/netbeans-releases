@@ -705,16 +705,14 @@ public abstract class CustomComponentHelper extends BaseHelper {
 
                 Node fsNode = LayerXmlHelper.goToFilesystemNode(doc, xpath, docRoot);
                 Node vmdMidpNode = goToVmdMidpNode(doc, xpath, fsNode);
+
                 Node compsNode = goToComponentsNode(doc, xpath, vmdMidpNode);
-                
-                Element cd = doc.createElement(LayerXmlHelper.LAYER_FOLDER);
+                Element cd = doc.createElement(LayerXmlHelper.LAYER_FILE);
                 cd.setAttribute( LayerXmlHelper.LAYER_NAME, getCDLayerInstanceName() );
                 compsNode.appendChild(cd);
                 
-                Node produsersNode;
-                
-                Element prod = doc.createElement(LayerXmlHelper.LAYER_FOLDER);
-                produsersNode = goToProducersNode(doc, xpath, vmdMidpNode);
+                Node produsersNode = goToProducersNode(doc, xpath, vmdMidpNode);
+                Element prod = doc.createElement(LayerXmlHelper.LAYER_FILE);
                 prod.setAttribute( LayerXmlHelper.LAYER_NAME, getProducerLayerInstanceName() );
                 produsersNode.appendChild(prod);
                 

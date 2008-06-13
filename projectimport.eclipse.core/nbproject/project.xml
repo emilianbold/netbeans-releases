@@ -47,12 +47,12 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.projectimport.eclipse.core</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.api.java</code-name-base>
+                    <code-name-base>org.jdesktop.layout</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.18</specification-version>
+                        <specification-version>1.6</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -142,6 +142,15 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.queries</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.13</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.awt</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -176,7 +185,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.2</specification-version>
+                        <specification-version>7.7</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -208,6 +217,9 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.j2ee.persistenceapi</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.projectui</code-name-base>
                     </test-dependency>
                 </test-type>
             </test-dependencies>

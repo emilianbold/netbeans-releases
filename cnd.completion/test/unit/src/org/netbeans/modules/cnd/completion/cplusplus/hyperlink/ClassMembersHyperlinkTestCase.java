@@ -48,6 +48,7 @@ package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
     public ClassMembersHyperlinkTestCase(String testName) {
         super(testName);
+        System.setProperty("cnd.repository.hardrefs", "true");
     }        
         
     public void testSameName() throws Exception {
@@ -311,6 +312,20 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ136140.cc", 17, 12, "IZ136140.cc", 11, 5);
     }
     
+    public void testIZ136894() throws Exception {
+        performTest("main.cc", 67, 35, "main.cc", 59, 5); // itd_state in state->ehci_itd_pool_addr->itd_state;
+        performTest("main.cc", 68, 35, "main.cc", 59, 5); // itd_state in state->ehci_itd_pool_addr[i].itd_state;
+        performTest("main.cc", 70, 19, "main.cc", 59, 5); // itd_state in pool_addr[i].itd_state;
+        performTest("main.cc", 71, 35, "main.cc", 59, 5); // itd_state in state->ehci_itd_pool_addr[0].itd_state;
+        performTest("main.cc", 72, 19, "main.cc", 59, 5); // itd_state in pool_addr[0].itd_state;
+    }
+    
+    public void testIZ136975() throws Exception {
+        performTest("iz136975.cc", 18, 14, "iz136975.cc", 13, 5); // OP in if (OP::Release(*static_cast<SP*> (this))) {
+        performTest("iz136975.cc", 19, 14, "iz136975.cc", 12, 5); // SP in SP::Destroy();
+        performTest("iz136975.cc", 18, 39, "iz136975.cc", 12, 5); // SP in if (OP::Release(*static_cast<SP*> (this))) {
+        performTest("iz136975.cc", 23, 10, "iz136975.cc", 15, 5); // PointerType in PointerType operator->() {
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
         

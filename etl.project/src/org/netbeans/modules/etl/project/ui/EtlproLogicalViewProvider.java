@@ -22,6 +22,8 @@ package org.netbeans.modules.etl.project.ui;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -30,7 +32,6 @@ import java.util.StringTokenizer;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 
-import javax.swing.JSeparator;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -263,7 +264,7 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
             String nbBundle10 = "Generate Bulk Loader";
 
 
-            return new Action[]{
+            List<Action> actions = new ArrayList<Action>(Arrays.asList(
                         CommonProjectActions.newFileAction(),
                         null,
                         ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, nbBundle1, null), // NOI18N
@@ -291,27 +292,15 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
                         CommonProjectActions.copyProjectAction(),
                         CommonProjectActions.deleteProjectAction(),
                         null,
-                        SystemAction.get(org.openide.actions.FindAction.class),
-                        addFromLayers(),
+                        SystemAction.get(org.openide.actions.FindAction.class)));
+            actions.addAll(Utilities.actionsForPath("Projects/Actions"));
+            actions.addAll(Arrays.asList(
                         null,
                         SystemAction.get(org.openide.actions.OpenLocalExplorerAction.class),
                         null,
                         brokenLinksAction,
-                        CommonProjectActions.customizeProjectAction(),
-                    };
-        }
-
-        private Action addFromLayers() {
-            Action action = null;
-            Lookup look = Lookups.forPath("Projects/Actions");
-            for (Object next : look.lookupAll(Object.class)) {
-                if (next instanceof Action) {
-                    action = (Action) next;
-                } else if (next instanceof JSeparator) {
-                    action = null;
-                }
-            }
-            return action;
+                        CommonProjectActions.customizeProjectAction()));
+            return actions.toArray(new Action[actions.size()]);
         }
 
         /** This action is created only when project has broken references.

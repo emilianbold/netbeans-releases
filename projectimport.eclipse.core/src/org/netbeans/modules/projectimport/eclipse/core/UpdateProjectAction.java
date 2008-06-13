@@ -42,6 +42,8 @@ package org.netbeans.modules.projectimport.eclipse.core;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
@@ -72,26 +74,23 @@ public final class UpdateProjectAction extends AbstractAction implements Context
     public void actionPerformed(ActionEvent ignore) {
         assert context != null;
         if (!getUpgradableProject().isEclipseProjectReachable()) {
-            // perhaps notify user that eclipse projetc is not avialable and let them fix it
+            if (!getUpgradableProject().updateBrokenEclipseReference()) {
+                return;
+            }
+        }
+        if (getUpgradableProject().isUpToDate(true)) {
             DialogDisplayer.getDefault().notify(
-                // TODO
-                new NotifyDescriptor.Message("Eclipse project files cannot be reach. Do you want to resolve them? TBD."));
+                new NotifyDescriptor.Message("Project are in synch and there is nothing to update."));
         } else {
-            if (getUpgradableProject().isUpToDate()) {
-                DialogDisplayer.getDefault().notify(
-                    // TODO
-                    new NotifyDescriptor.Message("Project are in synch."));
-            } else {
-                Object answer = DialogDisplayer.getDefault().notify(
-                    // TODO
-                    new NotifyDescriptor.Confirmation("Do you want to update NetBeans project according to Eclipse project?"));
-                if (answer == NotifyDescriptor.YES_OPTION) {
-                    try {
-                        getUpgradableProject().update();
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+            try {
+                List<String> importProblems = new ArrayList<String>();
+                getUpgradableProject().update(importProblems);
+                if (importProblems.size() > 0) {
+                    importProblems.add(0, "Following problems occured during sychronization with Eclipse project "+upgradable.getEclipseProjectFolder()+":");
                 }
+                ImportProblemsPanel.showReport("Update Issues", ImportProblemsPanel.indentAllButFirst(importProblems));
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
     }

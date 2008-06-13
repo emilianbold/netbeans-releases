@@ -44,6 +44,7 @@ package org.netbeans.modules.j2ee.persistence.entitygenerator;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.dbschema.SchemaElement;
@@ -124,11 +125,11 @@ public class DbSchemaEjbGeneratorTest extends NbTestCase {
             return tableName;
         }
 
-        public String getSchema(String tableName) {
+        public String getSchema() {
             return null;
         }
 
-        public String getCatalog(String tableName) {
+        public String getCatalog() {
             return null;
         }
 
@@ -144,7 +145,7 @@ public class DbSchemaEjbGeneratorTest extends NbTestCase {
              return false;
         }
 
-        public Set<String[]> getUniqueConstraints(String tableName) {
+        public Set<List<String>> getUniqueConstraints(String tableName) {
             return null;
         }
 

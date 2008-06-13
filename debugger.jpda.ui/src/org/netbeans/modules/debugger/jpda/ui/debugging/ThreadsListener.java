@@ -45,6 +45,7 @@ import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -177,13 +178,25 @@ public final class ThreadsListener implements PropertyChangeListener {
     }
     
     public synchronized List<JPDAThread> getCurrentThreadsHistory() {
-        List<JPDAThread> result = new ArrayList<JPDAThread>(currentThreadsHistory.size());
-        for (JPDAThread thread : currentThreadsHistory) {
-            if (thread.isSuspended()) {
-                result.add(thread);
+        if (debugger != null && debugger.getState() != JPDADebugger.STATE_DISCONNECTED) {
+            List<JPDAThread> result = new ArrayList<JPDAThread>(currentThreadsHistory.size());
+            for (JPDAThread thread : currentThreadsHistory) {
+                if (thread.isSuspended()) {
+                    result.add(thread);
+                }
             }
+            return result;
+        } else {
+            return Collections.EMPTY_LIST;
         }
-        return result;
+    }
+    
+    public synchronized List<JPDAThread> getThreads() {
+        if (debugger != null && debugger.getState() != JPDADebugger.STATE_DISCONNECTED) {
+            return debugger.getThreadsCollector().getAllThreads();
+        } else {
+            return Collections.EMPTY_LIST;
+        }
     }
     
     public synchronized int getHitsCount() {

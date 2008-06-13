@@ -1264,14 +1264,11 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
                 // TS diagrams (old .etld/.etlp diagram files)
                 retVal.addAll(getTSDiagramsInDirectory(baseDirectory));
             }
-            
-            catch (NullPointerException e)
+            catch (Exception e)
             {
-                // Just bail.
+                e.printStackTrace();
             }
-            
         }
-        
         else
         {
             // No id was added so include all open projects

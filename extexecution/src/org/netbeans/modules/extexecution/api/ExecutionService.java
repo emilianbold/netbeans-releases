@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.extexecution.api;
 
-import org.netbeans.modules.extexecution.FreeIOHandler;
+import org.netbeans.modules.extexecution.InputOutputManager;
 import org.netbeans.modules.extexecution.StopAction;
 import org.netbeans.modules.extexecution.RerunAction;
 import java.awt.event.ActionEvent;
@@ -56,6 +56,8 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,31 +70,32 @@ import org.netbeans.modules.extexecution.api.input.InputProcessor;
 import org.netbeans.modules.extexecution.api.input.InputProcessors;
 import org.netbeans.modules.extexecution.api.input.InputReaderTask;
 import org.netbeans.modules.extexecution.api.input.InputReaders;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
 /**
- * <p>An ExecutionService takes an {@link ExecutionDescriptor} and executes it.
+ * Execution service provides the facility to execute the process while
+ * displaying the output and handling the input.
+ * <p>
  * It will execute the program with an associated I/O window, with stop and
  * restart buttons. It will also obey various descriptor properties such as
  * whether or not to show a progress bar.
  * <p>
- * All launched processes will be killed on exit. Possibly I could make this
- * optional or at least ask the user.
- * </p>
- *
- * @todo Add a Restart button which accomplishes both a stop and a restart
+ * All processes launched by this class are terminated on VM exit by
+ * {@link Process#destroy()}.
+ * <p>
+ * Note that once service is run for the first time. Subsequents runs can be
+ * invoked by the user (rerun button) if it is allowed to do so
+ * ({@link ExecutionDescriptor#isControllable()}). As consequence {@link #kill()}
+ * always terminates <i>currently</i> running task.
  *
  * @author Tor Norbye, Petr Hejl
+ * @see #newService(java.util.concurrent.Callable, org.netbeans.modules.extexecution.api.ExecutionDescriptor, java.lang.String)
+ * @see ExecutionDescriptor
  */
 public final class ExecutionService {
 
@@ -102,7 +105,7 @@ public final class ExecutionService {
         RerunAction.Accessor.setDefault(new RerunAction.Accessor() {
 
             @Override
-            public Task rerun(ExecutionService service) {
+            public Future<Integer> rerun(ExecutionService service) {
                 return service.rerun();
             }
 
@@ -111,11 +114,22 @@ public final class ExecutionService {
 
     static {
         Thread t = new Thread() {
-
             @Override
             public void run() {
-                for (ExecutionService service : RUNNING_PROCESSES) {
-                    service.kill();
+                AccessController.doPrivileged(new PrivilegedAction<Void>() {
+                    public Void run() {
+                        SERVICE.shutdownNow();
+                        return null;
+                    }
+                });
+
+                try {
+                    boolean terminated = SERVICE.awaitTermination(10, TimeUnit.SECONDS);
+                    if (!terminated) {
+                        LOGGER.log(Level.INFO, "Could not terminate running processes"); // NOI18N
+                    }
+                } catch (InterruptedException ex) {
+                    LOGGER.log(Level.FINE, null, ex);
                 }
             }
         };
@@ -126,10 +140,7 @@ public final class ExecutionService {
     /** Display names of currently active processes. */
     private static final Set<String> ACTIVE_DISPLAY_NAMES = new HashSet<String>();
 
-    /** Set of currently active processes. */
-    private static final Set<ExecutionService> RUNNING_PROCESSES = new HashSet<ExecutionService>();
-
-    private static final RequestProcessor PROCESSOR = new RequestProcessor("Execution service", 10, true); // NOI18N
+    private static final ExecutorService SERVICE = Executors.newCachedThreadPool();
 
     private InputOutput io;
     private InputOutput customio;
@@ -140,6 +151,7 @@ public final class ExecutionService {
     private final String originalDisplayName;
     private String displayName; // May be tweaked from descriptor to deal with duplicate running same-name processes
 
+    private volatile Future<Integer> task;
     private boolean rerun;
 
     private ExecutionService(Callable<Process> processCreator, String displayName, ExecutionDescriptor descriptor) {
@@ -148,36 +160,59 @@ public final class ExecutionService {
         this.descriptor = descriptor;
     }
 
-    public static ExecutionService newService(Callable<Process> processCreator, ExecutionDescriptor descriptor, String displayName) {
+    /**
+     * Creates new execution service. Service will wrap up the processes
+     * created by <code>processCreator</code>.
+     *
+     * @param processCreator callable returning the process to wrap up
+     * @param descriptor descriptor describing the configuration of service
+     * @param displayName display name of this service
+     * @return new execution service
+     */
+    public static ExecutionService newService(Callable<Process> processCreator,
+            ExecutionDescriptor descriptor, String displayName) {
         return new ExecutionService(processCreator, displayName, descriptor);
     }
 
-    public void kill() {
-        // temp logging to track down #131628
-        LOGGER.log(Level.FINE, "Killing " + this.displayName + " " + this);
-        if (stopAction != null) {
-            //LOGGER.log(Level.FINE, "StopAction: " + stopAction);
-            //stopAction.actionPerformed(null);
-            Process process = stopAction.getProcess();
-            stopAction.setProcess(null);
-            if (process != null) {
-                LOGGER.log(Level.FINE, "Destroying process: " + process);
-                process.destroy();
+    public Future<Integer> getCurrent() {
+        synchronized (this) {
+            if (task != null && !task.isDone()) {
+                return task;
             }
+            return null;
         }
     }
 
-    private Task rerun() {
-        try {
-            io.getOut().reset();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+    // package level for tests
+    Future<Integer> rerun() {
+        synchronized (this) {
+            if (task != null && !task.isDone()) {
+                throw new IllegalStateException("Task is still running");
+            }
+
+            try {
+                io.getOut().reset();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            rerun = true;
+            return run();
         }
-        rerun = true;
-        return run();
     }
 
-    public Task run() {
+    /**
+     * Runs the process described by this service.
+     * <p>
+     * For details on execution control see {@link ExecutionDescriptor}.
+     *
+     * @return task representing the actual run
+     */
+    public Future<Integer> run() {
+        synchronized (this) {
+        if (task != null && !task.isDone()) {
+            throw new IllegalStateException("Task is still running");
+        }
+
         if (!rerun) {
             customio = descriptor.getInputOutput();
             if (customio != null) {
@@ -200,7 +235,7 @@ public final class ExecutionService {
             // try to find free output windows
             synchronized (this) {
                 if (io == null) {
-                    FreeIOHandler freeIO = FreeIOHandler.findFreeIO(originalDisplayName, descriptor.isControllable());
+                    InputOutputManager freeIO = InputOutputManager.findFreeIO(originalDisplayName, descriptor.isControllable());
                     if (freeIO != null) {
                         io = freeIO.getIO();
                         displayName = freeIO.getDisplayName();
@@ -216,8 +251,9 @@ public final class ExecutionService {
             if (io == null) { // free IO was not found, create new one
                 displayName = getNonActiveDisplayName(originalDisplayName);
 
+                // TODO fix this - UI class needed for kill
+                stopAction = new StopAction();
                 if (descriptor.isControllable()) {
-                    stopAction = new StopAction();
                     rerunAction = new RerunAction(this, descriptor.getRerunCondition());
 
                     io = IOProvider.getDefault().getIO(displayName, new Action[]{rerunAction, stopAction});
@@ -244,40 +280,31 @@ public final class ExecutionService {
         ACTIVE_DISPLAY_NAMES.add(displayName);
         io.setInputVisible(descriptor.isInputVisible());
 
-        Runnable runnable = new Runnable() {
-                public void run() {
-                    try {
-                        final Runnable pre = descriptor.getPreExecution();
-                        if (pre != null) {
-                            pre.run();
-                        }
+        final InputProcessor outProcessor = descriptor.getOutProcessor();
+        try {
+            if (outProcessor != null) {
+                outProcessor.reset();
+            }
 
-                        Process process = processCreator.call();
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
 
-                        RUNNING_PROCESSES.add(ExecutionService.this);
-                        if (stopAction != null) {
-                            stopAction.setProcess(process);
-                        }
-
-                        runIO(stopAction, process, io, null);
-
-                        try {
-                            process.waitFor();
-                        } catch (InterruptedException ex) {
-                            process.destroy();
-                        }
-                    } catch (Exception ex) {
-                        LOGGER.log(Level.WARNING, null, ex);
-                    }
-                }
-            };
+        final InputProcessor errProcessor = descriptor.getErrProcessor();
+        try {
+            if (errProcessor != null) {
+                errProcessor.reset();
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
 
         final ProgressHandle handle;
 
         if (descriptor.showProgress() || descriptor.showSuspended()) {
             handle =
                 ProgressHandleFactory.createHandle(displayName,
-                    stopAction != null
+                    stopAction != null && descriptor.isControllable()
                         ? new Cancellable() {
                             public boolean cancel() {
                                 stopAction.actionPerformed(null);
@@ -290,7 +317,7 @@ public final class ExecutionService {
                             io.select();
                         }
                     });
-                    
+
             handle.setInitialDelay(0);
             handle.start();
             handle.switchToIndeterminate();
@@ -307,47 +334,53 @@ public final class ExecutionService {
             rerunAction.setEnabled(false);
         }
 
-        Task task = PROCESSOR.post(runnable);
+        Callable<Integer> callable = new Callable<Integer>() {
+                public Integer call() {
+                    boolean interrupted = false;
+                    Process process = null;
+                    Integer ret = null;
 
-        task.addTaskListener(new TaskListener() {
-                public void taskFinished(Task task) {
-                    RUNNING_PROCESSES.remove(ExecutionService.this);
+                    try {
+                        final Runnable pre = descriptor.getPreExecution();
+                        if (pre != null) {
+                            pre.run();
+                        }
 
-                    if (io != null && io != customio) {
-                        FreeIOHandler.addFreeIO(io, displayName, stopAction, rerunAction);
-                    }
+                        if (Thread.currentThread().isInterrupted()) {
+                            return null;
+                        }
 
-                    ACTIVE_DISPLAY_NAMES.remove(displayName);
+                        process = processCreator.call();
 
-                    if (descriptor.getPostExecution() != null) {
-                        descriptor.getPostExecution().run();
-                    }
+                        if (stopAction != null) {
+                            stopAction.setProcess(process);
+                        }
 
-                    if (handle != null) {
-                        handle.finish();
-                    }
-
-                    if (descriptor.isControllable()) {
-                        stopAction.setEnabled(false);
-                        rerunAction.setEnabled(true);
-                    }
-
-                    if (stopAction != null) {
-                        Process process = stopAction.getProcess();
-                        stopAction.setProcess(null);
-                        if (process != null) {
-                            process.destroy();
+                        executionProcessing(process, io, descriptor.isInputVisible());
+                    } catch (InterruptedException ex) {
+                        LOGGER.log(Level.FINE, null, ex);
+                        interrupted = true;
+                    } catch (Exception ex) {
+                        LOGGER.log(Level.WARNING, null, ex);
+                    } finally {
+                        ret = executionCleanup(process, handle);
+                        if (interrupted) {
+                            Thread.currentThread().interrupt();
                         }
                     }
-                }
-            });
 
+                    return ret;
+                }
+            };
+
+        task = SERVICE.submit(callable);
         return task;
+        }
     }
 
-    private void runIO(final StopAction sa, Process process, InputOutput io, FileObject toRefresh) {
+    private void executionProcessing(Process process, InputOutput io, boolean input) throws InterruptedException {
+        final ExecutorService executor = Executors.newFixedThreadPool(input ? 3 : 2);
 
-        final ExecutorService executor = Executors.newFixedThreadPool(3);
         OutputWriter out = io.getOut();
         OutputWriter err = io.getErr();
         Reader in = io.getIn();
@@ -356,42 +389,67 @@ public final class ExecutionService {
             executor.submit(InputReaderTask.newTask(
                     InputReaders.forStream(process.getInputStream(), Charset.defaultCharset()),
                     createOutProcessor(out)));
-                    //descriptor.getOutProcessor(io.getOut())));
             executor.submit(InputReaderTask.newTask(
                     InputReaders.forStream(process.getErrorStream(), Charset.defaultCharset()),
                     createErrProcessor(err)));
-                    //descriptor.getErrProcessor(io.getErr())));
-            executor.submit(InputReaderTask.newTask(
-                    InputReaders.forReader(in),
-                    createInProcessor(process.getOutputStream())));
-                    //descriptor.getInProcessor(new OutputStreamWriter(process.getOutputStream()))));
+            if (input) {
+                executor.submit(InputReaderTask.newTask(
+                        InputReaders.forReader(in),
+                        createInProcessor(process.getOutputStream())));
+            }
 
             process.waitFor();
-        } catch (InterruptedException ex) {
-            LOGGER.log(Level.FINE, "Exiting thread", ex);
+        }  finally {
             process.destroy();
-        } finally {
-            AccessController.doPrivileged(new PrivilegedAction<Void>() {
 
+            AccessController.doPrivileged(new PrivilegedAction<Void>() {
                 public Void run() {
                     executor.shutdownNow();
                     return null;
                 }
-
             });
 
             out.close();
             err.close();
+
             try {
                 in.close();
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, null, ex);
             }
+        }
+    }
 
-            // remove this
-            if (toRefresh != null) {
-                FileUtil.refreshFor(FileUtil.toFile(toRefresh));
-            }
+    private Integer executionCleanup(Process process, ProgressHandle handle) {
+        if (io != null && io != customio) {
+            InputOutputManager.addFreeIO(io, displayName,
+                    descriptor.isControllable() ? stopAction : null, rerunAction);
+        }
+
+        ACTIVE_DISPLAY_NAMES.remove(displayName);
+
+        if (descriptor.getPostExecution() != null) {
+            descriptor.getPostExecution().run();
+        }
+
+        if (handle != null) {
+            handle.finish();
+        }
+
+        if (stopAction != null) {
+            stopAction.setProcess(null);
+        }
+
+        if (descriptor.isControllable()) {
+            stopAction.setEnabled(false);
+            rerunAction.setEnabled(true);
+        }
+
+        if (process != null) {
+            process.destroy();
+            return process.exitValue();
+        } else {
+            return null;
         }
     }
 
@@ -422,7 +480,7 @@ public final class ExecutionService {
     private InputProcessor createInProcessor(OutputStream os) {
         return InputProcessors.copying(new OutputStreamWriter(os));
     }
-    
+
     private static String getNonActiveDisplayName(final String displayNameBase) {
         String nonActiveDN = displayNameBase;
         if (ACTIVE_DISPLAY_NAMES.contains(nonActiveDN)) {
