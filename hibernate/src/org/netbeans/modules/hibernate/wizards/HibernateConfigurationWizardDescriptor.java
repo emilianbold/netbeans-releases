@@ -40,7 +40,6 @@ package org.netbeans.modules.hibernate.wizards;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.Project;
 import org.openide.WizardDescriptor;
 import org.netbeans.api.project.Project;
 import org.openide.util.ChangeSupport;
@@ -109,10 +108,6 @@ public class HibernateConfigurationWizardDescriptor implements WizardDescriptor.
         return project;
     }
     
-    String getSessionName() {
-        return panel == null ? null : panel.getSessionName();
-    }
-
     String getDialectName() {
         return panel == null ? null : panel.getSelectedDialect();
     }

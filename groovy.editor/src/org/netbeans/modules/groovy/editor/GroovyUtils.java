@@ -191,10 +191,8 @@ public class GroovyUtils {
         return ble;
     }
     
-    
-    static final String[] GROOVY_KEYWORDS =
+    static final String[] JAVA_KEYWORDS =
         new String[] {
-            "as",
             "import",
             "assert",
             "break",
@@ -203,7 +201,6 @@ public class GroovyUtils {
             "try",
             "class",
             "continue",
-            "def",
             "default",
             "do",
             "else",
@@ -211,14 +208,12 @@ public class GroovyUtils {
             "finally",
             "for",
             "if",
-            "in",
             "implements",
             "import",
             "instanceof",
             "interface",
             "new",
             "package",
-            "property",
             "return",
             "switch",
             "throw",
@@ -227,4 +222,11 @@ public class GroovyUtils {
             "while"
         };
     
+    static final String[] GROOVY_KEYWORDS =
+        new String[] {
+            "as",
+            "def",
+            "in",
+            "property"
+        };
 }

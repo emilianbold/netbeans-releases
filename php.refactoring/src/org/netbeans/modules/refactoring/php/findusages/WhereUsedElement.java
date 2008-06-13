@@ -51,6 +51,7 @@ import org.netbeans.napi.gsfret.source.UiUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
@@ -167,6 +168,8 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
             rangeNode = ((ClassInstanceCreation) node).getClassName();
         } else if (node instanceof StaticFieldAccess) {
             rangeNode = ((StaticFieldAccess) node).getField();
+        } else if (node instanceof ArrayAccess) {
+            rangeNode = ((ArrayAccess) node).getName();
         } 
         if (rangeNode == null) {
             rangeNode = node;

@@ -41,15 +41,17 @@ package org.netbeans.modules.projectimport.eclipse.web;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectFactorySupport;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
@@ -100,11 +102,14 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         // TODO: most of the values defaulted for now:
         //
         //
+        if (Deployment.getDefault().getServerInstanceIDs().length == 0) {
+            importProblems.add("project cannot be imported if there is no application server");
+            return null;
+        }
         
         WebProjectCreateData createData = new WebProjectCreateData();
         createData.setProjectDir(nbProjectDir);
         createData.setName(model.getProjectName());
-        assert Deployment.getDefault().getServerInstanceIDs().length > 0 : "sorry , for now you have to have at least one server";
         createData.setServerInstanceID(Deployment.getDefault().getServerInstanceIDs()[0]);
         createData.setJavaEEVersion("1.5");
         createData.setSourceLevel("1.5");
@@ -125,7 +130,7 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         createData.setBuildfile("build.xml");
         
         AntProjectHelper helper = WebProjectUtilities.importProject(createData);
-        Project nbProject = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+        WebProject nbProject = (WebProject)ProjectManager.getDefault().findProject(helper.getProjectDirectory());
         
         // set labels for source roots
 //        ProjectFactorySupport.updateSourceRootLabels(model.getEclipseSourceRoots(), nbProject.getSourceRoots());
@@ -139,7 +144,7 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         }
         
         // update project classpath
-        ProjectFactorySupport.updateProjectClassPath(helper, model, importProblems);
+        ProjectFactorySupport.updateProjectClassPath(helper, nbProject.getReferenceHelper(), model, importProblems);
         
         // save project
         ProjectManager.getDefault().saveProject(nbProject);
@@ -196,10 +201,15 @@ public class WebProjectFactory implements ProjectTypeUpdater {
     }
 
     public String update(Project project, ProjectImportModel model, String oldKey, List<String> importProblems) throws IOException {
+        if (!(project instanceof WebProject)) {
+            throw new IOException("is not web project: "+project.getClass().getName());
+        }
         String newKey = calculateKey(model);
         
         // update project classpath
-        String actualKey = ProjectFactorySupport.synchronizeProjectClassPath(project, ((WebProject)project).getAntProjectHelper(), model, oldKey, newKey, importProblems);
+        String actualKey = ProjectFactorySupport.synchronizeProjectClassPath(project, 
+                ((WebProject)project).getAntProjectHelper(), 
+                ((WebProject)project).getReferenceHelper(), model, oldKey, newKey, importProblems);
         
         // TODO:
         // update source roots and platform and server and web root and context
@@ -216,6 +226,15 @@ public class WebProjectFactory implements ProjectTypeUpdater {
 
     public String getProjectTypeName() {
         return "Web Application";
+    }
+
+    public boolean prepare() {
+        if (Deployment.getDefault().getServerInstanceIDs().length == 0) {
+            if (ServerManager.showAddServerInstanceWizard() == null) {
+                return false;
+            }
+        }
+        return true;
     }
     
 }

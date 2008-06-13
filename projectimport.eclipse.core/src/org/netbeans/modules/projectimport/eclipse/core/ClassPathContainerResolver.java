@@ -68,9 +68,9 @@ public class ClassPathContainerResolver {
      * 
      * Eg. for "org.eclipse.jdt.junit.JUNIT_CONTAINER/3.8.1" it would be "libs.junit.classpath"
      * 
-     * This method is called after .classpath file was parsed.
+     * This method is called during project import.
      */
-    public static boolean resolve(Workspace workspace, DotClassPathEntry entry) {
+    public static boolean resolve(Workspace workspace, DotClassPathEntry entry, List<String> importProblems) {
         assert entry.getKind() == DotClassPathEntry.Kind.CONTAINER : entry;
         
         String container = entry.getRawPath();
@@ -99,6 +99,10 @@ public class ClassPathContainerResolver {
             entry.setContainerMapping("");
             return true;
         }
+        
+        importProblems.add("unsupported classpath container found. It will be ignored and " +
+                "you may need to update NetBeans project classpath by hand. Internal name of this container is: '"+
+                container+"'");
         
         return false;
     }

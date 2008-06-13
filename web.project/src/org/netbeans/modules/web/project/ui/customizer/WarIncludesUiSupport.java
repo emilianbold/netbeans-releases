@@ -153,12 +153,12 @@ public class WarIncludesUiSupport {
         }
     }
 
-    public static void addJarFiles(String filePaths[], File base, ClasspathTableModel tableModel) {
+    public static void addJarFiles(String filePaths[], File base, String[] pathBasedVariables, ClasspathTableModel tableModel) {
         Object[][] newData = new Object[data.length + filePaths.length][2];
         for (int i = 0; i < data.length; i++)
             newData[i] = data[i];
         for (int i = 0; i < filePaths.length; i++) {
-            ClassPathSupport.Item item = ClassPathSupport.Item.create(filePaths[i], base, null);
+            ClassPathSupport.Item item = ClassPathSupport.Item.create(filePaths[i], base, null, pathBasedVariables != null ? pathBasedVariables[i] : null);
             item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, ClassPathSupportCallbackImpl.PATH_IN_WAR_APPLET);
             newData[data.length + i][0] = item;
             newData[data.length + i][1] = ClassPathSupportCallbackImpl.PATH_IN_WAR_APPLET;

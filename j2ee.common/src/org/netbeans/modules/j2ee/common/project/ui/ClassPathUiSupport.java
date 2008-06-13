@@ -107,7 +107,7 @@ public final class ClassPathUiSupport {
         ClassPathSupport.Item item = (ClassPathSupport.Item) listModel.getElementAt(selectedIndices[0]);
         if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
             EditJarSupport.Item eji = new EditJarSupport.Item();
-            eji.setJarFile(item.getFilePath());
+            eji.setJarFile(item.getVariableBasedProperty() != null ? item.getVariableBasedProperty() : item.getFilePath());
             eji.setSourceFile(item.getSourceFilePath());
             eji.setJavadocFile(item.getJavadocFilePath());
             eji = EditJarSupport.showEditDialog(helper, eji);
@@ -234,13 +234,13 @@ public final class ClassPathUiSupport {
         return indexes;        
     }
 
-    public static int[] addJarFiles( DefaultListModel listModel, int[] indices, String filePaths[], File base,
-            Callback callback) {
+    public static int[] addJarFiles( DefaultListModel listModel, int[] indices, String filePaths[], File base, 
+            String[] variables, Callback callback) {
         int lastIndex = indices == null || indices.length == 0 ? listModel.getSize() - 1 : indices[indices.length - 1];
         int[] indexes = new int[filePaths.length];
         for( int i = 0, delta = 0; i+delta < filePaths.length; ) {            
             int current = lastIndex + 1 + i;
-            ClassPathSupport.Item item = ClassPathSupport.Item.create( filePaths[i], base, null);
+            ClassPathSupport.Item item = ClassPathSupport.Item.create( filePaths[i], base, null, variables != null ? variables[i] : null);
             if (callback != null) {
                 callback.initItem(item);
             }

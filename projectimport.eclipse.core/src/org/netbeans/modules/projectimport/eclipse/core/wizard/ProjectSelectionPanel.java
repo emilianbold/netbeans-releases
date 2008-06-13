@@ -108,7 +108,7 @@ final class ProjectSelectionPanel extends JPanel {
                 label.setText(project.getName() + " ("+project.getProjectTypeFactory().getProjectTypeName()+")"); // NOI18N
                 label.setIcon(project.getProjectTypeFactory().getProjectTypeIcon());
             } else {
-                label.setText(project.getName()); // NOI18N
+                label.setText(project.getName() + " (unknown project type)"); // NOI18N
             }
             checkbox.setSelected(selectedProjects.contains(project) ||
                     requiredProjects.contains(project));
@@ -360,6 +360,13 @@ final class ProjectSelectionPanel extends JPanel {
     List<EclipseProject> getProjects() {
         List<EclipseProject> list = new ArrayList<EclipseProject>();
         addProjects(selectedProjects, list);
+        Iterator<EclipseProject> it = list.iterator();
+        while (it.hasNext()) {
+            EclipseProject eclipseProject = it.next();
+            if (!eclipseProject.isImportSupported()) {
+                it.remove();
+            }
+        }
         return list;
     }
     

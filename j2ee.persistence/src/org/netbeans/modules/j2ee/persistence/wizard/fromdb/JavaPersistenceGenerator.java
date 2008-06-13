@@ -388,10 +388,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     javaSource.runModificationTask(new Task<WorkingCopy>() {
                         public void run(WorkingCopy copy) throws IOException {
                             if (copy.getFileObject().equals(entityClassFO)) {
-                                EntityClassGenerator clsGen = new EntityClassGenerator(copy, 
-                                        entityClass, generateNamedQueries,
-                                        fullyQualifiedTableNames, regenTablesAttrs,
-                                        fetchType, collectionType);
+                                EntityClassGenerator clsGen = new EntityClassGenerator(copy, entityClass);
                                 clsGen.run();
                             } else {
                                 new PKClassGenerator(copy, entityClass).run();
@@ -739,31 +736,13 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             private final List<VariableTree> pkClassVariables = new ArrayList<VariableTree>();
             // the list of @NamedQuery annotations which will be added to the entity class
             private final List<ExpressionTree> namedQueryAnnotations = new ArrayList<ExpressionTree>();
-            //Specifies whether named queries should be generated.
-            private final boolean generateNamedQueries;
-            // Adds catalog and schema attribute on @Table if true
-            private final boolean fullyQualifiedTableNames;        
-            // Adds nullable (if false), length (for String), precision and scale (for decimal types)
-            // on @Column and uniqueContraints on @Table if true
-            private final boolean regenTablesAttrs;       
-            // Fetch type for relationships
-            private final FetchType fetchType;            
-            // The collection type used for OneToMany and ManyToMany cmr fields
-            private final CollectionType collectionType;
             // the property for the primary key (or the primary key class)
             private Property pkProperty;
             // the prefix or all named queries ("select ... ")
             private String namedQueryPrefix;
 
-            public EntityClassGenerator(WorkingCopy copy, EntityClass entityClass, boolean generateNamedQueries,
-                    boolean fullyQualifiedTableNames, boolean regenTablesAttrs,
-                    FetchType fetchType, CollectionType collectionType  ) throws IOException {
+            public EntityClassGenerator(WorkingCopy copy, EntityClass entityClass) throws IOException {
                 super(copy, entityClass);
-                this.generateNamedQueries = generateNamedQueries;
-                this.fullyQualifiedTableNames = fullyQualifiedTableNames;
-                this.regenTablesAttrs = regenTablesAttrs;
-                this.fetchType = fetchType;
-                this.collectionType = collectionType;
                 entityClassName = entityClass.getClassName();
                 assert typeElement.getSimpleName().contentEquals(entityClassName);
                 entityFQClassName = entityClass.getPackage() + "." + entityClassName;

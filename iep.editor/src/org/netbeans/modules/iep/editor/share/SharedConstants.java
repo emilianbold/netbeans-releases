@@ -309,5 +309,10 @@ public interface SharedConstants {
       COL_SEQID,
       COL_TIMESTAMP
   };
+  
+  //default jndi name
+  public static final String DEFAULT_JNDINAME = "jdbc/iepseDerbyNonXA"; 
+  
+  
 }
     
