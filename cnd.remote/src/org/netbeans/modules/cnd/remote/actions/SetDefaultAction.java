@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.remote.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
+import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.openide.util.NbBundle;
 
 /**
@@ -49,11 +50,14 @@ import org.openide.util.NbBundle;
  */
 public class SetDefaultAction extends AbstractAction {
     
-    public SetDefaultAction() {
+    private RemoteServerRecord record;
+    
+    public SetDefaultAction(RemoteServerRecord record) {
         super(NbBundle.getMessage(AddNewServerAction.class, "LBL_SetDefaultAction"));
+        this.record = record;
     }
 
     public void actionPerformed(ActionEvent e) {
-        System.err.println("SDA.actionPerformed");
+        record.setActive(true);
     }
 }
