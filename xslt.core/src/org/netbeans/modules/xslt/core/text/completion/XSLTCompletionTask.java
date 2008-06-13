@@ -48,10 +48,8 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
  */
 public class XSLTCompletionTask {
     public CompletionTask createTask(JTextComponent textComponent) {
-//**********??????
         AsyncCompletionTask completionTask = new AsyncCompletionTask(new XSLTCompletionQuery(), 
             textComponent);
         return completionTask;
-//**********??????            
     }
 }

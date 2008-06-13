@@ -40,6 +40,7 @@
 package org.netbeans.modules.projectimport.eclipse.core.spi;
 
 import java.io.IOException;
+import java.util.List;
 import org.netbeans.api.project.Project;
 
 /**
@@ -59,7 +60,6 @@ public interface ProjectTypeUpdater extends ProjectTypeFactory {
      */
     String calculateKey(ProjectImportModel model);
 
-    // TODO: should update has also: List<String> importProblems ?
     /**
      * Update given project.
      * 
@@ -71,7 +71,10 @@ public interface ProjectTypeUpdater extends ProjectTypeFactory {
      * @param project
      * @param model
      * @param oldKey
+     * @return resulting new key to be stored; it can be different from value returend by {@link #calculateKey}
+     *  because it is result of actual update and may keep some items which could not be removed or added
+     *  succesfully.
      */
-    void update(Project project, ProjectImportModel model, String oldKey) throws IOException;
+    String update(Project project, ProjectImportModel model, String oldKey, List<String> importProblems) throws IOException;
     
 }

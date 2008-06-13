@@ -44,6 +44,7 @@ package org.netbeans.modules.projectimport.eclipse.core;
 import java.io.File;
 import java.util.Collections;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
 
 /**
  * @author Martin Krauskopf
@@ -60,6 +61,11 @@ public class ClassPathParserTest extends NbTestCase {
         assertEquals("1 sources entry", 1, cp.getSourceRoots().size());
         assertNotNull("non empty output", cp.getOutput());
         assertNotNull("non empty JDK", cp.getJREContainer());
+        
+        DotClassPathEntry entry = cp.getClassPathEntries().get(0);
+        assertEquals("lib", entry.getProperty("kind"));
+        assertEquals("C:/MyProjects/JavaAPI/integrationServerApi.jar", entry.getProperty("path"));
+        assertEquals("jar:file:/C:/MyProjects/JavaAPI/docs/javaApiDoc.jar!/", entry.getProperty("javadoc_location"));
     }
     
     public void testAccessrulesDoesNotCauseException() throws Exception { // #91669

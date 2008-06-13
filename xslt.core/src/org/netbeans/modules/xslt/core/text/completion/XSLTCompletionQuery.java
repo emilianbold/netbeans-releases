@@ -46,9 +46,9 @@ import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.modules.xslt.core.text.completion.handler.HandlerAttributeEnumValues;
 import org.netbeans.modules.xslt.core.text.completion.handler.HandlerCallTemplateName;
+import org.netbeans.modules.xslt.core.text.completion.handler.HandlerUseAttributeSets;
 import org.netbeans.modules.xslt.core.text.completion.handler.HandlerWithParamName;
 import org.netbeans.modules.xslt.core.text.completion.handler.XSLTCompletionHandler;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -65,7 +65,8 @@ public class XSLTCompletionQuery extends AsyncCompletionQuery implements
                 // don't change the sequence of handlers in this list
                 new HandlerAttributeEnumValues(),
                 new HandlerCallTemplateName(),
-                new HandlerWithParamName()
+                new HandlerWithParamName(),
+                new HandlerUseAttributeSets()
             }
         ));
     

@@ -1,21 +1,16 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/Hello.groovy
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   class : Hello
   class-ig : hello
   fqn : foo.Hello
 
-Not Indexed:
+Not Searchable Keys:
 
 
-Document 2
-Indexed:
+Document 1
+Searchable Keys:
   class : Hello1
   class-ig : hello1
   field : field1
@@ -28,22 +23,22 @@ Indexed:
   method : dynamicmethod
   method : main(args);08
 
-Not Indexed:
+Not Searchable Keys:
 
 
-Document 3
-Indexed:
+Document 2
+Searchable Keys:
   class : SecondTestClass
   class-ig : secondtestclass
   fqn : foo.SecondTestClass
 
-Not Indexed:
+Not Searchable Keys:
 
 
-Document 4
-Indexed:
+Document 3
+Searchable Keys:
   class : ThirdTestClass
   class-ig : thirdtestclass
   fqn : foo.ThirdTestClass
 
-Not Indexed:
+Not Searchable Keys:

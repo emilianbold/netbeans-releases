@@ -859,7 +859,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
                 }
             }
             if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
-                if (item.getReference() != null) {
+                if (item.getReference() != null && item.getVariableBasedProperty() == null) {
                     //TODO reference is null for not yet persisted items.
                     // there seems to be no way to generate a reference string without actually
                     // creating and writing the property..
@@ -874,7 +874,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
             ClassPathSupport.Item item = (ClassPathSupport.Item) model.get(i);
             if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
                 if (item.getReference() != null) {
-                    uiProperties.cs.updateJarReference(item);
+                    item.updateJarReference(uiProperties.getProject().getAntProjectHelper());
                 }
             }
         }

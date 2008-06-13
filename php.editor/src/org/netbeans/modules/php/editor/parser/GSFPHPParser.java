@@ -42,8 +42,6 @@ package org.netbeans.modules.php.editor.parser;
 import java.io.StringReader;
 import java.util.logging.Logger;
 import org.netbeans.modules.gsf.api.*;
-import org.netbeans.modules.gsf.api.Error;
-import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 
 
@@ -81,7 +79,8 @@ public class GSFPHPParser implements Parser {
                 // calling the php ast parser itself
                 ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source), false);
                 ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
-                parser.setErrorHandler(new ErrorHandler(context));
+                PHP5ErrorHandler errorHandler = new PHP5ErrorHandler(context,this);
+                parser.setErrorHandler(errorHandler);
                 java_cup.runtime.Symbol rootSymbol = parser.parse();
                 if (rootSymbol != null) {
                     Program program = null;
@@ -92,6 +91,7 @@ public class GSFPHPParser implements Parser {
                         LOGGER.fine ("The parser value is not a Program: " + rootSymbol.value);
                     }
                     result = new PHPParseResult(this, file, program);
+                    errorHandler.displaySyntaxErrors(program);
                 }
                 else {
                     result = new PHPParseResult(this, file, null);
@@ -174,7 +174,7 @@ public class GSFPHPParser implements Parser {
         
         @Override
         public String toString() {
-            return "RubyParser.Context(" + file.toString() + ")"; // NOI18N
+            return "PHPParser.Context(" + getFile().toString() + ")"; // NOI18N
         }
         
         public OffsetRange getSanitizedRange() {
@@ -192,21 +192,26 @@ public class GSFPHPParser implements Parser {
         public int getErrorOffset() {
             return errorOffset;
         }
-    }
-    
-    private class ErrorHandler implements ParserErrorHandler {
-        
-        private final Context context;
 
-        public ErrorHandler(Context context) {
-            this.context = context;
+        /**
+         * @return the listener
+         */
+        public ParseListener getListener() {
+            return listener;
         }
-        
-        
-        public void handleError(Type type, String message, int startOffset, int endOffset, Object info) {
-            Error error = new GSFPHPError(message, context.file.getFileObject(), startOffset, endOffset, Severity.ERROR, new Object[]{info});
-            context.listener.error(error);
+
+        /**
+         * @return the file
+         */
+        public ParserFile getFile() {
+            return file;
         }
-        
+
+        /**
+         * @return the source
+         */
+        public String getSource() {
+            return source;
+        }
     }
 }

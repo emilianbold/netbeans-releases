@@ -96,7 +96,8 @@ public class JavaEngineProvider extends DebuggerEngineProvider {
         return new Object [] {
             new ComponentProxy("localsView"),
             new ComponentProxy("watchesView"),
-            new ComponentProxy("breakpointsView")
+            new ComponentProxy("breakpointsView"),
+            new ComponentProxy("debugging")
         };
     }
     

@@ -50,9 +50,12 @@
 package org.netbeans.modules.uml.drawingarea.actions;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.visual.action.ConnectorState;
+import org.netbeans.api.visual.action.WidgetAction;
+import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDropEvent;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
@@ -63,7 +66,6 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IRelationship;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.RelationProxy;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.RelationValidator;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
@@ -71,8 +73,10 @@ import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.drawingarea.LabelManager;
 import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
+import org.netbeans.modules.uml.drawingarea.palette.NodeInitializer;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
+import org.netbeans.modules.uml.drawingarea.view.MoveDropTargetDropEvent;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.openide.util.Lookup;
@@ -88,6 +92,7 @@ public class SceneConnectProvider implements ExConnectProvider
     private RelationValidator validator = new RelationValidator();
     private RelationshipFactory factory = null;
     private String stereotype = null;
+    private NodeInitializer defaultnodeinitializer;
 
     /**
      * Creates a new instance of SceneConnectProvider.  The provider will create
@@ -143,6 +148,10 @@ public class SceneConnectProvider implements ExConnectProvider
             
             if(retVal == ConnectorState.ACCEPT)
             {
+                // self link
+                if (sourceWidget == targetWidget)
+                    return ConnectorState.ACCEPT;
+                
                 if(isSourceParent(sourceWidget, targetWidget) == true)
                 {
                     retVal = ConnectorState.REJECT;
@@ -275,7 +284,9 @@ public class SceneConnectProvider implements ExConnectProvider
      *                    GraphScene.
      * @return The new node that was created.
      */
-    public Widget createTargetWidget(Scene targetScene, Widget sourceWidget)
+    public Widget createTargetWidget(Scene targetScene, 
+                                     Widget sourceWidget,
+                                     Point location)
     {
         Widget retVal = null;
 
@@ -292,15 +303,25 @@ public class SceneConnectProvider implements ExConnectProvider
                 IElement from = sourceElement.getFirstSubject();
                 String type = getRelationshipFactory().getElementType();
                 if(isValidRelationship(from, namedElement, type, false) == true)
-                {
+                {   
+                    if(defaultnodeinitializer!=null)
+                    {
+                        defaultnodeinitializer.initialize(namedElement);
+                    }
                     IPresentationElement element = createNodePresentationElement(namedElement);
                     retVal = scene.addNode(element);
+                    
+                    MoveDropTargetDropEvent dropEvent = new MoveDropTargetDropEvent(retVal, location);
+                    WidgetDropTargetDropEvent event = new WidgetDropTargetDropEvent (1, dropEvent);
 
-                    IDiagram diagram = scene.getDiagram();
-                    if (diagram != null)
+                    if(processLocationOperator(scene, event, location) == false)
                     {
-                        INamespace space = diagram.getNamespaceForCreatedElements();
-                        space.addOwnedElement(namedElement);
+                        IDiagram diagram = scene.getDiagram();
+                        if (diagram != null)
+                        {
+                            INamespace space = diagram.getNamespaceForCreatedElements();
+                            space.addOwnedElement(namedElement);
+                        }
                     }
                 }
                 else
@@ -313,6 +334,97 @@ public class SceneConnectProvider implements ExConnectProvider
         return retVal;
     }
 
+    private boolean processLocationOperator(Widget widget,
+                                         WidgetAction.WidgetDropTargetDropEvent event,
+                                         Point cursorSceneLocation)
+    {
+        Scene scene = widget.getScene();
+        Point location = scene.getLocation();
+        return processLocationOperator2(scene, event, new Point(cursorSceneLocation.x + location.x, cursorSceneLocation.y + location.y));
+    }
+
+    private boolean processLocationOperator2(Widget widget,
+                                            WidgetAction.WidgetDropTargetDropEvent event, 
+                                            Point point)
+    {
+        boolean retVal = false;
+        
+        if (!widget.isVisible())
+        {
+            return false;
+        }
+
+        Point location = widget.getLocation();
+//        point.translate(-location.x, -location.y);
+
+        Rectangle bounds = widget.getBounds();
+        if ((bounds != null) && (bounds.contains(point) == true))
+        {
+            List<Widget> children = widget.getChildren();
+            Widget[] childrenArray = children.toArray(new Widget[children.size()]);
+
+            for (int i = childrenArray.length - 1; i >= 0; i--)
+            {
+                if(processLocationOperator2(childrenArray[i], event, point) == true)
+                {
+                    retVal = true;
+                    break;
+                }
+            }
+
+            if ((retVal == false) && (widget.isHitAt(point) == true))
+            {
+                retVal = sendEvents(widget, event, point);
+            }
+        }
+
+        point.translate(location.x, location.y);
+        return retVal;
+    }
+    
+    private boolean sendEvents(Widget target,
+                               WidgetAction.WidgetDropTargetDropEvent event,
+                               Point pt)
+    {
+        boolean retVal = false;
+        
+        if(target != null)
+        {
+            if(sendEvents(target.getActions(), target, event) == false)
+            {
+                String tool = target.getScene().getActiveTool();
+                retVal = sendEvents(target.getActions(tool), target, event);
+            }
+            else
+            {
+                retVal = true;
+            }
+        }
+        
+        return retVal;
+    }
+    
+    private boolean sendEvents(WidgetAction.Chain actions,
+                                    Widget target,
+                                    WidgetAction.WidgetDropTargetDropEvent event)
+    {
+        boolean retVal = false;
+        
+        if(actions != null)
+        {
+            for(WidgetAction action :actions.getActions())
+            {
+                if(action.drop(target, event) == WidgetAction.State.CONSUMED)
+                {
+                    retVal = true;
+                    break;
+                }
+            }
+        }
+        
+        return retVal;
+    }
+    
     public RelationshipFactory getRelationshipFactory()
     {
         return factory;
@@ -321,6 +433,11 @@ public class SceneConnectProvider implements ExConnectProvider
     public void setRelationshipFactory(RelationshipFactory factory)
     {
         this.factory = factory;
+    }
+    
+    public void setDefaultNodeInitializer(NodeInitializer initializer)
+    {
+        this.defaultnodeinitializer=initializer;
     }
 
     protected IPresentationElement createNodePresentationElement(INamedElement element)
