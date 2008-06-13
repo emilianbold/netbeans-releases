@@ -80,7 +80,10 @@ public class RemoteServerRecord implements ServerRecord {
     }
     
     public void setActive(boolean active) {
-        this.active = active;
+        if (this.active != active) {
+            this.active = active;
+            RemoteServerList.getInstance().fireChange();
+        }
     }
 
     public String getServerName() {

@@ -40,30 +40,31 @@
 package org.netbeans.modules.cnd.remote.actions;
 
 import java.awt.Dialog;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.ui.AddServerDialog;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author gordonp
  */
-public class AddNewServerAction extends AbstractAction implements PropertyChangeListener {
+public class AddNewServerAction extends NodeAction implements PropertyChangeListener {
     
     protected JButton ok;
     
-    public AddNewServerAction() {
-        super(NbBundle.getMessage(AddNewServerAction.class, "LBL_AddNewServer"));
+    public String getName() {
+        return NbBundle.getMessage(AddNewServerAction.class, "LBL_AddNewServer");
     }
 
-    public void actionPerformed(ActionEvent e) {
+    public void performAction(Node[] nodes) {
         AddServerDialog dlg = new AddServerDialog();
         dlg.addPropertyChangeListener(AddServerDialog.PROP_VALID, this);
         ok = new JButton(NbBundle.getMessage(AddNewServerAction.class, "BTN_OK"));
@@ -83,5 +84,20 @@ public class AddNewServerAction extends AbstractAction implements PropertyChange
             AddServerDialog dlg = (AddServerDialog) evt.getSource();
             ok.setEnabled(dlg.isOkValid());
         }
+    }
+
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        return true;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+    
+    @Override
+    public boolean asynchronous() {
+        return false;
     }
 }

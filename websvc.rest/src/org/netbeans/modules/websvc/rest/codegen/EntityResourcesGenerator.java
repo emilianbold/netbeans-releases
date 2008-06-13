@@ -455,7 +455,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
 
                     modifiedTree = addGetEntityMethod(copy, modifiedTree, bean);
                     modifiedTree = addUpdateEntityMethod(copy, modifiedTree, bean);
-                    //modifiedTree = addGetUriMethod(copy, modifiedTree, bean);
+                    modifiedTree = addDeleteEntityMethod(copy, modifiedTree, bean);
 
                     copy.rewrite(tree, modifiedTree);
                 }
@@ -676,12 +676,13 @@ public class EntityResourcesGenerator extends AbstractGenerator {
 
         Object returnType = getConverterType(bean);
 
-        String[] parameters = new String[]{"start", "max", "expandLevel"};        //NOI18N
+        String[] parameters = new String[]{"start", "max", "expandLevel", "query"};        //NOI18N
 
         String intType = Integer.TYPE.getName();
-        Object[] paramTypes = new String[]{intType, intType, intType};          //NOI18N
+        Object[] paramTypes = new String[]{intType, intType, intType, String.class.getSimpleName()};          //NOI18N
 
         String[][] paramAnnotations = new String[][]{
+            {RestConstants.QUERY_PARAM_ANNOTATION, RestConstants.DEFAULT_VALUE_ANNOTATION},
             {RestConstants.QUERY_PARAM_ANNOTATION, RestConstants.DEFAULT_VALUE_ANNOTATION},
             {RestConstants.QUERY_PARAM_ANNOTATION, RestConstants.DEFAULT_VALUE_ANNOTATION},
             {RestConstants.QUERY_PARAM_ANNOTATION, RestConstants.DEFAULT_VALUE_ANNOTATION}
@@ -691,10 +692,11 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             {"start", "0"},
             {"max", "10"},
             {"expandLevel", "1"},
+            {"query", "SELECT e FROM " + getEntityClassName(bean) + " e"}
         };
 
         String bodyText = "{ try {" +
-                "return new $CONVERTER$(getEntities(start, max), context.getAbsolutePath(), expandLevel);" +
+                "return new $CONVERTER$(getEntities(start, max, query), context.getAbsolutePath(), expandLevel);" +
                 "} finally {" +
                 "PersistenceService.getInstance().close();" +
                 "}" +
@@ -800,12 +802,12 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                 new String[]{getEntityClassType(bean)});
 
         String bodyText = "{" +
-                "return PersistenceService.getInstance().createQuery(\"SELECT e FROM $CLASS$ e\")." +
+                "return PersistenceService.getInstance().createQuery(query)." +
                 "setFirstResult(start).setMaxResults(max).getResultList();" +
                 "}";
 
-        String[] parameters = new String[]{"start", "max"};
-        Object[] paramTypes = new Object[]{"int", "int"};
+        String[] parameters = new String[]{"start", "max", "query"};
+        Object[] paramTypes = new Object[]{"int", "int", "String"};
 
         bodyText = bodyText.replace("$CLASS$", getEntityClassName(bean));
 
@@ -1047,7 +1049,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                 "try {" +
                 "persistenceSvc.beginTx();" +
                 "$CLASS$ entity = getEntity();" +
-                "persistenceSvc.removeEntity(entity);" +
+                "deleteEntity(entity);" +
                 "persistenceSvc.commitTx();" +
                 "} finally {" +
                 "persistenceSvc.close();" +
@@ -1103,7 +1105,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             bodyText = "{" +
                     "final $CLASS$ parent = getEntity();" +
                     "return new $RESOURCE$(context) {" +
-                    "@Override protected Collection<$SUBCLASS$> getEntities(int start, int max) {" +
+                    "@Override protected Collection<$SUBCLASS$> getEntities(int start, int max, String query) {" +
                     "Collection<$SUBCLASS$> result = new java.util.ArrayList<$SUBCLASS$>();" +
                     "int index = 0;" +
                     "for ($SUBCLASS$ e : parent.$GETTER$()) {" +
@@ -1382,6 +1384,76 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         return bodyText;
     }
     
+    private ClassTree addDeleteEntityMethod(WorkingCopy copy, ClassTree tree,
+            EntityResourceBean bean) {
+        Modifier[] modifiers = new Modifier[]{Modifier.PROTECTED};
+        String methodName = "deleteEntity";                 //NOI18N
+        Object returnType = Constants.VOID;
+        String[] params = new String[]{"entity"};           //NOI18N
+        Object[] paramTypes = new Object[]{
+            getEntityClassType(bean)
+        };
+
+        String bodyText = "{" + getDeleteRelationshipsSubText(bean);        //NOI18N
+
+        bodyText = bodyText +
+                "PersistenceService.getInstance().removeEntity(entity);}";   //NOI18N
+
+        String comment = "Deletes the entity.\n\n" +
+                "@param entity the entity to deletle\n";                    //NOI18N
+
+        return JavaSourceHelper.addMethod(copy, tree,
+                modifiers, null, null,
+                methodName, returnType, params, paramTypes,
+                null, null, bodyText, comment);
+    }
+    
+    private String getDeleteRelationshipsSubText(EntityResourceBean bean) {
+        String oneToOneTemplate = "$CLASS$ $FIELD$ = entity.$GETTER$();" +
+                "if ($FIELD$ != null) {" +
+                "$FIELD$.$REVERSE_SETTER$(null);" +
+                "}";                                                //NOI18N
+        
+        String manyToOneTemplate = "$CLASS$ $FIELD$ = entity.$GETTER$();" +
+                "if ($FIELD$ != null) {" +
+                "$FIELD$.$REVERSE_GETTER$().remove(entity);" +
+                "}";                                                //NOI18N
+        
+        String manyToManyTemplate = "for ($CLASS$ value : entity.$GETTER$()) {" +
+                "value.$REVERSE_GETTER$().remove(entity);" +
+                "}";                                                //NOI18N
+ 
+        String bodyText = "";
+     
+        for (RelatedEntityResource subResource : bean.getSubResources()) {
+            FieldInfo reverseFieldInfo = subResource.getReverseFieldInfo();
+          
+            if (reverseFieldInfo == null) continue;
+            
+            FieldInfo fieldInfo = subResource.getFieldInfo();
+            String template = "";
+            
+            if (fieldInfo.isOneToOne()) {
+                template = oneToOneTemplate.replace("$CLASS$", fieldInfo.getSimpleTypeName()).
+                        replace("$FIELD$", fieldInfo.getName()).
+                        replace("$GETTER$", getGetterName(fieldInfo)).
+                        replace("$REVERSE_SETTER$", getSetterName(reverseFieldInfo));
+            } else if (fieldInfo.isManyToOne()) {
+                template = manyToOneTemplate.replace("$CLASS$", fieldInfo.getSimpleTypeName()).
+                        replace("$FIELD$", fieldInfo.getName()).
+                        replace("$GETTER$", getGetterName(fieldInfo)).
+                        replace("$REVERSE_GETTER$", getGetterName(reverseFieldInfo));
+            } else if (fieldInfo.isManyToMany()) {
+                template = manyToManyTemplate.replace("$CLASS$", fieldInfo.getSimpleTypeArgName()).
+                        replace("$GETTER$", getGetterName(fieldInfo)).
+                        replace("$REVERSE_GETTER$", getGetterName(reverseFieldInfo));
+            }
+            
+            bodyText += template;
+        }
+        
+        return bodyText;
+    }
     
     private String getRemoveOneToManyRelSubText(EntityResourceBean bean) {
         String template = "entity.$GETTER$().removeAll(newEntity.$GETTER$());" +
@@ -1859,7 +1931,11 @@ public class EntityResourcesGenerator extends AbstractGenerator {
     }
 
     private String getItemName(EntityResourceBean bean) {
-        return Util.getSingularName(bean);
+        if (!bean.isContainer()) {
+            return bean.getName();
+        } else {
+            return bean.getSubResources().iterator().next().getResourceBean().getName();
+        }
     }
 
     private String getItemResourceName(EntityResourceBean bean) {

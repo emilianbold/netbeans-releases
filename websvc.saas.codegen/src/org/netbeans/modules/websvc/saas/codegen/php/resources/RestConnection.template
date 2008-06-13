@@ -1,7 +1,7 @@
 <?php
     
     require_once "HTTP/Request.php";
-    require "RestResponse.php";
+    require_once "RestResponse.php";
 
     class RestConnection {
 
@@ -9,78 +9,54 @@
         private $response = "";
         private $responseBody = "";
         private $req = null;
-
-        public function RestConnection($url = "", $params = null) {
-            $this->__construct($url, $params);
-        }
-
-        public function __construct($url = "", $params = null) {
+        private $headers = array();
+    
+        public function RestConnection($url, $params = null) {
+            if($url == null)
+              throw new Exception('$url parameter cannot be empty in RestConnection()');
             $this->url = $url;
             if($params != null) {
+                $this->url = $this->url."?";
                 foreach ($params as $key => $value) {
                     $this->url = $this->url.$key."=".$value."&";
                 }
+                $len = strlen($this->url);
+                $this->url = substr($this->url, 0, $len-1);
             }
             $this->req =& new HTTP_Request($this->url);
         }
-    
+
+        public function setHeaders($headers = array("")) {
+            $this->headers = $headers;
+        }
+
         public function get() {
-            return get(null);
+            $this->req->setMethod("GET");
+            return $this->connect();
         }
 
-        public function get($headers = array("")) {
-            conn.setRequestMethod("GET");
-
-            return connect($headers, null);
-        }
-
-        public function put() {
-            return put(headers);
-        }
-    
-        public function put($headers = array(""), $data = "") {
-            conn.setRequestMethod("PUT");
-
-            return connect($headers,$data);
+        public function put($data) {
+            $this->req->setMethod("PUT");
+            $this->req->setBody($data);
+            return $this->connect();
         }
 
         public function post($data) {
-            return post(null, data);
-        }
-    
-        public function post($headers = array(""), $data = "") {
-            conn.setRequestMethod("POST");
-
-            return connect(headers, new ByteArrayInputStream(data.getBytes("UTF-8")));
-        }
-    
-    /**
-     * Used by post method whose contents are like form input
-     */
-        public function post($params = array("")) {
-            return post(null, params);
-        }
-
-    /**
-     * Used by post method whose contents are like form input
-     */
-        public function post($headers = array(""), $params = array("")) {
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("ContentType", "application/x-www-form-urlencoded");
-            foreach ($params as $key => $value) {
-                $this->req->addPostData($key, $value);
+            if(is_array($data)) {
+                $this->req->setMethod("POST");
+                $this->req->addHeader("Content-Type", "application/x-www-form-urlencoded");
+                foreach ($data as $key => $value) {
+                    $this->req->addPostData($key, $value);
+                }
+            } else {
+                $this->req->setBody($data);
             }
-            return connect($headers);
+            return $this->connect();
         }
 
         public function delete() {
-            return delete(null);
-        }
-
-        public function delete($headers = array("")) {
-            conn.setRequestMethod("DELETE");
-
-            return connect($headers, null);
+            $this->req->setMethod("DELETE");
+            return $this->connect();
         }
 
         public function connect() {
@@ -94,13 +70,10 @@
             }
             $response = new RestResponse();
 
-            $response->setResponseCode(conn.getResponseCode());
-            $response->setResponseMessage(conn.getResponseMessage());
-            $response->setContentType(conn.getContentType());
-            $response->setContentEncoding(conn.getContentEncoding());
-            $response->setLastModified(conn.getLastModified());
+            $response->setResponseCode($this->req->getResponseCode());
+            $response->setResponseBody($this->req->getResponseBody());
             
-            return response;
+            return $response;
         }
 
     }
