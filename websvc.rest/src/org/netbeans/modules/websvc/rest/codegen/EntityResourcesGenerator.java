@@ -1261,12 +1261,12 @@ public class EntityResourcesGenerator extends AbstractGenerator {
 //        bodyText = bodyText.replace("$SETTER$", getIdSetter(bean)).
 //                replace("$GETTER$", getIdGetter(bean));
 
-        String bodyText = "{" + getRemoveOneToManyRelSubText(bean);
+        String bodyText = "{" + getUpdateBeforeRelationshipsSubText(bean);
 
         bodyText = bodyText +
                 "entity = PersistenceService.getInstance().mergeEntity(newEntity);";
 
-        bodyText = bodyText + getUpdateOneToManyRelSubText(bean) +
+        bodyText = bodyText + getUpdateRelationshipsSubText(bean) +
                 "return entity;}";
 
         String comment = "Updates entity using data from newEntity.\n\n" +
@@ -1280,6 +1280,109 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                 null, null, bodyText, comment);
     }
 
+    
+    private String getUpdateBeforeRelationshipsSubText(EntityResourceBean bean) {
+        String bodyText = "";
+        
+        for (RelatedEntityResource subResource : bean.getSubResources()) {
+            FieldInfo fieldInfo = subResource.getFieldInfo();
+            
+            String template = "";
+            if (fieldInfo.isOneToOne() || fieldInfo.isManyToOne()) {
+                template += "$CLASS$ $FIELD$ = entity.$GETTER$();" +
+                        "$CLASS$ $FIELD$New = newEntity.$GETTER$();";
+                template = template.replace("$CLASS$", fieldInfo.getSimpleTypeName()).
+                        replace("$FIELD$", fieldInfo.getName()).
+                        replace("$GETTER$", getGetterName(fieldInfo));
+            } else if (fieldInfo.isOneToMany() || fieldInfo.isManyToMany()) {
+                template += "$HOLDER$<$CLASS$> $FIELD$ = entity.$GETTER$();" +
+                        "$HOLDER$<$CLASS$> $FIELD$New = newEntity.$GETTER$();";
+                template = template.replace("$HOLDER$", fieldInfo.getSimpleTypeName()).
+                        replace("$CLASS$", fieldInfo.getSimpleTypeArgName()).
+                        replace("$FIELD$", fieldInfo.getName()).
+                        replace("$GETTER$", getGetterName(fieldInfo));
+            }
+            
+            bodyText += template;
+        }
+        
+        return bodyText;
+    }
+    
+    
+    private String getUpdateRelationshipsSubText(EntityResourceBean bean) {
+         String oneToOneTemplate = "if ($FIELD$ != null && !$FIELD$.equals($FIELD$New)) {" +
+                 "$FIELD$.$REVERSE_SETTER$(null);" +
+                 "}" +
+                 "if ($FIELD$New != null && !$FIELD$New.equals($FIELD$)) {" +
+                 "$FIELD$New.$REVERSE_SETTER$(entity);" +
+                 "}";
+     
+        String manyToOneTemplate = "if ($FIELD$ != null && !$FIELD$.equals($FIELD$New)) {" +
+                "$FIELD$.$REVERSE_GETTER$().remove(entity);" +
+                "}" +
+                "if ($FIELD$New != null && !$FIELD$New.equals($FIELD$)) {" +
+                "$FIELD$New.$REVERSE_GETTER$().add(entity);" +
+                "}";
+        
+        String oneToManyTemplate = "for ($CLASS$ value : $FIELD$New) {" +
+                "if (!$FIELD$.contains(value)) {" +
+                "$ENTITY_CLASS$ oldEntity = value.$REVERSE_GETTER$();" +
+                "value.$REVERSE_SETTER$(entity);" +
+                "if (oldEntity != null && !oldEntity.equals(entity)) {" +
+                "oldEntity.$GETTER$().remove(value);" +
+                "}" +
+                "}" +
+                "}";
+        
+        String manyToManyTemplate = "for ($CLASS$ value : $FIELD$) {" +
+                "if (!$FIELD$New.contains(value)) {" +
+                "value.$REVERSE_GETTER$().remove(entity);" +
+                "}" +
+                "}" +
+                "for ($CLASS$ value : $FIELD$New) {" +
+                "if (!$FIELD$.contains(value)) {" +
+                "value.$REVERSE_GETTER$().add(entity);" +
+                "}" +
+                "}";                                            //NOI18N
+ 
+        String bodyText = "";
+     
+        for (RelatedEntityResource subResource : bean.getSubResources()) {
+            FieldInfo reverseFieldInfo = subResource.getReverseFieldInfo();
+          
+            if (reverseFieldInfo == null) continue;
+            
+            FieldInfo fieldInfo = subResource.getFieldInfo();
+            String template = "";
+            
+            if (fieldInfo.isOneToOne()) {
+                template = oneToOneTemplate.replace("$FIELD$", fieldInfo.getName()).
+                        replace("$REVERSE_SETTER$", getSetterName(reverseFieldInfo));
+            } else if (fieldInfo.isManyToOne()) {
+                template = manyToOneTemplate.replace("$FIELD$", fieldInfo.getName()).
+                        replace("$REVERSE_GETTER$", getGetterName(reverseFieldInfo));
+            } else if (fieldInfo.isOneToMany()) {
+                template = oneToManyTemplate.replace("$CLASS$", fieldInfo.getSimpleTypeArgName()).
+                        replace("$FIELD$", fieldInfo.getName()).
+                        replace("$GETTER$", getGetterName(fieldInfo)).
+                        replace("$ENTITY_CLASS$", getEntityClassName(bean)).
+                        replace("$REVERSE_GETTER$", getGetterName(reverseFieldInfo)).
+                        replace("$REVERSE_SETTER$", getSetterName(reverseFieldInfo));
+            } else if (fieldInfo.isManyToMany()) {
+                template = manyToManyTemplate.replace("$CLASS$", fieldInfo.getSimpleTypeArgName()).
+                        replace("$FIELD$", fieldInfo.getName()).
+                        replace("$GETTER$", getGetterName(fieldInfo)).
+                        replace("$REVERSE_GETTER$", getGetterName(reverseFieldInfo));
+            }
+            
+            bodyText += template;
+        }
+        
+        return bodyText;
+    }
+    
+    
     private String getRemoveOneToManyRelSubText(EntityResourceBean bean) {
         String template = "entity.$GETTER$().removeAll(newEntity.$GETTER$());" +
                 "for ($CLASS$ value : entity.$GETTER$()) {" +

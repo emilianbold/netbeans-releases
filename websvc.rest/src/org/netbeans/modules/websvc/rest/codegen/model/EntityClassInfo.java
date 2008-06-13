@@ -154,9 +154,8 @@ public class EntityClassInfo {
 
             if (fieldType.getKind() == TypeKind.DECLARED) {
                 DeclaredType declType = (DeclaredType) fieldType;
-
                 fieldInfo.setType(declType.asElement().toString());
-
+               
                 for (TypeMirror arg : declType.getTypeArguments()) {
                     fieldInfo.setTypeArg(arg.toString());
                 }
