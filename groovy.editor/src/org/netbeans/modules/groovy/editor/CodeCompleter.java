@@ -43,7 +43,6 @@ package org.netbeans.modules.groovy.editor;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaMethod;
-import groovy.util.Node;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -54,7 +53,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
@@ -62,7 +60,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.codehaus.groovy.ast.ASTNode;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler;
@@ -72,7 +69,6 @@ import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.modules.groovy.editor.elements.KeywordElement;
 import org.netbeans.modules.groovy.editor.parser.GroovyParser;
@@ -81,7 +77,6 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.ClassNode;
@@ -89,7 +84,6 @@ import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Variable;
-import org.codehaus.groovy.ast.VariableScope;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
@@ -120,8 +114,8 @@ import org.openide.util.Utilities;
 
 public class CodeCompleter implements CodeCompletionHandler {
 
-    private static ImageIcon classIcon;
-    // private boolean caseSensitive;
+    private static ImageIcon groovyIcon;
+    private static ImageIcon javaIcon;
     private int anchor;
     private final Logger LOG = Logger.getLogger(CodeCompleter.class.getName());
     private String jdkJavaDocBase = null;
@@ -129,7 +123,7 @@ public class CodeCompleter implements CodeCompletionHandler {
     private String gapiDocBase = null;
 
     public CodeCompleter() {
-        // LOG.setLevel(Level.FINEST);
+        LOG.setLevel(Level.OFF);
 
         JavaPlatformManager platformMan = JavaPlatformManager.getDefault();
         JavaPlatform platform = platformMan.getDefaultPlatform();
@@ -311,34 +305,35 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
 
     /**
-     * Complete Groovy Keywords.
+     * Complete Groovy or Java Keywords.
      * 
+     * @see GroovyUtils.GROOVY_KEYWORDS or GroovyUtils.JAVA_KEYWORDS
      * @param proposals
      * @param request
-     * @param isSymbol
      * @return
      */
-//    private boolean completeKeywords(List<CompletionProposal> proposals, CompletionRequest request, boolean isSymbol) {
-//
-//        String prefix = request.prefix;
-//
-//        // Keywords
-//
-//        for (String keyword : GroovyUtils.GROOVY_KEYWORDS) {
-//            if (startsWith(keyword, prefix)) {
-//                KeywordItem item = new KeywordItem(keyword, null, anchor, request);
-//
-//                if (isSymbol) {
-//                    item.setSymbol(true);
-//                }
-//
-//                proposals.add(item);
-//            }
-//        }
-//
-//        return false;
-//    }
+    private boolean completeKeywords(List<CompletionProposal> proposals, CompletionRequest request) {
+        String prefix = request.prefix;
 
+        for (String keyword : GroovyUtils.GROOVY_KEYWORDS) {
+            if (keyword.startsWith(prefix)) {
+                KeywordItem item = new KeywordItem(keyword, null, anchor, request, true);
+                item.setSymbol(true);
+                proposals.add(item);
+            }
+        }
+        
+        for (String keyword : GroovyUtils.JAVA_KEYWORDS) {
+            if (keyword.startsWith(prefix)) {
+                KeywordItem item = new KeywordItem(keyword, null, anchor, request, false);
+                item.setSymbol(true);
+                proposals.add(item);
+            }
+        }
+        
+        return true;
+    }
+    
     private boolean completeFields(List<CompletionProposal> proposals, CompletionRequest request) {
         LOG.log(Level.FINEST, "-> completeFields"); // NOI18N
 
@@ -632,9 +627,6 @@ public class CodeCompleter implements CodeCompletionHandler {
         CompilationInfo info = context.getInfo();
         int lexOffset = context.getCaretOffset();
         String prefix = context.getPrefix();
-        // NameKind kind = context.getNameKind();
-        // QueryType queryType = context.getQueryType();
-        // this.caseSensitive = context.isCaseSensitive();
         HtmlFormatter formatter = context.getFormatter();
 
         final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
@@ -678,16 +670,8 @@ public class CodeCompleter implements CodeCompletionHandler {
             request.info = info;
             request.prefix = prefix;
             
-            // request.th = th;
-            // request.kind = kind;
-            // request.queryType = queryType;
-            // request.fileObject = fileObject;
-
-            // No - we don't complete keywords, since one can get'em by hitting
-            // ctrl-k or use an abbrevation. Displaying them without a documentation
-            // makes no sense as well, see:
-            // http://www.netbeans.org/issues/show_bug.cgi?id=126500
-            // completeKeywords(proposals, request, showSymbols);
+            // complette keywords
+            completeKeywords(proposals, request);
 
             // complete methods
             completeMethods(proposals, request);
@@ -700,7 +684,6 @@ public class CodeCompleter implements CodeCompletionHandler {
             
             // complete local variables
             completeLocalVars(proposals, request);
-
 
             return new DefaultCompletionResult(proposals, false);
         } finally {
@@ -1181,11 +1164,11 @@ public class CodeCompleter implements CodeCompletionHandler {
                 return null;
             }
 
-            if (classIcon == null) {
-                classIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GROOVY_METHOD));
+            if (groovyIcon == null) {
+                groovyIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GROOVY_METHOD));
             }
 
-            return classIcon;
+            return groovyIcon;
         }
 
         @Override
@@ -1207,13 +1190,16 @@ public class CodeCompleter implements CodeCompletionHandler {
     private class KeywordItem extends GroovyCompletionItem {
 
         private static final String GROOVY_KEYWORD = "org/netbeans/modules/groovy/editor/resources/groovydoc.png"; //NOI18N
+        private static final String JAVA_KEYWORD   = "org/netbeans/modules/groovy/editor/resources/duke.png"; //NOI18N
         private final String keyword;
         private final String description;
+        private final boolean isGroovy;
 
-        KeywordItem(String keyword, String description, int anchorOffset, CompletionRequest request) {
+        KeywordItem(String keyword, String description, int anchorOffset, CompletionRequest request, boolean isGroovy) {
             super(null, anchorOffset, request);
             this.keyword = keyword;
             this.description = description;
+            this.isGroovy = isGroovy;
         }
 
         @Override
@@ -1242,11 +1228,18 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         @Override
         public ImageIcon getIcon() {
-            if (classIcon == null) {
-                classIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GROOVY_KEYWORD));
+            
+            if (isGroovy) {
+                if (groovyIcon == null) {
+                    groovyIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GROOVY_KEYWORD));
+                }
+                return groovyIcon;
+            } else {
+                if (javaIcon == null) {
+                    javaIcon = new ImageIcon(org.openide.util.Utilities.loadImage(JAVA_KEYWORD));
+                }
+                return javaIcon;
             }
-
-            return classIcon;
         }
 
         @Override
