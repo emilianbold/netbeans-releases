@@ -146,7 +146,7 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
                             boolean changed = false;
                             for (int i=0; i< classPathRoots.length; i++) {
                                 String f;
-                                if (performHeuristics) {
+                                if (performHeuristics && classPathRoots[i].isAbsolute()) {
                                     f = J2SEProjectClassPathModifier.this.performSharabilityHeuristics(classPathRoots[i], project.getAntProjectHelper());
                                 } else {
                                     URI toAdd = LibrariesSupport.getArchiveFile(classPathRoots[i]);
@@ -155,7 +155,12 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
                                     }
                                     f =  LibrariesSupport.convertURIToFilePath(toAdd);
                                 }
-                                ClassPathSupport.Item item = ClassPathSupport.Item.create( f, null );
+                                // LibrariesNode calls this method with variable based classpath items:
+                                String filePath = f;
+                                if (filePath.startsWith("${var.")) { // NOI18N
+                                    filePath = project.evaluator().evaluate(filePath);
+                                }
+                                ClassPathSupport.Item item = ClassPathSupport.Item.create( filePath, null, f.startsWith("${var.") ? f : null); // NOI18N
                                 if (operation == ADD && !resources.contains(item)) {
                                     resources.add (item);
                                     changed = true;
@@ -167,7 +172,7 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
                                     else {
                                         for (Iterator<ClassPathSupport.Item> it = resources.iterator(); it.hasNext();) {
                                             ClassPathSupport.Item _r = it.next();
-                                            if (_r.isBroken() && _r.getType() == ClassPathSupport.Item.TYPE_JAR && f.equals(_r.getFilePath())) {
+                                            if (_r.isBroken() && _r.getType() == ClassPathSupport.Item.TYPE_JAR && (f.equals(_r.getFilePath()) || f.equals(_r.getVariableBasedProperty()))) {
                                                 it.remove();
                                                 changed = true;
                                             }

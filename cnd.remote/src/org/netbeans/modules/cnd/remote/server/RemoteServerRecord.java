@@ -42,17 +42,52 @@ package org.netbeans.modules.cnd.remote.server;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 
 /**
- *
+ * The definition of a remote server and login. 
+ * 
  * @author gordonp
  */
 public class RemoteServerRecord implements ServerRecord {
+    
+    private String name;
+    private String user;
+    private boolean editable;
+    private boolean active;
+    
+    protected RemoteServerRecord(String name, String user, boolean active) {
+        this.name = name;
+        this.user = user;
+        this.active = active;
+        editable = true;
+    }
+    
+    protected RemoteServerRecord() {
+        name = "localhost"; // NOI18N
+        user = null;
+        editable = false;
+        active = true;
+    }
+    
+    public boolean isEditable() {
+        return editable;
+    }
 
     public boolean isRemote() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return !name.equals("localhost"); // NOI18N
     }
 
     public boolean isActive() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return active;
+    }
+    
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
+    public String getServerName() {
+        return name;
+    }
+
+    public String getUserName() {
+        return user;
+    }
 }

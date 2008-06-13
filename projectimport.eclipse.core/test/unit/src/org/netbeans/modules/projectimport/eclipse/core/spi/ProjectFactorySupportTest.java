@@ -49,6 +49,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.projectimport.eclipse.core.DotClassPath;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
@@ -175,16 +176,18 @@ public class ProjectFactorySupportTest extends NbTestCase {
         final AntProjectHelper helper = J2SEProjectGenerator.createProject(
                 new File(prj, "test"), "test", model.getEclipseSourceRootsAsFileArray(), 
                 model.getEclipseTestSourceRootsAsFileArray(), null, null, null);
-        
+        J2SEProject p = (J2SEProject)ProjectManager.getDefault().findProject(helper.getProjectDirectory());
         List<String> importProblems = new ArrayList<String>();
-        ProjectFactorySupport.updateProjectClassPath(helper, model, importProblems);
+        ProjectFactorySupport.updateProjectClassPath(helper, p.getReferenceHelper(), model, importProblems);
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         assertEquals(
-            "${var.MAVEN_REPOPO}/commons-cli/commons-cli/1.0/commons-cli-1.0.jar:" +
+            "${file.reference.commons-cli-1.0.jar}:" +
             "${file.reference.ejb3-persistence.jar}:" +
             "${libs.junit.classpath}:" +
             "${reference.JavaLibrary1.jar}", 
             ep.getProperty("javac.classpath").replace(';', ':'));
+        assertEquals("${var.MAVEN_REPOPO}/commons-cli/commons-cli/1.0/commons-cli-1.0.jar",
+                ep.getProperty("file.reference.commons-cli-1.0.jar"));
     }
     
     public void testSynchronizeProjectClassPath() throws IOException {
@@ -203,19 +206,18 @@ public class ProjectFactorySupportTest extends NbTestCase {
         final AntProjectHelper helper = J2SEProjectGenerator.createProject(
                 new File(prj, "test"), "test", model.getEclipseSourceRootsAsFileArray(), 
                 model.getEclipseTestSourceRootsAsFileArray(), null, null, null);
-        
+        J2SEProject p = (J2SEProject)ProjectManager.getDefault().findProject(helper.getProjectDirectory());
         List<String> importProblems = new ArrayList<String>();
-        ProjectFactorySupport.updateProjectClassPath(helper, model, importProblems);
+        ProjectFactorySupport.updateProjectClassPath(helper, p.getReferenceHelper(), model, importProblems);
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         assertEquals(
-            "${var.MAVEN_REPOPO}/commons-cli/commons-cli/1.0/commons-cli-1.0.jar:" +
+            "${file.reference.commons-cli-1.0.jar}:" +
             "${file.reference.ejb3-persistence.jar}:" +
             "${libs.junit.classpath}:" +
             "${reference.JavaLibrary1.jar}", 
             ep.getProperty("javac.classpath").replace(';', ':'));
         // ================= end of copy of testUpdateProjectClassPath
         
-        Project p = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
         String oldKey = ProjectFactorySupport.calculateKey(model);
         assertEquals(
             "src=src;" +
@@ -240,18 +242,22 @@ public class ProjectFactorySupportTest extends NbTestCase {
             "prj=JavaLibrary1;" +
             "prj=jlib;"+
             "jre="+JavaPlatform.getDefault().getDisplayName()+";", newKey);
-        ProjectFactorySupport.synchronizeProjectClassPath(p, helper, model, oldKey, newKey, importProblems);
+        ProjectFactorySupport.synchronizeProjectClassPath(p, helper, p.getReferenceHelper(), model, oldKey, newKey, importProblems);
         ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         assertEquals(
-            "${var.MAVEN_REPOPO}/commons-cli/commons-cli/1.0/commons-cli-1.0.jar:" +
+            "${file.reference.commons-cli-1.0.jar}:" +
             "${file.reference.ejb3-persistence.jar}:" +
             "${libs.junit.classpath}:" +
             "${reference.JavaLibrary1.jar}:" +
-            "${var.MAVEN_REPOPO}/some/other.jar:" +
             "${file.reference.other.jar}:" +
+            "${file.reference.other.jar-1}:" +
             "${libs.david.classpath}:" +
             "${reference.jlib.jar}", 
             ep.getProperty("javac.classpath").replace(';', ':'));
+        assertEquals("${var.MAVEN_REPOPO}/commons-cli/commons-cli/1.0/commons-cli-1.0.jar",
+                ep.getProperty("file.reference.commons-cli-1.0.jar"));
+        assertEquals("${var.MAVEN_REPOPO}/some/other.jar",
+                ep.getProperty("file.reference.other.jar"));
         
         oldKey = newKey;
         // remove some items from classpath:
@@ -265,15 +271,17 @@ public class ProjectFactorySupportTest extends NbTestCase {
             "ant=libs.david.classpath;" +
             "prj=jlib;"+
             "jre="+JavaPlatform.getDefault().getDisplayName()+";", newKey);
-        ProjectFactorySupport.synchronizeProjectClassPath(p, helper, model, oldKey, newKey, importProblems);
+        ProjectFactorySupport.synchronizeProjectClassPath(p, helper, p.getReferenceHelper(), model, oldKey, newKey, importProblems);
         ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         assertEquals(
-            "${var.MAVEN_REPOPO}/some/other.jar:" +
             "${file.reference.other.jar}:" +
+            "${file.reference.other.jar-1}:" +
             "${libs.david.classpath}:" +
             "${reference.jlib.jar}", 
             ep.getProperty("javac.classpath").replace(';', ':'));
-        
+        assertNull(ep.getProperty("file.reference.commons-cli-1.0.jar"));
+        assertEquals("${var.MAVEN_REPOPO}/some/other.jar",
+                ep.getProperty("file.reference.other.jar"));
     }
     
     public void testUpdateProjectClassPathForNonExistingRequiredProject() throws IOException {
@@ -284,14 +292,14 @@ public class ProjectFactorySupportTest extends NbTestCase {
         final AntProjectHelper helper = J2SEProjectGenerator.createProject(
                 new File(prj, "test"), "test", model.getEclipseSourceRootsAsFileArray(), 
                 model.getEclipseTestSourceRootsAsFileArray(), null, null, null);
-        
+        J2SEProject p = (J2SEProject)ProjectManager.getDefault().findProject(helper.getProjectDirectory());
         List<String> importProblems = new ArrayList<String>();
-        ProjectFactorySupport.updateProjectClassPath(helper, model, importProblems);
+        ProjectFactorySupport.updateProjectClassPath(helper, p.getReferenceHelper(), model, importProblems);
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         // required project "JavaLibrary1" is not available and therefore should not be
         // on classpath nor in key
         assertEquals(
-            "${var.MAVEN_REPOPO}/commons-cli/commons-cli/1.0/commons-cli-1.0.jar:" +
+            "${file.reference.commons-cli-1.0.jar}:" +
             "${file.reference.ejb3-persistence.jar}:" +
             "${libs.junit.classpath}", 
             ep.getProperty("javac.classpath").replace(';', ':'));

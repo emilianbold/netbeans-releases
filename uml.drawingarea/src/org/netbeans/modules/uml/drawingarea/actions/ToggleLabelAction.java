@@ -98,6 +98,7 @@ public class ToggleLabelAction extends AbstractAction
             else
             {
                 manager.showLabel(name, type);
+                manager.selectLabel(name, type);
             }
         } 
     }

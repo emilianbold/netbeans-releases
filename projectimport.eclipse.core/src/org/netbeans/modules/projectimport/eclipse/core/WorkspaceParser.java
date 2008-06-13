@@ -115,9 +115,7 @@ final class WorkspaceParser {
             String key = (String) entry.getKey();
             String value = (String) entry.getValue();
             if (key.startsWith(VARIABLE_PREFIX)) {
-                Workspace.Variable var = new Workspace.Variable();
-                var.setName(key.substring(VARIABLE_PREFIX_LENGTH));
-                var.setLocation(value);
+                Workspace.Variable var = new Workspace.Variable(key.substring(VARIABLE_PREFIX_LENGTH), value);
                 workspace.addVariable(var);
             } else if (key.startsWith(USER_LIBRARY_PREFIX) && !value.startsWith(IGNORED_CP_ENTRY)) { // #73542
                 String libName = key.substring(USER_LIBRARY_PREFIX_LENGTH);
@@ -136,9 +134,7 @@ final class WorkspaceParser {
             String key = (String) entry.getKey();
             String value = (String) entry.getValue();
             if (key.startsWith(RESOURCES_VARIABLE_PREFIX)) {
-                Workspace.Variable var = new Workspace.Variable();
-                var.setName(key.substring(RESOURCES_VARIABLE_PREFIX_LENGTH));
-                var.setLocation(value);
+                Workspace.Variable var = new Workspace.Variable(key.substring(RESOURCES_VARIABLE_PREFIX_LENGTH), value);
                 workspace.addResourcesVariable(var);
             }
         }

@@ -106,16 +106,14 @@ public class PersistenceService {
     }
     
     /**
-     * Resolves the given entity to the actual entity instance in the current persistence context.
+     * Returns an entity reference given the entity class and primary key
      *
-     * @param entity the entity to resolve
+     * @param entityClass the entity class
+     * @param primary the primary key 
      * @return the resolved entity
      */
-    public <T> T resolveEntity(T entity) {
-        entity = mergeEntity(entity);
-        em.refresh(entity);
-        
-        return entity;
+    public <T> T resolveEntity(Class<T> entityClass, Object primaryKey) {
+        return em.getReference(entityClass, primaryKey);
     }
     
     /**

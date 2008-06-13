@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.uml.diagrams.nodes.state;
 
+import java.awt.Font;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
@@ -58,6 +59,7 @@ public class HistoryStateWidget extends CircleWidget
         super(scene, radius, widgetID, displayName);
         
         LabelWidget labelWidget = new UMLLabelWidget(scene, label);
+        labelWidget.setFont(Font.decode("SansSerif-plain-10")); // NOI18N
         labelWidget.setForeground(null);
         setLayout(LayoutFactory.createHorizontalFlowLayout(SerialAlignment.CENTER, 0));
         Widget layer = new Widget(scene);

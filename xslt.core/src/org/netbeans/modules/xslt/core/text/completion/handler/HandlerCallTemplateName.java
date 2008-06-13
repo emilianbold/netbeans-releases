@@ -93,8 +93,11 @@ public class HandlerCallTemplateName extends BaseCompletionHandler {
             if (valueofAttributeName != null) {
                 String templateName = valueofAttributeName.toString();
                 if ((templateName != null) && (templateName.length() > 0)) {
-                    resultItemList.add(new XSLTCompletionResultItem(
-                        templateName, document, caretOffset));
+                    
+                    XSLTCompletionResultItem resultItem = new XSLTCompletionResultItem(
+                        templateName, document, caretOffset);
+                    resultItem.setSortPriority(resultItemList.size());
+                    resultItemList.add(resultItem);
                 }
             }   
         }

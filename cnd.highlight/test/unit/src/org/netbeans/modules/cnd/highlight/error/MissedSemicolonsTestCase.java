@@ -47,6 +47,8 @@ public class MissedSemicolonsTestCase extends ErrorHighlightingBaseTestCase {
 
     static {
         System.setProperty("cnd.parser.error.transparent", "false");
+        //System.setProperty("cnd.modelimpl.trace.error.provider", "true");
+        //System.setProperty("parser.report.errors", "true");
     }
     
     public MissedSemicolonsTestCase(String testName) {
@@ -55,5 +57,12 @@ public class MissedSemicolonsTestCase extends ErrorHighlightingBaseTestCase {
     
     public void testMissedSemicolonAfterClass() throws Exception {
         performStaticTest("missed_semicolon_after_class.cc"); //NOI18N
+    }
+    
+    public void testDynamicSimple() throws Exception {
+        MissedSemicolonsErrorMaker errorMaker = new MissedSemicolonsErrorMaker();
+        performDynamicTest("missed_semicolon_simple_1.cc", errorMaker); //NOI18N
+        performDynamicTest("missed_semicolon_simple_2.cc", errorMaker); //NOI18N
+        errorMaker.printStatistics();
     }
 }

@@ -68,7 +68,6 @@ public class ArrangeMoveWithBumping extends ArrangeMessagesProvider {
     private Point originalPosition,newPosition;
     private int gap=5;
     
-    private HashMap<Widget,ArrayList<ExecutionSpecificationThinWidget>> allOrderedSpecifications;
     private HashMap<MessagePinWidget,TreeSet<MessagePinWidget>> moveCollections;
 
     /**
@@ -86,7 +85,6 @@ public class ArrangeMoveWithBumping extends ArrangeMessagesProvider {
             this.originalPosition=originalPosition;
             this.newPosition=newPosition;
         }
-        allOrderedSpecifications=new HashMap<Widget,ArrayList<ExecutionSpecificationThinWidget>>();
         moveCollections=new HashMap<MessagePinWidget,TreeSet<MessagePinWidget>>();
     }
 
@@ -469,6 +467,26 @@ public class ArrangeMoveWithBumping extends ArrangeMessagesProvider {
         return shift;
     }
         
+    /**
+     * return collection of all messages moved after class creation
+     * or after class resetting
+     * @return
+     */
+    public ArrayList<MessageWidget> getAllMovedMessages()
+    {
+        ArrayList<MessageWidget> movedMsgs=new ArrayList<MessageWidget>();
+        for(TreeSet<MessagePinWidget> ts:moveCollections.values())
+        {
+            for(MessagePinWidget mp:ts)
+            {
+                if(mp.getNumbetOfConnections()>0 && mp.getConnection(0) instanceof MessageWidget && !movedMsgs.contains(mp.getConnection(0)))
+                {
+                    movedMsgs.add((MessageWidget) mp.getConnection(0));
+                }
+            }
+        }
+        return movedMsgs;
+    }
 
     /**
      * starting from current widget goes by messages and fin all connected psecifications, lifeline boxes, combined fragments which should be moved together

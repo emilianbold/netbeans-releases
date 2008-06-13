@@ -66,6 +66,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import javax.swing.*;
+import org.apache.tools.ant.module.api.support.AntScriptUtils;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.openide.util.HelpCtx;
@@ -332,9 +333,10 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
     private String selectProfilingTarget(final Project project, final FileObject buildScript, final int type,
             final String currentTarget) {
         final List targets = Util.getAntScriptTargets(buildScript);
-        final List l = Util.getAntScriptTargetNames(buildScript);
-
-        if (l == null) {
+        final List l;
+        try {
+            l = AntScriptUtils.getCallableTargetNames(buildScript);
+        } catch (IOException x) {
             Profiler.getDefault().displayError(MessageFormat.format(ERROR_PARSING_BUILDFILE_MSG,
                     new Object[]{ProjectUtils.getInformation(project).getName()                    }));
 
