@@ -132,6 +132,7 @@ public abstract class SimpleDeletingErrorMaker extends BaseErrorMaker {
     }
     
     public void printStatistics() {
+        System.err.printf("\nStatistics:\n");
         Stat.printHeader();
         Stat total = new Stat("TOTAL");
         for (Stat stat : stats.values()) {

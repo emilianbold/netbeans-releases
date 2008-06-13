@@ -86,6 +86,80 @@ public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
         compareReferenceFiles(datafileName, datafileName);
     }
 
+    protected final void performDynamicTest(String sourceFileName, ErrorMaker errorMaker) throws Exception {
+        File testSourceFile = getDataFile(sourceFileName);
+        CsmFile csmFile = getCsmFile(testSourceFile);
+        performDynamicTest(csmFile, errorMaker);
+    }
+    
+    protected final void performDynamicTest(CsmFile csmFile, ErrorMaker errorMaker) throws Exception {
+        File testSourceFile = new File(csmFile.getAbsolutePath().toString());
+        BaseDocument doc = getBaseDocument(testSourceFile);
+
+        // TODO: find more elegant solution than setting buffer explicitely
+        FileBufferDoc buffer = new FileBufferDoc(testSourceFile, doc);
+        ((FileImpl) csmFile).setBuffer(buffer);
+
+        Collection<CsmErrorInfo> errorInfos;
+        
+        errorInfos = CsmErrorProvider.getDefault().getErrors(doc, csmFile);
+        //if (TRACE) trace("INITIAL:", errorInfos, sourceFileName);
+        assertTrue("The shouldn't be errors in the initial state", errorInfos.isEmpty()); //NOI18N
+        
+        Undoer undoer = new Undoer(doc);
+        errorMaker.init(doc, csmFile);
+        while (errorMaker.change()) {
+            if (TRACE) trace("\n\n==========", doc);
+            //parseModifiedFile((DataObject) doc.getProperty(BaseDocument.StreamDescriptionProperty));
+            errorInfos = CsmErrorProvider.getDefault().getErrors(doc, csmFile);
+            if (TRACE) trace("----------", errorInfos, testSourceFile.getName());
+            errorMaker.analyze(errorInfos);
+            if (undoer.canUndo()) {
+                undoer.undo();
+                errorMaker.undone();
+            } else {
+                throw new IllegalStateException("can not undo"); //NOI18N
+            }
+        }
+    }
+
+//    private static void parseModifiedFile(DataObject dob) throws IOException { 
+//        CsmFile csmFile = CsmUtilities.getCsmFile(dob, false);
+//        assert csmFile != null : "Must be csmFile for data object " + dob;
+//        CsmProject prj = csmFile.getProject();
+//        assert prj != null : "Must be project for csm file " + csmFile;
+//        prj.waitParse();
+//        assert csmFile.isParsed() : " file must be parsed: " + csmFile;
+//        assert prj.isStable(null) : " full project must be parsed" + prj;
+//    }
+    
+
+    protected void trace(String title, BaseDocument doc) throws BadLocationException {
+        String text = doc.getText(0, doc.getLength());
+//        StringTokenizer tokenizer = new StringTokenizer(text, System.getProperty("line.separator"));
+//        int lineNo = 1;
+//        while (tokenizer.hasMoreTokens()) {
+//            String lineText = tokenizer.nextToken();
+//            System.err.printf(" %s\n", lineNo, lineText);
+//        }
+        System.err.printf("%s\n%s\n", title, text);
+    }
+    
+    protected void trace(String title, Collection<CsmErrorInfo> errorInfos, String sourceFileName) {
+        System.err.printf("%s\n", title);
+        trace(errorInfos, sourceFileName);
+    }
+    
+    protected void trace(Collection<CsmErrorInfo> errorInfos, String sourceFileName) {
+        for (CsmErrorInfo info : errorInfos) {
+            System.err.printf("%s\n", toString(info, sourceFileName));
+        }
+    }
+
+    protected String toString(CsmErrorInfo info, String sourceFileName) {
+        return String.format("%s %s [%d-%d]: %s", info.getSeverity(), sourceFileName, info.getStartOffset(), info.getEndOffset(), info.getMessage());
+    }
+    
     /**
      * Performs undo for changes that are made in a document
      */
@@ -141,77 +215,5 @@ public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
             }
             return false;
         }
-    }
-
-    protected final void performDynamicTest(String sourceFileName, ErrorMaker errorMaker) throws Exception {
-        String datafileName = sourceFileName + ".dat";
-        File testSourceFile = getDataFile(sourceFileName);
-        File workDir = getWorkDir();
-        File output = new File(workDir, datafileName);
-        CsmFile csmFile = getCsmFile(testSourceFile);
-        BaseDocument doc = getBaseDocument(testSourceFile);
-
-        // TODO: find more elegant solution than setting buffer explicitely
-        FileBufferDoc buffer = new FileBufferDoc(testSourceFile, doc);
-        ((FileImpl) csmFile).setBuffer(buffer);
-
-        Collection<CsmErrorInfo> errorInfos;
-        
-        errorInfos = CsmErrorProvider.getDefault().getErrors(doc, csmFile);
-        //if (TRACE) trace("INITIAL:", errorInfos, sourceFileName);
-        assertTrue("The shouldn't be errors in the initial state", errorInfos.isEmpty()); //NOI18N
-        
-        Undoer undoer = new Undoer(doc);
-        errorMaker.init(doc, csmFile);
-        while (errorMaker.change()) {
-            if (TRACE) trace("\n\n==========", doc);
-            //parseModifiedFile((DataObject) doc.getProperty(BaseDocument.StreamDescriptionProperty));
-            errorInfos = CsmErrorProvider.getDefault().getErrors(doc, csmFile);
-            if (TRACE) trace("----------", errorInfos, sourceFileName);
-            errorMaker.analyze(errorInfos);
-            if (undoer.canUndo()) {
-                undoer.undo();
-                errorMaker.undone();
-            } else {
-                throw new IllegalStateException("can not undo"); //NOI18N
-            }
-        }
-    }
-
-//    private static void parseModifiedFile(DataObject dob) throws IOException { 
-//        CsmFile csmFile = CsmUtilities.getCsmFile(dob, false);
-//        assert csmFile != null : "Must be csmFile for data object " + dob;
-//        CsmProject prj = csmFile.getProject();
-//        assert prj != null : "Must be project for csm file " + csmFile;
-//        prj.waitParse();
-//        assert csmFile.isParsed() : " file must be parsed: " + csmFile;
-//        assert prj.isStable(null) : " full project must be parsed" + prj;
-//    }
-    
-
-    protected void trace(String title, BaseDocument doc) throws BadLocationException {
-        String text = doc.getText(0, doc.getLength());
-//        StringTokenizer tokenizer = new StringTokenizer(text, System.getProperty("line.separator"));
-//        int lineNo = 1;
-//        while (tokenizer.hasMoreTokens()) {
-//            String lineText = tokenizer.nextToken();
-//            System.err.printf(" %s\n", lineNo, lineText);
-//        }
-        System.err.printf("%s\n%s\n", title, text);
-    }
-    
-    protected void trace(String title, Collection<CsmErrorInfo> errorInfos, String sourceFileName) {
-        System.err.printf("%s\n", title);
-        trace(errorInfos, sourceFileName);
-    }
-    
-    protected void trace(Collection<CsmErrorInfo> errorInfos, String sourceFileName) {
-        for (CsmErrorInfo info : errorInfos) {
-            System.err.printf("%s\n", toString(info, sourceFileName));
-        }
-    }
-
-    protected String toString(CsmErrorInfo info, String sourceFileName) {
-        return String.format("%s %s [%d-%d]: %s", info.getSeverity(), sourceFileName, info.getStartOffset(), info.getEndOffset(), info.getMessage());
-    }
+    }    
 }
