@@ -39,26 +39,27 @@
 
 package org.netbeans.modules.cnd.remote.explorer.nodes;
 
-import java.beans.PropertyChangeEvent;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.remote.actions.SetDefaultAction;
-import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 
 /**
  *
  * @author gordonp
  */
-public class RemoteServerNode extends RemoteServicesNode {
+public class RemoteServerNode extends AbstractNode {
     
     private boolean active;
     private RemoteServerRecord record;
+    private static final String SINGLE_SERVER_ICON = "org/netbeans/modules/cnd/remote/resources/single_server.png"; // NOI18N
 
     public RemoteServerNode(RemoteServerRecord record) {
         super(Children.LEAF);
         setName(record.getUserName() + '@' + record.getServerName());
         setActive(record.isActive());
+        setIconBaseWithExtension(SINGLE_SERVER_ICON);
         this.record = record;
     }
     
@@ -70,7 +71,7 @@ public class RemoteServerNode extends RemoteServicesNode {
     @Override
     public Action[] getActions(boolean context) {
         Action[] actions = {
-            new SetDefaultAction(),
+            new SetDefaultAction(record),
         };
         return actions;
     }
@@ -86,11 +87,5 @@ public class RemoteServerNode extends RemoteServicesNode {
     
     public boolean isActive() {
         return active;
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName() == RemoteServerList.PROP_ACTIVE) {
-            active = evt.getSource() == this;
-        }
     }
 }

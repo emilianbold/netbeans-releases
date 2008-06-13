@@ -73,6 +73,7 @@ public class HQLExecutor {
             
             SessionFactory sessionFactory = configuration.buildSessionFactory();
             Session session = sessionFactory.openSession();
+            session.beginTransaction();
 
             ph.progress(70);
             
@@ -87,6 +88,8 @@ public class HQLExecutor {
             } else {
                 result.setQueryResults(query.list());
             }
+            
+            session.getTransaction().commit();
 
         } catch (Exception e) {
             result.getExceptions().add(e);
