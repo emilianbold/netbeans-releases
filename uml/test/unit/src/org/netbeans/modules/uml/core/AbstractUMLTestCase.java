@@ -86,28 +86,28 @@ abstract public class AbstractUMLTestCase extends TestCase
     
     public static void initialize() 
     {
-        product = getProduct();
-
-        try
-        {
-            ProductHelper.getMessenger().setDisableMessaging(true);
-
-            // we don't want to be prompted to save projects,
-            // just save them automatically
-            // IZ=119824 - conover
-            // NbPreferences are not initialized in Unit Test runtime
-            // NbPreferences.forModule (AbstractUMLTestCase.class)
-            //      .putBoolean("UML_Prompt_to_Save_Project", false); // NOI18N
-            
-        }
-        
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        
-        factory = (UMLCreationFactory) product.getCreationFactory();
-        establishNamespaces();
+//        product = getProduct();
+//
+//        try
+//        {
+//            ProductHelper.getMessenger().setDisableMessaging(true);
+//
+//            // we don't want to be prompted to save projects,
+//            // just save them automatically
+//            // IZ=119824 - conover
+//            // NbPreferences are not initialized in Unit Test runtime
+//            // NbPreferences.forModule (AbstractUMLTestCase.class)
+//            //      .putBoolean("UML_Prompt_to_Save_Project", false); // NOI18N
+//            
+//        }
+//        
+//        catch (Exception e)
+//        {
+//            e.printStackTrace();
+//        }
+//        
+//        factory = (UMLCreationFactory) product.getCreationFactory();
+//        establishNamespaces();
     }
 
     private List<IElement> createdTypes = new ArrayList<IElement>();
