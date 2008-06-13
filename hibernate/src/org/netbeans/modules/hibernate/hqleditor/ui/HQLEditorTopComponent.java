@@ -42,6 +42,7 @@ import java.awt.CardLayout;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
@@ -75,13 +76,18 @@ public final class HQLEditorTopComponent extends TopComponent {
     static final String ICON_PATH = "org/netbeans/modules/hibernate/hqleditor/ui/resources/queryEditor16X16.png"; //NOI18N
     private Logger logger = Logger.getLogger(HQLEditorTopComponent.class.getName());
     private HashMap<String, FileObject> hibernateConfigMap = new HashMap<String, FileObject>();
-    private static int count = 0;
+    private static List<Integer> windowCounts = new ArrayList<Integer>();
+    private Integer thisWindowCount = new Integer(0);
     private HQLEditorController controller = null;
     private HibernateEnvironment env = null;
 
-    //TODO fix this method.
-    private static String getNextWindowTitle() {
-        return NbBundle.getMessage(HQLEditorTopComponent.class, "CTL_HQLEditorTopComponent") + (++count);
+    private static int getNextWindowCount() {
+        int count = 0;
+        while (windowCounts.contains(count)) {
+            count++;
+        }
+        windowCounts.add(count);
+        return count;
     }
 
     public static HQLEditorTopComponent getInstance() {
@@ -91,7 +97,8 @@ public final class HQLEditorTopComponent extends TopComponent {
     public HQLEditorTopComponent(HQLEditorController controller) {
         this.controller = controller;
         initComponents();
-        setName(getNextWindowTitle());
+        this.thisWindowCount = getNextWindowCount();
+        setName(NbBundle.getMessage(HQLEditorTopComponent.class, "CTL_HQLEditorTopComponent") + thisWindowCount);
         setToolTipText(NbBundle.getMessage(HQLEditorTopComponent.class, "HINT_HQLEditorTopComponent"));
         setIcon(Utilities.loadImage(ICON_PATH, true));
 
@@ -114,7 +121,7 @@ public final class HQLEditorTopComponent extends TopComponent {
                 try {
                     HibernateCfgDataObject hibernateCfgDataObject = (HibernateCfgDataObject) DataObject.find(configFileObject);
                     String configName = hibernateCfgDataObject.getHibernateConfiguration().getSessionFactory().getAttributeValue("name");
-                    if(configName == null || configName.equals("")) {
+                    if (configName == null || configName.equals("")) {
                         configName = configFileObject.getName();
                     }
                     hibernateConfigMap.put(configName, configFileObject);
@@ -125,7 +132,7 @@ public final class HQLEditorTopComponent extends TopComponent {
             hibernateConfigurationComboBox.setModel(new DefaultComboBoxModel(hibernateConfigMap.keySet().toArray()));
             HibernateConfiguration config = ((HibernateCfgDataObject) dO).getHibernateConfiguration();
             String selectedConfigName = config.getSessionFactory().getAttributeValue("name");
-            if(selectedConfigName == null || selectedConfigName.equals("")) {
+            if (selectedConfigName == null || selectedConfigName.equals("")) {
                 selectedConfigName = dO.getPrimaryFile().getName();
             }
             hibernateConfigurationComboBox.setSelectedItem(selectedConfigName);
@@ -197,11 +204,11 @@ public final class HQLEditorTopComponent extends TopComponent {
 
         } else {
             logger.info("HQL query execution resulted in following " + result.getExceptions().size() + " errors.");
-            
+
             switchToErrorView();
             setStatus(NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionError"));
             errorTextArea.setText("");
-            for(Throwable t : result.getExceptions()) {
+            for (Throwable t : result.getExceptions()) {
                 StringWriter sWriter = new StringWriter();
                 PrintWriter pWriter = new PrintWriter(sWriter);
                 t.printStackTrace(pWriter);
@@ -461,7 +468,7 @@ private void runHQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
     @Override
     protected void componentClosed() {
-        --count;
+        windowCounts.remove(thisWindowCount);
     }
 
     private void switchToResultView() {
