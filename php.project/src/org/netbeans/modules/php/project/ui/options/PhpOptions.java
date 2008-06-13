@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.project.ui.options;
 
 import java.io.IOException;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -60,20 +61,20 @@ public final class PhpOptions {
     public static final int DEFAULT_DEBUGGER_PORT = 9000;
     public static final boolean DEFAULT_DEBUGGER_STOP_AT_FIRST_LINE = false;
 
-    private static final PhpOptions INSTANCE = new PhpOptions();
-
     // php cli
-    private static final String PHP_INTERPRETER = "phpInterpreter"; // NOI18N
-    private static final String PHP_OPEN_IN_OUTPUT = "phpOpenInOutput"; // NOI18N
-    private static final String PHP_OPEN_IN_BROWSER = "phpOpenInBrowser"; // NOI18N
-    private static final String PHP_OPEN_IN_EDITOR = "phpOpenInEditor"; // NOI18N
+    public static final String PHP_INTERPRETER = "phpInterpreter"; // NOI18N
+    public static final String PHP_OPEN_IN_OUTPUT = "phpOpenInOutput"; // NOI18N
+    public static final String PHP_OPEN_IN_BROWSER = "phpOpenInBrowser"; // NOI18N
+    public static final String PHP_OPEN_IN_EDITOR = "phpOpenInEditor"; // NOI18N
 
     // debugger
-    private static final String PHP_DEBUGGER_PORT = "phpDebuggerPort"; // NOI18N
-    private static final String PHP_DEBUGGER_STOP_AT_FIRST_LINE = "phpDebuggerStopAtFirstLine"; // NOI18N
+    public static final String PHP_DEBUGGER_PORT = "phpDebuggerPort"; // NOI18N
+    public static final String PHP_DEBUGGER_STOP_AT_FIRST_LINE = "phpDebuggerStopAtFirstLine"; // NOI18N
 
     // global include path
-    private static final String PHP_GLOBAL_INCLUDE_PATH = "phpGlobalIncludePath"; // NOI18N
+    public static final String PHP_GLOBAL_INCLUDE_PATH = "phpGlobalIncludePath"; // NOI18N
+
+    private static final PhpOptions INSTANCE = new PhpOptions();
 
     private boolean phpInterpreterSearched = false;
 
@@ -86,6 +87,14 @@ public final class PhpOptions {
 
     private Preferences getPreferences() {
         return NbPreferences.forModule(PhpOptions.class);
+    }
+
+    public void addPreferenceChangeListener(PreferenceChangeListener preferenceChangeListener) {
+        getPreferences().addPreferenceChangeListener(preferenceChangeListener);
+    }
+
+    public void removePreferenceChangeListener(PreferenceChangeListener preferenceChangeListener) {
+        getPreferences().removePreferenceChangeListener(preferenceChangeListener);
     }
 
     public synchronized String getPhpInterpreter() {
