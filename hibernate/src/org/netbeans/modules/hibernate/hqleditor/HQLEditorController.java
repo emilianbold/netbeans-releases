@@ -64,7 +64,10 @@ public class HQLEditorController {
     private Logger logger = Logger.getLogger(HQLEditorController.class.getName());
     HQLEditorTopComponent editorTopComponent = null;
 
-    public void executeHQLQuery(final String hql, final FileObject configFileObject, final ProgressHandle ph) {
+    public void executeHQLQuery(final String hql, 
+            final FileObject configFileObject,
+            final int maxRowCount,
+            final ProgressHandle ph) {
         final List<URL> localResourcesURLList = new ArrayList<URL>();
 
         try {
@@ -96,7 +99,7 @@ public class HQLEditorController {
                     ph.progress(
                     NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionPassControlToHibernate"), 50
                     );
-                HQLResult r = queryExecutor.execute(hql, configFileObject);
+                HQLResult r = queryExecutor.execute(hql, configFileObject, maxRowCount);
                 ph.progress(
                     NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionProcessResults"), 80
                     );

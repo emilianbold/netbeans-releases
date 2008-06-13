@@ -272,6 +272,11 @@ public final class HQLEditorTopComponent extends TopComponent {
         toolBar2 = new javax.swing.JToolBar();
         resultToggleButton = new javax.swing.JToggleButton();
         sqlToggleButton = new javax.swing.JToggleButton();
+        spacerPanel1 = new javax.swing.JPanel();
+        spacerPanel2 = new javax.swing.JPanel();
+        setMaxRowCountPanel = new javax.swing.JPanel();
+        setMaxRowCountLabel = new javax.swing.JLabel();
+        setMaxRowCountComboBox = new javax.swing.JComboBox();
         executionPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         sqlEditorPane = new javax.swing.JEditorPane();
@@ -323,6 +328,7 @@ public final class HQLEditorTopComponent extends TopComponent {
         toolBar2.setRollover(true);
 
         org.openide.awt.Mnemonics.setLocalizedText(resultToggleButton, org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "HQLEditorTopComponent.resultToggleButton.text")); // NOI18N
+        resultToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "showResultTooltipText")); // NOI18N
         resultToggleButton.setFocusable(false);
         resultToggleButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         resultToggleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -334,6 +340,7 @@ public final class HQLEditorTopComponent extends TopComponent {
         toolBar2.add(resultToggleButton);
 
         org.openide.awt.Mnemonics.setLocalizedText(sqlToggleButton, org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "HQLEditorTopComponent.sqlToggleButton.text")); // NOI18N
+        sqlToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "showSQLTooltipText")); // NOI18N
         sqlToggleButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         sqlToggleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         sqlToggleButton.addItemListener(new java.awt.event.ItemListener() {
@@ -342,6 +349,55 @@ public final class HQLEditorTopComponent extends TopComponent {
             }
         });
         toolBar2.add(sqlToggleButton);
+
+        org.jdesktop.layout.GroupLayout spacerPanel1Layout = new org.jdesktop.layout.GroupLayout(spacerPanel1);
+        spacerPanel1.setLayout(spacerPanel1Layout);
+        spacerPanel1Layout.setHorizontalGroup(
+            spacerPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 202, Short.MAX_VALUE)
+        );
+        spacerPanel1Layout.setVerticalGroup(
+            spacerPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 27, Short.MAX_VALUE)
+        );
+
+        toolBar2.add(spacerPanel1);
+
+        org.jdesktop.layout.GroupLayout spacerPanel2Layout = new org.jdesktop.layout.GroupLayout(spacerPanel2);
+        spacerPanel2.setLayout(spacerPanel2Layout);
+        spacerPanel2Layout.setHorizontalGroup(
+            spacerPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 94, Short.MAX_VALUE)
+        );
+        spacerPanel2Layout.setVerticalGroup(
+            spacerPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 27, Short.MAX_VALUE)
+        );
+
+        toolBar2.add(spacerPanel2);
+
+        org.openide.awt.Mnemonics.setLocalizedText(setMaxRowCountLabel, org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "HQLEditorTopComponent.setMaxRowCountLabel.text")); // NOI18N
+
+        setMaxRowCountComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "100", "1000", "10000", "100000" }));
+        setMaxRowCountComboBox.setToolTipText(org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "setMaxRowToolTip")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout setMaxRowCountPanelLayout = new org.jdesktop.layout.GroupLayout(setMaxRowCountPanel);
+        setMaxRowCountPanel.setLayout(setMaxRowCountPanelLayout);
+        setMaxRowCountPanelLayout.setHorizontalGroup(
+            setMaxRowCountPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(setMaxRowCountPanelLayout.createSequentialGroup()
+                .add(setMaxRowCountLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(setMaxRowCountComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        );
+        setMaxRowCountPanelLayout.setVerticalGroup(
+            setMaxRowCountPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(setMaxRowCountPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(setMaxRowCountLabel)
+                .add(setMaxRowCountComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        );
+
+        toolBar2.add(setMaxRowCountPanel);
 
         executionPanel.setLayout(new java.awt.CardLayout());
 
@@ -438,6 +494,16 @@ public final class HQLEditorTopComponent extends TopComponent {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private int getMaxRowCount() {
+        String selectedMaxCount = setMaxRowCountComboBox.getSelectedItem().toString();
+        try {
+            return Integer.parseInt(selectedMaxCount);
+        } catch(NumberFormatException e) {
+            logger.warning("Number Format Error during parsing the max. row count");
+        }
+        return 1000; // Optimum value.
+    }
+    
 private void resultToggleButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_resultToggleButtonItemStateChanged
     if (resultToggleButton.isSelected()) {
         ((CardLayout) (executionPanel.getLayout())).last(executionPanel);
@@ -459,7 +525,10 @@ private void runHQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                 NbBundle.getMessage(HQLEditorTopComponent.class, "progressTaskname"));
         FileObject selectedConfigFile = (FileObject) hibernateConfigMap.get(hibernateConfigurationComboBox.getSelectedItem());
         ph.start(100);
-        controller.executeHQLQuery(hqlEditor.getText(), selectedConfigFile, ph);
+        controller.executeHQLQuery(hqlEditor.getText(), 
+                selectedConfigFile, 
+                getMaxRowCount(),
+                ph);
     } catch (Exception ex) {
         Exceptions.printStackTrace(ex);                                            
     }
@@ -480,6 +549,11 @@ private void runHQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JTable resultsTable;
     private javax.swing.JButton runHQLButton;
     private javax.swing.JLabel sessionLabel;
+    private javax.swing.JComboBox setMaxRowCountComboBox;
+    private javax.swing.JLabel setMaxRowCountLabel;
+    private javax.swing.JPanel setMaxRowCountPanel;
+    private javax.swing.JPanel spacerPanel1;
+    private javax.swing.JPanel spacerPanel2;
     private javax.swing.JSplitPane splitPane;
     private javax.swing.JEditorPane sqlEditorPane;
     private javax.swing.JToggleButton sqlToggleButton;

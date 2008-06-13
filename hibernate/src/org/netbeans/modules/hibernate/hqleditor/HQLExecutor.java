@@ -58,7 +58,9 @@ public class HQLExecutor {
      * @param configFileObject hibernate configuration object.
      * @return HQLResult containing the execution result (including any errors).
      */
-    public HQLResult execute(String hql, FileObject configFileObject) {
+    public HQLResult execute(String hql, 
+            FileObject configFileObject,
+            int maxRowCount) {
         HQLResult result = new HQLResult();
         try {
 
@@ -69,6 +71,7 @@ public class HQLExecutor {
             Session session = sessionFactory.openSession();
 
             Query query = session.createQuery(hql);
+            query.setMaxResults(maxRowCount);
 
             hql = hql.trim();
             hql = hql.toUpperCase();
