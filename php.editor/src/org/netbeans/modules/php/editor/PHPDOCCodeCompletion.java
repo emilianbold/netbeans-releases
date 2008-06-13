@@ -38,11 +38,19 @@
  */
 package org.netbeans.modules.php.editor;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.api.ElementHandle;
@@ -50,6 +58,9 @@ import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.php.editor.PHPCompletionItem.CompletionRequest;
+import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 
 /**
  *
@@ -64,6 +75,21 @@ public class PHPDOCCodeCompletion {
         "tutorial", "uses", "var", "version"
     };
     private static final Map<String, String> CUSTOM_TEMPLATES = new TreeMap<String, String>();
+    private static String docURLBase;
+        
+
+    static {
+        File file = InstalledFileLocator.getDefault().locate("docs/phpdocdesc.zip", null, true); //NoI18N
+        if (file != null) {
+            try {
+                URL urll = file.toURL();
+                urll = FileUtil.getArchiveRoot(urll);
+                docURLBase = urll.toString();
+            } catch (java.net.MalformedURLException e) {
+                // nothing to do
+                }
+        }
+    }
 
     public static void complete(List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request) {
@@ -82,13 +108,38 @@ public class PHPDOCCodeCompletion {
         }
     }
 
+    public static String getDoc(String tag) {
+        String resPath = String.format("%s%s.desc", docURLBase, tag); //NOI18N
+        
+        try{
+            URL url = new URL(resPath);
+            InputStream is = url.openStream();
+            byte buffer[] = new byte[1000];
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            int count = 0;
+            do {
+                count = is.read(buffer);
+                if (count > 0) baos.write(buffer, 0, count);
+            } while (count > 0);
+            
+            is.close();
+            String text = baos.toString();
+            baos.close();
+            return text;
+        } catch (java.io.IOException e){
+            return null;
+        }
+    }
+
     public static class PHPDOCCodeCompletionItem implements CompletionProposal {
         private String tag;
         private PHPCompletionItem.CompletionRequest request;
+        private PHPDOCTagElement elem;
 
         public PHPDOCCodeCompletionItem(CompletionRequest request, String tag) {
             this.tag = tag;
             this.request = request;
+            elem = new PHPDOCTagElement(tag);
         }
 
         public int getAnchorOffset() {
@@ -96,7 +147,7 @@ public class PHPDOCCodeCompletion {
         }
 
         public ElementHandle getElement() {
-            return null;
+            return elem;
         }
 
         public String getName() {
