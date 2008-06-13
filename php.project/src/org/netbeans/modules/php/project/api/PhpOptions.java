@@ -59,18 +59,36 @@ public final class PhpOptions {
         return org.netbeans.modules.php.project.ui.options.PhpOptions.getInstance();
     }
 
+    /**
+     * Get the PHP interpreter file path.
+     * @return the PHP interpreter file path or <code>null</code> if none is found.
+     */
     public String getPhpInterpreter() {
         return getPhpOptions().getPhpInterpreter();
     }
 
+    /**
+     * Get the port for PHP debugger, the default is
+     * <code>{@value org.netbeans.modules.php.project.ui.options.PhpOptions#DEFAULT_DEBUGGER_PORT}</code>.
+     * @return the port for PHP debugger.
+     */
     public int getDebuggerPort() {
         return getPhpOptions().getDebuggerPort();
     }
 
+    /**
+     * Check whether debugger stops at the first line of a PHP script. The default value is
+     * <code>{@value org.netbeans.modules.php.project.ui.options.PhpOptions#DEFAULT_DEBUGGER_STOP_AT_FIRST_LINE}</code>.
+     * @return <code>true</code> if the debugger stops at the first line of a PHP script, <code>false</code> otherwise.
+     */
     public boolean isDebuggerStoppedAtTheFirstLine() {
         return getPhpOptions().isDebuggerStoppedAtTheFirstLine();
     }
 
+    /**
+     * Get the global PHP include path.
+     * @return the global PHP include path or an empty String if no folders are defined.
+     */
     public String getPhpGlobalIncludePath() {
         return getPhpOptions().getPhpGlobalIncludePath();
     }

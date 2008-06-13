@@ -56,6 +56,10 @@ import org.openide.util.NbPreferences;
  */
 public final class PhpOptions {
 
+    // these constants are used in API javadoc so therefore public modifier
+    public static final int DEFAULT_DEBUGGER_PORT = 9000;
+    public static final boolean DEFAULT_DEBUGGER_STOP_AT_FIRST_LINE = false;
+
     private static final PhpOptions INSTANCE = new PhpOptions();
 
     // php cli
@@ -125,7 +129,7 @@ public final class PhpOptions {
     }
 
     public int getDebuggerPort() {
-        return getPreferences().getInt(PHP_DEBUGGER_PORT, 9000);
+        return getPreferences().getInt(PHP_DEBUGGER_PORT, DEFAULT_DEBUGGER_PORT);
     }
 
     public void setDebuggerPort(int debuggerPort) {
@@ -133,13 +137,14 @@ public final class PhpOptions {
     }
 
     public boolean isDebuggerStoppedAtTheFirstLine() {
-        return getPreferences().getBoolean(PHP_DEBUGGER_STOP_AT_FIRST_LINE, false);
+        return getPreferences().getBoolean(PHP_DEBUGGER_STOP_AT_FIRST_LINE, DEFAULT_DEBUGGER_STOP_AT_FIRST_LINE);
     }
 
     public void setDebuggerStoppedAtTheFirstLine(boolean debuggerStoppedAtTheFirstLine) {
         getPreferences().putBoolean(PHP_DEBUGGER_STOP_AT_FIRST_LINE, debuggerStoppedAtTheFirstLine);
     }
 
+    // XXX the default value could be improved (OS dependent)
     public String getPhpGlobalIncludePath() {
         return getPreferences().get(PHP_GLOBAL_INCLUDE_PATH, ""); // NOI18N
     }
