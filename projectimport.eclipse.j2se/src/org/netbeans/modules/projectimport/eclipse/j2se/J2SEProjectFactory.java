@@ -103,7 +103,7 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         }
         
         // update project classpath
-        ProjectFactorySupport.updateProjectClassPath(helper, model, importProblems);
+        ProjectFactorySupport.updateProjectClassPath(helper, nbProject.getReferenceHelper(), model, importProblems);
         
         // set platform used by an Eclipse project
         if (model.getJavaPlatform() != null) {
@@ -135,10 +135,16 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
     }
 
     public String update(Project project, ProjectImportModel model, String oldKey, List<String> importProblems) throws IOException {
+        if (!(project instanceof J2SEProject)) {
+            throw new IOException("is not java project: "+project.getClass().getName());
+        }
+        
         String newKey = calculateKey(model);
         
         // update project classpath
-        String actualKey = ProjectFactorySupport.synchronizeProjectClassPath(project, ((J2SEProject)project).getAntProjectHelper(), model, oldKey, newKey, importProblems);
+        String actualKey = ProjectFactorySupport.synchronizeProjectClassPath(project, 
+                ((J2SEProject)project).getAntProjectHelper(), 
+                ((J2SEProject)project).getReferenceHelper(), model, oldKey, newKey, importProblems);
         
         // TODO:
         // update source roots and platform

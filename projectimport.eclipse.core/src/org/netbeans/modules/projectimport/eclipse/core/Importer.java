@@ -169,6 +169,9 @@ final class Importer {
 
         List<String> projectImportProblems = new ArrayList<String>();
         
+        // evaluate classpath containers
+        eclProject.evaluateContainers(projectImportProblems);
+        
         // create global libraries, etc.
         eclProject.setupEvaluatedContainers(projectImportProblems);
         

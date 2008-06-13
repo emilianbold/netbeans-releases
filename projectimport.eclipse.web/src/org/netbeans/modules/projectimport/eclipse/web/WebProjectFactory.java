@@ -41,7 +41,6 @@ package org.netbeans.modules.projectimport.eclipse.web;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Icon;
@@ -125,7 +124,7 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         createData.setBuildfile("build.xml");
         
         AntProjectHelper helper = WebProjectUtilities.importProject(createData);
-        Project nbProject = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+        WebProject nbProject = (WebProject)ProjectManager.getDefault().findProject(helper.getProjectDirectory());
         
         // set labels for source roots
 //        ProjectFactorySupport.updateSourceRootLabels(model.getEclipseSourceRoots(), nbProject.getSourceRoots());
@@ -139,7 +138,7 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         }
         
         // update project classpath
-        ProjectFactorySupport.updateProjectClassPath(helper, model, importProblems);
+        ProjectFactorySupport.updateProjectClassPath(helper, nbProject.getReferenceHelper(), model, importProblems);
         
         // save project
         ProjectManager.getDefault().saveProject(nbProject);
@@ -196,10 +195,15 @@ public class WebProjectFactory implements ProjectTypeUpdater {
     }
 
     public String update(Project project, ProjectImportModel model, String oldKey, List<String> importProblems) throws IOException {
+        if (!(project instanceof WebProject)) {
+            throw new IOException("is not web project: "+project.getClass().getName());
+        }
         String newKey = calculateKey(model);
         
         // update project classpath
-        String actualKey = ProjectFactorySupport.synchronizeProjectClassPath(project, ((WebProject)project).getAntProjectHelper(), model, oldKey, newKey, importProblems);
+        String actualKey = ProjectFactorySupport.synchronizeProjectClassPath(project, 
+                ((WebProject)project).getAntProjectHelper(), 
+                ((WebProject)project).getReferenceHelper(), model, oldKey, newKey, importProblems);
         
         // TODO:
         // update source roots and platform and server and web root and context
