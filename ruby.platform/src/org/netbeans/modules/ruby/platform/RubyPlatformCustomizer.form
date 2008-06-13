@@ -411,7 +411,7 @@
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="rubyDebuggerLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="upperSep" pref="297" max="32767" attributes="0"/>
+                          <Component id="upperSep" pref="532" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="engineLabel" min="-2" max="-2" attributes="0"/>

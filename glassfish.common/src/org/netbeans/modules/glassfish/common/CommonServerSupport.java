@@ -1,3 +1,4 @@
+// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
@@ -36,6 +37,7 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+// </editor-fold>
 
 package org.netbeans.modules.glassfish.common;
 
@@ -58,12 +60,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
-import org.netbeans.spi.glassfish.AppDesc;
-import org.netbeans.spi.glassfish.GlassfishModule;
-import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
-import org.netbeans.spi.glassfish.GlassfishModule.ServerState;
-import org.netbeans.spi.glassfish.OperationStateListener;
-import org.netbeans.spi.glassfish.ServerCommand;
+import org.netbeans.modules.glassfish.spi.AppDesc;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
+import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
+import org.netbeans.modules.glassfish.spi.OperationStateListener;
+import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -96,6 +98,10 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         int httpPort = updateInt(ip, GlassfishModule.HTTPPORT_ATTR, GlassfishInstance.DEFAULT_HTTP_PORT);
         updateString(ip, GlassfishModule.DISPLAY_NAME_ATTR, GlassfishInstance.GLASSFISH_SERVER_NAME);
         updateInt(ip, GlassfishModule.ADMINPORT_ATTR, GlassfishInstance.DEFAULT_ADMIN_PORT);
+        
+        updateString(ip, GlassfishModule.DOMAINS_FOLDER_ATTR, 
+                glassfishRoot+File.separator+"domains"); // NOI18N)
+        updateString(ip,GlassfishModule.DOMAIN_NAME_ATTR, GlassfishInstance.DEFAULT_DOMAIN_NAME);
 
         if(ip.get(GlassfishModule.URL_ATTR) == null) {
             String deployerUrl = "[" + glassfishRoot + "]" + URI_PREFIX + ":" + 
@@ -197,6 +203,22 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     
     public String getHostName() {
         return properties.get(HOSTNAME_ATTR);
+    }
+    
+    public String getDomainsRoot() {
+        String retVal = properties.get(DOMAINS_FOLDER_ATTR);
+        if (null == retVal) {
+            retVal = properties.get(GLASSFISH_FOLDER_ATTR)+File.separator+"domains"; // NOI18N
+        }
+        return retVal;
+    }
+    
+    public String getDomainName() {
+        String retVal = properties.get(DOMAIN_NAME_ATTR);
+        if (null == retVal) {
+            retVal = "domain1"; // NOI18N
+        }
+        return retVal;
     }
     
     public void setServerState(final ServerState newState) {

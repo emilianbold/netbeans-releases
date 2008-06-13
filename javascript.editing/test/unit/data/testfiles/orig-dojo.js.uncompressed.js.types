@@ -318,7 +318,7 @@ if(<Boolean>typeof dojo == <String>"undefined"</String></Boolean>){
 	})</dojo.mixin>;
 
 
-		dojo.<String>_loadPath</String> = <Function>function(/*String*/relpath, /*String?*/module, /*Function?*/cb){
+		dojo.<String>_loadPath</String> = <Function>function(/*String*/relpath, /*String?*/module, <void>/*Function?*/cb</void>){
 		// 	summary:
 		//		Load a Javascript module given a relative path
 		//
@@ -343,14 +343,14 @@ if(<Boolean>typeof dojo == <String>"undefined"</String></Boolean>){
 			uri += <String>"?"</String> + <String>String(<djConfig.cacheBust>djConfig.cacheBust</djConfig.cacheBust></String>).replace(<RegExp>/\W+/g</RegExp>,<String>""</String>);
 		}
 		try{
-			return !module ? this._loadUri(uri, cb) : this._loadUriAndCheck(uri, module, cb); // Boolean
+			return !module ? this._loadUri(uri, <void>cb</void>) : this._loadUriAndCheck(uri, module, <void>cb</void>); // Boolean
 		}catch(e){
 			<console.debug>console.<console.debug>debug</console.debug>(e)</console.debug>;
 			return <Boolean>false</Boolean>; // Boolean
 		}
 	}</Function>
 
-	dojo.<String>_loadUri</String> = <Function>function(/*String (URL)*/uri, /*Function?*/cb){
+	dojo.<String>_loadUri</String> = <Function>function(/*String (URL)*/uri, <void>/*Function?*/cb</void>){
 		//	summary:
 		//		Loads JavaScript from a URI
 		//	description:
@@ -371,18 +371,18 @@ if(<Boolean>typeof dojo == <String>"undefined"</String></Boolean>){
 		if(!contents){ return <Boolean>false</Boolean>; } // Boolean
 		this._loadedUrls[uri] = <Boolean>true</Boolean>;
 		this._loadedUrls.push(uri);
-		if(cb){ contents = <String>'('</String>+contents+<String>')'</String>; }
+		if(<void>cb</void>){ contents = <String>'('</String>+contents+<String>')'</String>; }
 		var value = d[<String>"eval"</String>](contents+<String>"\r\n//@ sourceURL="</String>+uri);
-		if(cb){ <cb>cb(value)</cb>; }
+		if(<void>cb</void>){ <cb><void>cb</void>(value)</cb>; }
 		return <Boolean>true</Boolean>; // Boolean
 	}</Function>
 	
 	// FIXME: probably need to add logging to this method
-	dojo.<String>_loadUriAndCheck</String> = <Function>function(/*String (URL)*/uri, /*String*/moduleName, /*Function?*/cb){
+	dojo.<String>_loadUriAndCheck</String> = <Function>function(/*String (URL)*/uri, /*String*/moduleName, <void>/*Function?*/cb</void>){
 		// summary: calls loadUri then findModule and returns true if both succeed
 		var <Boolean>ok = <Boolean>false</Boolean></Boolean>;
 		try{
-			ok = this._loadUri(uri, cb);
+			ok = this._loadUri(uri, <void>cb</void>);
 		}catch(e){
 			<console.debug>console.<console.debug>debug</console.debug>(<String>"failed loading "</String> + uri + <String>" with error: "</String> + e)</console.debug>;
 		}
@@ -854,7 +854,7 @@ if(<Boolean>typeof dojo == <String>"undefined"</String></Boolean>){
 		}
 	}</Function>
 
-	dojo.<dojo._Url>_Url</dojo._Url>.<dojo._Url.prototype>prototype</dojo._Url.prototype>.<String>toString</String> = <Function>function(){ return this.uri; }</Function>;
+	dojo.<void>_Url</void>.<void.prototype>prototype</void.prototype>.<String>toString</String> = <Function>function(){ return this.uri; }</Function>;
 
 	dojo.<String>moduleUrl</String> = <Function>function(/*String*/module, /*dojo._Url||String*/url){
 		// summary: 
@@ -1030,8 +1030,8 @@ if(<Boolean>typeof window != <String>'undefined'</String></Boolean>){
 			// NOTE: must be declared before scope switches ie. this._xhrObj()
 			var http = this._xhrObj();
 
-			if(!hasBase &amp;&amp; <dojo._Url>dojo._Url</dojo._Url>){
-				uri = (<dojo._Url.toString><dojo._Url>new <dojo._Url>dojo._Url</dojo._Url>(owloc, uri)</dojo._Url>).<dojo._Url.toString>toString</dojo._Url.toString>()</dojo._Url.toString>;
+			if(!hasBase &amp;&amp; <void>dojo._Url</void>){
+				uri = (<void.toString><void>new <void>dojo._Url</void>(owloc, uri)</void>).<void.toString>toString</void.toString>()</void.toString>;
 			}
 			/*
 			console.debug("_getText:", uri);
@@ -1043,7 +1043,7 @@ if(<Boolean>typeof window != <String>'undefined'</String></Boolean>){
 			try{
 				<http.send>http.<http.send>send</http.send>(null)</http.send>;
 				// alert(http);
-				if(!<d._isDocumentOk>d.<d._isDocumentOk>_isDocumentOk</d._isDocumentOk>(http)</d._isDocumentOk>){
+				if(!<d._isDocumentOk>d.<Boolean>_isDocumentOk</Boolean>(http)</d._isDocumentOk>){
 					var err = <Error>Error(<String>"Unable to load "</String>+uri+<String>" status:"</String>+ <http.status>http.status</http.status>)</Error>;
 					err.<String>status</String> = <http.status>http.status</http.status>;
 					err.<String>responseText</String> = <http.responseText>http.responseText</http.responseText>;
@@ -1074,7 +1074,7 @@ if(<Boolean>typeof window != <String>'undefined'</String></Boolean>){
 		}
 
 		if(<Boolean><dojo._inFlightCount>dojo._inFlightCount</dojo._inFlightCount> == <Number>0</Number></Boolean>){
-			<dojo._modulesLoaded>dojo.<dojo._modulesLoaded>_modulesLoaded</dojo._modulesLoaded>()</dojo._modulesLoaded>;
+			<dojo._modulesLoaded>dojo.<void>_modulesLoaded</void>()</dojo._modulesLoaded>;
 		}
 	}</Function>
 
@@ -1086,18 +1086,18 @@ if(<Boolean>typeof window != <String>'undefined'</String></Boolean>){
 		//		DOMContentLoaded on that platform. For more information, see:
 		//		http://trac.dojotoolkit.org/ticket/1704
 		if(<dojo.isOpera>dojo.isOpera</dojo.isOpera>|| (<dojo.isMoz>dojo.isMoz</dojo.isMoz> &amp;&amp; (djConfig[<String>"enableMozDomContentLoaded"</String>] === <Boolean>true</Boolean>))){
-			<HTMLDocument.addEventListener><HTMLDocument>document</HTMLDocument>.<HTMLDocument.addEventListener>addEventListener</HTMLDocument.addEventListener>(<String>"DOMContentLoaded"</String>, <dojo._loadInit>dojo._loadInit</dojo._loadInit>, null)</HTMLDocument.addEventListener>;
+			<HTMLDocument.addEventListener><HTMLDocument>document</HTMLDocument>.<HTMLDocument.addEventListener>addEventListener</HTMLDocument.addEventListener>(<String>"DOMContentLoaded"</String>, <void>dojo._loadInit</void>, null)</HTMLDocument.addEventListener>;
 		}
 
 		//	mainly for Opera 8.5, won't be fired if DOMContentLoaded fired already.
 		//  also used for Mozilla because of trac #1640
-		<Window.addEventListener><Window>window</Window>.<Window.addEventListener>addEventListener</Window.addEventListener>(<String>"load"</String>, <dojo._loadInit>dojo._loadInit</dojo._loadInit>, null)</Window.addEventListener>;
+		<Window.addEventListener><Window>window</Window>.<Window.addEventListener>addEventListener</Window.addEventListener>(<String>"load"</String>, <void>dojo._loadInit</void>, null)</Window.addEventListener>;
 	}
 
 	if(<RegExp.test><RegExp>/(WebKit|khtml)/i</RegExp>.<RegExp.test>test</RegExp.test>(<Navigator.userAgent><Navigator>navigator</Navigator>.userAgent</Navigator.userAgent>)</RegExp.test>){ // sniff
 		dojo.<String>_khtmlTimer</String> = <setInterval>setInterval(<Function>function(){
 			if(<RegExp.test><RegExp>/loaded|complete/</RegExp>.<RegExp.test>test</RegExp.test>(<HTMLDocument.readyState><HTMLDocument>document</HTMLDocument>.readyState</HTMLDocument.readyState>)</RegExp.test>){
-				<dojo._loadInit>dojo.<dojo._loadInit>_loadInit</dojo._loadInit>()</dojo._loadInit>; // call the onload handler
+				<dojo._loadInit>dojo.<void>_loadInit</void>()</dojo._loadInit>; // call the onload handler
 			}
 		}</Function>, <Number>10</Number>)</setInterval>;
 	}
@@ -1140,7 +1140,7 @@ if(<Boolean>typeof window != <String>'undefined'</String></Boolean>){
 				<_w.setTimeout>_w.<_w.setTimeout>setTimeout</_w.setTimeout>(<Function>function(){ <Boolean>_unloading</Boolean> = <Boolean>false</Boolean>; }</Function>, <Number>0</Number>)</_w.setTimeout>;
 			}</Function>)</_handleNodeEvent>;
 			<_handleNodeEvent><Function>_handleNodeEvent</Function>(<String>"onunload"</String>, <Function>function(){
-				if(_unloading){ <dojo.unloaded>dojo.<dojo.unloaded>unloaded</dojo.unloaded>()</dojo.unloaded>; }
+				if(_unloading){ <dojo.unloaded>dojo.<void>unloaded</void>()</dojo.unloaded>; }
 			}</Function>)</_handleNodeEvent>;
 
 			try{
@@ -1149,7 +1149,7 @@ if(<Boolean>typeof window != <String>'undefined'</String></Boolean>){
 			}catch(e){}
 		}else{
 			// FIXME: dojo.unloaded requires dojo scope, so using anon function wrapper.
-			<_handleNodeEvent><Function>_handleNodeEvent</Function>(<String>"onbeforeunload"</String>, <Function>function() { <dojo.unloaded>dojo.<dojo.unloaded>unloaded</dojo.unloaded>()</dojo.unloaded>; }</Function>)</_handleNodeEvent>;
+			<_handleNodeEvent><Function>_handleNodeEvent</Function>(<String>"onbeforeunload"</String>, <Function>function() { <dojo.unloaded>dojo.<void>unloaded</void>()</dojo.unloaded>; }</Function>)</_handleNodeEvent>;
 		}
 
 	}</Function>)();
@@ -1229,7 +1229,7 @@ dojo.<String>isObject</String> = <Function>function(/*anything*/ it){
 	// summary: 
 	//		Returns true if it is a JavaScript object (or an Array, a Function or null)
 	return it !== undefined &amp;&amp;
-		(it === null || typeof <Boolean>it == <String>"object"</String></Boolean> || <dojo.isArray>dojo.<dojo.isArray>isArray</dojo.isArray>(it)</dojo.isArray> || <dojo.isFunction>dojo.<dojo.isFunction>isFunction</dojo.isFunction>(it)</dojo.isFunction>); // Boolean
+		(it === null || typeof <Boolean>it == <String>"object"</String></Boolean> || <dojo.isArray>dojo.<Boolean>isArray</Boolean>(it)</dojo.isArray> || <dojo.isFunction>dojo.<dojo.isFunction>isFunction</dojo.isFunction>(it)</dojo.isFunction>); // Boolean
 }</Function>
 
 dojo.<String>isArrayLike</String> = <Function>function(/*anything*/ it){
@@ -1272,7 +1272,7 @@ dojo.<String>extend</String> = <Function>function(/*Object*/ constructor, /*Obje
 
 dojo.<String>_hitchArgs</String> = <Function>function(scope, method /*,...*/){
 	var pre = <dojo._toArray>dojo.<dojo._toArray>_toArray</dojo._toArray>(arguments, <Number>2</Number>)</dojo._toArray>;
-	var named = <dojo.isString>dojo.<dojo.isString>isString</dojo.isString>(method)</dojo.isString>;
+	var <Boolean>named = <dojo.isString>dojo.<Boolean>isString</Boolean>(method)</dojo.isString></Boolean>;
 	return <Function>function(){
 		// arrayify arguments
 		var args = <dojo._toArray>dojo.<dojo._toArray>_toArray</dojo._toArray>(arguments)</dojo._toArray>;
@@ -1306,13 +1306,13 @@ dojo.<String>hitch</String> = <Function>function(/*Object*/scope, /*Function|Str
 	//	|	dojo.hitch(foo, myFunction);
 	//		returns a function that runs myFunction in the scope of foo
 	if(<Boolean><arguments.length>arguments.length</arguments.length> &gt; <Number>2</Number></Boolean>){
-		return <dojo._hitchArgs.apply>dojo.<dojo._hitchArgs>_hitchArgs</dojo._hitchArgs>.<dojo._hitchArgs.apply>apply</dojo._hitchArgs.apply>(dojo, arguments)</dojo._hitchArgs.apply>; // Function
+		return <Function.apply>dojo.<Function>_hitchArgs</Function>.<Function.apply>apply</Function.apply>(dojo, arguments)</Function.apply>; // Function
 	}
 	if(!method){
 		method = scope;
 		scope = null;
 	}
-	if(<dojo.isString>dojo.<dojo.isString>isString</dojo.isString>(method)</dojo.isString>){
+	if(<dojo.isString>dojo.<Boolean>isString</Boolean>(method)</dojo.isString>){
 		scope = scope || <dojo.global>dojo.global</dojo.global>;
 		if(!scope[method]){ throw([<Array.join><Array><String>'dojo.hitch: scope["'</String>, method, <String>'"] is null (scope="'</String>, scope, <String>'")'</String></Array>].<Array.join>join</Array.join>(<String>''</String>))</Array.join>; }
 		return <Function>function(){ return scope[method].apply(scope, arguments || <Array>[]</Array>); }</Function>; // Function
@@ -1355,9 +1355,9 @@ dojo.delegate = function(obj, props){
 dojo.<String>delegate</String> = dojo.<String>_delegate</String> = <Function>function(obj, props){
 
 	// boodman/crockford delegation
-	<Function>function TMP(){}</Function>;
-	TMP.<String>prototype</String> = obj;
-	var <TMP>tmp = <TMP>new TMP()</TMP></TMP>;
+	<Function>function <TMP>TMP</TMP>(){}</Function>;
+	<TMP>TMP</TMP>.<String>prototype</String> = obj;
+	var <TMP>tmp = <TMP>new <TMP>TMP</TMP>()</TMP></TMP>;
 	if(props){
 		<dojo.mixin>dojo.<dojo.mixin>mixin</dojo.mixin>(<TMP>tmp</TMP>, props)</dojo.mixin>;
 	}
@@ -1401,20 +1401,20 @@ dojo.<String>clone</String> = <Function>function(/*anything*/ o){
 	//		Clones objects (including DOM nodes) and all children.
 	//		Warning: do not clone cyclic structures.
 	if(!o){ return o; }
-	if(<dojo.isArray>dojo.<dojo.isArray>isArray</dojo.isArray>(o)</dojo.isArray>){
+	if(<dojo.isArray>dojo.<Boolean>isArray</Boolean>(o)</dojo.isArray>){
 		var <Array>r = <Array>[]</Array></Array>;
 		for(var <Number>i = <Number>0</Number></Number>; <Boolean><Number>i</Number> &lt; <o.length>o.length</o.length></Boolean>; ++<Number>i</Number>){
 			<Array.push><Array>r</Array>.<Array.push>push</Array.push>(<dojo.clone>dojo.<dojo.clone>clone</dojo.clone>(o[<Number>i</Number>])</dojo.clone>)</Array.push>;
 		}
 		return <Array>r</Array>; // Array
-	}else if(<dojo.isObject>dojo.<dojo.isObject>isObject</dojo.isObject>(o)</dojo.isObject>){
+	}else if(<dojo.isObject>dojo.<Boolean>isObject</Boolean>(o)</dojo.isObject>){
 		if(<o.nodeType>o.nodeType</o.nodeType> &amp;&amp; <o.cloneNode>o.cloneNode</o.cloneNode>){ // isNode
 			return <o.cloneNode>o.<o.cloneNode>cloneNode</o.cloneNode>(<Boolean>true</Boolean>)</o.cloneNode>; // Node
 		}else{
 			var <o.constructor>r = <o.constructor>new <o.constructor>o.constructor</o.constructor>()</o.constructor></o.constructor>; // specific to dojo.declare()'d classes!
-			for(var <Number>i</Number> in o){
-				if(!(i in <o.constructor>r</o.constructor>) || <Boolean><o.constructor>r</o.constructor>[i] != o[i]</Boolean>){
-					<o.constructor>r</o.constructor>[i] = <dojo.clone>dojo.<dojo.clone>clone</dojo.clone>(o[i])</dojo.clone>;
+			for(var <Number><MyObj>i</MyObj></Number> in o){
+				if(!(<MyObj>i</MyObj> in <o.constructor>r</o.constructor>) || <Boolean><o.constructor>r</o.constructor>[<MyObj>i</MyObj>] != o[<MyObj>i</MyObj>]</Boolean>){
+					<o.constructor>r</o.constructor>[<MyObj>i</MyObj>] = <dojo.clone>dojo.<dojo.clone>clone</dojo.clone>(o[<MyObj>i</MyObj>])</dojo.clone>;
 				}
 			}
 			return <o.constructor>r</o.constructor>; // Object
@@ -1496,7 +1496,7 @@ dojo.<String>declare</String> = <Function>function(/*String*/ className, /*Funct
 	// process superclass argument
 	// var dd=dojo.declare, mixins=null;
 	var <arguments.callee>dd=<arguments.callee>arguments.callee</arguments.callee></arguments.callee>, mixins=null;
-	if(<dojo.isArray>dojo.<dojo.isArray>isArray</dojo.isArray>(superclass)</dojo.isArray>){
+	if(<dojo.isArray>dojo.<Boolean>isArray</Boolean>(superclass)</dojo.isArray>){
 		mixins = superclass;
 		superclass = <mixins.shift>mixins.<mixins.shift>shift</mixins.shift>()</mixins.shift>;
 	}
@@ -1511,7 +1511,7 @@ dojo.<String>declare</String> = <Function>function(/*String*/ className, /*Funct
 	// prepare values
 	var init=(props||<Number>0</Number>).constructor, ctor=<arguments.callee._delegate><arguments.callee>dd</arguments.callee>.<arguments.callee._delegate>_delegate</arguments.callee._delegate>(superclass)</arguments.callee._delegate>, fn;
 	// name methods (experimental)
-	for(var <Number>i</Number> in props){if(<dojo.isFunction>dojo.<dojo.isFunction>isFunction</dojo.isFunction>(fn=props[i])</dojo.isFunction>&amp;&amp;(!<Number>0</Number>[i])){fn.<String>nom</String>=i;}}
+	for(var <Number><MyObj>i</MyObj></Number> in props){if(<dojo.isFunction>dojo.<dojo.isFunction>isFunction</dojo.isFunction>(fn=props[<MyObj>i</MyObj>])</dojo.isFunction>&amp;&amp;(!<Number>0</Number>[<MyObj>i</MyObj>])){fn.<String>nom</String>=<MyObj>i</MyObj>;}}
 	// decorate prototype
 	<dojo.extend>dojo.<dojo.extend>extend</dojo.extend>(ctor, {declaredClass: className, _constructor: init, preamble: null}, props||<Number>0</Number>)</dojo.extend>; 
 	// special help for IE
@@ -1538,7 +1538,7 @@ dojo.<String>declare</String> = <Function>function(/*String*/ className, /*Funct
 		return ctor;
 	}</Function>,
 	_extend: <Function>function(props){
-		for(var i in props){if(<dojo.isFunction>dojo.<dojo.isFunction>isFunction</dojo.isFunction>(fn=props[i])</dojo.isFunction>&amp;&amp;(!<Number>0</Number>[i])){fn.<String>nom</String>=i;}}
+		for(var <MyObj><MyObj>i</MyObj></MyObj> in props){if(<dojo.isFunction>dojo.<dojo.isFunction>isFunction</dojo.isFunction>(fn=props[<MyObj>i</MyObj>])</dojo.isFunction>&amp;&amp;(!<Number>0</Number>[<MyObj>i</MyObj>])){fn.<String>nom</String>=<MyObj>i</MyObj>;}}
 		<dojo.extend>dojo.<dojo.extend>extend</dojo.extend>(this, props)</dojo.extend>;
 	}</Function>,
 	_makeCtor: <Function>function(){
@@ -1606,7 +1606,7 @@ dojo.<String>declare</String> = <Function>function(/*String*/ className, /*Funct
 		inherited: <Function>function(name, args, newArgs){
 			// optionalize name argument (experimental)
 			var a = arguments;
-			if(!<dojo.isString>dojo.<dojo.isString>isString</dojo.isString>(a[<Number>0</Number>])</dojo.isString>){newArgs=args; args=name; <args.callee.nom>name</args.callee.nom>=<args.callee.nom>args.<args.callee>callee</args.callee>.nom</args.callee.nom>;}
+			if(!<dojo.isString>dojo.<Boolean>isString</Boolean>(a[<Number>0</Number>])</dojo.isString>){newArgs=args; args=name; <args.callee.nom>name</args.callee.nom>=<args.callee.nom>args.<args.callee>callee</args.callee>.nom</args.callee.nom>;}
 			var <args.callee>c=<args.callee>args.callee</args.callee></args.callee>, p=this.constructor.prototype, a=newArgs||args, fn, mp;
 			// if not an instance override 
 			if(<Boolean>this[<args.callee.nom>name</args.callee.nom>]!=<args.callee>c</args.callee></Boolean> || <Boolean>p[<args.callee.nom>name</args.callee.nom>]==<args.callee>c</args.callee></Boolean>){
@@ -1648,9 +1648,9 @@ dojo.<String>_listener</String> = {
 			// return value comes from original target function
 			var r=t &amp;&amp; <t.apply>t.<t.apply>apply</t.apply>(this, arguments)</t.apply>;
 			// invoke listeners after target function
-			for(var i in ls){
-				if(!(i in <Array.prototype>ap</Array.prototype>)){
-					ls[i].apply(this, arguments);
+			for(var <MyObj><MyObj>i</MyObj></MyObj> in ls){
+				if(!(<MyObj>i</MyObj> in <Array.prototype>ap</Array.prototype>)){
+					ls[<MyObj>i</MyObj>].apply(this, arguments);
 				}
 			}
 			// return value comes from original target function
@@ -1671,13 +1671,13 @@ dojo.<String>_listener</String> = {
 		var f = source[method];
 		// Ensure a dispatcher
 		if(!f||!<f._listeners>f._listeners</f._listeners>){
-			var d = <dojo._listener.getDispatcher>dojo.<dojo._listener>_listener</dojo._listener>.<dojo._listener.getDispatcher>getDispatcher</dojo._listener.getDispatcher>()</dojo._listener.getDispatcher>;
+			var <Function>d = <dojo._listener.getDispatcher>dojo.<dojo._listener>_listener</dojo._listener>.<Function>getDispatcher</Function>()</dojo._listener.getDispatcher></Function>;
 			// original target function is special
-			d.<String>target</String> = f;
+			<Function>d</Function>.<String>target</String> = f;
 			// dispatcher holds a list of listeners
-			d.<String>_listeners</String> = <Array>[]</Array>; 
+			<Function>d</Function>.<String>_listeners</String> = <Array>[]</Array>; 
 			// redirect source to dispatcher
-			f = source[method] = d;
+			f = source[method] = <Function>d</Function>;
 		}
 		// The contract is that a handle is returned that can 
 		// identify this listener for disconnect. 
@@ -1794,16 +1794,16 @@ dojo.<String>connect</String> = <Function>function(/*Object|null*/ obj,
 	//	|	dojo.connect("globalEvent", globalHandler); // same
 
 	// normalize arguments
-	var a=arguments, args=<Array>[]</Array>, i=<Number>0</Number>;
+	var a=arguments, args=<Array>[]</Array>, <MyObj>i=<Number>0</Number></MyObj>;
 	// if a[0] is a String, obj was ommited
-	<args.push>args.<args.push>push</args.push>(<dojo.isString>dojo.<dojo.isString>isString</dojo.isString>(a[<Number>0</Number>])</dojo.isString> ? null : a[i++], a[i++])</args.push>;
+	<args.push>args.<args.push>push</args.push>(<dojo.isString>dojo.<Boolean>isString</Boolean>(a[<Number>0</Number>])</dojo.isString> ? null : a[<MyObj>i</MyObj>++], a[<MyObj>i</MyObj>++])</args.push>;
 	// if the arg-after-next is a String or Function, context was NOT omitted
-	var a1 = a[i+<Number>1</Number>];
-	<args.push>args.<args.push>push</args.push>(<dojo.isString>dojo.<dojo.isString>isString</dojo.isString>(a1)</dojo.isString>||<dojo.isFunction>dojo.<dojo.isFunction>isFunction</dojo.isFunction>(a1)</dojo.isFunction> ? a[i++] : null, a[i++])</args.push>;
+	var a1 = a[<MyObj>i</MyObj>+<Number>1</Number>];
+	<args.push>args.<args.push>push</args.push>(<dojo.isString>dojo.<Boolean>isString</Boolean>(a1)</dojo.isString>||<dojo.isFunction>dojo.<dojo.isFunction>isFunction</dojo.isFunction>(a1)</dojo.isFunction> ? a[<MyObj>i</MyObj>++] : null, a[<MyObj>i</MyObj>++])</args.push>;
 	// absorb any additional arguments
-	for(var <a.length>l=<a.length>a.length</a.length></a.length>; <Boolean>i&lt;<a.length>l</a.length></Boolean>; i++){	<args.push>args.<args.push>push</args.push>(a[i])</args.push>; }
+	for(var <a.length>l=<a.length>a.length</a.length></a.length>; <Boolean><MyObj>i</MyObj>&lt;<a.length>l</a.length></Boolean>; <MyObj>i</MyObj>++){	<args.push>args.<args.push>push</args.push>(a[<MyObj>i</MyObj>])</args.push>; }
 	// do the actual work
-	return <dojo._connect.apply>dojo.<dojo._connect>_connect</dojo._connect>.<dojo._connect.apply>apply</dojo._connect.apply>(this, args)</dojo._connect.apply>; /*Handle*/
+	return <Array.apply>dojo.<Array>_connect</Array>.<Array.apply>apply</Array.apply>(this, args)</Array.apply>; /*Handle*/
 }</Function>
 
 // used by non-browser hostenvs. always overriden by event.js
@@ -1820,7 +1820,7 @@ dojo.<String>disconnect</String> = <Function>function(/*Handle*/ handle){
 	// handle:
 	//		the return value of the dojo.connect call that created the connection.
 	if(handle &amp;&amp; handle[<Number>0</Number>] !== undefined){
-		<dojo._disconnect.apply>dojo.<dojo._disconnect>_disconnect</dojo._disconnect>.<dojo._disconnect.apply>apply</dojo._disconnect.apply>(this, handle)</dojo._disconnect.apply>;
+		<void.apply>dojo.<void>_disconnect</void>.<void.apply>apply</void.apply>(this, handle)</void.apply>;
 		// let's not keep this reference
 		delete handle[<Number>0</Number>];
 	}
@@ -1862,7 +1862,7 @@ dojo.<String>unsubscribe</String> = <Function>function(/*Handle*/ handle){
 	//	|	...
 	//	|	dojo.unsubscribe(alerter);
 	if(handle){
-		<dojo._listener.remove>dojo.<dojo._listener>_listener</dojo._listener>.<dojo._listener.remove>remove</dojo._listener.remove>(<dojo._topics>dojo._topics</dojo._topics>, handle[<Number>0</Number>], handle[<Number>1</Number>])</dojo._listener.remove>;
+		<dojo._listener.remove>dojo.<dojo._listener>_listener</dojo._listener>.<void>remove</void>(<dojo._topics>dojo._topics</dojo._topics>, handle[<Number>0</Number>], handle[<Number>1</Number>])</dojo._listener.remove>;
 	}
 }</Function>
 
@@ -1905,7 +1905,7 @@ dojo.<String>connectPublisher</String> = <Function>function(	/*String*/ topic,
 	//	 	I.e. identifies a property obj[event].
 	//	example:
 	//	|	dojo.connectPublisher("/ajax/start", dojo, "xhrGet"};
-	var <Function>pf = <Function>function(){ <dojo.publish>dojo.<dojo.publish>publish</dojo.publish>(topic, arguments)</dojo.publish>; }</Function></Function>
+	var <Function>pf = <Function>function(){ <dojo.publish>dojo.<void>publish</void>(topic, arguments)</dojo.publish>; }</Function></Function>
 	return (<Event>event)</Event> ? <dojo.connect>dojo.<dojo.connect>connect</dojo.connect>(obj, <Event>event</Event>, <Function>pf</Function>)</dojo.connect> : <dojo.connect>dojo.<dojo.connect>connect</dojo.connect>(obj, <Function>pf</Function>)</dojo.connect>; //Handle
 }</Function>;
 
@@ -2235,43 +2235,43 @@ dojo.<String>Deferred</String> = <Function>function(/*Function?*/ canceller){
 		this._resback(<Error>res</Error>);
 	}</Function>,
 
-	addBoth: <Function>function(/*Function||Object*/cb, /*Optional, String*/cbfn){
+	addBoth: <Function>function(<void>/*Function||Object*/cb</void>, /*Optional, String*/cbfn){
 		// summary:
 		//		Add the same function as both a callback and an errback as the
 		//		next element on the callback sequence.	This is useful for code
 		//		that you want to guarantee to run, e.g. a finalizer.
-		var enclosed = <dojo.hitch>dojo.<dojo.hitch>hitch</dojo.hitch>(cb, cbfn)</dojo.hitch>;
+		var enclosed = <dojo.hitch>dojo.<dojo.hitch>hitch</dojo.hitch>(<void>cb</void>, cbfn)</dojo.hitch>;
 		if(<Boolean><arguments.length>arguments.length</arguments.length> &gt; <Number>2</Number></Boolean>){
 			enclosed = <dojo.partial>dojo.<dojo.partial>partial</dojo.partial>(enclosed, arguments, <Number>2</Number>)</dojo.partial>;
 		}
 		return this.addCallbacks(enclosed, enclosed);
 	}</Function>,
 
-	addCallback: <Function>function(cb, cbfn){
+	addCallback: <Function>function(<void>cb</void>, cbfn){
 		// summary: 
 		//		Add a single callback to the end of the callback sequence.
-		var enclosed = <dojo.hitch>dojo.<dojo.hitch>hitch</dojo.hitch>(cb, cbfn)</dojo.hitch>;
+		var enclosed = <dojo.hitch>dojo.<dojo.hitch>hitch</dojo.hitch>(<void>cb</void>, cbfn)</dojo.hitch>;
 		if(<Boolean><arguments.length>arguments.length</arguments.length> &gt; <Number>2</Number></Boolean>){
 			enclosed = <dojo.partial>dojo.<dojo.partial>partial</dojo.partial>(enclosed, arguments, <Number>2</Number>)</dojo.partial>;
 		}
 		return this.addCallbacks(enclosed, null);
 	}</Function>,
 
-	addErrback: <Function>function(cb, cbfn){
+	addErrback: <Function>function(<void>cb</void>, cbfn){
 		// summary: 
 		//		Add a single callback to the end of the callback sequence.
-		var enclosed = <dojo.hitch>dojo.<dojo.hitch>hitch</dojo.hitch>(cb, cbfn)</dojo.hitch>;
+		var enclosed = <dojo.hitch>dojo.<dojo.hitch>hitch</dojo.hitch>(<void>cb</void>, cbfn)</dojo.hitch>;
 		if(<Boolean><arguments.length>arguments.length</arguments.length> &gt; <Number>2</Number></Boolean>){
 			enclosed = <dojo.partial>dojo.<dojo.partial>partial</dojo.partial>(enclosed, arguments, <Number>2</Number>)</dojo.partial>;
 		}
 		return this.addCallbacks(null, enclosed);
 	}</Function>,
 
-	addCallbacks: <Function>function(cb, eb){
+	addCallbacks: <Function>function(<void>cb</void>, eb){
 		// summary: 
 		//		Add separate callback and errback to the end of the callback
 		//		sequence.
-		this.chain.push([<Array>cb, eb]</Array>)
+		this.chain.push([<Array><void>cb</void>, eb]</Array>)
 		if(<Boolean>this.fired &gt;= <Number>0</Number></Boolean>){
 			this._fire();
 		}
@@ -2286,7 +2286,7 @@ dojo.<String>Deferred</String> = <Function>function(/*Function?*/ canceller){
 		var fired = this.fired;
 		var res = this.results[fired];
 		var self = this;
-		var cb = null;
+		var <void>cb = null</void>;
 		while(
 			(<Boolean><chain.length>chain.length</chain.length> &gt; <Number>0</Number>)</Boolean> &amp;&amp;
 			(<Boolean>this.paused == <Number>0</Number>)</Boolean>
@@ -2400,7 +2400,7 @@ dojo.<String>toJson</String> = <Function>function(/*Object*/ it, /*Boolean?*/ pr
 	}else if(it === null){
 		return <String>"null"</String>;
 	}
-	if(<dojo.isString>dojo.<dojo.isString>isString</dojo.isString>(it)</dojo.isString>){ 
+	if(<dojo.isString>dojo.<Boolean>isString</Boolean>(it)</dojo.isString>){ 
 		return <dojo._escapeString>dojo.<dojo._escapeString>_escapeString</dojo._escapeString>(it)</dojo._escapeString>; 
 	}
 	if(<it.nodeType>it.nodeType</it.nodeType> &amp;&amp; <it.cloneNode>it.cloneNode</it.cloneNode>){ // isNode
@@ -2424,7 +2424,7 @@ dojo.<String>toJson</String> = <Function>function(/*Object*/ it, /*Boolean?*/ pr
 		}
 	}
 	// array
-	if(<dojo.isArray>dojo.<dojo.isArray>isArray</dojo.isArray>(it)</dojo.isArray>){
+	if(<dojo.isArray>dojo.<Boolean>isArray</Boolean>(it)</dojo.isArray>){
 		var <Array>res = <Array>[]</Array></Array>;
 		for(var <Number>i = <Number>0</Number></Number>; <Boolean><Number>i</Number> &lt; <it.length>it.length</it.length></Boolean>; <Number>i</Number>++){
 			var val = <recurse><arguments.callee>recurse</arguments.callee>(it[<Number>i</Number>], prettyPrint, nextIndent)</recurse>;
@@ -2481,12 +2481,12 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.arr
 <dojo.provide>dojo.<dojo.provide>provide</dojo.provide>(<String>"dojo._base.array"</String>)</dojo.provide>;
 
 (<Function>function(){
-	var <Function>_getParts = <Function>function(arr, obj, cb){
+	var <Function>_getParts = <Function>function(arr, obj, <void>cb</void>){
 		return [ 
-			(<Array><dojo.isString>dojo.<dojo.isString>isString</dojo.isString>(arr)</dojo.isString> ? <arr.split>arr.<arr.split>split</arr.split>(<String>""</String>)</arr.split> : arr), 
+			(<Array><dojo.isString>dojo.<Boolean>isString</Boolean>(arr)</dojo.isString> ? <arr.split>arr.<arr.split>split</arr.split>(<String>""</String>)</arr.split> : arr), 
 			(obj||<dojo.global>dojo.global</dojo.global>),
 			// FIXME: cache the anonymous functions we create here?
-			(<dojo.isString>dojo.<dojo.isString>isString</dojo.isString>(cb)</dojo.isString> ? (<Function>new Function(<String>"item"</String>, <String>"index"</String>, <String>"array"</String>, cb))</Function> : cb)
+			(<dojo.isString>dojo.<Boolean>isString</Boolean>(<void>cb</void>)</dojo.isString> ? (<Function>new Function(<String>"item"</String>, <String>"index"</String>, <String>"array"</String>, <void>cb</void>))</Function> : <void>cb</void>)
 		]</Array>;
 	}</Function></Function>
 
@@ -2504,11 +2504,11 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.arr
 
 			var <Number>i = <Number>0</Number></Number>, step = <Number>1</Number>, end = <array.length>array.length</array.length>;
 			if(findLast){
-				i = end - <Number>1</Number>;
+				<MyObj>i</MyObj> = end - <Number>1</Number>;
 				step = <Number>end</Number> = -<Number>1</Number>;
 			}
-			for(i = fromIndex || i; <Boolean>i != <Number>end</Number></Boolean>; i += step){
-				if(<Boolean>array[i] == value</Boolean>){ return i; }
+			for(<MyObj>i</MyObj> = fromIndex || <MyObj>i</MyObj>; <Boolean><MyObj>i</MyObj> != <Number>end</Number></Boolean>; <MyObj><MyObj>i</MyObj></MyObj> += step){
+				if(<Boolean>array[<MyObj>i</MyObj>] == value</Boolean>){ return <MyObj>i</MyObj>; }
 			}
 			return -<Number>1</Number>;	// Number
 		}</Function>,
@@ -2795,7 +2795,7 @@ dojo.<String>colorFromString</String> = <Function>function(/*String*/ str, /*doj
 	//	returns:
 	//		a dojo.Color object. If obj is passed, it will be the return value.
 	var a = dojo.<dojo.Color>Color</dojo.Color>.<dojo.Color.named>named</dojo.Color.named>[str];
-	return a &amp;&amp; <dojo.colorFromArray>dojo.<dojo.colorFromArray>colorFromArray</dojo.colorFromArray>(a, obj)</dojo.colorFromArray> || <dojo.colorFromRgb>dojo.<dojo.colorFromRgb>colorFromRgb</dojo.colorFromRgb>(str, obj)</dojo.colorFromRgb> || <dojo.colorFromHex>dojo.<dojo.colorFromHex>colorFromHex</dojo.colorFromHex>(str, obj)</dojo.colorFromHex>;
+	return a &amp;&amp; <dojo.colorFromArray>dojo.<dojo.colorFromArray>colorFromArray</dojo.colorFromArray>(a, obj)</dojo.colorFromArray> || <dojo.colorFromRgb>dojo.<Boolean>colorFromRgb</Boolean>(str, obj)</dojo.colorFromRgb> || <dojo.colorFromHex>dojo.<dojo.colorFromHex>colorFromHex</dojo.colorFromHex>(str, obj)</dojo.colorFromHex>;
 }</Function>;
 
 }
@@ -2910,7 +2910,7 @@ dojo.<String>setContext</String> = <Function>function(/*Object*/globalObject, /*
 
 dojo.<String>_fireCallback</String> = <Function>function(callback, context, cbArguments){
 	// FIXME: should migrate to using "dojo.isString"!
-	if(context &amp;&amp; <dojo.isString>dojo.<dojo.isString>isString</dojo.isString>(callback)</dojo.isString>){
+	if(context &amp;&amp; <dojo.isString>dojo.<Boolean>isString</Boolean>(callback)</dojo.isString>){
 		callback = context[callback];
 	}
 	return (context ? <callback.apply>callback.<callback.apply>apply</callback.apply>(context, cbArguments || <Array>[ ]</Array>)</callback.apply> : <callback>callback()</callback>);
@@ -2931,10 +2931,10 @@ dojo.<String>withGlobal</String> = <Function>function(	/*Object*/globalObject,
 	var <dojo.global>oldGlob = <dojo.global>dojo.global</dojo.global></dojo.global>;
 	var <dojo.doc>oldDoc = <dojo.doc>dojo.doc</dojo.doc></dojo.doc>;
 	try{
-		<dojo.setContext>dojo.<dojo.setContext>setContext</dojo.setContext>(globalObject, <globalObject.document>globalObject.document</globalObject.document>)</dojo.setContext>;
+		<dojo.setContext>dojo.<void>setContext</void>(globalObject, <globalObject.document>globalObject.document</globalObject.document>)</dojo.setContext>;
 		rval = <dojo._fireCallback>dojo.<dojo._fireCallback>_fireCallback</dojo._fireCallback>(callback, thisObject, cbArguments)</dojo._fireCallback>;
 	}finally{
-		<dojo.setContext>dojo.<dojo.setContext>setContext</dojo.setContext>(<dojo.global>oldGlob</dojo.global>, <dojo.doc>oldDoc</dojo.doc>)</dojo.setContext>;
+		<dojo.setContext>dojo.<void>setContext</void>(<dojo.global>oldGlob</dojo.global>, <dojo.doc>oldDoc</dojo.doc>)</dojo.setContext>;
 	}
 	return rval;
 }</Function>
@@ -2967,7 +2967,7 @@ dojo.<String>withDoc</String> = <Function>function(	/*Object*/documentObject,
 	var mp = djConfig[<String>"modulePaths"</String>];
 	if(mp){
 		for(var param in mp){
-			<dojo.registerModulePath>dojo.<dojo.registerModulePath>registerModulePath</dojo.registerModulePath>(param, mp[param])</dojo.registerModulePath>;
+			<dojo.registerModulePath>dojo.<void>registerModulePath</void>(param, mp[param])</dojo.registerModulePath>;
 		}
 	}
 }</Function>)();
@@ -2997,8 +2997,8 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.eve
 				name = (<Boolean>name == <String>"mouseenter"</String>)</Boolean> ? <String>"mouseover"</String> : <String>"mouseout"</String>;
 				<Function>fp</Function> = <Function>function(e){
 					// thanks ben!
-					var id = <dojo.isDescendant>dojo.<dojo.isDescendant>isDescendant</dojo.isDescendant>(<e.relatedTarget>e.relatedTarget</e.relatedTarget>, node)</dojo.isDescendant>;
-					if(<Boolean>id == <Boolean>false</Boolean></Boolean>){
+					var <Boolean|Number>id = <dojo.isDescendant>dojo.<Boolean|Number>isDescendant</Boolean|Number>(<e.relatedTarget>e.relatedTarget</e.relatedTarget>, node)</dojo.isDescendant></Boolean|Number>;
+					if(<Boolean><Boolean|Number>id</Boolean|Number> == <Boolean>false</Boolean></Boolean>){
 						// e.type = oname; // FIXME: doesn't take?
 						return <ofp.call>ofp.<ofp.call>call</ofp.call>(this, e)</ofp.call>;
 					}
@@ -3189,13 +3189,13 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.eve
 					source = source || <dojo.global>dojo.global</dojo.global>;
 					var f = source[method];
 					if(!f||!<f._listeners>f._listeners</f._listeners>){
-						var d = <dojo._getIeDispatcher>dojo.<dojo._getIeDispatcher>_getIeDispatcher</dojo._getIeDispatcher>()</dojo._getIeDispatcher>;
+						var <Function>d = <dojo._getIeDispatcher>dojo.<Function>_getIeDispatcher</Function>()</dojo._getIeDispatcher></Function>;
 						// original target function is special
-						d.<String>target</String> = f &amp;&amp; (<ieh.push>ieh.<ieh.push>push</ieh.push>(f)</ieh.push> - <Number>1</Number>);
+						<Function>d</Function>.<String>target</String> = f &amp;&amp; (<ieh.push>ieh.<ieh.push>push</ieh.push>(f)</ieh.push> - <Number>1</Number>);
 						// dispatcher holds a list of indices into handlers table
-						d.<String>_listeners</String> = <Array>[]</Array>;
+						<Function>d</Function>.<String>_listeners</String> = <Array>[]</Array>;
 						// redirect source to dispatcher
-						f = source[method] = d;
+						f = source[method] = <Function>d</Function>;
 					}
 					return <f._listeners.push>f.<f._listeners>_listeners</f._listeners>.<f._listeners.push>push</f._listeners.push>(<ieh.push>ieh.<ieh.push>push</ieh.push>(listener)</ieh.push> - <Number>1</Number>)</f._listeners.push> ; /*Handle*/
 				}</Function>,
@@ -3423,7 +3423,7 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.eve
 						}else if((<evt.ctrlKey>evt.ctrlKey)</evt.ctrlKey>&amp;&amp;(<Boolean><Number>c</Number>&gt;<Number>0</Number>)</Boolean>&amp;&amp;(<Boolean><Number>c</Number>&lt;<Number>27</Number>)</Boolean>){
 							c += <Number>96</Number>; // map CTRL-[A-Z] codes to ASCII
 						} else if (<Boolean>c==<dojo.keys.SHIFT_TAB>dojo.<dojo.keys>keys</dojo.keys>.SHIFT_TAB</dojo.keys.SHIFT_TAB></Boolean>) {
-							<dojo.keys.TAB>c</dojo.keys.TAB> = <dojo.keys.TAB>dojo.<dojo.keys>keys</dojo.keys>.TAB</dojo.keys.TAB>; // morph SHIFT_TAB into TAB + shiftKey: true
+							<Number>c</Number> = <Number>dojo.<dojo.keys>keys</dojo.keys>.TAB</Number>; // morph SHIFT_TAB into TAB + shiftKey: true
 							<Boolean>s</Boolean> = <Boolean>true</Boolean>;
 						} else {
 							c = (<Boolean>c&gt;=<Number>32</Number></Boolean> &amp;&amp; <Boolean>c&lt;<Number>63232</Number></Boolean> ? c : <Number>0</Number>); // avoid generating keyChar for non-printables
@@ -3463,7 +3463,7 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.eve
 			SCROLL_LOCK: <Number>63249</Number>,
 			NUM_LOCK: <Number>63289</Number>
 		})</dojo.mixin>;
-		var <dojo.keys>dk = <dojo.keys>dojo.keys</dojo.keys></dojo.keys>, identifierMap = { "Up": <dojo.keys.UP_ARROW><dojo.keys>dk</dojo.keys>.UP_ARROW</dojo.keys.UP_ARROW>, "Down": <dojo.keys.DOWN_ARROW><dojo.keys>dk</dojo.keys>.DOWN_ARROW</dojo.keys.DOWN_ARROW>, "Left": <dojo.keys.LEFT_ARROW><dojo.keys>dk</dojo.keys>.LEFT_ARROW</dojo.keys.LEFT_ARROW>, "Right": <dojo.keys.RIGHT_ARROW><dojo.keys>dk</dojo.keys>.RIGHT_ARROW</dojo.keys.RIGHT_ARROW>, "PageUp": <dojo.keys.PAGE_UP><dojo.keys>dk</dojo.keys>.PAGE_UP</dojo.keys.PAGE_UP>, "PageDown": <dojo.keys.PAGE_DOWN><dojo.keys>dk</dojo.keys>.PAGE_DOWN</dojo.keys.PAGE_DOWN> }; 
+		var <dojo.keys>dk = <dojo.keys>dojo.keys</dojo.keys></dojo.keys>, identifierMap = { "Up": <Number><dojo.keys>dk</dojo.keys>.UP_ARROW</Number>, "Down": <Number><dojo.keys>dk</dojo.keys>.DOWN_ARROW</Number>, "Left": <Number><dojo.keys>dk</dojo.keys>.LEFT_ARROW</Number>, "Right": <Number><dojo.keys>dk</dojo.keys>.RIGHT_ARROW</Number>, "PageUp": <Number><dojo.keys>dk</dojo.keys>.PAGE_UP</Number>, "PageDown": <Number><dojo.keys>dk</dojo.keys>.PAGE_DOWN</Number> }; 
 	}
 }</Function>)();
 
@@ -3473,13 +3473,13 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE>){
 	// ls[i] is an index into the master handler array
 	dojo.<String>_getIeDispatcher</String> = <Function>function(){
 		return <Function>function(){
-			var <Array.prototype>ap=<Array.prototype>Array.prototype</Array.prototype></Array.prototype>, h=<dojo._ie_listener.handlers>dojo.<dojo._ie_listener>_ie_listener</dojo._ie_listener>.handlers</dojo._ie_listener.handlers>, c=<arguments.callee>arguments.callee</arguments.callee>, ls=<c._listeners>c._listeners</c._listeners>, t=h[<c.target>c.target</c.target>];
+			var <Array.prototype>ap=<Array.prototype>Array.prototype</Array.prototype></Array.prototype>, h=<Array>dojo.<dojo._ie_listener>_ie_listener</dojo._ie_listener>.handlers</Array>, c=<arguments.callee>arguments.callee</arguments.callee>, ls=<c._listeners>c._listeners</c._listeners>, t=h[<c.target>c.target</c.target>];
 			// return value comes from original target function
 			var r = t &amp;&amp; <t.apply>t.<t.apply>apply</t.apply>(this, arguments)</t.apply>;
 			// invoke listeners after target function
-			for(var i in ls){
-				if(!(i in <Array.prototype>ap</Array.prototype>)){
-					h[ls[i]].apply(this, arguments);
+			for(var <MyObj><MyObj>i</MyObj></MyObj> in ls){
+				if(!(<MyObj>i</MyObj> in <Array.prototype>ap</Array.prototype>)){
+					h[ls[<MyObj>i</MyObj>]].apply(this, arguments);
 				}
 			}
 			return r;
@@ -3529,7 +3529,7 @@ dojo.byId = function(id, doc){
 =====*/
 if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>){
 	dojo.<String>byId</String> = <Function>function(id, doc){
-		if(<dojo.isString>dojo.<dojo.isString>isString</dojo.isString>(id)</dojo.isString>){
+		if(<dojo.isString>dojo.<Boolean>isString</Boolean>(id)</dojo.isString>){
 			var _d = doc || <dojo.doc>dojo.doc</dojo.doc>;
 			var te = <_d.getElementById>_d.<_d.getElementById>getElementById</_d.getElementById>(id)</_d.getElementById>;
 			// attributes.id.value is better than just id in case the 
@@ -3552,7 +3552,7 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>
 	}</Function>
 }else{
 	dojo.<String>byId</String> = <Function>function(id, doc){
-		if(<dojo.isString>dojo.<dojo.isString>isString</dojo.isString>(id)</dojo.isString>){
+		if(<dojo.isString>dojo.<Boolean>isString</Boolean>(id)</dojo.isString>){
 			return (doc || <dojo.doc>dojo.doc</dojo.doc>).getElementById(id);
 		}else{
 			return id; // DomNode
@@ -3762,7 +3762,7 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>
 	}
 =====*/
 
-	var gcs, dv = <HTMLDocument.defaultView><HTMLDocument>document</HTMLDocument>.defaultView</HTMLDocument.defaultView>;
+	var <Boolean>gcs</Boolean>, dv = <HTMLDocument.defaultView><HTMLDocument>document</HTMLDocument>.defaultView</HTMLDocument.defaultView>;
 	if(<dojo.isSafari>dojo.isSafari</dojo.isSafari>){
 		<Function>gcs</Function> = <Function>function(/*DomNode*/node){
 			var s = <dv.getComputedStyle>dv.<dv.getComputedStyle>getComputedStyle</dv.getComputedStyle>(node, null)</dv.getComputedStyle>;
@@ -3861,8 +3861,8 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>
 				// on IE7 Alpha(Filter opacity=100) makes text look fuzzy so remove it altogether (bug #2661)
 				node.<node.style>style</node.style>.<String>cssText</String> = <node.style.cssText.replace>node.<node.style>style</node.style>.<node.style.cssText>cssText</node.style.cssText>.<node.style.cssText.replace>replace</node.style.cssText.replace>(<RegExp>/FILTER:[^;]*;/i</RegExp>, <String>""</String>)</node.style.cssText.replace>;
 				if(<Boolean><node.nodeName.toLowerCase>node.<node.nodeName>nodeName</node.nodeName>.<node.nodeName.toLowerCase>toLowerCase</node.nodeName.toLowerCase>()</node.nodeName.toLowerCase> == <String>"tr"</String></Boolean>){
-					dojo.<dojo.query><dojo.query>query</dojo.query>(<String>"&gt; td"</String>, node</dojo.query>).forEach(<Function>function(i){
-						i.<i.style>style</i.style>.<String>cssText</String> = <i.style.cssText.replace>i.<i.style>style</i.style>.<i.style.cssText>cssText</i.style.cssText>.<i.style.cssText.replace>replace</i.style.cssText.replace>(<RegExp>/FILTER:[^;]*;/i</RegExp>, <String>""</String>)</i.style.cssText.replace>;
+					dojo.<dojo.query><dojo.query>query</dojo.query>(<String>"&gt; td"</String>, node</dojo.query>).forEach(<Function>function(<MyObj>i</MyObj>){
+						<MyObj>i</MyObj>.<MyObj.style>style</MyObj.style>.<String>cssText</String> = <MyObj.style.cssText.replace><MyObj>i</MyObj>.<MyObj.style>style</MyObj.style>.<MyObj.style.cssText>cssText</MyObj.style.cssText>.<MyObj.style.cssText.replace>replace</MyObj.style.cssText.replace>(<RegExp>/FILTER:[^;]*;/i</RegExp>, <String>""</String>)</MyObj.style.cssText.replace>;
 					}</Function>);
 				}
 			}else{
@@ -3870,8 +3870,8 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>
 				node.<node.style>style</node.style>.<String>filter</String> = o;
 			}
 			if(<Boolean><node.nodeName.toLowerCase>node.<node.nodeName>nodeName</node.nodeName>.<node.nodeName.toLowerCase>toLowerCase</node.nodeName.toLowerCase>()</node.nodeName.toLowerCase> == <String>"tr"</String></Boolean>){
-				dojo.<dojo.query><dojo.query>query</dojo.query>(<String>"&gt; td"</String>, node</dojo.query>).forEach(<Function>function(i){
-					i.<i.style>style</i.style>.<String>filter</String> = o;
+				dojo.<dojo.query><dojo.query>query</dojo.query>(<String>"&gt; td"</String>, node</dojo.query>).forEach(<Function>function(<MyObj>i</MyObj>){
+					<MyObj>i</MyObj>.<MyObj.style>style</MyObj.style>.<String>filter</String> = o;
 				}</Function>);
 			}
 			return opacity;
@@ -3886,7 +3886,7 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>
 	var <Function>_toStyleValue = <Function>function(node, type, value){
 		type = <type.toLowerCase>type.<type.toLowerCase>toLowerCase</type.toLowerCase>()</type.toLowerCase>;
 		if(_pixelNamesCache[type] === <Boolean>true</Boolean>){
-			return <dojo._toPixelValue>dojo.<dojo._toPixelValue>_toPixelValue</dojo._toPixelValue>(node, value)</dojo._toPixelValue>
+			return <dojo._toPixelValue>dojo.<Boolean>_toPixelValue</Boolean>(node, value)</dojo._toPixelValue>
 		}else if(_pixelNamesCache[type] === <Boolean>false</Boolean>){
 			return value;
 		}else{
@@ -3904,7 +3904,7 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>
 				(<Boolean><type.indexOf>type.<type.indexOf>indexOf</type.indexOf>(<String>"offset"</String>)</type.indexOf> &gt;= <Number>0</Number>)</Boolean>
 			){
 				_pixelNamesCache[type] = <Boolean>true</Boolean>;
-				return <dojo._toPixelValue>dojo.<dojo._toPixelValue>_toPixelValue</dojo._toPixelValue>(node, value)</dojo._toPixelValue>
+				return <dojo._toPixelValue>dojo.<Boolean>_toPixelValue</Boolean>(node, value)</dojo._toPixelValue>
 			}else{
 				_pixelNamesCache[type] = <Boolean>false</Boolean>;
 				return value;
@@ -3954,8 +3954,8 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>
 		//		Normally application code will not need to invoke this
 		//		directly, and will use the ...box... functions instead.
 		var 
-			s=computedStyle||<gcs>gcs(n)</gcs>, 
-			px=<dojo._toPixelValue>dojo._toPixelValue</dojo._toPixelValue>,
+			s=computedStyle||<gcs><Boolean>gcs</Boolean>(n)</gcs>, 
+			px=<Boolean>dojo._toPixelValue</Boolean>,
 			l=<px>px(n, <s.paddingLeft>s.paddingLeft</s.paddingLeft>)</px>, 
 			t=<px>px(n, <s.paddingTop>s.paddingTop</s.paddingTop>)</px>;
 		return { 
@@ -3978,8 +3978,8 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>
 		//		directly, and will use the ...box... functions instead.
 		var 
 			<String>ne=<String>'none'</String></String>,
-			px=<dojo._toPixelValue>dojo._toPixelValue</dojo._toPixelValue>, 
-			s=computedStyle||<gcs>gcs(n)</gcs>, 
+			px=<Boolean>dojo._toPixelValue</Boolean>, 
+			s=computedStyle||<gcs><Boolean>gcs</Boolean>(n)</gcs>, 
 			bl=(<Boolean><s.borderLeftStyle>s.borderLeftStyle</s.borderLeftStyle>!=<String>ne</String></Boolean> ? <px>px(n, <s.borderLeftWidth>s.borderLeftWidth</s.borderLeftWidth>)</px> : <Number>0</Number>),
 			bt=(<Boolean><s.borderTopStyle>s.borderTopStyle</s.borderTopStyle>!=<String>ne</String></Boolean> ? <px>px(n, <s.borderTopWidth>s.borderTopWidth</s.borderTopWidth>)</px> : <Number>0</Number>);
 		return { 
@@ -4001,7 +4001,7 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>
 		//		Normally application code will not need to invoke this
 		//		directly, and will use the ...box... functions instead.
 		var 
-			s=computedStyle||<gcs>gcs(n)</gcs>, 
+			s=computedStyle||<gcs><Boolean>gcs</Boolean>(n)</gcs>, 
 			p=<dojo._getPadExtents>dojo.<dojo._getPadExtents>_getPadExtents</dojo._getPadExtents>(n, s)</dojo._getPadExtents>,
 			b=<dojo._getBorderExtents>dojo.<dojo._getBorderExtents>_getBorderExtents</dojo._getBorderExtents>(n, s)</dojo._getBorderExtents>;
 		return { 
@@ -4023,8 +4023,8 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>
 		//		Normally application code will not need to invoke this
 		//		directly, and will use the ...box... functions instead.
 		var 
-			s=computedStyle||<gcs>gcs(n)</gcs>, 
-			px=<dojo._toPixelValue>dojo._toPixelValue</dojo._toPixelValue>,
+			s=computedStyle||<gcs><Boolean>gcs</Boolean>(n)</gcs>, 
+			px=<Boolean>dojo._toPixelValue</Boolean>,
 			l=<px>px(n, <s.marginLeft>s.marginLeft</s.marginLeft>)</px>,
 			t=<px>px(n, <s.marginTop>s.marginTop</s.marginTop>)</px>,
 			r=<px>px(n, <s.marginRight>s.marginRight</s.marginRight>)</px>,
@@ -4065,7 +4065,7 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>
 		// summary:
 		//		returns an object that encodes the width, height, left and top
 		//		positions of the node's margin box.
-		var s = computedStyle||<gcs>gcs(node)</gcs>, me = <dojo._getMarginExtents>dojo.<dojo._getMarginExtents>_getMarginExtents</dojo._getMarginExtents>(node, s)</dojo._getMarginExtents>;
+		var s = computedStyle||<gcs><Boolean>gcs</Boolean>(node)</gcs>, me = <dojo._getMarginExtents>dojo.<dojo._getMarginExtents>_getMarginExtents</dojo._getMarginExtents>(node, s)</dojo._getMarginExtents>;
 		var	l = <node.offsetLeft>node.offsetLeft</node.offsetLeft> - <me.l>me.l</me.l>,	t = <node.offsetTop>node.offsetTop</node.offsetTop> - <me.t>me.t</me.t>;
 		if(<dojo.isMoz>dojo.isMoz</dojo.isMoz>){
 			// Mozilla:
@@ -4081,9 +4081,9 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>
 				// have no choice but to examine the parent's computed style.
 				var <node.parentNode>p = <node.parentNode>node.parentNode</node.parentNode></node.parentNode>;
 				if(<node.parentNode>p</node.parentNode> &amp;&amp; <node.parentNode.style><node.parentNode>p</node.parentNode>.style</node.parentNode.style>){
-					var pcs = <gcs>gcs(<node.parentNode>p</node.parentNode>)</gcs>;
-					if(<Boolean><pcs.overflow>pcs.overflow</pcs.overflow> != <String>"visible"</String></Boolean>){
-						var be = <dojo._getBorderExtents>dojo.<dojo._getBorderExtents>_getBorderExtents</dojo._getBorderExtents>(<node.parentNode>p</node.parentNode>, pcs)</dojo._getBorderExtents>;
+					var <Boolean>pcs = <gcs><Boolean>gcs</Boolean>(<node.parentNode>p</node.parentNode>)</gcs></Boolean>;
+					if(<Boolean><Boolean.overflow><Boolean>pcs</Boolean>.overflow</Boolean.overflow> != <String>"visible"</String></Boolean>){
+						var be = <dojo._getBorderExtents>dojo.<dojo._getBorderExtents>_getBorderExtents</dojo._getBorderExtents>(<node.parentNode>p</node.parentNode>, <Boolean>pcs</Boolean>)</dojo._getBorderExtents>;
 						l += <be.l>be.l</be.l>, t += <be.t>be.t</be.t>;
 					}
 				}
@@ -4112,7 +4112,7 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>
 
 		// clientWidth/Height are important since the automatically account for scrollbars
 		// fallback to offsetWidth/Height for special cases (see #3378)
-		var s=computedStyle||<gcs>gcs(node)</gcs>, pe=<dojo._getPadExtents>dojo.<dojo._getPadExtents>_getPadExtents</dojo._getPadExtents>(node, s)</dojo._getPadExtents>, be=<dojo._getBorderExtents>dojo.<dojo._getBorderExtents>_getBorderExtents</dojo._getBorderExtents>(node, s)</dojo._getBorderExtents>, w=<node.clientWidth>node.clientWidth</node.clientWidth>, h;
+		var s=computedStyle||<gcs><Boolean>gcs</Boolean>(node)</gcs>, pe=<dojo._getPadExtents>dojo.<dojo._getPadExtents>_getPadExtents</dojo._getPadExtents>(node, s)</dojo._getPadExtents>, be=<dojo._getBorderExtents>dojo.<dojo._getBorderExtents>_getBorderExtents</dojo._getBorderExtents>(node, s)</dojo._getBorderExtents>, w=<node.clientWidth>node.clientWidth</node.clientWidth>, h;
 		if(!w){
 			<node.offsetWidth>w</node.offsetWidth>=<node.offsetWidth>node.offsetWidth</node.offsetWidth>, <node.offsetHeight>h</node.offsetHeight>=<node.offsetHeight>node.offsetHeight</node.offsetHeight>;
 		}else{
@@ -4129,12 +4129,12 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>
 	}</Function>
 
 	dojo.<String>_getBorderBox</String> = <Function>function(node, computedStyle){
-		var s=computedStyle||<gcs>gcs(node)</gcs>, pe=<dojo._getPadExtents>dojo.<dojo._getPadExtents>_getPadExtents</dojo._getPadExtents>(node, s)</dojo._getPadExtents>, cb=<dojo._getContentBox>dojo.<dojo._getContentBox>_getContentBox</dojo._getContentBox>(node, s)</dojo._getContentBox>;
+		var s=computedStyle||<gcs><Boolean>gcs</Boolean>(node)</gcs>, pe=<dojo._getPadExtents>dojo.<dojo._getPadExtents>_getPadExtents</dojo._getPadExtents>(node, s)</dojo._getPadExtents>, <void>cb=<dojo._getContentBox>dojo.<dojo._getContentBox>_getContentBox</dojo._getContentBox>(node, s)</dojo._getContentBox></void>;
 		return { 
-			l: <cb.l>cb.l</cb.l> - <pe.l>pe.l</pe.l>, 
-			t: <cb.t>cb.t</cb.t> - <pe.t>pe.t</pe.t>, 
-			w: <cb.w>cb.w</cb.w> + <pe.w>pe.w</pe.w>, 
-			h: <cb.h>cb.h</cb.h> + <pe.h>pe.h</pe.h>
+			l: <void.l><void>cb</void>.l</void.l> - <pe.l>pe.l</pe.l>, 
+			t: <void.t><void>cb</void>.t</void.t> - <pe.t>pe.t</pe.t>, 
+			w: <void.w><void>cb</void>.w</void.w> + <pe.w>pe.w</pe.w>, 
+			h: <void.h><void>cb</void>.h</void.h> + <pe.h>pe.h</pe.h>
 		};
 	}</Function>
 
@@ -4191,13 +4191,13 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>
 		//	summary:
 		//		Sets the size of the node's contents, irrespective of margins,
 		//		padding, or borders.
-		var bb = <dojo._usesBorderBox>dojo.<dojo._usesBorderBox>_usesBorderBox</dojo._usesBorderBox>(node)</dojo._usesBorderBox>;
-		if(bb){
+		var <Boolean>bb = <dojo._usesBorderBox>dojo.<Boolean>_usesBorderBox</Boolean>(node)</dojo._usesBorderBox></Boolean>;
+		if(<Boolean>bb</Boolean>){
 			var pb = <dojo._getPadBorderExtents>dojo.<dojo._getPadBorderExtents>_getPadBorderExtents</dojo._getPadBorderExtents>(node, computedStyle)</dojo._getPadBorderExtents>;
 			if(<Boolean>widthPx&gt;=<Number>0</Number></Boolean>){ widthPx += <pb.w>pb.w</pb.w>; }
 			if(<Boolean>heightPx&gt;=<Number>0</Number></Boolean>){ heightPx += <pb.h>pb.h</pb.h>; }
 		}
-		<dojo._setBox>dojo.<dojo._setBox>_setBox</dojo._setBox>(node, NaN, NaN, widthPx, heightPx)</dojo._setBox>;
+		<dojo._setBox>dojo.<void>_setBox</void>(node, NaN, NaN, widthPx, heightPx)</dojo._setBox>;
 	}</Function>
 
 	dojo.<String>_setMarginBox</String> = <Function>function(/*DomNode*/node, 	/*Number?*/leftPx, /*Number?*/topPx, 
@@ -4213,12 +4213,12 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>
 		// Some elements have special padding, margin, and box-model settings. 
 		// To use box functions you may need to set padding, margin explicitly.
 		// Controlling box-model is harder, in a pinch you might set dojo.boxModel.
-		var bb=<dojo._usesBorderBox>dojo.<dojo._usesBorderBox>_usesBorderBox</dojo._usesBorderBox>(node)</dojo._usesBorderBox>,
-				pb=bb ? _nilExtents : <dojo._getPadBorderExtents>dojo.<dojo._getPadBorderExtents>_getPadBorderExtents</dojo._getPadBorderExtents>(node, s)</dojo._getPadBorderExtents>,
+		var <Boolean>bb=<dojo._usesBorderBox>dojo.<Boolean>_usesBorderBox</Boolean>(node)</dojo._usesBorderBox></Boolean>,
+				pb=<Boolean>bb</Boolean> ? _nilExtents : <dojo._getPadBorderExtents>dojo.<dojo._getPadBorderExtents>_getPadBorderExtents</dojo._getPadBorderExtents>(node, s)</dojo._getPadBorderExtents>,
 				mb=<dojo._getMarginExtents>dojo.<dojo._getMarginExtents>_getMarginExtents</dojo._getMarginExtents>(node, s)</dojo._getMarginExtents>;
 		if(<Boolean>widthPx&gt;=<Number>0</Number></Boolean>){	widthPx = <Math.max>Math.<Math.max>max</Math.max>(widthPx - <pb.w>pb.w</pb.w> - <mb.w>mb.w</mb.w>, <Number>0</Number>)</Math.max>; }
 		if(<Boolean>heightPx&gt;=<Number>0</Number></Boolean>){ heightPx = <Math.max>Math.<Math.max>max</Math.max>(heightPx - <pb.h>pb.h</pb.h> - <mb.h>mb.h</mb.h>, <Number>0</Number>)</Math.max>; }
-		<dojo._setBox>dojo.<dojo._setBox>_setBox</dojo._setBox>(node, leftPx, topPx, widthPx, heightPx)</dojo._setBox>;
+		<dojo._setBox>dojo.<void>_setBox</void>(node, leftPx, topPx, widthPx, heightPx)</dojo._setBox>;
 	}</Function>
 	
 	var _nilExtents = { l:<Number>0</Number>, t:<Number>0</Number>, <node.offsetWidth>w</node.offsetWidth>:<Number>0</Number>, <node.clientHeight>h</node.clientHeight>:<Number>0</Number> };
@@ -4241,8 +4241,8 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>
 		//		optional. If passed, denotes that dojo.marginBox() should
 		//		update/set the margin box for node. Box is an object in the
 		//		above format. All properties are optional if passed.
-		var n=<dojo.byId>dojo.<dojo.byId>byId</dojo.byId>(node)</dojo.byId>, s=<gcs>gcs(n)</gcs>, b=box;
-		return !b ? <dojo._getMarginBox>dojo.<dojo._getMarginBox>_getMarginBox</dojo._getMarginBox>(n, s)</dojo._getMarginBox> : <dojo._setMarginBox>dojo.<dojo._setMarginBox>_setMarginBox</dojo._setMarginBox>(n, <b.l>b.l</b.l>, <b.t>b.t</b.t>, <b.w>b.w</b.w>, <b.h>b.h</b.h>, s)</dojo._setMarginBox>; // Object
+		var n=<dojo.byId>dojo.<dojo.byId>byId</dojo.byId>(node)</dojo.byId>, s=<gcs><Boolean>gcs</Boolean>(n)</gcs>, b=box;
+		return !b ? <dojo._getMarginBox>dojo.<dojo._getMarginBox>_getMarginBox</dojo._getMarginBox>(n, s)</dojo._getMarginBox> : <dojo._setMarginBox>dojo.<void>_setMarginBox</void>(n, <b.l>b.l</b.l>, <b.t>b.t</b.t>, <b.w>b.w</b.w>, <b.h>b.h</b.h>, s)</dojo._setMarginBox>; // Object
 	}</Function>
 
 	dojo.<String>contentBox</String> = <Function>function(/*DomNode|String*/node, /*Object?*/box){
@@ -4263,8 +4263,8 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>
 		//		optional. If passed, denotes that dojo.contentBox() should
 		//		update/set the content box for node. Box is an object in the
 		//		above format. All properties are optional if passed.
-		var n=<dojo.byId>dojo.<dojo.byId>byId</dojo.byId>(node)</dojo.byId>, s=<gcs>gcs(n)</gcs>, b=box;
-		return !b ? <dojo._getContentBox>dojo.<dojo._getContentBox>_getContentBox</dojo._getContentBox>(n, s)</dojo._getContentBox> : <dojo._setContentSize>dojo.<dojo._setContentSize>_setContentSize</dojo._setContentSize>(n, <b.w>b.w</b.w>, <b.h>b.h</b.h>, s)</dojo._setContentSize>; // Object
+		var n=<dojo.byId>dojo.<dojo.byId>byId</dojo.byId>(node)</dojo.byId>, s=<gcs><Boolean>gcs</Boolean>(n)</gcs>, b=box;
+		return !b ? <dojo._getContentBox>dojo.<dojo._getContentBox>_getContentBox</dojo._getContentBox>(n, s)</dojo._getContentBox> : <dojo._setContentSize>dojo.<void>_setContentSize</void>(n, <b.w>b.w</b.w>, <b.h>b.h</b.h>, s)</dojo._setContentSize>; // Object
 	}</Function>
 	
 	// =============================
@@ -4273,9 +4273,9 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>
 	
 	var <Function>_sumAncestorProperties = <Function>function(node, prop){
 		if(!(node = (node||<Number>0</Number>).parentNode)){return <Number>0</Number>};
-		var val, retVal = <Number>0</Number>, _b = <dojo.body>dojo.<dojo.body>body</dojo.body>()</dojo.body>;
+		var val, retVal = <Number>0</Number>, _b = <dojo.body>dojo.<Boolean>body</Boolean>()</dojo.body>;
 		while(<node.parentNode>node</node.parentNode> &amp;&amp; <node.parentNode.style><node.parentNode>node</node.parentNode>.style</node.parentNode.style>){
-			if(<Boolean><gcs>gcs(node</gcs>).position == <String>"fixed"</String></Boolean>){
+			if(<Boolean><Boolean.position><gcs><Boolean>gcs</Boolean>(node</gcs>).position</Boolean.position> == <String>"fixed"</String></Boolean>){
 				return <Number>0</Number>;
 			}
 			val = node[prop];
@@ -4291,19 +4291,19 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>
 	}</Function></Function>
 
 	dojo.<String>_docScroll</String> = <Function>function(){
-		var _b = <dojo.body>dojo.<dojo.body>body</dojo.body>()</dojo.body>;
+		var <Boolean>_b = <dojo.body>dojo.<Boolean>body</Boolean>()</dojo.body></Boolean>;
 		var <dojo.global>_w = <dojo.global>dojo.global</dojo.global></dojo.global>;
 		var <dojo.doc.documentElement>de = <dojo.doc.documentElement>dojo.<dojo.doc>doc</dojo.doc>.documentElement</dojo.doc.documentElement></dojo.doc.documentElement>;
 		return {
-			y: (<dojo.global.pageYOffset><dojo.global>_w</dojo.global>.pageYOffset</dojo.global.pageYOffset> || <dojo.doc.documentElement.scrollTop><dojo.doc.documentElement>de</dojo.doc.documentElement>.scrollTop</dojo.doc.documentElement.scrollTop> || <_b.scrollTop>_b.scrollTop</_b.scrollTop> || <Number>0</Number>),
-			x: (<dojo.global.pageXOffset><dojo.global>_w</dojo.global>.pageXOffset</dojo.global.pageXOffset> || <dojo._fixIeBiDiScrollLeft>dojo.<dojo._fixIeBiDiScrollLeft>_fixIeBiDiScrollLeft</dojo._fixIeBiDiScrollLeft>(<dojo.doc.documentElement.scrollLeft><dojo.doc.documentElement>de</dojo.doc.documentElement>.scrollLeft</dojo.doc.documentElement.scrollLeft>)</dojo._fixIeBiDiScrollLeft> || <_b.scrollLeft>_b.scrollLeft</_b.scrollLeft> || <Number>0</Number>)
+			y: (<dojo.global.pageYOffset><dojo.global>_w</dojo.global>.pageYOffset</dojo.global.pageYOffset> || <dojo.doc.documentElement.scrollTop><dojo.doc.documentElement>de</dojo.doc.documentElement>.scrollTop</dojo.doc.documentElement.scrollTop> || <Boolean.scrollTop><Boolean>_b</Boolean>.scrollTop</Boolean.scrollTop> || <Number>0</Number>),
+			x: (<dojo.global.pageXOffset><dojo.global>_w</dojo.global>.pageXOffset</dojo.global.pageXOffset> || <dojo._fixIeBiDiScrollLeft>dojo.<dojo._fixIeBiDiScrollLeft>_fixIeBiDiScrollLeft</dojo._fixIeBiDiScrollLeft>(<dojo.doc.documentElement.scrollLeft><dojo.doc.documentElement>de</dojo.doc.documentElement>.scrollLeft</dojo.doc.documentElement.scrollLeft>)</dojo._fixIeBiDiScrollLeft> || <Boolean.scrollLeft><Boolean>_b</Boolean>.scrollLeft</Boolean.scrollLeft> || <Number>0</Number>)
 		};
 	}</Function>;
 	
 	dojo.<String>_isBodyLtr</String> = <Function>function(){
 		//FIXME: could check html and body tags directly instead of computed style?  need to ignore case, accept empty values
 		return !(<String>"_bodyLtr"</String> in dojo) ? 
-			dojo.<String>_bodyLtr</String> = <Boolean>dojo.<dojo.getComputedStyle><dojo.getComputedStyle>getComputedStyle</dojo.getComputedStyle>(<dojo.body>dojo.<dojo.body>body</dojo.body>()</dojo.body></dojo.getComputedStyle>).direction == <String>"ltr"</String></Boolean> :
+			dojo.<String>_bodyLtr</String> = <Boolean>dojo.<dojo.getComputedStyle><dojo.getComputedStyle>getComputedStyle</dojo.getComputedStyle>(<dojo.body>dojo.<Boolean>body</Boolean>()</dojo.body></dojo.getComputedStyle>).direction == <String>"ltr"</String></Boolean> :
 			<dojo._bodyLtr>dojo._bodyLtr</dojo._bodyLtr>; // Boolean 
 	}</Function>
 	
@@ -4364,7 +4364,7 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>
 		var <Boolean>hasScroll = <Boolean>false</Boolean></Boolean>;
 
 		// targetBoxType == "border-box"
-		var db = <dojo.body>dojo.<dojo.body>body</dojo.body>()</dojo.body>;
+		var <Boolean>db = <dojo.body>dojo.<Boolean>body</Boolean>()</dojo.body></Boolean>;
 		if(<dojo.isIE>dojo.isIE</dojo.isIE>){
 			var client = <node.getBoundingClientRect>node.<node.getBoundingClientRect>getBoundingClientRect</node.getBoundingClientRect>()</node.getBoundingClientRect>;
 			var offset = <dojo._getIeDocumentElementOffset>dojo.<dojo._getIeDocumentElementOffset>_getIeDocumentElementOffset</dojo._getIeDocumentElementOffset>()</dojo._getIeDocumentElementOffset>;
@@ -4386,17 +4386,17 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>
 				// FIXME: getting contrary results to the above in latest WebKit.
 				if(<dojo.isSafari>dojo.isSafari</dojo.isSafari> &amp;&amp;
 					//(node.style.getPropertyValue("position") == "absolute") &amp;&amp;
-					(<Boolean><gcs>gcs(node</gcs>).position == <String>"absolute"</String>)</Boolean> &amp;&amp;
-					(<Boolean><node.parentNode>node.parentNode</node.parentNode> == db)</Boolean>){
-					endNode = db;
+					(<Boolean><Boolean.position><gcs><Boolean>gcs</Boolean>(node</gcs>).position</Boolean.position> == <String>"absolute"</String>)</Boolean> &amp;&amp;
+					(<Boolean><node.parentNode>node.parentNode</node.parentNode> == <Boolean>db</Boolean>)</Boolean>){
+					<Boolean>endNode</Boolean> = <Boolean>db</Boolean>;
 				}else{
-					<db.parentNode>endNode</db.parentNode> = <db.parentNode>db.parentNode</db.parentNode>;
+					<Boolean.parentNode>endNode</Boolean.parentNode> = <Boolean.parentNode><Boolean>db</Boolean>.parentNode</Boolean.parentNode>;
 				}
-				if(<Boolean><node.parentNode>node.parentNode</node.parentNode> != db</Boolean>){
+				if(<Boolean><node.parentNode>node.parentNode</node.parentNode> != <Boolean>db</Boolean></Boolean>){
 					var nd = node;
-					if(<dojo.isOpera>dojo.isOpera</dojo.isOpera> || (<Boolean><dojo.isSafari>dojo.isSafari</dojo.isSafari> &gt;= <Number>3</Number>)</Boolean>){ nd = db; }
-					ret.<String>x</String> -= <_sumAncestorProperties>_sumAncestorProperties(nd, <String>"scrollLeft"</String>)</_sumAncestorProperties>;
-					ret.<String>y</String> -= <_sumAncestorProperties>_sumAncestorProperties(nd, <String>"scrollTop"</String>)</_sumAncestorProperties>;
+					if(<dojo.isOpera>dojo.isOpera</dojo.isOpera> || (<Boolean><dojo.isSafari>dojo.isSafari</dojo.isSafari> &gt;= <Number>3</Number>)</Boolean>){ <Boolean>nd</Boolean> = <Boolean>db</Boolean>; }
+					ret.<String>x</String> -= <_sumAncestorProperties>_sumAncestorProperties(<Boolean>nd</Boolean>, <String>"scrollLeft"</String>)</_sumAncestorProperties>;
+					ret.<String>y</String> -= <_sumAncestorProperties>_sumAncestorProperties(<Boolean>nd</Boolean>, <String>"scrollTop"</String>)</_sumAncestorProperties>;
 				}
 				var curnode = node;
 				do{
@@ -4410,7 +4410,7 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>
 					var m = curnode[<String>"offsetTop"</String>];
 					ret.<String>y</String> += <isNaN>isNaN(m)</isNaN> ? <Number>0</Number> : m;
 					<curnode.offsetParent>curnode</curnode.offsetParent> = <curnode.offsetParent.offsetParent><curnode.offsetParent>curnode</curnode.offsetParent>.offsetParent</curnode.offsetParent.offsetParent>;
-				}while((<Boolean><curnode.offsetParent>curnode</curnode.offsetParent> != <db.parentNode>endNode</db.parentNode>)</Boolean>&amp;&amp;<curnode.offsetParent>curnode</curnode.offsetParent>);
+				}while((<Boolean><curnode.offsetParent>curnode</curnode.offsetParent> != <Boolean.parentNode>endNode</Boolean.parentNode>)</Boolean>&amp;&amp;<curnode.offsetParent>curnode</curnode.offsetParent>);
 			}else if(node[<String>"x"</String>]&amp;&amp;node[<String>"y"</String>]){
 				ret.<String>x</String> += <isNaN>isNaN(<node.x>node.x</node.x>)</isNaN> ? <Number>0</Number> : <node.x>node.x</node.x>;
 				ret.<String>y</String> += <isNaN>isNaN(<node.y>node.y</node.y>)</isNaN> ? <Number>0</Number> : <node.y>node.y</node.y>;
@@ -4438,7 +4438,7 @@ if(<dojo.isIE>dojo.isIE</dojo.isIE> || <dojo.isOpera>dojo.isOpera</dojo.isOpera>
 		//			{ l: 50, t: 200, w: 300: h: 150, x: 100, y: 300 }
 		//		does not act as a setter. If includeScroll is passed, the x and
 		//		y params are affected as one would expect in dojo._abs().
-		var n=<dojo.byId>dojo.<dojo.byId>byId</dojo.byId>(node)</dojo.byId>, s=<gcs>gcs(n)</gcs>, mb=<dojo._getMarginBox>dojo.<dojo._getMarginBox>_getMarginBox</dojo._getMarginBox>(n, s)</dojo._getMarginBox>;
+		var n=<dojo.byId>dojo.<dojo.byId>byId</dojo.byId>(node)</dojo.byId>, s=<gcs><Boolean>gcs</Boolean>(n)</gcs>, mb=<dojo._getMarginBox>dojo.<dojo._getMarginBox>_getMarginBox</dojo._getMarginBox>(n, s)</dojo._getMarginBox>;
 		var abs = <dojo._abs>dojo.<dojo._abs>_abs</dojo._abs>(n, includeScroll)</dojo._abs>;
 		mb.<String>x</String> = <abs.x>abs.x</abs.x>;
 		mb.<String>y</String> = <abs.y>abs.y</abs.y>;
@@ -4482,7 +4482,7 @@ dojo.<String>toggleClass</String> = <Function>function(/*DomNode|String*/node, /
 	//	condition:
 	//		If passed, true means to add the class, false means to remove.
 	if(condition === undefined){
-		condition = !<dojo.hasClass>dojo.<dojo.hasClass>hasClass</dojo.hasClass>(node, classStr)</dojo.hasClass>;
+		condition = !<dojo.hasClass>dojo.<Boolean>hasClass</Boolean>(node, classStr)</dojo.hasClass>;
 	}
 	<node>dojo[condition ? <String>"addClass"</String> : <String>"removeClass"</String>](node, classStr)</node>;
 }</Function>;
@@ -4691,8 +4691,8 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.Nod
 			//		if no value is passed, the result is an array of strings.
 			//		If a value is passed, the return is this NodeList
 			var aa = <d._toArray>d.<d._toArray>_toArray</d._toArray>(arguments, <Number>0</Number>, [<Array>null]</Array>)</d._toArray>;
-			var s = this.map(<Function>function(i){
-				aa[<Number>0</Number>] = i;
+			var s = this.map(<Function>function(<MyObj>i</MyObj>){
+				aa[<Number>0</Number>] = <MyObj>i</MyObj>;
 				return <d.style.apply>d.<d.style>style</d.style>.<d.style.apply>apply</d.style.apply>(d, aa)</d.style.apply>;
 			}</Function>);
 			return (<Boolean><arguments.length>arguments.length</arguments.length> &gt; <Number>1</Number>)</Boolean> ? this : s; // String||dojo.NodeList
@@ -4719,12 +4719,12 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.Nod
 			// summary:
 			//		adds the specified class to every node in the list
 			//
-			this.forEach(<Function>function(i){ <d.addClass>d.<d.addClass>addClass</d.addClass>(i, className)</d.addClass>; }</Function>);
+			this.forEach(<Function>function(<MyObj>i</MyObj>){ <d.addClass>d.<d.addClass>addClass</d.addClass>(<MyObj>i</MyObj>, className)</d.addClass>; }</Function>);
 			return this;
 		}</Function>,
 
 		removeClass: <Function>function(/*String*/ className){
-			this.forEach(<Function>function(i){ <d.removeClass>d.<d.removeClass>removeClass</d.removeClass>(i, className)</d.removeClass>; }</Function>);
+			this.forEach(<Function>function(<MyObj>i</MyObj>){ <d.removeClass>d.<d.removeClass>removeClass</d.removeClass>(<MyObj>i</MyObj>, className)</d.removeClass>; }</Function>);
 			return this;
 		}</Function>,
 
@@ -5056,7 +5056,7 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.que
 
 		var <Function>endClass = <Function>function(){
 			if(<Boolean>inClass &gt;= <Number>0</Number></Boolean>){
-				<currentPart.classes.push>currentPart.<currentPart.classes>classes</currentPart.classes>.<currentPart.classes.push>push</currentPart.classes.push>(<ts>ts(inClass+<Number>1</Number>, x</ts>).replace(<RegExp>/\\/g</RegExp>, <String>""</String>))</currentPart.classes.push>;
+				<Array.push>currentPart.<Array>classes</Array>.<Array.push>push</Array.push>(<ts>ts(inClass+<Number>1</Number>, x</ts>).replace(<RegExp>/\\/g</RegExp>, <String>""</String>))</Array.push>;
 				<Number>inClass</Number> = -<Number>1</Number>;
 			}
 		}</Function></Function>
@@ -5096,7 +5096,7 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.que
 							_cp.<String>matchFor</String> = <_cp.matchFor.substring><_cp.matchFor>cmf</_cp.matchFor>.<_cp.matchFor.substring>substring</_cp.matchFor.substring>(<Number>1</Number>, <_cp.matchFor.length><_cp.matchFor>cmf</_cp.matchFor>.length</_cp.matchFor.length>-<Number>1</Number>)</_cp.matchFor.substring>;
 						}
 					}
-					<currentPart.attrs.push>currentPart.<currentPart.attrs>attrs</currentPart.attrs>.<currentPart.attrs.push>push</currentPart.attrs.push>(_cp)</currentPart.attrs.push>;
+					<Array.push>currentPart.<Array>attrs</Array>.<Array.push>push</Array.push>(_cp)</Array.push>;
 					_cp = null; // necessaray?
 					inBrackets = <Number>inMatchFor</Number> = -<Number>1</Number>;
 				}else if(<Boolean><String>cc</String> == <String>"="</String></Boolean>){
@@ -5136,19 +5136,19 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.que
 						name: <ts><Function>ts</Function>(<Number>inPseudo</Number>+<Number>1</Number>, <Number>x</Number>)</ts>, 
 						value: null
 					}
-					<currentPart.pseudos.push>currentPart.<currentPart.pseudos>pseudos</currentPart.pseudos>.<currentPart.pseudos.push>push</currentPart.pseudos.push>(_cp)</currentPart.pseudos.push>;
+					<Array.push>currentPart.<Array>pseudos</Array>.<Array.push>push</Array.push>(_cp)</Array.push>;
 				}
 				<Number>inParens</Number> = <Number>x</Number>;
 			}else if(<Boolean><String>cc</String> == <String>" "</String></Boolean> &amp;&amp; <Boolean><String>lc</String> != <String>cc</String></Boolean>){
 				// note that we expect the string to be " " terminated
 				<endAll><Function>endAll</Function>()</endAll>;
 				if(<Boolean><Number>inPseudo</Number> &gt;= <Number>0</Number></Boolean>){
-					<currentPart.pseudos.push>currentPart.<currentPart.pseudos>pseudos</currentPart.pseudos>.<currentPart.pseudos.push>push</currentPart.pseudos.push>({ name: <ts><Function>ts</Function>(<Number>inPseudo</Number>+<Number>1</Number>, <Number>x</Number>)</ts> })</currentPart.pseudos.push>;
+					<Array.push>currentPart.<Array>pseudos</Array>.<Array.push>push</Array.push>({ name: <ts><Function>ts</Function>(<Number>inPseudo</Number>+<Number>1</Number>, <Number>x</Number>)</ts> })</Array.push>;
 				}
 				currentPart.<String>hasLoops</String> = (	
-						<currentPart.pseudos.length>currentPart.<currentPart.pseudos>pseudos</currentPart.pseudos>.length</currentPart.pseudos.length> || 
-						<currentPart.attrs.length>currentPart.<currentPart.attrs>attrs</currentPart.attrs>.length</currentPart.attrs.length> || 
-						<currentPart.classes.length>currentPart.<currentPart.classes>classes</currentPart.classes>.length</currentPart.classes.length>	);
+						<Array.length>currentPart.<Array>pseudos</Array>.length</Array.length> || 
+						<Array.length>currentPart.<Array>attrs</Array>.length</Array.length> || 
+						<Array.length>currentPart.<Array>classes</Array>.length</Array.length>	);
 				currentPart.<String>query</String> = <ts><Function>ts</Function>(<Number>pStart</Number>, <Number>x</Number>)</ts>;
 				currentPart.<String>tag</String> = (currentPart[<String>"oper"</String>]) ? null : (<currentPart.tag>currentPart.tag</currentPart.tag> || <String>"*"</String>);
 				<Array.push><Array>qparts</Array>.<Array.push>push</Array.push>(currentPart)</Array.push>;
@@ -5388,19 +5388,19 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.que
 		if(_filtersCache[<q.query>q.query</q.query>]){
 			return _filtersCache[<q.query>q.query</q.query>];
 		}
-		var ff = null;
+		var <Boolean>ff = null</Boolean>;
 
 		// does it have a tagName component?
 		if(<q.tag>q.tag</q.tag>){
 			if(<Boolean><q.tag>q.tag</q.tag> == <String>"*"</String></Boolean>){
-				ff = <agree>agree(ff, 
+				<Boolean>ff</Boolean> = <agree>agree(<Boolean>ff</Boolean>, 
 					<Function>function(elem){
 						return (<Boolean><elem.nodeType>elem.nodeType</elem.nodeType> == <Number>1</Number>)</Boolean>;
 					}</Function>
 				)</agree>;
 			}else{
 				// tag name match
-				ff = <agree>agree(ff, 
+				<Boolean>ff</Boolean> = <agree>agree(<Boolean>ff</Boolean>, 
 					<Function>function(elem){
 						return (
 							(<Boolean><elem.nodeType>elem.nodeType</elem.nodeType> == <Number>1</Number>)</Boolean> &amp;&amp;
@@ -5414,7 +5414,7 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.que
 
 		// does the node have an ID?
 		if(<q.id>q.id</q.id>){
-			ff = <agree>agree(ff, 
+			<Boolean>ff</Boolean> = <agree>agree(<Boolean>ff</Boolean>, 
 				<Function>function(elem){
 					return (
 						(<Boolean><elem.nodeType>elem.nodeType</elem.nodeType> == <Number>1</Number>)</Boolean> &amp;&amp;
@@ -5427,10 +5427,10 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.que
 		if(<q.hasLoops>q.hasLoops</q.hasLoops>){
 			// if we have other query param parts, make sure we add them to the
 			// filter chain
-			ff = <agree>agree(ff, <getSimpleFilterFunc>getSimpleFilterFunc(q)</getSimpleFilterFunc>)</agree>;
+			<Boolean>ff</Boolean> = <agree>agree(<Boolean>ff</Boolean>, <getSimpleFilterFunc>getSimpleFilterFunc(q)</getSimpleFilterFunc>)</agree>;
 		}
 
-		return _filtersCache[<q.query>q.query</q.query>] = ff;
+		return _filtersCache[<q.query>q.query</q.query>] = <Boolean>ff</Boolean>;
 	}</Function></Function>
 
 	var <Function>getNodeIndex = <Function>function(node){
@@ -5669,12 +5669,12 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.que
 		var fcHit = (_simpleFiltersCache[<query.query>query.query</query.query>]||_filtersCache[<query.query>query.query</query.query>]);
 		if(fcHit){ return fcHit; }
 
-		var ff = null;
+		var <Boolean>ff = null</Boolean>;
 
 		// the only case where we'll need the tag name is if we came from an ID query
 		if(<query.id>query.id</query.id>){ // do we have an ID component?
 			if(<Boolean><query.tag>query.tag</query.tag> != <String>"*"</String></Boolean>){
-				ff = <agree>agree(ff, <Function>function(elem){
+				<Boolean>ff</Boolean> = <agree>agree(<Boolean>ff</Boolean>, <Function>function(elem){
 					return (<Boolean><elem.tagName.toLowerCase>elem.<elem.tagName>tagName</elem.tagName>.<elem.tagName.toLowerCase>toLowerCase</elem.tagName.toLowerCase>()</elem.tagName.toLowerCase> == <query.tag>query.tag</query.tag>)</Boolean>;
 				}</Function>)</agree>;
 			}
@@ -5689,22 +5689,22 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.que
 			}
 			// I dislike the regex thing, even if memozied in a cache, but it's VERY short
 			var <RegExp>re = <RegExp>new RegExp(<String>"(?:^|\\s)"</String> + cname + (<Boolean>isWildcard</Boolean> ? <String>".*"</String> : <String>""</String>) + <String>"(?:\\s|$)"</String>)</RegExp></RegExp>;
-			ff = <agree>agree(ff, <Function>function(elem){
+			<Boolean>ff</Boolean> = <agree>agree(<Boolean>ff</Boolean>, <Function>function(elem){
 				return <re.test>re.<re.test>test</re.test>(<elem.className>elem.className</elem.className>)</re.test>;
 			}</Function>)</agree>;
-			ff.<String>count</String> = idx;
+			<Boolean>ff</Boolean>.<String>count</String> = idx;
 		}</Function>)</d.forEach>;
 
 		<d.forEach>d.<d.forEach>forEach</d.forEach>(<query.pseudos>query.pseudos</query.pseudos>, <Function>function(pseudo){
 			if(pseudos[<pseudo.name>pseudo.name</pseudo.name>]){
-				ff = <agree>agree(ff, <pseudo.name>pseudos[<pseudo.name>pseudo.name</pseudo.name>](<pseudo.name>pseudo.name</pseudo.name>, <pseudo.value>pseudo.value</pseudo.value>)</pseudo.name>)</agree>;
+				<Boolean>ff</Boolean> = <agree>agree(<Boolean>ff</Boolean>, <pseudo.name>pseudos[<pseudo.name>pseudo.name</pseudo.name>](<pseudo.name>pseudo.name</pseudo.name>, <pseudo.value>pseudo.value</pseudo.value>)</pseudo.name>)</agree>;
 			}
 		}</Function>)</d.forEach>;
 
 		<handleAttrs>handleAttrs(attrs, query, defaultGetter,
-			<Function>function(tmatcher){ ff = <agree>agree(ff, tmatcher)</agree>; }</Function>
+			<Function>function(tmatcher){ <Boolean>ff</Boolean> = <agree>agree(<Boolean>ff</Boolean>, tmatcher)</agree>; }</Function>
 		)</handleAttrs>;
-		if(!ff){
+		if(!<Boolean>ff</Boolean>){
 			<Function>ff</Function> = <Function>function(){ return <Boolean>true</Boolean>; }</Function>;
 		}
 		return _simpleFiltersCache[<query.query>query.query</query.query>] = <Function>ff</Function>;
@@ -5731,7 +5731,7 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.que
 
 		var filterFunc = <getSimpleFilterFunc>getSimpleFilterFunc(query)</getSimpleFilterFunc>;
 
-		var retFunc;
+		var <Array|void>retFunc</Array|void>;
 		if(<query.tag>query.tag</query.tag> &amp;&amp; <query.id>query.id</query.id> &amp;&amp; !<query.hasLoops>query.hasLoops</query.hasLoops>){
 			// we got a filtered ID search (e.g., "h4#thinger")
 			<Function>retFunc</Function> = <Function>function(root){
@@ -6033,9 +6033,9 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.que
 	// one-off function for filtering a NodeList based on a simple selector
 	d.<String>_filterQueryResult</String> = <Function>function(nodeList, simpleFilter){
 		var <d.NodeList>tnl = <d.NodeList>new <d.NodeList>d.NodeList</d.NodeList>()</d.NodeList></d.NodeList>;
-		var ff = (simpleFilter) ? <getFilterFunc>getFilterFunc(<getQueryParts>getQueryParts(simpleFilter</getQueryParts>)[<Number>0</Number>])</getFilterFunc> : <Function>function(){ return <Boolean>true</Boolean>; }</Function>;
+		var <Boolean>ff = (simpleFilter) ? <getFilterFunc>getFilterFunc(<getQueryParts>getQueryParts(simpleFilter</getQueryParts>)[<Number>0</Number>])</getFilterFunc> : <Function>function(){ return <Boolean>true</Boolean>; }</Function></Boolean>;
 		for(var <Number>x=<Number>0</Number></Number>, te; te = nodeList[<Number>x</Number>]; <Number>x</Number>++){
-			if(<ff>ff(te)</ff>){ <d.NodeList.push><d.NodeList>tnl</d.NodeList>.<d.NodeList.push>push</d.NodeList.push>(te)</d.NodeList.push>; }
+			if(<ff><Boolean>ff</Boolean>(te)</ff>){ <d.NodeList.push><d.NodeList>tnl</d.NodeList>.<d.NodeList.push>push</d.NodeList.push>(te)</d.NodeList.push>; }
 		}
 		return <d.NodeList>tnl</d.NodeList>;
 	}</Function>
@@ -6053,7 +6053,7 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.xhr
 
 (<Function>function(){
 	var _d = dojo;
-	<Function>function setValue(/*Object*/obj, /*String*/name, /*String*/value){
+	<Function>function <void>setValue</void>(/*Object*/obj, /*String*/name, /*String*/value){
 		//summary:
 		//		For the nameed property in object, set the value. If a value
 		//		already exists and it is a string, convert the value to be an
@@ -6107,16 +6107,16 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.xhr
 			var <item.name>_in = <item.name>item.name</item.name></item.name>;
 			var type = (<item.type>item.type</item.type>||<String>""</String>).toLowerCase();
 			if(<Boolean>type == <String>"radio"</String></Boolean> || <Boolean>type == <String>"checkbox"</String></Boolean>){
-				if(<item.checked>item.checked</item.checked>){ <setValue>setValue(ret, <item.name>_in</item.name>, <item.value>item.value</item.value>)</setValue>; }
+				if(<item.checked>item.checked</item.checked>){ <setValue><void>setValue</void>(ret, <item.name>_in</item.name>, <item.value>item.value</item.value>)</setValue>; }
 			}else if(<item.multiple>item.multiple</item.multiple>){
 				ret[<item.name>_in</item.name>] = <Array>[]</Array>;
 				_d.<_d.query><_d.query>query</_d.query>(<String>"option"</String>, item</_d.query>).forEach(<Function>function(opt){
 					if(<opt.selected>opt.selected</opt.selected>){
-						<setValue>setValue(ret, _in, <opt.value>opt.value</opt.value>)</setValue>;
+						<setValue><void>setValue</void>(ret, _in, <opt.value>opt.value</opt.value>)</setValue>;
 					}
 				}</Function>);
 			}else{ 
-				<setValue>setValue(ret, <item.name>_in</item.name>, <item.value>item.value</item.value>)</setValue>;
+				<setValue><void>setValue</void>(ret, <item.name>_in</item.name>, <item.value>item.value</item.value>)</setValue>;
 				if(<Boolean>type == <String>"image"</String></Boolean>){
 					ret[<item.name>_in</item.name>+<String>".x"</String>] = ret[<item.name>_in</item.name>+<String>".y"</String>] = ret[<item.name>_in</item.name>].<String>x</String> = ret[<item.name>_in</item.name>].<String>y</String> = <Number>0</Number>;
 				}
@@ -6279,9 +6279,9 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.xhr
 		}</Function>,
 		"xml": <Function>function(xhr){ 
 			if(<_d.isIE>_d.isIE</_d.isIE> &amp;&amp; !<xhr.responseXML>xhr.responseXML</xhr.responseXML>){
-				<_d.forEach>_d.<_d.forEach>forEach</_d.forEach>([<Array><String>"MSXML2"</String>, <String>"Microsoft"</String>, <String>"MSXML"</String>, <String>"MSXML3"</String>]</Array>, <Function>function(i){
+				<_d.forEach>_d.<_d.forEach>forEach</_d.forEach>([<Array><String>"MSXML2"</String>, <String>"Microsoft"</String>, <String>"MSXML"</String>, <String>"MSXML3"</String>]</Array>, <Function>function(<MyObj>i</MyObj>){
 					try{
-						var <ActiveXObject>doc = <ActiveXObject>new ActiveXObject(prefixes[i]+<String>".XMLDOM"</String>)</ActiveXObject></ActiveXObject>;
+						var <ActiveXObject>doc = <ActiveXObject>new ActiveXObject(prefixes[<MyObj>i</MyObj>]+<String>".XMLDOM"</String>)</ActiveXObject></ActiveXObject>;
 						<ActiveXObject>doc</ActiveXObject>.<String>async</String> = <Boolean>false</Boolean>;
 						<ActiveXObject.loadXML><ActiveXObject>doc</ActiveXObject>.<ActiveXObject.loadXML>loadXML</ActiveXObject.loadXML>(<xhr.responseText>xhr.responseText</xhr.responseText>)</ActiveXObject.loadXML>;
 						return <ActiveXObject>doc</ActiveXObject>;	//	DOMDocument
@@ -6559,8 +6559,8 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.xhr
 		//summary: Cancels all pending IO requests, regardless of IO type
 		//(xhr, script, iframe).
 		try{
-			<_d.forEach>_d.<_d.forEach>forEach</_d.forEach>(_inFlight, <Function>function(i){
-				<i.dfd.cancel>i.<i.dfd>dfd</i.dfd>.<i.dfd.cancel>cancel</i.dfd.cancel>()</i.dfd.cancel>;
+			<_d.forEach>_d.<_d.forEach>forEach</_d.forEach>(_inFlight, <Function>function(<MyObj>i</MyObj>){
+				<MyObj.dfd.cancel><MyObj>i</MyObj>.<MyObj.dfd>dfd</MyObj.dfd>.<MyObj.dfd.cancel>cancel</MyObj.dfd.cancel>()</MyObj.dfd.cancel>;
 			}</Function>)</_d.forEach>;
 		}catch(e){/*squelch*/}
 	}</Function>
@@ -6636,7 +6636,7 @@ dojo.<dojo._hasResource>_hasResource</dojo._hasResource>[<String>"dojo._base.xhr
 		}catch(e){
 			<dfd.cancel>dfd.<dfd.cancel>cancel</dfd.cancel>()</dfd.cancel>;
 		}
-		<_d._ioWatch>_d.<_d._ioWatch>_ioWatch</_d._ioWatch>(dfd, _validCheck, _ioCheck, _resHandle)</_d._ioWatch>;
+		<_d._ioWatch>_d.<void>_ioWatch</void>(dfd, _validCheck, _ioCheck, _resHandle)</_d._ioWatch>;
 		return dfd; //Deferred
 	}</Function></Function>
 
@@ -6777,10 +6777,10 @@ dojo.<String>_Line</String> = <Function>function(/*int*/ start, /*int*/ end){
 	//
 	constructor: <Function>function(/*Object*/ args){
 		<dojo.mixin>dojo.<dojo.mixin>mixin</dojo.mixin>(this, args)</dojo.mixin>;
-		if(<dojo.isArray>dojo.<dojo.isArray>isArray</dojo.isArray>(this.curve)</dojo.isArray>){
+		if(<dojo.isArray>dojo.<Boolean>isArray</Boolean>(this.curve)</dojo.isArray>){
 			/* curve: Array
 				pId: a */
-			this.<String>curve</String> = <dojo._Line>new <dojo._Line>dojo._Line</dojo._Line>(this.curve[<Number>0</Number>], this.curve[<Number>1</Number>])</dojo._Line>;
+			this.<String>curve</String> = <void>new <void>dojo._Line</void>(this.curve[<Number>0</Number>], this.curve[<Number>1</Number>])</void>;
 		}
 	}</Function>,
 	
@@ -7023,7 +7023,7 @@ dojo.<String>_Line</String> = <Function>function(/*int*/ start, /*int*/ end){
 	}</Function>;
 
 	dojo.<dojo._Animation>_Animation</dojo._Animation>.<dojo._Animation.prototype>prototype</dojo._Animation.prototype>.<String>_stopTimer</String> = <Function>function(){
-		<dojo.disconnect>dojo.<dojo.disconnect>disconnect</dojo.disconnect>(this._timer)</dojo.disconnect>;
+		<dojo.disconnect>dojo.<void>disconnect</void>(this._timer)</dojo.disconnect>;
 		this.<String>_timer</String> = null;
 		ctr--;
 		if(!ctr){
@@ -7187,7 +7187,7 @@ dojo.<String>_Line</String> = <Function>function(/*int*/ start, /*int*/ end){
 				// console.debug("start:", prop.start);
 				// console.debug("end:", prop.end);
 			}
-			this.<String>curve</String> = <PropLine>new PropLine(pm)</PropLine>;
+			this.<String>curve</String> = <PropLine>new <PropLine>PropLine</PropLine>(pm)</PropLine>;
 		}</Function>)</d.connect>;
 		<d.connect>d.<d.connect>connect</d.connect>(<d._Animation>anim</d._Animation>, <String>"onAnimate"</String>, <d._Animation>anim</d._Animation>, <Function>function(propValues){
 			// try{

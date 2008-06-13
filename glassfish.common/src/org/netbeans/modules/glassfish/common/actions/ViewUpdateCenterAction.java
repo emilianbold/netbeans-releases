@@ -53,7 +53,7 @@ import java.util.logging.Logger;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.netbeans.spi.glassfish.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.NbProcessDescriptor;

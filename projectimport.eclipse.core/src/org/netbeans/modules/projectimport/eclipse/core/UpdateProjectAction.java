@@ -42,19 +42,25 @@ package org.netbeans.modules.projectimport.eclipse.core;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Actions;
+import org.openide.awt.DynamicMenuContent;
+import org.openide.awt.Mnemonics;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.Presenter;
 
-/**
- */
-public final class UpdateProjectAction extends AbstractAction implements ContextAwareAction  {
+public final class UpdateProjectAction extends AbstractAction implements ContextAwareAction, Presenter.Popup {
     
     private Lookup context;
     private UpgradableProject upgradable;
@@ -65,33 +71,33 @@ public final class UpdateProjectAction extends AbstractAction implements Context
     }
 
     public UpdateProjectAction(Lookup actionContext) {
-        super(NbBundle.getBundle(UpdateProjectAction.class).getString("UpdateProjectAction.Name"));
+        super(NbBundle.getMessage(UpdateProjectAction.class, "UpdateProjectAction.Name"));
         this.context = actionContext;
     }
 
     public void actionPerformed(ActionEvent ignore) {
         assert context != null;
         if (!getUpgradableProject().isEclipseProjectReachable()) {
-            // perhaps notify user that eclipse projetc is not avialable and let them fix it
+            if (!getUpgradableProject().updateBrokenEclipseReference()) {
+                return;
+            }
+        }
+        if (getUpgradableProject().isUpToDate(true)) {
             DialogDisplayer.getDefault().notify(
-                // TODO
-                new NotifyDescriptor.Message("Eclipse project files cannot be reach. Do you want to resolve them? TBD."));
+                new NotifyDescriptor.Message(NbBundle.getMessage(UpdateProjectAction.class, "UpdateProjectAction.already-in-synch")));
         } else {
-            if (getUpgradableProject().isUpToDate()) {
-                DialogDisplayer.getDefault().notify(
-                    // TODO
-                    new NotifyDescriptor.Message("Project are in synch."));
-            } else {
-                Object answer = DialogDisplayer.getDefault().notify(
-                    // TODO
-                    new NotifyDescriptor.Confirmation("Do you want to update NetBeans project according to Eclipse project?"));
-                if (answer == NotifyDescriptor.YES_OPTION) {
-                    try {
-                        getUpgradableProject().update();
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+            try {
+                List<String> importProblems = new ArrayList<String>();
+                getUpgradableProject().update(importProblems);
+                if (importProblems.size() > 0) {
+                    importProblems.add(0,
+                            NbBundle.getMessage(UpdateProjectAction.class, "UpdateProjectAction.problems-occurred", upgradable.getEclipseProjectFolder()));
                 }
+                ImportProblemsPanel.showReport(
+                        NbBundle.getMessage(UpdateProjectAction.class, "UpdateProjectAction.update-issues"),
+                        ImportProblemsPanel.indentAllButFirst(importProblems));
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
     }
@@ -116,6 +122,31 @@ public final class UpdateProjectAction extends AbstractAction implements Context
     
     public Action createContextAwareInstance(Lookup actionContext) {
         return new UpdateProjectAction(actionContext);
+    }
+
+    public JMenuItem getPopupPresenter() {
+        return new Menu();
+    }
+
+    private class Menu extends JMenuItem implements DynamicMenuContent {
+
+        public Menu() {
+            Actions.connect(this, UpdateProjectAction.this);
+            Mnemonics.setLocalizedText(this, (String) getValue(NAME));
+        }
+
+        public JComponent[] getMenuPresenters() {
+            if (UpdateProjectAction.this.isEnabled()) {
+                return new JComponent[] {this};
+            } else {
+                return new JComponent[0];
+            }
+        }
+
+        public JComponent[] synchMenuPresenters(JComponent[] items) {
+            return getMenuPresenters();
+        }
+
     }
 
 }

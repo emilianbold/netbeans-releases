@@ -1,10 +1,12 @@
 <?php
 
-class ApiKeyProfile {
-    private $apiKey = "";    
+    class __NAME__ {
 
-    function getApiKey() {
-        return $this->apiKey;
+        //Specify the api-key here
+        private static $apiKey = "";    
+
+        public static function getApiKey() {
+            return self::$apiKey;
+        }
     }
-}
 ?>

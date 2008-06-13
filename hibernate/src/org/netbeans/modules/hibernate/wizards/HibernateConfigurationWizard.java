@@ -241,9 +241,6 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
         DataObject newOne = templateDataObject.createFromTemplate(targetDataFolder, targetName);
 
         SessionFactory sFactory = new SessionFactory();
-        if (descriptor.getSessionName() != null && !"".equals(descriptor.getSessionName())) {
-            sFactory.setAttributeValue(sessionName, descriptor.getSessionName());
-        }
 
         if (descriptor.getDialectName() != null && !"".equals(descriptor.getDialectName())) {
             int row = sFactory.addProperty2(descriptor.getDialectName());

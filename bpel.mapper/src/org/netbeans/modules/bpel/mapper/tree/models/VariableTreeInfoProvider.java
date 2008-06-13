@@ -76,7 +76,10 @@ import org.netbeans.modules.xml.xpath.ext.StepNodeTestType;
 import org.netbeans.modules.xml.xpath.ext.XPathUtils;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.bpel.model.api.support.Roles;
+import org.netbeans.modules.soa.ui.schema.SchemaTreeInfoProvider;
 import org.netbeans.modules.xml.schema.model.Any;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
 
 /**
  * The implementation of the TreeItemInfoProvider for the variables' tree.
@@ -85,12 +88,6 @@ import org.netbeans.modules.xml.schema.model.Any;
  * @author AlexanderPermyakov
  */
 public class VariableTreeInfoProvider implements TreeItemInfoProvider {
-    
-    public static final String ANY_ELEMENT = 
-            NbBundle.getMessage(VariableTreeInfoProvider.class, "ANY_ELEMENT"); // NOI18N
-    
-    public static final String ANY_ATTRIBUTE = 
-            NbBundle.getMessage(VariableTreeInfoProvider.class, "ANY_ATTRIBUTE"); // NOI18N
     
     private static VariableTreeInfoProvider singleton = new VariableTreeInfoProvider();
     
@@ -136,21 +133,16 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
             return "(" + gType.getName() + ")" + getDisplayName(castableObject);
         }
         //
-        if (treeItem instanceof AbstractPseudoComp) {
-            AbstractPseudoComp pseudo = ((AbstractPseudoComp)treeItem);
-            if (pseudo.isAttribute()) {
-                return "(" + pseudo.getName() + ")" + ANY_ATTRIBUTE;
-            } else {
-                return "(" + pseudo.getName() + ")" + ANY_ELEMENT;
-            }
+        if (treeItem instanceof XPathPseudoComp) {
+            return AbstractPseudoComp.getDisplayName((XPathPseudoComp)treeItem);
         }
         //
         if (treeItem instanceof AnyElement) {
-            return ANY_ELEMENT;
+            return AbstractPseudoComp.ANY_ELEMENT;
         }
         //
         if (treeItem instanceof AnyAttribute) {
-            return ANY_ATTRIBUTE;
+            return AbstractPseudoComp.ANY_ATTRIBUTE;
         }
         //
         return null;
@@ -293,9 +285,9 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         }
         //
         if (treeItem instanceof AbstractPredicate) {
-            SchemaComponent sComp = 
-                    ((AbstractPredicate)treeItem).getSComponent();
-            return getIcon(sComp);
+            SchemaCompHolder sCompHolder = 
+                    ((AbstractPredicate)treeItem).getSCompHolder();
+            return getIcon(sCompHolder.getHeldComponent());
         }
         //
         if (treeItem instanceof AbstractTypeCast) {
@@ -303,8 +295,8 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
             return getIcon(castableObject);
         }
         //
-        if (treeItem instanceof AbstractPseudoComp) {
-            AbstractPseudoComp pseudo = (AbstractPseudoComp)treeItem;
+        if (treeItem instanceof XPathPseudoComp) {
+            XPathPseudoComp pseudo = (XPathPseudoComp)treeItem;
             if (pseudo.isAttribute()) {
                 return NodeIcons.ATTRIBUTE.getIcon();
             } else {
@@ -480,7 +472,8 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         if (treeItem instanceof PartnerLinkContainer) {
             String type = ((PartnerLinkContainer) treeItem).getBpelModel().
                     getProcess().getName();
-            return getColorTooltip(null,"Partner Links", type, null);
+            return SchemaTreeInfoProvider.getColorTooltip(
+                    null,"Partner Links", type, null);
         }
 
         if (treeItem instanceof PartnerLink) {
@@ -552,68 +545,79 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         if (treeItem instanceof GlobalElement) {
             if (((GlobalElement) treeItem).getType() != null) {
                 type = ((GlobalElement) treeItem).getType().getRefString();
-                return getColorTooltip(null, name, type, nameSpase);
+                return SchemaTreeInfoProvider.getColorTooltip(
+                        null, name, type, nameSpase);
             }
         }
 
         if (treeItem instanceof Part) {
             if (((Part) treeItem).getType() != null) {
-                return getColorTooltip(null, name, ((Part) treeItem).getType().
+                return SchemaTreeInfoProvider.getColorTooltip(
+                        null, name, ((Part) treeItem).getType().
                         getRefString(), nameSpase);
             }
             if (((Part) treeItem).getElement() != null) {
-                return getColorTooltip(null, name, ((Part) treeItem).
+                return SchemaTreeInfoProvider.getColorTooltip(
+                        null, name, ((Part) treeItem).
                         getElement().getRefString(), nameSpase);
             }
         }
 
         if (treeItem instanceof LocalElement) {
             if (((LocalElement) treeItem).getType() != null) {
-                return getColorTooltip(null, name, ((LocalElement) treeItem).
+                return SchemaTreeInfoProvider.getColorTooltip(
+                        null, name, ((LocalElement) treeItem).
                         getType().getRefString(), nameSpase);
             }
         }
 
         if (treeItem instanceof LocalAttribute) {
             if (((LocalAttribute) treeItem).getType() != null) {
-                return getColorTooltip(null, name, ((LocalAttribute) treeItem).
+                return SchemaTreeInfoProvider.getColorTooltip(
+                        null, name, ((LocalAttribute) treeItem).
                         getType().getRefString(), nameSpase);
             }
         }
 
         if (treeItem instanceof GlobalAttribute) {
             if (((GlobalAttribute) treeItem).getType() != null) {
-                return getColorTooltip(null, name, ((GlobalAttribute) treeItem).
+                return SchemaTreeInfoProvider.getColorTooltip(
+                        null, name, ((GlobalAttribute) treeItem).
                         getType().getRefString(), nameSpase);
             }
         }
 
         if (treeItem instanceof GlobalType) {
-            return getColorTooltip(null, name, 
+            return SchemaTreeInfoProvider.getColorTooltip(null, name, 
                     ((GlobalType) treeItem).getName(), nameSpase);
         }
 
         if (treeItem instanceof Variable) {
             if (((Variable) treeItem).getMessageType() != null) {
-                return getColorTooltip(null, name, ((Variable) treeItem).
+                return SchemaTreeInfoProvider.getColorTooltip(
+                        null, name, ((Variable) treeItem).
                         getMessageType().getRefString(), nameSpase);
             }
             if (((Variable) treeItem).getType() != null) {
-                return getColorTooltip(null, name, ((Variable) treeItem).
+                return SchemaTreeInfoProvider.getColorTooltip(
+                        null, name, ((Variable) treeItem).
                         getType().getRefString(), nameSpase);
             }
             if (((Variable) treeItem).getElementType() != null) {
-                return getColorTooltip(null, name, ((Variable) treeItem).
+                return SchemaTreeInfoProvider.getColorTooltip(
+                        null, name, ((Variable) treeItem).
                         getElementType().getName(), nameSpase);
             }
         }
 
         if (treeItem instanceof Any) {
-            return getColorTooltip(null, name, "ANY_TYPE", nameSpase);
+            return SchemaTreeInfoProvider.getColorTooltip(
+                    name, null, null, nameSpase);
         }
 
         if (treeItem instanceof Process) {
-            return getColorTooltip(null, name, ((Process) treeItem).getName(), null);
+            return SchemaTreeInfoProvider.getColorTooltip(
+                    null, name, ((Process) treeItem).getName(), null);
         }
 
         if (treeItem instanceof AbstractTypeCast) {
@@ -635,7 +639,7 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
                 title = NbBundle.getMessage(this.getClass(), "PSEUDO_ELEMENT"); // NOI18N
             }
             //
-            String body = getColorTooltip(title ,pseudo.getName(), 
+            String body = SchemaTreeInfoProvider.getColorTooltip(title ,pseudo.getName(), 
                     pseudo.getType().getName(), pseudo.getNamespace());
             //
             return body;
@@ -650,28 +654,4 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
                 "</body>");
     }
     
-    private String getColorTooltip(String title, String name, String type, String nameSpace) {
-        StringBuilder result = new StringBuilder();
-        result.append("<html><body>");
-        //
-        if (title != null) {
-            result.append("<p align=\"center\"><b>" + title + "</b></p>").append("<hr>");
-        }
-        //
-        if (name != null) {
-            result.append(name);
-        }
-        //
-        if (type != null) {
-            result.append("<b><font color=#7C0000>" + " " + type + "</font></b>");
-        }
-        //
-        if (nameSpace != null) {
-            result.append("<hr>" + "Namespace: " + nameSpace);
-        }
-        //
-        result.append("</body>");
-        //
-        return result.toString();
-    }
 }

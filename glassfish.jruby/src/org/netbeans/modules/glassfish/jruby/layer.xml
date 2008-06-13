@@ -6,12 +6,12 @@
             <file name="JRubyServerModuleFactory.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.jruby.JRubyServerModuleFactory.getDefault"/>
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.jruby.JRubyServerModuleFactory"/>
-                <attr name="instanceOf" stringvalue="org.netbeans.spi.glassfish.GlassfishModuleFactory"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.glassfish.spi.GlassfishModuleFactory"/>
             </file>
             <file name="JRubyDecoratorFactory.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.jruby.JRubyDecoratorFactory.getDefault"/>
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.jruby.JRubyDecoratorFactory"/>
-                <attr name="instanceOf" stringvalue="org.netbeans.spi.glassfish.DecoratorFactory"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.glassfish.spi.DecoratorFactory"/>
             </file>
         </folder>
         <folder name="Ruby">

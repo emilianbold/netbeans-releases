@@ -467,9 +467,11 @@ public class AstUtilities {
     public static ASTNode getForeignNode(final IndexedElement o, ASTNode[] foreignRootRet) {
         ParserFile file = o.getFile();
 
+        /* Findbugs-Removed: IndexedElement.getFile() will never return null.
         if (file == null) {
-            return null;
+        return null;
         }
+         */
 
         List<ParserFile> files = Collections.singletonList(file);
         SourceFileReader reader =
@@ -499,8 +501,11 @@ public class AstUtilities {
         DefaultParseListener listener = new DefaultParseListener();
 
         // TODO - embedding model?
-TranslatedSource translatedSource = null; // TODO - determine this here?                
-        Parser.Job job = new Parser.Job(files, listener, reader, translatedSource);
+        // TODO - determine this here?   
+        // TranslatedSource translatedSource = null;
+        // The 4th parameter used to be 'translatedSource' which is null anyway.
+        
+        Parser.Job job = new Parser.Job(files, listener, reader, null);
         new GroovyParser().parseFiles(job);
 
         ParserResult result = listener.getParserResult();
@@ -525,16 +530,18 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
 //        Node node = AstUtilities.findBySignature(root, signature);
         GroovyParserResult rpr = (GroovyParserResult)result;
         boolean lookForFunction = o.getKind() == ElementKind.CONSTRUCTOR || o.getKind() == ElementKind.METHOD;
-        if (lookForFunction) {
-            for (AstElement element : rpr.getStructure().getElements()) {
-//                if (element instanceof FunctionAstElement) {
-//                    FunctionAstElement func = (FunctionAstElement) element;
-//                    if (signature.equals(func.getSignature())) {
-//                        return func.getNode();
-//                    }
-//                }
-            }
-        }
+        
+        // Findbugs-removed: We shouldn't run empty loops.
+        //        if (lookForFunction) {
+        //            for (AstElement element : rpr.getStructure().getElements()) {
+        //                if (element instanceof FunctionAstElement) {
+        //                    FunctionAstElement func = (FunctionAstElement) element;
+        //                    if (signature.equals(func.getSignature())) {
+        //                        return func.getNode();
+        //                    }
+        //                }
+        //            }
+        //        }
 
         for (AstElement element : rpr.getStructure().getElements()) {
             if (signature.equals(element.getSignature())) {

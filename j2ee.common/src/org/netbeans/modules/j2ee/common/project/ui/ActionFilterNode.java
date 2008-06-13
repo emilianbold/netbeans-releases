@@ -356,15 +356,7 @@ class ActionFilterNode extends FilterNode {
                     item.getType() == ClassPathSupport.Item.TYPE_JAR ) {
                 rh.destroyReference(item.getReference());
                 if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
-                    //oh well, how do I do this otherwise??
-                    EditableProperties ep = uh.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    if (item.getJavadocProperty() != null) {
-                        ep.remove(item.getJavadocProperty());
-                    }
-                    if (item.getSourceProperty() != null) {
-                        ep.remove(item.getSourceProperty());
-                    }
-                    uh.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                    item.removeSourceAndJavadoc(uh);
                 }
             }
         }

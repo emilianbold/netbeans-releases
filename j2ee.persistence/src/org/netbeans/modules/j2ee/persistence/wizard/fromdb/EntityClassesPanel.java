@@ -581,19 +581,14 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         }
 
         public void storeSettings(Object settings) {
-            Object buttonPressed = ((WizardDescriptor)settings).getValue();
-            if (buttonPressed.equals(WizardDescriptor.NEXT_OPTION) ||
-                    buttonPressed.equals(WizardDescriptor.FINISH_OPTION)) {
+            RelatedCMPHelper helper = RelatedCMPWizard.getHelper(wizardDescriptor);
 
-                RelatedCMPHelper helper = RelatedCMPWizard.getHelper(wizardDescriptor);
-
-                helper.setSelectedTables(getComponent().getSelectedTables());
-                helper.setLocation(getComponent().getLocationValue());
-                helper.setPackageName(getComponent().getPackageName());
-                helper.setCmpFieldsInInterface(getComponent().getCmpFieldsInInterface());
-                helper.setGenerateFinderMethods(getComponent().getGenerateFinderMethods());
-                helper.setPersistenceUnit(getComponent().getPersistenceUnit());
-            }
+            helper.setSelectedTables(getComponent().getSelectedTables());
+            helper.setLocation(getComponent().getLocationValue());
+            helper.setPackageName(getComponent().getPackageName());
+            helper.setCmpFieldsInInterface(getComponent().getCmpFieldsInInterface());
+            helper.setGenerateFinderMethods(getComponent().getGenerateFinderMethods());
+            helper.setPersistenceUnit(getComponent().getPersistenceUnit());
         }
 
         public void stateChanged(ChangeEvent event) {

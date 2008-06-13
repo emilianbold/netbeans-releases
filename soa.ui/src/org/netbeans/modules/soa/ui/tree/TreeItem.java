@@ -48,6 +48,8 @@ import java.util.Iterator;
  */
 public interface TreeItem extends Iterable<Object>, DataObjectHolder<Object> {
     
+    public TreeItem getParent();
+    
     class TreeRootItem implements TreeItem {
 
         private Object mRootObject;
@@ -67,6 +69,10 @@ public interface TreeItem extends Iterable<Object>, DataObjectHolder<Object> {
 
         public Object getDataObject() {
             return mRootObject;
+        }
+
+        public TreeItem getParent() {
+            return null;
         }
     }
     

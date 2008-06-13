@@ -54,6 +54,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
 import org.netbeans.modules.websvc.saas.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.Constants.SaasAuthenticationType;
@@ -64,7 +67,9 @@ import org.netbeans.modules.websvc.saas.codegen.model.RestClientSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 
 /**
  * Code generator for REST services wrapping WSDL-based web service.
@@ -75,6 +80,7 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
 
     private FileObject saasServiceFile = null;
     private FileObject serviceFolder = null;
+    private FileObject saasFolder = null;
     private SaasClientPhpAuthenticationGenerator authGen;
 
     public RestClientPhpCodeGenerator() {
@@ -85,7 +91,9 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
     public void init(SaasMethod m, Document doc) throws IOException {
         super.init(m, doc);
         setBean(new RestClientSaasBean((WadlSaasMethod) m));
-
+        
+        serviceFolder = null;
+        
         this.authGen = new SaasClientPhpAuthenticationGenerator(getBean(), getProject());
         this.authGen.setLoginArguments(getLoginArguments());
         this.authGen.setAuthenticatorMethodParameters(getAuthenticatorMethodParameters());
@@ -103,12 +111,35 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
 
     public FileObject getSaasServiceFolder() throws IOException {
         if (serviceFolder == null) {
+            FileObject rootFolder = getSourceRootFolder();
             String folderName = getBean().getSaasServicePackageName().replace(".", "_");
-            serviceFolder = getProject().getProjectDirectory().getFileObject(folderName);
+            serviceFolder = rootFolder.getFileObject(folderName);
             if(serviceFolder == null)
-                serviceFolder = getProject().getProjectDirectory().createFolder(folderName);
+                serviceFolder = FileUtil.createFolder(rootFolder, folderName);
         }
         return serviceFolder;
+    }
+    
+    public FileObject getSaasFolder() throws IOException {
+        if (saasFolder == null) {
+            FileObject rootFolder = getSourceRootFolder();
+            String folderName = SaasClientCodeGenerator.REST_CONNECTION_PACKAGE.replace(".", "_");
+            saasFolder = rootFolder.getFileObject(folderName);
+            if(saasFolder == null)
+                saasFolder = FileUtil.createFolder(rootFolder, folderName);
+        }
+        return saasFolder;
+    }
+    
+    private FileObject getSourceRootFolder() {
+        Sources sources = ProjectUtils.getSources(getProject());
+        SourceGroup[] groups = sources.getSourceGroups("PHPSOURCE");
+        FileObject rootFolder = getProject().getProjectDirectory();
+        if (groups != null && groups.length > 0 && groups[0] != null &&
+                groups[0].getRootFolder() != null) {
+            rootFolder = groups[0].getRootFolder();
+        }
+        return rootFolder;
     }
     
     public boolean canAccept(SaasMethod method, Document doc) {
@@ -153,10 +184,10 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
     protected void createRestConnectionFile(Project project) throws IOException {
         Util.createDataObjectFromTemplate(SaasClientCodeGenerator.TEMPLATES_SAAS+
                 REST_CONNECTION+"."+Constants.PHP_EXT, 
-                getSaasServiceFolder().getParent(), null);
+                getSaasFolder(), null);
         Util.createDataObjectFromTemplate(SaasClientCodeGenerator.TEMPLATES_SAAS+
                 REST_RESPONSE+"."+Constants.PHP_EXT, 
-                getSaasServiceFolder().getParent(), null);
+                getSaasFolder(), null);
     }
     
     protected String getServiceMethodBody() throws IOException {
@@ -169,25 +200,24 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         String queryParamsCode = "";
         if (getBean().getQueryParameters() != null &&
                 getBean().getQueryParameters().size() > 0) {
-            queryParamsCode = Util.getHeaderOrParameterDefinition(getBean().getQueryParameters(), Constants.QUERY_PARAMS, false);
+            queryParamsCode = getHeaderOrParameterDefinition(getBean().getQueryParameters(), Constants.QUERY_PARAMS, false);
         }
 
         String methodBody = "";
         methodBody += "        " + fixedCode;
 
         //Insert authentication code before new "+Constants.REST_CONNECTION+"() call
-        methodBody += "             " +
-                getAuthenticationGenerator().getPreAuthenticationCode() + "\n";
+        methodBody += getAuthenticationGenerator().getPreAuthenticationCode() + "\n";
 
         //Insert parameter declaration
         methodBody += "        " + pathParamsCode;
         methodBody += "        " + queryParamsCode;
 
-        methodBody += "             " + Constants.REST_CONNECTION + " conn = new " + Constants.REST_CONNECTION + "(\"" + getBean().getUrl() + "\"";
+        methodBody += "             $conn = new " + Constants.REST_CONNECTION + "(\"" + getBean().getUrl() + "\"";
         if (!pathParamsCode.trim().equals("")) {
-            methodBody += ", " + Constants.PATH_PARAMS + ", " + (queryParamsCode.trim().equals("") ? "null" : Constants.QUERY_PARAMS);
+            methodBody += ", $" + Constants.PATH_PARAMS + ", " + (queryParamsCode.trim().equals("") ? "null" : "$"+Constants.QUERY_PARAMS);
         } else if (!queryParamsCode.trim().equals("")) {
-            methodBody += ", " + Constants.QUERY_PARAMS;
+            methodBody += ", $" + Constants.QUERY_PARAMS;
         }
         methodBody += ");\n";
 
@@ -196,31 +226,30 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
                 getAuthenticationGenerator().getPostAuthenticationCode() + "\n";
 
         HttpMethodType httpMethod = getBean().getHttpMethod();
-        String headerUsage = "null";
         if (getBean().getHeaderParameters() != null && getBean().getHeaderParameters().size() > 0) {
-            headerUsage = Constants.HEADER_PARAMS;
-            methodBody += "        " + Util.getHeaderOrParameterDefinition(getBean().getHeaderParameters(), Constants.HEADER_PARAMS, false, httpMethod);
+            methodBody += "        " + getHeaderOrParameterDefinition(getBean().getHeaderParameters(), Constants.HEADER_PARAMS, false, httpMethod);
+            methodBody += "        $conn->setHeaders($" +Constants.HEADER_PARAMS+");";
         }
 
         boolean hasRequestRep = !getBean().findInputRepresentations(getBean().getMethod()).isEmpty();
         //Insert the method call
-        String returnStatement = "return conn";
+        String returnStatement = "return $conn";
         if (httpMethod == HttpMethodType.GET) {
-            methodBody += "             " + returnStatement + ".get(" + headerUsage + ");\n";
+            methodBody += "             " + returnStatement + "->get();\n";
         } else if (httpMethod == HttpMethodType.PUT) {
             if (hasRequestRep) {
-                methodBody += "             " + returnStatement + ".put(" + headerUsage + ", " + Constants.PUT_POST_CONTENT + ");\n";
+                methodBody += "             " + returnStatement + "->put($" + Constants.PUT_POST_CONTENT + ");\n";
             } else {
-                methodBody += "             " + returnStatement + ".put(" + headerUsage + ");\n";
+                methodBody += "             " + returnStatement + "->put(null);\n";
             }
         } else if (httpMethod == HttpMethodType.POST) {
             if (hasRequestRep) {
-                methodBody += "             " + returnStatement + ".post(" + headerUsage + ", " + Constants.QUERY_PARAMS + ");\n";
+                methodBody += "             " + returnStatement + "->post(" + Constants.QUERY_PARAMS + ");\n";
             } else {
-                methodBody += "             " + returnStatement + ".post(" + headerUsage + ", (java.io.InputStream) null);\n";
+                methodBody += "             " + returnStatement + "->post($" + Constants.PUT_POST_CONTENT + ");\n";
             }
         } else if (httpMethod == HttpMethodType.DELETE) {
-            methodBody += "             " + returnStatement + ".delete(" + headerUsage + ");\n";
+            methodBody += "             " + returnStatement + "->delete();\n";
         }
 
         return methodBody;
@@ -240,7 +269,7 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         }
         for (ParameterInfo param : getBean().getInputParameters()) {
             if (param.isFixed() && !Util.isContains(param, signParams)) {
-                fixedCode += "String " + getVariableName(param.getName()) + " = \"" + findParamValue(param) + "\";\n";
+                fixedCode += "$" + getVariableName(param.getName()) + " = $" + findParamValue(param) + ";\n";
             }
         }
 
@@ -286,18 +315,15 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
 
     protected void addImportsToTargetFile() throws IOException {
         List<String> imports = new ArrayList<String>();
-        imports.add(getBean().getSaasServicePackageName() + "." + getBean().getSaasServiceName());
-        imports.add(REST_CONNECTION_PACKAGE + "." + REST_RESPONSE);
+        imports.add(getBean().getSaasServicePackageName() + "->" + getBean().getSaasServiceName());
+        imports.add(REST_CONNECTION_PACKAGE + "->" + REST_RESPONSE);
         addImportsToPhp(getTargetFile(), imports);
     }
 
     protected void addImportsToSaasService() throws IOException {
         List<String> imports = new ArrayList<String>();
-        imports.add(REST_CONNECTION_PACKAGE + "." + REST_CONNECTION);
-        imports.add(REST_CONNECTION_PACKAGE + "." + REST_RESPONSE);
-//        if(getBean().canGenerateJAXBUnmarshaller()) {
-//            imports.add(InputStream.class.getName());
-//        }
+        imports.add(REST_CONNECTION_PACKAGE + "->" + REST_CONNECTION);
+        imports.add(REST_CONNECTION_PACKAGE + "->" + REST_RESPONSE);
         addImportsToPhp(saasServiceFile, imports);
     }
 
@@ -309,10 +335,11 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
             String code = "";
 
             code += "\n<?php\n"; // NOI18n
-
-            code += "\nrequire \"" + getBean().getSaasServicePackageName() + "\"\n";
-            code += getCustomMethodBody() + "\n";
+            code += "\nrequire_once \"" + getSaasServiceFolder().getName() + "/" + 
+                    getBean().getSaasServiceName() + ".php\";\n";
             code += "?>\n";// NOI18n
+            code += getCustomMethodBody() + "\n";
+
 
             insert(code, true);
         } catch (BadLocationException ex) {
@@ -324,12 +351,18 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
      *  Create Saas Service
      */
     public void createSaasServiceClass() throws IOException {
-        if (saasServiceFile == null) {
-            DataObject d = Util.createDataObjectFromTemplate(
-                    getBean().getSaasServiceTemplate()+"."+Constants.PHP_EXT, 
-                        getSaasServiceFolder(), null);
-            if(d != null)
-                saasServiceFile = d.getPrimaryFile();
+        DataObject d = Util.createDataObjectFromTemplate(
+                getBean().getSaasServiceTemplate()+"."+Constants.PHP_EXT, 
+                    getSaasServiceFolder(), getBean().getSaasServiceName());
+        if(d != null) {
+            saasServiceFile = d.getPrimaryFile();
+            try {
+                Document doc = Util.getDocument(saasServiceFile);
+                replaceDocument(doc, "__SAAS_FOLDER__", getSaasFolder().getName());
+                replaceDocument(doc, "__CONSTRUCT__", "__construct");
+            } catch (BadLocationException ex) {
+                throw new IOException(ex.getMessage());
+            }
         }
     }
 
@@ -337,9 +370,11 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
      *  Return target and generated file objects
      */
     protected void addSaasServiceMethod() throws IOException {
+        String indent = "        ";
         List<ParameterInfo> filterParams = getServiceMethodParameters();
         final String[] parameters = getGetParamNames(filterParams);
         final Object[] paramTypes = getGetParamTypes(filterParams);
+        String paramUse = getHeaderOrParameterUsage(filterParams);
 
         if (isContainsMethod(saasServiceFile,
                 getBean().getSaasServiceMethodName(), parameters, paramTypes)) {
@@ -349,22 +384,27 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         Modifier[] modifiers = Constants.PUBLIC_STATIC;
 
         String type = REST_RESPONSE;
-        String bodyText = "{ \n" + getServiceMethodBody() + "\n }";
+        String bodyText = "{ \n" + getServiceMethodBody() + "\n"+indent+"}";
 
 
         String comment = "Retrieves representation of an instance of " + getBean().getQualifiedClassName() + "\n";// NOI18N
 
         for (String param : parameters) {
-            comment += "@param $PARAM$ resource URI parameter\n".replace("$PARAM$", param);// NOI18N
+            comment += indent+"@param $PARAM$ resource URI parameter\n".replace("$PARAM$", param);// NOI18N
 
         }
-        comment += "@return an instance of " + type;// NOI18N
+        comment += indent+"@return an instance of " + type;// NOI18N
+        comment = "/*"+comment+"*/";
         
-        String code = "public static function "+
-                getBean().getSaasServiceMethodName()+"()"+
-                bodyText;
+        String code = "\n" + indent + comment + 
+                "\n" + indent + "public static function "+
+                getBean().getSaasServiceMethodName()+"("+paramUse+")"+
+                bodyText+"\n";
         try {
-            insert(code, true);
+            Document saasServiceDoc = Util.getDocument(saasServiceFile);
+            int start = findText(saasServiceDoc, "}", false);
+            int end = start;
+            insert(code, start, end, saasServiceDoc);
         } catch (BadLocationException ex) {
             throw new IOException(ex.getMessage());
         }
@@ -392,12 +432,12 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
             String name = getVariableName(param.getName());
             String paramVal = findParamValue(param);
             if (param.getType() != String.class) {
-                paramDecl += indent + param.getType().getName() + " " + name + " = " + paramVal + ";\n";
+                paramDecl += indent + "$" + name + " = " + paramVal + ";\n";
             } else {
                 if (paramVal != null) {
-                    paramDecl += indent + "String " + name + " = \"" + paramVal + "\";\n";
+                    paramDecl += indent + "$" + name + " = \"" + paramVal + "\";\n";
                 } else {
-                    paramDecl += indent + "String " + name + " = null;\n";
+                    paramDecl += indent + "$" + name + " = null;\n";
                 }
             }
         }
@@ -413,42 +453,19 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         
     }
 
-    //String pathParams[] = new String[][]  { {"{volumeId}", volumeId},  {"{objectId}", objectId}}; 
+    //$pathParams = array();
+    //$pathParams["{volumeId}"] = $volumeId;
+    //$pathParams["{objectId}"] = $objectId; 
     private String getTemplateParameterDefinition(List<ParameterInfo> params, String varName, boolean evaluate) {
-        String paramsStr = null;
         StringBuffer sb = new StringBuffer();
         for (ParameterInfo param : params) {
-            String paramName = getParameterName(param);
-            String paramVal = null;
-            if (evaluate) {
-                paramVal = findParamValue(param);
-                if (param.getType() != String.class) {
-                    sb.append("{\"" + paramName + "\", \"" + paramVal + "\".toString()},\n");
-                } else {
-                    if (paramVal != null) {
-                        sb.append("{\"{" + paramName + "}\", \"" + paramVal + "\"},\n");
-                    } else {
-                        sb.append("{\"{" + paramName + "}\", null},\n");
-                    }
-                }
-            } else {
-                sb.append("{\"{" + paramName + "}\", " + paramName + "},\n");
-            }
-        }
-        paramsStr = sb.toString();
-        if (params.size() > 0) {
-            paramsStr = paramsStr.substring(0, paramsStr.length() - 1);
+            sb.append(getHeaderOrParameterDefinitionPart(param, varName, evaluate));
         }
 
         String paramCode = "";
-        paramCode += "             String[][] " + varName + " = new String[][]{\n";
-        paramCode += "                 " + paramsStr + "\n";
-        paramCode += "             };\n";
+        paramCode += "$" + varName + " = array();\n";
+        paramCode += sb.toString() + "\n";
         return paramCode;
-    }
-
-    private String findParamValue(ParameterInfo param) {
-        return Util.findParamValue(param);
     }
 
     private boolean isContainsMethod(FileObject saasServiceFile, 
@@ -456,71 +473,114 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         return false;
     }
 
-    private void setJaxbWrapper() {
-        List<QName> repTypesFromWadl = getBean().findRepresentationTypes(getBean().getMethod());
-        if (!repTypesFromWadl.isEmpty()) {
-            QName qName = repTypesFromWadl.get(0);
-            String nsUri = qName.getNamespaceURI();
-            getBean().setOutputWrapperName(qName.getLocalPart());
-            getBean().setOutputWrapperPackageName(
-                    (getBean().getGroupName() + "." +
-                    getBean().getDisplayName()).toLowerCase() +
-                    "." + nsUri.substring(nsUri.lastIndexOf(":") + 1).toLowerCase());
-        }
-    }
-
     protected String getCustomMethodBody() throws IOException {
-        List<ParameterInfo> params = Util.getJaxRsMethodParameters(getBean());
-        String methodBody = "";
-        methodBody += "\n<?php\n";
-        methodBody += "\n$rs=\""+getBean().getUrl()+"\";\n";
-        methodBody += "\n$qs=\"\";\n";
-        methodBody += "\n$parray="+getHeaderOrParameterDefinitionPart(params, true)+";\n";
-        methodBody += "\nforeach($parray as $par=>$value){ \n";
-        methodBody += "     \n$qs=$qs.\"$par=\".urlencode($value).\"&\";\n";
-        methodBody += "\n}\n";
-        methodBody += "\n$uri=\"$rs?$qs\";\n";
-        methodBody += "\n$cobj=curl_init($uri);\n";
-        methodBody += "\ncurl_setopt($cobj,CURLOPT_RETURNTRANSFER,1);\n";
-        methodBody += "\n$xml=curl_exec($cobj);\n";
-        methodBody += "\ncurl_close($cobj);\n";
-        methodBody += "\necho '<div id=\"yn\">'.$xml.'</div>';\n";
-        methodBody += "\n?>\n";
+        String paramUse = "";
+        String paramDecl = "";
+        String indent2 = "                 ";
         
+        //Evaluate parameters (query(not fixed or apikey), header, template,...)
+        List<ParameterInfo> filterParams = getServiceMethodParameters();//includes request, response also
+        paramUse += getHeaderOrParameterUsage(filterParams);
+        paramDecl += getHeaderOrParameterDeclaration(filterParams);
+        String methodBody = "\n<?php\n";
+        methodBody += paramDecl + "\n";
+        methodBody += indent2 + "$result = " + getBean().getSaasServiceName() +
+                "::" + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
+        methodBody += indent2 + "echo $result->getResponseBody();";
+        methodBody += "\n?>\n";
         return methodBody;
     }
-    
 
-    public static String getHeaderOrParameterDefinitionPart(List<ParameterInfo> params, boolean evaluate) {
-        String paramsStr = null;
-        StringBuffer sb = new StringBuffer();
-        sb.append("array(");
+    public static String getHeaderOrParameterUsage(List<ParameterInfo> params) {
+        String paramUsage = "";
         for (ParameterInfo param : params) {
-            String paramName = Util.getParameterName(param);
-            String paramVal = null;
-            if (evaluate || param.isApiKey()) {
-                paramVal = Util.findParamValue(param);
-                if (param.getType() != String.class) {
-                    sb.append("\"" + paramName + "\" => " + paramVal + ".toString(),");
-                } else {
-                    if (paramVal != null) {
-                        sb.append("\"" + paramName + "\" => \"" + paramVal + "\",");
-                    } else {
-                        sb.append("\"" + paramName + "\" => null,");
-                    }
-                }
+            String name = Util.getParameterName(param, true, true, true);
+            paramUsage += "$" + name + ", ";
+        }
+        if (params.size() > 0) {
+            paramUsage = paramUsage.substring(0, paramUsage.length() - 2);
+        }
+        return paramUsage;
+    }
+    
+    public static String getHeaderOrParameterDefinitionPart(List<ParameterInfo> params, String varName, boolean evaluate) {
+        StringBuffer sb = new StringBuffer();
+        for (ParameterInfo param : params) {
+            sb.append(getHeaderOrParameterDefinitionPart(param, varName, evaluate || param.isApiKey()));
+        }
+        return sb.toString();
+    }
+    
+    public static String getHeaderOrParameterDefinitionPart(ParameterInfo param, String varName, boolean evaluate) {
+        StringBuffer sb = new StringBuffer();
+        String paramName = Util.getParameterName(param);
+        String paramVal = null;
+        String indent = "             ";
+        if(evaluate) {
+            paramVal = findParamValue(param);
+            if (param.getType() != String.class) {
+                sb.append(indent+"$"+varName+"[\"" + paramName + "\"] = $" + paramVal + ";\n");
             } else {
-                if (param.getType() != String.class) {
-                    sb.append("\"" + paramName + "\" => " + Util.getVariableName(param.getName()) + ".toString(),");
+                if (paramVal != null) {
+                    sb.append(indent+"$"+varName+"[\"" + paramName + "\"] = $" + paramVal + ";\n");
                 } else {
-                    sb.append("\"" + paramName + "\" => " + Util.getVariableName(param.getName()) + ",");
+                    sb.append(indent+"$"+varName+"[\"" + paramName + "\"] = null;\n");
                 }
             }
+        } else {
+            if (param.getType() != String.class) {
+                sb.append(indent+"$"+varName+"[\"" + paramName + "\"] = $" + Util.getVariableName(param.getName()) + ";\n");
+            } else {
+                sb.append(indent+"$"+varName+"[\"" + paramName + "\"] = $" + Util.getVariableName(param.getName()) + ";\n");
+            }
         }
-        paramsStr = sb.toString();
-        if (params.size() > 0) {
-            paramsStr = paramsStr.substring(0, paramsStr.length() - 1);
+        return sb.toString();
+    }
+    
+    public static String getHeaderOrParameterDefinition(List<ParameterInfo> params, String varName, boolean evaluate) {
+        String paramCode = "";
+        paramCode += "$" + varName + " = array();\n";
+        paramCode += getHeaderOrParameterDefinitionPart(params, varName, evaluate) + "\n";
+        return paramCode;
+    }
+    
+    public static String getHeaderOrParameterDefinition(List<ParameterInfo> params, String varName, boolean evaluate, HttpMethodType httpMethod) {
+        String part = getHeaderOrParameterDefinitionPart(params, varName, evaluate);
+        if (httpMethod == HttpMethodType.PUT ||
+                httpMethod == HttpMethodType.POST) {
+            if (!Util.isContains(params, new ParameterInfo(Constants.CONTENT_TYPE, String.class))) {
+                part += ", array(\"" + Constants.CONTENT_TYPE + "\" => " + Util.getVariableName(Constants.CONTENT_TYPE) + ")";
+            }
         }
-        return paramsStr+")";
+        String paramCode = "";
+        paramCode += "$" + varName + " = array();\n";
+        paramCode += part + "\n";
+        return paramCode;
+    }
+
+    private void replaceDocument(Document doc, String searchText, String replaceText) throws BadLocationException {
+        int len = doc.getLength();
+        String content = doc.getText(0, len);
+        content = content.replace(searchText, replaceText);
+        insert(content, 0, len, doc);
+    }
+    
+    private int findText(Document document, String searchText, boolean firstToLast) throws BadLocationException {
+        int len = document.getLength();
+        String content = document.getText(0, len);
+        if(firstToLast)
+            return content.indexOf(searchText);
+        else
+            return content.lastIndexOf(searchText);
+    }
+    
+    private static String findParamValue(ParameterInfo param) {
+        String paramVal = null;
+        if (param.isApiKey()) {
+            paramVal = "apiKey";
+        } else {
+            paramVal = Util.findParamValue(param);
+        }
+        return paramVal;
     }
 }

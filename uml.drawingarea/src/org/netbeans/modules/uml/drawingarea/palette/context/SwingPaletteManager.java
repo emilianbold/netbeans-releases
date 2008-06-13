@@ -53,6 +53,7 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.model.ObjectScene;
+import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
 import org.openide.util.Lookup;
@@ -371,7 +372,7 @@ public class SwingPaletteManager implements ContextPaletteManager
         @Override
         public State mouseMoved(Widget widget, WidgetMouseEvent event) 
         {
-            if(paletteWidget != null)
+            if(paletteWidget != null && paletteWidget.isVisible() && widget.getState().isSelected())
             {   
                 Point scenePt = widget.convertLocalToScene(event.getPoint());
                 Point viewPt = scene.convertSceneToView(scenePt);
@@ -393,7 +394,7 @@ public class SwingPaletteManager implements ContextPaletteManager
         @Override
         public State mouseMoved(Widget widget, WidgetMouseEvent event) 
         {
-            if(paletteWidget != null)
+            if(paletteWidget != null && paletteWidget.isVisible() && widget.getState().isSelected())
             {   
                 Rectangle bounds = widget.getBounds();
                 boolean left = event.getPoint().x < (bounds.x+bounds.width/2);

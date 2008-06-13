@@ -67,7 +67,6 @@ import java.util.Vector;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -538,27 +537,16 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 actions.add(standardActions[i]);
             actions.add(null);
             //actions.add(new CodeAssistanceAction());
-            addActionsFromLayers(actions, "NativeProjects/Menu"); // NOI18N
+            actions.addAll(Utilities.actionsForPath("NativeProjects/Menu")); // NOI18N
             actions.add(null);
             actions.add(SystemAction.get(org.openide.actions.FindAction.class ));
-            addActionsFromLayers(actions, "Projects/Actions"); // NOI18N
+            actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
             // Add remaining actions
             actions.add(null);
             //actions.add(SystemAction.get(ToolsAction.class));
             //actions.add(null);
             actions.add(CommonProjectActions.customizeProjectAction());
             return (Action[])actions.toArray(new Action[actions.size()]);
-        }
-        
-        private void addActionsFromLayers(final Vector actions, String path) {
-            Lookup look = Lookups.forPath(path);
-            for (Object next : look.lookupAll(Object.class)) {
-                if (next instanceof Action) {
-                    actions.add((Action) next);
-                } else if (next instanceof JSeparator) {
-                    actions.add(null);
-                }
-            }
         }
         
         public boolean canRename() {

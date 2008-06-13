@@ -236,6 +236,9 @@ public class DataLoaderInLayerTest extends NbTestCase {
     }
 
     public void testSimpleLoader() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return; // NB-Core-Build #767
+        }
         DataLoader l = DataLoader.getLoader(SimpleUniFileLoader.class);
         addRemoveLoader(l, true);
         try {

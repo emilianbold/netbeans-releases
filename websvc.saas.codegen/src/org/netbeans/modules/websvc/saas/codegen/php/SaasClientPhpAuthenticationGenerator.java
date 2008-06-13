@@ -103,7 +103,7 @@ public class SaasClientPhpAuthenticationGenerator extends SaasClientAuthenticati
         String methodBody = "";
         SaasAuthenticationType authType = getBean().getAuthenticationType();
         if (authType == SaasAuthenticationType.API_KEY) {
-            methodBody += "        String apiKey = " + getBean().getAuthenticatorClassName() + ".getApiKey();";
+            methodBody += "        $apiKey = " + getBean().getAuthenticatorClassName() + "::getApiKey();";
         } else if (authType == SaasAuthenticationType.SESSION_KEY) {
             SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) getBean().getAuthentication();
             methodBody += "        " + getBean().getAuthenticatorClassName() + ".login(" + getLoginArguments() + ");\n";
@@ -230,12 +230,13 @@ public class SaasClientPhpAuthenticationGenerator extends SaasClientAuthenticati
 
         //Also copy config
         if(getBean().getAuthenticationType() != SaasAuthenticationType.PLAIN) {
-            String profileName = getBean().getAuthenticatorClassName().toLowerCase();
+            String profileName = getBean().getAuthenticatorClassName()+"Profile";
             DataObject prof = null;
             String authProfile = getBean().getAuthenticationProfile();
             if (authProfile != null && !authProfile.trim().equals("")) {
                 try {
-                    prof = Util.createDataObjectFromTemplate(authProfile.replace("properties", Constants.PHP_EXT),
+                    authProfile = authProfile.replace("properties", Constants.PHP_EXT);
+                    prof = Util.createDataObjectFromTemplate(authProfile,
                             targetFolder, profileName);
                 } catch (Exception ex) {
                     throw new IOException("Profile file specified in " +

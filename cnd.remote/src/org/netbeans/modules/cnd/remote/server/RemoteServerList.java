@@ -40,16 +40,69 @@
 package org.netbeans.modules.cnd.remote.server;
 
 import java.util.ArrayList;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.openide.util.ChangeSupport;
 
 /**
  *
  * @author gordonp
  */
-public class RemoteServerList extends ArrayList<ServerRecord> implements ServerList {
+public class RemoteServerList extends ArrayList<RemoteServerRecord> implements ServerList {
+    
+    private static RemoteServerList instance = null;
+    
+    private ChangeSupport cs;
+    
+    public static RemoteServerList getInstance() {
+        if (instance == null) {
+            instance = new RemoteServerList();
+        }
+        return instance;
+    }
+    
+    public RemoteServerList() {
+        cs = new ChangeSupport(this);
+        add(new RemoteServerRecord()); // creates the "localhost" record
+//        add(new RemoteServerRecord("snocat", "gordonp", false)); // DEBUG
+//        add(new RemoteServerRecord("pucci", "gordonp", false)); // DEBUG
+        cs.fireChange();
+    }
+    
+    public void add(String server, String user, boolean active) {
+        RemoteServerRecord record = new RemoteServerRecord(server, user, active);
+        add(record);
+        cs.fireChange();
+    }
+    
+    public void add(String server, String user) {
+        add(server, user, false);
+        cs.fireChange();
+    }
 
     public ServerRecord getActive() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        for (RemoteServerRecord record : this) {
+            if (record.isActive()) {
+                return record;
+            }
+        }
+        return null;
+    }
+
+    public RemoteServerRecord getLocalhostRecord() {
+        return get(0);
+    }
+    
+    public void addChangeListener(ChangeListener listener) {
+        cs.addChangeListener(listener);
+    }
+    
+    public void remoteChangeListener(ChangeListener listener) {
+        cs.removeChangeListener(listener);
+    }
+    
+    public void fireChange() {
+        cs.fireChange();
     }
 }

@@ -718,6 +718,8 @@ final class LibrariesNode extends AbstractNode {
             } else {
                 chooser = new FileChooser(FileUtil.toFile(project.getProjectDirectory()), null);
             }
+            chooser.enableVariableBasedSelection(true);
+            chooser.setFileHidingEnabled(false);
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
             chooser.setMultiSelectionEnabled( true );
@@ -740,14 +742,14 @@ final class LibrariesNode extends AbstractNode {
                     return;
                 }
                 final String propName = cpProvider.getPropertyName(projectSourcesArtifact, ClassPath.COMPILE);
-                addJarFiles(files, fileFilter , FileUtil.toFile(project.getProjectDirectory()),
+                addJarFiles(files, chooser.getSelectedPathVariables(), fileFilter , FileUtil.toFile(project.getProjectDirectory()),
                         cpMod, propName);
                 curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
                 FoldersListSettings.getDefault().setLastUsedClassPathFolder(curDir);
             }
         }
 
-        private void addJarFiles (final String[] files, final FileFilter fileFilter,
+        private void addJarFiles (final String[] files, final String[] pathBasedVariables, final FileFilter fileFilter,
                 final File base, final J2SEProjectClassPathModifier cpMod, final String propName) {
             assert files != null;
             assert fileFilter != null;
@@ -761,8 +763,25 @@ final class LibrariesNode extends AbstractNode {
                     FileObject fo = FileUtil.toFileObject(fl);
                     assert fo != null : fl;
                     if (fo != null && fileFilter.accept(fl)) {
-                        URI u = LibrariesSupport.convertFilePathToURI(files[i]);
-                        if (FileUtil.isArchiveFile(fo)) {
+                        URI u;
+                        boolean isArchiveFile = FileUtil.isArchiveFile(fo);
+                        if (pathBasedVariables == null) {
+                            u = LibrariesSupport.convertFilePathToURI(files[i]);
+                        } else {
+                            try {
+                                String path = pathBasedVariables[i];
+                                // append slash before creating relative URI:
+                                if (!isArchiveFile && !path.endsWith("/")) { // NOI18N
+                                    path += "/"; // NOI18N
+                                }
+                                // create relative URI
+                                u = new URI(null, null, path, null);
+                            } catch (URISyntaxException ex) {
+                                Exceptions.printStackTrace(ex);
+                                u = LibrariesSupport.convertFilePathToURI(files[i]);
+                            }
+                        }
+                        if (isArchiveFile) {
                             u = LibrariesSupport.getArchiveRoot(u);
                         } else if (!u.toString().endsWith("/")) { // NOI18N
                             try {

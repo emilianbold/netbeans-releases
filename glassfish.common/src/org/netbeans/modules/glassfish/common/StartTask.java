@@ -1,3 +1,4 @@
+// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -38,6 +39,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+// </editor-fold>
 
 package org.netbeans.modules.glassfish.common;
 
@@ -51,11 +53,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.spi.glassfish.GlassfishModule;
-import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
-import org.netbeans.spi.glassfish.OperationStateListener;
-import org.netbeans.spi.glassfish.ServerUtilities;
-import org.netbeans.spi.glassfish.TreeParser;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
+import org.netbeans.modules.glassfish.spi.OperationStateListener;
+import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.openide.ErrorManager;
 import org.openide.execution.NbProcessDescriptor;
 import org.xml.sax.Attributes;
@@ -194,7 +196,7 @@ public class StartTask extends BasicTask<OperationState> {
         }
         String jarLocation = jar.getAbsolutePath();
         
-        Map<String, String> argMap = readJvmArgs(getDomainFolder(serverHome));
+        Map<String, String> argMap = readJvmArgs(getDomainFolder());
         
         StringBuilder argumentBuf = new StringBuilder(1024);
         appendSystemVars(argMap, argumentBuf);
@@ -202,6 +204,7 @@ public class StartTask extends BasicTask<OperationState> {
         argumentBuf.append(" -client -jar ");
         argumentBuf.append(quote(jarLocation));
         argumentBuf.append(" --domain " + getDomainName());
+        argumentBuf.append(" --domaindir " + getDomainFolder().getAbsolutePath());
         
         String arguments = argumentBuf.toString();
         Logger.getLogger("glassfish").log(Level.FINE, "V3 JVM Command: " + startScript + arguments);
@@ -266,13 +269,13 @@ public class StartTask extends BasicTask<OperationState> {
         return process;
     }
     
-    private File getDomainFolder(String serverHome) {
-        // !PW FIXME default domain hardcoded.
-        return new File(serverHome, "domains" + File.separatorChar + getDomainName());
+    private File getDomainFolder() {
+        return new File(ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) + 
+                File.separatorChar + getDomainName());
     }
     
-    private static final String getDomainName() {
-        return "domain1";
+    private final String getDomainName() {
+        return ip.get(GlassfishModule.DOMAIN_NAME_ATTR);
     }
     
     private Map<String, String> readJvmArgs(File domainRoot) {

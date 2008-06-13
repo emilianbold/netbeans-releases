@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -53,7 +52,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -64,9 +62,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.php.project.ui.actions.DebugSingleCommand;
-import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
 import org.netbeans.modules.php.project.ui.actions.RunSingleCommand;
-import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -243,17 +239,8 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
             actions.add(SystemAction.get(FindAction.class));
 
             // honor 57874 contact
-            Collection<? extends Object> res = Lookups.forPath("Projects/Actions").lookupAll(Object.class); // NOI18N
-            if (!res.isEmpty()) {
-                actions.add(null);
-                for (Object next : res) {
-                    if (next instanceof Action) {
-                        actions.add((Action) next);
-                    } else if (next instanceof JSeparator) {
-                        actions.add(null);
-                    }
-                }
-            }
+            actions.add(null);
+            actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
             actions.add(null);
             actions.add(CommonProjectActions.customizeProjectAction());
             return actions.toArray(new Action[actions.size()]);

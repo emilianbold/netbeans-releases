@@ -232,10 +232,7 @@ public class ModuleDependencies extends Task {
                 {
                     String ideDeps = file.getManifest ().getMainAttributes ().getValue ("OpenIDE-Module-IDE-Dependencies"); // IDE/1 > 4.25
                     if (ideDeps != null) {
-                        StringTokenizer tok = new StringTokenizer (ideDeps, "> ");
-                        if (tok.countTokens () != 2 || !tok.nextToken ().equals ("IDE/1")) {
-                            throw new BuildException ("Wrong OpenIDE-Module-IDE-Dependencies: " + ideDeps);
-                        }
+                        throw new BuildException("OpenIDE-Module-IDE-Dependencies is obsolete in " + f);
                     }
                 }
                 addDependencies (depends, file.getManifest (), Dependency.REQUIRES, "OpenIDE-Module-Module-Dependencies");

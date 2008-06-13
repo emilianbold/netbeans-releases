@@ -22,6 +22,7 @@ package org.netbeans.modules.bpel.mapper.predicates;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 
 /**
@@ -46,11 +47,11 @@ public class XPathPredicate extends AbstractPredicate {
         return mLocationStep.getPredicates();
     }
     
-    public SchemaComponent getSComponent() {
+    public SchemaCompHolder getSCompHolder() {
         XPathSchemaContext schemaContext = mLocationStep.getSchemaContext();
-        SchemaComponent sComp = XPathSchemaContext.Utilities.
-                getSchemaComp(schemaContext);
-        return sComp;
+        SchemaCompHolder sCompHolder = XPathSchemaContext.Utilities.
+                getSchemaCompHolder(schemaContext);
+        return sCompHolder;
     }
     
     public void setPredicates(XPathPredicateExpression[] newPArr) {

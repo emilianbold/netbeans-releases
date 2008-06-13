@@ -50,7 +50,6 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.JSeparator;
 import javax.swing.text.Document;
 
 import org.netbeans.core.spi.multiview.CloseOperationState;
@@ -64,6 +63,7 @@ import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 /**
@@ -252,22 +252,10 @@ public class ETLSourceMultiViewElement extends CloneableEditor implements MultiV
             if(!(action instanceof FileSystemAction))
             actionsList.add(action);
         }
-        actionsList.add(addFromLayers());
+        actionsList.addAll(Utilities.actionsForPath("Projects/Actions"));
         Action[] actions = new Action[actionsList.size()];
         actionsList.toArray(actions);
         return actions;
     }
 
-    private Action addFromLayers() {
-        Action action = null;
-        Lookup look = Lookups.forPath("Projects/Actions");
-        for (Object next : look.lookupAll(Object.class)) {
-            if (next instanceof Action) {
-                action = (Action) next;
-            } else if (next instanceof JSeparator) {
-                action = null;
-            }
-        }        
-        return action;
-    }
 }
