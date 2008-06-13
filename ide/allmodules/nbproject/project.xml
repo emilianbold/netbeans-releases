@@ -56,6 +56,7 @@ made subject to such option by the copyright holder.
                 <project>../../api.debugger</project>
                 <project>../../api.debugger.jpda</project>
                 <project>../../api.java</project>
+                <project>../../api.java.classpath</project>
                 <project>../../api.mobility</project>
                 <project>../../api.progress</project>
                 <project>../../api.visual</project>
@@ -116,6 +117,7 @@ made subject to such option by the copyright holder.
                 <project>../../cnd.navigation</project>
                 <project>../../cnd.qnavigator</project>
                 <project>../../cnd.refactoring</project>
+                <project>../../cnd.remote</project>
                 <project>../../cnd.repository</project>
                 <project>../../cnd.repository.api</project>
                 <project>../../cnd.utils</project>
@@ -182,11 +184,18 @@ made subject to such option by the copyright holder.
                 <project>../../editor.util</project>
                 <project>../../el.lexer</project>
                 <project>../../extbrowser</project>
+                <project>../../extexecution</project>
                 <project>../../favorites</project>
                 <project>../../form</project>
                 <project>../../form.j2ee</project>
                 <project>../../form.kit</project>
                 <project>../../gototest</project>
+                <project>../../groovy.editor</project>
+                <project>../../groovy.grails</project>
+                <project>../../groovy.grailsproject</project>
+                <project>../../groovy.gsp</project>
+                <project>../../groovy.kit</project>
+                <project>../../groovy.support</project>
                 <project>../../gsf</project>
                 <project>../../gsf.api</project>
                 <project>../../gsfpath.api</project>
@@ -251,6 +260,8 @@ made subject to such option by the copyright holder.
                 <project>../../j2me.cdc.platform.semc</project>
                 <project>../../j2me.cdc.platform.sun</project>
                 <project>../../j2me.cdc.project</project>
+                <project>../../j2me.cdc.project.execui</project>
+                <project>../../j2me.cdc.project.execuiimpl</project>
                 <project>../../j2me.cdc.project.nokiaS80</project>
                 <project>../../j2me.cdc.project.nsicom</project>
                 <project>../../j2me.cdc.project.ricoh</project>
@@ -265,6 +276,7 @@ made subject to such option by the copyright holder.
                 <project>../../java.guards</project>
                 <project>../../java.helpset</project>
                 <project>../../java.hints</project>
+                <project>../../java.hints.analyzer</project>
                 <project>../../java.j2seplatform</project>
                 <project>../../java.j2seproject</project>
                 <project>../../java.kit</project>
@@ -280,9 +292,11 @@ made subject to such option by the copyright holder.
                 <project>../../javascript.editing</project>
                 <project>../../javascript.hints</project>
                 <project>../../javascript.kit</project>
+                <project>../../javascript.libraries</project>
+                <project>../../javascript.libraries.woodstock</project>
+                <project>../../javascript.libraries.yahooui</project>
                 <project>../../javascript.refactoring</project>
                 <project>../../javawebstart</project>
-                <project>../../javawebstart.signtask</project>
                 <project>../../jsp.lexer</project>
                 <project>../../jumpto</project>
                 <project>../../junit</project>
@@ -304,9 +318,11 @@ made subject to such option by the copyright holder.
                 <project>../../libs.aguiswinglayout</project>
                 <project>../../libs.commons_fileupload</project>
                 <project>../../libs.commons_logging</project>
+                <project>../../libs.commons_net</project>
                 <project>../../libs.freemarker</project>
                 <project>../../libs.glassfish_logging</project>
                 <project>../../libs.ini4j</project>
+                <project>../../libs.jakarta_oro</project>
                 <project>../../libs.javacapi</project>
                 <project>../../libs.javacimpl</project>
                 <project>../../libs.javacup</project>
@@ -343,6 +359,9 @@ made subject to such option by the copyright holder.
                 <project>../../mobility.plugins.mpowerplayer</project>
                 <project>../../mobility.proguard</project>
                 <project>../../mobility.project</project>
+                <project>../../mobility.project.ant</project>
+                <project>../../mobility.project.bridge</project>
+                <project>../../mobility.project.bridge.impl</project>
                 <project>../../mobility.snippets</project>
                 <project>../../mobility.svgcore</project>
                 <project>../../mvd</project>
@@ -364,6 +383,7 @@ made subject to such option by the copyright holder.
                 <project>../../o.n.soa.libs.wsdl4j</project>
                 <project>../../o.n.soa.libs.xmlbeans</project>
                 <project>../../o.n.swing.dirchooser</project>
+                <project>../../o.n.swing.outline</project>
                 <project>../../o.n.swing.plaf</project>
                 <project>../../o.n.swing.tabcontrol</project>
                 <project>../../o.n.upgrader</project>
@@ -390,10 +410,10 @@ made subject to such option by the copyright holder.
                 <project>../../options.editor</project>
                 <project>../../options.keymap</project>
                 <project>../../php.dbgp</project>
-                <project>../../php.doc</project>
                 <project>../../php.editor</project>
                 <project>../../php.kit</project>
                 <project>../../php.project</project>
+                <project>../../php.refactoring</project>
                 <project>../../php.samples</project>
                 <project>../../print</project>
                 <project>../../profiler</project>
@@ -415,6 +435,9 @@ made subject to such option by the copyright holder.
                 <project>../../project.ant</project>
                 <project>../../project.libraries</project>
                 <project>../../projectapi</project>
+                <project>../../projectimport.eclipse.core</project>
+                <project>../../projectimport.eclipse.j2se</project>
+                <project>../../projectimport.eclipse.web</project>
                 <project>../../projectui</project>
                 <project>../../projectuiapi</project>
                 <project>../../properties</project>
@@ -437,6 +460,7 @@ made subject to such option by the copyright holder.
                 <project>../../ruby.refactoring</project>
                 <project>../../ruby.rhtml</project>
                 <project>../../ruby.samples.depot</project>
+                <project>../../ruby.testrunner</project>
                 <project>../../schema2beans</project>
                 <project>../../sendopts</project>
                 <project>../../server</project>
@@ -475,12 +499,12 @@ made subject to such option by the copyright holder.
                 <project>../../uml</project>
                 <project>../../uml.codegen</project>
                 <project>../../uml.designpattern</project>
+                <project>../../uml.diagrams</project>
                 <project>../../uml.documentation</project>
                 <project>../../uml.dom4jlib</project>
                 <project>../../uml.drawingarea</project>
                 <project>../../uml.integration</project>
                 <project>../../uml.kit</project>
-                <project>../../uml.palette</project>
                 <project>../../uml.parser.java</project>
                 <project>../../uml.project</project>
                 <project>../../uml.propertysupport</project>
@@ -489,7 +513,7 @@ made subject to such option by the copyright holder.
                 <project>../../uml.requirements.doorsprovider</project>
                 <project>../../uml.requirements.xmlrequirements</project>
                 <project>../../uml.samples</project>
-                <project>../../uml.tomsawyer</project>
+                <project>../../uml.widgets</project>
                 <project>../../updatecenters</project>
                 <project>../../usersguide</project>
                 <project>../../utilities</project>
@@ -519,7 +543,6 @@ made subject to such option by the copyright holder.
                 <project>../../visualweb.designtime.idebridge</project>
                 <project>../../visualweb.designtimeext</project>
                 <project>../../visualweb.ejb</project>
-                <project>../../visualweb.errorhandler</project>
                 <project>../../visualweb.errorhandler.client</project>
                 <project>../../visualweb.extension.openide</project>
                 <project>../../visualweb.extension.openide.loaders</project>
@@ -628,6 +651,7 @@ made subject to such option by the copyright holder.
                 <project>../../websvc.saas.services.zillow</project>
                 <project>../../websvc.saas.services.zvents</project>
                 <project>../../websvc.saas.ui</project>
+                <project>../../websvc.serverapi</project>
                 <project>../../websvc.serviceapi</project>
                 <project>../../websvc.utilities</project>
                 <project>../../websvc.websvcapi</project>
