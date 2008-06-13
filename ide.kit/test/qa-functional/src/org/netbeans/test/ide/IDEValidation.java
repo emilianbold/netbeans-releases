@@ -49,6 +49,8 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
@@ -169,7 +171,7 @@ public class IDEValidation extends JellyTestCase {
     @Override
     public void setUp() {
         //Enable logging from CloneableEditor to investigate hang
-        System.setProperty("editor.log.enabled","true");
+        Logger.getLogger("org.openide.text.CloneableEditor").setLevel(Level.FINE);
         System.out.println("########  "+getName()+"  #######");
         // Close help window if any - it should not stay open between test cases.
         // Otherwise it can break next tests.

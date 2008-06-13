@@ -201,11 +201,11 @@ made subject to such option by the copyright holder.
 
                     <file name="SeparatorAfterGoToHelp.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1240"/>
+                        <attr name="position" intvalue="1430"/>
                     </file>
 
                     <file name="format">
-                        <attr name="position" intvalue="1480"/>
+                        <attr name="position" intvalue="1580"/>
                     </file>                    
                                                             
 
@@ -213,7 +213,7 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="1520"/>
                     </file>
                     <file name="generate-code">
-                        <attr name="position" intvalue="1560"/>
+                        <attr name="position" intvalue="1480"/>
                     </file>
                     
                     <file name="SeparatorBeforeCut.instance">
