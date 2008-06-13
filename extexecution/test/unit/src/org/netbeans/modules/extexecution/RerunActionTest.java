@@ -86,6 +86,9 @@ public class RerunActionTest extends NbTestCase {
 
         action.setRerunCondition(condition);
         assertFalse(action.isEnabled());
+        condition.setRerunPossible(true);
+        action.setEnabled(false);
+        assertFalse(action.isEnabled());
     }
 
     private static class TestCondition implements RerunCondition {
