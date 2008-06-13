@@ -279,8 +279,12 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 }
                 previousDebugger = this.debugger;
                 this.debugger = deb;
-                this.session = engine.lookupFirst(null, Session.class);
-                deb.addPropertyChangeListener(this);
+                if (deb != null) {
+                    this.session = engine.lookupFirst(null, Session.class);
+                    deb.addPropertyChangeListener(this);
+                } else {
+                    this.session = null;
+                }
             }
             threadsListener.changeDebugger(deb);
         } else {
