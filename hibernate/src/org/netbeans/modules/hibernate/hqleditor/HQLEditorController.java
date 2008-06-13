@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hibernate.util.CustomClassLoader;
@@ -51,6 +52,7 @@ import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * HQL Editor controller. Controls overall HQL query execution.
@@ -62,10 +64,13 @@ public class HQLEditorController {
     private Logger logger = Logger.getLogger(HQLEditorController.class.getName());
     HQLEditorTopComponent editorTopComponent = null;
 
-    public void executeHQLQuery(final String hql, final FileObject configFileObject) {
+    public void executeHQLQuery(final String hql, final FileObject configFileObject, final ProgressHandle ph) {
         final List<URL> localResourcesURLList = new ArrayList<URL>();
 
         try {
+            ph.progress(
+                    NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionPrepare"), 10
+                    );
             Project project = FileOwnerQuery.getOwner(configFileObject);
             // Parse POJOs from HQL
             // Check and if required compile POJO files mentioned in HQL
@@ -88,7 +93,13 @@ public class HQLEditorController {
                 Thread.currentThread().setContextClassLoader(customClassLoader);
                 HQLExecutor queryExecutor = new HQLExecutor();
                 try {
+                    ph.progress(
+                    NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionPassControlToHibernate"), 50
+                    );
                 HQLResult r = queryExecutor.execute(hql, configFileObject);
+                ph.progress(
+                    NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionProcessResults"), 80
+                    );
                    editorTopComponent.setResult(r);
                 } catch (Exception e) {
                     System.out.println("exception " + e);   

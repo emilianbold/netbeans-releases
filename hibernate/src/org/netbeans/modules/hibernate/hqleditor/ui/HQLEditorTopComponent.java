@@ -49,6 +49,8 @@ import java.util.Vector;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.table.DefaultTableModel;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
@@ -80,6 +82,7 @@ public final class HQLEditorTopComponent extends TopComponent {
     private Integer thisWindowCount = new Integer(0);
     private HQLEditorController controller = null;
     private HibernateEnvironment env = null;
+    private ProgressHandle ph = null;
 
     private static int getNextWindowCount() {
         int count = 0;
@@ -103,6 +106,7 @@ public final class HQLEditorTopComponent extends TopComponent {
         setIcon(Utilities.loadImage(ICON_PATH, true));
 
         sqlToggleButton.setSelected(true);
+        
     }
 
     public void fillHibernateConfigurations(Node[] activatedNodes) {
@@ -216,7 +220,12 @@ public final class HQLEditorTopComponent extends TopComponent {
             }
             logger.info(errorTextArea.getText());
         }
+        ph.progress(
+                NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionDone"), 99
+                );
+        
         runHQLButton.setEnabled(true);
+        ph.finish();
 
     }
 
@@ -428,9 +437,12 @@ private void sqlToggleButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GE
 private void runHQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runHQLButtonActionPerformed
     runHQLButton.setEnabled(false);
     try {
+        ph = ProgressHandleFactory.createHandle(
+                NbBundle.getMessage(HQLEditorTopComponent.class, "progressTaskname")
+                );
         FileObject selectedConfigFile = (FileObject) hibernateConfigMap.get(hibernateConfigurationComboBox.getSelectedItem());
-
-        controller.executeHQLQuery(hqlEditor.getText(), selectedConfigFile);
+        ph.start(100);
+        controller.executeHQLQuery(hqlEditor.getText(), selectedConfigFile, ph);
     } catch (Exception ex) {
         Exceptions.printStackTrace(ex);                                            
     }
