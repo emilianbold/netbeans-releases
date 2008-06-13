@@ -41,10 +41,8 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.impl;
 
-import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.XPath;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -60,15 +58,6 @@ public class XPathImpl extends SecurityPolicyComponentImpl implements XPath {
         super(model, e);
     }
     
-    public XPathImpl(WSDLModel model){
-        this(model, createPrefixedElement(SecurityPolicyQName.XPATH.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
     public void setXPath(String xPath) {
         setText(XPATH_CONTENT_VALUE_PROPERTY, xPath);
     }

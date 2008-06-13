@@ -10,8 +10,8 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.navigation.hierarchy.Bundle"/>
             </file>
 
-            <file name="org-netbeans-modules-cnd-navigation-hierarchy-ClassHierarchyPopupAction.instance"/>
-            <file name="org-netbeans-modules-cnd-navigation-hierarchy-IncludeHierarchyPopupAction.instance"/>
+            <!--file name="org-netbeans-modules-cnd-navigation-hierarchy-ClassHierarchyPopupAction.instance"/-->
+            <!--file name="org-netbeans-modules-cnd-navigation-hierarchy-IncludeHierarchyPopupAction.instance"/-->
         
         </folder>
         <folder name="Window">
@@ -55,14 +55,14 @@
                             <attr name="position" intvalue="1200"/>
                         </file>
 
-                        <file name="org-netbeans-modules-cnd-navigation-hierarchy-IncludeHierarchyPopupAction.shadow">
+                        <!--file name="org-netbeans-modules-cnd-navigation-hierarchy-IncludeHierarchyPopupAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-hierarchy-IncludeHierarchyPopupAction.instance"/>
                             <attr name="position" intvalue="1300"/>
-                        </file>
-                        <file name="org-netbeans-modules-cnd-navigation-hierarchy-ClassHierarchyPopupAction.shadow">
+                        </file-->
+                        <!--file name="org-netbeans-modules-cnd-navigation-hierarchy-ClassHierarchyPopupAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-hierarchy-ClassHierarchyPopupAction.instance"/>
                             <attr name="position" intvalue="1400"/>
-                        </file>
+                        </file-->
                     </folder>
                 </folder>
             </folder>
@@ -95,10 +95,10 @@
                             <attr name="position" intvalue="1100"/>
                         </file>
 
-                        <file name="org-netbeans-modules-cnd-navigation-hierarchy-IncludeHierarchyPopupAction.shadow">
+                        <!--file name="org-netbeans-modules-cnd-navigation-hierarchy-IncludeHierarchyPopupAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-hierarchy-IncludeHierarchyPopupAction.instance"/>
                             <attr name="position" intvalue="1200"/>
-                        </file>
+                        </file-->
                     
                     </folder>
                 </folder>

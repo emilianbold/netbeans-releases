@@ -16,9 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
-
 package org.netbeans.modules.bpel.core.wizard;
 
 import java.awt.Component;
@@ -34,15 +31,11 @@ import org.openide.WizardDescriptor;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 
-/**
- *
- * from nb webservice module
- */
 final class NewBpelFilePanel implements WizardDescriptor.Panel<WizardDescriptor> {
 
-    NewBpelFilePanel(Project project, SourceGroup[] folders) {
-        this.folders = folders;
-        this.project = project;
+    NewBpelFilePanel(Project aProject, SourceGroup[] aFolders) {
+        this.folders = aFolders;
+        this.project = aProject;
     }
     
     TemplateWizard getTemplateWizard() {
@@ -67,9 +60,9 @@ final class NewBpelFilePanel implements WizardDescriptor.Panel<WizardDescriptor>
     public boolean isValid() {
         boolean valid = true;
         
-        if(gui.getNamespaceTextField().contains(" "))
+        if(gui.getNamespaceTextField().contains(" ")) {
             valid = false;
-        
+        }
         return valid;
     }
 
@@ -116,11 +109,10 @@ final class NewBpelFilePanel implements WizardDescriptor.Panel<WizardDescriptor>
         return project;
     }
 
-    private final List/*<ChangeListener>*/ listeners = new ArrayList();
+    private final List listeners = new ArrayList();
     private BpelOptionsPanel gui;
 
     private Project project;
     private SourceGroup[] folders;
     private TemplateWizard templateWizard;
-   
 }

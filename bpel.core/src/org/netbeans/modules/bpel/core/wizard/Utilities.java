@@ -34,7 +34,9 @@ import org.openide.WizardDescriptor;
  *
  * @author  from nb webservice module
  */
-public class Utilities {
+public final class Utilities {
+
+    private Utilities() {}
     
     public static String[] createSteps(String[] before,
             WizardDescriptor.Panel[] panels) {
@@ -65,8 +67,9 @@ public class Utilities {
         JLabel label = findLabel(component, text);
         if(label != null) {
             Component comp = label.getLabelFor();
-            if (comp!=null && (comp instanceof JTextComponent))
+            if (comp!=null && (comp instanceof JTextComponent)) {
                 return (JTextComponent)comp;
+            }
         }
         return null;
     }
@@ -76,9 +79,7 @@ public class Utilities {
      * taken from j2ee module
      * Recursively gets all components in the components array and puts it in allComponents
      */
-    private static void getAllComponents( Component[] components, 
-            Collection allComponents ) 
-    {
+    private static void getAllComponents( Component[] components, Collection allComponents) {
         for( int i = 0; i < components.length; i++ ) {
             if( components[i] != null ) {
                 allComponents.add( components[i] );
@@ -110,6 +111,4 @@ public class Utilities {
         }
         return null;
     }
-    
-    
 }

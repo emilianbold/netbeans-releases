@@ -109,7 +109,7 @@ public final class SetUtil {
         myValue = element.getName();
       }
       myValue = myValue.toLowerCase();
-      myChars = new byte [0xFFFF];
+      myChars = new byte [MAX_CHAR];
 
       for (int i=0; i < myValue.length(); i++) {
         myChars [myValue.charAt(i)]++;
@@ -150,11 +150,11 @@ public final class SetUtil {
           if (myChars [i] == 0) {
             continue;
           }
-          buffer.append(((char) i) + "(" + myChars [i] + ")");
+          buffer.append(((char) i) + "(" + myChars [i] + ")"); // NOI18N
         }
-        myString = myValue + ": " +  buffer.toString();
+        myString = myValue + ": " +  buffer.toString(); // NOI18N
       }
-      return myDistance + ": " + myString;
+      return myDistance + ": " + myString; // NOI18N
     }
 
     private int myDistance;
@@ -162,5 +162,6 @@ public final class SetUtil {
     private String myString;
     private byte [] myChars;
     private Named myElement;
+    private static final int MAX_CHAR = 0xFFFF;
   }
 }

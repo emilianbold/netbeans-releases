@@ -72,7 +72,7 @@ import org.openide.util.RequestProcessor;
  */
 public class AntCustomizer extends JPanel implements ActionListener {
     
-    private List<File> classpath;
+    private List<File> classpath = Collections.emptyList();
     private Map<String,String> properties = Collections.emptyMap();
     private boolean         changed = false;
     private boolean         listen = false;

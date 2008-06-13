@@ -41,10 +41,8 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.transport.impl;
 
-import org.netbeans.modules.websvc.wsitmodelext.transport.FIQName;
 import org.netbeans.modules.websvc.wsitmodelext.transport.OptimizedFastInfosetSerialization;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -60,15 +58,6 @@ public class OptimizedFastInfosetSerializationImpl extends FiComponentImpl imple
         super(model, e);
     }
     
-    public OptimizedFastInfosetSerializationImpl(WSDLModel model){
-        this(model, createPrefixedElement(FIQName.OPTIMIZEDFASTINFOSETSERIALIZATION.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
     public void enable(boolean enabled) {
         setAttribute(FI_CONTENT_VALUE_PROPERTY, TransportAttribute.ENABLED, enabled);        
     }

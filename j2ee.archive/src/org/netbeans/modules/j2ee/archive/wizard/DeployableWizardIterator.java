@@ -728,6 +728,7 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
             createData.setBuildfile(GeneratedFilesHelper.BUILD_XML_PATH);
             createData.setJavaSourceBased(false);
             createData.setWebInfFolder(webInf);
+            createData.setSourceLevel("1.5");
             return WebProjectUtilities.importProject(createData);
         }
         

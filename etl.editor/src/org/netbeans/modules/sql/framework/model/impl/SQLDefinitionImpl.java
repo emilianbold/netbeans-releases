@@ -441,6 +441,7 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
         dbName = (dbName == null) ? ETLEditorSupport.PRJ_PATH + File.separator + "data" + File.separator :  dbName;
         return dbName;
     }
+    
     public boolean isDynamicFlatFile() {
         Boolean dynamicFlatFile = (Boolean) this.getAttributeValue(DYNAMIC_FLAT_FILE);
         boolean flag = false;
@@ -1044,7 +1045,7 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
     public void setAxiondbDataDirectory(String dbInstanceName) {
         this.setAttribute(AXION_DB_DATA_DIR, dbInstanceName);
     }
-
+    
     /**
      * @see SQLDefinition#setParent
      */

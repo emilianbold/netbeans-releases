@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import org.xml.sax.SAXException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -71,7 +72,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 
-public class Util {
+public final class Util {
 
   private Util () {}
 
@@ -93,23 +94,14 @@ public class Util {
                   try {
                       FileUtil.copy(str, out);
                   }
-                  catch (Exception e) {
-                    e.printStackTrace();
-                  }
                   finally {
                       out.close();
                   }
               } 
-              catch (Exception e) {
-                e.printStackTrace();
-              }
               finally {
                   lock.releaseLock();
               }
           }
-      }
-      catch (Exception e) {
-        e.printStackTrace();
       }
       finally {
           source.close();
@@ -122,7 +114,7 @@ public class Util {
   }
 
   public static void renameInProperties(FileObject prjLoc, String newName, String defaultName) {
-    FileObject propertiesFile = prjLoc.getFileObject("nbproject/project.properties");
+    FileObject propertiesFile = prjLoc.getFileObject("nbproject/project.properties"); // NOI18N
 
     try {
       String text = readContent(propertiesFile);
@@ -178,8 +170,11 @@ public class Util {
               }
               saveXml(doc, prjLoc, AntProjectHelper.PROJECT_XML_PATH);
           }
-          
-      } catch (Exception e) {
+      } 
+      catch (IOException e) {
+          ErrorManager.getDefault().notify(e);
+      }
+      catch (SAXException e) {
           ErrorManager.getDefault().notify(e);
       }
   }
@@ -260,7 +255,7 @@ public class Util {
       }
   }
 
-  private static String [] JAVAEE_ARTIFACT_TYPES = new String [] {
+  private static final String [] JAVAEE_ARTIFACT_TYPES = new String [] {
     "j2ee_archive", // NOI18N
     "war", // NOI18N
     JbiProjectConstants.ARTIFACT_TYPE_JBI_ASA

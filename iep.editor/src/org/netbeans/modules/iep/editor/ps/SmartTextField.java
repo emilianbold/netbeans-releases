@@ -50,8 +50,8 @@ public class SmartTextField extends JTextField {
     }
     
     public SmartTextField(boolean truncateColumn, AttributeDropNotificationListener handler) {
-    	this(truncateColumn);
-    	this.mHandler = handler;
+        this(truncateColumn);
+        this.mHandler = handler;
     }
     
     class MyDropTargetAdapter extends DropTargetAdapter {
@@ -87,7 +87,7 @@ public class SmartTextField extends JTextField {
                     msg = mTruncateColumn? ai.getEntityName() : ai.getEntityAndColumnName();
                      //if there is a handler then notify it
                     if(mHandler != null) {
-                    	AttributeDropNotificationEvent evt = new AttributeDropNotificationEvent(ai);
+                        AttributeDropNotificationEvent evt = new AttributeDropNotificationEvent(ai);
                         mHandler.onDropComplete(evt);
                     }
                 } else {

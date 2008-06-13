@@ -49,7 +49,7 @@ public class TcgComponentNodeProperty extends Node.Property {
     protected IEPModel mModel;
     
     public static TcgComponentNodeProperty 
-    		newCustomPropertyEditorInstance(OperatorComponent component, IEPModel model) throws I18nException {
+            newCustomPropertyEditorInstance(OperatorComponent component, IEPModel model) throws I18nException {
         Property property = model.getFactory().createProperty(model);
         property.setName(SharedConstants.PROPERTY_EDITOR_KEY);
         TcgPropertyType propertyType = component.getComponentType().getPropertyType(SharedConstants.PROPERTY_EDITOR_KEY);
@@ -58,21 +58,21 @@ public class TcgComponentNodeProperty extends Node.Property {
     }
     
     public static TcgComponentNodeProperty newInstance(TcgPropertyType propertyType,
-    												   OperatorComponent component,
-    												   IEPModel model) throws I18nException {
+                                                       OperatorComponent component,
+                                                       IEPModel model) throws I18nException {
         return newPropertyInstance(propertyType, component, model);
     }
     
     private static TcgComponentNodeProperty newPropertyInstance(TcgPropertyType propertyType,
-    												   OperatorComponent component,
-    												   IEPModel model) {
+                                                       OperatorComponent component,
+                                                       IEPModel model) {
         return new TcgComponentNodeProperty(Object.class, propertyType, component, model);
     }
 
     private TcgComponentNodeProperty(Class valueType,
-    								 TcgPropertyType propertyType,
-    								 OperatorComponent component,
-    								 IEPModel model) {
+                                     TcgPropertyType propertyType,
+                                     OperatorComponent component,
+                                     IEPModel model) {
         super (valueType);
         mPropertyType = propertyType;
         mComp = component;
@@ -99,8 +99,8 @@ public class TcgComponentNodeProperty extends Node.Property {
     public Object getValue () 
         throws IllegalAccessException, IllegalArgumentException, InvocationTargetException 
     {
-    	return "";
-    	//rit commented below
+        return "";
+        //rit commented below
 //        // Note that the return of this method is not used by 
 //        // TcgComponentNodePropertyEditor and its children at all.
 //        // It is used by Netbean's default property editors
@@ -118,7 +118,7 @@ public class TcgComponentNodeProperty extends Node.Property {
 //            List list = new ArrayList();//ritmProperty.getListValue();
 //            String value = mProperty.getValue();
 //            if(value != null) {
-//            	list = (List) mProperty.getPropertyType().getType().parse(value);
+//                list = (List) mProperty.getPropertyType().getType().parse(value);
 //            }
 //            for (int i = 0, I = list.size(); i < I; i++) {
 //                listModel.addElement(list.get(i));
@@ -181,7 +181,7 @@ public class TcgComponentNodeProperty extends Node.Property {
             return super.getPropertyEditor();
         }
         try {
-        	ComponentPropertyEditorConfig editor = (ComponentPropertyEditorConfig)Class.forName(editorName).newInstance();
+            ComponentPropertyEditorConfig editor = (ComponentPropertyEditorConfig)Class.forName(editorName).newInstance();
             //editor.setProperty(this);
             editor.setPropertyType(this.mPropertyType);
             editor.setOperatorComponent(this.mComp);
@@ -196,11 +196,11 @@ public class TcgComponentNodeProperty extends Node.Property {
 
    
     public IEPModel getModel() {
-    	return this.mModel;
+        return this.mModel;
     }
     
     public OperatorComponent getModelComponent() {
-    	return this.mComp;
+        return this.mComp;
     }
     
     public TcgPropertyType getPropertyType() {

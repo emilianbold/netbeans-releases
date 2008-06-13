@@ -41,20 +41,16 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.algosuite.impl;
 
-import java.util.Collections;
-import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
 import org.netbeans.modules.websvc.wsitmodelext.security.algosuite.AlgorithmSuite;
-import org.netbeans.modules.websvc.wsitmodelext.security.algosuite.AlgorithmSuiteQName;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
+import org.netbeans.modules.websvc.wsitmodelext.security.impl.SecurityPolicyComponentImpl;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author Martin Grebac
  */
-public class AlgorithmSuiteImpl extends AlgorithmSuiteComponentImpl implements AlgorithmSuite {
+public class AlgorithmSuiteImpl extends SecurityPolicyComponentImpl implements AlgorithmSuite {
     
     /**
      * Creates a new instance of AlgorithmSuiteImpl
@@ -63,25 +59,4 @@ public class AlgorithmSuiteImpl extends AlgorithmSuiteComponentImpl implements A
         super(model, e);
     }
     
-    public AlgorithmSuiteImpl(WSDLModel model){
-        this(model, createPrefixedElement(AlgorithmSuiteQName.ALGORITHMSUITE.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
-    public void setPolicy(Policy policy) {
-        java.util.List<Class<? extends WSDLComponent>> classes = Collections.emptyList();
-        setChild(Policy.class, Policy.POLICY_PROPERTY, policy, classes);
-    }
-
-    public Policy getPolicy() {
-        return getChild(Policy.class);
-    }
-
-    public void removePolicy(Policy policy) {
-        removeChild(Policy.POLICY_PROPERTY, policy);
-    }    
 }

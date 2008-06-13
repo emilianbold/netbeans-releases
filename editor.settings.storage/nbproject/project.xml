@@ -113,6 +113,9 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.openide.text</code-name-base>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.bootstrap</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.core</code-name-base>
                     </test-dependency>
                     <test-dependency>

@@ -19,6 +19,7 @@ import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.TreeLoader;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -42,6 +43,8 @@ public class ElementHeadersTest extends NbTestCase {
     
     private void prepareTest(String fileName, String code) throws Exception {
         clearWorkDir();
+        
+        FileUtil.refreshAll();
         
         FileObject workFO = FileUtil.toFileObject(getWorkDir());
         
@@ -97,5 +100,14 @@ public class ElementHeadersTest extends NbTestCase {
         performTest("test/Test.java", "package test; public class Test { int aa; }", 39, ElementHeaders.NAME, "aa");
         performTest("test/Test.java", "package test; public class Test { int aa; }", 39, ElementHeaders.NAME, "aa");
         performTest("test/Test.java", "package test; public class Test { int aa; }", 39, ElementHeaders.NAME, "aa");
+    }
+    
+    public void testConstructor133774() throws Exception {
+        performTest("test/Test.java", "package test; public class Test { public Test() {}}", 43, ElementHeaders.NAME, "Test");
+    }
+    
+    public void test134664() throws Exception {
+        TreeLoader.DISABLE_CONFINEMENT_TEST = true;
+        performTest("test/Test.java", "package test; public class Test { public Tfst {} }", 43, ElementHeaders.NAME, "Tfst");
     }
 }

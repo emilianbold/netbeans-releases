@@ -816,21 +816,43 @@ public class Node
         // examine the cases
         for (n = first.next; n != null; n = n.next)
         {
-            if (n.type == Token.CASE) {
-                rv |= ((Jump)n).target.endCheck();
+            // <netbeans>
+            //if (n.type == Token.CASE) {
+            //    rv |= ((Jump)n).target.endCheck();
+            if (n.type == Token.CASE && n.first != null) {
+                for (Node c = n.first.next; c != null; c = c.next) {
+                    rv |= c.endCheck();
+                }
+                // we don't care how the cases drop into each other
+                rv &= ~END_DROPS_OFF;
+            } else if (n.type == Token.DEFAULT) {
+                for (Node c = n.first; c != null; c = c.next) {
+                    rv |= c.endCheck();
+                }
+            // </netbeans>
             } else
                 break;
         }
 
         // we don't care how the cases drop into each other
-        rv &= ~END_DROPS_OFF;
+        // <netbeans>
+        // This is done only for case tokens, not the default, above
+        // rv &= ~END_DROPS_OFF;
+        // </netbeans>
 
         // examine the default
+        // <netbeans>
+        /*
+        // </netbeans>
         n = ((Jump)this).getDefault();
         if (n != null)
             rv |= n.endCheck();
         else
             rv |= END_DROPS_OFF;
+        // <netbeans>
+        */
+        // </netbeans>
+        
 
         // remove the switch block
         rv |= getIntProp(CONTROL_BLOCK_PROP, END_UNREACHED);
@@ -1031,6 +1053,12 @@ public class Node
                     default:
                         return endCheckBlock();
                 }
+                
+            // <netbeans>                
+            // I removed the surrounding block:
+            case Token.SWITCH:
+                return endCheckSwitch();
+            // </netbeans>                
 
             default:
                 return END_DROPS_OFF;
@@ -1055,6 +1083,22 @@ public class Node
             return first.next.hasSideEffects() &&
                    first.next.next.hasSideEffects();
 
+          // <netbeans>
+          // This expression:
+          //   act && cal.callCloseHandler();
+          // DOES have side effects!
+          case Token.AND:
+          case Token.OR: {
+            for (Node n = first; n != null; n = n.next) {
+                if (n.hasSideEffects()) {
+                    return true;
+                }
+            }
+            
+            return false;
+          }
+          // </netbeans>
+            
           case Token.ERROR:         // Avoid cascaded error messages
           case Token.EXPR_RESULT:
           case Token.ASSIGN:

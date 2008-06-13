@@ -241,7 +241,6 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
                 }
             }
         });
-        
     }
     
     /**
@@ -305,8 +304,7 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
     }
 
     @Override
-    protected void notifyClosed()
-    {
+    protected void notifyClosed() {
         QuietUndoManager undo = getUndoManager();
         StyledDocument doc = getDocument();
         synchronized (undo) {
@@ -323,6 +321,7 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
             }
             // Must unset the model when no longer listening to it.
             undo.setModel(null);
+
         }
         super.notifyClosed();
         getUndoManager().discardAllEdits();
@@ -339,9 +338,6 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
       return (Controller) getEnv().getXsltDataObject().getLookup().lookup(Controller.class);
     }
 
-    /*
-     * Update presence of SaveCookie on first keystroke.
-     */
     @Override
     protected boolean notifyModified() {
         boolean notify = super.notifyModified();

@@ -391,7 +391,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new EjbJarActionProvider( this, helper, refHelper ),
                 new EjbJarLogicalViewProvider(this, updateHelper, evaluator(), spp, refHelper),
                 new CustomizerProviderImpl( this, updateHelper, evaluator(), refHelper ),
-                new ClassPathProviderMerger(cpProvider),
+                LookupMergerSupport.createClassPathProviderMerger(cpProvider),
                 QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
                 QuerySupport.createJavadocForBinaryQuery(helper, evaluator()),
                 new AntArtifactProviderImpl(),
@@ -968,7 +968,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             ArrayList<ClassPathSupport.Item> l = new ArrayList<ClassPathSupport.Item>();
             l.addAll(classPathModifier.getClassPathSupport().itemsList(props.getProperty(ProjectProperties.JAVAC_CLASSPATH), ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES));
-            ProjectProperties.storeLibrariesLocations(helper, l.iterator(), props);
+            ProjectProperties.storeLibrariesLocations(helper, l.iterator(), helper.isSharableProject() ? props : ep);
             
             // #129316
             ProjectProperties.removeObsoleteLibraryLocations(ep);

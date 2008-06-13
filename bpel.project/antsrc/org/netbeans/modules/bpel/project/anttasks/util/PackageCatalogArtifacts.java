@@ -125,6 +125,7 @@ public class PackageCatalogArtifacts {
         final File catalogFile = new File(metaInfDirectory, "catalog.xml");
         
         final String retrieverPathPrefix = "nbproject/private/cache/";
+        final String retrieverPathPrefix2 = "retrieved/";
         
         final PrintWriter catalogWriter = 
                 new PrintWriter(new FileWriter(catalogFile));
@@ -147,13 +148,22 @@ public class PackageCatalogArtifacts {
                 } 
                 
                 // The URI leads to the nbproject directory -- it is a
-                // resource fetched by the retriever -- copy it to the META-INF
-                // directory
+                // resource fetched by the retriever -- copy it
                 if (localUri.startsWith(retrieverPathPrefix)) {
                     localUri = localUri.substring(retrieverPathPrefix.length());
                     
                     Util.copyFile(
                             new File(projectDirectory, retrieverPathPrefix + localUri), 
+                            new File(buildDirectory, "_" + localUri));
+                    
+                    localUri = "../_" + localUri;
+                }
+                
+                // The URI leads to the retrieved directory -- it is a
+                // resource fetched by the retriever -- copy it
+                if (localUri.startsWith(retrieverPathPrefix2)) {
+                    Util.copyFile(
+                            new File(projectDirectory, localUri), 
                             new File(buildDirectory, "_" + localUri));
                     
                     localUri = "../_" + localUri;

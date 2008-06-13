@@ -327,10 +327,7 @@ public class JsfProjectUtils {
 
     public static boolean supportProjectProperty(Project project) {
         if (isWebProject(project)) {
-            AuxiliaryConfiguration ac = (AuxiliaryConfiguration)project.getLookup().lookup(AuxiliaryConfiguration.class);
-            if (ac == null) {
-                return false;
-            }
+            AuxiliaryConfiguration ac = ProjectUtils.getAuxiliaryConfiguration(project);
             
             Element auxElement = ac.getConfigurationFragment(RAVE_AUX_NAME, RAVE_AUX_NAMESPACE, true);
             if (auxElement != null) {
@@ -359,10 +356,7 @@ public class JsfProjectUtils {
             
     public static String getProjectProperty(Project project, String propName) {
         if (isWebProject(project)) {
-            AuxiliaryConfiguration ac = (AuxiliaryConfiguration)project.getLookup().lookup(AuxiliaryConfiguration.class);
-            if (ac == null) {
-                return "";
-            }
+            AuxiliaryConfiguration ac = ProjectUtils.getAuxiliaryConfiguration(project);
             
             Element auxElement = ac.getConfigurationFragment(RAVE_AUX_NAME, RAVE_AUX_NAMESPACE, true);
             if (auxElement == null) {  // Creator 2 project
@@ -444,10 +438,7 @@ public class JsfProjectUtils {
     
     private static void putProjectProperty(Project project, String propName, String value, String oldval) {
         if (isWebProject(project)) {
-            AuxiliaryConfiguration ac = (AuxiliaryConfiguration)project.getLookup().lookup(AuxiliaryConfiguration.class);
-            if (ac == null) {
-                return;
-            }
+            AuxiliaryConfiguration ac = ProjectUtils.getAuxiliaryConfiguration(project);
             
             Element auxElement = ac.getConfigurationFragment(RAVE_AUX_NAME, RAVE_AUX_NAMESPACE, true);
             if (auxElement == null) {

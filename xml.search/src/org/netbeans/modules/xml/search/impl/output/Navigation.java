@@ -60,17 +60,14 @@ final class Navigation extends JPanel {
   }
 
   @Override
-  public boolean isOptimizedDrawingEnabled()
-  {
+  public boolean isOptimizedDrawingEnabled() {
     return false;
   }
 
   @Override
-  public void doLayout()
-  {
+  public void doLayout() {
     Dimension size = myWrapper.getPreferredSize();
-    int x = getWidth() - myScrollPane.getVerticalScrollBar().getPreferredSize().width -
-      size.width - INSET;
+    int x = getWidth() - myScrollPane.getVerticalScrollBar().getPreferredSize().width - size.width - INSET;
     myWrapper.setBounds(x, INSET, size.width, size.height);
     myScrollPane.setBounds(0, 0, getWidth(), getHeight());
   }

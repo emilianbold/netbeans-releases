@@ -141,10 +141,7 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.php.rt</friend>
-                <package>org.netbeans.modules.php.dbgp.api</package>
-            </friend-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>

@@ -46,11 +46,12 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
- * @author Tomas Mysik
+ * @author Tomas Mysik, Radek Matous
  */
 public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCategoryProvider {
 
     private static final String SOURCES = "Sources"; // NOI18N
+    public static final String RUN = "Run"; // NOI18N        
     private static final String PHP_INCLUDE_PATH = "PhpIncludePath"; // NOI18N
 
     private final String name;
@@ -66,6 +67,12 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             toReturn = ProjectCustomizer.Category.create(
                     SOURCES,
                     NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_Config_Sources"),
+                    null,
+                    categories);
+        } else if (RUN.equals(name)) {
+            toReturn = ProjectCustomizer.Category.create(
+                    RUN,
+                    NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_Config_RunConfig"),
                     null,
                     categories);
         } else if (PHP_INCLUDE_PATH.equals(name)) {
@@ -84,6 +91,8 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         PhpProjectProperties uiProps = context.lookup(PhpProjectProperties.class);
         if (SOURCES.equals(nm)) {
             return new CustomizerSources(category, uiProps);
+        } else if (RUN.equals(nm)) {
+            return new CustomizerRun(uiProps, category);
         } else if (PHP_INCLUDE_PATH.equals(nm)) {
             return new CustomizerPhpIncludePath(category, uiProps);
         }
@@ -94,6 +103,10 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         return new CompositePanelProviderImpl(SOURCES);
     }
 
+    public static CompositePanelProviderImpl createRunConfig() {
+        return new CompositePanelProviderImpl(RUN);
+    }
+    
     public static CompositePanelProviderImpl createPhpIncludePath() {
         return new CompositePanelProviderImpl(PHP_INCLUDE_PATH);
     }

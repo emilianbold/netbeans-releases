@@ -319,46 +319,40 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
     }
 
     public void drop(final DropTargetDropEvent dtde) {
-//      System.out.println("DropTarget.drop");
-
-        //BpelEntity be = getBpelEntity(dtde.getTransferable());
-
+//System.out.println();
+//System.out.println("DropTarget.drop");
         getDesignView().getTopComponent().requestActive();
         getDesignView().requestFocusInWindow();
-
-        
 
         final DiagramView view = (DiagramView) dtde.getDropTargetContext().getComponent();
 
         if (view == null) {
             return;
         }
-
         final FPoint location = view.convertScreenToDiagram(dtde.getLocation());
-
-
         Callable<Object> callable = null;
+
         if (dtde.isDataFlavorSupported(flowDataFlavor)) {
+//System.out.println("1");
             callable = new Callable<Object>() {
 
                 public Object call() {
                     getFlowLinkTool().drop(location);
-
                     return null;
                 }
             };
-        } else {
+        }
+        else {
             callable = new Callable<Object>() {
-
                 public Object call() {
+//System.out.println();
+//System.out.println("drop: " + view.getPlaceholderManager().getClass().getName());
                     view.getPlaceholderManager().drop(location);
                     clear();
                     return null;
                 }
             };
-
         }
-
         try {
             if (callable != null) {
                 designView.getBPELModel().invoke(callable, this);
@@ -366,15 +360,12 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
-
-
-
     }
 
     private BpelEntity getBpelEntity(Transferable t) {
         BpelEntity entity = null;
-        try {
 
+        try {
             for (DataFlavor flavor : t.getTransferDataFlavors()) {
                 Class repClass = flavor.getRepresentationClass();
                 Object data = t.getTransferData(flavor);
@@ -444,7 +435,6 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
             if (!isDataFlavorSupported(flavor)) {
                 throw new UnsupportedFlavorException(flavor);
             }
-
             return button;
         }
     }

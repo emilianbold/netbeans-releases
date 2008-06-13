@@ -36,7 +36,7 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
+// XXX add referenceclient
 package org.netbeans.modules.subversion.client.cli;
 
 import java.io.File;

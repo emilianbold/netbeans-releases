@@ -60,15 +60,6 @@ public class PolicyReferenceImpl extends PolicyComponentImpl implements PolicyRe
         super(model, e);
     }
     
-    public PolicyReferenceImpl(WSDLModel model){
-        this(model, createPrefixedElement(PolicyQName.POLICYREFERENCE.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
     public void setDigestAlgorithm(String digestAlgorithm) {
         setAttribute(DIGESTALGORITHM_PROPERTY, PolicyAttribute.DIGESTALGORITHM, digestAlgorithm);        
     }

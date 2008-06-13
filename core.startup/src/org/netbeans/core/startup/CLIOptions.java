@@ -46,7 +46,6 @@ import java.io.PrintWriter;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import org.netbeans.CLIHandler;
-import org.netbeans.TopSecurityManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -138,6 +137,18 @@ public class CLIOptions extends CLIHandler {
                 args[i] = null;
                 try {
                     String ui = args[++i];
+                    //Translate L&F ID into L&F class for known IDs
+                    if ("Metal".equals(ui)) {
+                        ui = "javax.swing.plaf.metal.MetalLookAndFeel";
+                    } else if ("GTK".equals(ui)) {
+                        ui = "com.sun.java.swing.plaf.gtk.GTKLookAndFeel";
+                    } else if ("Nimbus".equals(ui)) {
+                        ui = "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
+                    } else if ("Windows".equals(ui)) {
+                        ui = "com.sun.java.swing.plaf.windows.WindowsLookAndFeel";
+                    } else if ("Aqua".equals(ui)) {
+                        ui = "apple.laf.AquaLookAndFeel";
+                    }
                     uiClass = Class.forName(ui);
                 } catch(ArrayIndexOutOfBoundsException e) {
                     System.err.println(getString("ERR_UIExpected"));

@@ -173,7 +173,12 @@ public class WarIncludesUi {
             
             if ( source == addJar ) { 
                 // Let user search for the Jar file
-                FileChooser chooser = new FileChooser(project.getAntProjectHelper(), true);
+                FileChooser chooser;
+                if (project.getAntProjectHelper().isSharableProject()) {
+                    chooser = new FileChooser(project.getAntProjectHelper(), true);
+                } else {
+                    chooser = new FileChooser(FileUtil.toFile(project.getProjectDirectory()), null);
+                }
                 FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
                 chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
                 chooser.setMultiSelectionEnabled( true );
@@ -256,7 +261,7 @@ public class WarIncludesUi {
 //                if (userInitiatedChange && cpItem.getType() == ClassPathSupport.Item.TYPE_JAR && newPathInWar.startsWith("WEB-INF")) { //NOI18N
                 if (cpItem.getType() == ClassPathSupport.Item.TYPE_JAR && newPathInWar.startsWith("WEB-INF")) { //NOI18N
                     if (newPathInWar.equals("WEB-INF\\lib") || newPathInWar.equals("WEB-INF/lib")) { //NOI18N
-                        if (((File) cpItem.getObject()).isDirectory()) {
+                        if (cpItem.getResolvedFile().isDirectory()) {
                             message = NbBundle.getMessage(WarIncludesUi.class,
                                 "MSG_NO_FOLDER_IN_WEBINF_LIB", newPathInWar); // NOI18N
                         } else {

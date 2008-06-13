@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.impl;
 
-import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.Trust10;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.w3c.dom.Element;
@@ -57,10 +56,6 @@ public class Trust10Impl extends TrustElementImpl implements Trust10 {
      */
     public Trust10Impl(WSDLModel model, Element e) {
         super(model, e);
-    }
-    
-    public Trust10Impl(WSDLModel model){
-        this(model, createPrefixedElement(SecurityPolicyQName.WSS11.getQName(), model));
     }
 
 }

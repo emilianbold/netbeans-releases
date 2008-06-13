@@ -100,8 +100,16 @@ public abstract class RubyProjectTestBase extends RubyTestBase {
         return project;
     }
 
+    protected RubyProject createTestProject(final boolean open) throws Exception {
+        RubyProject project = createTestProject("RubyProject_" + getName());
+        if (open) {
+            project.open();
+        }
+        return project;
+        
+    }
     protected RubyProject createTestProject() throws Exception {
-        return createTestProject("RubyProject_" + getName());
+        return createTestProject(false);
     }
 
     protected void registerLayer() throws Exception {

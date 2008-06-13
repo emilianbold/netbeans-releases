@@ -58,7 +58,7 @@ import org.dom4j.Element;
 import org.dom4j.IDResolver;
 import org.dom4j.Node;
 
-import org.openide.util.Exceptions;
+
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.IApplication;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
@@ -98,6 +98,7 @@ import org.netbeans.modules.uml.core.workspacemanagement.IWSProject;
 import org.netbeans.modules.uml.core.workspacemanagement.IWorkspace;
 import org.netbeans.modules.uml.core.workspacemanagement.WorkspaceManagementException;
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
+import org.openide.util.Exceptions;
 
 /**
  */

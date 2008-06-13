@@ -157,7 +157,16 @@ public final class ClassPathSupport {
                     AntArtifact artifact = (AntArtifact)ret[0];
                     URI uri = (URI)ret[1];
                     File usedFile = antProjectHelper.resolveFile(evaluator.evaluate(pe[i]));
-                    File artifactFile = new File (artifact.getScriptLocation().toURI().resolve(uri).normalize());
+                    /* Workaround for http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4723726 (URI.normalize() ruins URI built from UNC File) */
+                    File artifactFile = null;
+                    if(uri.isAbsolute()) {
+                        artifactFile = new File(uri);
+                    } else {
+                        artifactFile = new File(artifact.getScriptLocation().getParent(), uri.getPath());
+                    }
+                    artifactFile = FileUtil.normalizeFile(artifactFile);
+                    //File artifactFile = new File (artifact.getScriptLocation().toURI().resolve(uri).normalize());
+                    /* End of UNC workaround */
                     if (usedFile.equals(artifactFile)) {
                         item = Item.create( artifact, uri, pe[i]);
                     }
@@ -313,9 +322,11 @@ public final class ClassPathSupport {
     }
     
     public void updateJarReference(Item item) {
+        assert item.getType() == Item.TYPE_JAR;
+        RelativePath rp = (RelativePath)item.object;
         String eval = evaluator.evaluate( item.getReference() );
 
-        item.object = eval;
+        item.object = new RelativePath(eval, rp.getBase());
 
         //TODO these should be encapsulated in the Item class 
         // but that means we need to pass evaluator and antProjectHelper there.
@@ -567,10 +578,6 @@ public final class ClassPathSupport {
             }
         }
         
-        public Object getObject() {
-            return object;
-        }
-
         public boolean canDelete() {
             return getType() != TYPE_CLASSPATH;
         }

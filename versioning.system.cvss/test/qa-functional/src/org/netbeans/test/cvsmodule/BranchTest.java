@@ -125,6 +125,13 @@ public class BranchTest extends JellyTestCase {
     
     public void testCheckOutProject() throws Exception {
 
+        //extract CVS protocol dump file
+        try {
+            TestKit.extractProtocol(getDataDir());
+        } catch (Exception e ) {
+            e.printStackTrace();
+        }
+
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
         TestKit.closeProject(projectName);

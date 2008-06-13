@@ -356,7 +356,7 @@ public final class EarProjectProperties {
         
         ArrayList libs = new ArrayList ();
         libs.addAll(ClassPathUiSupport.getList(EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel()));
-        ProjectProperties.storeLibrariesLocations (antProjectHelper, libs.iterator(), projectProperties);
+        ProjectProperties.storeLibrariesLocations (antProjectHelper, libs.iterator(), antProjectHelper.isSharableProject() ? projectProperties : privateProperties);
         
         CLIENT_MODULE_MODEL.storeSelectedItem(projectProperties);
         
@@ -536,7 +536,7 @@ public final class EarProjectProperties {
         Module m = searchForModule(dd, pathInEAR);
         if (null != m) {
             dd.removeModule(m);
-            if (item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) {
+            if (item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT && !item.isBroken()) {
                 AntArtifact aa = item.getArtifact();
                 Project p = aa.getProject();
                 J2eeModuleProvider jmp = p.getLookup().lookup(J2eeModuleProvider.class);

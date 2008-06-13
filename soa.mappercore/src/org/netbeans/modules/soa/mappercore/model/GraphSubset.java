@@ -36,6 +36,9 @@ public class GraphSubset {
     private Vertex[] verteces;
     private Link[] links;
     
+    private Vertex minXVertex;
+    private Vertex minYVertex;
+    
     
     public GraphSubset(Vertex vertex) {
         this.treePath = null;
@@ -43,6 +46,8 @@ public class GraphSubset {
         
         if (vertex != null) {
             this.verteces = new Vertex[] { vertex };
+            minXVertex = vertex;
+            minYVertex = vertex;
         } else {
             this.verteces = EMPTY_VERTECES;
         }
@@ -68,9 +73,31 @@ public class GraphSubset {
         this.links = (links != null && !links.isEmpty()) 
                 ? links.toArray(new Link[links.size()])
                 : EMPTY_LINKS;
+        
+        if (verteces != null && !verteces.isEmpty()) {
+            minXVertex = verteces.get(0);
+            for (int i = verteces.size() - 1; i > 0; i--) {
+                Vertex vertex = verteces.get(i);
+                if (minXVertex.getX() > vertex.getX()) {
+                    minXVertex = vertex;
+                }
+            }
+
+            minYVertex = verteces.get(0);
+            for (int i = verteces.size() - 1; i > 0; i--) {
+                Vertex vertex = verteces.get(i);
+                if (minYVertex.getY() > vertex.getY()) {
+                    minYVertex = vertex;
+                }
+            }
+        }
     }
     
     public GraphSubset(GraphSubset graphSubset) {
+        this(graphSubset, graphSubset.getTreePath());
+    }
+    
+    public GraphSubset(GraphSubset graphSubset, TreePath treePath) {
         List<Vertex> verteces = new ArrayList<Vertex>();
         List<Link> links = new ArrayList<Link>();
         
@@ -85,7 +112,7 @@ public class GraphSubset {
             }
         }
         
-        this.treePath = graphSubset.getTreePath();
+        this.treePath = treePath;
         this.graph = graphSubset.getGraph();
         this.verteces = (verteces != null && !verteces.isEmpty()) 
                 ? verteces.toArray(new Vertex[verteces.size()])
@@ -93,6 +120,9 @@ public class GraphSubset {
         this.links = (links != null && !links.isEmpty()) 
                 ? links.toArray(new Link[links.size()])
                 : EMPTY_LINKS;
+        
+        minXVertex = graphSubset.getMinXVertex();
+        minYVertex = graphSubset.getMinYVertex();
     }
            
     
@@ -114,6 +144,15 @@ public class GraphSubset {
         }
         return false;
     }
+    
+    public Vertex getMinXVertex() {
+        return minXVertex;
+    }
+    
+    public Vertex getMinYVertex() {
+        return minYVertex;
+    }
+    
     private int ingexOf(Vertex vertex) {
         int length = verteces.length;
         for (int i = 0; i < length; i++) {

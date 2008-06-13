@@ -18,11 +18,13 @@
  */
 package org.netbeans.modules.bpel.mapper.logging.model;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.bpel.mapper.cast.AbstractPseudoComp;
 import org.netbeans.modules.bpel.mapper.cast.AbstractTypeCast;
 import org.netbeans.modules.bpel.mapper.logging.tree.AlertItem;
 import org.netbeans.modules.bpel.mapper.logging.tree.LogItem;
@@ -33,10 +35,8 @@ import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.Expression;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 import org.netbeans.modules.bpel.model.api.From;
-import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.ext.logging.api.Alert;
 import org.netbeans.modules.bpel.model.ext.logging.api.AlertLevel;
 import org.netbeans.modules.bpel.model.ext.logging.api.Location;
@@ -44,9 +44,7 @@ import org.netbeans.modules.bpel.model.ext.logging.api.Log;
 import org.netbeans.modules.bpel.model.ext.logging.api.LogLevel;
 import org.netbeans.modules.bpel.model.ext.logging.api.Trace;
 import org.netbeans.modules.soa.mappercore.model.Graph;
-import org.netbeans.modules.xml.xpath.ext.schema.InvalidNamespaceException;
-import org.openide.ErrorManager;
-import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * 
@@ -56,6 +54,7 @@ import org.openide.util.Exceptions;
  */
 public class LoggingBpelModelUpdater extends BpelModelUpdater {
         
+    private static final Logger LOGGER = Logger.getLogger(LoggingBpelModelUpdater.class.getName());
 //    private BpelMapperModel mMapperModel;
 //    private BpelDesignContext mDesignContext;
 //    private TreePath mTreePath;
@@ -118,6 +117,7 @@ public class LoggingBpelModelUpdater extends BpelModelUpdater {
     {
         assert extensibleElement != null;
 
+        ExtensibleElements editorExtensibleElement = null;
         //
         // Do common preparations
         //
@@ -160,6 +160,7 @@ public class LoggingBpelModelUpdater extends BpelModelUpdater {
             if (rightLog == null) {
                 return;
             }
+            editorExtensibleElement = rightLog;
             
             From from = rightLog.getFrom();
             if (from == null) {
@@ -182,7 +183,8 @@ public class LoggingBpelModelUpdater extends BpelModelUpdater {
             if (rightAlert == null) {
                 return;
             }
-            
+            editorExtensibleElement = rightAlert;
+
             From from = rightAlert.getFrom();
             if (from == null) {
                 from = bpelModel.getBuilder().createFrom();
@@ -196,11 +198,17 @@ public class LoggingBpelModelUpdater extends BpelModelUpdater {
         //
         // Populate 
         Set<AbstractTypeCast> typeCastCollector = new HashSet<AbstractTypeCast>();
+        Set<AbstractPseudoComp> pseudoCollector = new HashSet<AbstractPseudoComp>();
 
-        updateFrom(graph, typeCastCollector, bpelExpr);
+        updateFrom(graph, typeCastCollector, pseudoCollector, bpelExpr);
         
 //        populateContentHolder(bpelExpr, graphInfo, typeCastCollector);
-        registerTypeCasts(extensibleElement, typeCastCollector, true);
+        if (editorExtensibleElement != null) {
+            registerTypeCasts(editorExtensibleElement, typeCastCollector, true);
+        } else {
+            LOGGER.log(Level.WARNING, NbBundle.getMessage(
+                    LoggingBpelModelUpdater.class, "MSG_WarningNoEditorExtensibleElement")); // NOI18N
+        }
     }
 
     // todo m

@@ -101,6 +101,15 @@ public class EqualsMethodHintTest extends TreeRuleTestBase {
                              
     }
     
+    public void test134255() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public boolean e|quals(Object o);\n" +
+                            "}\n");
+                             
+    }
+    
     @Override
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
         return new EqualsMethodHint().run(info, path);

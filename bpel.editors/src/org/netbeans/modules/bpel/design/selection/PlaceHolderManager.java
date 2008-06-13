@@ -198,10 +198,8 @@ public class PlaceHolderManager implements DnDTool {
         }
         if (targetPlaceholder != null) {
             try {
-
                 BpelEntity activity = (BpelEntity) getDraggedPattern().getOMReference();
-                BpelEntity activityParent = (activity != null)
-                        ? activity.getParent() : null;
+                BpelEntity activityParent = (activity != null) ? activity.getParent() : null;
 
                 if (activityParent != null) {
                     activity.cut();
@@ -219,10 +217,6 @@ public class PlaceHolderManager implements DnDTool {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
         }
-
-
-
-
     }
 
     public void paint(Graphics2D g2) {

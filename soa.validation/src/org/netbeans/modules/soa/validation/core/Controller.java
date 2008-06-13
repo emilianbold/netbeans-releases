@@ -41,6 +41,7 @@
 package org.netbeans.modules.soa.validation.core;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -48,8 +49,10 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.WeakHashMap;
+import java.util.prefs.Preferences;
 
 import org.openide.text.Line;
+import org.openide.util.NbPreferences;
 import org.netbeans.modules.xml.validation.ValidateAction;
 import org.netbeans.modules.xml.validation.ValidateAction.RunAction;
 import org.netbeans.modules.xml.validation.ValidationOutputWindowController;
@@ -78,22 +81,28 @@ public final class Controller implements ComponentListener {
     myAnnotations = new LinkedList<Annotation>();
   }
 
+  public Model getModel() {
+    return myModel;
+  }
+
   public void attach() {
     myModel.addComponentListener(this);
   }
 
   public void detach() {
-    myModel.removeComponentListener(this);
+    if (myModel != null) {
+      myModel.removeComponentListener(this);
+    }
   }
 
   public void addListener(Listener listener) {
-    synchronized(myListeners) {
+    synchronized (myListeners) {
       myListeners.put(listener, null);
     }
   }
   
   public void removeListener(Listener listener) {
-    synchronized(myListeners) {
+    synchronized (myListeners) {
       myListeners.remove(listener);
     }
   }
@@ -117,10 +126,18 @@ public final class Controller implements ComponentListener {
   public void triggerValidation() {
 //stackTrace();
     log();
+    log("ALLOW Background Validation: " + isAllowBackgroundValidation()); // NOI18N
+    log();
+
+    if ( !isAllowBackgroundValidation()) {
+      return;
+    }
+    log();
     log("TIMER-TRIGGER"); // NOI18N
     log();
 
-    cancelTimer();
+    cancelValidation();
+
     myTimer.schedule(new TimerTask() {
       public void run() {
         doValidation(false, false);
@@ -129,59 +146,66 @@ public final class Controller implements ComponentListener {
     DELAY);
   }
 
-  public boolean cliValidate(File file, boolean allowBuildWithError) {
-    boolean isError = false;
-    List<ResultItem> result = validate(ValidationType.COMPLETE);
-      
-    for (ResultItem item : result) {
-      if ( !allowBuildWithError) {
-        if (item.getType() == Validator.ResultType.ERROR) {
-          System.out.println(LineUtil.getValidationError(file, item));
-          System.out.println();
-        }
-      }
-      if (item.getType() == Validator.ResultType.ERROR) {
-        isError = true;
-      }
-    }
-    return isError;
+  public boolean cliValidate(File file) {
+    return validate(file, true);
   }
 
   public boolean ideValidate(File file) {
+    return validate(file, false);
+  }
+
+  private boolean validate(File file, boolean isCommandLine) {
+    PrintStream stream;
+    List<ResultItem> result;
+
+    if (isCommandLine) {
+      stream = System.out;
+      result = validate(ValidationType.PARTIAL);
+    }
+    else {
+      stream = System.err;
+      result = validate(ValidationType.COMPLETE);
+    }
     boolean isError = false;
-    List<ResultItem> result = validate(ValidationType.COMPLETE);
 
     for (ResultItem item : result) {
-      System.err.println(LineUtil.getValidationError(file, item));
-      System.err.println();
-
       if (item.getType() == Validator.ResultType.ERROR) {
         isError = true;
       }
+      else {
+        if (isCommandLine) {
+          continue;
+        }
+      }
+      stream.println(LineUtil.getValidationError(file, item));
+      stream.println();
     }
     return isError;
   }
 
-  private List<ResultItem> validate(ValidationType type) {
+  public List<ResultItem> validate(ValidationType type) {
     Validation validation = new Validation();
     validation.validate(myModel, type);
     return validation.getValidationResult();
   }
 
-  private synchronized void doValidation(boolean isComplete, boolean isOutput) {
-    cancelTimer();
+  private void doValidation(boolean isComplete, boolean isOutput) {
+    cancelValidation();
 
     List<ResultItem> items;
     ValidationType type;
+    int priority;
 
     if (isComplete) {
-      Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
       type = ValidationType.COMPLETE;
+      priority = Thread.MAX_PRIORITY;
     }
     else {
-      Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
       type = ValidationType.PARTIAL;
+      priority = Thread.MIN_PRIORITY;
     }
+    Thread.currentThread().setPriority(priority);
+
     log();
     log("VALIDATION: " + type); // NOI18N
     startTimeln();
@@ -200,23 +224,36 @@ public final class Controller implements ComponentListener {
       }
     }
     endTime("validation"); // NOI18N
+    log("end: " + type); // NOI18N
 
     notifyListeners(items);
   }
 
-  private void cancelTimer() {
+  private void cancelValidation() {
     myTimer.cancel();
     myTimer = new Timer();
+    Validation.stop();
   }
 
-  private void notifyListeners(List<ResultItem> items) {
-    myResult = new LinkedList<ResultItem>();
+  private boolean isAllowBackgroundValidation() {
+    return get(ALLOW_BACKGROUND_VALIDATION, true);
+  }
 
-    synchronized (items) {
-      for (ResultItem item : items) {
-        myResult.add(item);
-      }
+  private boolean get(String name, boolean defaultValue) {
+    return getPreferences().getBoolean(name, defaultValue);
+  }
+
+  private Preferences getPreferences() {
+    return NbPreferences.forModule(org.netbeans.modules.xml.schema.model.SchemaModel.class);
+  } 
+
+  private void notifyListeners(List<ResultItem> items) {
+    if (items == null) {
+      return;
     }
+    myResult = items;
+    log("+++: Notify listeners"); // NOI18N
+
     synchronized (myListeners) {
       for (Listener listener : myListeners.keySet()) {
         if (listener != null) {
@@ -292,4 +329,5 @@ public final class Controller implements ComponentListener {
   private Map<Listener, Object> myListeners;
 
   private static final long DELAY = 5432L;
+  private static final String ALLOW_BACKGROUND_VALIDATION = "allow.background.validation"; // NOI18N
 }

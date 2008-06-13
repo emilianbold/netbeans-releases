@@ -79,14 +79,7 @@ public final class Percent extends JComboBox implements ActionListener {
     void invalidValue(String value);
   }
 
-  public Percent(
-    Listener listener,
-    double initValue,
-    int [] values,
-    final int defaultCustomIndex,
-    String [] customs,
-    String toolTip)
-  {
+  public Percent(Listener listener, double initValue, int [] values, final int defaultCustomIndex, String [] customs, String toolTip) {
 //out("<New> Percent: " + initValue);
     for (int value : values) {
       addItem(value + PERCENT);

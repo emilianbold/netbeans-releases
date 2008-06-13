@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<palette_item version="1.0">
+  <element name="CombinedFragment" />
+
+  <icon16 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/combined-fragment.png" />
+  <icon32 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/combined-fragment-32.png" />
+
+  <description localizing-bundle="org.netbeans.modules.uml.diagrams.resources.palette.Bundle"
+               display-name-key="NAME_CombinedFragment"
+               tooltip-key="HINT_CombinedFragment" />
+</palette_item>

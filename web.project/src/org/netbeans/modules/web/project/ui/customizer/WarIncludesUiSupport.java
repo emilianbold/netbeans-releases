@@ -130,7 +130,7 @@ public class WarIncludesUiSupport {
             for (int i = 0; i < n0; i++) {
                 ClassPathSupport.Item item = (ClassPathSupport.Item) data[i][0];
                 if(item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
-                    if(newLibList.remove(item.getObject()))
+                    if(newLibList.remove(item.getLibrary()))
                         table.addRowSelectionInterval(i, i);
                 }
             }

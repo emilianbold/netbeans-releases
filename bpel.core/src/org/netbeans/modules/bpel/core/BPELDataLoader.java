@@ -78,9 +78,7 @@ public class BPELDataLoader extends UniFileLoader {
      * @return the data object for this file
      * @exception DataObjectExistsException if the primary file already has data object
      */
-    protected MultiDataObject createMultiObject( FileObject primaryFile )
-            throws DataObjectExistsException, IOException
-    {
+    protected MultiDataObject createMultiObject( FileObject primaryFile ) throws DataObjectExistsException, IOException {
         return new BPELDataObject(primaryFile, this);
     }
     
@@ -105,15 +103,11 @@ public class BPELDataLoader extends UniFileLoader {
         return result;
     }
     
-    protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, 
-            FileObject primaryFile) 
-    {
+    protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
         return new FileEntry(obj, primaryFile);
     }
     
-    protected MultiDataObject.Entry createSecondaryEntry(MultiDataObject obj, 
-            FileObject secondaryFile) 
-    {       
+    protected MultiDataObject.Entry createSecondaryEntry(MultiDataObject obj, FileObject secondaryFile) {       
         return new FileEntry(obj, secondaryFile);
     }
     
@@ -121,7 +115,8 @@ public class BPELDataLoader extends UniFileLoader {
      * other modules can decorate with Special Actions
      * to see the default actions look in the layer.xml
      */
-    @Override protected String actionsContext() {
+    @Override 
+    protected String actionsContext() {
             return ACTION_CONTEXT;
     }
 }

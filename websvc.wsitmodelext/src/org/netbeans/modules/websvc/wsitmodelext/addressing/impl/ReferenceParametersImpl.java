@@ -41,10 +41,8 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.addressing.impl;
 
-import org.netbeans.modules.websvc.wsitmodelext.addressing.AddressingQName;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.ReferenceParameters;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -60,21 +58,12 @@ public class ReferenceParametersImpl extends AddressingComponentImpl implements 
         super(model, e);
     }
     
-    public ReferenceParametersImpl(WSDLModel model){
-        this(model, createPrefixedElement(AddressingQName.REFERENCEPARAMETERS.getQName(), model));
-    }
-
     public void setReferenceParameters(String referenceParameters) {
         setText(REFERENCEPARAMETERS_CONTENT_VALUE_PROPERTY, referenceParameters);
     }
 
     public String getReferenceParameters() {
         return getText();
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
     }
     
 }

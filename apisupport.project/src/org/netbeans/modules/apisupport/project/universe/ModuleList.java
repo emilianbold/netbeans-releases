@@ -76,7 +76,6 @@ import org.openide.ErrorManager;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbCollections;
-import org.openide.util.NbCollections;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -88,7 +87,9 @@ import org.xml.sax.SAXException;
  * @author Jesse Glick
  */
 public final class ModuleList {
-    
+
+    private static final Logger LOG = Logger.getLogger(ModuleList.class.getName());
+
     /** for performance measurement from ModuleListTest */
     static long timeSpentInXmlParsing;
     static int xmlFilesParsed;
@@ -1082,10 +1083,42 @@ public final class ModuleList {
         ModuleEntry e = entries.get(codeNameBase);
         if (e != null) {
             return e;
-        } else {
-            maybeRescanNetBeansOrgSources();
-            return entries.get(codeNameBase);
         }
+        if (isNetBeansOrg(home)) {
+            File nbdestdir = new File(home, DEST_DIR_IN_NETBEANS_ORG);
+            for (String tree : FOREST) {
+                String name = abbreviate(codeNameBase);
+                File basedir = new File(tree == null ? home : new File(home, tree), name);
+                Map<String,ModuleEntry> _entries = new HashMap<String,ModuleEntry>();
+                try {
+                    scanPossibleProject(basedir, _entries, false, false, home, nbdestdir, tree == null ? name : tree + "/" + name, false);
+                } catch (IOException x) {
+                    LOG.log(Level.INFO, null, x);
+                    continue;
+                }
+                if (!_entries.isEmpty()) {
+                    _entries.putAll(entries);
+                    entries = _entries;
+                    e = _entries.get(codeNameBase);
+                    if (e != null) {
+                        LOG.log(Level.FINE, "Found entry for {0} by direct guess in {1}", new Object[] {codeNameBase, basedir});
+                        return e;
+                    }
+                }
+            }
+        }
+        maybeRescanNetBeansOrgSources();
+        return entries.get(codeNameBase);
+    }
+
+    public static String abbreviate(String cnb) {
+        return cnb.replaceFirst("^org\\.netbeans\\.modules\\.", ""). // NOI18N
+                   replaceFirst("^org\\.netbeans\\.(libs|lib|api|spi|core)\\.", "$1."). // NOI18N
+                   replaceFirst("^org\\.netbeans\\.", "o.n."). // NOI18N
+                   replaceFirst("^org\\.openide\\.", "openide."). // NOI18N
+                   replaceFirst("^org\\.", "o."). // NOI18N
+                   replaceFirst("^com\\.sun\\.", "c.s."). // NOI18N
+                   replaceFirst("^com\\.", "c."); // NOI18N
     }
     
     /**

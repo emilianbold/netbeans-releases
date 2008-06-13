@@ -100,7 +100,7 @@ public class PlanSourceMultiViewElement extends CloneableEditor implements Multi
     private void initialize()
     {
         
-    	ShowCookie showCookie = new ShowCookie()
+        ShowCookie showCookie = new ShowCookie()
         {
             
             public void show(ResultItem resultItem) {
@@ -160,7 +160,7 @@ public class PlanSourceMultiViewElement extends CloneableEditor implements Multi
         });
         timerSelNodes.setRepeats(false);
     }
-	
+    
     public JComponent getToolbarRepresentation() {
         Document doc = getEditorPane().getDocument();
         if (doc instanceof NbDocument.CustomToolbar) {
@@ -225,12 +225,12 @@ public class PlanSourceMultiViewElement extends CloneableEditor implements Multi
      */ 
     @Override
     protected boolean closeLast() {
-	PlanEditorSupport support = mObj.getPlanEditorSupport();
-	JEditorPane[] editors = support.getOpenedPanes();
-	if (editors == null || editors.length == 0) {
-	    return support.silentClose();
-	}
-	return false;
+    PlanEditorSupport support = mObj.getPlanEditorSupport();
+    JEditorPane[] editors = support.getOpenedPanes();
+    if (editors == null || editors.length == 0) {
+        return support.silentClose();
+    }
+    return false;
     }
 
     public CloseOperationState canCloseElement() {
@@ -286,7 +286,7 @@ public class PlanSourceMultiViewElement extends CloneableEditor implements Multi
     
     @Override
     public void componentOpened() {
-	super.componentOpened();
+    super.componentOpened();
     }
     
     

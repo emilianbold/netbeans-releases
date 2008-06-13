@@ -137,13 +137,16 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                         if (!changed.isEmpty()) {
                             String itemRefs[] = cs.encodeToStrings( resources, ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
                             projectProperties = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //PathParser may change the EditableProperties                                
+                            EditableProperties privateProperties = helper.getProperties (AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                             projectProperties.setProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL, itemRefs);                                
 
                             ArrayList l = new ArrayList ();
                             l.addAll(cs.itemsList(projectProperties.getProperty(ProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
                             l.addAll(resources);
-                            ProjectProperties.storeLibrariesLocations(project.getAntProjectHelper(), l.iterator(), projectProperties);
+                            ProjectProperties.storeLibrariesLocations(project.getAntProjectHelper(), l.iterator(), 
+                                    project.getAntProjectHelper().isSharableProject() ? projectProperties : privateProperties);
                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+                            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
                             if (saveProject) {
                                 ProjectManager.getDefault().saveProject(project);
                             }
@@ -191,12 +194,15 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                         if (!changed.isEmpty()) {
                             String itemRefs[] = cs.encodeToStrings( resources, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES);
                             props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //PathParser may change the EditableProperties                                
+                            EditableProperties privateProperties = helper.getProperties (AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                             props.setProperty(ProjectProperties.JAVAC_CLASSPATH, itemRefs);                                
                             ArrayList l = new ArrayList ();
                             l.addAll(resources);
                             l.addAll(cs.itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
-                            ProjectProperties.storeLibrariesLocations(project.getAntProjectHelper(), l.iterator(), props);
+                            ProjectProperties.storeLibrariesLocations(project.getAntProjectHelper(), l.iterator(), 
+                                    project.getAntProjectHelper().isSharableProject() ? props : privateProperties);
                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
                             ProjectManager.getDefault().saveProject(project);
                             return true;
                         }
@@ -364,14 +370,17 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
 
                             String[] war_includes = cs.encodeToStrings(WarIncludesUiSupport.getList(addModel), ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
                             props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);  //PathParser may change the EditableProperties
+                            EditableProperties privateProperties = helper.getProperties (AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                             props.setProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL, war_includes);
 
                             ArrayList libs = new ArrayList ();
                             libs.addAll(cs.itemsList(props.getProperty(ProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
                             libs.addAll(WarIncludesUiSupport.getList(addModel));
 
-                            ProjectProperties.storeLibrariesLocations (project.getAntProjectHelper(), libs.iterator(), props);
+                            ProjectProperties.storeLibrariesLocations (project.getAntProjectHelper(), libs.iterator(),
+                                    project.getAntProjectHelper().isSharableProject() ? props : privateProperties);
                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
 
                             ProjectManager.getDefault().saveProject(project);
                             return true;

@@ -52,13 +52,15 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 //import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -129,7 +131,7 @@ public class MakeProjectGenerator {
 	}
 
         FileObject dirFO = createProjectDir (projectNameFile);
-        AntProjectHelper h = createProject(dirFO, projectName, makefileName, confs, null, null);
+        AntProjectHelper h = createProject(dirFO, projectName, makefileName, confs, null, null, true);
         MakeProject p = (MakeProject)ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
 
@@ -150,7 +152,7 @@ public class MakeProjectGenerator {
      */
     public static AntProjectHelper createProject(File dir, String name, String makefileName, Configuration[] confs, Iterator sourceFolders, Iterator importantItems) throws IOException {
         FileObject dirFO = createProjectDir (dir);
-        AntProjectHelper h = createProject(dirFO, name, makefileName, confs, sourceFolders, importantItems); //NOI18N
+        AntProjectHelper h = createProject(dirFO, name, makefileName, confs, sourceFolders, importantItems, false); //NOI18N
         MakeProject p = (MakeProject)ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         //FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
@@ -200,7 +202,7 @@ public class MakeProjectGenerator {
     }
     */
 
-    private static AntProjectHelper createProject(FileObject dirFO, String name, String makefileName, Configuration[] confs, final Iterator sourceFolders, final Iterator importantItems) throws IOException {
+    private static AntProjectHelper createProject(FileObject dirFO, String name, String makefileName, Configuration[] confs, final Iterator sourceFolders, final Iterator importantItems, boolean saveNow) throws IOException {
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, MakeProjectType.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -228,7 +230,7 @@ public class MakeProjectGenerator {
 	projectDescriptor.init(confs);
         
         Project project = projectDescriptor.getProject();
-        if (project instanceof MakeProject){
+        if (project instanceof MakeProject && !saveNow) { // How can it not be an instance of MakeProject???
             MakeProject makeProject = (MakeProject) project;
             makeProject.addOpenedTask(new Runnable(){
                 public void run() {
@@ -265,11 +267,11 @@ public class MakeProjectGenerator {
         FileObject dirFO;
         if(!dir.exists()) {
             //Refresh before mkdir not to depend on window focus
-            refreshFileSystem (dir);
+            // refreshFileSystem (dir); // See 136445
             if (!dir.mkdirs()) {
                 throw new IOException ("Can not create project folder."); // NOI18N
             }
-            refreshFileSystem (dir);
+            // refreshFileSystem (dir); // See 136445
         }        
         dirFO = FileUtil.toFileObject(dir);
         assert dirFO != null : "No such dir on disk: " + dir; // NOI18N
@@ -313,15 +315,11 @@ public class MakeProjectGenerator {
     }
 
 
-    private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
-        File rootF = dir;
-        while (rootF.getParentFile() != null) {
-            rootF = rootF.getParentFile();
-        }
-        FileObject dirFO = FileUtil.toFileObject(rootF);
-        assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
-        dirFO.getFileSystem().refresh(false);
-    }
+//    private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
+//        File rootF = dir;
+//        while (rootF.getParentFile() != null /*UNC*/&& rootF.getParentFile().exists()) {
+//            rootF = rootF.getParentFile();
+//    }
 }
 
 

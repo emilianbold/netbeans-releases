@@ -48,10 +48,6 @@ class TestCompilationInfo extends GsfTestCompilationInfo {
         super(test, fileObject, doc, text);
     }
     
-    public String getPreferredMimeType() {
-        return RubyMimeResolver.RUBY_MIME_TYPE;
-    }
-    
     @Override
     public ParserResult getEmbeddedResult(String embeddedMimeType, int offset) {
         assert embeddedMimeType.equals(getPreferredMimeType());

@@ -24,98 +24,98 @@ import org.openide.loaders.DataObject;
 
 public class ModelHelper {
 
-	public static OperatorComponent findOperator(String id, IEPModel model) {
-		if(id == null || model == null) {
-			return null;
-		}
-		
-		OperatorComponent operatorComponent = null;
-		
-		PlanComponent pComponent = model.getPlanComponent();
-		OperatorComponentContainer operatorsComponent = pComponent.getOperatorComponentContainer();
-		if(operatorsComponent != null) {
-			operatorComponent = operatorsComponent.findChildComponent(id);
-		}
-		
-		return operatorComponent;
-		
-	}
-	
-	public static LinkComponent findLink(OperatorComponent fromComponent, OperatorComponent toComponent, IEPModel model) {
-		LinkComponent linkComponent = null;
-		
-		PlanComponent pComponent = model.getPlanComponent();
-		LinkComponentContainer linksComponent = pComponent.getLinkComponentContainer();
-		if(linksComponent != null) {
-			List<LinkComponent> operators = linksComponent.getAllLinkComponents();
-			Iterator<LinkComponent> it = operators.iterator(); 
-			while(it.hasNext()) {
-				LinkComponent lc = it.next();
-				OperatorComponent fc = lc.getFrom();
-				OperatorComponent tc = lc.getTo();
-				
-				if(fc != null 
-				   && fc.equals(fromComponent)
-				   && tc != null 
-				   && tc.equals(toComponent)) {
-					linkComponent = lc;
-					break;
-				}
-			}
-		}
-		
-		return linkComponent;
-		
-	}
-	
-	public static LinkComponent findLink(String name, IEPModel model) {
-		if(name == null) {
-			return null;
-		}
-		
-		LinkComponent linkComponent = null;
-		
-		PlanComponent pComponent = model.getPlanComponent();
-		LinkComponentContainer linksComponent = pComponent.getLinkComponentContainer();
-		if(linksComponent != null) {
-			List<LinkComponent> operators = linksComponent.getAllLinkComponents();
-			Iterator<LinkComponent> it = operators.iterator(); 
-			while(it.hasNext()) {
-				LinkComponent lc = it.next();
-				
-				if(name.equals(lc.getName())) {
-					linkComponent = lc;
-					break;
-				}
-			}
-		}
-		
-		return linkComponent;
-		
-	}
-	public static SchemaComponent findSchema(String name, IEPModel model) {
-		if(name == null) {
-			return null;
-		}
-		
-		SchemaComponent schemaComponent = null;
-		
-		PlanComponent pComponent = model.getPlanComponent();
-		SchemaComponentContainer schemasComponent = pComponent.getSchemaComponentContainer();
-		if(schemasComponent != null) {
-			List<SchemaComponent> schemas = schemasComponent.getAllSchemaComponents();
-			Iterator<SchemaComponent> it = schemas.iterator(); 
-			while(it.hasNext()) {
-				SchemaComponent oc = it.next();
-				if(name.equals(oc.getName())) {
-					schemaComponent = oc;
-					break;
-				}
-			}
-		}
-		
-		return schemaComponent;		
-	}
+    public static OperatorComponent findOperator(String id, IEPModel model) {
+        if(id == null || model == null) {
+            return null;
+        }
+        
+        OperatorComponent operatorComponent = null;
+        
+        PlanComponent pComponent = model.getPlanComponent();
+        OperatorComponentContainer operatorsComponent = pComponent.getOperatorComponentContainer();
+        if(operatorsComponent != null) {
+            operatorComponent = operatorsComponent.findChildComponent(id);
+        }
+        
+        return operatorComponent;
+        
+    }
+    
+    public static LinkComponent findLink(OperatorComponent fromComponent, OperatorComponent toComponent, IEPModel model) {
+        LinkComponent linkComponent = null;
+        
+        PlanComponent pComponent = model.getPlanComponent();
+        LinkComponentContainer linksComponent = pComponent.getLinkComponentContainer();
+        if(linksComponent != null) {
+            List<LinkComponent> operators = linksComponent.getAllLinkComponents();
+            Iterator<LinkComponent> it = operators.iterator(); 
+            while(it.hasNext()) {
+                LinkComponent lc = it.next();
+                OperatorComponent fc = lc.getFrom();
+                OperatorComponent tc = lc.getTo();
+                
+                if(fc != null 
+                   && fc.equals(fromComponent)
+                   && tc != null 
+                   && tc.equals(toComponent)) {
+                    linkComponent = lc;
+                    break;
+                }
+            }
+        }
+        
+        return linkComponent;
+        
+    }
+    
+    public static LinkComponent findLink(String name, IEPModel model) {
+        if(name == null) {
+            return null;
+        }
+        
+        LinkComponent linkComponent = null;
+        
+        PlanComponent pComponent = model.getPlanComponent();
+        LinkComponentContainer linksComponent = pComponent.getLinkComponentContainer();
+        if(linksComponent != null) {
+            List<LinkComponent> operators = linksComponent.getAllLinkComponents();
+            Iterator<LinkComponent> it = operators.iterator(); 
+            while(it.hasNext()) {
+                LinkComponent lc = it.next();
+                
+                if(name.equals(lc.getName())) {
+                    linkComponent = lc;
+                    break;
+                }
+            }
+        }
+        
+        return linkComponent;
+        
+    }
+    public static SchemaComponent findSchema(String name, IEPModel model) {
+        if(name == null) {
+            return null;
+        }
+        
+        SchemaComponent schemaComponent = null;
+        
+        PlanComponent pComponent = model.getPlanComponent();
+        SchemaComponentContainer schemasComponent = pComponent.getSchemaComponentContainer();
+        if(schemasComponent != null) {
+            List<SchemaComponent> schemas = schemasComponent.getAllSchemaComponents();
+            Iterator<SchemaComponent> it = schemas.iterator(); 
+            while(it.hasNext()) {
+                SchemaComponent oc = it.next();
+                if(name.equals(oc.getName())) {
+                    schemaComponent = oc;
+                    break;
+                }
+            }
+        }
+        
+        return schemaComponent;        
+    }
         
         public static WSDLModel getWSDLModel(IEPModel iepModel, 
                                              Import imp) throws Exception {
@@ -128,7 +128,7 @@ public class ModelHelper {
                 
                 return model;
             }
-	
+    
         
             public static FileObject resolveWSDLFileObject(IEPModel iepModel, 
                                                            Import imp) throws Exception {
@@ -202,8 +202,8 @@ public class ModelHelper {
             
             
             public static String getPackageName(DataObject dataObject) {
-            	
-            	String packageName = "";
+                
+                String packageName = "";
                 
                 FileObject iepFile = dataObject.getPrimaryFile();
                 FileObject iepFileParent = iepFile.getParent();
@@ -219,7 +219,7 @@ public class ModelHelper {
                                 for(int i =0; i < sg.length; i++) {
                                     FileObject rootFolder = sg[i].getRootFolder();
                                     if(FileUtil.isParentOf(rootFolder, iepFileParent)) {
-                                    	packageName = FileUtil.getRelativePath(rootFolder, iepFileParent);
+                                        packageName = FileUtil.getRelativePath(rootFolder, iepFileParent);
                                         break;
                                     }
                                 }
@@ -232,17 +232,17 @@ public class ModelHelper {
                 if(packageName != null) {
 //                    int dotIndex = packageName.lastIndexOf(".");
 //                    if(dotIndex != -1) {
-//                    	packageName = packageName.substring(0, dotIndex) + "_" + qualifiedName.substring(dotIndex +1, qualifiedName.length());
+//                        packageName = packageName.substring(0, dotIndex) + "_" + qualifiedName.substring(dotIndex +1, qualifiedName.length());
 //                    }
                     
-                	packageName = packageName.replaceAll("/", ".");
+                    packageName = packageName.replaceAll("/", ".");
                 } else {
-                	//no package so iep file resides in src folder
-                	// so "" indicate default package
-                	packageName = ""; 
+                    //no package so iep file resides in src folder
+                    // so "" indicate default package
+                    packageName = ""; 
                 }
                 
                 return packageName;
-            	
+                
             }
 }

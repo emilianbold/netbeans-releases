@@ -60,6 +60,23 @@ public abstract class NameGenerator {
         return generator != null ? generator.getName(component) : null;
     }
     
+    private static String getCamelCase(String namePrefix) {
+        assert namePrefix != null;
+        if (namePrefix.length() <= 0) {
+            return namePrefix;
+        }
+        String lowerPart = namePrefix.substring(1);
+        lowerPart = lowerPart.toLowerCase();
+
+        char firstChar = namePrefix.charAt(0);
+        if (!Character.isUpperCase(firstChar)) {
+            firstChar = Character.toUpperCase(firstChar);
+        }
+
+        return Character.toString(firstChar) + lowerPart;
+    }
+
+
     private static class ServiceNameGenerator extends NameGenerator {
 
         @Override
@@ -73,7 +90,8 @@ public abstract class NameGenerator {
                 return null;
             }
 
-            namePrefix = namePrefix.toLowerCase();
+//            namePrefix = namePrefix.toLowerCase();
+            namePrefix = getCamelCase(namePrefix);
 
             Service service = (Service) component;
             TMapModel model = service.getModel();
@@ -93,7 +111,7 @@ public abstract class NameGenerator {
 
             String uniqueName = null;
             boolean isUnique = false;
-            int i = 0;
+            int i = 1;
             while (uniqueName == null) {
                 uniqueName = namePrefix + i;
                 for (Service tmpService : services) {
@@ -129,7 +147,8 @@ public abstract class NameGenerator {
                 return null;
             }
 
-            namePrefix = namePrefix.toLowerCase();
+//            namePrefix = namePrefix.toLowerCase();
+            namePrefix = getCamelCase(namePrefix);
 
             Invoke invoke = (Invoke) component;
             TMapModel model = invoke.getModel();
@@ -202,7 +221,8 @@ public abstract class NameGenerator {
                 return null;
             }
 
-            namePrefix = namePrefix.toLowerCase();
+//            namePrefix = namePrefix.toLowerCase();
+            namePrefix = getCamelCase(namePrefix);
 
             Transform transform = (Transform) component;
             TMapModel model = transform.getModel();

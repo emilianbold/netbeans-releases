@@ -42,6 +42,7 @@
 package org.netbeans.modules.spring.api.beans.model;
 
 import java.util.List;
+import java.util.Set;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -53,12 +54,10 @@ import org.openide.filesystems.FileObject;
  */
 public interface SpringBeans {
 
-    // XXX aliases.
-
     /**
-     * Finds a bean by its id or name.
+     * Finds a bean by its id or name or alias.
      *
-     * @param  idOrName the bean id or name; never null.
+     * @param  idOrName the bean id or name or alias; never null.
      * @return the bean with the specified id or name; {@code null} if no such
      *         bean was found.
      */
@@ -79,4 +78,11 @@ public interface SpringBeans {
      * @return the list of beans; never {@code null}.
      */
     List<SpringBean> getBeans();
+    
+    /**
+     * Returns all registered alias names in the Spring config model
+     * 
+     * @return registered aliases; never {@code null}.
+     */
+    Set<String> getAliases();
 }

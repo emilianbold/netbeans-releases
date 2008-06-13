@@ -1,0 +1,30 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/BookmarkController.groovy
+
+
+
+Document 1
+Indexed:
+  class : BookmarkController
+  class-ig : bookmarkcontroller
+  field : create
+  field : delete
+  field : deliciousService
+  field : edit
+  field : list
+  field : params
+  field : preview
+  field : save
+  field : scaffold
+  field : search
+  field : suggestTag
+  field : update
+  field : updateNotes
+  fqn : BookmarkController
+  method : addTags(b);02
+  method : getSuggestions(url,bookmark);02
+  method : printParams(params,unusedParam);02
+
+Not Indexed:

@@ -94,7 +94,7 @@ public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
     
     @Override
     public void define(Token name, Collection<Token> params, List<Token> value) {
-        if (sysMacroMap != null && sysMacroMap.isDefined(name) && false) { // disable for IZ#124635
+        if (false && sysMacroMap != null && sysMacroMap.isDefined(name)) { // disable for IZ#124635
             // TODO: report error about redefining system macros
         } else {
             super.define(name, params, value);
@@ -103,7 +103,7 @@ public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
     
     @Override
     public void undef(Token name) {
-        if (sysMacroMap != null && sysMacroMap.isDefined(name) && false) { // disable for IZ#124635
+        if (false && sysMacroMap != null && sysMacroMap.isDefined(name)) { // disable for IZ#124635
             // TODO: report error about undefined system macros
         }
         super.undef(name);

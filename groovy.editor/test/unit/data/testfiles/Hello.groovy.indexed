@@ -1,0 +1,49 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/Hello.groovy
+
+
+
+Document 1
+Indexed:
+  class : Hello
+  class-ig : hello
+  fqn : foo.Hello
+
+Not Indexed:
+
+
+Document 2
+Indexed:
+  class : Hello1
+  class-ig : hello1
+  field : field1
+  field : greeting
+  field : name
+  field : privateField
+  field : protectedField;04
+  field : publicField;01
+  fqn : foo.Hello1
+  method : dynamicmethod
+  method : main(args);08
+
+Not Indexed:
+
+
+Document 3
+Indexed:
+  class : SecondTestClass
+  class-ig : secondtestclass
+  fqn : foo.SecondTestClass
+
+Not Indexed:
+
+
+Document 4
+Indexed:
+  class : ThirdTestClass
+  class-ig : thirdtestclass
+  fqn : foo.ThirdTestClass
+
+Not Indexed:

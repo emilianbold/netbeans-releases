@@ -78,4 +78,5 @@ public final class BeansAttributes {
     public static final String FACTORY_METHOD = "factory-method"; // NOI18N
     public static final String ID = "id"; // NOI18N
     public static final String PRIMARY = "primary"; // NOI18N
+    public static final String ALIAS = "alias"; // NOI18N
 }

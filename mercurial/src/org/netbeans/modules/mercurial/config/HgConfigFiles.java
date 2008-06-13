@@ -297,9 +297,15 @@ public class HgConfigFiles {
     private Ini loadRepoHgrcFile(File dir) {
         String filePath = dir.getAbsolutePath() + File.separator + HG_REPO_DIR + File.separator + HG_RC_FILE; // NOI18N 
         File file = FileUtil.normalizeFile(new File(filePath));
+        File tmpFile = HgUtils.fixPathsInIniFileOnWindows(file);
         Ini system = null;
         try {            
-            system = new Ini(new FileReader(file));
+            if (Utilities.isWindows() && tmpFile != null && tmpFile.isFile() && tmpFile.canWrite() && file != null) {
+                tmpFile.deleteOnExit();
+                system = new Ini(new FileReader(tmpFile));
+            } else {
+                system = new Ini(new FileReader(file));
+            }
         } catch (FileNotFoundException ex) {
             // ignore
         } catch (IOException ex) {
@@ -308,7 +314,7 @@ public class HgConfigFiles {
 
         if(system == null) {
             system = new Ini();
-            Mercurial.LOG.log(Level.WARNING, "Could not load the file " + filePath + ". Falling back on hg defaults."); // NOI18N
+            Mercurial.LOG.log(Level.FINE, "Could not load the file " + filePath + ". Falling back on hg defaults."); // NOI18N
         }
         return system;
     }

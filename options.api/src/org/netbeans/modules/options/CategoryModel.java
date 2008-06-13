@@ -328,6 +328,10 @@ public final class CategoryModel implements LookupListener {
             setCurrentCategoryID(getID());
         }
 
+        public void setCurrentSubcategory(String subpath) {
+            OptionsPanelControllerAccessor.getDefault().setCurrentSubcategory(create(), subpath);
+        }
+    
         private void setHighlited(boolean highlited) {
             if (highlited) {
                 highlitedCategoryID = getID();
@@ -426,6 +430,7 @@ public final class CategoryModel implements LookupListener {
         private void setLookups(List<Lookup> lookups) {
             setLookups(lookups.toArray(new Lookup[lookups.size()]));
         }
+        @Override
         protected void beforeLookup(Lookup.Template template) {
             super.beforeLookup(template);
             masterLookupTask.waitFinished();

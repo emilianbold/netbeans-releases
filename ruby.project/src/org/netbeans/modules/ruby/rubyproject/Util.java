@@ -41,31 +41,21 @@
 
 package org.netbeans.modules.ruby.rubyproject;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 import javax.swing.JComboBox;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
-import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
-import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
-import org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils;
-import org.openide.ErrorManager;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
+import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.util.Utilities;
+import org.openide.windows.WindowManager;
 
 /**
- * This was originally org.netbeans.modules.ant.freeform.spi.support.Util
- * Miscellaneous helper methods.
- * @author Jesse Glick, David Konecny
+ * Miscellaneous helper methods for Ruby project types.
  */
 public final class Util {
 
@@ -73,206 +63,80 @@ public final class Util {
 
     private Util() {
     }
-    
-    // XXX XML methods copied from ant/project... make a general API of these instead?
-    
+
     /**
-     * Search for an XML element in the direct children of a parent.
-     * DOM provides a similar method but it does a recursive search
-     * which we do not want. It also gives a node list and we want
-     * only one result.
-     * @param parent a parent element
-     * @param name the intended local name
-     * @param namespace the intended namespace
-     * @return the one child element with that name, or null if none or more than one
+     * Tries to infer currently best suitable {@link RubyBaseProject Ruby
+     * project} based on the current user's context.
+     * 
+     * @return might be <tt>null</tt>
      */
-    public static Element findElement(Element parent, String name, String namespace) {
-        Element result = null;
-        NodeList l = parent.getChildNodes();
-        for (int i = 0; i < l.getLength(); i++) {
-            if (l.item(i).getNodeType() == Node.ELEMENT_NODE) {
-                Element el = (Element)l.item(i);
-                if (name.equals(el.getLocalName()) && namespace.equals(el.getNamespaceURI())) {
-                    if (result == null) {
-                        result = el; // XXX Uhm, why don't we just return it???
-                    } else {
-                        return null;
-                    }
+    public static RubyBaseProject inferRubyProject() {
+        // try current context firstly
+        Node[] activatedNodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
+
+        if (activatedNodes != null) {
+            for (Node n : activatedNodes) {
+                RubyBaseProject result = lookupRubyBaseProject(n.getLookup());
+                if (result != null) {
+                    return result;
                 }
             }
         }
-        return result;
-    }
-    
-    /**
-     * Extract nested text from an element.
-     * Currently does not handle coalescing text nodes, CDATA sections, etc.
-     * @param parent a parent element
-     * @return the nested text, or null if none was found
-     */
-    public static String findText(Element parent) {
-        NodeList l = parent.getChildNodes();
-        for (int i = 0; i < l.getLength(); i++) {
-            if (l.item(i).getNodeType() == Node.TEXT_NODE) {
-                Text text = (Text)l.item(i);
-                return text.getNodeValue();
+
+        Lookup globalContext = Utilities.actionsGlobalContext();
+        RubyBaseProject result = lookupRubyBaseProject(globalContext);
+        if (result != null) {
+            return result;
+        }
+        FileObject fo = globalContext.lookup(FileObject.class);
+        if (fo != null) {
+            result = lookupRubyBaseProject(FileOwnerQuery.getOwner(fo));
+            if (result != null) {
+                return result;
+            }
+        }
+
+        // next try main project
+        OpenProjects projects = OpenProjects.getDefault();
+        result = lookupRubyBaseProject(projects.getMainProject());
+        if (result != null) {
+            return result;
+        }
+
+        // next try other opened projects
+        for (Project project : projects.getOpenProjects()) {
+            result = lookupRubyBaseProject(project);
+            if (result != null) {
+                return result;
             }
         }
         return null;
     }
+
+    private static RubyBaseProject lookupRubyBaseProject(final Project project) {
+        if (project != null) {
+            return lookupRubyBaseProject(project.getLookup());
+        }
+        return null;
+    }
     
-    /**
-     * Find all direct child elements of an element.
-     * More useful than {@link Element#getElementsByTagNameNS} because it does
-     * not recurse into recursive child elements.
-     * Children which are all-whitespace text nodes are ignored; others cause
-     * an exception to be thrown.
-     * @param parent a parent element in a DOM tree
-     * @return a list of direct child elements (may be empty)
-     * @throws IllegalArgumentException if there are non-element children besides whitespace
-     */
-    public static List<Element> findSubElements(Element parent) throws IllegalArgumentException {
-        NodeList l = parent.getChildNodes();
-        List<Element> elements = new ArrayList<Element>(l.getLength());
-        for (int i = 0; i < l.getLength(); i++) {
-            Node n = l.item(i);
-            if (n.getNodeType() == Node.ELEMENT_NODE) {
-                elements.add((Element)n);
-            } else if (n.getNodeType() == Node.TEXT_NODE) {
-                String text = ((Text)n).getNodeValue();
-                if (text.trim().length() > 0) {
-                    throw new IllegalArgumentException("non-ws text encountered in " + parent + ": " + text); // NOI18N
-                }
-            } else if (n.getNodeType() == Node.COMMENT_NODE) {
-                // skip
-            } else {
-                throw new IllegalArgumentException("unexpected non-element child of " + parent + ": " + n); // NOI18N
+    private static RubyBaseProject lookupRubyBaseProject(final Lookup lookup) {
+        // try directly
+        RubyBaseProject result = lookup.lookup(RubyBaseProject.class);
+        if (result != null) {
+            return result;
+        }
+        // try through Project instance
+        Project project = lookup.lookup(Project.class);
+        if (project != null) {
+            result = project.getLookup().lookup(RubyBaseProject.class);
+            if (result != null) {
+                return result;
             }
         }
-        return elements;
+        return null;
     }
 
-    /**
-     * Finds AuxiliaryConfiguration for the given project helper. The method
-     * finds project associated with the helper and searches 
-     * AuxiliaryConfiguration in project's lookup.
-     *
-     * @param helper instance of project's RakeProjectHelper
-     * @return project's AuxiliaryConfiguration
-     */
-    public static AuxiliaryConfiguration getAuxiliaryConfiguration(RakeProjectHelper helper) {
-        try {
-            Project p = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
-            AuxiliaryConfiguration aux = p.getLookup().lookup(AuxiliaryConfiguration.class);
-            assert aux != null;
-            return aux;
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
-            return null;
-        }
-    }
-
-//    /** 
-//     * Relativize given file against the original project and if needed use 
-//     * ${project.dir} property as base. If file cannot be relativized
-//     * the absolute filepath is returned.
-//     * @param projectBase original project base folder
-//     * @param freeformBase Freeform project base folder
-//     * @param location location to relativize
-//     * @return text suitable for storage in project.xml representing given location
-//     */
-//    public static String relativizeLocation(File projectBase, File freeformBase, File location) {
-//        if (CollocationQuery.areCollocated(projectBase, location)) {
-//            if (projectBase.equals(freeformBase)) {
-//                return PropertyUtils.relativizeFile(projectBase, location);
-//            } else if (projectBase.equals(location) && ProjectConstants.PROJECT_LOCATION_PREFIX.endsWith("/")) { // NOI18N
-//                return ProjectConstants.PROJECT_LOCATION_PREFIX.substring(0, ProjectConstants.PROJECT_LOCATION_PREFIX.length() - 1);
-//            } else {
-//                return ProjectConstants.PROJECT_LOCATION_PREFIX + PropertyUtils.relativizeFile(projectBase, location);
-//            }
-//        } else {
-//            return location.getAbsolutePath();
-//        }
-//    }
-
-    /**
-     * Resolve given string value (e.g. "${project.dir}/lib/lib1.jar")
-     * to a File.
-     * @param evaluator evaluator to use for properties resolving
-     * @param freeformProjectBase freeform project base folder
-     * @param val string to be resolved as file
-     * @return resolved File or null if file could not be resolved
-     */
-    public static File resolveFile(PropertyEvaluator evaluator, File freeformProjectBase, String val) {
-        String location = evaluator.evaluate(val);
-        if (location == null) {
-            return null;
-        }
-        return PropertyUtils.resolveFile(freeformProjectBase, location);
-    }
-
-//    /**
-//     * Returns location of original project base folder. The location can be dirrerent
-//     * from NetBeans metadata project folder.
-//     * @param helper RakeProjectHelper associated with the project
-//     * @param evaluator PropertyEvaluator associated with the project
-//     * @return location of original project base folder
-//     */
-//    public static File getProjectLocation(RakeProjectHelper helper, PropertyEvaluator evaluator) {
-//        //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
-//        String loc = evaluator.getProperty(ProjectConstants.PROP_PROJECT_LOCATION);
-//        if (loc != null) {
-//            return helper.resolveFile(loc);
-//        } else {
-//            return FileUtil.toFile(helper.getProjectDirectory());
-//        }
-//    }
-
-    /**
-     * Append child element to the correct position according to given
-     * order.
-     * @param parent parent to which the child will be added
-     * @param el element to be added
-     * @param order order of the elements which must be followed
-     */
-    public static void appendChildElement(Element parent, Element el, String[] order) {
-        Element insertBefore = null;
-        List l = Arrays.asList(order);
-        int index = l.indexOf(el.getLocalName());
-        assert index != -1 : el.getLocalName()+" was not found in "+l; // NOI18N
-        Iterator it = Util.findSubElements(parent).iterator();
-        while (it.hasNext()) {
-            Element e = (Element)it.next();
-            int index2 = l.indexOf(e.getLocalName());
-            assert index2 != -1 : e.getLocalName()+" was not found in "+l; // NOI18N
-            if (index2 > index) {
-                insertBefore = e;
-                break;
-            }
-        }
-        parent.insertBefore(el, insertBefore);
-    }
-    
-//    /**Get the "default" (user-specified) ant script for the given freeform project.
-//     * Please note that this method may return <code>null</code> if there is no such script.
-//     *
-//     * WARNING: This method is there only for a limited set of usecases like the profiler plugin.
-//     * It should not be used by the freeform project natures.
-//     *
-//     * @param prj the freeform project
-//     * @return the "default" ant script or <code>null</code> if there is no such a script
-//     * @throws IllegalArgumentException if the passed project is not a freeform project.
-//     */
-//    public static FileObject getDefaultAntScript(Project prj) throws IllegalArgumentException {
-//        ProjectAccessor accessor = prj.getLookup().lookup(ProjectAccessor.class);
-//        
-//        if (accessor == null) {
-//            throw new IllegalArgumentException("Only FreeformProjects are supported.");
-//        }
-//        
-//        return FreeformProjectGenerator.getAntScript(accessor.getHelper(), accessor.getEvaluator());
-//    }
-    
     public static void preselectWizardPlatform(final JComboBox platforms) {
         org.netbeans.modules.ruby.platform.Util.preselectPlatform(platforms, LAST_PLATFORM_ID);
     }
@@ -292,5 +156,11 @@ public final class Util {
         int extIndex = fileName.lastIndexOf('.');
         String extension = extIndex == -1 ? "" : fileName.substring(extIndex);
         return ext.equals(extension) ? fileName.substring(0, extIndex) : fileName;
+    }
+
+    public static String getProjectNameWarning(final String projectNameTextField) {
+        // XXX provide non-hack solution - Project API anywhere for this?
+        // dashes are OK and usual in the project's directory name
+        return RubyUtils.getIdentifierWarning(projectNameTextField.replace('-', '_'), 0);
     }
 }

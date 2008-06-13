@@ -62,7 +62,7 @@ import org.openide.util.io.SafeException;
 *
 * @author Jaroslav Tulach
 */
-public abstract class DataLoader extends SharedClassObject {
+public abstract class DataLoader extends SharedClassObject implements DataObject.Factory {
     /** error manager for logging the happenings in loaders */
     static final Logger ERR = Logger.getLogger("org.openide.loaders.DataLoader"); // NOI18N
 
@@ -355,6 +355,25 @@ public abstract class DataLoader extends SharedClassObject {
         return NbBundle.getBundle(DataLoader.class).getString ("LBL_loader_display_name");
     }
 
+    /** Find a data object appropriate to the given file object--the meat of this class.
+     * 
+     * @param fo file object
+     * @param recognized set of already processed files
+     * @return created data object
+     * @throws java.io.IOException
+     * @since 7.0
+     */
+    public final DataObject findDataObject (
+        FileObject fo, final Set<? super FileObject> recognized
+    ) throws IOException {
+        class Rec implements RecognizedFiles {
+            public void markRecognized(FileObject fo) {
+                recognized.add(fo);
+            }
+        }
+        return findDataObject(fo, new Rec());
+    }
+    
     /** Find a data object appropriate to the given file object--the meat of this class.
      * <p>
     * For example: for files with the same basename but extensions <EM>.java</EM> and <EM>.class</EM>, the handler

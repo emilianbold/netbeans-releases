@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.web.client.javascript.debugger.firefox.extension
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/client/javascript/debugger/firefox/extension/Bundle.properties
+OpenIDE-Module-Provides: netbeans.firefox.extension
+OpenIDE-Module-Specification-Version: 0.6
+AutoUpdate-Show-In-Client: false
+

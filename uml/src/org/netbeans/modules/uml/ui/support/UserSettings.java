@@ -51,6 +51,7 @@ import java.util.HashMap;
 
 import org.dom4j.Attribute;
 import org.dom4j.Document;
+import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.Node;
 import org.dom4j.dom.DOMDocumentFactory;
@@ -122,41 +123,40 @@ public class UserSettings
             if(setting != null)
             {
                 setting.addAttribute("isOnlyShowNavigateWhenShift", 
-                     Boolean.toString(value));
-                XMLManip.save(setting.getDocument(), getProjectFileLocation(element));
+                                 Boolean.toString(value));
+                    XMLManip.save(setting.getDocument(), getProjectFileLocation(element));
             }
         }
    }
    
    public void setDefaultDiagram(IElement element, String value)
    {
-          if(element != null)
-          {
-                 Element setting = createProjectSettingsElement(element);
+      if(element != null)
+      {
+             Element setting = createProjectSettingsElement(element);
 
-                 if(setting != null)
-                 {
-                        setting.addAttribute("associatedXMID", value);
-                        setting.addAttribute("isAssociatedDiagram", "true");
-                        XMLManip.save(setting.getDocument(), getProjectFileLocation(element));
-                 }
-          }
-		
+             if(setting != null)
+             {
+                    setting.addAttribute("associatedXMID", value);
+                    setting.addAttribute("isAssociatedDiagram", "true");
+                    XMLManip.save(setting.getDocument(), getProjectFileLocation(element));
+             }
+      }
    }
    
    public void setDefaultPE(IElement element, String value)
    {
-          if(element != null)
-          {
-                 Element setting = createProjectSettingsElement(element);
+      if(element != null)
+      {
+             Element setting = createProjectSettingsElement(element);
 
-                 if(setting != null)
-                 {
-                        setting.addAttribute("associatedXMID", value);
-                        setting.addAttribute("isAssociatedDiagram", "false");
-                        XMLManip.save(setting.getDocument(), getProjectFileLocation(element));
-                 }
-          }
+             if(setting != null)
+             {
+                    setting.addAttribute("associatedXMID", value);
+                    setting.addAttribute("isAssociatedDiagram", "false");
+                    XMLManip.save(setting.getDocument(), getProjectFileLocation(element));
+             }
+      }
    }
    
    public String getDefaultNavigationTargetXMID(IElement associatedElement)
@@ -217,17 +217,18 @@ public class UserSettings
          Element settings = getProjectSettingsElement(associatedElement);
          if(settings != null)
          {
-            Attribute xmiAttr = settings.attribute("associatedXMID");
-            if (xmiAttr != null)
-            {
-                    settings.remove(xmiAttr);
-            }
-            Attribute diaAttr = settings.attribute("isAssociatedDiagram");
-            if (diaAttr != null)
-            {
-                    settings.remove(settings.attribute("isAssociatedDiagram"));
-            }
-            XMLManip.save(settings.getDocument(), getProjectFileLocation(associatedElement));
+                    Attribute xmiAttr = settings.attribute("associatedXMID");
+                    if (xmiAttr != null)
+                    {
+                            settings.remove(xmiAttr);
+                    }
+
+                    Attribute diaAttr = settings.attribute("isAssociatedDiagram");
+                    if (diaAttr != null)
+                    {
+                            settings.remove(settings.attribute("isAssociatedDiagram"));
+                    }
+                    XMLManip.save(settings.getDocument(), getProjectFileLocation(associatedElement));
          }
       }
    }
@@ -567,7 +568,7 @@ public class UserSettings
 						pNode2.setText(value);
 					}
 				}
-				XMLManip.save(doc, m_SystemSettingsFile);
+                                XMLManip.save(doc, m_SystemSettingsFile);
 			}
 		}
    }
@@ -627,8 +628,7 @@ public class UserSettings
 			Document doc = topSetting.getDocument();
 			if(doc != null)
 			{
-                            XMLManip.save(doc, m_SystemSettingsFile);
-				
+                                XMLManip.save(doc, m_SystemSettingsFile);
 			}  
 		}
 	}
@@ -653,8 +653,7 @@ public class UserSettings
 			Document doc = topSetting.getDocument();
 			if(doc != null)
 			{
-                            XMLManip.save(doc, m_SystemSettingsFile);
-				
+                                XMLManip.save(doc, m_SystemSettingsFile);
 			}  
 		}
 	}

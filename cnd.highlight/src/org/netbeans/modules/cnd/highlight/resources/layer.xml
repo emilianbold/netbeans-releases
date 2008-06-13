@@ -40,7 +40,7 @@ Contributor(s):
     <folder name="Editors">
         <folder name="AnnotationTypes">
             <file name="org-netbeans-modules-cnd-cpp-parser_annotation_err.xml" url="parser_annotation_err.xml"/>
-            <file name="org-netbeans-modules-cnd-highligh-semantic-markoccurences.xml" url="occurence_annotation.xml"/>
+            <file name="org-netbeans-modules-cnd-highligh-semantic-markoccurrences.xml" url="occurrence_annotation.xml"/>
         </folder>
         <folder name="text">
             <folder name="x-c++">
@@ -56,22 +56,6 @@ Contributor(s):
                         </folder>
                     </folder>
                 </folder>
-                 <folder name="FontsColors">
-                    <folder name="NetBeans">
-                        <folder name="Defaults">
-                            <file name="org-netbeans-modules-cnd-resources-coloring.xml" url="Netbeans-CCHL-fontsColors.xml">
-                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.highlight.resources.Bundle"/>
-                            </file>
-                        </folder>
-                    </folder>
-                    <folder name="CityLights">
-                        <folder name="Defaults">
-                            <file name="org-netbeans-modules-cnd-resources-coloring.xml" url="CityLights-CCHL-fontsColors.xml">
-                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.highlight.resources.Bundle"/>
-                            </file>
-                        </folder>
-                    </folder>
-                </folder>
             </folder>
             <folder name="x-c">
                 <file name="org-netbeans-modules-cnd-highlight-CppHighlightsLayerFactory.instance" />
@@ -83,22 +67,6 @@ Contributor(s):
                     <folder name="NetBeans">
                         <folder name="Defaults">
                             <file name="highlighting-keybindings.xml" url="DefaultKeyBindings.xml"/>
-                        </folder>
-                    </folder>
-                </folder>
-                 <folder name="FontsColors">
-                    <folder name="NetBeans">
-                        <folder name="Defaults">
-                            <file name="org-netbeans-modules-cnd-resources-coloring.xml" url="Netbeans-CCHL-fontsColors.xml">
-                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.highlight.resources.Bundle"/>
-                            </file>
-                        </folder>
-                    </folder>
-                    <folder name="CityLights">
-                        <folder name="Defaults">
-                            <file name="org-netbeans-modules-cnd-resources-coloring.xml" url="CityLights-CCHL-fontsColors.xml">
-                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.highlight.resources.Bundle"/>
-                            </file>
                         </folder>
                     </folder>
                 </folder>

@@ -1,5 +1,5 @@
 /*
- * WLMModelCommonTest.java
+ * ImportWSDLTest.java
  * JUnit based test
  *
  * Created on May 31, 2007, 3:10 PM
@@ -42,11 +42,11 @@ public class ImportWSDLTest extends TestCase {
     
     public void testImportWSDL()  throws Exception{
         URL url = ImportWSDLTest.class.getResource("data/PurchaseOrderEventProcess.iep");
-    	URI wfFile = url.toURI();
-    	IEPModelProvider provider = new IEPModelProviderInsideIde ();
-    	IEPModel model = provider.getWLMModel(wfFile);
-       	model.sync();
-    	assertNotNull(model);
+        URI wfFile = url.toURI();
+        IEPModelProvider provider = new IEPModelProviderInsideIde ();
+        IEPModel model = provider.getIEPModel(wfFile);
+           model.sync();
+        assertNotNull(model);
 
         //test for import element
         assertEquals(1, model.getPlanComponent().getImports().size());

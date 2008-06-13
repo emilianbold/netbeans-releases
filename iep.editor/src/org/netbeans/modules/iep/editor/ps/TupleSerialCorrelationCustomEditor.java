@@ -267,8 +267,8 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
             String outputSchemaNameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.OUTPUT_SCHEMA_NAME");
             mOutputSchemaNamePanel = PropertyPanel.createSingleLineTextPanel(outputSchemaNameStr, outputSchemaNameProp, false);
             if (mOutputSchemaNamePanel.getStringValue() == null || mOutputSchemaNamePanel.getStringValue().trim().equals("")) {
-            	IEPModel model = mComponent.getModel();
-            	String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer());
+                IEPModel model = mComponent.getModel();
+                String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer());
                 mOutputSchemaNamePanel.setStringValue(schemaName);
             }
             gbc.gridx = 0;
@@ -371,7 +371,7 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
         
         public void validateContent(PropertyChangeEvent evt) throws PropertyVetoException {
             try {
-            	OperatorComponentContainer ocContainer = mModel.getPlanComponent().getOperatorComponentContainer();
+                OperatorComponentContainer ocContainer = mModel.getPlanComponent().getOperatorComponentContainer();
                 SchemaComponentContainer scContainer = mModel.getPlanComponent().getSchemaComponentContainer();
                 
                 // name
@@ -391,7 +391,7 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
                 SchemaComponent outputSchema = mComponent.getOutputSchemaId();
                 String schemaName = null;
                 if(outputSchema != null) {
-                	schemaName = outputSchema.getName();
+                    schemaName = outputSchema.getName();
                 }
                 
                 if (!newSchemaName.equals(schemaName) && scContainer.findSchema(newSchemaName) != null) {
@@ -435,11 +435,11 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
                 Vector c = (Vector) r.elementAt(i);
                 SchemaAttribute sa = mModel.getFactory().createSchemaAttribute(mModel);
                 String name = (String) c.elementAt(0);
-            	sa.setName(name);
-            	sa.setTitle(name);
-            	
-            	//name
-            	sa.setAttributeName(name);
+                sa.setName(name);
+                sa.setTitle(name);
+                
+                //name
+                sa.setAttributeName(name);
                 
                 //type
                 sa.setAttributeType((String) c.elementAt(1));
@@ -456,9 +456,9 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
         }
         
         public void setValue() {
-        	SchemaComponentContainer scContainer = mModel.getPlanComponent().getSchemaComponentContainer();
-        	
-        	mNamePanel.store();
+            SchemaComponentContainer scContainer = mModel.getPlanComponent().getSchemaComponentContainer();
+            
+            mNamePanel.store();
             mIncrementPanel.store();
             mSizePanel.store();
             try {
@@ -467,7 +467,7 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
                 SchemaComponent outputSchema = mComponent.getOutputSchemaId();
                 String schemaName = null;
                 if(outputSchema != null) {
-                	schemaName = outputSchema.getName();
+                    schemaName = outputSchema.getName();
                 }
                 
                 boolean schemaExist = schemaName != null && !schemaName.trim().equals("") && outputSchema != null;
@@ -476,27 +476,27 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
                 //rit fix below
                 if (schemaExist) {
                     if (!newSchemaName.equals(schemaName)) {
-                    	mModel.startTransaction();
-                    	SchemaComponent scComp = mModel.getFactory().createSchema(mModel);
-                    	scComp.setName(newSchemaName);
-                    	scComp.setType(newSchemaName);
-                    	scComp.setSchemaAttributes(attrs);
-                    	
-                    	
-                    	scContainer.addSchemaComponent(scComp);
-                    	scContainer.removeSchemaComponent(outputSchema);
-                    	mModel.endTransaction();
-                    	
+                        mModel.startTransaction();
+                        SchemaComponent scComp = mModel.getFactory().createSchema(mModel);
+                        scComp.setName(newSchemaName);
+                        scComp.setType(newSchemaName);
+                        scComp.setSchemaAttributes(attrs);
+                        
+                        
+                        scContainer.addSchemaComponent(scComp);
+                        scContainer.removeSchemaComponent(outputSchema);
+                        mModel.endTransaction();
+                        
                         mOutputSchemaNamePanel.store();
                         //ritmProperty.getNode().getView().updateTcgComponentNodeView();
                         //ritplan.getPropertyChangeSupport().firePropertyChange("Schema Name",
                         //rit        schemaName, newSchemaName);
                         
                     } else {
-                    	mModel.startTransaction();
-                    	outputSchema.setSchemaAttributes(attrs);
-                    	mModel.endTransaction();
-                    	
+                        mModel.startTransaction();
+                        outputSchema.setSchemaAttributes(attrs);
+                        mModel.endTransaction();
+                        
                         //rit need to fix this
                         /*if (!schema.hasSameAttributeMetadata(attributes)) {
                             schema.setAttributeMetadataAsList(attributes);
@@ -505,17 +505,17 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
                         }*/
                     }
                 } else {
-                	mModel.startTransaction();
-                	
-                	SchemaComponent scComp = mModel.getFactory().createSchema(mModel);
-                	scComp.setName(newSchemaName);
-                	scComp.setTitle(newSchemaName);
-                	scComp.setSchemaAttributes(attrs);
-                	
-                	scContainer.addSchemaComponent(scComp);
-                	mModel.endTransaction();
-                	mOutputSchemaNamePanel.store();
-                	
+                    mModel.startTransaction();
+                    
+                    SchemaComponent scComp = mModel.getFactory().createSchema(mModel);
+                    scComp.setName(newSchemaName);
+                    scComp.setTitle(newSchemaName);
+                    scComp.setSchemaAttributes(attrs);
+                    
+                    scContainer.addSchemaComponent(scComp);
+                    mModel.endTransaction();
+                    mOutputSchemaNamePanel.store();
+                    
 //                    newSchema = ModelManager.createSchema(schemaName);
 //                    plan.addSchema(newSchema);
 //                    newSchema.setAttributeMetadataAsList(attributes);

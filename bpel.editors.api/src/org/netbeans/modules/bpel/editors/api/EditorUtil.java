@@ -268,7 +268,6 @@ public class EditorUtil {
         return getBasicNodeType((BpelEntity)component);
     }
 
-
     public static String getUsageContextPath(String suffix, BpelEntity entity, Class<? extends BpelEntity> filter) {
         String resultStr = getUsageContextPath(entity, filter);
         if (resultStr != null) {
@@ -455,7 +454,7 @@ public class EditorUtil {
 
     public static void goToSource(Component component) {
         if (component.getModel() == null) { // deleted
-          return;
+            return;
         }
         if ( !(component instanceof DocumentComponent)) {
             return;
@@ -472,13 +471,13 @@ public class EditorUtil {
             if (lc == null) {
                 return;
             }
-            int lineNum = getLineNum(document);
+            int lineNum = SoaUtil.getLineNum(document);
             if (lineNum < 0) {
                 return;
             }
 
             final Line l = lc.getLineSet().getCurrent(lineNum);
-            final int column = getColumnNum(document);
+            final int column = SoaUtil.getColumnNum(document);
             if (column < 0) {
                 return;
             }
@@ -495,7 +494,7 @@ public class EditorUtil {
     }
 
     public static void goToLoggingAlerting(Component component) {
-        assert component instanceof BpelEntity ;
+        assert component instanceof BpelEntity;
 
         final BpelEntity bpelEntity = (BpelEntity) component;
         FileObject fo = SoaUtil.getFileObjectByModel(bpelEntity.getBpelModel());
@@ -523,7 +522,7 @@ public class EditorUtil {
     }
 
     public static void goToBusinessRules(Component component) {
-        assert component instanceof BpelEntity ;
+        assert component instanceof BpelEntity;
 
         final BpelEntity bpelEntity = (BpelEntity) component;
         FileObject fo = SoaUtil.getFileObjectByModel(bpelEntity.getBpelModel());
@@ -564,9 +563,14 @@ public class EditorUtil {
         }
     }
 
-    public static void goToDesign(final BpelEntity bpelEntity) {
+    public static void goToDesign(Component component) {
+        if ( !(component instanceof BpelEntity)) {
+            return;
+        }
+        final BpelEntity bpelEntity = (BpelEntity) component;
+
         if (bpelEntity.getModel() == null) { // deleted
-          return;
+            return;
         }
         FileObject fo = SoaUtil.getFileObjectByModel(bpelEntity.getBpelModel());
 
@@ -631,8 +635,8 @@ public class EditorUtil {
         } catch (DataObjectNotFoundException ex) {
             return null;
         }
-        int line = getLineNum(entity);
-        int col = getColumnNum(entity);
+        int line = SoaUtil.getLineNum(entity);
+        int col = SoaUtil.getColumnNum(entity);
         ModelSource modelSource = entity.getBpelModel().getModelSource();
         assert modelSource != null;
         Lookup lookup = modelSource.getLookup();
@@ -657,69 +661,20 @@ public class EditorUtil {
         return boldenRefOrType(nodeLabel);
     }
 
-    private static int getLineNum(DocumentComponent entity) {
-        int position = entity.findPosition();
-        ModelSource modelSource = entity.getModel().getModelSource();
-        assert modelSource != null;
-        Lookup lookup = modelSource.getLookup();
-
-        StyledDocument document = lookup.lookup(StyledDocument.class);
-        if (document == null) {
-            return -1;
-        }
-        return NbDocument.findLineNumber(document,position);
-    }
-
-    private static int getColumnNum(DocumentComponent entity) {
-        int position = entity.findPosition();
-        ModelSource modelSource = entity.getModel().getModelSource();
-        assert modelSource != null;
-        Lookup lookup = modelSource.getLookup();
-
-        StyledDocument document = lookup.lookup(StyledDocument.class);
-        if (document == null) {
-            return -1;
-        }
-        return NbDocument.findLineColumn(document,position);
-    }
-
     private static void openActiveDesignEditor() {
-        openActiveMVEditor(BpelEditorConstants.BPEL_DESIGNMV_PREFFERED_ID);
+        SoaUtil.openActiveMVEditor(BpelEditorConstants.BPEL_DESIGNMV_PREFFERED_ID);
     }
 
     private static void openActiveMapperEditor() {
-        openActiveMVEditor(BpelEditorConstants.BPEL_MAPPERMV_PREFFERED_ID);
+        SoaUtil.openActiveMVEditor(BpelEditorConstants.BPEL_MAPPERMV_PREFFERED_ID);
     }
 
     private static void openActiveLoggingEditor() {
-        openActiveMVEditor(BpelEditorConstants.BPEL_LOGGINGMV_PREFFERED_ID);
+        SoaUtil.openActiveMVEditor(BpelEditorConstants.BPEL_LOGGINGMV_PREFFERED_ID);
     }
 
     private static void openActiveSourceEditor() {
-        openActiveMVEditor(BpelEditorConstants.BPEL_SOURCEMV_PREFFERED_ID);
-    }
-
-    private static void openActiveMVEditor(String mvPreferedID) {
-        if (mvPreferedID == null) {
-            return;
-        }
-
-        TopComponent tc = WindowManager.getDefault().getRegistry().getActivated();
-
-        MultiViewHandler mvh = MultiViews.findMultiViewHandler(tc);
-        if (mvh == null) {
-            return;
-        }
-
-        MultiViewPerspective[] mvps = mvh.getPerspectives();
-        if (mvps != null && mvps.length >0) {
-            for (MultiViewPerspective mvp : mvps) {
-                if (mvp.preferredID().equals(mvPreferedID)) {  // NOI18N
-                    mvh.requestVisible(mvp);
-                    mvh.requestActive(mvp);
-                }
-            }
-        }
+        SoaUtil.openActiveMVEditor(BpelEditorConstants.BPEL_SOURCEMV_PREFFERED_ID);
     }
 
     // TODO get xml snippet for line that contains the
@@ -835,9 +790,7 @@ public class EditorUtil {
         return true;
     }
 
-    public static void goToDocumentComponentSource(
-            DocumentComponent<DocumentComponent> component)
-    {
+    public static void goToDocumentComponentSource(DocumentComponent<DocumentComponent> component) {
         if (component == null) return;
 
         Model model = component.getModel();
@@ -1053,6 +1006,10 @@ public class EditorUtil {
         return false;
     }
 
+    public static String getAccentedString(String message) {
+        return "<html><b>" + message + "</b></html>";// NOI18N
+    }
+    
     private static final int MAX_SIMPLE_NAME_LENGTH = 50;
     public static final String ENTITY_SEPARATOR = "."; // NOI18N
 }

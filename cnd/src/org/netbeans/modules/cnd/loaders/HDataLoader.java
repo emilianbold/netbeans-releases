@@ -72,7 +72,7 @@ public final class HDataLoader extends CndAbstractDataLoaderExt {
     public HDataLoader() {
         super("org.netbeans.modules.cnd.loaders.HDataObject"); // NOI18N
         instance = this;
-        createExtentions(hdrExtensions);
+        //createExtentions(hdrExtensions);
     }
 
     public static HDataLoader getInstance(){

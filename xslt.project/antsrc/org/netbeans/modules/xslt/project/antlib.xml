@@ -40,6 +40,6 @@
   made subject to such option by the copyright holder.
 -->
 <antlib>
-    <typedef name="XsltProjectJBIGen" classname="org.netbeans.modules.xslt.project.anttasks.IDEGenerateJBIDescriptor"/>
-    <!-- typedef name="XsltProjectValidate" classname="org.netbeans.modules.xslt.project.anttasks.IDEValidateXSLTProject"/ -->
+  <typedef name="validate-xslt-project" classname="org.netbeans.modules.xslt.project.anttasks.IdeValidateProjectTask"/>
+  <typedef name="XsltProjectJBIGen" classname="org.netbeans.modules.xslt.project.anttasks.IDEGenerateJBIDescriptor"/>
 </antlib>

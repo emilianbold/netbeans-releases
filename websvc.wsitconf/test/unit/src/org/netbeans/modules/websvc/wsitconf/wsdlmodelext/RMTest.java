@@ -44,9 +44,9 @@ import java.io.File;
 import junit.framework.*;
 import org.netbeans.modules.websvc.wsitconf.util.TestCatalogModel;
 import org.netbeans.modules.websvc.wsitconf.util.TestUtil;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
 /**
@@ -70,41 +70,42 @@ public class RMTest extends TestCase {
     public void testRM() throws Exception {
         TestCatalogModel.getDefault().setDocumentPooling(true);
         WSDLModel model = TestUtil.loadWSDLModel("../wsdlmodelext/resources/policy.xml");
-        WSDLComponentFactory fact = model.getFactory();
+
+        ConfigVersion cfgVersion = ConfigVersion.CONFIG_1_0;
         
         model.startTransaction();
 
         Definitions d = model.getDefinitions();
         Binding b = (Binding) d.getBindings().toArray()[0];
         
-        assertFalse("RM enabled indicated on empty WSDL", RMModelHelper.isRMEnabled(b));
+        assertFalse("RM enabled indicated on empty WSDL", RMModelHelper.getInstance(cfgVersion).isRMEnabled(b));
 
-        RMModelHelper.enableRM(b);
-        assertTrue("RM not enabled correctly", RMModelHelper.isRMEnabled(b));
+        RMModelHelper.getInstance(cfgVersion).enableRM(b, true);
+        assertTrue("RM not enabled correctly", RMModelHelper.getInstance(cfgVersion).isRMEnabled(b));
 
-        assertNull("Inactivity timeout set even when not specified", RMModelHelper.getInactivityTimeout(b));
-        RMModelHelper.setInactivityTimeout(b, "112233");
-        assertEquals("Inactivity Timeout Value Not Saved/Read Correctly", "112233", RMModelHelper.getInactivityTimeout(b));
+        assertNull("Inactivity timeout set even when not specified", RMModelHelper.getInstance(cfgVersion).getInactivityTimeout(b));
+        RMModelHelper.getInstance(cfgVersion).setInactivityTimeout(b, "112233");
+        assertEquals("Inactivity Timeout Value Not Saved/Read Correctly", "112233", RMModelHelper.getInstance(cfgVersion).getInactivityTimeout(b));
 
-        assertFalse("Flow Control enabled indicated", RMMSModelHelper.isFlowControlEnabled(b));
-        RMMSModelHelper.enableFlowControl(b);
-        RMMSModelHelper.disableFlowControl(b);
-        RMMSModelHelper.enableFlowControl(b);
-        assertTrue("Flow Control disabled indicated", RMMSModelHelper.isFlowControlEnabled(b));
+        assertFalse("Flow Control enabled indicated", RMModelHelper.isFlowControl(b));
+        RMModelHelper.getInstance(cfgVersion).enableFlowControl(b, true);
+        RMModelHelper.getInstance(cfgVersion).enableFlowControl(b, false);
+        RMModelHelper.getInstance(cfgVersion).enableFlowControl(b, true);
+        assertTrue("Flow Control disabled indicated", RMModelHelper.isFlowControl(b));
 
-        assertNull("Max Receive Buffer Size set even when not specified", RMMSModelHelper.getMaxReceiveBufferSize(b));
-        RMMSModelHelper.setMaxReceiveBufferSize(b, "2233");
-        assertEquals("Max Receive Buffer Size Value Not Saved/Read Correctly", "2233", RMMSModelHelper.getMaxReceiveBufferSize(b));
+        assertNull("Max Receive Buffer Size set even when not specified", RMModelHelper.getMaxReceiveBufferSize(b));
+        RMModelHelper.setMaxReceiveBufferSize(b, "2233");
+        assertEquals("Max Receive Buffer Size Value Not Saved/Read Correctly", "2233", RMModelHelper.getMaxReceiveBufferSize(b));
 
-        assertFalse("Ordered enabled indicated", RMSunModelHelper.isOrderedEnabled(b));
-        RMSunModelHelper.enableOrdered(b);
-        assertTrue("Ordered disabled indicated", RMSunModelHelper.isOrderedEnabled(b));
-        RMSunModelHelper.disableOrdered(b);
-        assertFalse("Ordered enabled indicated", RMSunModelHelper.isOrderedEnabled(b));
+        assertFalse("Ordered enabled indicated", RMModelHelper.getInstance(cfgVersion).isOrderedEnabled(b));
+        RMModelHelper.getInstance(cfgVersion).enableOrdered(b, true);
+        assertTrue("Ordered disabled indicated", RMModelHelper.getInstance(cfgVersion).isOrderedEnabled(b));
+        RMModelHelper.getInstance(cfgVersion).enableOrdered(b, false);
+        assertFalse("Ordered enabled indicated", RMModelHelper.getInstance(cfgVersion).isOrderedEnabled(b));
         
-        RMModelHelper.disableRM(b);
-        assertFalse("RM not disabled correctly", RMModelHelper.isRMEnabled(b));
-        assertNull("RM not disabled correctly", RMModelHelper.getInactivityTimeout(b));
+        RMModelHelper.getInstance(cfgVersion).enableRM(b, false);
+        assertFalse("RM not disabled correctly", RMModelHelper.getInstance(cfgVersion).isRMEnabled(b));
+        assertNull("RM not disabled correctly", RMModelHelper.getInstance(cfgVersion).getInactivityTimeout(b));
         
         model.endTransaction();
 

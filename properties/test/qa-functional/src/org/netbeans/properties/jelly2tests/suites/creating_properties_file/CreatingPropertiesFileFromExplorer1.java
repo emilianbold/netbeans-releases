@@ -55,6 +55,7 @@ import lib.PropertiesEditorTestCase;
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.junit.NbTestSuite;
 
 
 /**
@@ -74,10 +75,21 @@ public class CreatingPropertiesFileFromExplorer1 extends PropertiesEditorTestCas
     /**
      *  Constructor - creates a new instance of CreatingPropertiesFileFromExplorer1
      */
-    public CreatingPropertiesFileFromExplorer1() {
-        super("testCreatingPropertiesFileFromExplorer1");
+    public CreatingPropertiesFileFromExplorer1(String name) {
+        super(name);
     }
     
+     /** Creates suite from particular test cases. You can define order of testcases here. */
+    public static NbTestSuite suite(){
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new CreatingPropertiesFileFromExplorer1("testCreatingPropertiesFileFromExplorer1"));
+        return suite;
+    }
+    
+    /* Method allowing test execution directly from the IDE. */
+    public static void main(String[] args) {
+       junit.textui.TestRunner.run(suite());
+    }
     /**
      * This method contain body of test
      * @return void
@@ -94,7 +106,7 @@ public class CreatingPropertiesFileFromExplorer1 extends PropertiesEditorTestCas
          * select in appeared context menu New|Other|Properties File.
          */
         log(PACKAGE_PATH);
-        SourcePackagesNode spn = new SourcePackagesNode(defaultProjectName);
+        SourcePackagesNode spn = new SourcePackagesNode(DEFAULT_PROJECT_NAME);
         Node node = new Node(spn,PACKAGE_PATH);
         
         node.select();
@@ -130,7 +142,7 @@ public class CreatingPropertiesFileFromExplorer1 extends PropertiesEditorTestCas
     
     public void tearDown() {
         log("Teardown");
-        closeFiles();
+      //  closePropertiesFile(FILE_NAME);
     }
     
     

@@ -101,8 +101,8 @@ public class IEPWizardHelper {
             sComponent.setTitle(schemaName);
 
             
-                    	
-                    	
+                        
+                        
                         
             List<SchemaAttribute> attrs = new ArrayList<SchemaAttribute>();
             
@@ -116,7 +116,7 @@ public class IEPWizardHelper {
                     continue;
                 }
                 sa.setName(attrName);
-            	sa.setTitle(attrName);
+                sa.setTitle(attrName);
                 sa.setAttributeName(attrName);
                 sa.setAttributeType(attr.getAttributeType());
                 sa.setAttributeSize(attr.getAttributeSize());

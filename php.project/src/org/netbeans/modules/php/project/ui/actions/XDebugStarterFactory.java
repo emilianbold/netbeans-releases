@@ -49,17 +49,20 @@ import org.openide.util.Union2;
  * @author Radek Matous
  *
  */
-public class XDebugStarterFactory {
+public final class XDebugStarterFactory {
     private static Union2<XDebugStarter, Boolean> INSTANCE;
-    
+
+    private XDebugStarterFactory() {
+    }
+
     public static XDebugStarter getInstance() {
         boolean init;
-        synchronized(XDebugStarterFactory.class) {
+        synchronized (XDebugStarterFactory.class) {
             init = (INSTANCE == null);
         }
         if (init) {
-            //TODO: add lookup listener
-            XDebugStarter debugStarter = Lookup.getDefault().lookup( XDebugStarter.class );
+            //TODO add lookup listener
+            XDebugStarter debugStarter = Lookup.getDefault().lookup(XDebugStarter.class);
             if (debugStarter != null) {
                 INSTANCE = Union2.createFirst(debugStarter);
             } else {

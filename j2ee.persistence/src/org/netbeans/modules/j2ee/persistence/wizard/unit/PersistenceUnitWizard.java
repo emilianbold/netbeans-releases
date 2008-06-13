@@ -137,7 +137,15 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
                 }
             }
             if (descriptor.isNonDefaultProviderEnabled()) {
-                punit.setProvider(descriptor.getNonDefaultProvider());
+                String providerClass = descriptor.getNonDefaultProvider();
+                punit.setProvider(providerClass);
+                
+                //Only add library for Hibernate in NB 6.5
+                if(providerClass.equals("org.hibernate.ejb.HibernatePersistence")){
+                    if (descriptor.getPersistenceLibrary() != null) {
+                        Util.addLibraryToProject(project, descriptor.getPersistenceLibrary());
+                    }
+                }
             }
         } else {
             LOG.fine("Creating an application managed PU");

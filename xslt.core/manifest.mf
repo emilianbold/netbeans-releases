@@ -4,7 +4,3 @@ OpenIDE-Module-Specification-Version: 1.1
 OpenIDE-Module: org.netbeans.modules.xslt.core/1
 OpenIDE-Module-Layer: org/netbeans/modules/xslt/core/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xslt/core/resources/Bundle.properties
-
-Name: org/netbeans/modules/xslt/core/XSLTDataLoader.class
-Install-Before: org.netbeans.modules.xsl.XSLDataObject, org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject
-OpenIDE-Module-Class: Loader

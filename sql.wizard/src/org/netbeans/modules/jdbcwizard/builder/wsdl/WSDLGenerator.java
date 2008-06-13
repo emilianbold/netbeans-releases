@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.jdbcwizard.builder.wsdl;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.List;
@@ -26,11 +28,21 @@ import java.util.HashMap;
 
 import java.net.URL;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.Writer;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
+import java.util.ArrayList;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLWriter;
 import javax.wsdl.xml.WSDLReader;
@@ -904,17 +916,25 @@ public class WSDLGenerator {
             writer.writeWSDL(this.def, sink);
             WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName);
         } catch (final Exception e) {
-			try{
-            final WSDLWriter writer = WSDLGenerator.factory.newWSDLWriter();
-            final String outputFileName = this.wsdlFileLocation + File.separator + this.mWSDLFileName + ".wsdl";
-            java.io.FileOutputStream fos = new java.io.FileOutputStream(outputFileName);
-            final Writer sink = new java.io.OutputStreamWriter(fos,"UTF-8");
-            writer.writeWSDL(this.def, sink);
-            WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName);
-			} catch (Exception uee){
-				uee.printStackTrace();
-			}
+           if(e instanceof FileNotFoundException){
+               WSDLGenerator.logger.log(Level.SEVERE, e.getMessage());
+            }else if(e instanceof IOException){
+               WSDLGenerator.logger.log(Level.SEVERE, e.getMessage());
+            }else if(e instanceof WSDLException){ 
+            if((((WSDLException)e).getMessage()).indexOf("Unsupported Java encoding for writing wsdl file") != -1){
+                try{ 
+                   final WSDLWriter writer = WSDLGenerator.factory.newWSDLWriter();
+                   final String outputFileName = this.wsdlFileLocation + File.separator + this.mWSDLFileName + ".wsdl";
+                   java.io.FileOutputStream fos = new java.io.FileOutputStream(outputFileName);
+                   final Writer sink = new java.io.OutputStreamWriter(fos,"UTF-8");
+                   writer.writeWSDL(this.def, sink);
+                   WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName);
+                   }catch(Exception ex){
+                       WSDLGenerator.logger.log(Level.SEVERE, ex.getMessage());
+                   }
+                }else WSDLGenerator.logger.log(Level.SEVERE, e.getMessage());
+            }else WSDLGenerator.logger.log(Level.SEVERE, e.getMessage());
         }
-
     }
+    
 }

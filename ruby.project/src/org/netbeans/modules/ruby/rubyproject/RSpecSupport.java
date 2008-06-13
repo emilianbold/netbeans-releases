@@ -77,13 +77,20 @@ public class RSpecSupport {
         this.project = project;
     }
 
-    private String getVersion(final String gemName) {
-        GemManager gemManager = RubyPlatform.gemManagerFor(project);
-        return gemManager == null ? null : gemManager.getLatestVersion(gemName);
+    static boolean hasRSpecInstalled(final RubyPlatform platform) {
+        return getLatestVersion(platform.getGemManager()) != null;
+    }
+    
+    private static String getLatestVersion(final GemManager gemManager) {
+        return gemManager == null ? null : gemManager.getLatestVersion(RSPEC_GEM_NAME);
+    }
+    
+    private String getLatestVersion() {
+        return getLatestVersion(RubyPlatform.gemManagerFor(project));
     }
     
     public boolean isRSpecInstalled() {
-        if (getVersion(RSPEC_GEM_NAME) != null) {
+        if (getLatestVersion() != null) {
             return true;
         }
 
@@ -112,7 +119,7 @@ public class RSpecSupport {
 
         GemManager gemManager = RubyPlatform.gemManagerFor(project);
 
-        String version = getVersion(RSPEC_GEM_NAME);
+        String version = getLatestVersion();
 
         if (version != null) {
             String libGemDir = gemManager.getGemHome();

@@ -162,23 +162,23 @@ public final class Util {
   public static class BpelFileFilter implements FileFilter {
 
       public boolean accept(File pathname) {
-          boolean result = false;
           if (pathname.isDirectory()) {
-              return true;
+            return true;
           }
-
           String fileName = pathname.getName();
-          String fileExtension = null;
           int dotIndex = fileName.lastIndexOf('.');
+          String fileExtension = null;
+
           if (dotIndex != -1) {
               fileExtension = fileName.substring(dotIndex + 1);
           }
-
-          if (fileExtension != null && (fileExtension.equalsIgnoreCase(BPEL_FILE_EXTENSION))) {
-              result = true;
+          if (fileExtension == null) {
+              return false;
           }
-
-          return result;
+          if (fileExtension.equalsIgnoreCase(BPEL_FILE_EXTENSION)) {
+            return true;
+          }
+          return false;
       }
   }
   
@@ -200,7 +200,7 @@ public final class Util {
       }
   }
   
-  public static final String WSDL_FILE_EXTENSION = "wsdl"; // NOI18N
-  public static final String XSD_FILE_EXTENSION = "xsd"; // NOI18N
-  public static final String BPEL_FILE_EXTENSION = "bpel"; // NOI18N
+  private static final String WSDL_FILE_EXTENSION = "wsdl"; // NOI18N
+  private static final String XSD_FILE_EXTENSION = "xsd"; // NOI18N
+  private static final String BPEL_FILE_EXTENSION = "bpel"; // NOI18N
 }

@@ -160,4 +160,5 @@ public interface BpelModel extends Model<BpelEntity> {
     BpelEntity findElement( int i );
     
     boolean isSupportedExpension(String uri);
+    void rollbackTransaction();
 }

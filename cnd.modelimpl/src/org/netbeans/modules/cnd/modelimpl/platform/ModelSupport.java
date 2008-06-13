@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
 import org.netbeans.modules.cnd.modelimpl.options.CodeAssistanceOptions;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -146,7 +147,7 @@ public class ModelSupport implements PropertyChangeListener {
 	
         DataObject.getRegistry().addChangeListener(modifiedListener);
 	
-	if (! ModelImpl.isStandalone()) {
+	if (!CndUtils.isStandalone()) {
 	    openedProjects = new HashSet<Project>();
 	    if (TRACE_STARTUP) System.out.println("Model support: Inited"); // NOI18N
 
@@ -232,7 +233,7 @@ public class ModelSupport implements PropertyChangeListener {
     }
 
     public static boolean needParseOrphan(final Object platformProject) {
-        if (!ModelImpl.isStandalone()) {
+        if (!CndUtils.isStandalone()) {
             Project project = ModelImpl.findProjectByNativeProject(getNativeProject(platformProject));
             if (project != null) {
                 return new CodeAssistanceOptions(project,true).getParseOrphanEnabled().booleanValue();
@@ -423,7 +424,7 @@ public class ModelSupport implements PropertyChangeListener {
     }
     
     public static NativeProject[] getOpenNativeProjects() {
-	if (ModelImpl.isStandalone()) {
+	if (CndUtils.isStandalone()) {
 	    return new NativeProject[0];
 	}
 	List<NativeProject> result = new ArrayList<NativeProject>();

@@ -46,6 +46,9 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Iterator;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -96,7 +99,10 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
                 if (CsmKindUtilities.isNamespace(result)) {
                     CharSequence lastName = rawName[rawName.length - 1];
                     CsmDeclaration bestChoice = null;
-                    for (CsmDeclaration elem : ((CsmNamespace)result).getDeclarations()) {
+                    CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(lastName.toString(), true, false, false);
+                    Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(((CsmNamespace)result), filter);
+                    while (it.hasNext()) {
+                        CsmDeclaration elem = it.next();
                         if (CharSequenceKey.Comparator.compare(lastName,elem.getName())==0) {
                             if (!CsmKindUtilities.isExternVariable(elem)) {
                                 referencedDeclaration = elem;

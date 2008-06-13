@@ -45,7 +45,6 @@ made subject to such option by the copyright holder.
 
   <property name="dist.base" value="http://www.netbeans.org/download/nbms/alpha/dev/1.16"/>
   <property name="license.file" location="${nb_all}/nbbuild/standard-nbm-license.txt"/>
-  <property name="nbm_alias" value="nb_ide"/>
   <property name="build.sysclasspath" value="ignore"/>
 
   <property name="clusters.list.file" location="${nb_all}/nbbuild/cluster.properties"/>

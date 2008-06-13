@@ -48,8 +48,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
+import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.classfile.ClassFile;
@@ -74,8 +77,7 @@ public class ProjectCustomizerPanel extends javax.swing.JPanel implements HelpCt
 
     public ProjectCustomizerPanel() {
         initComponents();
-        lafCombo.setModel(new DefaultComboBoxModel(LAF_DISPLAY_NAMES));
-        // TODO the combo should offer all look and feel classes on project classpath
+        lafCombo.setModel(lafComboModel());
     }
 
     void setVendorId(String text) {
@@ -125,6 +127,13 @@ public class ProjectCustomizerPanel extends javax.swing.JPanel implements HelpCt
             }
         }
         return lafJarRoot;
+    }
+
+    void setReadOnly() {
+        vendorIdTextField.setEnabled(false);
+        appIdTextField.setEnabled(false);
+        lafCombo.setEnabled(false);
+        browseButton.setVisible(false);
     }
 
     /** This method is called from within the constructor to
@@ -303,6 +312,14 @@ public class ProjectCustomizerPanel extends javax.swing.JPanel implements HelpCt
                     || "javax.swing.plaf.metal.MetalLookAndFeel".equals(name) // NOI18N
                     || "javax.swing.plaf.basic.BasicLookAndFeel".equals(name) // NOI18N
                     || "javax.swing.plaf.synth.SynthLookAndFeel".equals(name)); // NOI18N
+    }
+
+    private ComboBoxModel lafComboModel() {
+        DefaultComboBoxModel model = new DefaultComboBoxModel(LAF_DISPLAY_NAMES);
+        for (LookAndFeelInfo laf : UIManager.getInstalledLookAndFeels()) {
+            model.addElement(laf.getClassName());
+        }
+        return model;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

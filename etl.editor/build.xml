@@ -60,7 +60,7 @@
         <i18n dir="${basedir}/build/classes" file="${basedir}/src/org/netbeans/modules/etl/logger/msgs_log.properties" prefix="DM-DI-" strict="false" pattern="(EDIT\d\d\d)(: )(.*)"></i18n>
         <copy file="${basedir}/src/org/netbeans/modules/etl/logger/msgs.properties" todir="${basedir}/build/classes/org/netbeans/modules/etl/logger"/>
         <copy file="${basedir}/src/org/netbeans/modules/etl/logger/msgs_log.properties" todir="${basedir}/build/classes/org/netbeans/modules/etl/logger"/>
-        <delete file="${basedir}/src/org/netbeans/modules/etl/logger/msgs.properties"/>
-        <delete file="${basedir}/src/org/netbeans/modules/etl/logger/msgs_log.properties"/>
+        <!--delete file="${basedir}/src/org/netbeans/modules/etl/logger/msgs.properties"/>
+        <delete file="${basedir}/src/org/netbeans/modules/etl/logger/msgs_log.properties"/-->
     </target>
 </project>

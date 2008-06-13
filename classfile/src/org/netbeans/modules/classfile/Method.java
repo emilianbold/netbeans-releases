@@ -213,6 +213,7 @@ public final class Method extends Field {
         return annotationDefault;
     }
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer(super.toString());
         sb.append(", params (");
@@ -237,10 +238,10 @@ public final class Method extends Field {
 	    sb.append(annotationDefault.toString());
 	    sb.append("\" ");
 	}
-	Code code = getCode();
-	if (code != null) {
+	Code c = getCode();
+	if (c != null) {
             sb.append(' ');
-	    sb.append(code.toString());
+	    sb.append(c.toString());
         }
         return sb.toString();
     }

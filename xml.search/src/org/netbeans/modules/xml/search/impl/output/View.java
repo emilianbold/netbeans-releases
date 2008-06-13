@@ -114,38 +114,32 @@ public final class View extends TopComponent implements SearchListener {
   }
 
   @Override
-  public HelpCtx getHelpCtx()
-  {
+  public HelpCtx getHelpCtx() {
     return HelpCtx.DEFAULT_HELP;
   }
 
   @Override
-  public int getPersistenceType()
-  {
+  public int getPersistenceType() {
     return PERSISTENCE_ALWAYS;
   }
       
   @Override
-  public String getName()
-  {
+  public String getName() {
     return NAME;
   }
   
   @Override
-  public String getDisplayName()
-  {
+  public String getDisplayName() {
     return i18n(View.class, "LBL_Search_Results"); // NOI18N
   }
 
   @Override
-  public String getToolTipText()
-  {
+  public String getToolTipText() {
     return i18n(View.class, "TLT_Search_Results"); // NOI18N
   }
 
   @Override
-  protected void componentClosed()
-  {
+  protected void componentClosed() {
     super.componentClosed();
 
     if (myTabbed != null) {
@@ -156,8 +150,7 @@ public final class View extends TopComponent implements SearchListener {
   }
 
   @Override
-  protected String preferredID()
-  {
+  protected String preferredID() {
     return NAME;
   }
 

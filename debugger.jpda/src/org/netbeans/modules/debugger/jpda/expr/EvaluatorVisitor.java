@@ -158,6 +158,7 @@ import javax.lang.model.type.TypeVariable;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext.VariableInfo;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
@@ -300,10 +301,13 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 type = objectReference.referenceType();
             } else {
                 objectReference = evaluationContext.getFrame().thisObject();
-                type = evaluationContext.getFrame().location().declaringType();
+                type = objectReference.referenceType();
                 if (enclosingClass != null) {
-                    ReferenceType dt = findEnclosingType(type, enclosingClass);
-                    if (dt != null) type = dt;
+                    ReferenceType enclType = findEnclosingType(type, enclosingClass);
+                    if (enclType != null) {
+                        ObjectReference enclObject = findEnclosingObject(objectReference, enclType);
+                        if (enclObject != null) type = enclObject.referenceType();
+                    }
                 }
             }
             if (objectReference == null) {
@@ -1282,11 +1286,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 ObjectReference thisObject = evaluationContext.getFrame().thisObject();
                 if (thisObject != null) {
                     if (field.isPrivate()) {
-                        ObjectReference to = findEnclosedObject(thisObject, declaringType);
+                        ObjectReference to = findEnclosingObject(thisObject, declaringType);
                         if (to != null) thisObject = to;
                     } else {
                         if (!instanceOf(thisObject.referenceType(), declaringType)) {
-                            ObjectReference to = findEnclosedObject(thisObject, declaringType);
+                            ObjectReference to = findEnclosingObject(thisObject, declaringType);
                             if (to != null) thisObject = to;
                         }
                     }
@@ -1347,7 +1351,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 } catch (AbsentInformationException aiex) {
                     try {
                         org.netbeans.api.debugger.jpda.LocalVariable[] lvs;
-                        lvs = new CallStackFrameImpl(frame, 0, evaluationContext.getDebugger()).getMethodArguments();
+                        lvs = new CallStackFrameImpl((JPDAThreadImpl) ((JPDADebuggerImpl) evaluationContext.getDebugger()).getThread(frame.thread()),
+                                                     frame, 0, evaluationContext.getDebugger()).getMethodArguments();
                         if (lvs != null) {
                             for (org.netbeans.api.debugger.jpda.LocalVariable lv : lvs) {
                                 if (paramName.equals(lv.getName())) {
@@ -1395,7 +1400,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         return false;
     }
     
-    private ObjectReference findEnclosedObject(ObjectReference object, ReferenceType type) {
+    private ObjectReference findEnclosingObject(ObjectReference object, ReferenceType type) {
         if (instanceOf(object.referenceType(), type)) {
             return object;
         }
@@ -1406,7 +1411,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         if (outerRef == null) return null;
         object = (ObjectReference) object.getValue(outerRef);
-        return findEnclosedObject(object, type);
+        return findEnclosingObject(object, type);
     }
 
     @Override
@@ -2358,11 +2363,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             } else {
                 if (type != null) {
                     if (method.isPrivate()) {
-                        ObjectReference to = findEnclosedObject(objectReference, type);
+                        ObjectReference to = findEnclosingObject(objectReference, type);
                         if (to != null) objectReference = to;
                     } else {
                         if (!instanceOf(objectReference.referenceType(), type)) {
-                            ObjectReference to = findEnclosedObject(objectReference, type);
+                            ObjectReference to = findEnclosingObject(objectReference, type);
                             if (to != null) objectReference = to;
                         }
                     }

@@ -57,6 +57,7 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.NbBundle;
 import javax.swing.JOptionPane;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Utilities;
@@ -116,18 +117,30 @@ public class Mercurial {
     private String version;
     private String runVersion;
     private boolean checkedVersion;
+    private boolean gotVersion;
 
     private Mercurial() {
     }
     
     
     private void init() {
-        checkedVersion = false;
+        loadIniParserClassesWorkaround();
         setDefaultPath();
         fileStatusCache = new FileStatusCache();
         mercurialAnnotator = new MercurialAnnotator();
         mercurialInterceptor = new MercurialInterceptor();
         checkVersion(); // Does the Hg check but postpones querying user until menu is activated
+    }
+    
+    private void loadIniParserClassesWorkaround() {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+        try {
+            // triggers ini4j initialization in call to loadSystemAndGlobalFile()
+            HgConfigFiles.getSysInstance();   
+        } finally {
+            Thread.currentThread().setContextClassLoader(cl);
+        }
     }
 
     private void setDefaultPath() {
@@ -155,49 +168,51 @@ public class Mercurial {
         }
     }
 
-    private void checkVersion() {
-        version = HgCommand.getHgVersion();
-        LOG.log(Level.FINE, "version: {0}", version); // NOI18N
-        if (version != null) {
-            goodVersion = version.startsWith(MERCURIAL_SUPPORTED_VERSION_093) ||
-                          version.startsWith(MERCURIAL_SUPPORTED_VERSION_094) ||
-                          version.startsWith(MERCURIAL_SUPPORTED_VERSION_095) ||
-                          version.startsWith(MERCURIAL_SUPPORTED_VERSION_100);
-            if (!goodVersion){
-                Preferences prefs = HgModuleConfig.getDefault().getPreferences();
-                runVersion = prefs.get(HgModuleConfig.PROP_RUN_VERSION, null);
-                if (runVersion != null && runVersion.equals(version)) {
-                    goodVersion = true;
+    public void checkVersion() {
+        checkedVersion = false;
+        runVersion = null;
+        gotVersion = false;
+        RequestProcessor rp = getRequestProcessor();
+        Runnable doCheck = new Runnable() {
+            public void run() {
+                version = HgCommand.getHgVersion();
+                LOG.log(Level.FINE, "version: {0}", version); // NOI18N
+                if (version != null) {
+                    goodVersion = version.startsWith(MERCURIAL_SUPPORTED_VERSION_093) ||
+                                  version.startsWith(MERCURIAL_SUPPORTED_VERSION_094) ||
+                                  version.startsWith(MERCURIAL_SUPPORTED_VERSION_095) ||
+                                  version.startsWith(MERCURIAL_SUPPORTED_VERSION_100);
+                    if (!goodVersion){
+                        Preferences prefs = HgModuleConfig.getDefault().getPreferences();
+                        runVersion = prefs.get(HgModuleConfig.PROP_RUN_VERSION, null);
+                        if (runVersion != null && runVersion.equals(version)) {
+                            goodVersion = true;
+                        }
+                   }
+                } else {
+                    goodVersion = false;
                 }
-           }
-        } else {
-            goodVersion = false;
-        }
+                gotVersion = true;
+            }
+        };
+        rp.post(doCheck);
     }
     
     public void checkVersionNotify() {  
+        if (!gotVersion) {
+            LOG.log(Level.FINE, "Call to hg version not finished"); // NOI18N
+            return;
+        }
         if (version != null && !goodVersion) {
-             if (runVersion == null || !runVersion.equals(version)) {
+            if (runVersion == null || !runVersion.equals(version)) {
                 Preferences prefs = HgModuleConfig.getDefault().getPreferences();
-                NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(Mercurial.class, "MSG_VERSION_CONFIRM_QUERY", version)); // NOI18N
-                descriptor.setTitle(NbBundle.getMessage(Mercurial.class, "MSG_VERSION_CONFIRM")); // NOI18N
-                descriptor.setMessageType(JOptionPane.WARNING_MESSAGE);
-                descriptor.setOptionType(NotifyDescriptor.YES_NO_OPTION);
 
-                Object res = DialogDisplayer.getDefault().notify(descriptor);
                 OutputLogger logger = getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
-                if (res == NotifyDescriptor.YES_OPTION) {
-                    goodVersion = true;
-                    prefs.put(HgModuleConfig.PROP_RUN_VERSION, version);
-                    logger.outputInRed(NbBundle.getMessage(Mercurial.class, "MSG_USING_VERSION_MSG", version)); // NOI18N);
-                } else {
-                    prefs.remove(HgModuleConfig.PROP_RUN_VERSION);
-                    logger.outputInRed(NbBundle.getMessage(Mercurial.class, "MSG_NOT_USING_VERSION_MSG", version)); // NOI18N);
-                }
+                prefs.put(HgModuleConfig.PROP_RUN_VERSION, version);
+                logger.outputInRed(NbBundle.getMessage(Mercurial.class, "MSG_USING_UNRECOGNIZED_VERSION_MSG", version)); // NOI18N);
                 logger.closeLog();
-            } else {
-                goodVersion = true;
             }
+            goodVersion = true;         
         } else if (version == null) {
             Preferences prefs = HgModuleConfig.getDefault().getPreferences();
             prefs.remove(HgModuleConfig.PROP_RUN_VERSION);
@@ -388,6 +403,10 @@ public class Mercurial {
         if(processorsToUrl != null & url != null) {
              processorsToUrl.remove(url);
         }
+    }
+
+    public void notifyFileChanged(File file) {
+        fileStatusCache.notifyFileChanged(file);
     }
 
     /**

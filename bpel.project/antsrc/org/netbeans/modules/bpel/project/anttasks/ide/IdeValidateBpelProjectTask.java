@@ -49,7 +49,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
@@ -133,28 +132,28 @@ public class IdeValidateBpelProjectTask extends Task {
             throw new BuildException("Failed to get File object for project build directory " + this.mBuildDirectory, ex);
         }
         
-        myBPELFiles = new ArrayList<BPELFile>();
-        processBpelFilesFolderInBuildDir(this.mBuildDir);
+        myMyFiles = new ArrayList<MyFile>();
+        processFilesFolderInBuildDir(this.mBuildDir);
         processSourceDirs(Arrays.asList(this.mSourceDir));
     }
 
-    private void processBpelFilesFolderInBuildDir(File folder) {
+    private void processFilesFolderInBuildDir(File folder) {
         File files[] = folder.listFiles(new Util.BpelFileFilter());
 
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
 
             if (file.isFile()) {
-                processBpelFilesInBuildDir(file);
+                processFilesInBuildDir(file);
             } else {
-                processBpelFilesFolderInBuildDir(file);
+                processFilesFolderInBuildDir(file);
             }
         }
     }
 
-    private void processBpelFilesInBuildDir(File bpel) {
-        String relativePath = Util.getRelativePath(this.mBuildDir, bpel);
-        this.mBpelFileNamesToFileInBuildDir.put(relativePath, bpel);
+    private void processFilesInBuildDir(File file) {
+        String relativePath = Util.getRelativePath(this.mBuildDir, file);
+        this.myFileNamesToFileInBuildDir.put(relativePath, file);
     }
 
     private void processSourceDirs(List sourceDirs) {
@@ -177,96 +176,90 @@ public class IdeValidateBpelProjectTask extends Task {
     }
 
     private void processFolder(File fileDir) {
-        File[] bpelFiles = fileDir.listFiles(new Util.BpelFileFilter());
-        processBpelFiles(bpelFiles);
+        File[] files = fileDir.listFiles(new Util.BpelFileFilter());
+        processFiles(files);
     }
 
-    private void processBpelFiles(File[] bpelFiles) {
-        for (int i = 0; i < bpelFiles.length; i++) {
-            if (bpelFiles[i].isFile()) {
-                processBpelFile(bpelFiles[i]);
+    private void processFiles(File[] files) {
+        for (int i = 0; i < files.length; i++) {
+            if (files[i].isFile()) {
+                processFile(files[i]);
             } else {
-                processFolder(bpelFiles[i]);
+                processFolder(files[i]);
             }
         }
     }
 
     // vlv # 100036
-    private void processBpelFile(File file) throws BuildException {
+    private void processFile(File file) throws BuildException {
         BpelModel model = null;
 
         try {
             model = IdeBpelCatalogModel.getDefault().getBPELModel(file);
         } catch (Exception e) {
-            throw new RuntimeException("Error while trying to get BPEL Model", e);
+            throw new RuntimeException("Error while trying to get Model", e);
         }
         Process process = model.getProcess();
 
         if (process != null) {
             String qName = process.getName() + ", " + process.getTargetNamespace(); // NOI18N
-            BPELFile current = new BPELFile(file, mSourceDir, qName);
+            MyFile current = new MyFile(file, mSourceDir, qName);
 
-            for (BPELFile bpel : myBPELFiles) {
-                if (bpel.getQName().equals(qName)) {
+            for (MyFile mFile : myMyFiles) {
+                if (mFile.getQName().equals(qName)) {
                     if (!myAllowBuildWithError) { // # 106342
                         throw new BuildException(
                                 " \n" +
-                                "BPEL files " + bpel.getName() + " and " + current.getName() + "\n" +
+                                "BPEL files " + mFile.getName() + " and " + current.getName() + "\n" +
                                 "have the same bpel process name and targetname space:\n" +
                                 qName + " \n \n");
                     }
                 }
             }
-            myBPELFiles.add(current);
+            myMyFiles.add(current);
         }
-        if (isBpelFileModified(file)) {
-            loadAndValidateExistingBusinessProcess(file);
+        if (isModified(file)) {
+            try {
+                validateFile(file);
+            }
+            catch (Throwable ex) {
+                if ( !myAllowBuildWithError) {
+                    throw new BuildException(ex);
+                }
+            }
         }
     }
 
-    private boolean isBpelFileModified(File bpel) {
+    private boolean isModified(File file) {
         boolean modified = true;
-        String relativePath = Util.getRelativePath(this.mSourceDir, bpel);
-        File bpelFileInBuildDir = (File) this.mBpelFileNamesToFileInBuildDir.get(relativePath);
+        String relativePath = Util.getRelativePath(this.mSourceDir, file);
+        File fileInBuildDir = (File) this.myFileNamesToFileInBuildDir.get(relativePath);
 
-        if (bpelFileInBuildDir != null) {
-            if (bpelFileInBuildDir.lastModified() == bpel.lastModified()) {
+        if (fileInBuildDir != null) {
+            if (fileInBuildDir.lastModified() == file.lastModified()) {
                 modified = false;
             }
         }
         return modified;
     }
 
-    private void validateBPEL(File bpel) throws BuildException {
+    private void validateFile(File file) throws BuildException {
       try {
-        Model model = IdeBpelCatalogModel.getDefault().getBPELModel(bpel);
-        boolean isError = new Controller(model).ideValidate(bpel);
+        Model model = IdeBpelCatalogModel.getDefault().getBPELModel(file);
 
-        if (isError) {
+        if (new Controller(model).ideValidate(file)) {
           throw new BuildException(LineUtil.FOUND_VALIDATION_ERRORS);
         }
       }
       catch (Exception e) {
         throw new BuildException(e);
-//        throw new RuntimeException("Error while trying to create BPEL Model", e);
       }
     }
 
-    private void loadAndValidateExistingBusinessProcess(File bpel) throws BuildException {
-        try {
-            validateBPEL(bpel);
-        }
-        catch (Throwable ex) {
-            if ( !myAllowBuildWithError) {
-                throw new BuildException(ex);
-            }
-        }
-    }
+    // --------------------------
+    private static class MyFile {
 
-    // ----------------------------
-    private static class BPELFile {
-
-        public BPELFile(File file, File project, String qName) {
+        public MyFile(File file, File project, String qName) {
             myFile = file;
             myProject = project;
             myQName = qName;
@@ -285,19 +278,20 @@ public class IdeValidateBpelProjectTask extends Task {
             }
             return file;
         }
+
         private File myFile;
         private File myProject;
         private String myQName;
     }
+
     private String mSourceDirectory;
     private String mProjectClassPath;
     private String mBuildDirectory;
     private String mBuildDependentProjectFilesDirectory;
     private File mSourceDir;
     private File mBuildDir;
-    private Map mBpelFileNamesToFileInBuildDir = new HashMap();
+    private Map myFileNamesToFileInBuildDir = new HashMap();
     private boolean isFoundErrors = false;
     private boolean myAllowBuildWithError = false;
-    private Logger logger = Logger.getLogger(IdeValidateBpelProjectTask.class.getName());
-    private List<BPELFile> myBPELFiles;
+    private List<MyFile> myMyFiles;
 }

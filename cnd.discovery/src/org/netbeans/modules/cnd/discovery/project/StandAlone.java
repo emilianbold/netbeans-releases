@@ -40,30 +40,44 @@ package org.netbeans.modules.cnd.discovery.project;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.discovery.api.KnownProject;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author Alexander Simon
  */
 public class StandAlone {
+    private StandAlone() {
+    }
 
     public static void main(String[] args) {
         System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true");
+        Logger logger = Logger.getLogger(NbPreferences.class.getName());
+        logger.setLevel(Level.SEVERE);
+        logger = Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory");
+        logger.setLevel(Level.SEVERE);
+
         Map<String,String> res = processArguments(args);
         if (KnownProject.getDefault().canCreate(res)){
             KnownProject.getDefault().create(res);
         } else {
-            System.err.println("Provider not found"); //NOI18N
+            System.err.println(NbBundle.getMessage(StandAlone.class, "PROVIDER_NOT_FOUND")); //NOI18N
             if (!res.containsKey(KnownProject.PROJECT)) {
-                System.err.println("Input parameter "+KnownProject.PROJECT+" missing"); //NOI18N
+                System.err.println(NbBundle.getMessage(StandAlone.class, "UNDEFINED_PROJECT", KnownProject.PROJECT)); //NOI18N
             }
             if (!res.containsKey(KnownProject.ROOT)) {
-                System.err.println("Input parameter "+KnownProject.ROOT+" missing"); //NOI18N
+                System.err.println(NbBundle.getMessage(StandAlone.class, "UNDEFINED_ROOT", KnownProject.ROOT)); //NOI18N
             }
             if (!res.containsKey(KnownProject.NB_ROOT)) {
-                System.err.println("Input parameter "+KnownProject.NB_ROOT+" missing"); //NOI18N
+                System.err.println(NbBundle.getMessage(StandAlone.class, "UNDEFINED_NB_ROOT", KnownProject.NB_ROOT)); //NOI18N
             }
+            System.out.println(NbBundle.getMessage(StandAlone.class, "USAGES",
+                    new Object[]{KnownProject.PROJECT, KnownProject.ROOT, KnownProject.NB_ROOT,
+                    OpenSolaris.LOG_FILE, OpenSolaris.BUILD_SCRIPT}));
         }
     }
 

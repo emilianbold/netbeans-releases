@@ -54,7 +54,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
-import org.netbeans.modules.php.dbgp.api.SessionId;
 import org.netbeans.modules.php.dbgp.models.AbstractIDEBridge;
 import org.netbeans.modules.php.dbgp.packets.DbgpCommand;
 import org.netbeans.modules.php.dbgp.packets.DbgpMessage;
@@ -67,11 +66,12 @@ import org.openide.util.RequestProcessor;
  *
  */
 public class DebugSession implements Runnable {
-
     private static final int SLEEP_TIME = 100;
+    private DebuggerOptions options;
 
-    DebugSession() {
+    DebugSession(DebuggerOptions options) {
         init(null);
+        this.options = options;
     }
 
     /* (non-Javadoc)
@@ -115,7 +115,7 @@ public class DebugSession implements Runnable {
                 return;
             }
             addCommand(command);
-            getSessionThread().interrupt();
+            //getSessionThread().interrupt();
         }
     }
 
@@ -296,6 +296,10 @@ public class DebugSession implements Runnable {
     private void log(IOException e) {
         Logger.getLogger(DebugSession.class.getName()).log(
                 Level.SEVERE, null, e);
+    }
+
+    public DebuggerOptions getOptions() {
+        return options;
     }
 
     /*

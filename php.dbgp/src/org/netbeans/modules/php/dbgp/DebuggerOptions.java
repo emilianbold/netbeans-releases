@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,45 +31,72 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.dbgp;
 
-import java.util.prefs.Preferences;
-import org.openide.util.NbPreferences;
+import org.netbeans.modules.php.project.api.PhpOptions;
 
 /**
- *
  * @author Radek Matous
  */
-public final class DebuggerOptions  {
-    private static final String PHP_DEBUGGER_PORT = "phpDebuggerPort"; // NOI18N
-    private static final String PHP_DEBUGGER_STOP_AT_FIRST_LINE = "phpDebuggerStopAtFirstLine"; // NOI18N
-    private static final String PHP_INTERPRETER = "phpInterpreter"; // NOI18N    
-    public static int getPort() {
-        return getPreferences().getInt(PHP_DEBUGGER_PORT, 9000);     
-    } 
+public class DebuggerOptions {
+    private static final DebuggerOptions GLOBAL_INSTANCE = new DefaultGlobal();
+    int port = -1;
+    Boolean debugForFirstPageOnly;
+    Boolean debuggerStoppedAtTheFirstLine;
+    String phpInterpreter;
     
-    public static boolean isDebugForFirstPageOnly() {
-        return false;
+    public static DebuggerOptions getGlobalInstance() {
+        return GLOBAL_INSTANCE;
+    }
+    
+    public int getPort() {                
+        return (port != -1) ? port :  getGlobalInstance().getPort();
+    }
+    
+    
+    public boolean isDebugForFirstPageOnly() {
+        return (debugForFirstPageOnly != null) ? debugForFirstPageOnly : 
+            getGlobalInstance().isDebugForFirstPageOnly();
     }
 
-    public static boolean isDebugForAllPages() {
-        return !isDebugForFirstPageOnly();
+    public boolean isDebuggerStoppedAtTheFirstLine() {
+        return (debuggerStoppedAtTheFirstLine != null) ? debuggerStoppedAtTheFirstLine :
+            getGlobalInstance().isDebuggerStoppedAtTheFirstLine();
     }
-    
-    public static boolean isDebuggerStoppedAtTheFirstLine() {
-        return getPreferences().getBoolean(PHP_DEBUGGER_STOP_AT_FIRST_LINE, false);
+
+    public String getPhpInterpreter() {
+        return (phpInterpreter != null) ? phpInterpreter :
+            getGlobalInstance().getPhpInterpreter();
     }
-    
-    public static String getPhpInterpreter() {
-        return getPreferences().get(PHP_INTERPRETER, null);
-    }
-    
-    private static Preferences getPreferences() {
-        return NbPreferences.root().node("org/netbeans/modules/php/project");// NOI18N
+
+    private static class DefaultGlobal extends DebuggerOptions {
+        public DefaultGlobal() {
+        }
+
+        @Override
+        public int getPort() {
+            return PhpOptions.getInstance().getDebuggerPort();
+        }
+
+        @Override
+        public boolean isDebugForFirstPageOnly() {
+            return false;
+        }
+
+
+        @Override
+        public boolean isDebuggerStoppedAtTheFirstLine() {
+            return PhpOptions.getInstance().isDebuggerStoppedAtTheFirstLine();
+        }
+
+        @Override
+        public String getPhpInterpreter() {
+            return PhpOptions.getInstance().getPhpInterpreter();
+        }
     }
 }

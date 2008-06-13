@@ -70,7 +70,10 @@ public class DbActionLoaderImpl implements DbActionLoader {
         
         for (Iterator i = providers.iterator(); i.hasNext();) {
             ActionProvider provider = (ActionProvider)i.next();
-            actions.addAll(provider.getActions());
+            List<Action> actionList = provider.getActions();
+            if (actionList != null) {
+                actions.addAll(actionList);
+            }
         }
         
         return actions;

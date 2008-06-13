@@ -56,12 +56,12 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
         <folder name="MySQL">
-            <folder name="Servers">
+            <!--folder name="Servers">
                 <file name="MySQLDatabaseServer.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.impl.MySQLDatabaseServer.getDefault"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.DatabaseServer"/>
                 </file>                
-            </folder>
+            </folder-->
             <folder name="Installations">
                 <file name="MAMPInstallation.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.installations.MAMPInstallation.getDefault"/>

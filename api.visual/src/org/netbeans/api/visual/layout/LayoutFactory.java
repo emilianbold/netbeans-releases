@@ -70,7 +70,22 @@ public final class LayoutFactory {
      */
     public enum ConnectionWidgetLayoutAlignment {
 
-        NONE, CENTER, TOP_CENTER, BOTTOM_CENTER, CENTER_LEFT, CENTER_RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT
+        NONE, 
+        CENTER, 
+        TOP_CENTER, 
+        BOTTOM_CENTER, 
+        CENTER_LEFT, 
+        CENTER_RIGHT, 
+        TOP_LEFT, 
+        TOP_RIGHT, 
+        BOTTOM_LEFT, 
+        BOTTOM_RIGHT, 
+        CENTER_SOURCE, 
+        CENTER_TARGET, 
+        BOTTOM_SOURCE, 
+        BOTTOM_TARGET, 
+        TOP_SOURCE, 
+        TOP_TARGET
     }
 
     private LayoutFactory () {

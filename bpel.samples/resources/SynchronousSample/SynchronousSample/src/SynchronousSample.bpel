@@ -40,11 +40,7 @@
          xmlns:ns2="http://xml.netbeans.org/schema/SynchronousSample">
     
     <documentation>
-        The synchronous BPEL process illustrates a simple synchronous
-        flow. The process receives an input message and sends it back
-        synchronously. A client starts the synchronous process by invoking
-        a request-response operation. After invoking a synchronous process,
-        the client is blocked until the process finishes and returns the result.
+        The synchronous BPEL process illustrates a simple synchronous flow. The process receives an input message and sends it back synchronously. A client starts the synchronous process by invoking a request-response operation. After invoking a synchronous process, the client is blocked until the process finishes and returns the result.
     </documentation>
 
     <import namespace="http://xml.netbeans.org/schema/SynchronousSample"
@@ -60,9 +56,9 @@
             name="SynchronousSample"
             partnerLinkType="ns1:partnerlinktype1"
             myRole="partnerlinktyperole1">
+            
             <documentation>
-                This partner link represents the client who sends an
-                input message to the process and receives the response.
+                This partner link represents the client who sends an input message to the process and receives the response.
             </documentation>
         </partnerLink>
     </partnerLinks>
@@ -71,6 +67,7 @@
         <variable name="outputVar" messageType="ns1:responseMessage">
             <documentation>Output variable.</documentation>
         </variable>
+
         <variable name="inputVar" messageType="ns1:requestMessage">
             <documentation>Input variable.</documentation>
         </variable>
@@ -78,9 +75,9 @@
     
     <sequence>
         <documentation>
-            The sequence includes several activities
-            which are executed in lexical order.
+            The sequence includes several activities which are executed in lexical order.
         </documentation>
+
         <receive
             name="start"
             partnerLink="SynchronousSample"
@@ -88,30 +85,32 @@
             portType="ns1:portType1"
             variable="inputVar"
             createInstance="yes">
+
             <documentation>
-                The Receive activity makes the process
-                to wait for the incoming message to arrive.
+                The Receive activity makes the process to wait for the incoming message to arrive.
             </documentation>
         </receive>
+
         <assign name="Assign1">
             <documentation>
-                The Assign activity copies data from the
-                input variable to the output variable.
+                The Assign activity copies data from the input variable to the output variable.
             </documentation>
+
             <copy>
                 <from>$inputVar.inputType/ns2:paramA</from>
                 <to>$outputVar.resultType/ns2:paramA</to>
             </copy>
         </assign>
+
         <reply
             name="end"
             partnerLink="SynchronousSample"
             operation="operation1"
             portType="ns1:portType1"
             variable="outputVar">
+            
             <documentation>
-                The Reply activity returns a message from the process
-                to the  partner which initiated the communication.
+                The Reply activity returns a message from the process to the  partner which initiated the communication.
             </documentation>
         </reply>
     </sequence>

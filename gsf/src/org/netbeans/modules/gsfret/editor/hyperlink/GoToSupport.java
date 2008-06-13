@@ -59,7 +59,7 @@ import org.netbeans.modules.gsf.api.DeclarationFinder.AlternativeLocation;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.Phase;
@@ -149,7 +149,7 @@ public class GoToSupport {
                                     finder.findDeclaration(controller, offset);
 
                                 if (tooltip) {
-                                    Completable completer = language.getCompletionProvider();
+                                    CodeCompletionHandler completer = language.getCompletionProvider();
                                     if (location != DeclarationLocation.NONE && completer != null) {
                                         ElementHandle element = location.getElement();
                                         if (element != null) {

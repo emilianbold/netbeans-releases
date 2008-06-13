@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.DeploymentManager;
@@ -418,6 +419,11 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
                         jmp.removeInstanceListener(il);
                         FileObject tmp[] = jmp.getSourceRoots();
                         if (null != tmp && tmp.length > 0) {
+                            if (null == tmp[0]) {
+                                Logger.getLogger(ModuleConfigurationImpl.class.getName()).log(
+                                    Level.FINER,"ignorable", new IllegalArgumentException("FileObject tmp[0] is null"));
+                                return;
+                            }
                             rewriteBuildImpl(tmp[0]);
                         }
                         // TODO : reenable this when GF 3317 is resolved

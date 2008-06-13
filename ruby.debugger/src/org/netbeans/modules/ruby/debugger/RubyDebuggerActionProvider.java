@@ -176,7 +176,7 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
                 return;
             }
         }
-        if (event.isSuspensionType()) {
+        if (event.isSuspensionType() || event.isExceptionType()) {
             String path = event.getFilePath();
             // HACK, do not try to step into the 'eval-code'. Cf. #106115.
             if ("(eval)".equals(path)) { // NOI18N
@@ -192,8 +192,10 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
             if (absPath != null) {
                 File file = new File(absPath);
                 FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
-                if (event.isStepping() || rubySession.isRunningTo(file, event.getLine()) ||
-                        (fo != null && RubyBreakpointManager.isBreakpointOnLine(fo, event.getLine()))) {
+                boolean shouldStop = event.isExceptionType() ||
+                        event.isStepping() || rubySession.isRunningTo(file, event.getLine()) ||
+                         (fo != null && RubyBreakpointManager.isBreakpointOnLine(fo, event.getLine()));
+                if (shouldStop) {
                     stopHere(event);
                 } else {
                     event.getRubyThread().resume();

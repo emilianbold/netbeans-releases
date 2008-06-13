@@ -165,7 +165,7 @@ public class GraphExpandProcessor {
             To copyTo = copy.getTo();
             CopyToForm form = CopyToProcessor.getCopyToForm(copyTo);
             ArrayList<TreeItemFinder> toNodeFinderList = CopyToProcessor.
-                    constructFindersList(form, copy, copyTo, null, null, null);
+                    constructFindersList(form, copy, copyTo, null, null, null, null);
             TreePath targetTreePath = fProcessor.findFirstNode(toNodeFinderList);
 //            TreePath targetTreePath = mModel.getRightTreeModel().
 //                    findFirstNode(toNodeFinderList);

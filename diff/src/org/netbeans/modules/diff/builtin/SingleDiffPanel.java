@@ -285,7 +285,7 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
     }//GEN-LAST:event_bExportActionPerformed
     
     private void bOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bOptionsActionPerformed
-        OptionsDisplayer.getDefault().open("Advanced");
+        OptionsDisplayer.getDefault().open("Advanced/Diff");
     }//GEN-LAST:event_bOptionsActionPerformed
 
 

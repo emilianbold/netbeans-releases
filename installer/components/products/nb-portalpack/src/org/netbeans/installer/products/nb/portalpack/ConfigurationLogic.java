@@ -42,11 +42,14 @@ import java.util.List;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
+import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.helper.Dependency;
+import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.helper.RemovalMode;
 import org.netbeans.installer.utils.helper.Text;
 import org.netbeans.installer.utils.progress.Progress;
@@ -90,9 +93,19 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         
         // pick the first one and integrate with it
         final File nbLocation = sources.get(0).getInstallationLocation();
+        final File entCluster = new File(nbLocation,ENTERPRISE_CLUSTER);
         
         try {
+            List <File> before = FileUtils.listFiles(entCluster).toList();
             NetBeansUtils.runUpdater(nbLocation);
+            List <File> after = FileUtils.listFiles(entCluster).toList();
+            FilesList installedFiles = getProduct().getInstalledFiles();
+            for(File f : after) {
+                if(!before.contains(f)) {
+                    LogManager.log("... file was created during Portal Pack installation : " + f);
+                    installedFiles.add(f);
+                }
+            }
         } catch (IOException e) {
             throw new InstallationException(
                     getString("cl.error.running.updater"),//NOI18N
@@ -114,7 +127,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
     @Override
     public Text getThirdPartyLicense() {
-        final String text = parseString("$R{" + THIRDPARTYLICENSE_RESOURCE + "}");
+        final String text = parseString("$R{" + THIRDPARTYLICENSE_RESOURCE + ";utf-8}");
         return new Text(text, Text.ContentType.PLAIN_TEXT);
     }
 }

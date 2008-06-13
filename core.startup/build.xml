@@ -42,8 +42,4 @@ made subject to such option by the copyright holder.
 -->
 <project name="core.startup" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
-
-    <target name="test-preinit" depends="projectized-common.test-preinit" >
-        <ant dir="test/unit/src/org/netbeans/core/startup"/>
-    </target>
 </project>

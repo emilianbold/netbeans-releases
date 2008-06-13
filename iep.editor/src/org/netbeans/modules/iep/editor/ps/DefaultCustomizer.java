@@ -44,8 +44,15 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DropTargetAdapter;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -105,7 +112,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
         try {
             mComponent = getOperatorComponent();
             mIsSchemaOwner = mComponent.isSchemaOwner();
-            String inputType = mComponent.getProperty(INPUT_TYPE_KEY).getValue();
+            String inputType = mComponent.getInputType().getType();
             mHasExpressionColumn = mIsSchemaOwner && !inputType.equals(IO_TYPE_NONE);
             mHasFromClause = mComponent.getFromClause() != null;
             mHasWhereClause = mComponent.getWhereClause()!= null;
@@ -123,7 +130,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
             
             mSelectPanel = createSelectPanel(model, mComponent);
             
-            ExpressionAttributeDropNotificationListener listener = new ExpressionAttributeDropNotificationListener();
+            UpdateFromClauseExpressionAttributeDropNotificationListener listener = new UpdateFromClauseExpressionAttributeDropNotificationListener();
             mSelectPanel.addAttributeDropNotificationListener(listener);
             
             // property pane
@@ -163,7 +170,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
                 ((JSplitPane)attributePane).setOneTouchExpandable(true);
                 mInputPanel = createInputSchemaTreePanel(model, mComponent);
                 if(mInputPanel != null) {
-                	 mInputPanel.setPreferredSize(new Dimension(200, 400));
+                     mInputPanel.setPreferredSize(new Dimension(200, 400));
                     ((JSplitPane)attributePane).setLeftComponent(mInputPanel);
                 }
             }
@@ -214,6 +221,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
                     gbc.fill = GridBagConstraints.BOTH;
                     Property whereProp = mComponent.getProperty(WHERE_CLAUSE_KEY);
                     mWherePanel = PropertyPanel.createSmartMultiLineTextPanel("WHERE", whereProp);
+                    ((SmartTextArea) mWherePanel.input[0]).addAttributeDropNotificationListener(listener);
                     rightPane.add(mWherePanel.panel, gbc);
                 }
                 if (mHasGroupBy) {
@@ -253,7 +261,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
     }
     
     protected SelectPanel createSelectPanel(IEPModel model, OperatorComponent component) {
-    	return new SelectPanel(model, component);
+        return new SelectPanel(model, component);
     }
     
     protected InputSchemaTreePanel createInputSchemaTreePanel(IEPModel model, OperatorComponent component) {
@@ -311,8 +319,8 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
         mOutputSchemaNamePanel = PropertyPanel.createSingleLineTextPanel(outputSchemaNameStr, outputSchemaNameProp, false);
         if (mIsSchemaOwner) {
             if (mOutputSchemaNamePanel.getStringValue() == null || mOutputSchemaNamePanel.getStringValue().trim().equals("")) {
-            	IEPModel model = mComponent.getModel();
-            	String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer());
+                IEPModel model = mComponent.getModel();
+                String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer());
                 mOutputSchemaNamePanel.setStringValue(schemaName);
             }
         } else {
@@ -356,11 +364,11 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
     
     public void validateContent(PropertyChangeEvent evt) throws PropertyVetoException {
         try {
-        	IEPModel model = mComponent.getModel();
-        	
-        	OperatorComponentContainer ocContainer = model.getPlanComponent().getOperatorComponentContainer();
-        	SchemaComponentContainer scContainer = model.getPlanComponent().getSchemaComponentContainer();
-        	
+            IEPModel model = mComponent.getModel();
+            
+            OperatorComponentContainer ocContainer = model.getPlanComponent().getOperatorComponentContainer();
+            SchemaComponentContainer scContainer = model.getPlanComponent().getSchemaComponentContainer();
+            
             // name
             mNamePanel.validateContent(evt);
             String newName = mNamePanel.getStringValue();
@@ -380,7 +388,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
                 
                 String schemaName = null;
                 if(outputSchema != null) {
-                	schemaName = outputSchema.getName();
+                    schemaName = outputSchema.getName();
                 }
                 
                 if (!newSchemaName.equals(schemaName) && scContainer.findSchema(newSchemaName) != null) {
@@ -472,9 +480,9 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
     }
     
     public void setValue() {
-    	IEPModel model = mComponent.getModel();
-    	SchemaComponentContainer scContainer = model.getPlanComponent().getSchemaComponentContainer();
-    	
+        IEPModel model = mComponent.getModel();
+        SchemaComponentContainer scContainer = model.getPlanComponent().getSchemaComponentContainer();
+        
         try {
             // name
             mNamePanel.store();
@@ -485,7 +493,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
                 SchemaComponent outputSchema = mComponent.getOutputSchemaId();
                 String schemaName = null;
                 if(outputSchema != null) {
-                	schemaName = outputSchema.getName();
+                    schemaName = outputSchema.getName();
                 }
                 
                 boolean schemaExist = schemaName != null && !schemaName.trim().equals("") && outputSchema != null;
@@ -493,45 +501,45 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
                 List<SchemaAttribute> attrs = mSelectPanel.getAttributes();
                 if (schemaExist) {
                     if (!newSchemaName.equals(schemaName)) {
-                    	model.startTransaction();
-                    	SchemaComponent sc = model.getFactory().createSchema(model);
-                    	sc.setName(newSchemaName);
-                    	sc.setTitle(newSchemaName);
-                    	sc.setSchemaAttributes(attrs);
-                    	
-                    	
-                    	scContainer.addSchemaComponent(sc);
-                    	scContainer.removeSchemaComponent(outputSchema);
-                    	model.endTransaction();
-                    	
+                        model.startTransaction();
+                        SchemaComponent sc = model.getFactory().createSchema(model);
+                        sc.setName(newSchemaName);
+                        sc.setTitle(newSchemaName);
+                        sc.setSchemaAttributes(attrs);
+                        
+                        
+                        scContainer.addSchemaComponent(sc);
+                        scContainer.removeSchemaComponent(outputSchema);
+                        model.endTransaction();
+                        
                         mOutputSchemaNamePanel.store();
                         //ritmProperty.getNode().getView().updateTcgComponentNodeView();
                         //ritplan.getPropertyChangeSupport().firePropertyChange("Schema Name",
                         //        schemaName, newSchemaName);
                         
                     } else {
-                    	mModel.startTransaction();
-                    	outputSchema.setSchemaAttributes(attrs);
-                    	mModel.endTransaction();
+                        mModel.startTransaction();
+                        outputSchema.setSchemaAttributes(attrs);
+                        mModel.endTransaction();
 //                        if (!schema.hasSameAttributeMetadata(attributes)) {
-//                        	outputSchema.setSchemaAttributes(attrs);
+//                            outputSchema.setSchemaAttributes(attrs);
 //                            schema.setAttributeMetadataAsList(attributes);
 //                            //ritplan.getPropertyChangeSupport().firePropertyChange("Schema Column Metadata",
 //                                    "old", "new");
 //                        }
                     }
                 } else {
-                	model.startTransaction();
-                	SchemaComponent sc = model.getFactory().createSchema(model);
-                	sc.setName(newSchemaName);
-                	sc.setTitle(newSchemaName);
-                	sc.setSchemaAttributes(attrs);
-                	
-                	scContainer.addSchemaComponent(sc);
-                	model.endTransaction();
-                	
-                	mOutputSchemaNamePanel.store();
-                	
+                    model.startTransaction();
+                    SchemaComponent sc = model.getFactory().createSchema(model);
+                    sc.setName(newSchemaName);
+                    sc.setTitle(newSchemaName);
+                    sc.setSchemaAttributes(attrs);
+                    
+                    scContainer.addSchemaComponent(sc);
+                    model.endTransaction();
+                    
+                    mOutputSchemaNamePanel.store();
+                    
 //                    newSchema = ModelManager.createSchema(newSchemaName);
 //                    plan.addSchema(newSchema);
 //                    newSchema.setAttributeMetadataAsList(attributes);
@@ -596,31 +604,38 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
         return null;
     }
     
-    class ExpressionAttributeDropNotificationListener implements AttributeDropNotificationListener {
-
-		public void onDropComplete(AttributeDropNotificationEvent evt) {
-			if(mFromPanel == null) {
-				return;
-			}
-			
-			//generate form clause automatically
-			String from = mFromPanel.getStringValue();
-			AttributeInfo info = evt.getAttributeInfo();
-			String entityName = info.getEntityName();
-			
-			if(from == null || from.trim().equals("")) {
-				mFromPanel.setStringValue(entityName);
-			} else {
-				if(!(from != null && from.contains(entityName))) {
-					StringBuffer strBuf = new StringBuffer();
-					strBuf.append(from);
-					strBuf.append(",");
-					strBuf.append(entityName);
-					mFromPanel.setStringValue(strBuf.toString());
-				}
-			}
-			
-		}
-    	
+    private void updateFromClause(AttributeInfo info) {
+        //generate form clause automatically
+        String from = mFromPanel.getStringValue();
+        String entityName = info.getEntityName();
+        
+        if(from == null || from.trim().equals("")) {
+            mFromPanel.setStringValue(entityName);
+        } else {
+            if(!(from != null && from.contains(entityName))) {
+                StringBuffer strBuf = new StringBuffer();
+                strBuf.append(from);
+                strBuf.append(",");
+                strBuf.append(entityName);
+                mFromPanel.setStringValue(strBuf.toString());
+            }
+        }
+        
     }
+    
+    class UpdateFromClauseExpressionAttributeDropNotificationListener implements AttributeDropNotificationListener {
+
+        public void onDropComplete(AttributeDropNotificationEvent evt) {
+            if(mFromPanel == null) {
+                return;
+            }
+            
+            //generate form clause automatically
+            AttributeInfo info = evt.getAttributeInfo();
+            updateFromClause(info);
+            
+        }
+        
+    }
+    
 }

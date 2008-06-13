@@ -38,11 +38,11 @@ public class DefaultMoveableRowTableModel
     implements MoveableRowTableModel {
 
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = -6467642233798433503L;
+     * 
+     */
+    private static final long serialVersionUID = -6467642233798433503L;
 
-	/**
+    /**
      * Constructs a default <code>DefaultMoveableRowTableModel</code> which is
      * a table of zero columns and zero rows.
      */

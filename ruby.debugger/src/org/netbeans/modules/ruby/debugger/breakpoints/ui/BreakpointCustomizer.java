@@ -45,7 +45,7 @@ import java.beans.Customizer;
 import java.io.File;
 import javax.swing.JPanel;
 import org.netbeans.modules.ruby.debugger.EditorUtil;
-import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
+import org.netbeans.modules.ruby.debugger.breakpoints.RubyLineBreakpoint;
 import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.DialogDescriptor;
@@ -55,13 +55,13 @@ import org.openide.util.NbBundle;
 
 public final class BreakpointCustomizer extends JPanel implements Customizer, Controller {
 
-    private RubyBreakpoint bp;
+    private RubyLineBreakpoint bp;
     
     public BreakpointCustomizer() {
         initComponents();
     }
 
-    public static void customize(RubyBreakpoint bp) {
+    public static void customize(RubyLineBreakpoint bp) {
         BreakpointCustomizer customizer = new BreakpointCustomizer();
         customizer.setObject(bp);
         DialogDescriptor descriptor = new DialogDescriptor(customizer,
@@ -69,28 +69,19 @@ public final class BreakpointCustomizer extends JPanel implements Customizer, Co
         Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
         d.setVisible(true);
         if (descriptor.getValue() == NotifyDescriptor.OK_OPTION) {
-            try {
-                int line = Integer.valueOf(customizer.lineValue.getText()) - 1; // need 0-based
-                String file = customizer.fileValue.getText();
-                if (!new File(file).isFile()) {
-                    Util.notifyLocalized(BreakpointCustomizer.class, "BreakpointCustomizer.file.not.found", file);
-                } else {
-                    bp.setLine(EditorUtil.getLine(file, line));
-                }
-            } catch (NumberFormatException nfe) {
-                Util.notifyLocalized(BreakpointCustomizer.class, "BreakpointCustomizer.invalid.number", customizer.lineValue.getText());
-            }
+            customizer.ok();
         }
     }
 
     public void setObject(Object bean) {
-        if (!(bean instanceof RubyBreakpoint)) {
+        if (!(bean instanceof RubyLineBreakpoint)) {
             throw new IllegalArgumentException(bean.toString());
         }
-        RubyBreakpoint bp = (RubyBreakpoint) bean;
-        this.bp = bp;
+        this.bp = (RubyLineBreakpoint) bean;
         fileValue.setText(bp.getFilePath());
         lineValue.setText("" + bp.getLineNumber());
+        String condition = bp.getCondition();
+        conditionValue.setText(condition == null ? "" : condition);
     }
 
     public boolean ok() {
@@ -102,8 +93,11 @@ public final class BreakpointCustomizer extends JPanel implements Customizer, Co
                 return false;
             } else {
                 bp.setLine(EditorUtil.getLine(file, line));
-                return true;
             }
+            if (getCondition().length() > 0) {
+                bp.setCondition(getCondition());
+            }
+            return true;
         } catch (NumberFormatException nfe) {
             Util.notifyLocalized(BreakpointCustomizer.class, "BreakpointCustomizer.invalid.number", lineValue.getText());
             return false;
@@ -114,6 +108,10 @@ public final class BreakpointCustomizer extends JPanel implements Customizer, Co
         return true;
     }
     
+    private String getCondition() {
+        return conditionValue.getText().trim();
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -123,48 +121,93 @@ public final class BreakpointCustomizer extends JPanel implements Customizer, Co
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        settingsPanel = new javax.swing.JPanel();
+        lineValue = new javax.swing.JTextField();
+        fileValue = new javax.swing.JTextField();
         fileLbl = new javax.swing.JLabel();
         lineLbl = new javax.swing.JLabel();
-        fileValue = new javax.swing.JTextField();
-        lineValue = new javax.swing.JTextField();
+        conditionsPanel = new javax.swing.JPanel();
+        conditionValue = new javax.swing.JTextField();
+        conditionLbl = new javax.swing.JLabel();
 
+        settingsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(BreakpointCustomizer.class, "BreakpointCustomizer.settingsPanel.border.title"))); // NOI18N
+
+        fileLbl.setLabelFor(fileValue);
         org.openide.awt.Mnemonics.setLocalizedText(fileLbl, org.openide.util.NbBundle.getMessage(BreakpointCustomizer.class, "BreakpointCustomizer.fileLbl.text")); // NOI18N
 
+        lineLbl.setLabelFor(lineValue);
         org.openide.awt.Mnemonics.setLocalizedText(lineLbl, org.openide.util.NbBundle.getMessage(BreakpointCustomizer.class, "BreakpointCustomizer.lineLbl.text")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout settingsPanelLayout = new org.jdesktop.layout.GroupLayout(settingsPanel);
+        settingsPanel.setLayout(settingsPanelLayout);
+        settingsPanelLayout.setHorizontalGroup(
+            settingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, settingsPanelLayout.createSequentialGroup()
+                .add(fileLbl)
+                .add(16, 16, 16)
+                .add(fileValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, settingsPanelLayout.createSequentialGroup()
+                .add(lineLbl)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(lineValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE))
+        );
+        settingsPanelLayout.setVerticalGroup(
+            settingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(settingsPanelLayout.createSequentialGroup()
+                .add(settingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(fileLbl)
+                    .add(fileValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(settingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lineLbl)
+                    .add(lineValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+        );
+
+        conditionsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(BreakpointCustomizer.class, "BreakpointCustomizer.conditionsPanel.border.title"))); // NOI18N
+
+        conditionLbl.setLabelFor(conditionValue);
+        org.openide.awt.Mnemonics.setLocalizedText(conditionLbl, org.openide.util.NbBundle.getMessage(BreakpointCustomizer.class, "BreakpointCustomizer.conditionLbl.text")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout conditionsPanelLayout = new org.jdesktop.layout.GroupLayout(conditionsPanel);
+        conditionsPanel.setLayout(conditionsPanelLayout);
+        conditionsPanelLayout.setHorizontalGroup(
+            conditionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, conditionsPanelLayout.createSequentialGroup()
+                .add(conditionLbl)
+                .add(16, 16, 16)
+                .add(conditionValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE))
+        );
+        conditionsPanelLayout.setVerticalGroup(
+            conditionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(conditionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(conditionLbl)
+                .add(conditionValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(fileLbl)
-                    .add(lineLbl))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lineValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE)
-                    .add(fileValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE))
-                .addContainerGap())
+            .add(conditionsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(settingsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(fileLbl)
-                    .add(fileValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(settingsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lineLbl)
-                    .add(lineValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(conditionsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel conditionLbl;
+    private javax.swing.JTextField conditionValue;
+    private javax.swing.JPanel conditionsPanel;
     private javax.swing.JLabel fileLbl;
     private javax.swing.JTextField fileValue;
     private javax.swing.JLabel lineLbl;
     private javax.swing.JTextField lineValue;
+    private javax.swing.JPanel settingsPanel;
     // End of variables declaration//GEN-END:variables
 }

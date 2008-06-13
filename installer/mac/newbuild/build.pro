@@ -9,7 +9,7 @@
     <!-- Base IDE properties   -->       
     <property name="baseide.version" value="Dev"/>
     <property name="appname" value="NetBeans Dev ${buildnumber}"/> 
-    <property name="mpkgname" value="NetBeans Dev ${buildnumber}"/> 
+    <property name="mpkg.name_nb" value="NetBeans Dev ${buildnumber}"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
     <property name="nbClusterDir" value="nb6.1"/>      
 
@@ -23,8 +23,11 @@
     <!-- GlassFish properties   -->   
     <property name="glassfish.install.dir" value="${install.dir}/glassfish-v2ur2"/>
     <property name="glassfish.version" value="v2ur2"/>
-    <property name="glassfish_location" value="${gf_builds_host}/java/re/glassfish/9.1_02/promoted/fcs/latest/images/mac/glassfish-image-SNAPSHOT.jar"/>  
-    <property name="glassfish_location_ml" value="${gf_builds_host}/java/re/glassfish/9.1_01/promoted/fcs/b09d/l10n/mac/glassfish-image-v2ur1-b09d-darwin-ml.jar"/>  
+    <!--<property name="glassfish_location" value="${gf_builds_host}/java/re/glassfish/9.1_02/promoted/fcs/latest/images/mac/glassfish-image-SNAPSHOT.jar"/>-->
+    <property name="glassfish_location"    value="file:${user.home}/releng/hudson/glassfish-image-v2ur2-b04.jar"/>
+    <!--<property name="glassfish_location_ml" value="${gf_builds_host}/java/re/glassfish/9.1_02/promoted/fcs/latest/l10n/mac/glassfish-image-SNAPSHOT-ml.jar"/>-->
+    <property name="glassfish_location_ml" value="file:${user.home}/releng/hudson/glassfish-image-v2ur2-b04-ml.jar"/>
+
     
     <!-- Open ESB Properties-->    
     <property name="openesb.install.dir" value="${glassfish.install.dir}/addons"/>

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.debugger.jpda.models;
 
+import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
@@ -208,9 +209,24 @@ public class ThreadsCache implements Executor {
         }
         if (event instanceof ThreadDeathEvent) {
             ThreadReference thread = ((ThreadDeathEvent) event).thread();
-            ThreadGroupReference group = thread.threadGroup();
+            ThreadGroupReference group;
+            try {
+                group = thread.threadGroup();
+            } catch (ObjectCollectedException ocex) {
+                group = null;
+            }
             synchronized (this) {
-                List<ThreadReference> threads = threadMap.get(group);
+                List<ThreadReference> threads;
+                if (group != null) {
+                    threads = threadMap.get(group);
+                } else {
+                    threads = null;
+                    for (List<ThreadReference> testThreads : threadMap.values()) {
+                        if (testThreads.contains(thread)) {
+                            threads = testThreads;
+                        }
+                    }
+                }
                 if (threads != null) {
                     threads.remove(thread);
                 }

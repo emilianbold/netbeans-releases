@@ -64,8 +64,8 @@ public class XSLTDataLoader extends UniFileLoader {
     private static final long serialVersionUID = 1L;
 
     public static final String MIME_TYPE = "application/xslt+xml";
-    static final String PRIMARY_EXTENSION = "xsl";                 // NOI18N
-    static final String PRIMARY_EXTENSION2 = "xslt";              // NOI18N
+    public static final String PRIMARY_EXTENSION = "xsl";                 // NOI18N
+    public static final String PRIMARY_EXTENSION2 = "xslt";              // NOI18N
   
     // TODO m
     static final String TRANSFORM_MAP_FILE = "transformmap.xml";              // NOI18N

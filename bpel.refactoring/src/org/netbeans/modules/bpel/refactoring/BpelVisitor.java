@@ -100,20 +100,16 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   }
                       
   @Override
-  public void visit(Import _import)
-  {
+  public void visit(Import _import) {
 //out();
 //out("[IMPORT] location: " + _import.getLocation());
-    if (ImportHelper.getWsdlModel(_import) == myTarget ||
-      ImportHelper.getSchemaModel(_import) == myTarget)
-    {
+    if (ImportHelper.getWsdlModel(_import) == myTarget || ImportHelper.getSchemaModel(_import) == myTarget) {
       myUsage.add(_import);
     }
   }
 
   @Override
-  public void visit(PartnerLink partnerLink)
-  {
+  public void visit(PartnerLink partnerLink) {
 //out();
 //out("[PARTNER LINK]: " + Util.getName(partnerLink));
     Util.visit(
@@ -137,10 +133,8 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   }
 
   @Override
-  public void visit(Validate validate)
-  {
-    List<BpelReference<VariableDeclaration>> variables =
-      validate.getVaraibles();
+  public void visit(Validate validate) {
+    List<BpelReference<VariableDeclaration>> variables = validate.getVaraibles();
 
     if (variables == null) {
       return;
@@ -156,66 +150,57 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   }
 
   @Override
-  public void visit(StartCounterValue value)
-  {
+  public void visit(StartCounterValue value) {
 //out();
 //out("[START COUNTER]: " + Util.getName(value));
     visitContentElement(value);
   }
 
   @Override
-  public void visit(FinalCounterValue value)
-  {
+  public void visit(FinalCounterValue value) {
 //out();
 //out("[FINAL COUNTER]: " + Util.getName(value));
     visitContentElement(value);
   }
 
   @Override
-  public void visit(Branches branches)
-  {
+  public void visit(Branches branches) {
 //out();
 //out("[BRANCHES]: " + Util.getName(branches));
     visitContentElement(branches);
   }
     
   @Override
-  public void visit(BooleanExpr booleanExpression)
-  {
+  public void visit(BooleanExpr booleanExpression) {
 //out();
 //out("[BOOLEAN EXPRESSION]: " + Util.getName(booleanExpression));
     visitContentElement(booleanExpression);
   }
 
   @Override
-  public void visit(RepeatEvery repeatEvery)
-  {
+  public void visit(RepeatEvery repeatEvery) {
 //out();
 //out("[REPEAT EVERY]: " + Util.getName(repeatEvery));
     visitContentElement(repeatEvery);
   }
 
   @Override
-  public void visit(DeadlineExpression deadline)
-  {
+  public void visit(DeadlineExpression deadline) {
 //out();
 //out("[DEADLNE]: " + Util.getName(deadline));
     visitContentElement(deadline);
   }
 
   @Override
-  public void visit(For _for)
-  {
+  public void visit(For _for) {
 //out();
 //out("[FOR]: " + Util.getName(_for));
     visitContentElement(_for);
   }
 
   @Override
-  public void visit(CorrelationSet correlationSet)
-  {
-    List<WSDLReference<CorrelationProperty>> references =
-      correlationSet.getProperties();
+  public void visit(CorrelationSet correlationSet) {
+    List<WSDLReference<CorrelationProperty>> references = correlationSet.getProperties();
 
     if (references == null) {
       return;
@@ -231,8 +216,7 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   }
 
   @Override
-  public void visit(Correlation correlation)
-  {
+  public void visit(Correlation correlation) {
     Util.visit(
       correlation.getSet(),
       myTarget,
@@ -242,8 +226,7 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   }
 
   @Override
-  public void visit(Source source)
-  {
+  public void visit(Source source) {
     Util.visit(
       source.getLink(),
       myTarget,
@@ -253,8 +236,7 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   }
 
   @Override
-  public void visit(Target target)
-  {
+  public void visit(Target target) {
     Util.visit(
       target.getLink(),
       myTarget,
@@ -264,8 +246,7 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   }
 
   @Override
-  public void visit(From from)
-  {
+  public void visit(From from) {
 //out();
 //out();
 //out("[FROM]: " + Util.getName(from));
@@ -297,8 +278,7 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   }
 
   @Override
-  public void visit(FromPart fromPart)
-  {
+  public void visit(FromPart fromPart) {
     Util.visit(
       fromPart.getToVariable(),
       myTarget,
@@ -308,8 +288,7 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   }
 
   @Override
-  public void visit(To to)
-  {
+  public void visit(To to) {
 //out();
 //out();
 //out("[TO]: " + Util.getName(to));
@@ -341,8 +320,7 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   }
 
   @Override
-  public void visit(ToPart toPart)
-  {
+  public void visit(ToPart toPart) {
     Util.visit(
       toPart.getFromVariable(),
       myTarget,
@@ -359,8 +337,7 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   }
 
   @Override
-  public void visit(OnEvent event)
-  {
+  public void visit(OnEvent event) {
 //out();
 //out("[EVENT]: " + Util.getName(event));
     Util.visit(
@@ -396,8 +373,7 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   }
 
   @Override
-  public void visit(OnMessage message)
-  {
+  public void visit(OnMessage message) {
 //out();
 //out("[MESSAGE]: " + Util.getName(message));
     Util.visit(
@@ -433,8 +409,7 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   }
 
   @Override
-  public void visit(Catch _catch)
-  {
+  public void visit(Catch _catch) {
 //out();
 //out("[CATCH]: " + Util.getName(_catch));
     Util.visit(
@@ -458,8 +433,7 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   }
 
   @Override
-  public void visit(Reply reply)
-  {
+  public void visit(Reply reply) {
 //out();
 //out("[REPLY]: " + Util.getName(reply));
     Util.visit(
@@ -501,8 +475,7 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   }
 
   @Override
-  public void visit(Receive receive)
-  {
+  public void visit(Receive receive) {
 //out();
 //out("[RECEIVE]: " + Util.getName(receive));
     Util.visit(
@@ -538,8 +511,7 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   }
 
   @Override
-  public void visit(Invoke invoke)
-  {
+  public void visit(Invoke invoke) {
 //out();
 //out("[INVOKE]: " + Util.getName(invoke));
     Util.visit(
@@ -578,16 +550,14 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   }
 
   @Override
-  public void visit(Scope scope)
-  {
+  public void visit(Scope scope) {
     if (scope.getCompensationHandler() == myTarget) {
       myUsage.add(scope);
     }
   }
 
   @Override
-  public void visit(CompensateScope scope)
-  {
+  public void visit(CompensateScope scope) {
     Util.visit(
       scope.getTarget(),
       myTarget,
@@ -597,8 +567,7 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   }
 
   @Override
-  public void visit(Throw _throw)
-  {
+  public void visit(Throw _throw) {
 //out();
 //out("[THROW]: " + Util.getName(_throw));
     Util.visit(
@@ -616,8 +585,7 @@ final class BpelVisitor extends SimpleBpelModelVisitorAdaptor {
   }
 
   @Override
-  public void visit(Variable variable)
-  {
+  public void visit(Variable variable) {
 //out();
 //out("[VARIABLE]: " + Util.getName(variable));
     Util.visit(

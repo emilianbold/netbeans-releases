@@ -23,10 +23,12 @@ import java.awt.geom.Area;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.ExtendableActivity;
 import org.netbeans.modules.bpel.model.api.Flow;
+import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.bpel.design.geometry.FBounds;
 import org.netbeans.modules.bpel.design.geometry.FDimension;
 import org.netbeans.modules.bpel.design.geometry.FPath;
@@ -46,9 +48,7 @@ import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.design.selection.PlaceHolder;
 import org.netbeans.modules.bpel.model.api.Sequence;
 
-
 public class FlowPattern extends CompositePattern {
-    
     
     private VisualElement startGateway;
     private VisualElement endGateway;
@@ -65,16 +65,13 @@ public class FlowPattern extends CompositePattern {
         super(model);
     }
     
-    
     public VisualElement getFirstElement() {
         return startGateway;
     }
     
-    
     public VisualElement getLastElement() {
         return endGateway;
     }
-    
     
     protected void createElementsImpl() {
         setBorder(new GroupBorder());
@@ -102,11 +99,8 @@ public class FlowPattern extends CompositePattern {
         }
     }
     
-    
     public FBounds layoutPattern(LayoutManager manager) {
-
         Collection<Pattern> patterns = getNestedPatterns();
-        
         boolean empty = patterns.isEmpty();
         
         double height = 0;
@@ -162,13 +156,11 @@ public class FlowPattern extends CompositePattern {
         return getBorder().getBounds();
     }
     
-    
     protected void onAppendPattern(Pattern p) {
         if (placeHolder.getPattern() == this) {
             removeElement(placeHolder);
         }
     }
-    
     
     protected void onRemovePattern(Pattern p) {
         Flow flow = (Flow) getOMReference();
@@ -177,11 +169,9 @@ public class FlowPattern extends CompositePattern {
         }
     }
     
-    
     public String getDefaultName() {
         return "Flow"; // NOI18N
     }
-    
     
     public void createPlaceholders(Pattern draggedPattern, 
             Collection<PlaceHolder> placeHolders) 
@@ -230,7 +220,6 @@ public class FlowPattern extends CompositePattern {
         }
     }
     
-    
     public void reconnectElements() {
         BpelEntity[] activities = ((Flow) getOMReference()).getActivities();
         
@@ -273,12 +262,10 @@ public class FlowPattern extends CompositePattern {
         }
     }
     
-    
     public NodeType getNodeType() {
         return NodeType.FLOW;
     }
 
-    
     public Area createSelection() {
         Area a = new Area(getBorder().getShape());
         a.subtract(new Area(startGateway.getShape()));
@@ -286,12 +273,10 @@ public class FlowPattern extends CompositePattern {
         return a;
     }
     
-    
     private double getNextPlaceHolderX() {
         BorderElement border = getBorder();
         return border.getX() + border.getWidth() - border.getInsets().right / 2;
     }
-    
     
     class FirstPlaceHolder extends PlaceHolder {
         public FirstPlaceHolder(Pattern draggedPattern) {
@@ -305,7 +290,6 @@ public class FlowPattern extends CompositePattern {
             
         }
     }
-
 
     class NextPlaceHolder extends PlaceHolder {
         
@@ -324,13 +308,11 @@ public class FlowPattern extends CompositePattern {
             ((Flow) getOMReference()).addActivity((Activity) p.getOMReference());
         }
 
-        
         public void paint(Graphics2D g2) {
             Connection.paintConnection(g2, tempPath, false, true, false, false, 
                     null);
             super.paint(g2);
         }
-        
         
         private FPath createTempPath() {
             double x1 = startGateway.getX() + startGateway.getWidth();
@@ -359,7 +341,6 @@ public class FlowPattern extends CompositePattern {
         }
     }
     
-    
     private class BeforeImpliciteSequencePlaceHolder extends PlaceHolder {
         
         private int index;
@@ -382,7 +363,6 @@ public class FlowPattern extends CompositePattern {
                 }
             }
         }
-         
         
         public void drop() {
             Flow flow = (Flow) getOwnerPattern().getOMReference();
@@ -396,10 +376,9 @@ public class FlowPattern extends CompositePattern {
             sequence.addActivity(activity);
             
             flow.insertActivity(sequence, index);
+            setName(flow, sequence);
         }
     }
-
-
 
     private class AfterImpliciteSequencePlaceHolder extends PlaceHolder {
         
@@ -424,7 +403,6 @@ public class FlowPattern extends CompositePattern {
             }
         }
          
-        
         public void drop() {
             Flow flow = (Flow) getOwnerPattern().getOMReference();
             
@@ -437,7 +415,40 @@ public class FlowPattern extends CompositePattern {
             sequence.addActivity(dragged);
             
             flow.insertActivity(sequence, index);
+            setName(flow, sequence);
         }
     }
 
+    private void setName(Flow flow, Sequence sequence) {
+      String name = FLOW_SEQUENCE_NAME;
+      int index = 1;
+
+      while (true) {
+        if ( !hasName(flow, name)) {
+          break;
+        }
+//System.out.println("++1");
+        name = FLOW_SEQUENCE_NAME + (index++);
+      }
+      try {
+        sequence.setName(name);
+      }
+      catch (VetoException e) {}
+    }
+
+    private boolean hasName(BpelEntity entity, String name) {
+      if (entity instanceof Named && name.equals(((Named) entity).getName())) {
+        return true;
+      }
+      List<BpelEntity> children = entity.getChildren();
+
+      for (BpelEntity child : children) {
+        if (hasName(child, name)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    private static final String FLOW_SEQUENCE_NAME = "FlowSequence"; // NOI18N
 }

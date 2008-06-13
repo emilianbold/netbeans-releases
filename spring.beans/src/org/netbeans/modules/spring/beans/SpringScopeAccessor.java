@@ -52,14 +52,25 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class SpringScopeAccessor {
 
-    public static SpringScopeAccessor DEFAULT;
+    private static volatile SpringScopeAccessor accessor;
 
-    static {
+    public static void setDefault(SpringScopeAccessor accessor) {
+        if (SpringScopeAccessor.accessor != null) {
+            throw new IllegalStateException();
+        }
+        SpringScopeAccessor.accessor = accessor;
+    }
+
+    public static SpringScopeAccessor getDefault() {
+        if (accessor != null) {
+            return accessor;
+        }
         try {
             Class.forName(SpringScope.class.getName(), true, SpringScope.class.getClassLoader());
         } catch (ClassNotFoundException e) {
             throw new AssertionError(e);
         }
+        return accessor;
     }
 
     public abstract SpringScope createSpringScope(ConfigFileManager manager);

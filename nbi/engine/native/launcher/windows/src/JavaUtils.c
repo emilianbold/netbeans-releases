@@ -39,6 +39,7 @@
 #include "JavaUtils.h"
 #include "RegistryUtils.h"
 #include "StringUtils.h"
+#include "SystemUtils.h"
 #include "FileUtils.h"
 #include "ProcessUtils.h"
 #include "Launcher.h"
@@ -67,8 +68,8 @@ WCHAR * JAVA_REGISTRY_KEYS [] = {
 WCHAR * JAVA_HOME = L"JavaHome";
 WCHAR * CURRENT_VERSION = L"CurrentVersion";
 
-WCHAR * getJavaHomeValue(WCHAR *parentkey, WCHAR *subkey) {
-    return getStringValuePC(HKEY_LOCAL_MACHINE, parentkey, subkey, JAVA_HOME);
+WCHAR * getJavaHomeValue(WCHAR *parentkey, WCHAR *subkey, BOOL access64key) {
+    return getStringValuePC(HKEY_LOCAL_MACHINE, parentkey, subkey, JAVA_HOME, access64key);
 }
 
 
@@ -373,7 +374,7 @@ WCHAR * getJavaResource(WCHAR * location, const WCHAR * suffix) {
 }
 
 
-void searchCurrentJavaRegistry(LauncherProperties * props) {
+void searchCurrentJavaRegistry(LauncherProperties * props, BOOL access64key) {
     DWORD i=0;
     WCHAR ** keys = JAVA_REGISTRY_KEYS;
     DWORD k=0;
@@ -393,9 +394,9 @@ void searchCurrentJavaRegistry(LauncherProperties * props) {
             }
             else {
                 
-                WCHAR * value = getStringValue(rootKeys[k], keys[i], CURRENT_VERSION);
+                WCHAR * value = getStringValue(rootKeys[k], keys[i], CURRENT_VERSION, access64key);
                 if(value!=NULL) {
-                    WCHAR *javaHome = getStringValuePC(rootKeys[k], keys[i], value, JAVA_HOME);
+                    WCHAR *javaHome = getStringValuePC(rootKeys[k], keys[i], value, JAVA_HOME, access64key);
                     writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "... ", 0);
                     writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, (rootKeys[k]==HKEY_LOCAL_MACHINE) ? "HKEY_LOCAL_MACHINE" : "HKEY_CURRENT_USER", 0);
                     writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "\\", 0);
@@ -429,7 +430,7 @@ void searchCurrentJavaRegistry(LauncherProperties * props) {
         for(i=0;i<keysNumber;i++) {
             HKEY  hkey = 0;
             DWORD   index  = 0 ;
-            if (RegOpenKeyExW(rootKeys[k], keys[i], 0, KEY_READ, &hkey) == ERROR_SUCCESS) {
+            if (RegOpenKeyExW(rootKeys[k], keys[i], 0, KEY_READ | ((access64key && IsWow64) ? KEY_WOW64_64KEY : 0), &hkey) == ERROR_SUCCESS) {
                 DWORD number = 0;
                 if (RegQueryInfoKeyW(hkey, NULL, NULL, NULL, &number, NULL, NULL, NULL, NULL, NULL, NULL, NULL) == ERROR_SUCCESS) {
                     DWORD err = 0;
@@ -439,7 +440,7 @@ void searchCurrentJavaRegistry(LauncherProperties * props) {
                         buffer[0]  = 0;
                         err = RegEnumKeyExW(hkey, index, buffer, &size, NULL, NULL, NULL, NULL);
                         if (err == ERROR_SUCCESS) {
-                            WCHAR  * javaHome = getJavaHomeValue(keys[i], buffer);
+                            WCHAR  * javaHome = getJavaHomeValue(keys[i], buffer, access64key);
                             status = ERROR_OK;
                             
                             writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, (rootKeys[k]==HKEY_LOCAL_MACHINE) ? "HKEY_LOCAL_MACHINE" : "HKEY_CURRENT_USER", 0);
@@ -700,12 +701,16 @@ void findSystemJava(LauncherProperties *props) {
     
     // search JVM in the registry
     if(isTerminated(props)) return;
-    if(props->java==NULL) {
-        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Search java in registry", 1);
-        searchCurrentJavaRegistry(props);
+    if(props->java==NULL) {        
+	if(IsWow64) {
+	   writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Search java in 64-bit registry", 1);
+           searchCurrentJavaRegistry(props, 1);
+        }
+        if(props->java==NULL) {
+	    writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Search java in 32-bit registry", 1);
+            searchCurrentJavaRegistry(props, 0);
+        }
     }
-    
-    
 }
 
 

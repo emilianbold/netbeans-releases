@@ -49,7 +49,6 @@ package org.netbeans.modules.classfile.closure;
 
 import org.netbeans.modules.classfile.*;
 import java.io.*;
-import java.lang.reflect.*;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;

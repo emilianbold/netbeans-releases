@@ -1191,7 +1191,7 @@ public class ScenePanel extends JPanel implements SceneListener,
         public void itemStateChanged(ItemEvent e) {
             //boolean selected = e.getStateChange() == ItemEvent.SELECTED ? true : false;
             ScenePanel.this.addSelectedLayer(layer, true);
-            if (DEBUG) System.out.println("set " + layer.getName() + " selection toogled"); // NOI18N
+            if (DEBUG) System.out.println("set " + layer.getName() + " selection toggled"); // NOI18N
         }
     }
       

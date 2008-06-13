@@ -54,6 +54,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
@@ -91,14 +92,15 @@ public class GlassPane extends JPanel implements ActionListener, FocusListener, 
         setOpaque(false);
 
         if (editable) {
-          editorPane = new javax.swing.JTextArea();
+          editorPane = new JTextArea();
+          ((JTextArea) editorPane).setLineWrap(true);
+          ((JTextArea) editorPane).setWrapStyleWord(true);
         }
         else {
           editorPane = new JEditorPane() {
               protected void paintComponent(Graphics g) {
                   Graphics2D g2 = (Graphics2D) g.create();
-                  g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                          RenderingHints.VALUE_ANTIALIAS_ON);
+                  g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                   super.paintComponent(g2);
                   g2.dispose();
               }

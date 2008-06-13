@@ -43,6 +43,7 @@ import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.helper.Platform;
 
 /**
  *
@@ -62,15 +63,20 @@ public class LinuxNativeUtils extends UnixNativeUtils {
     
     public static final String[] FORBIDDEN_DELETING_FILES_LINUX = {};
     
-    LinuxNativeUtils() {
-        String library = System.getProperty("os.arch").equals("amd64") ?
-            LIBRARY_AMD64 : LIBRARY_I386;
+    LinuxNativeUtils() {        
+        final String arch = System.getProperty("os.arch");
+        String library = arch.equals("amd64") ?
+                LIBRARY_AMD64 : 
+            arch.equals("i386") || arch.equals("x86") ? 
+                LIBRARY_I386 : null;
         
-        loadNativeLibrary(LIBRARY_PREFIX_LINUX + library);
-        
+        if(library!=null) {
+            loadNativeLibrary(LIBRARY_PREFIX_LINUX + library);
+        }        
         initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_LINUX);
     }
     
+    @Override
     public File getDefaultApplicationsLocation() {
         File usrlocal = new File("/usr/local");
         
@@ -114,5 +120,19 @@ public class LinuxNativeUtils extends UnixNativeUtils {
         }
         return roots;
     }
-    
+    @Override
+    protected Platform getPlatform() {        
+        final String osArch = System.getProperty("os.arch");
+        if (osArch.contains("ppc")) {
+            return SystemUtils.isCurrentJava64Bit() ? 
+                Platform.LINUX_PPC64 : 
+                Platform.LINUX_PPC;
+        } else if (osArch.contains("sparc")) {
+            return  Platform.LINUX_SPARC;
+        } else {
+            return SystemUtils.isCurrentJava64Bit() ? 
+                Platform.LINUX_X64 : 
+                Platform.LINUX_X86;
+        }        
+    }
 }

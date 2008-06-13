@@ -49,6 +49,7 @@ import java.io.File;
 import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.openide.util.Lookup;
 
 /**
  * Base SPI interface for J2eePlatform. The J2eePlatform describes the target
@@ -106,6 +107,7 @@ public abstract class J2eePlatformImpl {
      *
      * @param  toolName tool name, for example {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform#TOOL_APP_CLIENT_RUNTIME}.
      * @return classpath for the specified tool.
+     * @deprecated {@link #getLookup()} should be used to obtain tool specifics
      */
     public abstract File[] getToolClasspathEntries(String toolName);
     
@@ -117,6 +119,7 @@ public abstract class J2eePlatformImpl {
      * .
      * @return <code>true</code> if platform supports tool of the given name, 
      *         <code>false</code> otherwise.
+     * @deprecated {@link #getLookup()} should be used to obtain tool specifics
      */
     public abstract boolean isToolSupported(String toolName);
     
@@ -229,8 +232,25 @@ public abstract class J2eePlatformImpl {
      *         specified tool.
      *         
      * @since 1.16
+     * @deprecated {@link #getLookup()} should be used to obtain tool specifics
      */
     public String getToolProperty(String toolName, String propertyName) {
         return null;
     }
+    
+    /**
+     * Lookup providing a way to find non mandatory technologies supported
+     * by the platform.
+     * <p>
+     * <div class="nonnormative">
+     * The typical example of such support is a webservice stack.
+     * </div>
+     *
+     * @return Lookup providing way to find other supported technologies
+     * @since 1.44
+     */
+    public Lookup getLookup() {
+        return Lookup.EMPTY;
+    }
+
 }

@@ -42,9 +42,7 @@
 package org.netbeans.modules.websvc.wsitmodelext.addressing.impl;
 
 import org.netbeans.modules.websvc.wsitmodelext.addressing.Address;
-import org.netbeans.modules.websvc.wsitmodelext.addressing.AddressingQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -60,10 +58,6 @@ public class AddressImpl extends AddressingComponentImpl implements Address {
         super(model, e);
     }
     
-    public AddressImpl(WSDLModel model){
-        this(model, createPrefixedElement(AddressingQName.ADDRESS.getQName(), model));
-    }
-
     public void setAddress(String address) {
         setText(ADDRESS_CONTENT_VALUE_PROPERTY, address);
     }
@@ -72,9 +66,4 @@ public class AddressImpl extends AddressingComponentImpl implements Address {
         return getText();
     }
 
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-    
 }

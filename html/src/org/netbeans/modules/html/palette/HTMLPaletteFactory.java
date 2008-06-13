@@ -41,8 +41,11 @@
 
 package org.netbeans.modules.html.palette;
 import java.io.IOException;
+import org.netbeans.spi.palette.DragAndDropHandler;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
+import org.openide.util.Lookup;
+import org.openide.util.datatransfer.ExTransferable;
 
 
 
@@ -62,9 +65,20 @@ public final class HTMLPaletteFactory {
     public static PaletteController getPalette() throws IOException {
 
         if (palette == null)
-            palette = PaletteFactory.createPalette(HTML_PALETTE_FOLDER, new HTMLPaletteActions());//, null, new HTMLDragAndDropHandler());
+            palette = PaletteFactory.createPalette(HTML_PALETTE_FOLDER, new HTMLPaletteActions(), null, new HTMLDragAndDropHandler());
             
         return palette;
     }
-    
+
+    private static class HTMLDragAndDropHandler extends DragAndDropHandler {
+
+        public HTMLDragAndDropHandler() {
+            super( true );
+        }
+        
+        @Override
+        public void customize(ExTransferable t, Lookup item) {
+            //do nothing
+        }
+    }
 }

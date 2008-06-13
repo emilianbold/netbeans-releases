@@ -56,21 +56,22 @@ public class IEPWSDLGenerator {
 //        "STRUCT",
     };
     
-	private IEPModel mModel;
-	private OperatorComponentContainer mocContainer;
-	
-	
-	public IEPWSDLGenerator(IEPModel model) {
-		this.mModel = model;
-		this.mocContainer = this.mModel.getPlanComponent().getOperatorComponentContainer();
-		
-	}
-	
-	
+    private IEPModel mModel;
+    private OperatorComponentContainer mocContainer;
     
-	public String getWSDL(String tns) throws Exception {
-        List<InputOperatorComponent> inList = mModel.getInputList();
-        List<OutputOperatorComponent> outList = mModel.getOutputList();
+    
+    public IEPWSDLGenerator(IEPModel model) {
+        this.mModel = model;
+        this.mocContainer = this.mModel.getPlanComponent().getOperatorComponentContainer();
+        
+    }
+    
+    
+    
+    public String getWSDL(String tns) throws Exception {
+        boolean wsOnly = true;
+        List<InputOperatorComponent> inList = mModel.getInputList(wsOnly);
+        List<OutputOperatorComponent> outList = mModel.getOutputList(wsOnly);
         
         StringBuffer sb = new StringBuffer();
         sb.append("<definitions targetNamespace=\"" + tns + "\"\n");
@@ -102,15 +103,15 @@ public class IEPWSDLGenerator {
             sb.append("            <xsd:complexType>\n");
             sb.append("                <xsd:sequence>\n");
             if (outputSchema != null) {
-            	List<SchemaAttribute> attrs =  outputSchema.getSchemaAttributes();
-            	Iterator<SchemaAttribute> it = attrs.iterator();
-            	while(it.hasNext()) {
-            		SchemaAttribute sa = it.next();
-            		String cName = sa.getAttributeName();
+                List<SchemaAttribute> attrs =  outputSchema.getSchemaAttributes();
+                Iterator<SchemaAttribute> it = attrs.iterator();
+                while(it.hasNext()) {
+                    SchemaAttribute sa = it.next();
+                    String cName = sa.getAttributeName();
                     String cType = sa.getAttributeType();
                     String xsdType = (String)SQL_2_XSD_MAP.get(cType);
                     sb.append("                    <xsd:element name=\"" + cName + "\" type=\"" + xsdType + "\"/>\n");
-            	}
+                }
                 
             }
             sb.append("                </xsd:sequence>\n");
@@ -126,15 +127,15 @@ public class IEPWSDLGenerator {
             sb.append("                            <xsd:sequence>\n");
             
             if (outputSchema != null) {
-            	List<SchemaAttribute> attrs =  outputSchema.getSchemaAttributes();
-            	Iterator<SchemaAttribute> it = attrs.iterator();
-            	while(it.hasNext()) {
-            		SchemaAttribute sa = it.next();
-            		String cName = sa.getAttributeName();
+                List<SchemaAttribute> attrs =  outputSchema.getSchemaAttributes();
+                Iterator<SchemaAttribute> it = attrs.iterator();
+                while(it.hasNext()) {
+                    SchemaAttribute sa = it.next();
+                    String cName = sa.getAttributeName();
                     String cType = sa.getAttributeType();
                     String xsdType = (String)SQL_2_XSD_MAP.get(cType);
                     sb.append("                    <xsd:element name=\"" + cName + "\" type=\"" + xsdType + "\"/>\n");
-            	}
+                }
                 
             }
             sb.append("                            </xsd:sequence>\n");
@@ -149,7 +150,7 @@ public class IEPWSDLGenerator {
             OutputOperatorComponent op = (OutputOperatorComponent)outList.get(i);
             String name = op.getDisplayName();
             name = NameUtil.makeJavaId(name);
-            boolean isRelation = op.getProperty(OperatorComponent.PROP_INPUTTYPE).getValue().equals(OperatorType.OPERATOR_RELATION.toString());
+            boolean isRelation = op.getInputType().equals(OperatorType.OPERATOR_RELATION);
             SchemaComponent outputSchema = op.getOutputSchemaId();
             
             if (outputSchema == null) {
@@ -171,17 +172,17 @@ public class IEPWSDLGenerator {
             sb.append(indent + "            <xsd:complexType>\n");
             sb.append(indent + "                <xsd:sequence>\n");
             if (outputSchema != null) {
-            	
-            	List<SchemaAttribute> attrs =  outputSchema.getSchemaAttributes();
-            	Iterator<SchemaAttribute> it = attrs.iterator();
-            	while(it.hasNext()) {
-            		SchemaAttribute sa = it.next();
-            		String cName = sa.getAttributeName();
+                
+                List<SchemaAttribute> attrs =  outputSchema.getSchemaAttributes();
+                Iterator<SchemaAttribute> it = attrs.iterator();
+                while(it.hasNext()) {
+                    SchemaAttribute sa = it.next();
+                    String cName = sa.getAttributeName();
                     String cType = sa.getAttributeType();
                     String xsdType = (String)SQL_2_XSD_MAP.get(cType);
                     sb.append(indent + "                   <xsd:element name=\"" + cName + "\" type=\"" + xsdType + "\"/>\n");
                     
-            	}
+                }
                 
             }
             if (isRelation) {
@@ -238,20 +239,21 @@ public class IEPWSDLGenerator {
         
         sb.append("\n");
         //portType
-        sb.append("<portType name=\"" + INPUT_PORT_TYPE + "\">\n");
-        for (int i = 0, I = inList.size(); i < I; i++) {
-            InputOperatorComponent op = (InputOperatorComponent)inList.get(i);
-            String name = op.getDisplayName();
-            name = NameUtil.makeJavaId(name);
-            sb.append("    <operation name=\"" + name + "\">\n");
-            sb.append("        <input message=\"tns:" + name + "_Msg\"/>\n");
-            sb.append("    </operation>\n");
-            sb.append("    <operation name=\"" + name + "Batch\">\n");
-            sb.append("        <input message=\"tns:" + name + "Batch_Msg\"/>\n");
-            sb.append("    </operation>\n");
+        if (inList.size() > 0) {
+            sb.append("<portType name=\"" + INPUT_PORT_TYPE + "\">\n");
+            for (int i = 0, I = inList.size(); i < I; i++) {
+                InputOperatorComponent op = (InputOperatorComponent)inList.get(i);
+                String name = op.getDisplayName();
+                name = NameUtil.makeJavaId(name);
+                sb.append("    <operation name=\"" + name + "\">\n");
+                sb.append("        <input message=\"tns:" + name + "_Msg\"/>\n");
+                sb.append("    </operation>\n");
+                sb.append("    <operation name=\"" + name + "Batch\">\n");
+                sb.append("        <input message=\"tns:" + name + "Batch_Msg\"/>\n");
+                sb.append("    </operation>\n");
+            }
+            sb.append("</portType>\n");
         }
-        sb.append("</portType>\n");
-        
         for (int i = 0, I = outList.size(); i < I; i++) {
             OutputOperatorComponent op = (OutputOperatorComponent)outList.get(i);
             boolean batchMode = op.isBatchMode();
@@ -271,9 +273,11 @@ public class IEPWSDLGenerator {
         sb.append("\n");
         
         // partnerLinkType
-        sb.append("<plnk:partnerLinkType name=\"" + INPUT_PARTNER_LINK_TYPE + "\" xmlns:plnk=\"http://docs.oasis-open.org/wsbpel/2.0/plnktype\">\n");
-        sb.append("    <plnk:role name = \"" + INPUT_ROLE_NAME + "\" portType=\"tns:" + INPUT_PORT_TYPE + "\"/>\n");
-        sb.append("</plnk:partnerLinkType>\n");
+        if (inList.size() > 0) {
+            sb.append("<plnk:partnerLinkType name=\"" + INPUT_PARTNER_LINK_TYPE + "\" xmlns:plnk=\"http://docs.oasis-open.org/wsbpel/2.0/plnktype\">\n");
+            sb.append("    <plnk:role name = \"" + INPUT_ROLE_NAME + "\" portType=\"tns:" + INPUT_PORT_TYPE + "\"/>\n");
+            sb.append("</plnk:partnerLinkType>\n");
+        }    
         for (int i = 0, I = outList.size(); i < I; i++) {
             OutputOperatorComponent op = (OutputOperatorComponent)outList.get(i);
             String name = op.getDisplayName();
@@ -283,37 +287,39 @@ public class IEPWSDLGenerator {
             sb.append("</plnk:partnerLinkType>\n");
         }
         // input binding
-        sb.append("<!-- input binding -->\n");
-        sb.append("<binding name=\"InputBinding\" type=\"defns:InputPt\">\n");
-        sb.append("    <soap:binding style=\"document\" transport=\"http://schemas.xmlsoap.org/soap/http\"/>\n");
-        for (int i = 0, I = inList.size(); i < I; i++) {
-            InputOperatorComponent op = (InputOperatorComponent)inList.get(i);
-            String name = op.getDisplayName();
-            name = NameUtil.makeJavaId(name);
-            sb.append("    <operation name=\"" + name + "\">\n");
-            sb.append("        <soap:operation soapAction=\"" + name + "\"/>\n");
-            sb.append("        <input>\n");
-            sb.append("            <soap:body use=\"literal\"/>\n");
-            sb.append("        </input>\n");
-            sb.append("    </operation>\n");
-            
-            sb.append("    <operation name=\"" + name + "Batch\">\n");
-            sb.append("        <soap:operation soapAction=\"" + name + "Batch\"/>\n");
-            sb.append("        <input>\n");
-            sb.append("            <soap:body use=\"literal\"/>\n");
-            sb.append("        </input>\n");
-            sb.append("    </operation>\n");
-        }
-        sb.append("</binding>\n");
-        
-        // input service
-        sb.append("<!-- input service -->\n");
-        sb.append("<service name=\"InputService\">\n");
-        sb.append("    <port name=\"InputPort\" binding=\"tns:InputBinding\">\n");
-        sb.append("        <soap:address location=\"http://localhost:12100/service/" + tns + "\"/>\n");
-        sb.append("    </port>\n");
-        sb.append("</service>\n");
+        if (inList.size() > 0) {
+            sb.append("<!-- input binding -->\n");
+            sb.append("<binding name=\"InputBinding\" type=\"defns:InputPt\">\n");
+            sb.append("    <soap:binding style=\"document\" transport=\"http://schemas.xmlsoap.org/soap/http\"/>\n");
+            for (int i = 0, I = inList.size(); i < I; i++) {
+                InputOperatorComponent op = (InputOperatorComponent) inList.get(i);
+                String name = op.getDisplayName();
+                name = NameUtil.makeJavaId(name);
+                sb.append("    <operation name=\"" + name + "\">\n");
+                sb.append("        <soap:operation soapAction=\"" + name + "\"/>\n");
+                sb.append("        <input>\n");
+                sb.append("            <soap:body use=\"literal\"/>\n");
+                sb.append("        </input>\n");
+                sb.append("    </operation>\n");
 
+                sb.append("    <operation name=\"" + name + "Batch\">\n");
+                sb.append("        <soap:operation soapAction=\"" + name + "Batch\"/>\n");
+                sb.append("        <input>\n");
+                sb.append("            <soap:body use=\"literal\"/>\n");
+                sb.append("        </input>\n");
+                sb.append("    </operation>\n");
+            }
+            sb.append("</binding>\n");
+        }
+        if (inList.size() > 0) {
+            // input service
+            sb.append("<!-- input service -->\n");
+            sb.append("<service name=\"InputService\">\n");
+            sb.append("    <port name=\"InputPort\" binding=\"tns:InputBinding\">\n");
+            sb.append("        <soap:address location=\"http://localhost:12100/service/" + tns + "\"/>\n");
+            sb.append("    </port>\n");
+            sb.append("</service>\n");
+        }
         // http output binding and service
         if (outList.size() > 0) {
             sb.append("\n<!-- http output binding and service\n");
@@ -332,7 +338,7 @@ public class IEPWSDLGenerator {
             sb.append("</binding>\n");
         }
         for (int i = 0, I = outList.size(); i < I; i++) {
-        	OutputOperatorComponent op = (OutputOperatorComponent)outList.get(i);
+            OutputOperatorComponent op = (OutputOperatorComponent)outList.get(i);
             String name = op.getDisplayName();
             name = NameUtil.makeJavaId(name);
             String servceName = tns + "_" + name + "_callee";
@@ -351,7 +357,7 @@ public class IEPWSDLGenerator {
             sb.append("<!-- file output binding and service -->\n");
         }
         for (int i = 0, I = outList.size(); i < I; i++) {
-        	OutputOperatorComponent op = (OutputOperatorComponent)outList.get(i);
+            OutputOperatorComponent op = (OutputOperatorComponent)outList.get(i);
             String name = op.getDisplayName();
             name = NameUtil.makeJavaId(name);
             sb.append("<binding name=\"OutputBinding_" + name + "\" type=\"defns:OutputPt_" + name + "\">\n");
@@ -369,7 +375,7 @@ public class IEPWSDLGenerator {
             sb.append("</binding>\n");
         }
         for (int i = 0, I = outList.size(); i < I; i++) {
-        	OutputOperatorComponent op = (OutputOperatorComponent)outList.get(i);
+            OutputOperatorComponent op = (OutputOperatorComponent)outList.get(i);
             String name = op.getDisplayName();
             name = NameUtil.makeJavaId(name);
             String servceName = tns + "_" + name + "_callee";

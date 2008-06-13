@@ -49,6 +49,8 @@ import org.netbeans.junit.NbTestCase;
  */
 public class CLITest extends NbTestCase {
 
+    // XXX test cancel
+    
     public CLITest(String arg0) {
         super(arg0);
     }
@@ -57,6 +59,9 @@ public class CLITest extends NbTestCase {
         TestSuite suite = new TestSuite();
         
         suite.addTestSuite(AddTest.class);                
+        suite.addTestSuite(AvailabilityTest.class);                
+        suite.addTestSuite(BlameTest.class);                
+        suite.addTestSuite(CancelTest.class);                
         suite.addTestSuite(CatTest.class);                
         suite.addTestSuite(CheckoutTest.class);                
         suite.addTestSuite(CommitTest.class);                
@@ -65,11 +70,18 @@ public class CLITest extends NbTestCase {
         suite.addTestSuite(ImportTest.class);                
         suite.addTestSuite(InfoTest.class);                  
         suite.addTestSuite(ListTest.class);                              
+        suite.addTestSuite(LogTest.class);                              
+        suite.addTestSuite(MergeTest.class);                        
         suite.addTestSuite(MkdirTest.class);                        
         suite.addTestSuite(MoveTest.class);                         
+        suite.addTestSuite(ParsedStatusTest.class);                                        
         suite.addTestSuite(PropertyTest.class);                                        
+        suite.addTestSuite(RelocateTest.class);                                        
         suite.addTestSuite(RemoveTest.class);                                        
+        suite.addTestSuite(ResolvedTest.class);                                        
         suite.addTestSuite(RevertTest.class);                                                        
+        suite.addTestSuite(StatusTest.class);                                                        
+        suite.addTestSuite(SwitchToTest.class);                                        
         suite.addTestSuite(UpdateTest.class);                                        
         
         return suite;

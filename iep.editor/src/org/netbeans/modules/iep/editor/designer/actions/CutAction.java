@@ -14,22 +14,22 @@ import org.openide.util.NbBundle;
 
 public class CutAction extends PdAction {
 
-	public final static String CUT_NAME = "Cut";
+    public final static String CUT_NAME = "Cut";
     
-	public final static ImageIcon CUT_ICON = ImageUtil.getImageIcon("x16.cut.gif");
+    public final static ImageIcon CUT_ICON = ImageUtil.getImageIcon("x16.cut.gif");
 
-	private static final String CUT_DESCRIPTION = NbBundle.getMessage(CutAction.class,"PlanDesigner.Cut_to_clipboard");
+    private static final String CUT_DESCRIPTION = NbBundle.getMessage(CutAction.class,"PlanDesigner.Cut_to_clipboard");
 
-	public CutAction(PlanCanvas canvas) {
-		super(CUT_NAME, CUT_DESCRIPTION, CUT_ICON, canvas);
-	}
+    public CutAction(PlanCanvas canvas) {
+        super(CUT_NAME, CUT_DESCRIPTION, CUT_ICON, canvas);
+    }
 
 
-	public void actionPerformed(ActionEvent e) {
-		getCanvas().cut();
-	}
+    public void actionPerformed(ActionEvent e) {
+        getCanvas().cut();
+    }
 
-	public boolean canAct() { 
+    public boolean canAct() { 
         return super.canAct() && !getCanvas().getSelection().isEmpty() 
             && getCanvas().getDoc().isModifiable(); 
     }

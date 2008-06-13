@@ -64,6 +64,7 @@ import org.openide.util.NbBundle;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
@@ -202,12 +203,9 @@ public class ClientView extends SectionView {
 
     private boolean isClientAdvancedConfigRequired(Binding binding, WSDLModel serviceModel) {
         Binding serviceBinding = PolicyModelHelper.getBinding(serviceModel, binding.getName());
-        boolean rmEnabled = RMModelHelper.isRMEnabled(serviceBinding);
-//        boolean timestampEnabled = SecurityPolicyModelHelper.isIncludeTimestamp(serviceBinding); 
+        boolean rmEnabled = RMModelHelper.getInstance(ConfigVersion.CONFIG_1_0).isRMEnabled(serviceBinding) ||
+                            RMModelHelper.getInstance(ConfigVersion.CONFIG_1_2).isRMEnabled(serviceBinding);
         boolean secConvRequired = RequiredConfigurationHelper.isSecureConversationParamRequired(serviceBinding);
-        
-        //TODO - enable when timestamp becomes supported
-        
         return rmEnabled || secConvRequired /* || timestampEnabled*/;
     }
 

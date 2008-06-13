@@ -50,7 +50,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- * This class helps Bpel project to obtain the Bpel model given a BPEL File URI
+ * This class helps project to obtain the Bpel model given a File URI
  * @author Sreenivasan Genipudi
  */
 public class IdeBpelCatalogModel {

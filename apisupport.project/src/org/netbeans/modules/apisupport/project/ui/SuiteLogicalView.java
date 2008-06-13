@@ -44,11 +44,7 @@ package org.netbeans.modules.apisupport.project.ui;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
 import javax.swing.Action;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
@@ -59,6 +55,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -116,7 +113,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
     }
     
     /** Package private for unit test only. */
-    static final class SuiteRootNode extends AnnotatedNode
+    static final class SuiteRootNode extends AbstractNode
             implements PropertyChangeListener {
         
         private static final Image ICON = Utilities.loadImage(SuiteProject.SUITE_ICON_PATH, true);
@@ -130,20 +127,6 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             this.suite = suite;
             info = ProjectUtils.getInformation(suite);
             info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
-            setFiles(getProjectFiles());
-        }
-        
-        /** Package private for unit test only. */
-        Set<FileObject> getProjectFiles() {
-            Set<FileObject> files = new HashSet<FileObject>();
-            Enumeration en = suite.getProjectDirectory().getChildren(false);
-            while (en.hasMoreElements()) {
-                FileObject child = (FileObject) en.nextElement();
-                if (FileOwnerQuery.getOwner(child) == suite) {
-                    files.add(child);
-                }
-            }
-            return files;
         }
         
         public String getName() {
@@ -164,7 +147,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         }
         
         public Image getIcon(int type) {
-            return annotateIcon(ICON, type);
+            return ICON;
         }
         
         public Image getOpenedIcon(int type) {

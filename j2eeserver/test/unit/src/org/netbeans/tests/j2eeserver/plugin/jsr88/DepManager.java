@@ -56,13 +56,20 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.*;
  * @author nn136682
  */
 public class DepManager implements DeploymentManager {
-    String name;
+    
+    public static final String PLATFORM_ROOT_PROPERTY = "platform";
+    
+    private final String url;
 
     /** Creates a new instance of DepFactory */
     public DepManager(String url, String user, String password) {
-        name = url;
+        this.url = url;
     }
-    public String getName() { return name ; }
+    public String getName() { return url ; }
+    
+    public InstanceProperties getInstanceProperties() {
+        return InstanceProperties.getInstanceProperties(url);
+    }
     
     public DeploymentConfiguration createConfiguration(DeployableObject deployableObject) throws InvalidModuleException {
         return null;

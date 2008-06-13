@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import org.xml.sax.Attributes;
 import javax.xml.XMLConstants;
@@ -377,7 +378,7 @@ public class CompletionUtil {
     /**
      * Returns the appropriate AXIOM element for a given context.
      */
-    private static Element findAXIElementAtContext(
+    public static Element findAXIElementAtContext(
             CompletionContextImpl context) {
         List<QName> path = context.getPathFromRoot();
         if(path == null || path.size() == 0)
@@ -557,13 +558,18 @@ public class CompletionUtil {
     }
     
     public static boolean isDTDBasedDocument(Document document) {
-        TokenHierarchy th = TokenHierarchy.get(document);
-        TokenSequence ts = th.tokenSequence();
-        while(ts.moveNext()) {
-            Token token = ts.token();
-            if(token.id() == XMLTokenId.DECLARATION) {                
-                return true;
+        ((AbstractDocument)document).readLock();
+        try {
+            TokenHierarchy th = TokenHierarchy.get(document);
+            TokenSequence ts = th.tokenSequence();
+            while(ts.moveNext()) {
+                Token token = ts.token();
+                if(token.id() == XMLTokenId.DECLARATION) {
+                    return true;
+                }
             }
+        } finally {
+            ((AbstractDocument)document).readUnlock();
         }
         return false;
     }
@@ -573,13 +579,18 @@ public class CompletionUtil {
      */
     public static int getNamespaceInsertionOffset(Document document) {
         int offset = 0;
-        TokenHierarchy th = TokenHierarchy.get(document);
-        TokenSequence ts = th.tokenSequence();
-        while(ts.moveNext()) {
-            Token nextToken = ts.token();
-            if(nextToken.id() == XMLTokenId.TAG && nextToken.text().toString().equals(">")) {
-               offset = nextToken.offset(th);
+        ((AbstractDocument)document).readLock();
+        try {
+            TokenHierarchy th = TokenHierarchy.get(document);
+            TokenSequence ts = th.tokenSequence();
+            while(ts.moveNext()) {
+                Token nextToken = ts.token();
+                if(nextToken.id() == XMLTokenId.TAG && nextToken.text().toString().equals(">")) {
+                   offset = nextToken.offset(th);
+                }
             }
+        } finally {
+            ((AbstractDocument)document).readUnlock();
         }
         
         return offset;
@@ -591,35 +602,45 @@ public class CompletionUtil {
      * attributes for the root element.
      */
     public static DocRoot getDocRoot(Document document) {
-        TokenHierarchy th = TokenHierarchy.get(document);
-        TokenSequence ts = th.tokenSequence();
-        List<DocRootAttribute> attributes = new ArrayList<DocRootAttribute>();
-        String name = null;
-        while(ts.moveNext()) {
-            Token nextToken = ts.token();
-            if(nextToken.id() == XMLTokenId.TAG) {
-                String tagName = nextToken.text().toString();
-                if(name == null && tagName.startsWith("<"))
-                    name = tagName.substring(1, tagName.length());
-                String lastAttrName = null;
-                while(ts.moveNext() ) {
-                    Token t = ts.token();
-                    if(t.id() == XMLTokenId.TAG && t.text().toString().equals(">"))
+        ((AbstractDocument)document).readLock();
+        try {
+            TokenHierarchy th = TokenHierarchy.get(document);
+            TokenSequence ts = th.tokenSequence();
+            List<DocRootAttribute> attributes = new ArrayList<DocRootAttribute>();
+            String name = null;
+            while(ts.moveNext()) {
+                Token nextToken = ts.token();
+                if(nextToken.id() == XMLTokenId.TAG) {
+                    String tagName = nextToken.text().toString();
+                    if(name == null && tagName.startsWith("<"))
+                        name = tagName.substring(1, tagName.length());
+                    String lastAttrName = null;
+                    while(ts.moveNext() ) {
+                        Token t = ts.token();
+                        if(t.id() == XMLTokenId.TAG && t.text().toString().equals(">"))
+                            break;
+                        if(t.id() == XMLTokenId.ARGUMENT) {
+                            lastAttrName = t.text().toString();
+                        }
+                        if(t.id() == XMLTokenId.VALUE && lastAttrName != null) {
+                            String value = t.text().toString();
+                            if(value.startsWith("'") || value.startsWith("\""))
+                                value = value.substring(1, value.length()-1);                        
+                            attributes.add(new DocRootAttribute(lastAttrName, value));
+                            lastAttrName = null;
+                        }
+                    } //while loop
+                    
+                    //first start tag with a valid name is the root
+                    if(name != null)
                         break;
-                    if(t.id() == XMLTokenId.ARGUMENT) {
-                        lastAttrName = t.text().toString();
-                    }
-                    if(t.id() == XMLTokenId.VALUE && lastAttrName != null) {
-                        String value = t.text().toString();
-                        if(value.startsWith("'") || value.startsWith("\""))
-                            value = value.substring(1, value.length()-1);                        
-                        attributes.add(new DocRootAttribute(lastAttrName, value));
-                        lastAttrName = null;
-                    }
                 }
-            }
-        }
-        return new DocRoot(name, attributes);
+            } //while loop
+            
+            return new DocRoot(name, attributes);
+        } finally {
+            ((AbstractDocument)document).readUnlock();
+        }        
     }
     
     public static class DocRoot {

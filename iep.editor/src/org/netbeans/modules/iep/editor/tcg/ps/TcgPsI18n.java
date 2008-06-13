@@ -39,10 +39,10 @@ public class TcgPsI18n implements SharedConstants {
         String titleKey = type.getTitle();
         String title = null;
         try {
-        	title = mAppBundle.getString(titleKey);
+            title = mAppBundle.getString(titleKey);
         } catch(Exception ex) {
-        	if(title == null) {
-            	title = titleKey;
+            if(title == null) {
+                title = titleKey;
             }
         }
         
@@ -53,10 +53,10 @@ public class TcgPsI18n implements SharedConstants {
         String descKey = type.getDescription();
         String desc = null;
         try {
-        	desc = mAppBundle.getString(descKey);
+            desc = mAppBundle.getString(descKey);
         } catch (Exception ex) {
-        	if(desc == null) {
-            	desc = descKey;
+            if(desc == null) {
+                desc = descKey;
             }
         }
         
@@ -92,10 +92,10 @@ public class TcgPsI18n implements SharedConstants {
         String title = null;
         
         try {
-        	title = mAppBundle.getString(titleKey);
+            title = mAppBundle.getString(titleKey);
         } catch(Exception ex) {
-        	if(title == null) {
-            	title = titleKey;
+            if(title == null) {
+                title = titleKey;
             }
         }
         
@@ -106,10 +106,10 @@ public class TcgPsI18n implements SharedConstants {
         String descKey = pt.getDescription();
         String desc = null;
         try {
-        	desc = mAppBundle.getString(descKey);
+            desc = mAppBundle.getString(descKey);
         } catch(Exception ex) {
-        	if(desc == null) {
-            	desc = descKey;
+            if(desc == null) {
+                desc = descKey;
             }
         }
         
@@ -120,10 +120,10 @@ public class TcgPsI18n implements SharedConstants {
         String key = pt.getCategory();
         String display = null;
         try {
-        	display = mAppBundle.getString(key);
+            display = mAppBundle.getString(key);
         } catch(Exception ex) {
-        	if(display == null) {
-            	display = key;
+            if(display == null) {
+                display = key;
             }
         }
         
@@ -133,10 +133,10 @@ public class TcgPsI18n implements SharedConstants {
     public static String getI18nString(String key) {
         String result = null;
         try {
-        	result = mAppBundle.getString(key);
+            result = mAppBundle.getString(key);
         } catch(Exception ex) {
-        	if(result == null) {
-            	result = key;
+            if(result == null) {
+                result = key;
             }
         }
         
@@ -146,10 +146,10 @@ public class TcgPsI18n implements SharedConstants {
     
     
     public static String getI18nStringStripI18N(String key) {
-    	if (key.startsWith("i18n.")) {
-    		return getI18nString(TcgPsI18n.getI18nString(key.substring(5)));
-    	}
-    	
-    	return getI18nString(key);
+        if (key.startsWith("i18n.")) {
+            return getI18nString(TcgPsI18n.getI18nString(key.substring(5)));
+        }
+        
+        return getI18nString(key);
     }
 }

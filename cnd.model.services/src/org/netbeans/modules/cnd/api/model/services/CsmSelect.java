@@ -44,6 +44,7 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.openide.util.Lookup;
 
@@ -56,7 +57,9 @@ public abstract class CsmSelect {
 
     public abstract CsmFilterBuilder getFilterBuilder();
     public abstract Iterator<CsmMacro> getMacros(CsmFile file, CsmFilter filter);
+    public abstract Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFile file, CsmFilter filter);
     public abstract Iterator<CsmOffsetableDeclaration> getDeclarations(CsmNamespace namespace, CsmFilter filter);
+    public abstract Iterator<CsmOffsetableDeclaration> getDeclarations(CsmNamespaceDefinition namespace, CsmFilter filter);
     
     protected CsmSelect() {
     }
@@ -110,6 +113,22 @@ public abstract class CsmSelect {
 
         @Override
         public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmNamespace namespace, CsmFilter filter) {
+            for (CsmSelect selector : res.allInstances()) {
+                return selector.getDeclarations(namespace, filter);
+            }
+            return null;
+        }
+
+        @Override
+        public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFile file, CsmFilter filter) {
+            for (CsmSelect selector : res.allInstances()) {
+                return selector.getDeclarations(file, filter);
+            }
+            return null;
+        }
+
+        @Override
+        public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmNamespaceDefinition namespace, CsmFilter filter) {
             for (CsmSelect selector : res.allInstances()) {
                 return selector.getDeclarations(namespace, filter);
             }

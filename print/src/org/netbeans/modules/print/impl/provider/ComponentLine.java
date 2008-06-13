@@ -62,11 +62,7 @@ import static org.netbeans.modules.print.impl.ui.UI.*;
  */
 final class ComponentLine {
 
-  ComponentLine(
-    AttributedCharacterIterator it,
-    Font defaultFont,
-    Color defaultColor)
-  {
+  ComponentLine(AttributedCharacterIterator it, Font defaultFont, Color defaultColor) {
     for (char c = it.first(); c != CharacterIterator.DONE; c = it.next()) {
       Font font = (Font) it.getAttribute(TextAttribute.FONT);
       Color color = (Color) it.getAttribute(TextAttribute.FOREGROUND);
@@ -223,8 +219,7 @@ final class ComponentLine {
   }
 
   @Override
-  public String toString()
-  {
+  public String toString() {
     StringBuffer buffer = new StringBuffer();
 
     for (int i=0; i < length(); i++) {
@@ -265,8 +260,7 @@ final class ComponentLine {
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
       return "'" + // NOI18N
         myChar + "' " + // NOI18N
         getString(myFont) + " " + // NOI18N

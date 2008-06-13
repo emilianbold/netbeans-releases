@@ -89,7 +89,7 @@ public class Util {
     }
     
     public static Document loadDocument(InputStream in) throws Exception {
-	Document sd = new org.netbeans.editor.BaseDocument(
+    Document sd = new org.netbeans.editor.BaseDocument(
             org.netbeans.modules.xml.text.syntax.XMLKit.class, false);
         BufferedReader br = new BufferedReader(new InputStreamReader(in));
         StringBuffer sbuf = new StringBuffer();

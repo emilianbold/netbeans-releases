@@ -45,17 +45,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.text.DataEditorSupport;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
-import org.netbeans.modules.xml.xam.spi.Validation;
-import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
-
 import org.netbeans.modules.soa.validation.core.Controller;
 import org.netbeans.modules.soa.validation.core.QuickFix;
 import org.netbeans.modules.soa.validation.core.QuickFixable;
@@ -100,11 +95,12 @@ public final class QuickFixAction extends IconAction {
       return;
     }
     for (QuickFix quickFix: quickFixes) {
-      if (quickFix.canFix()) {
-        quickFix.doFix();
+      String description = quickFix.doFix();
+
+      if (description != null) {
+        out.println();
+        out.println(i18n(QuickFixAction.class, "MSG_Quick_Fix", description)); // NOI18N
       }
-      out.println();
-      out.println(i18n(QuickFixAction.class, "MSG_Quick_Fix", quickFix.getDescription())); // NOI18N
     }
   }
 
@@ -116,16 +112,14 @@ public final class QuickFixAction extends IconAction {
     }
 //out();
 //out("NODE: " + node);
+    Controller controller = node.getLookup().lookup(Controller.class);
+//out("CONTROLLER: " + controller);
 
-    if (myController == null) {
-      myController = node.getLookup().lookup(Controller.class);
-//out("CONTROLLER: " + myController);
-    }
-    if (myController == null) {
+    if (controller == null) {
 //out("CONTROLLER is NULL");
       return quickFixes;
     }
-    List<ResultItem> result = myController.getResult();
+    List<ResultItem> result = controller.getResult();
 
     for (ResultItem item : result) {
       if ( !(item instanceof QuickFixable)) {
@@ -139,6 +133,4 @@ public final class QuickFixAction extends IconAction {
     }
     return quickFixes;
   }
-
-  private Controller myController;
 }

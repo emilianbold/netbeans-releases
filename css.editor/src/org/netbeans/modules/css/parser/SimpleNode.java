@@ -123,31 +123,41 @@ public class SimpleNode implements Node {
     your output uses more than one line you should override
     toString(String), otherwise overriding toString() is probably all
     you need to do. */
-    public String toString() {
+    public String toString(boolean addImage) {
         return CSSParserTreeConstants.jjtNodeName[id] 
                 + " [" 
                 + startOffset()
                 + " - " 
                 + endOffset() 
-                + "]";
+                + "]"
+                + (addImage ? " '" + image() + "'" : "");
+                
+    }
+    
+    public String toString() {
+        return toString(true);
     }
 
     public String toString(String prefix) {
-        return prefix + toString();
+        return prefix + toString(false);
     }
 
     /* Override this method if you want to customize how the node dumps
     out its children. */
-    public void dump(String prefix) {
-        System.out.println(toString(prefix));
+    public String dump(String prefix) {
+        StringBuilder str = new StringBuilder();
+        str.append(toString(prefix));
+        str.append('\n');
         if (children != null) {
             for (int i = 0; i < children.length; ++i) {
                 SimpleNode n = (SimpleNode) children[i];
                 if (n != null) {
-                    n.dump(prefix + " ");
+                    str.append(n.dump(prefix + " "));
                 }
             }
         }
+        System.out.println(str);
+        return str.toString();
     }
 
     public void visitChildren(NodeVisitor visitor) {

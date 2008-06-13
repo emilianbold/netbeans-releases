@@ -41,12 +41,18 @@
 package org.netbeans.modules.websvc.core.jaxws.projects;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.WebServiceNotifier;
+import org.netbeans.modules.websvc.core.JaxWsStackProvider;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
+import org.netbeans.modules.websvc.serverapi.api.WSStack;
+import org.netbeans.modules.websvc.serverapi.api.WSStackFeature;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 
@@ -75,7 +81,7 @@ public class ProjectWebServiceNotifier implements WebServiceNotifier {
     }
 
     private boolean isJsr109Supported() {
-        boolean jsr109Supported = true;
+        boolean jsr109Supported = false;
         EditableProperties projectProperties = null;
         try {
             projectProperties = WSUtils.getEditableProperties(proj, AntProjectHelper.PRIVATE_PROPERTIES_PATH);
@@ -85,9 +91,14 @@ public class ProjectWebServiceNotifier implements WebServiceNotifier {
         if (projectProperties!=null) {
             String serverInstance = projectProperties.getProperty(J2EE_SERVER_INSTANCE);
             if (serverInstance != null) {
-                J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
-                if (j2eePlatform != null) {
-                    jsr109Supported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
+                try {
+                    J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstance).getJ2eePlatform();
+                    WSStack wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
+                    if (wsStack != null) {
+                        return wsStack.getServiceFeatures().contains(WSStackFeature.JSR_109);
+                    }
+                } catch (InstanceRemovedException ex) {
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, "Failed to find J2eePlatform", ex);
                 }
             }
         }

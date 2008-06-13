@@ -47,8 +47,7 @@ public final class Decorator extends DecorationProvider implements DecorationPro
   }
 
   @Override
-  public Decoration getDecoration(BpelEntity entity)
-  {
+  public Decoration getDecoration(BpelEntity entity) {
     if ( !myIsClearSelection && mySelectedEntity == entity) {
       return GREEN_DECORATION; // glow
     }
@@ -59,8 +58,7 @@ public final class Decorator extends DecorationProvider implements DecorationPro
   }
 
   @Override
-  public void release()
-  {
+  public void release() {
     mySelectedEntity = null;
     myHighlightedEntities = null;
   }

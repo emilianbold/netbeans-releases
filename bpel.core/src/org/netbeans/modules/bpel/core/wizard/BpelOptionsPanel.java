@@ -123,27 +123,26 @@ public class BpelOptionsPanel extends javax.swing.JPanel {
     }
     
     String getWsName() {
-        if (fileNameTF!=null)
+        if (fileNameTF!=null) {
             return fileNameTF.getText();
-        else
+        }
+        else {
             return DEFAULT_SERVICE_NAME;
+        }
     }
     
-    void attachFileNameListener(JTextField fileNameTF) {
+    void attachFileNameListener(JTextField aFileNameTF) {
         
-        this.fileNameTF=fileNameTF;
+        this.fileNameTF = aFileNameTF;
+
         if (fileNameTF!=null) {
             DocListener listener = new DocListener();
             javax.swing.text.Document doc = fileNameTF.getDocument();
             doc.addDocumentListener(listener);
         }
-        
         String newNamespace = generateNamespace();
         namespaceTextField.setText(newNamespace);
-        
-        // initialise.
         prevNamespace = newNamespace;
-        
     }
     
     /**
@@ -174,7 +173,6 @@ public class BpelOptionsPanel extends javax.swing.JPanel {
         String result = MessageFormat.format(
                 TARGET_URL_PREFIX, projectName, serviceName);
         return result;
-        
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -183,16 +181,17 @@ public class BpelOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JTextField namespaceTextField;
     // End of variables declaration//GEN-END:variables
     
-    NewBpelFilePanel newBpelFilePanel;
+    private NewBpelFilePanel newBpelFilePanel;
     private JTextField fileNameTF;
     private String prevNamespace;
-    private boolean nameSpaceModifiedFlag = false;
+    private boolean nameSpaceModifiedFlag;
     
     private void doUpdate() {
-        if(namespaceTextField.getText()!=null && prevNamespace != null)
-            if(!namespaceTextField.getText().equals(prevNamespace))
+        if(namespaceTextField.getText()!=null && prevNamespace != null) {
+            if(!namespaceTextField.getText().equals(prevNamespace)) {
                 nameSpaceModifiedFlag = true;
-        
+            }
+        }
         if(!nameSpaceModifiedFlag) {
             String newNamespace = generateNamespace();
             namespaceTextField.setText(newNamespace);
@@ -233,9 +232,9 @@ public class BpelOptionsPanel extends javax.swing.JPanel {
     
     
     private void checkValidNamespace() {
-        if(newBpelFilePanel.getTemplateWizard() == null)
+        if(newBpelFilePanel.getTemplateWizard() == null) {
             return;
-        
+        }
         if(namespaceTextField.getText().contains(" ")) {
             newBpelFilePanel.getTemplateWizard().
                     putProperty("WizardPanel_errorMessage",                  // NOI18N
@@ -246,5 +245,4 @@ public class BpelOptionsPanel extends javax.swing.JPanel {
                     putProperty("WizardPanel_errorMessage", null);               //NOI18N
         }
     }
-    
 }

@@ -46,6 +46,8 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -119,7 +121,11 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
                         }
                         File loc = project.getHelper().resolveFile(text);
                         URL u = FileUtil.urlForArchiveOrDir(loc);
-                        if (u.equals(binaryRoot)) {
+                        if (u == null) { // #135163
+                            Logger.getLogger(SourceForBinaryImpl.class.getName()).log(Level.WARNING,
+                                    "In " + FileUtil.getFileDisplayName(project.getProjectDirectory()) +
+                                    " " + loc + " is neither a directory nor a JAR");
+                        } else if (u.equals(binaryRoot)) {
                             res = new Result(entry.getKey());
                             break ECUS;
                         }
@@ -136,7 +142,7 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
     private URL getClassesUrl() {
         if (classesUrl == null) {
             File classesDir = project.getClassesDirectory();
-            classesUrl = FileUtil.urlForArchiveOrDir(classesDir);
+            classesUrl = classesDir != null ? FileUtil.urlForArchiveOrDir(classesDir) : null;
         }
         return classesUrl;
     }
@@ -144,7 +150,7 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
     private URL getTestClassesUrl() {
         if (testClassesUrl == null && project.supportsUnitTests()) {
             File testClassesDir = project.getTestClassesDirectory();
-            testClassesUrl = FileUtil.urlForArchiveOrDir(testClassesDir);
+            testClassesUrl = testClassesDir != null ? FileUtil.urlForArchiveOrDir(testClassesDir) : null;
         }
         return testClassesUrl;
     }

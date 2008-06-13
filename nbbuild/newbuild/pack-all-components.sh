@@ -28,7 +28,7 @@ pack_all_components()
     cd $NB_ALL/nbbuild
 
     #Pack the distrubutions
-    find netbeans | egrep -v "netbeans/(extra|testtools|php)" | zip -q $DIST_DIR/zip/$NAME.zip -@ || exit 1
+    find netbeans | egrep -v "netbeans/(extra|testtools)" | zip -q $DIST_DIR/zip/$NAME.zip -@ || exit 1
 
     #find netbeans | egrep "netbeans/(platform|harness)" | zip -q $DIST_DIR/zip/$NAME-platform.zip -@ || exit 1
     find netbeans | egrep -v "netbeans/(extra|testtools|xml|mobility|enterprise|visualweb|uml|ruby|soa|cnd|identity|php)" | zip -q $DIST_DIR/zip/$NAME-javase.zip -@ || exit 1
@@ -42,12 +42,6 @@ pack_all_components()
 
     rm -rf $NB_ALL/nbbuild/netbeans/extra
 
-    cd $NB_ALL/nbbuild/netbeans
-
-    #Pack PHP first, it can't be in all-in-one zip
-    pack_component $DIST_DIR/zip/moduleclusters $NAME php "php*"
-    rm -rf php*
-
     cd $NB_ALL/nbbuild
 
     #Pack all the NetBeans
@@ -56,6 +50,9 @@ pack_all_components()
     cd $NB_ALL/nbbuild/netbeans
 
     #Continue with individual component
+    pack_component $DIST_DIR/zip/moduleclusters $NAME php "php*"
+    rm -rf php*
+
     pack_component $DIST_DIR/zip/moduleclusters $NAME uml "uml*"
     rm -rf uml*
 

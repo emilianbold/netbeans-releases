@@ -114,7 +114,7 @@ public class CLDModelingBasics extends ClassDiagramTestCase {
         try {
             ProjectRootNode root = CLDUtils.createNewUMLProject(NEW_PROJECT_NAME, projLocation);
             assert(root!=null);
-            Node cldNode = CLDUtils.createNewClassDiagram(classDiagramName, NEW_PROJECT_NAME);
+            Node cldNode = CLDUtils.createNewClassDiagram(classDiagramName, NEW_PROJECT_NAME);     
             assert(cldNode!=null);
             new Timeout("", 5000).sleep();
             DiagramOperator dop = new DiagramOperator(classDiagramName);
@@ -131,9 +131,15 @@ public class CLDModelingBasics extends ClassDiagramTestCase {
     
     public void testVerifyElementsInPaletteForAnExistingCLD(){
         String waysToOpen = "pop-up" ;
-        String classDiagramName = "CLDNameToTestPltte";
+//        String classDiagramName = "CLDNameToTestPltte";
+       
         
+        //There are bugs to open diagram, so use the diagram "CLDName"
+        // that created in test testCreateNewClassDiagram
+        String classDiagramName = "CLDName";
         Node root = CLDUtils.openDiagram(classDiagramName, PROJECT_NAME, waysToOpen);
+      
+        
         //new EventTool().waitNoEvent(1000);
         new Timeout("", 5000).sleep();
         DiagramOperator dop = new DiagramOperator(classDiagramName);
@@ -150,16 +156,17 @@ public class CLDModelingBasics extends ClassDiagramTestCase {
                 fail("Element " + et + " does not exist in the palette" + e.toString());
             }
         }
-        
-        LinkTypes[] paletteLinkTypes = CLDUtils.getExpectedCLDPaletteLinkTypes();
-        for(LinkTypes et : paletteLinkTypes ){
-            try {
-                tco.selectToolByType(et);
-            } catch(NotFoundException e){
-                e.printStackTrace();
-                fail("Link " + et + " does not exist in the palette" + e.toString());
-            }
-        }
+// meteroa: Links are moved from palette        
+//        LinkTypes[] paletteLinkTypes = CLDUtils.getExpectedCLDPaletteLinkTypes();
+//        for(LinkTypes et : paletteLinkTypes ){
+//            try {
+//                tco.selectToolByType(et);
+//            } catch(NotFoundException e){
+//                e.printStackTrace();
+//                fail("Link " + et + " does not exist in the palette" + e.toString());
+//            }
+//        }
+// meteroa
         /*
         Enum[] paletteElementTypes = CLDUtils.getExpectedCLDPaletteElements();
         for(Enum et : paletteElementTypes ){
@@ -190,7 +197,7 @@ public class CLDModelingBasics extends ClassDiagramTestCase {
         String classDiagramName = "CLDNameToOpen";
         
         for(int i=0; i<waysToOpen.length; i++) {
-            Node root = CLDUtils.openDiagram(classDiagramName, PROJECT_NAME, waysToOpen[i]);
+            Node root = CLDUtils.openDiagram(classDiagramName, PROJECT_NAME, waysToOpen[i]);       
             new Timeout("", 5000).sleep();
             DiagramOperator dop = new DiagramOperator(classDiagramName);
             assertTrue(dop!=null);

@@ -44,7 +44,9 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.JarURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -55,6 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.test.TestFileUtils;
 
 /** Tests that cover some basic aspects of a Proxy/JarClassLoader.
  *
@@ -69,22 +72,17 @@ public class JarClassLoaderTest extends NbTestCase {
         super(name);
     }
 
-    /** directory full of JAR files to test */
-    protected File jars;
-    /** directory full of testing roots */
-    protected File dirs;
-
     @Override
     protected void setUp() throws Exception {
         LOGGER.setUseParentHandlers(false);
         LOGGER.setLevel(Level.OFF);
-        jars = new File(JarClassLoaderTest.class.getResource("jars").getFile());
-        dirs = new File(JarClassLoaderTest.class.getResource("dirs").getFile());
+        clearWorkDir();
     }
 
 
     public void testCanLoadFromDefaultPackage() throws Exception {
-        File jar = new File(jars, "default-package-resource.jar");
+        File jar = new File(getWorkDir(), "default-package-resource.jar");
+        TestFileUtils.writeZipFile(jar, "resource.txt:content", "package/resource.txt:content");
         JarClassLoader jcl = new JarClassLoader(Collections.singletonList(jar), new ProxyClassLoader[0]);
         
         assertStreamContent(jcl.getResourceAsStream("package/resource.txt"), "content");
@@ -100,7 +98,8 @@ public class JarClassLoaderTest extends NbTestCase {
 
 
     public void testCanLoadFromDefaultPackageCached() throws Exception {
-        final File jar = new File(jars, "default-package-resource-cached.jar");
+        final File jar = new File(getWorkDir(), "default-package-resource-cached.jar");
+        TestFileUtils.writeZipFile(jar, "resource.txt:content", "package/resource.txt:content", "META-INF/MANIFEST.MF:Covered-Packages: META-INF,/MANIFEST.MF,package,\n");
 
         Module fake = new Module(null, null, null, null) {
 	    public List<File> getAllJars() {throw new UnsupportedOperationException();}
@@ -137,7 +136,10 @@ public class JarClassLoaderTest extends NbTestCase {
     }
 
     public void testCanLoadFromDefaultPackageDirs() throws Exception {
-        File dir = new File(dirs, "default-package-resource");
+        File dir = getWorkDir();
+        TestFileUtils.writeFile(new File(dir, "resource.txt"), "content");
+        TestFileUtils.writeFile(new File(dir, "package/resource.txt"), "content");
+        TestFileUtils.writeFile(new File(dir, "META-INF/services/resource.txt"), "content");
         JarClassLoader jcl = new JarClassLoader(Collections.singletonList(dir), new ProxyClassLoader[0]);
         
         assertStreamContent(jcl.getResourceAsStream("package/resource.txt"), "content");
@@ -151,6 +153,19 @@ public class JarClassLoaderTest extends NbTestCase {
         assertURLsContent(jcl.getResources("/package/resource.txt"), "content");
         assertURLsContent(jcl.getResources("resource.txt"), "content");
         assertURLsContent(jcl.getResources("/resource.txt"), "content");
+    }
+
+    public void testJarURLConnection() throws Exception {
+        File jar = new File(getWorkDir(), "default-package-resource.jar");
+        TestFileUtils.writeZipFile(jar, "META-INF/MANIFEST.MF:Manifest-Version: 1.0\nfoo: bar\n\n", "package/resource.txt:content");
+        JarClassLoader jcl = new JarClassLoader(Collections.singletonList(jar), new ProxyClassLoader[0]);
+        URLConnection conn = jcl.getResource("package/resource.txt").openConnection();
+        assertTrue(conn instanceof JarURLConnection);
+        JarURLConnection jconn = (JarURLConnection) conn;
+        assertEquals("package/resource.txt", jconn.getEntryName());
+        assertEquals(jar.toURI().toURL(), jconn.getJarFileURL());
+        assertEquals("bar", jconn.getMainAttributes().getValue("foo"));
+        assertEquals(jar.getAbsolutePath(), jconn.getJarFile().getName());
     }
 
     private void assertURLsContent(Enumeration<URL> urls, String ... contents) throws IOException {

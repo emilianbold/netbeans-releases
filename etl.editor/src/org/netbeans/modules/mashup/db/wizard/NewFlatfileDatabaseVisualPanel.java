@@ -15,11 +15,12 @@ import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 
-
 public final class NewFlatfileDatabaseVisualPanel extends JPanel {
+
     private static transient final Logger mLogger = Logger.getLogger(NewFFDBAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     public String nbBundle1 = mLoc.t("BUND265: Create Mashup Database");
+
     class NameFieldKeyAdapter extends KeyAdapter {
 
         /**
@@ -43,6 +44,7 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
     public NewFlatfileDatabaseVisualPanel() {
         initComponents();
         errorMsg.setForeground(Color.RED);
+        jLabel1.setForeground(Color.BLACK);
         dbLoc.setForeground(Color.BLACK);
         driverClass.setForeground(Color.BLACK);
         dbName.setText("");
@@ -61,7 +63,7 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
     }
 
     public void clearText() {
-        dbName.setText("");
+        dbName.setText("newMashupDB");
     }
 
     public boolean canProceed() {
@@ -76,9 +78,9 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
             FileInputStream in = new FileInputStream(conf);
             prop.load(in);
         } catch (FileNotFoundException ex) {
-        //ignore
+            //ignore
         } catch (IOException ex) {
-        //ignore
+            //ignore
         }
         String defaultDir = prop.getProperty(AxionDBConfiguration.PROP_DB_LOC);
         defaultDir = defaultDir.replace('/', '\\');
@@ -109,11 +111,15 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
      */
     private void initComponents() {
         jLabel1 = new javax.swing.JLabel();
+        jLabel1.setText("Database Name:  ");
         dbName = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        dbLoc = new javax.swing.JLabel();
+        dbLoc = new javax.swing.JTextField();
+        dbLoc.setEditable(false);
         driver = new javax.swing.JLabel();
-        driverClass = new javax.swing.JLabel();
+        driverClass = new javax.swing.JTextField();
+        driverClass.setText("org.axiondb.jdbc.AxionDriver".trim());
+        driverClass.setEditable(false);
         errorMsg = new javax.swing.JLabel();
 
         setMaximumSize(new java.awt.Dimension(10000, 4000));
@@ -132,12 +138,12 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, nbBundle3.substring(15));
         driver.getAccessibleContext().setAccessibleName(nbBundle4.substring(15));
         org.openide.awt.Mnemonics.setLocalizedText(driver, nbBundle4.substring(15));
-        org.openide.awt.Mnemonics.setLocalizedText(driverClass, "org.axiondb.jdbc.AxionDriver");
+        //org.openide.awt.Mnemonics.setLocalizedText(driverClass, "org.axiondb.jdbc.AxionDriver");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-                layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().addContainerGap().add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).add(jLabel1).add(layout.createSequentialGroup().add(driver).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().add(driverClass).addContainerGap()).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().add(dbName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 161, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(190, 190, 190)).add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup().add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING).add(org.jdesktop.layout.GroupLayout.LEADING, dbLoc, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE).add(errorMsg, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)).addContainerGap())))));
+                layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().addContainerGap().add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).add(jLabel1).add(layout.createSequentialGroup().add(driver).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().add(driverClass).addContainerGap()).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().add(dbName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 161, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(190, 190, 190)).add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup().add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING).add(org.jdesktop.layout.GroupLayout.LEADING, dbLoc, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE).add(errorMsg, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)).addContainerGap())))));
         layout.setVerticalGroup(
                 layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().add(40, 40, 40).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE).add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(dbName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(errorMsg, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 18, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(14, 14, 14).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE).add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(dbLoc, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)).add(32, 32, 32).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE).add(driver).add(driverClass, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)).addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
     }
@@ -145,7 +151,6 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
     private void checkDBName() {
         String name = dbName.getText().trim();
         String location = null;
-
         if (MashupTableWizardIterator.IS_PROJECT_CALL) {
             location = ETLEditorSupport.PRJ_PATH + "\\nbproject\\private\\databases";
             dbLoc.setText("${project.home}" + "\\nbproject\\private\\databases");
@@ -158,7 +163,7 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
         char[] ch = name.toCharArray();
         if (ch.length != 0) {
             if (f.exists()) {
-                String nbBundle5 = mLoc.t("BUND270: Database {0} already exists. ",name);
+                String nbBundle5 = mLoc.t("BUND270: Database {0} already exists. ", name);
                 errorMsg.setText(nbBundle5.substring(15));
                 canProceed = false;
             } else if (Character.isDigit(ch[0])) {
@@ -174,10 +179,10 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
             canProceed = false;
         }
     }
-    private javax.swing.JLabel dbLoc;
+    private javax.swing.JTextField dbLoc;
     private javax.swing.JTextField dbName;
     private javax.swing.JLabel driver;
-    private javax.swing.JLabel driverClass;
+    private javax.swing.JTextField driverClass;
     private javax.swing.JLabel errorMsg;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

@@ -1,0 +1,4 @@
+NetBeans Plugin Modules
+    Module
+    Module Suite
+    Library Wrapper Module

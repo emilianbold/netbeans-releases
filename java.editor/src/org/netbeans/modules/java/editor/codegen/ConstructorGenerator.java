@@ -46,7 +46,6 @@ import com.sun.source.util.TreePath;
 import java.awt.Dialog;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -70,9 +69,11 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.codegen.ui.ConstructorPanel;
 import org.netbeans.modules.java.editor.codegen.ui.ElementNode;
+import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -83,17 +84,22 @@ public class ConstructorGenerator implements CodeGenerator {
 
     public static class Factory implements CodeGenerator.Factory {
         
-        public Factory() {            
-        }
-        
-        public Iterable<? extends CodeGenerator> create(CompilationController controller, TreePath path) throws IOException {
-            path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
-            if (path == null)
-                return Collections.emptySet();
-            controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+        public List<? extends CodeGenerator> create(Lookup context) {
+            ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
+            JTextComponent component = context.lookup(JTextComponent.class);
+            CompilationController controller = context.lookup(CompilationController.class);
+            TreePath path = context.lookup(TreePath.class);
+            path = path != null ? Utilities.getPathElementOfKind(Tree.Kind.CLASS, path) : null;
+            if (component == null || controller == null || path == null)
+                return ret;
+            try {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            } catch (IOException ioe) {
+                return ret;
+            }
             TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
             if (typeElement == null || !typeElement.getKind().isClass() || NestingKind.ANONYMOUS.equals(typeElement.getNestingKind()))
-                return Collections.emptySet();
+                return ret;
             final Set<VariableElement> initializedFields = new LinkedHashSet<VariableElement>();
             final Set<VariableElement> uninitializedFields = new LinkedHashSet<VariableElement>();
             final List<ExecutableElement> constructors = new ArrayList<ExecutableElement>();
@@ -124,18 +130,20 @@ public class ConstructorGenerator implements CodeGenerator {
                     fieldDescriptions.add(ElementNode.Description.create(variableElement, null, true, false));
                 fieldsDescription = ElementNode.Description.create(typeElement, fieldDescriptions, false, false);
             }
-            if (constructorHandle == null && constructorDescription == null && fieldsDescription == null)
-                return Collections.emptySet();
-            return Collections.singleton(new ConstructorGenerator(constructorHandle, constructorDescription, fieldsDescription));
+            if (constructorHandle != null || constructorDescription != null || fieldsDescription != null)
+                ret.add(new ConstructorGenerator(component, constructorHandle, constructorDescription, fieldsDescription));
+            return ret;
         }
     }
 
+    private JTextComponent component;
     private ElementHandle<? extends Element> constructorHandle;
     private ElementNode.Description constructorDescription;
     private ElementNode.Description fieldsDescription;
     
     /** Creates a new instance of ConstructorGenerator */
-    private ConstructorGenerator(ElementHandle<? extends Element> constructorHandle, ElementNode.Description constructorDescription, ElementNode.Description fieldsDescription) {
+    private ConstructorGenerator(JTextComponent component, ElementHandle<? extends Element> constructorHandle, ElementNode.Description constructorDescription, ElementNode.Description fieldsDescription) {
+        this.component = component;
         this.constructorHandle = constructorHandle;
         this.constructorDescription = constructorDescription;
         this.fieldsDescription = fieldsDescription;
@@ -145,7 +153,7 @@ public class ConstructorGenerator implements CodeGenerator {
         return org.openide.util.NbBundle.getMessage(ConstructorGenerator.class, "LBL_constructor"); //NOI18N
     }
 
-    public void invoke(JTextComponent component) {
+    public void invoke() {
         final List<ElementHandle<? extends Element>> fieldHandles;
         final List<ElementHandle<? extends Element>> constrHandles;
         if (constructorDescription != null || fieldsDescription != null) {

@@ -89,7 +89,7 @@ class JavaDBAdapter implements RailsDatabaseConfiguration {
                             "# JavaDB Setup\n" +
                             "#\n" +
                             "# You may need to copy derby.jar into\n" +
-                            "#  TODO: location " +  platform.getLib() + "\n" +
+                            "#  TODO: location " +  platform.getLibDir() + "\n" +
                             "# With Java SE 6 and later this is not necessary.\n" +
                             "development:\n" + // NOI18N
                             "  adapter: derby\n" + // NOI18N

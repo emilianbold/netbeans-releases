@@ -116,4 +116,40 @@ public class SimpleNodeUtil {
             visitAncestors(parent, visitor);
         }
     }
+    
+        /** @return A sibling node before or after the given node. */
+    public static SimpleNode getSibling(SimpleNode node, boolean before) {
+        SimpleNode parent = (SimpleNode)node.jjtGetParent();
+        if(parent == null) {
+            return null;
+        }
+        if(parent.children == null) {
+            return null;
+        }
+        
+        SimpleNode sibling = null;
+        for(int i = 0; i < parent.children.length ; i++) {
+            SimpleNode child = (SimpleNode)parent.children[i];
+            if(child == node) {
+                //we found myself
+                if(before) {
+                    if(i == 0) {
+                        //we are first node, no sibling before
+                        return null;
+                    } else {
+                        return (SimpleNode)parent.children[i - 1];
+                    }
+                } else {
+                    //after
+                    if(i == parent.children.length - 1) {
+                        //we are last node, no sibling after
+                        return null;
+                    } else {
+                        return (SimpleNode)parent.children[i + 1];
+                    }
+                }
+            }
+        }
+        return sibling;
+    }
 }

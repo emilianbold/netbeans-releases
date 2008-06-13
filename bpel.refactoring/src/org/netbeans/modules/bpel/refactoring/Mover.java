@@ -100,8 +100,7 @@ final class Mover extends Plugin {
   }
     
   public Problem prepare(RefactoringElementsBag refactoringElements) {
-    Referenceable reference =
-      myRequest.getRefactoringSource().lookup(Referenceable.class);
+    Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
 
     if (reference == null) {
       return null;
@@ -127,8 +126,7 @@ final class Mover extends Plugin {
         return processErrors(errors);
       } 
     } 
-    XMLRefactoringTransaction transaction =
-      myRequest.getContext().lookup(XMLRefactoringTransaction.class);
+    XMLRefactoringTransaction transaction = myRequest.getContext().lookup(XMLRefactoringTransaction.class);
     transaction.register(this, elements);
     refactoringElements.registerTransaction(transaction);
 
@@ -139,13 +137,10 @@ final class Mover extends Plugin {
     return null;
   }
       
-  public void doRefactoring(
-    List<RefactoringElementImplementation> elements) throws IOException
-  {
+  public void doRefactoring(List<RefactoringElementImplementation> elements) throws IOException {
     Map<Model, Set<RefactoringElementImplementation>> map = getModelMap(elements);
     Set<Model> models = map.keySet();
-    Referenceable reference =
-      myRequest.getRefactoringSource().lookup(Referenceable.class);
+    Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
 
     for (Model model : models) {
       if (reference instanceof Model) {
@@ -161,11 +156,8 @@ final class Mover extends Plugin {
     return null;
   }
 
-  private Map<Model, Set<RefactoringElementImplementation>> getModelMap(
-    List<RefactoringElementImplementation> elements)
-  {
-    Map<Model, Set<RefactoringElementImplementation>> results =
-      new HashMap<Model, Set<RefactoringElementImplementation>>();
+  private Map<Model, Set<RefactoringElementImplementation>> getModelMap(List<RefactoringElementImplementation> elements) {
+    Map<Model, Set<RefactoringElementImplementation>> results = new HashMap<Model, Set<RefactoringElementImplementation>>();
   
     for(RefactoringElementImplementation element : elements) {
       Model model = (element.getLookup().lookup(Component.class)).getModel();
@@ -183,9 +175,7 @@ final class Mover extends Plugin {
     return results;
   }
 
-  private List<Component> getComponents(
-    Set<RefactoringElementImplementation> elements)
-  {
+  private List<Component> getComponents(Set<RefactoringElementImplementation> elements) {
     List<Component> component = new ArrayList<Component>(elements.size());
   
     for (RefactoringElementImplementation element : elements) {

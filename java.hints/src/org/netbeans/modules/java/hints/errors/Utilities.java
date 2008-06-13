@@ -46,6 +46,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
@@ -73,6 +74,7 @@ import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.MarkBlock;
@@ -137,10 +139,14 @@ public class Utilities {
     }
     
     public static String getName(ExpressionTree et) {
+        return getName((Tree) et);
+    }
+    
+    public static String getName(Tree et) {
         return adjustName(getNameRaw(et));
     }
     
-    private static String getNameRaw(ExpressionTree et) {
+    private static String getNameRaw(Tree et) {
         if (et == null)
             return null;
 
@@ -152,13 +158,9 @@ public class Utilities {
         case MEMBER_SELECT:
             return ((MemberSelectTree) et).getIdentifier().toString();
         case NEW_CLASS:
-            String type = ((NewClassTree) et).getIdentifier().toString();
-            char firstChar = type.charAt(0);
-            if (Character.isUpperCase(firstChar)) {
-                return Character.toLowerCase(firstChar) + type.substring(1);
-            } else {
-                return type + "1"; // NOI18N
-            }
+            return firstToLower(getName(((NewClassTree) et).getIdentifier()));
+        case PARAMETERIZED_TYPE:
+            return firstToLower(getName(((ParameterizedTypeTree) et).getType()));
         default:
             return null;
         }
@@ -281,7 +283,13 @@ public class Utilities {
         TypeMirror type = resolveCapturedTypeInt(info, tm);
         
         if (type.getKind() == TypeKind.WILDCARD) {
-            return ((WildcardType) type).getExtendsBound();
+            TypeMirror tmirr = ((WildcardType) type).getExtendsBound();
+            if (tmirr != null)
+                return tmirr;
+            else { //no extends, just '?'
+                return info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
+            }
+                
         }
         
         return type;

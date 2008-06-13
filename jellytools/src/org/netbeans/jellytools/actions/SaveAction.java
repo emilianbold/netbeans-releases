@@ -53,7 +53,7 @@ public class SaveAction extends Action {
     private static final String savePopup = Bundle.getStringTrimmed(
                                             "org.openide.actions.Bundle", "Save");
     private static final String saveMenu = Bundle.getStringTrimmed(
-                                            "org.netbeans.core.Bundle", "Menu/File")
+                                            "org.netbeans.core.ui.resources.Bundle", "Menu/File")
                                             + "|" + savePopup;
     
     /** Creates new SaveAction instance. */

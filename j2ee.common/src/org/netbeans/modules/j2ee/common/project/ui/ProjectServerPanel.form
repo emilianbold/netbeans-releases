@@ -47,7 +47,7 @@
               </Group>
           </Group>
           <Group type="102" alignment="0" attributes="0">
-              <Component id="mainClassLabel" min="-2" pref="54" max="-2" attributes="0"/>
+              <Component id="mainClassLabel" min="-2" pref="-2" max="-2" attributes="0"/>
               <EmptySpace pref="365" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">

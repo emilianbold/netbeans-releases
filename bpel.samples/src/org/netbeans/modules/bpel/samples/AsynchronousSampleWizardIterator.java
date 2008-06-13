@@ -42,15 +42,10 @@ package org.netbeans.modules.bpel.samples;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.openide.ErrorManager;
+
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
 
@@ -64,7 +59,7 @@ public class AsynchronousSampleWizardIterator extends SampleWizardIterator {
     }
     
     protected String[] createSteps() {
-      return new String[] { NbBundle.getMessage(AsynchronousSampleWizardIterator.class, "MSG_CreateAsynchronousSampleProject") };
+      return new String[] { NbBundle.getMessage(AsynchronousSampleWizardIterator.class, "MSG_CreateAsynchronousSampleProject") }; // NOI18N
     }
     
     protected WizardDescriptor.Panel[] createPanels() {
@@ -76,10 +71,10 @@ public class AsynchronousSampleWizardIterator extends SampleWizardIterator {
         FileObject compAppProjectDir = projectDir.createFolder(name);
         
         FileObject trsCompositeApp = Repository.getDefault().
-                getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/AsynchronousSampleApplication.zip");// NOI18N
+                getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/AsynchronousSampleApplication.zip"); // NOI18N
 
         Util.unZipFile(trsCompositeApp.getInputStream(), compAppProjectDir);
-        Util.setProjectName(compAppProjectDir, Util.COMPAPP_PROJECT_CONFIGURATION_NAMESPACE, name, "AsynchronousSampleApplication");
+        Util.setProjectName(compAppProjectDir, Util.COMPAPP_PROJECT_CONFIGURATION_NAMESPACE, name, "AsynchronousSampleApplication"); // NOI18N
 
         Util.addJbiModule(compAppProjectDir, getProjectDir());
         resultSet.add(compAppProjectDir);

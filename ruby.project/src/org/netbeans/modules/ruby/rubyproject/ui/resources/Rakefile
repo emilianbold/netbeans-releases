@@ -12,9 +12,8 @@ require 'rake'
 require 'rake/clean'
 require 'rake/gempackagetask'
 require 'rake/rdoctask'
-require 'fileutils'
-require 'spec/rake/spectask'
-
+require 'rake/testtask'
+${REQUIRE_SPEC_TASK}
 spec = Gem::Specification.new do |s|
   s.name = '${PROJECT_NAME}'
   s.version = '0.0.1'
@@ -45,6 +44,7 @@ Rake::RDocTask.new do |rdoc|
   rdoc.options << '--line-numbers'
 end
 
-Spec::Rake::SpecTask.new('spec') do |t|
-  t.spec_files = FileList['spec/**/*.rb']
+Rake::TestTask.new do |t|
+  t.test_files = FileList['test/**/*.rb']
 end
+${SPEC_TASK_DEF}

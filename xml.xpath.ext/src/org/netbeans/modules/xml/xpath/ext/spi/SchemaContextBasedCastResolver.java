@@ -40,9 +40,10 @@
  */
 package org.netbeans.modules.xml.xpath.ext.spi;
 
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.CastSchemaContext;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 
 /**
  * Looks through the chan of SchemaContext elements and 
@@ -68,6 +69,12 @@ public class SchemaContextBasedCastResolver implements XPathCastResolver {
         return getCast(mSContext, baseSContext);
     }
   
+    public List<XPathPseudoComp> getPseudoCompList(XPathSchemaContext parentSContext) {
+        // It looks like it doesn't necessary here
+        // TODO: investigate it later
+        return null;
+    }
+
     private XPathCast getCast(XPathSchemaContext lookInside, 
             XPathSchemaContext soughtSContext) {
         if (lookInside == null) {

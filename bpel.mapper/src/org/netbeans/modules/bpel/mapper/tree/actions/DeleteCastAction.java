@@ -29,16 +29,15 @@ import org.netbeans.modules.bpel.mapper.cast.CastManager;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author nk160297
  */
-public class DeleteCastAction extends MapperAction<RestartableIterator<Object>> {
+public class DeleteCastAction extends MapperAction<Iterable<Object>> {
     
     private static final long serialVersionUID = 1L;
     private boolean mInLeftTree;
@@ -46,8 +45,8 @@ public class DeleteCastAction extends MapperAction<RestartableIterator<Object>> 
     
     public DeleteCastAction(MapperTcContext mapperTcContext, 
             boolean inLeftTree, TreePath treePath, 
-            RestartableIterator<Object> doItr) {
-        super(mapperTcContext, doItr);
+            Iterable<Object> doItrb) {
+        super(mapperTcContext, doItrb);
         mTreePath = treePath;
         mInLeftTree = inLeftTree;
         postInit();
@@ -59,15 +58,14 @@ public class DeleteCastAction extends MapperAction<RestartableIterator<Object>> 
     }
     
     public void actionPerformed(ActionEvent e) {
-        RestartableIterator<Object> itr = getActionSubject();
-        itr.restart();
-        Object nextObj = itr.next();
+        Iterable<Object> itrb = getActionSubject();
+        Object nextObj = itrb.iterator().next();
         assert nextObj instanceof AbstractTypeCast;
         AbstractTypeCast typeCast = (AbstractTypeCast)nextObj;
         //
         XPathSchemaContext sContext = typeCast.getSchemaContext();
         if (sContext == null) {
-            sContext = PathConverter.constructContext(itr);
+            sContext = PathConverter.constructContext(itrb, false);
         }
         //
 //        PredicateUpdater updater = new PredicateUpdater(mMapperTcContext, 

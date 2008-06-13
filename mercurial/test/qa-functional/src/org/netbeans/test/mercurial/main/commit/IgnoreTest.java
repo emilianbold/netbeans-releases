@@ -13,23 +13,15 @@ import java.io.File;
 import java.io.PrintStream;
 import javax.swing.table.TableModel;
 import junit.textui.TestRunner;
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.jemmy.operators.Operator;
-import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.mercurial.operators.VersioningOperator;
-import org.netbeans.test.mercurial.utils.RepositoryMaintenance;
 import org.netbeans.test.mercurial.utils.TestKit;
 
 /**
@@ -55,14 +47,7 @@ public class IgnoreTest extends JellyTestCase {
         
     }
     
-    protected boolean isUnix() {
-        boolean unix = false;
-        if (os_name.indexOf("Windows") == -1) {
-            unix = true;
-        }
-        return unix;
-    }
-    
+   
     public static void main(String[] args) {
         // TODO code application logic here
         TestRunner.run(suite());
@@ -79,19 +64,17 @@ public class IgnoreTest extends JellyTestCase {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
         try {
-            TestKit.showStatusLabels();
-            TestKit.closeProject(PROJECT_NAME);
             
             OutputOperator oo = OutputOperator.invoke();
             
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
-            TestKit.loadOpenProject(PROJECT_NAME, getDataDir());
 
             TestKit.createNewElement(PROJECT_NAME, "javaapp", "NewClass");
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|NewClass");
-            node.performPopupAction("Mercurial|Ignore");
-            OutputTabOperator oto = new OutputTabOperator("Mercurial");
-            oto.waitText("INFO: End of Ignore");
+            node.performPopupAction("Mercurial|Toggle Ignore");
+            String outputTabName=TestKit.getProjectAbsolutePath(PROJECT_NAME);
+            OutputTabOperator oto = new OutputTabOperator(outputTabName);
+//            oto.waitText("INFO: End of Ignore");
             
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|NewClass");
             org.openide.nodes.Node nodeIDE = (org.openide.nodes.Node) node.getOpenideNode();
@@ -102,19 +85,13 @@ public class IgnoreTest extends JellyTestCase {
             
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|NewClass");
             TimeoutExpiredException tee = null;
-            try {
-                node.performPopupAction("Mercurial|Ignore");
-            } catch (Exception e) {
-                tee = (TimeoutExpiredException) e;
-            }
-            assertNotNull("Ignore action should be disabled!!!", tee);
-            
             //unignore file
-            oto = new OutputTabOperator("Mercurial");
+            oto = new OutputTabOperator(outputTabName);
             oto.clear();
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|NewClass");
-            node.performPopupAction("Mercurial|Unignore");
-            oto.waitText("INFO: End of Unignore");
+            node.performPopupAction("Mercurial|Toggle Ignore");
+//            oto.waitText("INFO: End of Unignore");
+            Thread.sleep(1000);
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|NewClass");
             nodeIDE = (org.openide.nodes.Node) node.getOpenideNode();
             color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
@@ -137,7 +114,7 @@ public class IgnoreTest extends JellyTestCase {
         } catch (Exception e) {
             throw new Exception("Test failed: " + e);
         } finally {
-            TestKit.closeProject(PROJECT_NAME);
+//            TestKit.closeProject(PROJECT_NAME);
         }    
     }
     

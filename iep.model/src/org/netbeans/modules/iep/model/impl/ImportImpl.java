@@ -63,8 +63,8 @@ import org.w3c.dom.Element;
  */
 public class ImportImpl extends IEPComponentBase implements Import {
 
-	
-	
+    
+    
     public ImportImpl(IEPModel model) {
         this(model, createNewElement(IEPQNames.IMPORT.getQName(), model));
     }

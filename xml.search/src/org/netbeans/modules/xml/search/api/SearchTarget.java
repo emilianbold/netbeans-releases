@@ -68,8 +68,7 @@ public interface SearchTarget {
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
       return i18n(myBundle, name());
     }
 

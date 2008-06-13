@@ -58,9 +58,9 @@ public class AcceptanceTestCase  extends JellyTestCase {
         "createNewXSLTModule",
                 "createSchemas",
                 "createWSDL",
-                "createXSLT",
-                "editXSLT",
-                "checkSource"
+                "createXSLT"//,
+              //  "editXSLT",
+              //  "checkSource"
     };
     
     static final String SCHEMA_NAME = "schema";

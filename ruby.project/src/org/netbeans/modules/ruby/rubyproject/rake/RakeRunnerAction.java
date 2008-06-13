@@ -41,23 +41,12 @@
 
 package org.netbeans.modules.ruby.rubyproject.rake;
 
-import java.io.File;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
-import org.netbeans.modules.ruby.rubyproject.RubyFileLocator;
+import org.netbeans.modules.ruby.rubyproject.Util;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeTaskChooser.TaskDescriptor;
-import org.openide.LifecycleManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.CallableSystemAction;
 
 /**
@@ -67,84 +56,19 @@ import org.openide.util.actions.CallableSystemAction;
 public final class RakeRunnerAction extends CallableSystemAction {
 
     public void performAction() {
-        Lookup context = Utilities.actionsGlobalContext();
-        Project p = context.lookup(Project.class);
-        if (p == null) { // no project in the current context
-            FileObject fo = context.lookup(FileObject.class);
-            if (fo != null) {
-                p = FileOwnerQuery.getOwner(fo);
-            }
-        }
-        if (p == null) {
+        RubyBaseProject project = Util.inferRubyProject();
+        if (project == null) {
             return;
         }
 
-        if (!RubyPlatform.platformFor(p).showWarningIfInvalid()) {
-            return;
-        }
-
-        RubyBaseProject project = (RubyBaseProject) p;
-
-        TaskDescriptor taskDesc = RakeTaskChooser.select(project);
-        if (taskDesc != null) {
-            runTask(project, taskDesc);
-        }
-    }
-
-    
-    private void runTask(final RubyBaseProject project, final TaskDescriptor taskDesc) {
         if (!RubyPlatform.platformFor(project).showWarningIfInvalid()) {
             return;
         }
-        
-        if (!RubyPlatform.hasValidRake(project, true)) {
-            return;
+
+        TaskDescriptor taskDesc = RakeTaskChooser.select(project);
+        if (taskDesc != null && taskDesc.getRakeTask() != null) {
+            RakeRunner.runTask(project, taskDesc.getRakeTask(), taskDesc.isDebug());
         }
-
-        // Save all files first
-        LifecycleManager.getDefault().saveAll();
-
-
-        // EMPTY CONTEXT??
-        FileLocator fileLocator = new RubyFileLocator(Lookup.EMPTY, project);
-        String displayName = NbBundle.getMessage(RakeRunnerAction.class, "RakeRunnerAction.Rake");
-
-        ProjectInformation info = ProjectUtils.getInformation(project);
-
-        File pwd = null;
-
-        FileObject rakeFile = RakeSupport.findRakeFile(project);
-        if (rakeFile == null) {
-            pwd = FileUtil.toFile(project.getProjectDirectory());
-        }
-
-        RakeSupport rake = new RakeSupport(project);
-
-        final RakeTask task = taskDesc.getRakeTask();
-        String taskName = task.getTask();
-
-        if (taskName != null && (taskName.equals("test") || taskName.startsWith("test:"))) { // NOI18N
-            rake.setTest(true);
-        }
-
-        if (info != null) {
-            displayName = info.getDisplayName();
-        }
-
-        displayName += " (" + taskName + ')';
-
-        rake.runRake(pwd, rakeFile, displayName, fileLocator, true, taskDesc.isDebug(), taskName);
-
-//        // Update recent tasks list: add or move to end
-//        if (rakeFile != null) {
-//            List<RakeTask> recent = recentTasks.get(rakeFile);
-//            if (recent == null) {
-//                recent = new ArrayList<RakeTask>();
-//                recenttasks.put(rakeFile, recent);
-//            }
-//            recent.remove(task);
-//            recent.add(task);
-//        }
     }
 
     public String getName() {

@@ -211,7 +211,7 @@ public class ConfigurationMakefileWriter {
         }
         
         bw.write("#\n"); // NOI18N
-        bw.write("# Gererated Makefile - do not edit!\n"); // NOI18N
+        bw.write("# Generated Makefile - do not edit!\n"); // NOI18N
         bw.write("#\n"); // NOI18N
         bw.write("# Edit the Makefile in the project folder instead (../Makefile). Each target\n"); // NOI18N
         bw.write("# has a -pre and a -post target defined where you can add customized code.\n"); // NOI18N

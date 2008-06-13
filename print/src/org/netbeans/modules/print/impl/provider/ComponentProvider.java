@@ -116,13 +116,7 @@ public class ComponentProvider implements PrintProvider {
     return printPages;
   }
 
-  private double getZoom(
-    double zoom,
-    int pageWidth,
-    int pageHeight,
-    int componentWidth,
-    int componentHeight)
-  {
+  private double getZoom(double zoom, int pageWidth, int pageHeight, int componentWidth, int componentHeight) {
     double factor = Percent.getZoomFactor(zoom, -1.0);
 
     if (0 < factor) {

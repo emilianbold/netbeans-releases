@@ -66,17 +66,16 @@ import org.netbeans.modules.soa.mappercore.utils.Utils;
 
 /**
  *
- * @author AlexanderPermyacov
+ * @author AlexanderPermyakov
  */
 public class LinkConnectAction extends MapperKeyboardAction implements 
         MapperSelectionListener, TreeExpansionListener, FocusListener,
         TreeSelectionListener
 {
     private TreePath treePath;
-    private Canvas canvas;
-    
+        
     public LinkConnectAction(Canvas canvas) {
-        this.canvas = canvas;
+        super(canvas);
         treePath = null;
 
         MapperKeyboardAction action = new LinkConnectDone(canvas);

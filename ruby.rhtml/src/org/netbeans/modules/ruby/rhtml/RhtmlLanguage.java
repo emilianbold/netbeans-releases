@@ -41,9 +41,20 @@
 package org.netbeans.modules.ruby.rhtml;
 
 
-import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.ruby.RubyLanguage;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
+import org.netbeans.modules.gsf.api.DeclarationFinder;
+import org.netbeans.modules.gsf.api.Formatter;
+import org.netbeans.modules.gsf.api.Indexer;
+import org.netbeans.modules.gsf.api.InstantRenamer;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
+import org.netbeans.modules.gsf.api.OccurrencesFinder;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.gsf.api.StructureScanner;
+import org.netbeans.modules.ruby.RubyStructureAnalyzer;
 
 public class RhtmlLanguage extends RubyLanguage {
     public RhtmlLanguage() {
@@ -62,5 +73,75 @@ public class RhtmlLanguage extends RubyLanguage {
     @Override
     public String getPreferredExtension() {
         return "erb"; // NOI18N
+    }
+    
+    @Override
+    public boolean isUsingCustomEditorKit() {
+        return true;
+    }
+
+    @Override
+    public CodeCompletionHandler getCompletionHandler() {
+        return null;
+    }
+
+    @Override
+    public DeclarationFinder getDeclarationFinder() {
+        return null;
+    }
+
+    @Override
+    public boolean hasFormatter() {
+        return false;
+    }
+
+    @Override
+    public Formatter getFormatter() {
+        return null;
+    }
+
+    @Override
+    public Indexer getIndexer() {
+        return null;
+    }
+
+    @Override
+    public InstantRenamer getInstantRenamer() {
+        return null;
+    }
+
+    @Override
+    public KeystrokeHandler getKeystrokeHandler() {
+        return null;
+    }
+
+    @Override
+    public boolean hasOccurrencesFinder() {
+        return false;
+    }
+
+    @Override
+    public OccurrencesFinder getOccurrencesFinder() {
+        return null;
+    }
+
+    @Override
+    public Parser getParser() {
+        return null;
+    }
+
+    @Override
+    public SemanticAnalyzer getSemanticAnalyzer() {
+        return null;
+    }
+
+    @Override
+    public boolean hasStructureScanner() {
+        return true;
+    }
+
+    @Override
+    public StructureScanner getStructureScanner() {
+        return new RubyStructureAnalyzer();
     }
 }

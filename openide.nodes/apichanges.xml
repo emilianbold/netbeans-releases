@@ -46,6 +46,20 @@ made subject to such option by the copyright holder.
 <apidef name="nodes">Nodes API</apidef>
 </apidefs>
 <changes>
+    <change id="Children.getNodeAt">
+        <api name="nodes"/>
+        <summary>Children.getNodeAt is changing to public</summary>
+        <version major="7" minor="5"/>
+        <date day="2" month="6" year="2008"/>
+        <author login="t_h"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            Adding possibility to get node at specific position rather than
+            whole array of nodes.
+        </description>
+        <class package="org.openide.nodes" name="Children"/>
+        <issue number="121913"/>
+    </change>
     <change id="ChildFactory">
         <api name="nodes"/>
         <summary>API for Children objects that asynchronously compute keys/child

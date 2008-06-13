@@ -5,7 +5,7 @@ require 'rbconfig'
 # java.util.Properties
 
 # Interpreter info
-jruby = defined?(JRUBY_VERSION)
+jruby = defined?(JRUBY_VERSION) || (defined?(RUBY_ENGINE) && 'jruby' == RUBY_ENGINE)
 rubinius = defined?(RUBY_ENGINE) && 'rbx' == RUBY_ENGINE
 $stdout.printf "ruby_kind=#{jruby ? "JRuby" : (rubinius ? "Rubinius" : "Ruby")}\n"
 $stdout.printf "ruby_version=#{RUBY_VERSION}\n"
@@ -17,6 +17,7 @@ ruby = File.join(RbConfig::CONFIG["bindir"], RbConfig::CONFIG["ruby_install_name
 ruby << RbConfig::CONFIG["EXEEXT"]
 $stdout.printf "ruby_executable=#{ruby}\n"
 $stdout.printf "ruby_platform=#{RUBY_PLATFORM}\n"
+$stdout.printf "ruby_lib_dir=#{RbConfig::CONFIG['rubylibdir']}\n"
 
 # RubyGems info
 begin

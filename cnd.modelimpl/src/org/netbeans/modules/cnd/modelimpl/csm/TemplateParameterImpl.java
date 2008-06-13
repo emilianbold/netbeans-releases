@@ -39,37 +39,50 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
+import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  *
  * @author eu155513
  */
-public class TemplateParameterImpl implements CsmTemplateParameter, SelfPersistent {
+public class TemplateParameterImpl extends OffsetableBase implements CsmTemplateParameter, SelfPersistent {
     private final CharSequence name;
+    private CsmUID<CsmScope> scope;
 
-    public TemplateParameterImpl(String name) {
-        this.name = NameCache.getManager().getString(name);
+    public TemplateParameterImpl(AST ast, CsmFile file, CsmScope scope) {
+        super(ast, file);
+        this.name = NameCache.getManager().getString(ast.getText());
+        if ((scope instanceof CsmIdentifiable)) {
+            this.scope = UIDCsmConverter.scopeToUID(scope);
+        }
     }
     
     public CharSequence getName() {
         return name;
     }
-    
-    // is not used for now
-    public Kind getKind() {
-        return null;
-    }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof CsmTemplateParameter) {
-            return this.getName().equals(((CsmTemplateParameter)obj).getName());
+        if (obj instanceof TemplateParameterImpl) {
+            if (this.getName().equals(((TemplateParameterImpl)obj).getName())){
+                return scope != null && scope.equals(((TemplateParameterImpl)obj).scope);
+            }
         }
         return false;
     }
@@ -82,11 +95,36 @@ public class TemplateParameterImpl implements CsmTemplateParameter, SelfPersiste
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
 
+    @Override
     public void write(DataOutput output) throws IOException {
+        super.write(output); 
         output.writeUTF(name.toString());
+        UIDObjectFactory.getDefaultFactory().writeUID(scope, output);        
     }
     
     public TemplateParameterImpl(DataInput input) throws IOException {
+        super(input);
         this.name = NameCache.getManager().getString(input.readUTF());
+        this.scope = UIDObjectFactory.getDefaultFactory().readUID(input);
+    }
+
+    //    TODO: It seems CsmScopeElement    
+//    public CsmScope getScope() {
+//        return scope.getObject();
+//    }
+
+    public CsmTemplateParameter.Kind getKind() {
+        return CsmTemplateParameter.Kind.TEMPLATE; //FIXME
+    }
+
+    @Override
+    public String toString() {
+        CsmScope s = scope.getObject();
+        if (CsmKindUtilities.isFunction(s)) {
+            return ((CsmFunction)s).getQualifiedName()+"::"+name;
+        } else if (CsmKindUtilities.isClass(s)) {
+            return ((CsmClass)s).getQualifiedName()+"::"+name;
+        }
+        return name.toString();
     }
 }

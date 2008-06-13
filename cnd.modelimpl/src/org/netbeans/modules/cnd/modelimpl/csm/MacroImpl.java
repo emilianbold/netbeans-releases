@@ -170,7 +170,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
     
     public @Override boolean equals(Object obj) {
         boolean retValue;
-        if (obj == null || !(obj instanceof CsmMacro)) {
+        if (obj == null || !(obj instanceof MacroImpl)) {
             retValue = false;
         } else {
             MacroImpl other = (MacroImpl)obj;

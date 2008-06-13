@@ -56,7 +56,7 @@ import javax.swing.text.JTextComponent;
 import org.mozilla.javascript.Node;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
@@ -71,8 +71,11 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.CodeCompletionContext;
+import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResult;
 import org.netbeans.modules.javascript.editing.JsParser.Sanitize;
 import org.netbeans.modules.javascript.editing.lexer.Call;
@@ -120,7 +123,8 @@ import org.openide.util.NbBundle;
  * 
  * @author Tor Norbye
  */
-public class JsCodeCompletion implements Completable {
+public class JsCodeCompletion implements CodeCompletionHandler {
+    private static final int MAX_COMPLETION_ITEMS = JsIndex.MAX_SEARCH_ITEMS;
     private static ImageIcon keywordIcon;
     private boolean caseSensitive;
     private static final String[] REGEXP_WORDS =
@@ -378,8 +382,15 @@ public class JsCodeCompletion implements Completable {
         
     }
 
-    public List<CompletionProposal> complete(CompilationInfo info, int lexOffset, String prefix,
-            NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
+    public CodeCompletionResult complete(CodeCompletionContext context) {
+        CompilationInfo info = context.getInfo();
+        int lexOffset = context.getCaretOffset();
+        String prefix = context.getPrefix();
+        NameKind kind = context.getNameKind();
+        QueryType queryType = context.getQueryType();
+        this.caseSensitive = context.isCaseSensitive();
+        HtmlFormatter formatter = context.getFormatter();
+        
         // Temporary: case insensitive matches don't work very well for JavaScript
         if (kind == NameKind.CASE_INSENSITIVE_PREFIX) {
             kind = NameKind.PREFIX;
@@ -388,29 +399,23 @@ public class JsCodeCompletion implements Completable {
         if (prefix == null) {
             prefix = "";
         }
-        this.caseSensitive = caseSensitive;
 
-        final Document document;
-        try {
-            document = info.getDocument();
-            if (document == null) {
-                return null;
-            }
-        } catch (Exception e) {
-            Exceptions.printStackTrace(e);
-            return null;
+        final Document document = info.getDocument();
+        if (document == null) {
+            return CodeCompletionResult.NONE;
         }
         final BaseDocument doc = (BaseDocument)document;
 
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
-
+        DefaultCompletionResult completionResult = new DefaultCompletionResult(proposals, false);
+        
         JsParseResult parseResult = AstUtilities.getParseResult(info);
         doc.readLock(); // Read-lock due to Token hierarchy use
         try {
             Node root = parseResult.getRootNode();
             final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
             if (astOffset == -1) {
-                return null;
+                return CodeCompletionResult.NONE;
             }
             final TokenHierarchy<Document> th = TokenHierarchy.get(document);
             final FileObject fileObject = info.getFileObject();
@@ -420,6 +425,7 @@ public class JsCodeCompletion implements Completable {
             // and I don't want to pass dozens of parameters from method to method; just pass
             // a request context with supporting info needed by the various completion helpers i
             CompletionRequest request = new CompletionRequest();
+            request.completionResult = completionResult;
             request.result = parseResult;
             request.formatter = formatter;
             request.lexOffset = lexOffset;
@@ -437,26 +443,33 @@ public class JsCodeCompletion implements Completable {
 
             Token<? extends TokenId> token = LexUtilities.getToken(doc, lexOffset);
             if (token == null) {
-                return proposals;
-            }
-            
-            TokenId id = token.id();
-            if (id == JsTokenId.LINE_COMMENT) {
-                // TODO - Complete symbols in comments?
-                return proposals;
-            } else if (id == JsTokenId.BLOCK_COMMENT) {
-                try {
-                    completeComments(proposals, request);
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
+                if (JsUtils.isJsFile(fileObject)) {
+                    return completionResult;
                 }
-                return proposals;
-            } else if (id == JsTokenId.STRING_LITERAL || id == JsTokenId.STRING_END) {
-                completeStrings(proposals, request);
-                return proposals;
-            } else if (id == JsTokenId.REGEXP_LITERAL || id == JsTokenId.REGEXP_END) {
-                completeRegexps(proposals, request);
-                return proposals;
+
+                // Embedding? Possibly in something like an EMPTY JAvaScript attribute,
+                // e.g.   <input onclick="|"> - there's no token here. We have to
+                // instead assume an empty prefix.
+                request.prefix = prefix = "";
+            } else {
+                TokenId id = token.id();
+                if (id == JsTokenId.LINE_COMMENT) {
+                    // TODO - Complete symbols in comments?
+                    return completionResult;
+                } else if (id == JsTokenId.BLOCK_COMMENT) {
+                    try {
+                        completeComments(proposals, request);
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    return completionResult;
+                } else if (id == JsTokenId.STRING_LITERAL || id == JsTokenId.STRING_END) {
+                    completeStrings(proposals, request);
+                    return completionResult;
+                } else if (id == JsTokenId.REGEXP_LITERAL || id == JsTokenId.REGEXP_END) {
+                    completeRegexps(proposals, request);
+                    return completionResult;
+                }
             }
             
             if (root != null) {
@@ -478,7 +491,7 @@ public class JsCodeCompletion implements Completable {
 
             // If we're in a call, add in some info and help for the code completion call
             if (completeParameters(proposals, request)) {
-                return proposals;
+                return completionResult;
             }
             
             // Don't do empty-completion for parameters
@@ -490,17 +503,17 @@ public class JsCodeCompletion implements Completable {
             
             if (root == null) {
                 completeKeywords(proposals, request);
-                return proposals;
+                return completionResult;
             }
 
             // Try to complete "new" RHS
             if (completeNew(proposals, request)) {
-               return proposals;
+                return completionResult;
             }
 
             if (call.getLhs() != null || request.call.getPrevCallParenPos() != -1) {
                 completeObjectMethod(proposals, request);
-                return proposals;
+                return completionResult;
             }
 
             completeKeywords(proposals, request);
@@ -508,18 +521,18 @@ public class JsCodeCompletion implements Completable {
             addLocals(proposals, request);
             
             if (completeObjectMethod(proposals, request)) {
-                return proposals;
+                return completionResult;
             }
 
             // Try to complete methods
             if (completeFunctions(proposals, request)) {
-               return proposals;
+                return completionResult;
             }
         } finally {
             doc.readUnlock();
         }
         
-        return proposals;
+        return completionResult;
     }
 
     private void addLocals(List<CompletionProposal> proposals, CompletionRequest request) {
@@ -1195,8 +1208,6 @@ public class JsCodeCompletion implements Completable {
                 doc.readUnlock();
             }
             // Else: normal identifier: just return null and let the machinery do the rest
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
         }
@@ -1219,13 +1230,13 @@ public class JsCodeCompletion implements Completable {
         if (fqn != null) {
             matches = index.getElements(prefix, fqn, kind, JsIndex.ALL_SCOPE, result);
         } else {
-//            if (prefix.length() == 0) {
-//                proposals.clear();
-//                proposals.add(new KeywordItem("", "Type more characters to see matches", request));
-//                return true;
-//            } else {
-                matches = index.getAllNames(prefix, kind, JsIndex.ALL_SCOPE, result);
-//            }
+            Pair<Set<IndexedElement>, Boolean> names = index.getAllNamesTruncated(prefix, kind, JsIndex.ALL_SCOPE, result);
+            matches = names.getA();
+            boolean isTruncated = names.getB();
+            if (isTruncated) {
+                request.completionResult.setTruncated(true);
+                includeNonFqn = false;
+            }
         }
         // Also add in non-fqn-prefixed elements
         if (includeNonFqn) {
@@ -1437,11 +1448,21 @@ public class JsCodeCompletion implements Completable {
 //                    proposals.add(new KeywordItem("", "Type more characters to see matches", request));
 //                    return true;
 //                } else {
-                    elements = index.getAllNames(prefix, kind, JsIndex.ALL_SCOPE, result);
+                    Pair<Set<IndexedElement>, Boolean> names = index.getAllNamesTruncated(prefix, kind, JsIndex.ALL_SCOPE, result);
+                    elements = names.getA();
+                    boolean isTruncated = names.getB();
+                    if (isTruncated) {
+                        request.completionResult.setTruncated(true);
+                    }
 //                }
             }
 
             for (IndexedElement element : elements) {
+                if (proposals.size() >= MAX_COMPLETION_ITEMS) {
+                    request.completionResult.setTruncated(true);
+                    return true;
+                }
+
                 // Skip constructors - you don't want to call
                 //   x.Foo !
 //                if (element.getKind() == ElementKind.CONSTRUCTOR) {
@@ -1538,7 +1559,11 @@ public class JsCodeCompletion implements Completable {
                 }
 
                 if (token.id() == JsTokenId.NEW) {
-                    Set<IndexedElement> elements = index.getConstructors(prefix, kind, JsIndex.ALL_SCOPE);
+                    Pair<Set<IndexedElement>, Boolean> constructors = index.getConstructors(prefix, kind, JsIndex.ALL_SCOPE);
+                    Set<IndexedElement> elements = constructors.getA();
+                    if (constructors.getB()) {
+                        request.completionResult.setTruncated(true);
+                    }
                     String lhs = request.call.getLhs();
                     if (lhs != null && lhs.length() > 0) {
                         Set<IndexedElement> m = index.getElements(prefix, lhs, kind, JsIndex.ALL_SCOPE, null);
@@ -1567,6 +1592,11 @@ public class JsCodeCompletion implements Completable {
                     }
 
                     for (IndexedElement element : elements) {
+                        if (proposals.size() >= MAX_COMPLETION_ITEMS) {
+                            request.completionResult.setTruncated(true);
+                            return true;
+                        }
+
                         // Hmmm, is this necessary? Filtering should happen in the getInheritedMEthods call
                         if ((prefix.length() > 0) && !element.getName().startsWith(prefix)) {
                             continue;
@@ -2083,6 +2113,9 @@ public class JsCodeCompletion implements Completable {
 
             // Adjust offset to the left
             BaseDocument doc = (BaseDocument) info.getDocument();
+            if (doc == null) {
+                return false;
+            }
             int newLexOffset = LexUtilities.findSpaceBegin(doc, lexOffset);
             if (newLexOffset < lexOffset) {
                 astOffset -= (lexOffset-newLexOffset);
@@ -2369,9 +2402,6 @@ public class JsCodeCompletion implements Completable {
                 anchorOffset = call.getSourceStart(); // TODO - compute
             }
             anchorOffsetHolder[0] = anchorOffset;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return false;
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
             return false;
@@ -2381,6 +2411,7 @@ public class JsCodeCompletion implements Completable {
     }
     
     private static class CompletionRequest {
+        private DefaultCompletionResult completionResult;
         private TokenHierarchy<Document> th;
         private CompilationInfo info;
         private AstPath path;

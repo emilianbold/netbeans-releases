@@ -59,15 +59,12 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.ext.ExtKit.CommentAction;
 import org.netbeans.editor.ext.ExtKit.PrefixMakerAction;
-import org.netbeans.editor.ext.ExtKit.UncommentAction;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.editor.MainMenuAction;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.editor.codegen.InsertSemicolonAction;
-import org.netbeans.modules.java.editor.codegen.GenerateCodeAction;
 import org.netbeans.modules.java.editor.imports.FastImportAction;
 import org.netbeans.modules.java.editor.imports.JavaFixAllImports;
 import org.netbeans.modules.java.editor.overridden.GoToSuperTypeAction;
@@ -252,7 +249,6 @@ public class JavaKit extends NbEditorKit {
                                    new JavaGotoHelpAction(),
 				   new InstantRenameAction(),
                                    new JavaFixImports(),
-                                   new GenerateCodeAction(),
                                    new InsertSemicolonAction(true),
                                    new InsertSemicolonAction(false),
                                    new SelectCodeElementAction(selectNextElementAction, true),

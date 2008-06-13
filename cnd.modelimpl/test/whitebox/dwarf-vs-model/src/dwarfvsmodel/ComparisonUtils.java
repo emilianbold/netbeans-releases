@@ -109,7 +109,7 @@ public class ComparisonUtils {
      */
     private static String CsmTypeGetText(CsmType type, CsmClassifier classifier) {
 	if( DMFlags.UNRESOLVED_TOLERANT && classifier == null ) {
-	    return type.getText();
+	    return type.getText().toString();
 	}
 //        if( text == null ) {
             StringBuffer sb = new StringBuffer();
@@ -198,10 +198,10 @@ public class ComparisonUtils {
 	if( CsmKindUtilities.isVariableDefinition(decl) ) {
 	    CsmVariable var = ((CsmVariableDefinition) decl).getDeclaration();
 	    if( var != null ) {
-		return var.getQualifiedName();
+		return var.getQualifiedName().toString();
 	    }
 	}
-	return decl.getQualifiedName();
+	return decl.getQualifiedName().toString();
     }
 
     public static boolean isFunction(DwarfEntry entry) {

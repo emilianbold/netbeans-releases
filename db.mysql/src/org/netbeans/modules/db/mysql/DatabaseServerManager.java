@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.db.mysql;
 
-import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.db.mysql.impl.MySQLDatabaseServer;
 
 /**
  * 
@@ -47,21 +47,18 @@ import org.openide.util.lookup.Lookups;
  * @author David Van Couvering
  */
 public class DatabaseServerManager {
-    private static DatabaseServer SERVER = lookupDatabaseServer();
-    
-    private static final String SERVER_PROVIDER_PATH = 
-            "Databases/MySQL/Servers"; // NOI18N
-
-
-    private static synchronized DatabaseServer lookupDatabaseServer() {
-        return (DatabaseServer)
-                Lookups.forPath(SERVER_PROVIDER_PATH)
-                    .lookup(DatabaseServer.class);
-
-    }
-    
+    private static volatile DatabaseServer SERVER;
+        
     public static DatabaseServer getDatabaseServer() {
+        if ( SERVER == null ) {           
+            DatabaseServer server = MySQLDatabaseServer.getDefault();
+            
+            synchronized(DatabaseServerManager.class) {
+                if ( SERVER == null ) {
+                    SERVER = server;
+                }
+            }
+        }
         return SERVER;
     }
-
 }

@@ -16,13 +16,10 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.bpel.nodes.navigator;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.text.StyledDocument;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.bpel.model.api.BaseScope;
@@ -37,19 +34,15 @@ import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
-import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 
 /**
- *
  * @author Vitaly Bychkov
  * @version 11 April 2006 
- *
  */
 public class Util {
     
-    private Util() {
-    }
+    private Util() {}
 
     public static List<BaseScope> getClosestBaseScopes(List<BpelEntity> bpelEntities) {
         if (bpelEntities == null || bpelEntities.size() < 1) {
@@ -200,7 +193,6 @@ public class Util {
                 }
             }
         }
-        
         return null;
     }
 }

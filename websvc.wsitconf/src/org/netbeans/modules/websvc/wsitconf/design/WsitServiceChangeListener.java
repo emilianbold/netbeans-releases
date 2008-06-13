@@ -47,6 +47,7 @@ import org.netbeans.modules.websvc.design.javamodel.MethodModel;
 import org.netbeans.modules.websvc.design.javamodel.ServiceChangeListener;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
@@ -56,6 +57,7 @@ import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.filesystems.FileObject;
 
@@ -75,9 +77,7 @@ public class WsitServiceChangeListener implements ServiceChangeListener {
         this.project = project;
     }
     
-    public void propertyChanged(String propertyName, String oldValue, String newValue) {
-        //        System.out.println("receieved propertychangeevent for propertyName="+propertyName);
-    }
+    public void propertyChanged(String propertyName, String oldValue, String newValue) { }
     
     public void operationAdded(MethodModel method) {
         
@@ -89,7 +89,7 @@ public class WsitServiceChangeListener implements ServiceChangeListener {
             }
             if (SecurityPolicyModelHelper.isSecurityEnabled(binding)) {
                 String profile = ProfilesModelHelper.getSecurityProfile(binding);
-                ProfilesModelHelper.setMessageLevelSecurityProfilePolicies(bO, profile);
+                ProfilesModelHelper.getInstance(PolicyModelHelper.getConfigVersion(bO)).setMessageLevelSecurityProfilePolicies(bO, profile);
             }
             WSITModelSupport.save(binding);
         }
@@ -124,7 +124,7 @@ public class WsitServiceChangeListener implements ServiceChangeListener {
             try {
                 for (BindingOperation bOperation : bOperations) {
                     if (methodName.equals(bOperation.getName())) {
-                        ProfilesModelHelper.setMessageLevelSecurityProfilePolicies(bOperation, ComboConstants.NONE);
+                        ProfilesModelHelper.getInstance(PolicyModelHelper.getConfigVersion(bOperation)).setMessageLevelSecurityProfilePolicies(bOperation, ComboConstants.NONE);
                         binding.removeBindingOperation(bOperation);
                     }
                 }

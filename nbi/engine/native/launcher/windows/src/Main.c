@@ -49,6 +49,7 @@
 
 char mainClassName[80] = "Main NBI Window Class";
 char mainTitle [80] = "NBI Launcher";
+char showMessageTitle [] = "\n<ShowMessage>\n";
 HWND hwndPB = NULL;
 HWND hwndMain = NULL;
 HWND hwndErrorDetail = NULL;
@@ -449,7 +450,7 @@ void showMessageW(LauncherProperties * props, const WCHAR* message, const DWORD 
     va_list ap;
     DWORD counter=0;
     WCHAR * result = NULL;
-    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "\n<ShowMessage>\n", 0);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, showMessageTitle, 0);
     
     va_start(ap, varArgsNumber);
     
@@ -477,7 +478,7 @@ void showMessageA(LauncherProperties * props, const char* message, const DWORD v
     DWORD counter=0;
     char * result = NULL;
     
-    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "\n<ShowMessage>\n", 0);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, showMessageTitle, 0);
     va_start(ap, varArgsNumber);
     while((counter++)<varArgsNumber) {
         char * arg = va_arg( ap, char * );
@@ -609,6 +610,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hi, LPSTR lpCmdLine, int nCmd
     DWORD status = ERROR_OK;
     globalInstance = hInstance;
     UNREFERENCED_PARAMETER(lpCmdLine);
+    initWow64();
     if(is9x()) {
         MessageBoxA(0, "Windows 9X platform is not supported", "Message", MB_OK);
         status = EXIT_CODE_SYSTEM_ERROR;

@@ -96,13 +96,11 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
      * It contains two kinds of keys: dot-separated package names and slash-separated
      * META-INF resource names, e.g. {"org.foobar", "/services/org.foobar.Foo"} 
      */
-    private static Map<String,Set<ProxyClassLoader>> packageCoverage = new HashMap<String,Set<ProxyClassLoader>>(); 
+    private static final Map<String,Set<ProxyClassLoader>> packageCoverage = new HashMap<String,Set<ProxyClassLoader>>();
     
-     
     private Set<ProxyClassLoader> parentSet = new HashSet<ProxyClassLoader>(); 
      
     private static Map<String,Boolean> sclPackages = Collections.synchronizedMap(new HashMap<String,Boolean>());  
-    
    
     /** Create a multi-parented classloader.
      * @param parents all direct parents of this classloader, except system one.
@@ -188,7 +186,7 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
     @Override
     protected synchronized Class loadClass(String name, boolean resolve)
                                             throws ClassNotFoundException {
-        if (LOG_LOADING && !name.startsWith("java.util.logging.")) {
+        if (LOG_LOADING && !name.startsWith("java.")) {
             LOGGER.log(Level.FINEST, "{0} initiated loading of {1}",
                     new Object[] {this, name});
         }
@@ -234,13 +232,23 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
             // multicovered package, search in order
             for (ProxyClassLoader pcl : parents) { // all our accessible parents
                 if (del.contains(pcl) && shouldDelegateResource(path, pcl)) { // that cover given package
-                    cls = pcl.selfLoadClass(pkg, name);
-                    if (cls != null) break;
+                    Class _cls = pcl.selfLoadClass(pkg, name);
+                    if (_cls != null) {
+                        if (cls == null) {
+                            cls = _cls;
+                        } else if (cls != _cls) {
+                            String message = "Will not load class " + name + " arbitrarily from one of " +
+                                    cls.getClassLoader() + " and " + pcl +
+                                    "; see http://wiki.netbeans.org/DevFaqModuleCCE";
+                            LOGGER.warning(message);
+                            throw new ClassNotFoundException(message);
+                        }
                     }
-                } 
+                }
+            }
             if (cls == null && del.contains(this)) cls = selfLoadClass(pkg, name); 
             if (cls != null) sclPackages.put(pkg, false); 
-            } 
+        } 
         if (cls == null && shouldDelegateResource(path, null)) cls = systemCL.loadClass(name); // may throw CNFE
         if (cls == null) throw new ClassNotFoundException(name); 
         if (resolve) resolveClass(cls); 
@@ -252,7 +260,7 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
         Class cls = findLoadedClass(name); 
         if (cls == null) {
             cls = doLoadClass(pkg, name);
-            if (LOG_LOADING && !name.startsWith("java.util.logging.")) LOGGER.log(Level.FINEST, "{0} loaded {1}",
+            if (LOG_LOADING && !name.startsWith("java.")) LOGGER.log(Level.FINEST, "{0} loaded {1}",
                         new Object[] {this, name});
         }
         return cls; 

@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.web.core.syntax.gsf.embedding;
 
+import org.netbeans.modules.css.parser.CssParserResultHolder;
+import org.netbeans.modules.css.parser.CssParserAccess.CssParserResult;
 import org.netbeans.modules.gsf.api.EmbeddingModel;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 
@@ -46,7 +48,7 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
  *
  * @author Tor Norbye
  */
-public class CssJspTranslatedSource implements TranslatedSource {
+public class CssJspTranslatedSource implements TranslatedSource, CssParserResultHolder {
     private CssJspModel model;
     private CssJspEmbeddingModel embeddingModel;
 
@@ -77,5 +79,9 @@ public class CssJspTranslatedSource implements TranslatedSource {
 
     public int getSourceEndOffset() {
         return model.getCode().length();
+    }
+
+    public CssParserResult result() {
+        return model.getCachedParserResult();
     }
 }

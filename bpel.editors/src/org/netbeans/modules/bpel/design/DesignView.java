@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.bpel.design;
 
+import java.awt.Rectangle;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -47,7 +48,6 @@ import java.awt.Point;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.logging.Level;
@@ -115,9 +115,13 @@ import org.netbeans.modules.bpel.design.actions.GoToLoggingAction;
 import org.netbeans.modules.bpel.design.actions.GoToMapperAction;
 import org.netbeans.modules.bpel.design.actions.GoToSourceAction;
 import org.netbeans.modules.bpel.design.actions.RenameAction;
+import org.netbeans.modules.bpel.design.actions.ScrollToOperationAction;
 import org.netbeans.modules.bpel.design.actions.ShowContextMenuAction;
 import org.netbeans.modules.bpel.design.actions.TabToNextComponentAction;
+import org.netbeans.modules.bpel.design.geometry.FBounds;
 import org.netbeans.modules.bpel.design.model.PartnerRole;
+import org.netbeans.modules.bpel.design.model.connections.MessageConnection;
+import org.netbeans.modules.bpel.design.model.elements.VisualElement;
 import org.netbeans.modules.bpel.nodes.actions.GoToAction;
 import org.netbeans.modules.bpel.nodes.actions.ShowBpelMapperAction;
 import org.netbeans.modules.bpel.properties.NodeUtils;
@@ -481,6 +485,8 @@ public class DesignView extends JPanel implements
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "rename-something"); // NOI18N
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete-something"); // NOI18N
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "cancel-something"); // NOI18N
+        im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.ALT_DOWN_MASK 
+                + KeyEvent.SHIFT_DOWN_MASK), "scroll-to-operation"); // NOI18N
 
         KeyStroke gotoSourceKey = GoToAction.getKeyStroke(org.netbeans.modules.bpel.nodes.actions.GoToSourceAction.class);
         KeyStroke gotoMapperKey = GoToAction.getKeyStroke(ShowBpelMapperAction.class);
@@ -563,6 +569,7 @@ public class DesignView extends JPanel implements
         am.put("show_context_menu", new ShowContextMenuAction(this)); // NOI18N
         am.put("go_next_hierarchy_component", new TabToNextComponentAction(this, true)); // NOI18N
         am.put("go_previous_hierarchy_component", new TabToNextComponentAction(this, false)); // NOI18N
+        am.put("scroll-to-operation", new ScrollToOperationAction(this)); // NOI18N
 //
 //        am.put("go_nearest_right_component", new GoRightNearestComponentAction()); // NOI18N
 //        am.put("go_nearest_left_component", new GoLeftNearestComponentAction()); // NOI18N
@@ -916,7 +923,54 @@ public class DesignView extends JPanel implements
         consumersView.scrollPatternToView(pattern);
         processView.scrollPatternToView(pattern);
         providersView.scrollPatternToView(pattern);
+    }
+    
+    
+    public void scrollToOperation(MessageConnection messageConnection) {
+        VisualElement sourceElement = messageConnection.getSource();
+        VisualElement targetElement = messageConnection.getTarget();
 
+        Pattern sourcePattern = sourceElement.getPattern();
+
+        DiagramView centerView = getProcessView();
+
+        VisualElement centerElement;
+        VisualElement sideElement;
+
+        if (sourcePattern.getView() == centerView) {
+            centerElement = sourceElement;
+            sideElement = targetElement;
+        } else {
+            centerElement = targetElement;
+            sideElement = sourceElement;
+        }
+
+        DiagramView sideView = sideElement.getPattern().getView();
+
+        FBounds centerBounds = centerElement.getBounds();
+        Point centerPoint1 = centerView.convertDiagramToScreen(
+                centerBounds.getTopLeft());
+        Point centerPoint2 = centerView.convertDiagramToScreen(
+                centerBounds.getBottomRight());
+
+        FBounds sideBounds = sideElement.getBounds();
+        Point sidePoint1 = centerView.convertDiagramToScreen(
+                sideBounds.getTopLeft());
+        Point sidePoint2 = centerView.convertDiagramToScreen(
+                sideBounds.getBottomRight());
+
+        Rectangle centerVisibleRect = centerView.getVisibleRect();
+        Rectangle sideVisibleRect = sideView.getVisibleRect();
+
+        int centerOffset = (centerPoint2.y + centerPoint1.y) / 2 
+                - centerVisibleRect.y;
+
+        int sideOffset = (sidePoint1.y + sidePoint2.y) / 2 
+                - sideVisibleRect.y;
+
+        sideVisibleRect.y += sideOffset - centerOffset;
+
+        sideView.scrollRectToVisible(sideVisibleRect);
     }
 
     /**
@@ -1033,5 +1087,4 @@ public class DesignView extends JPanel implements
     public DnDHandler getDndHandler() {
         return dndHandler;
     }
-
 }

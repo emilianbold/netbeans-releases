@@ -163,8 +163,10 @@ public class TextEditorComponent extends CloneableEditor {
      * and this component is preferred one in it. This implementation adds 
      * performer to the ToggleBreakpointAction.
      */
+    @Override
     protected void componentActivated () {
-        pane.addCaretListener (caretListener);
+        if(pane != null)
+            pane.addCaretListener (caretListener);
         super.componentActivated();
     }
 
@@ -173,14 +175,17 @@ public class TextEditorComponent extends CloneableEditor {
      * or when this component losts preferrence in the parent window. This 
      * implementation removes performer from the ToggleBreakpointAction.
      */
+    @Override
     protected void componentDeactivated () {
-        pane.removeCaretListener (caretListener);
+        if(pane != null)
+            pane.removeCaretListener (caretListener);
         super.componentDeactivated();
     }
 
     /** Deserialize this top component.
      * @param in the stream to deserialize from
      */
+    @Override
     public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {
         if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TextEditorComponent.readExternal()"); // NOI18N
 

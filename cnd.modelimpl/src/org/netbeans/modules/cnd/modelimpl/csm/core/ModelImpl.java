@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Cancellable;
 import org.openide.util.RequestProcessor;
 
@@ -82,10 +83,6 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 
     public ModelImpl() {
 	startup();
-    }
-    
-    public static boolean isStandalone() {
-        return ! ModelImpl.class.getClassLoader().getClass().getName().startsWith("org.netbeans."); // NOI18N
     }
     
     private void initThreasholds() {
@@ -416,7 +413,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 	    LowMemoryNotifier.instance().setThresholdPercentage(warningThreshold);
 	}
         
-        ParserThreadManager.instance().startup(isStandalone());
+        ParserThreadManager.instance().startup(CndUtils.isStandalone());
 	RepositoryUtils.startup();
 	//if( ! isStandalone() ) {
 	//    for( NativeProject nativeProject : ModelSupport.instance().getNativeProjects() ) {

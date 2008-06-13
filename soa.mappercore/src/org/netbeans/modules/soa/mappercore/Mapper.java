@@ -49,6 +49,7 @@ import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeModel;
@@ -64,7 +65,10 @@ import org.netbeans.modules.soa.mappercore.model.GraphSubset;
 import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
  *
@@ -109,7 +113,7 @@ public class Mapper extends JPanel {
 
     private boolean filterLeft = false;
     private boolean filterRight = false;
-    
+   
     /** Creates a new instance of RightTree */
     public Mapper(MapperModel model) {
         setLayout(new MapperLayout());
@@ -152,6 +156,8 @@ public class Mapper extends JPanel {
             }
         });
         
+        setSelected();  //[Issue 125764]
+        
         InputMap iMap = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         ActionMap aMap = getActionMap();
         
@@ -166,6 +172,11 @@ public class Mapper extends JPanel {
                 }
             }
         });
+        
+        aMap.put(DefaultEditorKit.copyAction, new CopyMapperAction(canvas));
+        aMap.put(DefaultEditorKit.cutAction, new CutMapperAction(canvas));
+        aMap.put(DefaultEditorKit.pasteAction, new PasteMapperAction(canvas));
+//        actionMap.put("delete", ExplorerUtils.actionDelete(manager, false));
 
     
         getAccessibleContext().setAccessibleName(NbBundle
@@ -1166,6 +1177,15 @@ public class Mapper extends JPanel {
         return 0;
     }
 
+    private void setSelected() {
+        MapperNode root = getRoot();
+
+        if (root != null && root.getChildCount() == 1 &&
+                root.getChild(0).getChildCount() < 1) {
+            getSelectionModel().setSelected(root.getChild(0).getTreePath());
+        }
+    }
+
     private class TreeModelListenerImpl implements TreeModelListener {
 
         public void treeNodesChanged(TreeModelEvent e) {
@@ -1251,12 +1271,16 @@ public class Mapper extends JPanel {
         }
     }
     public static final String MODEL_PROPERTY = "mapper-model-property";
+    public static final String BUFFER_PROPERTY = "mapper-buffer-property";
     public static final Stroke DASHED_ROW_SEPARATOR_STROKE = new BasicStroke(1,
             BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL,
             1, new float[]{4, 2}, 0);
     public static final Stroke DASHED_STROKE = new BasicStroke(1,
             BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL,
             1, new float[]{4, 4}, 0);
+    public static final Stroke DASHED_SELECTED_STROKE = new BasicStroke(2,
+            BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL,
+            1, new float[]{8, 4}, 0);
     public static final Color CANVAS_BACKGROUND_COLOR = new Color(0xFCFAF5);
     public static final Color CANVAS_GRID_COLOR = new Color(0xC0C0C0);
     public static final Color ROW_SEPARATOR_COLOR = new Color(0xBBD3E9); //new Color(0x99B7D3);

@@ -54,15 +54,15 @@ is divided into following sections:
                 <xsl:attribute name="description">Build whole project.</xsl:attribute>
             </target>
             
-            <xsl:comment> 
+            <xsl:comment>
                 ======================
                 INITIALIZATION SECTION 
                 ======================
             </xsl:comment>
             
             <target name="pre-init">
-                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
-                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+                <xsl:comment>Empty placeholder for easier customization</xsl:comment>
+                <xsl:comment>You can override this target in the ../build.xml file</xsl:comment>
             </target>
             
             <target name="init-private">
@@ -107,8 +107,8 @@ is divided into following sections:
                     <fail unless="platform.java">Must set platform.java</fail>
                     <fail unless="platform.javac">Must set platform.javac</fail>
                 </xsl:if>
-                <xsl:comment> The two properties below are usually overridden </xsl:comment>
-                <xsl:comment> by the active platform. Just a fallback. </xsl:comment>
+                <xsl:comment>The two properties below are usually overridden</xsl:comment>
+                <xsl:comment>by the active platform. Just a fallback</xsl:comment>
                 <property name="default.javac.source" value="1.4"/>
                 <property name="default.javac.target" value="1.4"/>
                 <xsl:if test="/p:project/p:configuration/ejb:data/ejb:use-manifest">
@@ -121,8 +121,8 @@ is divided into following sections:
             </target>
             
             <target name="post-init">
-                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
-                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+                <xsl:comment>Empty placeholder for easier customization</xsl:comment>
+                <xsl:comment>You can override this target in the ../build.xml file</xsl:comment>
             </target>
             
             <target name="init-check">
@@ -141,7 +141,7 @@ is divided into following sections:
             </target>
   
             <target name="init-taskdefs" if="from.commandline">
-                <path id="ant.task.classpath.models">          
+                <path id="ant.task.classpath">          
                     <pathelement location="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-xml-xam.jar"/>
                     <pathelement location="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-xml-retriever.jar"/>
                     <pathelement location="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-projectapi.jar"/>
@@ -149,18 +149,29 @@ is divided into following sections:
                     <pathelement location="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
                     <pathelement location="${{netbeans.home}}/../ide9/modules/org-apache-xml-resolver.jar"/>
                     <pathelement location="${{netbeans.home}}/../ide9/modules/ext/resolver-1_1_nb.jar"/> 
+                    <pathelement location="${{netbeans.home}}/../platform8/modules/org-openide-dialogs.jar"/>
                     <pathelement location="${{netbeans.home}}/../platform8/modules/org-openide-loaders.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform8/modules/org-openide-nodes.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform8/modules/org-openide-text.jar"/>
                     <pathelement location="${{netbeans.home}}/../platform8/core/org-openide-filesystems.jar"/>
                     <pathelement location="${{netbeans.home}}/../platform8/lib/org-openide-util.jar"/>
+                    <pathelement location="${{netbeans.home}}/../soa2/modules/org-netbeans-modules-soa-validation.jar"/>
+                    <pathelement location="${{netbeans.home}}/../soa2/modules/org-netbeans-modules-xslt-model.jar"/>
                     <pathelement location="${{netbeans.home}}/../soa2/modules/org-netbeans-modules-xslt-project.jar"/>
                     <pathelement location="${{netbeans.home}}/../soa2/ant/nblib/org-netbeans-modules-xslt-project.jar"/>
                     <pathelement location="${{netbeans.home}}/../soa2/modules/org-netbeans-modules-xslt-core.jar"/>
                     <pathelement location="${{netbeans.home}}/../soa2/modules/org-netbeans-modules-xslt-tmap.jar"/>
+                    <pathelement location="${{netbeans.home}}/../soa2/modules/org-netbeans-modules-xslt-validation.jar"/>
                     <pathelement location="${{netbeans.home}}/../xml2/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
+                    <pathelement location="${{netbeans.home}}/../xml2/modules/org-netbeans-modules-xml-search.jar"/>
                 </path>
                 
+                <taskdef name="validate-xslt-project" classname="org.netbeans.modules.xslt.project.anttasks.CliValidateProjectTask">
+                    <classpath refid="ant.task.classpath"/>
+                </taskdef>
+         
                 <taskdef name="XsltProjectJBIGen" classname="org.netbeans.modules.xslt.project.anttasks.GenerateJBIDescriptorTask">
-                    <classpath refid="ant.task.classpath.models"/>
+                    <classpath refid="ant.task.classpath"/>
                 </taskdef>        
             </target>
 
@@ -243,8 +254,8 @@ is divided into following sections:
             </target>
             
             <target name="pre-compile">
-                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
-                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+                <xsl:comment>Empty placeholder for easier customization</xsl:comment>
+                <xsl:comment>You can override this target in the ../build.xml file</xsl:comment>
             </target>
             
             <target name="library-inclusion-in-archive" depends="compile">
@@ -293,7 +304,7 @@ is divided into following sections:
             <target name="do-compile">
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile</xsl:attribute>
                 <xsl:if test="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
-                    <xsl:comment>For web services, refresh the Tie and SerializerRegistry classes</xsl:comment> 
+                    <xsl:comment>For web services, refresh the Tie and SerializerRegistry classes</xsl:comment>
                     <delete> 
                         <fileset dir="${{build.classes.dir}}" includes="**/*_Tie.* **/*_SerializerRegistry.*"/>
                     </delete>
@@ -309,7 +320,7 @@ is divided into following sections:
                   <fileset dir="${{meta.inf}}" excludes="**/*.dbschema"/> 
                 </copy>
                 <xsl:if test="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
-                    <xsl:comment>For web services, refresh ejb-jar.xml and sun-ejb-jar.xml</xsl:comment>  
+                    <xsl:comment>For web services, refresh ejb-jar.xml and sun-ejb-jar.xml</xsl:comment>
                     <copy todir="${{build.dir}}" overwrite="true"> 
                       <fileset includes="META-INF/ejb-jar.xml META-INF/sun-ejb-jar.xml" dir="${{meta.inf}}"/>
                     </copy>
@@ -329,8 +340,8 @@ is divided into following sections:
                         </xsl:for-each>
                     </xsl:attribute>
                 </xsl:if>
-                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
-                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+                <xsl:comment>Empty placeholder for easier customization</xsl:comment>
+                <xsl:comment>You can override this target in the ../build.xml file</xsl:comment>
             </target>
             
             <target name="compile">
@@ -339,8 +350,8 @@ is divided into following sections:
             </target>
             
             <target name="pre-compile-single">
-                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
-                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+                <xsl:comment>Empty placeholder for easier customization</xsl:comment>
+                <xsl:comment>You can override this target in the ../build.xml file</xsl:comment>
             </target>
             
             <target name="do-compile-single">
@@ -354,8 +365,8 @@ is divided into following sections:
             </target>
             
             <target name="post-compile-single">
-                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
-                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+                <xsl:comment>Empty placeholder for easier customization</xsl:comment>
+                <xsl:comment>You can override this target in the ../build.xml file</xsl:comment>
             </target>
             
             <target name="compile-single">
@@ -369,8 +380,8 @@ is divided into following sections:
             </xsl:comment>
             
             <target name="pre-dist">
-                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
-                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+                <xsl:comment>Empty placeholder for easier customization</xsl:comment>
+                <xsl:comment>You can override this target in the ../build.xml file</xsl:comment>
                 <mkdir dir="${{build.dir}}"/>
                 <mkdir dir="${{build.dir}}/META-INF"/>
                 <!--xslt in="${{basedir}}/${{src.dir}}/xsltmap.xml" out="${{build.dir}}/META-INF/jbi.xml"
@@ -382,32 +393,27 @@ is divided into following sections:
                 </xslt-->
                 
                 <xsl:comment>validation</xsl:comment>
-                <!--
-                <validate-project buildDirectory="${{basedir}}/${{build.dir}}" sourceDirectory="${{basedir}}/${{src.dir}}" projectClassPath="${{javac.classpath}}" buildDependentProjectDir="${{basedir}}/${{build.dir}}/dependentProjectFiles"/>
-                -->
+                <validate-xslt-project buildDirectory="${{basedir}}/${{build.dir}}" sourceDirectory="${{basedir}}/${{src.dir}}" projectClassPath="${{javac.classpath}}" buildDependentProjectDir="${{basedir}}/${{build.dir}}/dependentProjectFiles" classpathRef="ant.task.classpath" allowBuildWithError="${{allow.build.with.error}}"/>
 
-                <xsl:comment> copy all files from project source directory to build directory. </xsl:comment>
+                <xsl:comment>copy all files from project source directory to build directory</xsl:comment>
                 <copy todir="${{build.dir}}" preservelastmodified="true" >
                     <!--issue 112930- fileset includes="**/*.xsl,**/*.xslt,**/*.wsdl,**/*.xsd" dir="${{src.dir}}"/-->
                     <fileset includes="**/*" dir="${{src.dir}}"/>
                 </copy>
                 
                 
-                <xsl:comment> build sub-projects and copy them to the build dir </xsl:comment>
+                <xsl:comment>build sub-projects and copy them to the build dir</xsl:comment>
                 <antcall target="deps-sub-project" inheritAll="true"/>
                 <antcall target="PackageRetrievedFiles" inheritAll="true"/>
 
-                <XsltProjectJBIGen buildDirectory="${{basedir}}/${{build.dir}}" sourceDirectory="${{basedir}}/${{src.dir}}" projectClassPath="${{javac.classpath}}" classpathRef="ant.task.classpath.models"/>
+                <XsltProjectJBIGen buildDirectory="${{basedir}}/${{build.dir}}" sourceDirectory="${{basedir}}/${{src.dir}}" projectClassPath="${{javac.classpath}}" classpathRef="ant.task.classpath"/>
 
-                <xsl:comment> extract wsdl/xsd files from dependent projects and copy to build/dependentProjectFiles. </xsl:comment>
+                <xsl:comment>extract wsdl/xsd files from dependent projects and copy to build/dependentProjectFiles</xsl:comment>
                 <delete dir="${{build.dir}}/dependentProjectFiles"/>
                 <mkdir dir="${{build.dir}}/dependentProjectFiles"/>
-                
             </target>
             
-            
-            
-            <xsl:comment> BUILD ALL SUB-PROJECTS and copy xsd/wsdl/xsl/xml files</xsl:comment>
+            <xsl:comment>BUILD ALL SUB-PROJECTS and copy xsd/wsdl/xsl/xml files</xsl:comment>
             <xsl:call-template name="build-and-layout-sub-projects-template">
                 <xsl:with-param name="targetname" select="'deps-sub-project'"/>
             </xsl:call-template>            
@@ -449,8 +455,8 @@ is divided into following sections:
             </target>
             
             <target name="post-dist">
-                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
-                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+                <xsl:comment>Empty placeholder for easier customization</xsl:comment>
+                <xsl:comment>You can override this target in the ../build.xml file</xsl:comment>
                 <!--
                 <generate-deployment-path
                     jarFileClasspath="${{module.install.dir}}/com-stc-projects-xsltpro.jar"
@@ -577,8 +583,8 @@ is divided into following sections:
             </target>
             
             <target name="post-clean">
-                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
-                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+                <xsl:comment>Empty placeholder for easier customization</xsl:comment>
+                <xsl:comment>You can override this target in the ../build.xml file</xsl:comment>
             </target>
             
             <target name="clean">

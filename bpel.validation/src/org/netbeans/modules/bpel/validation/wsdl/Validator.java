@@ -70,11 +70,10 @@ import static org.netbeans.modules.xml.ui.UI.*;
 public final class Validator extends WsdlValidator {
 
   @Override
-  protected final WSDLVisitor getVisitor() { return new DefaultVisitor() {
+  protected WSDLVisitor getVisitor() { return new DefaultVisitor() {
   
   @Override
-  public void visit(Definitions definitions)
-  {
+  public void visit(Definitions definitions) {
 //out();
 //out("definitions: " + definitions);
     List<PropertyAlias> aliases = new ArrayList<PropertyAlias>();
@@ -272,28 +271,6 @@ public final class Validator extends WsdlValidator {
       }
     }
     NamedComponentReference<GlobalElement> ref2 = property.getElement();
-
-    if (ref2 != null) {
-      GlobalElement element = ref2.get();
-
-      if (element != null) {
-        return getTypeOfElement(element);
-      }
-    }
-    return null;
-  }
-
-  private Component getType(Part part) {
-    NamedComponentReference<GlobalType> ref1 = part.getType();
-
-    if (ref1 != null) {
-      GlobalType type = ref1.get();
-
-      if (type != null) {
-        return getTypeOfElement(type);
-      }
-    }
-    NamedComponentReference<GlobalElement> ref2 = part.getElement();
 
     if (ref2 != null) {
       GlobalElement element = ref2.get();

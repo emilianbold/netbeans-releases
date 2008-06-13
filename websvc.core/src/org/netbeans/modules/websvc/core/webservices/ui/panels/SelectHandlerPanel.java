@@ -133,10 +133,10 @@ public class SelectHandlerPanel extends JPanel implements ExplorerManager.Provid
     }
     
     
-    class SourceListViewChildren extends Children.Keys {
+    class SourceListViewChildren extends Children.Keys<String> {
         public static final String KEY_SOURCES = "sourcesKey"; //NOI18N
         
-        protected Node[] createNodes(Object key) {
+        protected Node[] createNodes(String key) {
             Node n = null;
             List<Node> sourceNodes = new LinkedList<Node>();
             if (key == KEY_SOURCES) {
@@ -156,14 +156,14 @@ public class SelectHandlerPanel extends JPanel implements ExplorerManager.Provid
         }
         
         private void createNodes() {
-            List l = new ArrayList();
+            List<String> l = new ArrayList<String>();
             l.add(KEY_SOURCES);
             setKeys(l);
         }
         
         @Override
         protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
+            setKeys(Collections.<String>emptySet());
             super.removeNotify();
         }
         

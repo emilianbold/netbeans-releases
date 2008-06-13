@@ -64,6 +64,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -72,10 +73,10 @@ import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.editor.indent.api.Reformat;
-import org.netbeans.modules.java.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -84,12 +85,14 @@ import org.openide.util.NbBundle;
  */
 public class AddPropertyCodeGenerator implements CodeGenerator {
 
+    private JTextComponent component;
     private String className;
     private List<String> existingFields;
     private String[] pcsName;
     private String[] vcsName;
 
-    public AddPropertyCodeGenerator(String className, List<String> existingFields, String[] pcsName, String[] vcsName) {
+    public AddPropertyCodeGenerator(JTextComponent component, String className, List<String> existingFields, String[] pcsName, String[] vcsName) {
+        this.component = component;
         this.className = className;
         this.existingFields = existingFields;
         this.pcsName = pcsName;
@@ -100,7 +103,7 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
         return NbBundle.getMessage(AddPropertyCodeGenerator.class, "DN_AddProperty");
     }
 
-    public void invoke(JTextComponent component) {
+    public void invoke() {
         Object o = component.getDocument().getProperty(Document.StreamDescriptionProperty);
 
         if (o instanceof DataObject) {
@@ -207,12 +210,15 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
 
     public static final class Factory implements CodeGenerator.Factory {
 
-        public Iterable<? extends CodeGenerator> create(CompilationController cc, TreePath path) throws IOException {
+        public List<? extends CodeGenerator> create(Lookup context) {
+            JTextComponent component = context.lookup(JTextComponent.class);
+            CompilationController cc = context.lookup(CompilationController.class);
+            TreePath path = context.lookup(TreePath.class);
             while (path != null && path.getLeaf().getKind() != Kind.CLASS) {
                 path = path.getParentPath();
             }
 
-            if (path == null) {
+            if (component == null || cc == null || path == null) {
                 return Collections.emptyList();
             }
             
@@ -253,7 +259,7 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
             
             String className = ((TypeElement) e).getQualifiedName().toString();
             
-            return Collections.singleton(new AddPropertyCodeGenerator( className, existingFields, pcsName,vcsName));
+            return Collections.singletonList(new AddPropertyCodeGenerator(component, className, existingFields, pcsName,vcsName));
         }
         
         private static TypeMirror resolve(CompilationInfo info, String s) {

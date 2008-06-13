@@ -179,7 +179,7 @@ table.components_table .no_border {
 }
 
 table.components_table .download_button {
-    padding:            5px 9px 2px 9px;
+    padding:            5px 6px 2px 6px;
 }
 
 table.components_table .no_padding {
@@ -188,6 +188,10 @@ table.components_table .no_padding {
 
 table.components_table .left_border {
     border-left:        1px solid #D5D5D5;
+}
+
+table.components_table .right_border {
+    border-right:       1px solid #D5D5D5;
 }
 
 table.components_table .bottom_border {

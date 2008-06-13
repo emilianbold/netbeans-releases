@@ -69,7 +69,6 @@ import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.tomcat5.ide.StartTomcat;
-import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
 import org.netbeans.modules.tomcat5.progress.MultiProgressObjectWrapper;

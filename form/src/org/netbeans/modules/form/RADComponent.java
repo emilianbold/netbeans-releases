@@ -41,11 +41,15 @@
 
 package org.netbeans.modules.form;
 
+import java.awt.EventQueue;
 import java.beans.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.lang.reflect.Method;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
+import javax.swing.AbstractButton;
+import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
 import org.netbeans.modules.form.RADProperty.FakePropertyDescriptor;
 
@@ -1631,6 +1635,115 @@ public class RADComponent {
             return groupName != null ?
                 groupName + ".add(" + getRADComponent().getName() + ");" : // NOI18N
                 null;
+        }
+
+        @Override
+        public void restoreDefaultValue() throws IllegalAccessException, InvocationTargetException {
+            if (this.getValue() instanceof FormDesignValue) {
+                FormDesignValue formValue = (FormDesignValue) this.getValue();
+
+                if (formValue.getDesignValue() instanceof ButtonGroup) {
+                    AbstractButton button = (AbstractButton) this.getRADComponent().getBeanInstance();
+                    synchronizeButtonGroupInAWT(button, formValue, null);
+                }
+            }
+            super.restoreDefaultValue();
+        }
+        
+        // add/removes AbtractButton components to/from RadioGroup component now or later
+        private void synchronizeButtonGroup(final AbstractButton button, 
+                                            final Object originalComponent, 
+                                            final Object newComponent)
+        {
+            boolean isOriginalValid = (originalComponent == null) ||
+                    (originalComponent instanceof FormDesignValue);
+            boolean isNewValid = (newComponent == null) ||
+                    (newComponent instanceof FormDesignValue);
+
+            if (isOriginalValid && isNewValid) {
+                boolean waitForButtonGroupInstance = false;
+
+                if (newComponent != null) {
+                    Object comp = ((FormDesignValue) newComponent).getDesignValue();
+                    waitForButtonGroupInstance = !(comp instanceof ButtonGroup);
+                }
+
+                if (originalComponent != null) {
+                    Object comp = ((FormDesignValue) originalComponent).getDesignValue();
+                    waitForButtonGroupInstance = !(comp instanceof ButtonGroup);
+                }
+
+                // if there are already instances of buttongroup components
+                if (!waitForButtonGroupInstance) {
+                    synchronizeButtonGroupInAWT(button,
+                            (FormDesignValue) originalComponent,
+                            (FormDesignValue) newComponent);
+                } else {
+                    // there are no instances of buttongroup components yet, 
+                    // ide is loading form right now, try later ...
+                    EventQueue.invokeLater(new Runnable() {
+
+                        public void run() {
+                            synchronizeButtonGroupInAWT(button,
+                                    (FormDesignValue) originalComponent,
+                                    (FormDesignValue) newComponent);
+                        }
+                    });
+                }
+            }
+        }
+
+        // add/removes AbtractButton components to/from RadioGroup component
+        private void synchronizeButtonGroupInAWT(AbstractButton button, 
+                                                 FormDesignValue originalComponent, 
+                                                 FormDesignValue newComponent)
+        {
+            if (originalComponent != null) {
+                //remove button from original buttongroup
+                Object group = originalComponent.getDesignValue();
+                if (group instanceof ButtonGroup) {
+                    ((ButtonGroup) group).remove(button);
+                }
+            }
+
+            if (newComponent != null) {
+                // add button to new buttongroup
+                Object groupObj = newComponent.getDesignValue();
+                if (groupObj instanceof ButtonGroup) {
+                    ButtonGroup group = (ButtonGroup) groupObj;
+                    
+                    // try to find button inside buttongroup
+                    boolean add = true;
+                    for (Enumeration e = group.getElements(); e.hasMoreElements(); ) {
+                         if (button.equals(e.nextElement())) {
+                            add = false;
+                            break;
+                         }
+                     }                    
+
+                    // button not found inside group, add it
+                    if (add) {
+                        group.add(button);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void setValue(Object value) throws IllegalAccessException,
+                                                  IllegalArgumentException,
+                                                  InvocationTargetException
+        {
+            Object originalValue = super.getValue();
+            super.setValue(value);
+
+            // get swing abstractbutton component
+            AbstractButton button = (AbstractButton) this.getRADComponent().getBeanInstance();
+
+            // add/remove button from buttongroup
+            // note: using "getValue()" instead of "value", because setValue()
+            //       handles more different types (eg.FormProperty.ValueWithEditor)
+            synchronizeButtonGroup(button, originalValue, this.getValue());
         }
     }
 

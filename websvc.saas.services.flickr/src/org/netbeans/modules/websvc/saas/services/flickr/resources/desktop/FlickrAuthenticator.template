@@ -158,7 +158,7 @@ public class __NAME__ {
             String value = params[i][1];
 
             if (value != null) {
-                map.put(key, URLEncoder.encode(value, "UTF-8"));
+                map.put(key, value); 
             }
         }
 

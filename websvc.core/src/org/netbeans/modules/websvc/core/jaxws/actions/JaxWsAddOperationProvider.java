@@ -69,10 +69,10 @@ public class JaxWsAddOperationProvider implements AddOperationActionProvider {
     }
         
     private Service getService(JAXWSSupport support, String packageName) {
-        List<Service> services = support.getServices();
-        for (Service service:services) {
-            if (packageName.equals(service.getImplementationClass())) {
-                return service;
+        List services = support.getServices();
+        for (Object service:services) {
+            if (packageName.equals(((Service)service).getImplementationClass())) {
+                return (Service)service;
             } 
         }
         return null;

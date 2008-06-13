@@ -322,7 +322,9 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
                 verticalBar.removeAll();
                 JButton[] btns = ((ETLOutputPanel) panel).getVerticalToolBar();
                 for (JButton btn : btns) {
+                    if(btn != null){
                     verticalBar.add(btn);
+                    }
                 }
                add(verticalBar, BorderLayout.WEST);
             }

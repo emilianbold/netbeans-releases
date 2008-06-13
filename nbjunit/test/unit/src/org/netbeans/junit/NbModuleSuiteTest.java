@@ -39,9 +39,11 @@
 
 package org.netbeans.junit;
 
+import java.util.Enumeration;
 import java.util.Set;
 import junit.framework.Test;
 import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 /**
  *
@@ -68,9 +70,24 @@ public class NbModuleSuiteTest extends TestCase {
      */
     public void testRun() {
         Test instance = NbModuleSuite.create(T.class, null, null);
+        assertEquals("no so far", 0, instance.countTestCases());
         junit.textui.TestRunner.run(instance);
         
         assertEquals("OK", System.getProperty("t.one"));
+        
+        if (instance instanceof TestSuite) {
+            TestSuite ts = (TestSuite)instance;
+            assertEquals("One test", 1, ts.testCount());
+            Test t = ts.testAt(0);
+            assertEquals("Is of type T", T.class.getName(), t.getClass().getName());
+            
+            Enumeration en = ts.tests();
+            assertTrue("More tests", en.hasMoreElements());
+            assertSame("Same test as 0", t, en.nextElement());
+            assertFalse("No more", en.hasMoreElements());
+        } else {
+            fail("Should be a test suite: " + instance);
+        }
     }
     
     public void testModulesForCL() throws Exception {

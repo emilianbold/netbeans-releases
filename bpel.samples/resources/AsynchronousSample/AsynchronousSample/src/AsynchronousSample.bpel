@@ -39,12 +39,7 @@
          xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable">
     
     <documentation>
-        This is an example of simple asynchronous process.
-        The process receives an input message from the client,
-        then the process asynchronously invokes the original
-        client and sends the same message back. Usually an
-        asynchronous process is used when the BPEL process is
-        long-running (it takes a long time to compute the result).
+        This is an example of simple asynchronous process. The process receives an input message from the client, then the process asynchronously invokes the original client and sends the same message back. Usually an asynchronous process is used when the BPEL process is long-running (it takes a long time to compute the result).
     </documentation>
 
     <import namespace="http://enterprise.netbeans.org/bpel/AsynchronousSampleSchemaNamespace"
@@ -57,10 +52,9 @@
     
     <partnerLinks>
         <documentation>
-            The partner link defines the interaction between
-            the BPEL process and the client who sends an input
-            message and later receives the result.
+            The partner link defines the interaction between the BPEL process and the client who sends an input message and later receives the result.
         </documentation>
+        
         <partnerLink
             name="partnerLinkA" 
             partnerLinkType="wsdlNS:AsyncPartnerLinkType" 
@@ -72,6 +66,7 @@
         <variable name="inputVar" messageType="wsdlNS:requestMessage">
             <documentation>Input variable.</documentation>
         </variable>
+
         <variable name="outputVar" messageType="wsdlNS:responseMessage">
             <documentation>Output variable.</documentation>
         </variable>
@@ -85,17 +80,17 @@
             operation="asyncOperation"
             variable="inputVar"
             createInstance="yes">
+
             <documentation>
-                The Receive activity makes the process
-                to wait for a message to arrive.
+                The Receive activity makes the process to wait for a message to arrive.
             </documentation>
         </receive>
         
         <assign name="assign">
             <documentation>
-                The Assign activity copies data from the
-                input variable to the output variable.
+                The Assign activity copies data from the input variable to the output variable.
             </documentation>
+
             <copy>
                 <from variable="inputVar" part="inputType"/>
                 <to variable="outputVar" part="resultType"/>
@@ -108,9 +103,9 @@
             portType="wsdlNS:MyCallbackPortType" 
             operation="onResult"
             inputVariable="outputVar">
+
             <documentation>
-                The Invoke activity allows the business process
-                to call the client and send a response message.
+                The Invoke activity allows the business process to call the client and send a response message.
             </documentation>
         </invoke>
     </sequence>

@@ -39,14 +39,6 @@
 
 package org.netbeans.modules.php.project.api;
 
-import java.io.IOException;
-import java.util.prefs.Preferences;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.util.Exceptions;
-import org.openide.util.NbPreferences;
-
 /**
  * Helper class to get actual PHP properties like debugger port etc.
  * Use {@link #getInstance()} to get class instance.
@@ -54,21 +46,7 @@ import org.openide.util.NbPreferences;
  * @since 1.2
  */
 public final class PhpOptions {
-
     private static final PhpOptions INSTANCE = new PhpOptions();
-
-    // php cli
-    private static final String PHP_INTERPRETER = "phpInterpreter"; // NOI18N
-    private static final String PHP_OPEN_IN_OUTPUT = "phpOpenInOutput"; // NOI18N
-    private static final String PHP_OPEN_IN_BROWSER = "phpOpenInBrowser"; // NOI18N
-    private static final String PHP_OPEN_IN_EDITOR = "phpOpenInEditor"; // NOI18N
-
-    // debugger
-    private static final String PHP_DEBUGGER_PORT = "phpDebuggerPort"; // NOI18N
-    private static final String PHP_DEBUGGER_STOP_AT_FIRST_LINE = "phpDebuggerStopAtFirstLine"; // NOI18N
-
-    // global include path
-    private static final String PHP_GLOBAL_INCLUDE_PATH = "phpGlobalIncludePath"; // NOI18N
 
     private PhpOptions() {
     }
@@ -77,71 +55,23 @@ public final class PhpOptions {
         return INSTANCE;
     }
 
-    private Preferences getPreferences() {
-        return NbPreferences.forModule(PhpOptions.class);
+    private org.netbeans.modules.php.project.ui.options.PhpOptions getPhpOptions() {
+        return org.netbeans.modules.php.project.ui.options.PhpOptions.getInstance();
     }
 
     public String getPhpInterpreter() {
-        return getPreferences().get(PHP_INTERPRETER, null);
-    }
-
-    public void setPhpInterpreter(String phpInterpreter) {
-        getPreferences().put(PHP_INTERPRETER, phpInterpreter);
-    }
-
-    public boolean isOpenResultInOutputWindow() {
-        return getPreferences().getBoolean(PHP_OPEN_IN_OUTPUT, true);
-    }
-
-    public void setOpenResultInOutputWindow(boolean openResultInOutputWindow) {
-        getPreferences().putBoolean(PHP_OPEN_IN_OUTPUT, openResultInOutputWindow);
-    }
-
-    public boolean isOpenResultInBrowser() {
-        return getPreferences().getBoolean(PHP_OPEN_IN_BROWSER, false);
-    }
-
-    public void setOpenResultInBrowser(boolean openResultInBrowser) {
-        getPreferences().putBoolean(PHP_OPEN_IN_BROWSER, openResultInBrowser);
-    }
-
-    public boolean isOpenResultInEditor() {
-        return getPreferences().getBoolean(PHP_OPEN_IN_EDITOR, false);
-    }
-
-    public void setOpenResultInEditor(boolean openResultInEditor) {
-        getPreferences().putBoolean(PHP_OPEN_IN_EDITOR, openResultInEditor);
+        return getPhpOptions().getPhpInterpreter();
     }
 
     public int getDebuggerPort() {
-        return getPreferences().getInt(PHP_DEBUGGER_PORT, 9000);
-    }
-
-    public void setDebuggerPort(int debuggerPort) {
-        getPreferences().putInt(PHP_DEBUGGER_PORT, debuggerPort);
+        return getPhpOptions().getDebuggerPort();
     }
 
     public boolean isDebuggerStoppedAtTheFirstLine() {
-        return getPreferences().getBoolean(PHP_DEBUGGER_STOP_AT_FIRST_LINE, false);
-    }
-
-    public void setDebuggerStoppedAtTheFirstLine(boolean debuggerStoppedAtTheFirstLine) {
-        getPreferences().putBoolean(PHP_DEBUGGER_STOP_AT_FIRST_LINE, debuggerStoppedAtTheFirstLine);
+        return getPhpOptions().isDebuggerStoppedAtTheFirstLine();
     }
 
     public String getPhpGlobalIncludePath() {
-        return getPreferences().get(PHP_GLOBAL_INCLUDE_PATH, ""); // NOI18N
-    }
-
-    public void setPhpGlobalIncludePath(String phpGlobalIncludePath) {
-        getPreferences().put(PHP_GLOBAL_INCLUDE_PATH, phpGlobalIncludePath);
-        // update global ant properties as well (global include path can be used in project's include path)
-        EditableProperties globalProperties = PropertyUtils.getGlobalProperties();
-        globalProperties.setProperty(PhpProjectProperties.GLOBAL_INCLUDE_PATH, phpGlobalIncludePath);
-        try {
-            PropertyUtils.putGlobalProperties(globalProperties);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        return getPhpOptions().getPhpGlobalIncludePath();
     }
 }

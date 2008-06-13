@@ -97,11 +97,14 @@ function params() {
 
 function main() {
 
-dirs=""
+dirs="Application_1"
 
-TESTCODE=${TESTCODE-${HOME}/_testcode}
-INITDATA=${TESTCODE}/_initdata
-RES_ROOT=${TESTCODE}/_res
+#TESTCODE=${TESTCODE-${HOME}/_testcode}
+#INITDATA=${TESTCODE}/_initdata
+#RES_ROOT=${TESTCODE}/_res
+TESTCODE="/export/home/nk220367/projects"
+INITDATA="/tmp"
+RES_ROOT="/tmp/res"
 
 params $@
 
@@ -116,7 +119,8 @@ for PROJECT in ${dirs}; do
 	echo "======================================== ${PROJECT} ========================================";
 	RES="${RES_ROOT}/${PROJECT}"; 
 	mkdir -p ${RES} > /dev/null; 
-	time ant -f build_cli.xml run -Dargs="-c ${INITDATA}/${PROJECT}/all.gcc -t ${RES}" -Djvmargs="-Xmx1536M ${DEFS} ${DEBUG_PROFILE}" 2>&1 | tee ${RES}/_all.log; 
+	#time ant -f build_cli.xml run -Dargs="-c ${INITDATA}/${PROJECT}/all.gcc -t ${RES}" -Djvmargs="-Xmx1536M ${DEFS} ${DEBUG_PROFILE}" 2>&1 | tee ${RES}/_all.log; 
+        time ant -f build_cli.xml run -Dargs="-c ${INITDATA}/${PROJECT}.gcc -t ${RES} -Dcnd.repository.hardrefs=true" -Djvmargs="-Xmx1536M ${DEFS} ${DEBUG_PROFILE}" 2>&1 | tee ${RES}/_all.log; 
 done
 }
 

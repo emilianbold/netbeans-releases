@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.spring.beans.completion;
 
+import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.spring.beans.completion.CompletionContext.CompletionType;
@@ -69,15 +70,12 @@ public class SpringXMLConfigCompletionProvider implements CompletionProvider {
         return 0; // XXX: Return something more specific
     }
 
-    /**
-     * XXX: To take care of filter() and canFilter() methods to shortcircuit calls to query
-     * every time user types a key with completion open
-     */
     private static class SpringXMLConfigCompletionQuery extends AsyncCompletionQuery {
-
+        
         private int queryType;
         private int caretOffset;
         private JTextComponent component;
+        private Completor completor;
 
         public SpringXMLConfigCompletionQuery(int queryType, int caretOffset) {
             this.queryType = queryType;
@@ -99,25 +97,51 @@ public class SpringXMLConfigCompletionProvider implements CompletionProvider {
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             this.caretOffset = caretOffset;
 
-            CompletionContext context = new CompletionContext(doc, caretOffset);
+            CompletionContext context = new CompletionContext(doc, caretOffset, queryType);
             if (context.getCompletionType() == CompletionType.NONE) {
                 resultSet.finish();
                 return;
             }
 
-            switch (context.getCompletionType()) {
-                case ATTRIBUTE_VALUE:
-                    CompletionManager.getDefault().completeAttributeValues(resultSet, context);
-                    break;
-                case ATTRIBUTE:
-                    CompletionManager.getDefault().completeAttributes(resultSet, context);
-                    break;
-                case TAG:
-                    CompletionManager.getDefault().completeElements(resultSet, context);
-                    break;
+            completor = CompletorRegistry.getDefault().getCompletor(context);
+            if(completor != null) {
+                List<SpringXMLConfigCompletionItem> items = completor.complete(context);
+                populateResultSet(resultSet, completor, items);
             }
 
             resultSet.finish();
+        }
+
+        @Override
+        protected boolean canFilter(JTextComponent component) {
+            if(completor == null) {
+                return false;
+            }
+            
+            return completor.canFilter(new CompletionContext(component.getDocument(), 
+                    component.getCaretPosition(), queryType));
+        }
+
+        @Override
+        protected void filter(CompletionResultSet resultSet) {
+            CompletionContext context = new CompletionContext(component.getDocument(), 
+                    component.getCaretPosition(), queryType);
+            List<SpringXMLConfigCompletionItem> filteredItems = completor.filter(context);
+            populateResultSet(resultSet, completor, filteredItems);
+            resultSet.finish();
+        }
+        
+        private void populateResultSet(CompletionResultSet resultSet, Completor completor,
+                List<SpringXMLConfigCompletionItem> items) {
+            resultSet.addAllItems(items);
+            if (completor.getAnchorOffset() != -1) {
+                resultSet.setAnchorOffset(completor.getAnchorOffset());
+            }
+            
+            if(completor.hasAdditionalItems()) {
+                resultSet.setHasAdditionalItems(true);
+                resultSet.setHasAdditionalItemsText(completor.getAdditionalItemsText());
+            }
         }
     }
 }

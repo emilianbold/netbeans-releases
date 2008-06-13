@@ -465,7 +465,7 @@ public class PaletteItemDataObject extends MultiDataObject {
   	    UI_LOG.log(rec);
 
             // XXX NB#82645, when the issue is fixed, remove this.
-            hackExplorerDnD(this, t);
+            //hackExplorerDnD(this, t);
             
             return t;
             
@@ -686,15 +686,15 @@ public class PaletteItemDataObject extends MultiDataObject {
     //////////////////////
     // >>> Hack workaround.
     /** XXX Workaround of NB #82645. */
-    private static void hackExplorerDnD(ItemNode itemNode, Transferable trans) {
-        Object explorerDnDManager = getExplorerDnDManager();
-        if (explorerDnDManager != null) {
-            setNodeAllowedActions(explorerDnDManager, DnDConstants.ACTION_MOVE);
-            setDraggedTransferable(explorerDnDManager, trans, true);
-            setDraggedNodes(explorerDnDManager, new Node[] {itemNode});
-            setDnDActive(explorerDnDManager, true);
-        }
-    }
+//    private static void hackExplorerDnD(ItemNode itemNode, Transferable trans) {
+//        Object explorerDnDManager = getExplorerDnDManager();
+//        if (explorerDnDManager != null) {
+//            setNodeAllowedActions(explorerDnDManager, DnDConstants.ACTION_MOVE);
+//            setDraggedTransferable(explorerDnDManager, trans, true);
+//            setDraggedNodes(explorerDnDManager, new Node[] {itemNode});
+//            setDnDActive(explorerDnDManager, true);
+//        }
+//    }
     
     private static void setNodeAllowedActions(Object explorerDnDManager, int actions) {
         invokeOnExplorerDnDManager(explorerDnDManager,

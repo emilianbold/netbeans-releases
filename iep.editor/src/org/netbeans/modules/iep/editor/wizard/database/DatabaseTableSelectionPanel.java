@@ -255,6 +255,7 @@ private void mMoveAllToAvailableTableListButtonActionPerformed(java.awt.event.Ac
         this.mAvailableTableListModel.addTable(table);
     }
     
+    this.mSelectedTableListModel.setTables(new ArrayList<TableInfo>());
 }//GEN-LAST:event_mMoveAllToAvailableTableListButtonActionPerformed
 
     

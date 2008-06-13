@@ -52,6 +52,16 @@
                     </folder>
                 </folder>
             </folder>
+
+            <folder name="x-tmap+xml">
+                <folder name="Toolbars">
+                    <folder name="Default">
+                        <file name="org-netbeans-modules-soa-validation-action-QuickFixAction.instance">
+                            <attr name="position" intvalue="19291"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
         </folder>
     </folder>
 </filesystem>

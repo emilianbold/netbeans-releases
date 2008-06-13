@@ -39,10 +39,8 @@
 
 package org.netbeans.modules.subversion.client.cli;
 
-import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  *
@@ -117,7 +115,7 @@ public class Parser {
     }    
     
     private LinePattern[] patterns = {
-        new LinePattern("([CGU ])([CGU ])   (.+)",                               2, -1),        // XXX ([CGU ])([CGU ])   (.+)
+        new LinePattern("([CGU ])([CGU ])   (.+)",                               2, -1),
         new LinePattern("D    ([^ ].+)",                                         0, -1),
         new LinePattern("A    ([^ ].+)",                                         0, -1),
         new LinePattern("A  \\(bin\\)  ([^ ].+)",                                0, -1),

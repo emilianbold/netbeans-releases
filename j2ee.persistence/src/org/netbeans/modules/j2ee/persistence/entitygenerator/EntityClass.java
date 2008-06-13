@@ -43,6 +43,9 @@ package org.netbeans.modules.j2ee.persistence.entitygenerator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.CollectionType;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.FetchType;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -52,11 +55,17 @@ import org.openide.filesystems.FileObject;
  * @author Chris Webster, Martin Adamek, Andrei Badea
  */
 public class EntityClass {
-    
+    private final boolean fullyQualifiedTblNames;
+    private final String catalogName;
+    private final String schemaName;
     private final String tableName;
     private final FileObject rootFolder;
     private final String className;
     private final String packageName;
+    private final FetchType fetchType;
+    private final boolean regenSchemaAttrs;
+    private final Set<List<String>> uniqueConstraints;
+    private final CollectionType collectionType;
     
     private List<RelationshipRole> roles;
     private List<EntityMember> fields;
@@ -64,15 +73,51 @@ public class EntityClass {
     private String pkFieldName;
     private CMPMappingModel mappingModel;
     
-    public EntityClass(String tableName, FileObject rootFolder, String packageName, String className) {
+    private boolean forTable = true;  // false means forView
+    
+    public EntityClass(boolean fullyQualifiedTblNames, String catalogName, String schemaName, String tableName, 
+            FileObject rootFolder, String packageName, String className,
+            FetchType fetchType, boolean regenSchemaAttrs, Set<List<String>> uniqueConstraints,
+            CollectionType collectionType) {
+        this.fullyQualifiedTblNames = fullyQualifiedTblNames;
+        this.catalogName = catalogName;
+        this.schemaName = schemaName;
         this.tableName = tableName;
         this.rootFolder = rootFolder;
         this.packageName = packageName;
         this.className = className;
+        this.fetchType = fetchType;
+        this.regenSchemaAttrs = regenSchemaAttrs;
+        this.uniqueConstraints = uniqueConstraints;
+        this.collectionType = collectionType;
         
         roles = Collections.<RelationshipRole>emptyList();
         fields = new ArrayList<EntityMember>();
         mappingModel = new CMPMappingModel();
+    }
+    
+    public boolean isForTable() {
+        return this.forTable;
+    }
+    
+    public void setIsForTable( boolean forTable) {
+        this.forTable = forTable;
+    }
+    
+    public Set<List<String>> getUniqueConstraints() {
+        return this.uniqueConstraints;
+    }
+    
+    public boolean isFullyQualifiedTblNames() {
+        return this.fullyQualifiedTblNames;
+    }
+
+    public boolean isRegenSchemaAttrs() {
+        return regenSchemaAttrs;
+    }
+
+    public CollectionType getCollectionType() {
+        return collectionType;
     }
     
     public void addRole(RelationshipRole role) {
@@ -94,6 +139,7 @@ public class EntityClass {
         this.fields = fields;
     }
     
+    @Override
     public String toString() {
         String cmpFields = ""; // NOI18N
         for (EntityMember entityMember : getFields()) {
@@ -111,12 +157,24 @@ public class EntityClass {
         return packageName;
     }
     
+    public String getCatalogName() {
+        return catalogName;
+    }
+    
+    public String getSchemaName() {
+        return schemaName;
+    }
+    
     public String getTableName() {
         return tableName;
     }
     
     public String getClassName() {
         return className;
+    }
+
+    public FetchType getFetchType() {
+        return fetchType;
     }
     
     public FileObject getPackageFileObject() {

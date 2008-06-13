@@ -234,9 +234,34 @@ public abstract class EntityMember {
      */
     public abstract boolean supportsFinder();
     
+    /** 
+     * Get the length of the column - for character type fields only.
+     * 
+     * @return the length, <code>null</code> if it is not a character type
+     * field or there is no length.
+     */
+    public abstract Integer getLength();
+
+    /** 
+     * Get the precision of the column - for numeric type fields only.
+     * 
+     * @return the precision, <code>null</code> if it is not a numeric type
+     * field or there is no precision.
+     */
+    public abstract Integer getPrecision();
+
+    /** 
+     * Get the scale of the column - for numeric type fields only.
+     * 
+     * @return the scale, <code>null</code> if it is not a numeric type
+     * field or there is no scale.
+     */
+    public abstract Integer getScale();
+    
     /**
      * override java.lang.Object#equals based on member name.
      */
+    @Override
     public boolean equals(Object other) {
         if (other == null || !(other.getClass().isInstance(getClass()))) {
             return false;
@@ -247,10 +272,10 @@ public abstract class EntityMember {
     /**
      * override java.lang.Object#hashCode
      */
+    @Override
     public int hashCode() {
         return getMemberName().hashCode();
     }
-    
     
     public abstract boolean isNullable();
     public abstract String getColumnName();

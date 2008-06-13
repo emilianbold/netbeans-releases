@@ -220,7 +220,6 @@ public final class IncludePathUiSupport {
 
         private static final Map<String, String> WELL_KNOWN_PATHS_NAMES = new HashMap<String, String>();
         static {
-            // XXX will be replaced with the ide include path
             WELL_KNOWN_PATHS_NAMES.put(PhpProjectProperties.GLOBAL_INCLUDE_PATH,
                     NbBundle.getMessage(IncludePathUiSupport.class, "LBL_GlobalIncludePath_DisplayName"));
         };
@@ -412,7 +411,7 @@ public final class IncludePathUiSupport {
 
         /** Handles changes in the selection
          */
-        public void valueChanged( ListSelectionEvent e ) {
+        public void valueChanged(ListSelectionEvent e) {
             // addFolder allways enabled
             remove.setEnabled(selectionModel.getMinSelectionIndex() != -1);
             moveUp.setEnabled(IncludePathUiSupport.canMoveUp(selectionModel));

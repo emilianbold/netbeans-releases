@@ -204,6 +204,7 @@ public class AnnotateAction extends ContextAction {
                 }
                 if (annotation.getRevision().equals(log.getRevision())) {
                     annotation.setDate(log.getDate());
+                    annotation.setId(log.getCSetShortID());
                     annotation.setCommitMessage(log.getMessage());
                 }
             }

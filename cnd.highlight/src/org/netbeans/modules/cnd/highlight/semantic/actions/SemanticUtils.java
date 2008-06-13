@@ -94,10 +94,10 @@ public class SemanticUtils {
                         return hs.getStartOffset();
                     }
                 } else if (stuck) {
-                    // just move to previous occurence
+                    // just move to previous occurrence
                     return last;
                 } else {
-                    // it was last occurence in the file
+                    // it was last occurrence in the file
                     return current;
                 }
             }
@@ -105,7 +105,7 @@ public class SemanticUtils {
         return -1;
     }
 
-    /*package*/ static void navigateToOccurence(boolean next) {
+    /*package*/ static void navigateToOccurrence(boolean next) {
         final Node[] activatedNodes = TopComponent.getRegistry().getActivatedNodes();
         // check whether current file is C++ Source file
         DataObject dobj = activatedNodes[0].getLookup().lookup(CCDataObject.class);

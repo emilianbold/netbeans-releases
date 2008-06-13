@@ -40,12 +40,7 @@
          xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable">
     
     <documentation>
-        The AsynchronousSampleClient BPEL process represents a client
-        interacting with AsynchronousSample process. This process is
-        used for testing the AsynchronousSample process as it requires
-        a client that is capable of receiving an asynchronous callback.
-        From this process the AsynchronousSample process will receive
-        incoming data and to this process it will return the result.
+        The AsynchronousSampleClient BPEL process represents a client interacting with AsynchronousSample process. This process is used for testing the AsynchronousSample process as it requires a client that is capable of receiving an asynchronous callback. From this process the AsynchronousSample process will receive incoming data and to this process it will return the result.
     </documentation>
 
     <import namespace="http://enterprise.netbeans.org/bpel/AsynchronousSample" 
@@ -67,15 +62,9 @@
             partnerLinkType="partnerNS:AsyncPartnerLinkType" 
             myRole="serviceRequestor"
             partnerRole="serviceProvider">
+            
             <documentation>
-                This partner link defines interaction between
-                the AsynchronousSampleClient process and it's
-                partner (AsynchronousSample process in this case).
-                The Client process sends a message to AsynchronousSample
-                process and then asynchronously receives a message from it.
-                The partnerlink has two operations defined, a partner can
-                receive a message from the AsynchronousSampleClient process
-                and call the process.
+                This partner link defines interaction between the AsynchronousSampleClient process and it's partner (AsynchronousSample process in this case). The Client process sends a message to AsynchronousSample process and then asynchronously receives a message from it. The partnerlink has two operations defined, a partner can receive a message from the AsynchronousSampleClient process and call the process.
             </documentation>
         </partnerLink>         
     </partnerLinks>
@@ -89,13 +78,9 @@
     
     <correlationSets>
         <documentation>
-            BPEL runtime uses correlation sets to route messages to the right
-            process instance. Correlation set is made up of one or more property
-            values. Properties in turn are defined in a WSDL file and get their
-            value through property aliases (also defined in WSDL). Property aliases
-            are the rules that tell the BPEL runtime how to map data from a message
-            into a property value.
+            BPEL runtime uses correlation sets to route messages to the right process instance. Correlation set is made up of one or more property values. Properties in turn are defined in a WSDL file and get their value through property aliases (also defined in WSDL). Property aliases are the rules that tell the BPEL runtime how to map data from a message into a property value.
         </documentation>
+        
         <correlationSet name="correlator" properties="wsdlNS:correlatorProp"/>
     </correlationSets>
 
@@ -110,8 +95,7 @@
             <correlations>
                 <correlation set="correlator" initiate="yes">
                     <documentation>
-                        Correlation set is initiated with the values
-                        of the properties found in the message.
+                        Correlation set is initiated with the values of the properties found in the message.
                     </documentation>
                 </correlation>
             </correlations>
@@ -130,9 +114,9 @@
             portType="partnerNS:MyPortType" 
             operation="asyncOperation"
             inputVariable="partnerInputVar">
+
             <documentation>
-                The process sends a message to the partner
-                (AsynchronousSample process will receive it).
+                The process sends a message to the partner (AsynchronousSample process will receive it).
             </documentation>
         </invoke>
         
@@ -143,9 +127,11 @@
             operation="onResult"
             variable="partnerOutputVar"
             createInstance="no">
+
             <documentation>
                 The process receives a response from the partner.
             </documentation>
+            
             <correlations>
                 <correlation set="correlator"/>
             </correlations>
@@ -158,10 +144,11 @@
             </copy>
         </assign>
         
-        <reply name="end"  
-               partnerLink="partnerLinkA"
-               portType="wsdlNS:MyPortTypeClient" 
-               operation="operationA"
-               variable="outputVar"/>
+        <reply
+            name="end"  
+            partnerLink="partnerLinkA"
+            portType="wsdlNS:MyPortTypeClient" 
+            operation="operationA"
+            variable="outputVar"/>
     </sequence>
 </process>

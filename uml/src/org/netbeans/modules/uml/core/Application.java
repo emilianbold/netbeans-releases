@@ -48,9 +48,6 @@ import java.util.Iterator;
 import org.dom4j.Document;
 import org.dom4j.Node;
 
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProductEventDispatcher;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProductInitEventsSink;
@@ -66,8 +63,6 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableEleme
 import org.netbeans.modules.uml.core.metamodel.core.foundation.PreventElementReEntrance;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
-import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
-import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.metamodel.structure.IStructureEventDispatcher;
 import org.netbeans.modules.uml.core.metamodel.structure.Project;
@@ -93,8 +88,8 @@ import org.netbeans.modules.uml.core.workspacemanagement.IWorkspaceManager;
 import org.netbeans.modules.uml.core.workspacemanagement.WSProjectEventDispatcher;
 import org.netbeans.modules.uml.core.workspacemanagement.WorkspaceManagementException;
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
-import org.netbeans.modules.uml.ui.support.ProductHelper;
-import org.netbeans.modules.uml.ui.support.applicationmanager.IProductDiagramManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * @author sumitabhk
@@ -473,19 +468,17 @@ public class Application implements IApplication,
                     project.save(fileName, true);
             }
         }
-        
+        // TODO: meteora save diagrams
         // shouldn't we save all the modified diagrams as well?
-        IProductDiagramManager manager = ProductHelper.getProductDiagramManager();
-        ETList<IProxyDiagram> list = manager.getOpenDiagrams();
-        for (IProxyDiagram diagram: list)
-        {
-            IDiagram dia = diagram.getDiagram();
-            //krichard issue 124470 NPE from dia.getProject().equals(project)
-            // added dia.getProject() != null check
-            if (dia != null && dia.getProject() != null && dia.getProject().equals(project))
-                if (dia.getIsDirty())
-                    dia.save();
-        }
+//        IProductDiagramManager manager = ProductHelper.getProductDiagramManager();
+//        ETList<IProxyDiagram> list = manager.getOpenDiagrams();
+//        for (IProxyDiagram diagram: list)
+//        {
+//            IDiagram dia = diagram.getDiagram();
+//            if (dia != null && dia.getProject().equals(project))
+//                if (dia.getIsDirty())
+//                    dia.save();
+//        }
     }
     
     /**

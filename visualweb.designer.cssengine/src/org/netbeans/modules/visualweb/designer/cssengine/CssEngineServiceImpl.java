@@ -1060,8 +1060,9 @@ public final class CssEngineServiceImpl implements CssEngineService {
 //        Value value = CssLookup.getValue(element, XhtmlCss.BACKGROUND_IMAGE_INDEX);
         CssValue cssValue = getComputedValueForElement(element, XhtmlCss.BACKGROUND_IMAGE_INDEX);
         
+        // #134220 Possible NPE
 //        if (value == CssValueConstants.NONE_VALUE) {
-        if (CssProvider.getValueService().isNoneValue(cssValue)) {
+        if (cssValue == null || CssProvider.getValueService().isNoneValue(cssValue)) {
             return null;
         }
 

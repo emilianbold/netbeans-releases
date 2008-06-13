@@ -55,9 +55,35 @@ public class ListTest extends AbstractCLITest {
         super(testName);
     }
 
+    @Override
+    protected void setUp() throws Exception {        
+        if(getName().equals("testListNullAuthor")) {
+            setAnnonWriteAccess();
+            String[] cmd = new String[]{"svnserve", "-d"};
+            Process p = Runtime.getRuntime().exec(cmd);
+            p.waitFor();   
+        }                        
+        super.setUp();
+    }
+    
+    @Override
+    protected void tearDown() throws Exception {
+        if(getName().equals("testListNullAuthor")) {        
+            restoreAuthSettings();
+        }
+        super.tearDown();
+    }    
+    
+    @Override
+    protected String getRepoURLProtocol() {
+        if(getName().equals("testListNullAuthor")) {        
+            return "svn://localhost/";
+        }
+        return super.getRepoURLProtocol();
+    }                
 
     public void testListWrongFile() throws Exception {                                
-                        
+        // XXX add refclient
         SVNClientException e1 = null;
         try {
             getNbClient().getList(getRepoUrl().appendPath("arancha"), SVNRevision.HEAD, false);
@@ -91,11 +117,10 @@ public class ListTest extends AbstractCLITest {
         add(file2);                       
         add(file3);                       
         commit(getWC());
-                        
-        ISVNClientAdapter c = getNbClient();        
-        ISVNDirEntry[] entries1 = c.getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, false);
+                                
+        ISVNDirEntry[] entries1 = getNbClient().getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, false);        
+        ISVNDirEntry[] entries2 = getReferenceClient().getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, false);
         
-        ISVNDirEntry[] entries2 = list(getTestUrl().appendPath(getWC().getName()));                
         assertEntryArrays(entries1, entries2);
     }
     
@@ -111,12 +136,23 @@ public class ListTest extends AbstractCLITest {
         add(file3);                       
         commit(getWC());
                         
-        ISVNClientAdapter c = getNbClient();        
-        ISVNDirEntry[] entries1 = c.getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, false);
-        
-        ISVNDirEntry[] entries2 = list(getTestUrl().appendPath(getWC().getName()));
+        ISVNDirEntry[] entries1 = getNbClient().getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, false);        
+        ISVNDirEntry[] entries2 = getReferenceClient().getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, false);
         
         assertEntryArrays(entries1, entries2);                
     }
    
+    public void testListNullAuthor() throws Exception {                                        
+        File file = createFile("file");
+                
+        add(file);                               
+        commit(getWC());
+                        
+        ISVNClientAdapter c = getNbClient();        
+        ISVNDirEntry[] entries = c.getList(getTestUrl().appendPath(getWC().getName()), SVNRevision.HEAD, false);
+                
+        assertNull(entries[0].getLastCommitAuthor());
+        
+    }      
+    
 }

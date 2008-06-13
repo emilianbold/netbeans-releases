@@ -31,7 +31,6 @@ import java.awt.Dialog;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,6 +50,10 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.HintFix;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.javascript.editing.AstUtilities;
 import org.netbeans.modules.javascript.editing.BrowserVersion;
 import org.netbeans.modules.javascript.editing.ElementUtilities;
@@ -59,13 +62,9 @@ import org.netbeans.modules.javascript.editing.JsIndex;
 import org.netbeans.modules.javascript.editing.JsTypeAnalyzer;
 import org.netbeans.modules.javascript.editing.SupportedBrowsers;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
-import org.netbeans.modules.javascript.hints.spi.AstRule;
-import org.netbeans.modules.javascript.hints.spi.Description;
-import org.netbeans.modules.javascript.hints.spi.Fix;
-import org.netbeans.modules.javascript.hints.spi.HintSeverity;
-import org.netbeans.modules.javascript.hints.spi.RuleContext;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
-import org.netbeans.modules.javascript.hints.infrastructure.DisableHintFix;
+import org.netbeans.modules.javascript.hints.infrastructure.JsAstRule;
+import org.netbeans.modules.javascript.hints.infrastructure.JsRuleContext;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
@@ -78,120 +77,140 @@ import org.openide.util.NbPreferences;
  * 
  * @author Tor Norbye
  */
-public class UnsupportedCalls implements AstRule {
+public class UnsupportedCalls extends JsAstRule {
     public UnsupportedCalls() {
     }
     
     //private Map<String,Integer> STATISTICS = new HashMap<String,Integer>();
 
-    public boolean appliesTo(CompilationInfo info) {
+    public boolean appliesTo(RuleContext context) {
         return true;
     }
 
     public Set<Integer> getKinds() {
-        return Collections.singleton(Token.STRING);
+        HashSet<Integer> kinds = new HashSet<Integer>();
+        kinds.add(Token.STRING);
+        kinds.add(Token.NEW);
+        return kinds;
     }
     
-    public void run(RuleContext context, List<Description> result) {
-        CompilationInfo info = context.compilationInfo;
+    public void run(JsRuleContext context, List<Hint> result) {
         Node node = context.node;
         
-        Node parent = node.getParentNode();
-        if (parent.getType() == Token.GETPROP) {
-            Node grandParent = parent.getParentNode();
-            if (grandParent != null && 
-                    (grandParent.getType() == Token.CALL || grandParent.getType() == Token.NEW) &&
-                    grandParent.getFirstChild() == parent) {
-                String name = node.getString();
-                Node callNode = grandParent;
+        if (node.getType() == Token.NEW) {
+            // TODO - handle FQN's for constructors?
+            // Don't need it yet
+            Node first = node.getFirstChild();
+            if (first != null && first.getType() == Token.NAME) {
+                String name = first.getString();
                 if (NAME_SET.contains(name)) {
-                    //if (STATISTICS != null) {
-                    //    Integer count = STATISTICS.get(name);
-                    //    if (count == null) {
-                    //        count = Integer.valueOf(1);
-                    //    } else {
-                    //        count = Integer.valueOf(count.intValue()+1);
-                    //    }
-                    //    STATISTICS.put(name, count);
-                    //}                    
-                    
-                    // For names that are unique (no other functions of the same name) I don't have
-                    // to go to the trouble and expense of computing the expression type - if 
-                    // we see the name, we know the forbidden method is being called. To determine
-                    // if the function is 
-                    Boolean skipFqnCheck = MUST_CHECK_FQN.get(name);
-                    if (skipFqnCheck == null) {
-                        // Check index to see if 
-                        JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
-                        Set<IndexedElement> elements = index.getAllNames(name, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, null);
-                        if (elements.size() <= 1) {
-                            // Exactly one match, or no such known element - don't bother looking
-                            // up the fqn of calls, just assume this is the one
-                            skipFqnCheck = Boolean.TRUE;
-                        } else {
-                            int functionCount = 0;
-                            for (IndexedElement element : elements) {
-                                if (element.getKind() == ElementKind.METHOD) {
-                                    functionCount++;
-                                    if (functionCount == 2) {
-                                        break;
-                                    }
-                                }
-                            }
-                            if (functionCount <= 1) {
-                                // There are other symbols of this name but only one is a function
-                                // so we figure it's unique
-                                skipFqnCheck = Boolean.TRUE;
-                            } else {
-                                skipFqnCheck = Boolean.FALSE;
-                            }
-                        }
-                        
-                        MUST_CHECK_FQN.put(name, skipFqnCheck);
-                    }
-                    
-                    String fqn;
-                    if (skipFqnCheck == Boolean.FALSE) {
-                        // Do fuller check to see if this method is actually the one
-                        //String fqn = JsTypeAnalyzer.getCallFqn(info, callNode, false);
-                        fqn = JsTypeAnalyzer.getCallFqn(info, callNode, true);
-                        if (fqn == null) {
-                            return;
-                        }
-                        if (!COMPAT_MAP.containsKey(fqn)) {
-                            return;
-                        }
-                    } else {
-                        fqn = NAME_TO_FQN.get(name);
-                        if (fqn == null) {
-                            return;
-                        }
-                    }
-                    // Make sure this isn't one we've deliberately skipped
-                    if (getSkipMap().contains(fqn)) {
-                        return;
-                    }
-                    // Yessirree
-                    // TODO - figure out the real type
-                    EnumSet<BrowserVersion> compat = COMPAT_MAP.get(fqn);
-                    if (!SupportedBrowsers.getInstance().isSupported(compat)) {
-                        // Quickfix!
-                        OffsetRange astRange = AstUtilities.getRange(info, node);
-                        OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);
-                        if (lexRange == OffsetRange.NONE) {
-                            return;
-                        }
-
-                        List<Fix> fixList = new ArrayList<Fix>(3);
-                        fixList.add(new ShowDetails(info, fqn, compat));
-                        fixList.add(new SkipFunction(info, fqn));
-                        fixList.add(new ChangeTargetFix());
-                        String displayName = NbBundle.getMessage(UnsupportedCalls.class, "UnsupportedCallFqn", fqn);
-                        Description desc = new Description(this, displayName, info.getFileObject(), lexRange, fixList, 1450);
-                        result.add(desc);
+                    processCall(context, result, node, name, first);
+                }
+            }
+        } else {
+            assert node.getType() == Token.STRING;
+            Node parent = node.getParentNode();
+            if (parent.getType() == Token.GETPROP) {
+                Node grandParent = parent.getParentNode();
+                if (grandParent != null && 
+                        (grandParent.getType() == Token.CALL || grandParent.getType() == Token.NEW) &&
+                        grandParent.getFirstChild() == parent) {
+                    String name = node.getString();
+                    Node callNode = grandParent;
+                    if (NAME_SET.contains(name)) {
+                        processCall(context, result, callNode, name, node);
                     }
                 }
             }
+        }
+    }
+    
+    private void processCall(JsRuleContext context, List<Hint> result, Node callNode, String name, Node node) {
+        //if (STATISTICS != null) {
+        //    Integer count = STATISTICS.get(name);
+        //    if (count == null) {
+        //        count = Integer.valueOf(1);
+        //    } else {
+        //        count = Integer.valueOf(count.intValue()+1);
+        //    }
+        //    STATISTICS.put(name, count);
+        //}                    
+
+        // For names that are unique (no other functions of the same name) I don't have
+        // to go to the trouble and expense of computing the expression type - if 
+        // we see the name, we know the forbidden method is being called. To determine
+        // if the function is 
+        CompilationInfo info = context.compilationInfo;
+        Boolean skipFqnCheck = MUST_CHECK_FQN.get(name);
+        if (skipFqnCheck == null) {
+            // Check index to see if 
+            JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
+            Set<IndexedElement> elements = index.getAllNames(name, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, null);
+            if (elements.size() <= 1) {
+                // Exactly one match, or no such known element - don't bother looking
+                // up the fqn of calls, just assume this is the one
+                skipFqnCheck = Boolean.TRUE;
+            } else {
+                int functionCount = 0;
+                for (IndexedElement element : elements) {
+                    if (element.getKind() == ElementKind.METHOD) {
+                        functionCount++;
+                        if (functionCount == 2) {
+                            break;
+                        }
+                    }
+                }
+                if (functionCount <= 1) {
+                    // There are other symbols of this name but only one is a function
+                    // so we figure it's unique
+                    skipFqnCheck = Boolean.TRUE;
+                } else {
+                    skipFqnCheck = Boolean.FALSE;
+                }
+            }
+
+            MUST_CHECK_FQN.put(name, skipFqnCheck);
+        }
+
+        String fqn;
+        if (skipFqnCheck == Boolean.FALSE) {
+            // Do fuller check to see if this method is actually the one
+            //String fqn = JsTypeAnalyzer.getCallFqn(info, callNode, false);
+            fqn = JsTypeAnalyzer.getCallFqn(info, callNode, true);
+            if (fqn == null) {
+                return;
+            }
+            if (!COMPAT_MAP.containsKey(fqn)) {
+                return;
+            }
+        } else {
+            fqn = NAME_TO_FQN.get(name);
+            if (fqn == null) {
+                return;
+            }
+        }
+        // Make sure this isn't one we've deliberately skipped
+        if (getSkipMap().contains(fqn)) {
+            return;
+        }
+        // Yessirree
+        // TODO - figure out the real type
+        EnumSet<BrowserVersion> compat = COMPAT_MAP.get(fqn);
+        if (!SupportedBrowsers.getInstance().isSupported(compat)) {
+            // Quickfix!
+            OffsetRange astRange = AstUtilities.getRange(info, node);
+            OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);
+            if (lexRange == OffsetRange.NONE) {
+                return;
+            }
+
+            List<HintFix> fixList = new ArrayList<HintFix>(3);
+            fixList.add(new ShowDetails(info, fqn, compat));
+            fixList.add(new SkipFunction(context, fqn));
+            fixList.add(new ChangeTargetFix());
+            String displayName = NbBundle.getMessage(UnsupportedCalls.class, "UnsupportedCallFqn", fqn);
+            Hint desc = new Hint(this, displayName, info.getFileObject(), lexRange, fixList, 1450);
+            result.add(desc);
         }
     }
     
@@ -255,12 +274,12 @@ public class UnsupportedCalls implements AstRule {
         return null;
     }
     
-    private class SkipFunction implements Fix {
+    private class SkipFunction implements HintFix {
         private String fqn;
-        private CompilationInfo info;
+        private JsRuleContext context;
         
-        SkipFunction(CompilationInfo info, String fqn) {
-            this.info = info;
+        SkipFunction(JsRuleContext context, String fqn) {
+            this.context = context;
             this.fqn = fqn;
         }
         
@@ -271,8 +290,8 @@ public class UnsupportedCalls implements AstRule {
         public void implement() throws Exception {
             skip(fqn);
 
-            //// Trigger rescan
-            DisableHintFix.refreshHints(info, -1);
+            // Trigger rescan
+            context.manager.refreshHints(context);
         }
 
         public boolean isSafe() {
@@ -284,7 +303,7 @@ public class UnsupportedCalls implements AstRule {
         }
     }
 
-    private static class ChangeTargetFix implements Fix {
+    private static class ChangeTargetFix implements HintFix {
         ChangeTargetFix() {
         }
         
@@ -306,7 +325,7 @@ public class UnsupportedCalls implements AstRule {
         }
     }
 
-    private static class ShowDetails implements Fix {
+    private static class ShowDetails implements HintFix {
         private EnumSet<BrowserVersion> compat;
         private CompilationInfo info;
         private String fqn;
@@ -323,9 +342,15 @@ public class UnsupportedCalls implements AstRule {
         
         public void implement() throws Exception {
             int dot = fqn.lastIndexOf('.');
-            assert dot != -1 : fqn;
-            String prefix = fqn.substring(dot+1);
-            String type = fqn.substring(0, dot);
+            String prefix;
+            String type;
+            if (dot != -1) {
+                prefix = fqn.substring(dot+1);
+                type = fqn.substring(0, dot);
+            } else {
+                prefix = "";
+                type = fqn;
+            }
             Set<IndexedElement> elements = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE)).getElements(prefix, type, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, null);
             String html;
             if (elements.size() > 0) {
@@ -382,13 +407,12 @@ public class UnsupportedCalls implements AstRule {
     }
     
     // TODO - add a way to customize this by user-configurable files
-    
     // This code is automatically generated by #emitBrowserMaps()
     // in the javascript.generatestubs project in the misc repository.
-    private static final Set<String> NAME_SET = new HashSet<String>(256);
-    private static final Map<String,Boolean> MUST_CHECK_FQN = new HashMap<String,Boolean>(256);
-    private static final Map<String,String> NAME_TO_FQN = new HashMap<String,String>(256);
-    private static final Map<String,EnumSet<BrowserVersion>> COMPAT_MAP = new HashMap<String,EnumSet<BrowserVersion>>(256);
+    private static final Set<String> NAME_SET = new HashSet<String>(258);
+    private static final Map<String,Boolean> MUST_CHECK_FQN = new HashMap<String,Boolean>(258);
+    private static final Map<String,String> NAME_TO_FQN = new HashMap<String,String>(258);
+    private static final Map<String,EnumSet<BrowserVersion>> COMPAT_MAP = new HashMap<String,EnumSet<BrowserVersion>>(258);
     private static final EnumSet<BrowserVersion> FF2FF3OPERASAFARI2SAFARI3KONQ = BrowserVersion.fromFlags("FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ"); // NOI18N
     private static final EnumSet<BrowserVersion> NOT_IE = BrowserVersion.fromFlags("FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ"); // NOI18N
     private static final EnumSet<BrowserVersion> NOT_IE55 = BrowserVersion.fromFlags("IE6|IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ"); // NOI18N
@@ -527,7 +551,9 @@ public class UnsupportedCalls implements AstRule {
         COMPAT_MAP.put("TreeWalker.previousNode", NOT_IE); // NOI18N
         COMPAT_MAP.put("TreeWalker.previousSibling", NOT_IE); // NOI18N
         COMPAT_MAP.put("TypeInfo.isDerivedFrom", NOT_IE55_OR_6); // NOI18N
+        COMPAT_MAP.put("XMLHttpRequest", NOT_IE55_OR_6); // NOI18N
 
+        NAME_SET.add("XMLHttpRequest"); // NOI18N
         NAME_SET.add("addColorStop"); // NOI18N
         NAME_SET.add("adoptNode"); // NOI18N
         NAME_SET.add("appendData"); // NOI18N
@@ -651,6 +677,7 @@ public class UnsupportedCalls implements AstRule {
         NAME_SET.add("transform"); // NOI18N
         NAME_SET.add("translate"); // NOI18N
 
+        NAME_TO_FQN.put("XMLHttpRequest", "XMLHttpRequest"); // NOI18N
         NAME_TO_FQN.put("addColorStop", "CanvasGradient.addColorStop"); // NOI18N
         NAME_TO_FQN.put("adoptNode", "Document.adoptNode"); // NOI18N
         NAME_TO_FQN.put("appendData", "Node.appendData"); // NOI18N

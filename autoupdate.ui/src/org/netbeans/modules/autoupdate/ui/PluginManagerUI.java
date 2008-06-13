@@ -102,7 +102,6 @@ public class PluginManagerUI extends javax.swing.JPanel  {
         initTask = Utilities.startAsWorkerThread (new Runnable () {
             public void run () {
                 initialize ();
-                setSelectedTab();
             }
         });
     }
@@ -191,14 +190,15 @@ public class PluginManagerUI extends javax.swing.JPanel  {
         bClose.doClick ();
     }
     
-    public void initialize () {
+    private void initialize () {
         try {
-            units = UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ());
+        units = UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ());
             // postpone later
             // getLocalDownloadSupport().getUpdateUnits();
             SwingUtilities.invokeAndWait (new Runnable () {
                 public void run () {
                     refreshUnits ();
+                    setSelectedTab ();
                 }
             });
         } catch (InterruptedException ex) {
@@ -209,7 +209,7 @@ public class PluginManagerUI extends javax.swing.JPanel  {
     }
     
     //workaround of #96282 - Memory leak in org.netbeans.core.windows.services.NbPresenter
-    public void unitilialize () {
+    private void unitilialize () {
         Utilities.startAsWorkerThread (new Runnable () {
             public void run () {
                 //ensures that uninitialization runs after initialization

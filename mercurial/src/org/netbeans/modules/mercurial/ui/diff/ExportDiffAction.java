@@ -60,6 +60,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
 
 /**
  * ExportDiff action for mercurial: 
@@ -201,7 +202,7 @@ public class ExportDiffAction extends ContextAction {
             if (!list.isEmpty() && list.size() > 1) {
                 File outFile = new File(list.get(1));
                 if (outFile != null && outFile.canRead()) {
-                    org.netbeans.modules.versioning.util.Utils.openFile(outFile);
+                    org.netbeans.modules.versioning.util.Utils.openFile(FileUtil.normalizeFile(outFile));
                 }
             }
         }
@@ -237,7 +238,7 @@ public class ExportDiffAction extends ContextAction {
             if (!list.isEmpty() && list.size() > 1) {
                 File outFile = new File(outputFileName);
                 if (outFile != null && outFile.canRead()) {
-                    org.netbeans.modules.versioning.util.Utils.openFile(outFile);
+                    org.netbeans.modules.versioning.util.Utils.openFile(FileUtil.normalizeFile(outFile));
                 }
             }
         }

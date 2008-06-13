@@ -75,7 +75,7 @@ public class PropertyModel {
     }
 
     public Property getProperty(String name) {
-        return properties.get(name);
+        return properties.get(name.toLowerCase());
     }
 
     private void parseSource(String sourcePath) {

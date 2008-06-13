@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -54,37 +54,50 @@ import org.openide.filesystems.URLMapper;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
 
-/** Stores {@link RubyBreakpoint}s. */
+/** Stores and reads {@link RubyBreakpoint}s. */
 public final class BreakpointsReader implements Properties.Reader {
     
     private static final String PROPERTY_URL = "url"; // NOI18N
     private static final String PROPERTY_LINE_NUMBER = "lineNumber"; // NOI18N
+    private static final String PROPERTY_CONDITION = "condition"; // NOI18N
+    private static final String PROPERTY_EXCEPTION = "exception"; // NOI18N
     
     public String [] getSupportedClassNames() {
         return new String[] {
             RubyBreakpoint.class.getName(),
         };
     }
-    
+
     public Object read(final String typeID, final Properties props) {
-        if (!(typeID.equals(RubyBreakpoint.class.getName()))) {
-            return null;
+        if (typeID.equals(RubyLineBreakpoint.class.getName())) {
+            Line line = getLine(props.getString(PROPERTY_URL, null), props.getInt(PROPERTY_LINE_NUMBER, 1));
+            if (line != null) {
+                String condition = props.getString(PROPERTY_CONDITION, null);
+                return RubyBreakpointManager.createLineBreakpoint(line, condition);
+            }
+        } else if (typeID.equals(RubyExceptionBreakpoint.class.getName())) {
+            String exception = props.getString(PROPERTY_EXCEPTION, null);
+            return RubyBreakpointManager.createExceptionBreakpoint(exception);
         }
-        Line line = getLine(props.getString(PROPERTY_URL, null), props.getInt(PROPERTY_LINE_NUMBER, 1));
-        if (line == null) {
-            return null;
-        }
-        return RubyBreakpointManager.createBreakpoint(line);
+        return null;
     }
     
     public void write(final Object object, final Properties props) {
-        RubyBreakpoint bp = (RubyBreakpoint) object;
-        FileObject fo = bp.getFileObject();
-        try {
-            props.setString(PROPERTY_URL, fo.getURL().toString());
-            props.setInt(PROPERTY_LINE_NUMBER, bp.getLine().getLineNumber());
-        } catch (FileStateInvalidException ex) {
-            Exceptions.printStackTrace(ex);
+        if (object instanceof RubyLineBreakpoint) {
+            RubyLineBreakpoint bp = (RubyLineBreakpoint) object;
+            FileObject fo = bp.getFileObject();
+            try {
+                props.setString(PROPERTY_URL, fo.getURL().toString());
+                props.setInt(PROPERTY_LINE_NUMBER, bp.getLine().getLineNumber());
+                props.setString(PROPERTY_CONDITION, bp.getCondition());
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else if (object instanceof RubyExceptionBreakpoint) {
+            RubyExceptionBreakpoint bp = (RubyExceptionBreakpoint) object;
+            props.setString(PROPERTY_EXCEPTION, bp.getException());
+        } else {
+            throw new IllegalArgumentException("Unknown breakpoint type: " + object);
         }
     }
     

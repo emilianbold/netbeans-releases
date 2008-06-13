@@ -86,8 +86,8 @@ public final class IEPVisualPanel1 extends JPanel {
     }//GEN-LAST:event_jRadioButton1ActionPerformed
 
     private void initGUI() {
-    	buttonGroup1.add(jRadioButton1);
-    	buttonGroup1.add(jRadioButton2);
+        buttonGroup1.add(jRadioButton1);
+        buttonGroup1.add(jRadioButton2);
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

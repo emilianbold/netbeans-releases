@@ -63,6 +63,7 @@ import java.util.regex.PatternSyntaxException;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformProvider;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
@@ -132,6 +133,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             RubyPlatform platform = new RubyPlatformProvider(evaluator).getPlatform();
             if (platform == null) {
                 LOGGER.severe("Cannot resolve platform for project: " + projectDirectory);
+                return Collections.emptyList();
             }
             
             if (!platform.hasRubyGemsInstalled()) {
@@ -346,7 +348,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     private static void addGem(Map<String, String> gemVersions, Map<String, URL> gemUrls,
             String name, String version, URL url) {
         if (!gemVersions.containsKey(name) ||
-                GemManager.compareGemVersions(version, gemVersions.get(name)) > 0) {
+                Util.compareVersions(version, gemVersions.get(name)) > 0) {
             gemVersions.put(name, version);
             gemUrls.put(name, url);
         }

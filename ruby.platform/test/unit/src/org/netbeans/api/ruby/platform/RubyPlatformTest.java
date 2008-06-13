@@ -61,9 +61,9 @@ public class RubyPlatformTest extends RubyTestBase {
         assertTrue("is valid", jruby.isValid());
         assertTrue("is default", jruby.isDefault());
         assertEquals("right version", "1.8.6", jruby.getVersion());
-//        assertEquals("right label", NbBundle.getMessage(RubyPlatformManager.class, "CTL_BundledJRubyLabel"), jruby.getLabel());
         assertEquals("right ruby home", TestUtil.getXTestJRubyHome(), jruby.getHome());
-        assertEquals("right ruby lib", new File(TestUtil.getXTestJRubyHome(), "lib/ruby/1.8").getAbsolutePath(), jruby.getLibDir());
+        assertEquals("right ruby home", new File(jruby.getHome(), "lib").getAbsolutePath(), jruby.getLibDir());
+        assertEquals("right ruby lib", new File(jruby.getHome(), "lib/ruby/1.8").getAbsolutePath(), jruby.getVersionLibDir());
     }
     
     public void testHasRubyGemsInstalled() throws Exception {
@@ -111,14 +111,14 @@ public class RubyPlatformTest extends RubyTestBase {
     
     public void testLongDescription() throws Exception {
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
-        assertEquals("right long description", "JRuby 1.8.6 (2008-03-31 patchlevel 6360) [java]", jruby.getInfo().getLongDescription());
+        assertEquals("right long description", "JRuby 1.8.6 (2008-05-28 patchlevel 6586) [java]", jruby.getInfo().getLongDescription());
         RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
         assertEquals("right long description without patchlevel", "Ruby 0.1 (2000-01-01) [abcd]", ruby.getInfo().getLongDescription());
     }
     
     public void testLabel() throws Exception {
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
-        assertEquals("right label for build-in JRuby", "Built-in JRuby (1.1)", jruby.getLabel());
+        assertEquals("right label for build-in JRuby", "Built-in JRuby (1.1.2)", jruby.getLabel());
         RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
         assertEquals("right label for Ruby", "Ruby (0.1)", ruby.getLabel());
     }
@@ -170,6 +170,7 @@ public class RubyPlatformTest extends RubyTestBase {
         RubyPlatform.Info computed = RubyPlatformManager.computeInfo(platform.getInterpreterFile());
         assertEquals("correct info for bundled JRuby", computed, info);
         assertEquals("correct info for bundled JRuby", computed.getJVersion(), info.getJVersion());
+        assertEquals("correct info for bundled JRuby", computed.getLibDir(), info.getLibDir());
     }
     
     public void testRubinius() throws IOException {

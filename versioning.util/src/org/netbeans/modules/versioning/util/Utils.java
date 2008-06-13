@@ -693,6 +693,10 @@ public final class Utils {
      * @return true if scanning for versioning system metadata is forbidden in the given folder, false otherwise
      */
     public static boolean isScanForbidden(File folder) {
+        // forbid scanning for UNC paths \\ or \\computerName
+        if(folder.getPath().startsWith("\\\\")) {
+            return folder.getParent() == null || folder.getParent().equals("\\\\");
+        }
         for (File unversionedFolder : unversionedFolders) {
             if (isAncestorOrEqual(unversionedFolder, folder)) {
                 return true;

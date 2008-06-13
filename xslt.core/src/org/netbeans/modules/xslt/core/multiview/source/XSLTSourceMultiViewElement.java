@@ -261,9 +261,10 @@ public class XSLTSourceMultiViewElement extends CloneableEditor implements Multi
         setActivatedNodes(new Node[0]);
         setActivatedNodes(new Node[] { getDataObject().getNodeDelegate() });
         addUndoManager();
-//      getValidationController().triggerValidation();
+//      getValidationController().triggerValidation(); // todo r
     }
-    
+
+// todo r 
 //    private Controller getValidationController() {
 //      return (Controller) getDataObject().getLookup().lookup(Controller.class);
 //    }

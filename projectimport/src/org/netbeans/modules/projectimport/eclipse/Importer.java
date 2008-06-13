@@ -43,12 +43,15 @@ package org.netbeans.modules.projectimport.eclipse;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -56,6 +59,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
@@ -67,11 +72,9 @@ import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.J2SEProjectType;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.projectimport.LoggerFactory;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -215,9 +218,6 @@ final class Importer {
         J2SEProject nbProject = (J2SEProject) ProjectManager.getDefault().
                 findProject(FileUtil.toFileObject(
                 FileUtil.normalizeFile(nbProjectDir)));
-        ProjectClassPathExtender nbProjectClassPath =
-                (ProjectClassPathExtender) nbProject.getLookup().lookup(ProjectClassPathExtender.class);
-        assert nbProjectClassPath != null : "Cannot lookup ProjectClassPathExtender"; // NOI18N
         
         // set labels for source roots
         SourceRoots roots = nbProject.getSourceRoots();
@@ -227,13 +227,17 @@ final class Importer {
             labels[i] = (String) eclRoots.get(new File(rootURLs[i].getFile()));
         }
         roots.putRoots(rootURLs, labels);
+        FileObject sourceRoot = FileUtil.toFileObject(srcFiles[0]);
+        // Make sure PCPM knows who owns this (J2SEProject will do the same later on anyway):
+        FileOwnerQuery.markExternalOwner(sourceRoot, nbProject, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         
         // add libraries to classpath
         for (Iterator it = eclProject.getAllLibrariesFiles().iterator(); it.hasNext(); ) {
             File eclLib = (File) it.next();
             if (eclLib.exists()) {
-                nbProjectClassPath.addArchiveFile(FileUtil.toFileObject(
-                        FileUtil.normalizeFile(eclLib)));
+                ProjectClassPathModifier.addRoots(
+                        new URL[] {FileUtil.urlForArchiveOrDir(eclLib)},sourceRoot,
+                        org.netbeans.api.java.classpath.ClassPath.COMPILE);
             } else {
                 logWarning(NbBundle.getMessage(Importer.class, "MSG_LibraryDoesnExist", // NOI18N
                         eclProject.getName(), eclLib.getAbsolutePath()), true);
@@ -252,8 +256,13 @@ final class Importer {
                     AntArtifact[] artifact =
                             AntArtifactQuery.findArtifactsByType(nbSubProject,
                             JavaProjectConstants.ARTIFACT_TYPE_JAR);
-                    nbProjectClassPath.addAntArtifact(
-                            artifact[0], artifact[0].getArtifactLocations()[0]);
+                    List<URI> elements = new ArrayList<URI>();
+                    for (AntArtifact art : artifact) {
+                        elements.addAll(Arrays.asList(art.getArtifactLocations()));
+                    }
+                    ProjectClassPathModifier.addAntArtifacts(artifact,
+                            elements.toArray(new URI[elements.size()]),sourceRoot,
+                        org.netbeans.api.java.classpath.ClassPath.COMPILE);
                 } else {
                     logger.warning("Project in directory \"" +  // NOI18N
                             eclProject.getDirectory().getAbsolutePath() +

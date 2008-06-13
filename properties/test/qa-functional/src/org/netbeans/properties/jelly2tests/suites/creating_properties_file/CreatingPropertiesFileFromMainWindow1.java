@@ -53,54 +53,56 @@
  *
  * Created on 16. September 2002
  */
-
 package org.netbeans.properties.jelly2tests.suites.creating_properties_file;
 
 import org.netbeans.jellytools.*;
-import org.netbeans.jemmy.QueueTool;
 import lib.PropertiesEditorTestCase;
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-
+import org.netbeans.junit.NbTestSuite;
 
 /**
  *
  * @author  Petr Felenda - QA Engineer ( petr.felenda@sun.com )
  */
 public class CreatingPropertiesFileFromMainWindow1 extends PropertiesEditorTestCase {
-    
+
     /*
      * Definition of member variables
      */
-    
-    
-    
     /**
      * Constructor - Creates a new instance of this class
      */
-    public CreatingPropertiesFileFromMainWindow1() {
-        super("testCreatingPropertiesFileFromMainWindow1");
+    public CreatingPropertiesFileFromMainWindow1(String name) {
+        super(name);
     }
-    
-    
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new CreatingPropertiesFileFromMainWindow1("testCreatingPropertiesFileFromMainWindow1"));
+        return suite;
+    }
+
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(suite());
+    }
+
     /**
      * This method contains body of test
      * @return void
      */
     public void testCreatingPropertiesFileFromMainWindow1() {
-        
+
         // open project
         openDefaultProject();
-        
+
         /*
          * 1st step of testcase ( here is used toolbar's icon for opening wizard )
          * There will be opened New Wizard from Main Window Toolbar ( icon 'New' from toolbar 'System' )
          */
-        
+
         MainWindowOperator mainWindowOp = MainWindowOperator.getDefault();
-        mainWindowOp.menuBar().pushMenuNoBlock("File"+menuSeparator+"New File...",menuSeparator);
-        
+        mainWindowOp.menuBar().pushMenuNoBlock("File" + menuSeparator + "New File...", menuSeparator);
+
         /*
          * 2nd step of testcase
          * Select from wizard Other|Properties File and click next button.
@@ -109,8 +111,8 @@ public class CreatingPropertiesFileFromMainWindow1 extends PropertiesEditorTestC
         newWizard.selectCategory(WIZARD_CATEGORY_FILE);
         newWizard.selectFileType(WIZARD_FILE_TYPE);
         newWizard.next();
-        
-        
+
+
         /*
          * 3rd step of testcase
          * (here is nothing happen)
@@ -120,33 +122,32 @@ public class CreatingPropertiesFileFromMainWindow1 extends PropertiesEditorTestC
          */
         // it must be selected a Folder to place the file ( is this a bug ? )
         NewFileNameLocationStepOperator nameStepOper = new NewFileNameLocationStepOperator();
-        JTextFieldOperator jtfo = new JTextFieldOperator(nameStepOper,2);
+        JTextFieldOperator jtfo = new JTextFieldOperator(nameStepOper, 2);
         jtfo.setText("src");
-        
+
         /*
          * 4th step of testcase
          * Confirm wizard
          */
         newWizard.finish();
-        
-        
+
+
         /*
          *  Result
          * Should be added new properties file (with default name) to adequate place in
          * explorer and opened in editor.
          */
-        if ( ! existsFileInEditor(WIZARD_DEFAULT_PROPERTIES_FILE_NAME) )
-            fail("File "+ WIZARD_DEFAULT_PROPERTIES_FILE_NAME +" not found in Editor window");
-        if ( ! existsFileInExplorer("<default package>",WIZARD_DEFAULT_PROPERTIES_FILE_NAME+".properties") )
-            fail("File "+ WIZARD_DEFAULT_PROPERTIES_FILE_NAME +" not found in explorer");
-        
+        if (!existsFileInEditor(WIZARD_DEFAULT_PROPERTIES_FILE_NAME)) {
+            fail("File " + WIZARD_DEFAULT_PROPERTIES_FILE_NAME + " not found in Editor window");
+        }
+        if (!existsFileInExplorer("<default package>", WIZARD_DEFAULT_PROPERTIES_FILE_NAME + ".properties")) {
+            fail("File " + WIZARD_DEFAULT_PROPERTIES_FILE_NAME + " not found in explorer");
+        }
+
     }
-    
+
     public void tearDown() {
         log("Teardown");
-        closeFiles();
+    //closePropertiesFile();
     }
-    
-    
-    
 }

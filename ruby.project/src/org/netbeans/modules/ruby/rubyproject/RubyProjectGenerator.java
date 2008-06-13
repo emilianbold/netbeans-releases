@@ -80,6 +80,7 @@ public final class RubyProjectGenerator {
     
     public static final String DEFAULT_SRC_NAME = "src.dir"; // NOI18N
     public static final String DEFAULT_TEST_SRC_NAME = "test.src.dir"; // NOI18N
+    public static final String DEFAULT_SPEC_SRC_NAME = "spec.src.dir"; // NOI18N
 
     private RubyProjectGenerator() {}
 
@@ -95,11 +96,13 @@ public final class RubyProjectGenerator {
      */
     public static RakeProjectHelper createProject(File dir, String prjName, String mainClass, final RubyPlatform platform) throws IOException {
         FileObject dirFO = FileUtil.createFolder(dir);
-        RakeProjectHelper helper = createBasicProjectMetadata(dirFO, prjName, "lib", "test", mainClass, platform); // NOI18N
+        RakeProjectHelper helper = createBasicProjectMetadata(dirFO, prjName,
+                "lib", "test", "spec", mainClass, platform); // NOI18N
         Project project = ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(project);
         FileObject srcFolder = dirFO.createFolder("lib"); // NOI18N
         dirFO.createFolder("test"); // NOI18N
+        dirFO.createFolder("spec"); // NOI18N
         if (mainClass != null) {
             createFromTemplate(mainClass, srcFolder, "Templates/Ruby/main.rb"); // NOI18N
         }
@@ -107,6 +110,17 @@ public final class RubyProjectGenerator {
         // Rakefile
         final Map<String, String> rakeProps = new HashMap<String, String>();
         rakeProps.put("PROJECT_NAME", dir.getName()); // NOI18N
+        if (RSpecSupport.hasRSpecInstalled(platform)) {
+            rakeProps.put("REQUIRE_SPEC_TASK", "require 'spec/rake/spectask'\n"); // NOI18N
+            String specTaskDef = "\nSpec::Rake::SpecTask.new do |t|\n" + // NOI18N
+                    "  t.spec_files = FileList['spec/**/*.rb']\n" + // NOI18N
+                    "end"; // NOI18N
+            rakeProps.put("SPEC_TASK_DEF", specTaskDef); // NOI18N
+        } else {
+            rakeProps.put("REQUIRE_SPEC_TASK", ""); // NOI18N
+            rakeProps.put("SPEC_TASK_DEF", ""); // NOI18N
+            
+        }
         
         createFromTemplate("Rakefile", dirFO, "Templates/Ruby/Rakefile", rakeProps); // NOI18N
         
@@ -135,7 +149,7 @@ public final class RubyProjectGenerator {
             final File[] sourceFolders, final File[] testFolders, final RubyPlatform platform) throws IOException {
         assert sourceFolders != null && testFolders != null: "Package roots can't be null"; // NOI18N
         final FileObject dirFO = FileUtil.createFolder(dir);
-        final RakeProjectHelper helper = createBasicProjectMetadata(dirFO, prjName, null, null, null, platform);
+        final RakeProjectHelper helper = createBasicProjectMetadata(dirFO, prjName, null, null, null, null, platform);
         final RubyProject project = (RubyProject) ProjectManager.getDefault().findProject(dirFO);
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
@@ -238,7 +252,7 @@ public final class RubyProjectGenerator {
      * Creates very basic project skeleton.
      */
     private static RakeProjectHelper createBasicProjectMetadata(FileObject dirFO, String name,
-            String srcRoot, String testRoot, String mainClass,
+            String srcRoot, String testRoot, String specRoot, String mainClass,
             final RubyPlatform platform) throws IOException {
         RakeProjectHelper helper = ProjectGenerator.createProject(dirFO, RubyProjectType.TYPE);
         Element data = helper.getPrimaryConfigurationData(true);
@@ -255,14 +269,20 @@ public final class RubyProjectGenerator {
             ep.setProperty("src.dir", srcRoot); // NOI18N
         }
         data.appendChild (sourceRoots);
-        Element testRoots = doc.createElementNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots"); // NOI18N
+        Element testRoots = doc.createElementNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE, "test-roots"); // NOI18N
         if (testRoot != null) {
-            Element root = doc.createElementNS (RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root"); // NOI18N
-            root.setAttribute ("id","test.src.dir"); // NOI18N
-            testRoots.appendChild (root);
+            Element root = doc.createElementNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root"); // NOI18N
+            root.setAttribute("id", "test.src.dir"); // NOI18N
+            testRoots.appendChild(root);
             ep.setProperty("test.src.dir", testRoot); // NOI18N
         }
-        data.appendChild (testRoots);
+        if (specRoot != null) {
+            Element root = doc.createElementNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root"); // NOI18N
+            root.setAttribute("id", "spec.src.dir"); // NOI18N
+            testRoots.appendChild(root);
+            ep.setProperty("spec.src.dir", specRoot); // NOI18N
+        }
+        data.appendChild(testRoots);
         helper.putPrimaryConfigurationData(data, true);
 
         Charset enc = FileEncodingQuery.getDefaultEncoding();

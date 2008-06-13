@@ -36,9 +36,7 @@ import org.openide.util.Utilities;
  */
 abstract class BadgedIconCache {
 
-    private static Map<String,Image> theCache =
-        Collections.synchronizedMap(new WeakHashMap<String,Image>(101));
-    
+    private static Map<String,Image> theCache = Collections.synchronizedMap(new WeakHashMap<String,Image>(101));
 
     public static final int NW_BADGE_X = 8;
     public static final int NW_BADGE_Y = 0;
@@ -50,59 +48,48 @@ abstract class BadgedIconCache {
     public static final int SW_BADGE_Y = 8;
     
   
-    public static final String DEFAULT_ICON =
-       "org/openide/resources/defaultNode.gif";                           // NOI18N
-    public static final String DEFAULT_ERROR_BADGE =   
-        "org/netbeans/modules/bpel/core/resources/errorbadge.gif";        // NOI18N
-    public static final String DEFAULT_WARNING_BADGE =
-        "org/netbeans/modules/bpel/core/resources/warningbadge.gif";      // NOI18N
+    public static final String DEFAULT_ICON = "org/openide/resources/defaultNode.gif"; // NOI18N
+    public static final String DEFAULT_ERROR_BADGE = "org/netbeans/modules/bpel/core/resources/errorbadge.gif"; // NOI18N
+    public static final String DEFAULT_WARNING_BADGE = "org/netbeans/modules/bpel/core/resources/warningbadge.gif"; // NOI18N
     
     private static final String ERROR_KEY_PREFIX = "ERR";                 // NOI18N
     private static final String WARNING_KEY_PREFIX = "WRN";               // NOI18N
     
-    public static Image getErrorIcon(String base)
-    {
+    public static Image getErrorIcon(String base) {
         return getBadgedIcon(base,null,null,null,DEFAULT_ERROR_BADGE);
     }
     
-    public static Image getWarningIcon(String base)
-    {
+    public static Image getWarningIcon(String base) {
         return getBadgedIcon(base,null,null,null,DEFAULT_WARNING_BADGE);
     }
 
-    public static Image getErrorIcon(Image baseImage)
-    {
-        if(null == baseImage)
+    public static Image getErrorIcon(Image baseImage) {
+        if (null == baseImage) {
             return null;
-        
+        }
         String key = ERROR_KEY_PREFIX + baseImage.toString();
-        
         Image result = (Image)theCache.get(key);
-        if (result == null)
-        {
+
+        if (result == null) {
             result = createBadgedIcon(
                 baseImage, null, null, null, DEFAULT_ERROR_BADGE);
             theCache.put(key, result);
         }
-        
         return result;      
     }
     
-    public static Image getWarningIcon(Image baseImage)
-    {
-        if(null == baseImage)
+    public static Image getWarningIcon(Image baseImage) {
+        if (null == baseImage) {
             return null;
-        
+        }
         String key = WARNING_KEY_PREFIX + baseImage.toString();
-        
         Image result = (Image)theCache.get(key);
-        if (result == null)
-        {
+
+        if (result == null) {
             result = createBadgedIcon(
                 baseImage, null, null, null, DEFAULT_WARNING_BADGE);
             theCache.put(key, result);
         }
-        
         return result;      
     }
     
@@ -133,20 +120,17 @@ abstract class BadgedIconCache {
      * @param seBadge classloader path of the icon file for the SE quadrant badge.
      * @param swBadge classloader path of the icon file for the SW quadrant badge.
      */
-    public static Image getBadgedIcon(String base, String nwBadge, String neBadge,
-                                        String seBadge, String swBadge) {
-        if (base == null)
+    public static Image getBadgedIcon(String base, String nwBadge, String neBadge, String seBadge, String swBadge) {
+        if (base == null) {
             return null;
-
+        }
         String key = buildIconKey(base, nwBadge, neBadge, seBadge, swBadge);
-
         Image result = (Image)theCache.get(key);
-        if (result == null)
-        {
+
+        if (result == null) {
             result = createBadgedIcon(base, nwBadge, neBadge, seBadge, swBadge);
             theCache.put(key, result);
         }
-        
         return result;
     }
 
@@ -157,25 +141,19 @@ abstract class BadgedIconCache {
      * @param seBadge classloader path of the icon file for the SE quadrant badge.
      * @param swBadge classloader path of the icon file for the SW quadrant badge.
      */
-    public static Image getBadgedIcon(String base, Image baseImage, 
-            String nwBadge, String neBadge,
-            String seBadge, String swBadge) {
-        if (base == null)
+    public static Image getBadgedIcon(String base, Image baseImage, String nwBadge, String neBadge, String seBadge, String swBadge) {
+        if (base == null) {
             return null;
-
+        }
         String key = buildIconKey(base, nwBadge, neBadge, seBadge, swBadge);
-
         Image result = (Image)theCache.get(key);
-        if (result == null)
-        {
-            result = createBadgedIcon(baseImage, nwBadge, neBadge, seBadge, 
-                    swBadge);
+
+        if (result == null) {
+            result = createBadgedIcon(baseImage, nwBadge, neBadge, seBadge, swBadge);
             theCache.put(key, result);
         }
-        
         return result;
     }
-
 
     /**
      * Construct hash table key = concatenate all arguments with ";" between
@@ -186,44 +164,17 @@ abstract class BadgedIconCache {
      * better to use "null" in the key for that badge.  Currently the bad file name
      * is used to construct the key.
      */
-    private static String buildIconKey(
-        String base,
-        String nwBadge,
-        String neBadge,
-        String seBadge,
-        String swBadge)
-    {
+    private static String buildIconKey(String base, String nwBadge, String neBadge, String seBadge, String swBadge) {
         String nullString = new String("null"); // NOI18N
-        Object[] params = new Object[] {normalizeGifPath(base),
+        Object[] params = new Object[] { 
+            normalizeGifPath(base),
             ((nwBadge == null) ? nullString : normalizeGifPath(nwBadge)),
             ((neBadge == null) ? nullString : normalizeGifPath(neBadge)),
             ((seBadge == null) ? nullString : normalizeGifPath(seBadge)),
             ((swBadge == null) ? nullString : normalizeGifPath(swBadge)),
         };
- 
         return MessageFormat.format("{0};{1};{2};{3};{4}", params); // NOI18N
     }
-
-    /*
-    private static String buildIconKey(
-        Image baseIcon,
-        String nwBadge,
-        String neBadge,
-        String seBadge,
-        String swBadge)
-    {
-        String nullString = new String("null"); // NOI18N
-        String iconAsString = baseIcon.
-        Object[] params = new Object[] {normalizeGifPath(baseIcon),
-            ((nwBadge == null) ? nullString : normalizeGifPath(nwBadge)),
-            ((neBadge == null) ? nullString : normalizeGifPath(neBadge)),
-            ((seBadge == null) ? nullString : normalizeGifPath(seBadge)),
-            ((swBadge == null) ? nullString : normalizeGifPath(swBadge)),
-        };
- 
-        return MessageFormat.format("{0};{1};{2};{3};{4}", params); // NOI18N
-    }
-    */
 
     /**
      * Instantiate an Image for each not-null argument.
@@ -236,34 +187,19 @@ abstract class BadgedIconCache {
      * 
      * Does not do caching.
      */
-    public static Image createBadgedIcon(
-        String base,
-        String nwBadge,
-        String neBadge,
-        String seBadge,
-        String swBadge)
-    {
+    public static Image createBadgedIcon(String base, String nwBadge, String neBadge, String seBadge, String swBadge) {
         Image baseImage = getIcon(base);
-        if (baseImage == null)
-            baseImage = getIcon(DEFAULT_ICON);
 
+        if (baseImage == null) {
+            baseImage = getIcon(DEFAULT_ICON);
+        }
         return createBadgedIcon(baseImage,nwBadge,neBadge,seBadge,swBadge);
     }
     
-    /*
-     * 
-     * Does not do caching.
-     */
-    public static Image createBadgedIcon(
-        Image baseImage,
-        String nwBadge,
-        String neBadge,
-        String seBadge,
-        String swBadge)
-    {
-        if(null == baseImage)
+    public static Image createBadgedIcon(Image baseImage, String nwBadge, String neBadge, String seBadge, String swBadge) {
+        if (null == baseImage) {
             return null;
-        
+        }
         Image badgedImage = baseImage;
         
         // merge the icon for each quadrant with the base icon:
@@ -286,13 +222,12 @@ abstract class BadgedIconCache {
         return badgedImage;
     }
 
-    public static Image mergeSingleImage(
-        Image baseImage, String badge, int badge_x, int badge_y)
-    {
+    public static Image mergeSingleImage(Image baseImage, String badge, int badge_x, int badge_y) {
         Image badgeImage = getIcon(badge);
-        if (badgeImage == null)
-            return baseImage;
 
+        if (badgeImage == null) {
+            return baseImage;
+        }
         return Utilities.mergeImages(baseImage, badgeImage, badge_x, badge_y);
     }
     
@@ -300,22 +235,21 @@ abstract class BadgedIconCache {
      * Find icon resource file in cache if available; otherwise get from disk
      * and add to cache.
      */
-    public static Image getIcon(String iconFile)
-    {
+    public static Image getIcon(String iconFile) {
         String filename = normalizeGifPath(iconFile);
         Image theImage = (Image)theCache.get(filename);
-        if (theImage != null)
-            return theImage;    // cache hit
 
+        if (theImage != null) {
+            return theImage;    // cache hit
+        }
         // got following line of code from openide.util.IconManager.java:
         // ("BadgedIconCache.class.getClassLoader().getResource(iconFile)" doesn't work)
-        ClassLoader loader =  (ClassLoader)org.openide.util.Lookup.getDefault().
-            lookup(ClassLoader.class);
-
+        ClassLoader loader =  (ClassLoader)org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
         URL tmpURL = loader.getResource(filename);
-        if (tmpURL == null)
-            return null;
 
+        if (tmpURL == null) {
+            return null;
+        }
         theImage = new ImageIcon(tmpURL).getImage();
         theCache.put(filename, theImage);
 
@@ -327,20 +261,18 @@ abstract class BadgedIconCache {
      * fix so doesn't start with "/" and does end in ".gif".
      */
     public static String normalizeGifPath(String gifPath) {
-        if (gifPath == null)
+        if (gifPath == null) {
             return gifPath;
-        
+        }
         String slash = "/"; // NOI18N
         String dot = ".";   // NOI18N
         
         if (gifPath.startsWith(slash)) {
             gifPath = gifPath.substring(slash.length());
         }
-        
         if (gifPath.indexOf(dot) == -1) {
             gifPath = gifPath.concat(".gif");   // NOI18N
         }
-        
         return gifPath;
     }
 }

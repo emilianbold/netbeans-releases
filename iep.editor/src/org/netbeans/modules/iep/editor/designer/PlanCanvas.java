@@ -7,7 +7,6 @@ import java.awt.Cursor;
 import java.awt.Event;
 import java.awt.Point;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.dnd.DropTargetDragEvent;
@@ -30,13 +29,9 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
 
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
 import org.openide.windows.TopComponent;
 
 
-import com.nwoods.jgo.JGoControl;
 import com.nwoods.jgo.JGoDocument;
 import com.nwoods.jgo.JGoDocumentEvent;
 import com.nwoods.jgo.JGoLink;
@@ -59,11 +54,8 @@ import org.netbeans.modules.iep.editor.designer.actions.IEPTemplateAction;
 import org.netbeans.modules.iep.editor.designer.actions.PasteAction;
 import org.netbeans.modules.iep.editor.designer.nodes.PlanNode;
 import org.netbeans.modules.iep.editor.model.ModelObjectFactory;
-import org.netbeans.modules.iep.editor.model.ModelObjectWrapper;
 import org.netbeans.modules.iep.editor.model.NameGenerator;
 import org.netbeans.modules.iep.editor.tcg.palette.TcgActiveEditorDrop;
-import org.netbeans.modules.iep.editor.tcg.model.TcgModelManager;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNode;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodeProperty;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizerDialogManager;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodeView;
@@ -77,11 +69,7 @@ import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.OperatorComponentContainer;
 import org.netbeans.modules.iep.model.PlanComponent;
 import org.netbeans.modules.iep.model.Property;
-import org.netbeans.modules.iep.model.SchemaComponentContainer;
-import org.netbeans.modules.iep.model.lib.TcgComponent;
 import org.netbeans.modules.iep.model.lib.TcgComponentType;
-import org.netbeans.modules.iep.model.lib.TcgComponentValidationMsg;
-import org.netbeans.modules.iep.model.lib.TcgComponentValidationReport;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
 import org.netbeans.spi.palette.PaletteController;
@@ -90,7 +78,6 @@ import org.openide.nodes.Node;
 import org.openide.text.ActiveEditorDrop;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.netbeans.api.javahelp.Help;
 
@@ -377,26 +364,26 @@ public class PlanCanvas extends JGoView implements JGoViewListener, GuiConstants
                 Toolkit.getDefaultToolkit().beep();
             }
         } else if (t == KeyEvent.VK_F1) {
-        	JGoObject obj = getSelection().getPrimarySelection();
+            JGoObject obj = getSelection().getPrimarySelection();
             if (obj != null && obj instanceof EntityNode) {
-            	EntityNode node = (EntityNode)obj;
-            	OperatorComponent comp = node.getModelComponent();
-            	final String helpID = comp.getHelpID();
-            	
-            	final Help help = Lookup.getDefault().lookup(Help.class);
-            	if(help != null) {
-            		Runnable r = new Runnable() {
-            			
-            			public void run() {
-            				help.showHelp(new HelpCtx(helpID));
-            			}
-            		};
-	    			
-            		SwingUtilities.invokeLater(r);
-            	
-            	} else {
-            		super.onKeyEvent(evt);
-            	}
+                EntityNode node = (EntityNode)obj;
+                OperatorComponent comp = node.getModelComponent();
+                final String helpID = comp.getHelpID();
+                
+                final Help help = Lookup.getDefault().lookup(Help.class);
+                if(help != null) {
+                    Runnable r = new Runnable() {
+                        
+                        public void run() {
+                            help.showHelp(new HelpCtx(helpID));
+                        }
+                    };
+                    
+                    SwingUtilities.invokeLater(r);
+                
+                } else {
+                    super.onKeyEvent(evt);
+                }
             }
             
         }
@@ -470,7 +457,7 @@ public class PlanCanvas extends JGoView implements JGoViewListener, GuiConstants
     
     @Override
     public boolean doMouseUp(int modifiers, Point dc, Point vc) {
-    	setCursor(mDefaultCursor);
+        setCursor(mDefaultCursor);
         mTempLink = null;
         mTempPortForLink = null;
         
@@ -481,25 +468,25 @@ public class PlanCanvas extends JGoView implements JGoViewListener, GuiConstants
     
     @Override
     protected void onMouseReleased(MouseEvent evt) {
-    	if(evt.isPopupTrigger()) {
-    		mPopupMenu.show(this, evt.getX(), evt.getY());
-    	}
-    	super.onMouseReleased(evt);
+        if(evt.isPopupTrigger()) {
+            mPopupMenu.show(this, evt.getX(), evt.getY());
+        }
+        super.onMouseReleased(evt);
     }
     
     @Override
     public void doMoveSelection(int modifiers, int offsetx, int offsety, int event) {
-    	super.doMoveSelection(modifiers, offsetx, offsety, event);
-    	
-    	JGoSelection selection = getSelection();
+        super.doMoveSelection(modifiers, offsetx, offsety, event);
+        
+        JGoSelection selection = getSelection();
         if(selection != null) {
-        	JGoListPosition pos = selection.getFirstObjectPos();
+            JGoListPosition pos = selection.getFirstObjectPos();
             while(pos != null) {
-            	JGoObject obj = selection.getObjectAtPos(pos);
-            	if(obj instanceof EntityNode) {
-            		EntityNode node = (EntityNode) obj;
-            		updateLocation(node);
-            	}
+                JGoObject obj = selection.getObjectAtPos(pos);
+                if(obj instanceof EntityNode) {
+                    EntityNode node = (EntityNode) obj;
+                    updateLocation(node);
+                }
                 pos = selection.getNextObjectPos(pos);
             }
         }
@@ -507,26 +494,26 @@ public class PlanCanvas extends JGoView implements JGoViewListener, GuiConstants
     }
     
     private void updateLocation(final EntityNode node) {
-    	    
-    	//IOProvider.getDefault().getStdOut().println("************updateLocation :" + node.getLabelString() + " loca :"+ node.getLocation());
-    	
-    		Runnable r = new Runnable() {
-    		
-    		public void run() {
-    			OperatorComponent opComp = node.getModelComponent();
-    	    	int x = node.getLocation().x;
-    	    	int y = node.getLocation().y;
-    	    	
-    	    	IEPModel model = opComp.getModel();
-    	    	model.startTransaction();
-    	    	opComp.setX(x);
-    	    	opComp.setY(y);
-    	    	model.endTransaction();
-    		}
-    	};
-    	
-    	SwingUtilities.invokeLater(r);
-    	
+            
+        //IOProvider.getDefault().getStdOut().println("************updateLocation :" + node.getLabelString() + " loca :"+ node.getLocation());
+        
+            Runnable r = new Runnable() {
+            
+            public void run() {
+                OperatorComponent opComp = node.getModelComponent();
+                int x = node.getLocation().x;
+                int y = node.getLocation().y;
+                
+                IEPModel model = opComp.getModel();
+                model.startTransaction();
+                opComp.setX(x);
+                opComp.setY(y);
+                model.endTransaction();
+            }
+        };
+        
+        SwingUtilities.invokeLater(r);
+        
     }
     public void documentChanged(JGoDocumentEvent evt)    {
         switch (evt.getHint()) {
@@ -651,6 +638,10 @@ public class PlanCanvas extends JGoView implements JGoViewListener, GuiConstants
         EntityNode toNode = (EntityNode)toObj;
         
         if (fromNode.getOutputType().equals(IO_TYPE_TABLE)) {
+            if (toNode.getStaticInputCount() >= toNode.getStaticInputMaxCount()) {
+                return false;
+            }
+        } else if (fromNode.getOutputType().equals(IO_TYPE_RELATION) && toNode.isRelationInputStatic()) {
             if (toNode.getStaticInputCount() >= toNode.getStaticInputMaxCount()) {
                 return false;
             }
@@ -925,9 +916,9 @@ public class PlanCanvas extends JGoView implements JGoViewListener, GuiConstants
         PlanComponent planComponent = this.mModel.getPlanComponent();
         OperatorComponentContainer opContainer = planComponent.getOperatorComponentContainer();
         if(opContainer != null) {
-        	PdModel model = getDoc();
-        	model.setIsReloading(true);
-        	
+            PdModel model = getDoc();
+            model.setIsReloading(true);
+            
             List<OperatorComponent> operators = opContainer.getAllOperatorComponent();
             //restore operators
             
@@ -1000,7 +991,7 @@ public class PlanCanvas extends JGoView implements JGoViewListener, GuiConstants
 //        IOProvider.getDefault().getStdOut().println("************doc obj :" + obj + " view obj :"+ viewObj);
         
         if(mTempLink != null) {
-        	JGoPort fromPort = mTempLink.getFromPort();
+            JGoPort fromPort = mTempLink.getFromPort();
             if(fromPort.equals(mTempPortForLink)) {
                 fromPort = mTempLink.getToPort();
             }
@@ -1012,10 +1003,10 @@ public class PlanCanvas extends JGoView implements JGoViewListener, GuiConstants
         }
         
         if (obj instanceof EntityNode ) {
-        	mLastEntityNode = (EntityNode) obj;
+            mLastEntityNode = (EntityNode) obj;
             
             if(mTempLink != null) {
-            	
+                
                     JGoPort fromPort = mTempLink.getFromPort();
                     if(fromPort.equals(mTempPortForLink)) {
                         fromPort = mTempLink.getToPort();
@@ -1030,17 +1021,17 @@ public class PlanCanvas extends JGoView implements JGoViewListener, GuiConstants
                     //if mouse is on a node which is not from node then
                     //only we need to provide cursor and invalid port behaviour
                     if(!parentFromNode.equals(mLastEntityNode)) {
-                    	//mLastEntityNode.showInvalidPorts(!validLink);
-                    	mTempLink.showInvalidLink(!validLink);
-                    	showInvalidCursor(!validLink);
+                        //mLastEntityNode.showInvalidPorts(!validLink);
+                        mTempLink.showInvalidLink(!validLink);
+                        showInvalidCursor(!validLink);
                     }
                 
             } 
             
         } else if (obj instanceof DocumentationNode) {
-        	showDocumentation(dc, (DocumentationNode) obj);
+            showDocumentation(dc, (DocumentationNode) obj);
         } else if (!(viewObj instanceof DocumentationControl)){
-        	if(docControl != null) {
+            if(docControl != null) {
                 docControl.storeDocumentation();
                 this.removeObject(docControl);
                 docControl = null;
@@ -1052,19 +1043,19 @@ public class PlanCanvas extends JGoView implements JGoViewListener, GuiConstants
         //and mouse was previously on an entity node
         //then make sure we remove invalid ports
         if(!(obj instanceof EntityNode)) {
-        	if( mLastEntityNode != null) {
-        		//mLastEntityNode.showInvalidPorts(false);
-        		mLastEntityNode = null;
-        		showInvalidCursor(false);
-        	}
-        	
-        	if(mTempLink != null) {
-        		mTempLink.showInvalidLink(false);
-        	}
+            if( mLastEntityNode != null) {
+                //mLastEntityNode.showInvalidPorts(false);
+                mLastEntityNode = null;
+                showInvalidCursor(false);
+            }
+            
+            if(mTempLink != null) {
+                mTempLink.showInvalidLink(false);
+            }
         }
         
         if(mTempLink == null) {
-        	highlightInvalidNodes(true);
+            highlightInvalidNodes(true);
         }
         
         return super.doMouseMove(modifiers, dc, vc);
@@ -1091,7 +1082,7 @@ public class PlanCanvas extends JGoView implements JGoViewListener, GuiConstants
     @Override
     protected JGoLink createTemporaryLinkForNewLink(JGoPort from, JGoPort to) {
         //mTempLink =  super.createTemporaryLinkForNewLink(from, to);
-    	mTempLink = new Link(from, to);
+        mTempLink = new Link(from, to);
         return mTempLink;
     }
     
@@ -1116,10 +1107,10 @@ public class PlanCanvas extends JGoView implements JGoViewListener, GuiConstants
                 model.addObjectAtTail(node);
                 
                 Runnable r = new Runnable() {
-                	public void run() {
-                		node.refreshProperties();
+                    public void run() {
+                        node.refreshProperties();
                         selectObject(node);
-                	}
+                    }
                 };
                 
                 SwingUtilities.invokeLater(r);
@@ -1387,16 +1378,16 @@ public class PlanCanvas extends JGoView implements JGoViewListener, GuiConstants
                 };
                 
             } else if (source instanceof OperatorComponent) {
-            	//make sure documentation if deleted then
-            	//we update in selected node's property sheet
-            	
-            	r = new Runnable() {
+                //make sure documentation if deleted then
+                //we update in selected node's property sheet
+                
+                r = new Runnable() {
                     
                     public void run() {
-                    	updateSelectedNodeProperties();
+                        updateSelectedNodeProperties();
                     }
                 };
-            	
+                
             }
             
             if(r != null) {
@@ -1431,13 +1422,13 @@ public class PlanCanvas extends JGoView implements JGoViewListener, GuiConstants
                 };
                 
             } else if(source instanceof Documentation) {
-            	r = new Runnable() {
+                r = new Runnable() {
                     
                     public void run() {
-                    	updateSelectedNodeProperties();
+                        updateSelectedNodeProperties();
                     }
                 };
-            	
+                
             }
             
             if(r != null) {
@@ -1449,27 +1440,27 @@ public class PlanCanvas extends JGoView implements JGoViewListener, GuiConstants
     public void refreshProperties() {
         TopComponent tc = TopComponent.getRegistry().getActivated();
         if(tc != null) {
-        	DataObject dObj = tc.getLookup().lookup(DataObject.class);
-        	if(dObj != null) {
-        		tc.setActivatedNodes(new Node[]{new PlanNode(dObj.getNodeDelegate(), mModel.getPlanComponent())});
-        	} else {
+            DataObject dObj = tc.getLookup().lookup(DataObject.class);
+            if(dObj != null) {
+                tc.setActivatedNodes(new Node[]{new PlanNode(dObj.getNodeDelegate(), mModel.getPlanComponent())});
+            } else {
             //Node node = new TcgComponentNode(mModel.getPlanComponent(), mModel, this);
-        		tc.setActivatedNodes(new Node[]{});
-        	}
+                tc.setActivatedNodes(new Node[]{});
+            }
         }
     }
   
     public void showInvalidCursor(boolean show) {
-    	if(show) {
-    		setCursor(mNoLinkCursor);
-    	} else {
-    		setCursor(mDefaultCursor);
-    	}
+        if(show) {
+            setCursor(mNoLinkCursor);
+        } else {
+            setCursor(mDefaultCursor);
+        }
     }
     
     
     private void highlightInvalidNodes(OperatorComponent fromComp) {
-    	PdModel model = getDoc();
+        PdModel model = getDoc();
         
         JGoListPosition pos = model.getFirstObjectPos();
         while (pos != null) {
@@ -1486,11 +1477,11 @@ public class PlanCanvas extends JGoView implements JGoViewListener, GuiConstants
                 node.showInvalidPorts(!isValid);
             }
         }
-    	
+        
     }
     
     private void highlightInvalidNodes(boolean isValid) {
-    	PdModel model = getDoc();
+        PdModel model = getDoc();
         
         JGoListPosition pos = model.getFirstObjectPos();
         while (pos != null) {
@@ -1505,7 +1496,7 @@ public class PlanCanvas extends JGoView implements JGoViewListener, GuiConstants
                 node.showInvalidPorts(!isValid);
             }
         }
-    	
+        
     }
     
     

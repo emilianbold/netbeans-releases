@@ -74,7 +74,7 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
         RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
         File defaultRubyHome = getTestRubyHome();
         assertEquals("right ruby home", defaultRubyHome, ruby.getHome());
-        assertEquals("right ruby lib", new File(defaultRubyHome, "lib/ruby/1.8").getAbsolutePath(), ruby.getLibDir());
+        assertEquals("right ruby lib", new File(defaultRubyHome, "lib/ruby/1.8").getAbsolutePath(), ruby.getVersionLibDir());
         assertEquals("two platforms", 2, RubyPlatformManager.getPlatforms().size());
         RubyPlatformManager.removePlatform(ruby);
         assertEquals("platform removed", 1, RubyPlatformManager.getPlatforms().size());
@@ -129,7 +129,7 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
         // remove and check
         gemManager.removeGemPath(dummyRepo);
         // XXX this is neeeded on Windows. But we do use FileObject everywhere (?!)
-        platform.getLibFO().refresh();
+        platform.getLibDirFO().refresh();
         RubyPlatformManager.resetPlatforms();
         platform = RubyPlatformManager.getDefaultPlatform();
         gemManager = platform.getGemManager();

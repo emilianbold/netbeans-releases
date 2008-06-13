@@ -300,6 +300,25 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("ClassA.cc", 102, 15, "ClassA.h", 69, 5); // ostream& operator <<(ostream& output, const ClassA& item) {
     }
 
+    public void testIZ136102() throws Exception {
+        // from usage to definition
+        performTest("IZ136102.cc", 15, 8, "IZ136102.cc", 6, 12);
+    }
+
+    public void testIZ136140() throws Exception {
+        // from usage to definition
+        performTest("IZ136140.cc", 16, 11, "IZ136140.cc", 11, 5);
+        performTest("IZ136140.cc", 17, 12, "IZ136140.cc", 11, 5);
+    }
+    
+    public void testIZ136894() throws Exception {
+        performTest("main.cc", 67, 35, "main.cc", 59, 5); // itd_state in state->ehci_itd_pool_addr->itd_state;
+        performTest("main.cc", 68, 35, "main.cc", 59, 5); // itd_state in state->ehci_itd_pool_addr[i].itd_state;
+        performTest("main.cc", 70, 19, "main.cc", 59, 5); // itd_state in pool_addr[i].itd_state;
+        performTest("main.cc", 71, 35, "main.cc", 59, 5); // itd_state in state->ehci_itd_pool_addr[0].itd_state;
+        performTest("main.cc", 72, 19, "main.cc", 59, 5); // itd_state in pool_addr[0].itd_state;
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
         
         protected Class getTestCaseDataClass() {

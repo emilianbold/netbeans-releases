@@ -83,7 +83,8 @@ public class Asenv {
      */
     public Asenv(File platformRoot) {
         String ext = (Utilities.isWindows() ? "bat" : "conf");          // NOI18N
-        File asenv = new File(platformRoot,"config/asenv."+ext);            // NOI18N
+        File asenv = new File(platformRoot,"config/asenv."+ext);        // NOI18N
+        if (!asenv.canRead()) return;
         FileReader fReader = null;
         BufferedReader bReader = null;
         try {
@@ -107,6 +108,7 @@ public class Asenv {
                 line = bReader.readLine(); 
             } 
         } catch (FileNotFoundException ex) {
+            // the file disappeared?
             Logger.getLogger(Asenv.class.getName()).log(Level.INFO,null,ex);
         } catch (IOException ex) {
             Logger.getLogger(Asenv.class.getName()).log(Level.INFO,null,ex);

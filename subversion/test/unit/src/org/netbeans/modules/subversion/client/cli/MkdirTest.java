@@ -64,6 +64,7 @@ public class MkdirTest extends AbstractCLITest {
         ISVNInfo info = getInfo(url);
         assertNotNull(info);        
         assertEquals(url.toString(), info.getUrl().toString());        
+        assertNotifiedFiles(new File[] {});        
     }
     
     public void testMkdirFile() throws Exception {                                                
@@ -76,6 +77,7 @@ public class MkdirTest extends AbstractCLITest {
         ISVNInfo info = getInfo(folder);
         assertNotNull(info);        
         assertStatus(SVNStatusKind.ADDED, folder);
+        assertNotifiedFiles(new File[] {folder});        
     }
     
     public void testMkdirUrlParents() throws Exception {                                                                        
@@ -86,6 +88,7 @@ public class MkdirTest extends AbstractCLITest {
         ISVNInfo info = getInfo(url);
         assertNotNull(info);        
         assertEquals(url.toString(), info.getUrl().toString());                
+        assertNotifiedFiles(new File[] {});        
     }            
     
 }

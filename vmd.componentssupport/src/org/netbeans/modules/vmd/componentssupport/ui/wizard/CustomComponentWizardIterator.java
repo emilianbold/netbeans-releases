@@ -1,7 +1,44 @@
 /*
- * To change this template, choose Tools | Templates and open the template in
- * the editor.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
 import java.awt.Component;
@@ -12,8 +49,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.zip.ZipEntry;
@@ -22,7 +62,12 @@ import java.util.zip.ZipInputStream;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.vmd.componentssupport.ui.helpers.BaseHelper;
+import org.netbeans.modules.vmd.componentssupport.ui.helpers.CustomComponentHelper;
+import org.netbeans.modules.vmd.componentssupport.ui.helpers.JavaMELibsConfigurationHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -40,7 +85,9 @@ public class CustomComponentWizardIterator implements
         WizardDescriptor./* Progress */InstantiatingIterator
 {
 
+    // unzipped project filtering
     private static final String UTF_8       = "UTF-8";                           // NOI18N
+    
     private static final String CODE_NAME_BASE 
                                             = "code-name-base";                  // NOI18N
     private static final String DATA        = "data";                            // NOI18N
@@ -49,11 +96,11 @@ public class CustomComponentWizardIterator implements
                                             = "nbproject/build-impl.xml";        // NOI18N
     private static final String BUILD_XML   = "build.xml";                       // NOI18N
 
+    // wizard properties
     public static final String WIZARD_PANEL_ERROR_MESSAGE 
                                             = "WizardPanel_errorMessage";        // NOI18N
     private static final String LBL_WIZARD_STEPS_COUNT 
                                             = "LBL_WizardStepsCount";            // NOI18N
-    
     public static final String CONTENT_DATA = "WizardPanel_contentData";         // NOI18N
     public static final String SELECTED_INDEX 
                                             = "WizardPanel_contentSelectedIndex";// NOI18N
@@ -68,14 +115,22 @@ public class CustomComponentWizardIterator implements
     public static final String FINAL_STEP   = "LBL_FinalStep";                   // NOI18N
 
     // properties
-    public static final String PROJECT_DIR  = "projdir";                         // NOI18N
-    public static final String PROJECT_NAME = "projname";                        // NOI18N
+    public static final String PROJECT_DIR  = "projDir";                         // NOI18N
+    public static final String PROJECT_NAME = "projName";                        // NOI18N
+    public static final String SET_AS_MAIN  = "setAsMain";                       // NOI18N
     public static final String LAYER_PATH   = "layer";                           // NOI18N
-    public static final String BUNDLE_PATH  = "bundle";
+    public static final String BUNDLE_PATH  = "bundle";                          // NOI18N
     public static final String CODE_BASE_NAME
                                             = "codeBaseName";                    // NOI18N
     public static final String DISPLAY_NAME = "displayName";                     // NOI18N
-
+    // added library descriptors
+    public static final String LIBRARIES    = "libraries";                       // NOI18N
+    public static final String LIB_DISPLAY_NAMES
+                                            = "libDisplayNames";                 // NOI18N
+    public static final String LIB_NAMES    = "libNames";                        // NOI18N
+    // added Custom components
+    public static final String CUSTOM_COMPONENTS  
+                                            = "customComponents";                // NOI18N
 
     // parameters for project
     private static final String CODE_NAME_PARAM 
@@ -84,32 +139,31 @@ public class CustomComponentWizardIterator implements
                                             = "_BUNDLE_PATH_";                   // NOI18N
     private static final String PROJECT_NAME_PARAM 
                                             = "_PROJECT_NAME_";                  // NOI18N
-
     // names of templates
+    public static final String BUNDLE_PROPERTIES 
+                                            = "Bundle.properties";               // NOI18N
+    public static final String LAYER_XML    = "layer.xml";             // NOI18N
+
     private static final String SRC         = "src/";                            // NOI18N
-    private static final String BUNDLE_NAME = SRC + "Bundle.properties";         // NOI18N
-    private static final String LAYER_NAME  = SRC + "layer.xml";                 // NOI18N
+    private static final String BUNDLE_NAME = SRC + BUNDLE_PROPERTIES;           // NOI18N
+    private static final String LAYER_NAME  = SRC + LAYER_XML;                   // NOI18N
     private static final String MANIFEST    = "manifest.mf";                     // NOI18N
     private static final String LAYER       = "OpenIDE-Module-Layer: ";          // NOI18N
 
-    private int index;
-
-    private WizardDescriptor.Panel[] panels;
-
-    private WizardDescriptor wiz;
-
-    public CustomComponentWizardIterator() {
+    private CustomComponentWizardIterator() {
     }
 
     public static CustomComponentWizardIterator createIterator() {
         return new CustomComponentWizardIterator();
     }
 
-    private WizardDescriptor.Panel[] createPanels() {
-        return new WizardDescriptor.Panel[] { new CustomComponentWizardPanel(), 
+    WizardDescriptor.Panel[] createPanels() {
+        return new WizardDescriptor.Panel[] { 
+              new CustomComponentWizardPanel(), 
+              new BasicModuleConfWizardPanel(),
               new JavaMELibsWizardPanel(),
-              new DescriptorsWizardPanel(),
-              new BasicModuleConfWizardPanel()};
+              new DescriptorsWizardPanel()
+        };
     }
 
     private String[] createSteps() {
@@ -117,26 +171,28 @@ public class CustomComponentWizardIterator implements
                 NbBundle.getMessage(
                         CustomComponentWizardIterator.class, STEP_BASIC_PARAMS) ,
                 NbBundle.getMessage(
+                        CustomComponentWizardIterator.class, FINAL_STEP),
+                NbBundle.getMessage(
                         CustomComponentWizardIterator.class, LBL_LIBRARIES),
                 NbBundle.getMessage(
-                        CustomComponentWizardIterator.class, LBL_COMPONENT_DESC),
-                NbBundle.getMessage(
-                        CustomComponentWizardIterator.class, FINAL_STEP)
+                        CustomComponentWizardIterator.class, LBL_COMPONENT_DESC)
                         };
     }
 
+    // TODO add all created elements into result set.
     public Set/* <FileObject> */instantiate(/* ProgressHandle handle */)
             throws IOException
     {
         Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
-        File dirF = FileUtil.normalizeFile((File) wiz
+        File dirF = FileUtil.normalizeFile((File) myWizard
                 .getProperty(PROJECT_DIR));
         dirF.mkdirs();
 
-        FileObject template = Templates.getTemplate(wiz);
+        FileObject template = Templates.getTemplate(myWizard);
         FileObject dir = FileUtil.toFileObject(dirF);
-        unZipFile(template.getInputStream(), dir , wiz );
+        unZipFile(template.getInputStream(), dir , myWizard );
 
+        
         // Always open top dir as a project:
         resultSet.add(dir);
         // Look for nested projects to open as well:
@@ -152,12 +208,18 @@ public class CustomComponentWizardIterator implements
         if (parent != null && parent.exists()) {
             ProjectChooser.setProjectsFolder(parent);
         }
-
+        
+        Project createdProject = FileOwnerQuery.getOwner(dir);
+        // store ME Libraries
+        JavaMELibsConfigurationHelper
+                .configureJavaMELibs(createdProject, myWizard);
+        // store custom component descriptors
+        configureComponents(createdProject, myWizard);
         return resultSet;
     }
 
     public void initialize( WizardDescriptor wiz ) {
-        this.wiz = wiz;
+        myWizard = wiz;
         index = 0;
         panels = createPanels();
         // Make sure list of steps is accurate.
@@ -182,9 +244,13 @@ public class CustomComponentWizardIterator implements
     }
 
     public void uninitialize( WizardDescriptor wiz ) {
-        this.wiz.putProperty(PROJECT_DIR, null);
-        this.wiz.putProperty(PROJECT_NAME, null);
-        this.wiz = null;
+        wiz.putProperty(PROJECT_DIR, null);
+        wiz.putProperty(PROJECT_NAME, null);
+        wiz.putProperty(LIBRARIES, null );
+        wiz.putProperty(LIB_NAMES, null);
+        wiz.putProperty(LIB_DISPLAY_NAMES, null);
+        wiz.putProperty(CUSTOM_COMPONENTS, null);
+        wiz = null;
         panels = null;
     }
 
@@ -227,7 +293,27 @@ public class CustomComponentWizardIterator implements
 
     public final void removeChangeListener( ChangeListener l ) {
     }
-
+    
+    private static Set<FileObject> configureComponents(Project project, WizardDescriptor wizard)
+            throws IOException 
+    {
+            List<Map<String, Object>> components = 
+                    (List<Map<String, Object>>) wizard.getProperty(
+                    CustomComponentWizardIterator.CUSTOM_COMPONENTS);
+            if (components == null){
+                return Collections.EMPTY_SET;
+            }
+            
+            Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
+            for(Map<String, Object> component : components){
+                CustomComponentHelper helper = new CustomComponentHelper.
+                        RealInstantiationHelper(project, component);
+                resultSet.addAll( helper.instantiate() );
+            }
+            
+            return Collections.EMPTY_SET;
+    }
+    
     private static void unZipFile( InputStream source, FileObject projectRoot ,
             WizardDescriptor wizard )
             throws IOException
@@ -271,7 +357,7 @@ public class CustomComponentWizardIterator implements
                     else {
                         fo = FileUtil.createData(projectRoot, entry
                                 .getName());
-                        writeFile(zipIS, fo);
+                        BaseHelper.copyByteAfterByte(zipIS, fo);
                     }
                 }
             }
@@ -332,7 +418,7 @@ public class CustomComponentWizardIterator implements
             return;
         }
         FileObject fileObject = FileUtil.createData(projectRoot, SRC + layer );
-        writeFile(is, fileObject );
+        BaseHelper.copyByteAfterByte(is, fileObject );
     }
 
     private static void filterManifest( FileObject fo, ZipInputStream is,
@@ -365,17 +451,6 @@ public class CustomComponentWizardIterator implements
         }        
     }
 
-    private static void writeFile( ZipInputStream is, FileObject fo )
-            throws IOException
-    {
-        OutputStream out = fo.getOutputStream();
-        try {
-            FileUtil.copy(is, out);
-        }
-        finally {
-            out.close();
-        }
-    }
 
     private static void filterProjectXML( FileObject fo, ZipInputStream str,
             String name ) throws IOException
@@ -412,8 +487,12 @@ public class CustomComponentWizardIterator implements
         }
         catch (Exception ex) {
             Exceptions.printStackTrace(ex);
-            writeFile(str, fo);
+            BaseHelper.copyByteAfterByte(str, fo);
         }
 
     }
+    
+    private int index;
+    private WizardDescriptor.Panel[] panels;
+    private WizardDescriptor myWizard;
 }

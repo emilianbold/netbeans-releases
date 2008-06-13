@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-import org.netbeans.modules.php.dbgp.api.SessionId;
+import org.netbeans.modules.php.dbgp.SessionId;
 import org.netbeans.modules.php.dbgp.breakpoints.FunctionBreakpoint;
 import org.netbeans.modules.php.dbgp.breakpoints.LineBreakpoint;
 import org.netbeans.modules.php.dbgp.packets.BrkpntSetCommand.Types;

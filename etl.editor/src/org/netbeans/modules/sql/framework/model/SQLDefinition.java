@@ -130,6 +130,8 @@ public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
      * @return
      */
     public String getAxiondbDataDirectory();
+    
+    
     public boolean isDynamicFlatFile();
     
     public void setDynamicFlatFile(boolean flag);

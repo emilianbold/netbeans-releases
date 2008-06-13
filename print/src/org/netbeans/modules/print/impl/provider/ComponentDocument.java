@@ -309,20 +309,17 @@ final class ComponentDocument extends JComponent {
   }
 
   @Override
-  public int getWidth()
-  {
+  public int getWidth() {
     return myWidth;
   }
 
   @Override
-  public int getHeight()
-  {
+  public int getHeight() {
     return myHeight;
   }
  
   @Override
-  protected void paintComponent(Graphics graphics)
-  {
+  protected void paintComponent(Graphics graphics) {
     Graphics2D g = Option.getDefault().getGraphics(graphics);
 
     g.setColor(myBackgroundColor);

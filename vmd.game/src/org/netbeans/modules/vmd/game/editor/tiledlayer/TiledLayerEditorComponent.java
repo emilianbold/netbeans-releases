@@ -514,7 +514,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
         if (this.isSelectMode()) {
             synchronized (this.cellsSelected) {
                 if (e.isControlDown()) {
-                    //ctrl-left_press toogle a single cell without affecting other selection
+                    //ctrl-left_press toggle a single cell without affecting other selection
                     if (!this.cellsSelected.remove(cell)) {
                         this.cellsSelected.add(cell);
                     }

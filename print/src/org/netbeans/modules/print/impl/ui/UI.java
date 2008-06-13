@@ -178,10 +178,7 @@ public final class UI {
     return panel;
   }
 
-  private static AbstractButton createAbstractButton(
-    AbstractButton button,
-    Action action)
-  {
+  private static AbstractButton createAbstractButton(AbstractButton button, Action action) {
     button.setAction(action);
     mnemonicAndToolTip(button, (String) action.getValue(Action.SHORT_DESCRIPTION));
     return button;
@@ -262,13 +259,7 @@ public final class UI {
     return NbBundle.getMessage(clazz, key, param1, param2);
   }
 
-  public static String i18n(
-    Class clazz,
-    String key,
-    String param1,
-    String param2,
-    String param3)
-  {
+  public static String i18n(Class clazz, String key, String param1, String param2, String param3) {
     if (key == null) {
       return null;
     }
@@ -536,8 +527,7 @@ public final class UI {
     }
 
     @Override
-    public boolean selectWithKeyChar(char key)
-    {
+    public boolean selectWithKeyChar(char key) {
       processKey(key);
       setSelectedIndex(myIndex);
       return true;
@@ -622,7 +612,7 @@ public final class UI {
   // --------------------------------------------------------
   public abstract static class Dialog extends WindowAdapter {
 
-    protected void opened()  {}
+    protected void opened() {}
     protected void resized() {}
     protected void updated() {}
    
@@ -671,8 +661,7 @@ public final class UI {
     }
 
     @Override
-    public void windowOpened(WindowEvent event)
-    {
+    public void windowOpened(WindowEvent event) {
       opened();
     }
 
@@ -701,8 +690,7 @@ public final class UI {
     }
 
     @Override
-    public void paintBorder(Component c, Graphics g, int x, int y, int w, int h)
-    {
+    public void paintBorder(Component c, Graphics g, int x, int y, int w, int h) {
       CORNER.paintIcon(c, g, w - CORNER.getIconWidth(), h - CORNER.getIconHeight());
     }
 
@@ -847,12 +835,7 @@ public final class UI {
 
   private static final Border CORNER_BORDER = new CornerBorder();
 
-  private static final boolean ENABLE_LOG =
-    System.getProperty("org.netbeans.modules.log") != null; // NOI18N
-  
-  private static final boolean ENABLE_OUT =
-    System.getProperty("org.netbeans.modules.out") != null; // NOI18N
-
-  private static final boolean ENABLE_TIM =
-    System.getProperty("org.netbeans.modules.tim") != null; // NOI18N
+  private static final boolean ENABLE_LOG = System.getProperty("org.netbeans.modules.log") != null; // NOI18N
+  private static final boolean ENABLE_OUT = System.getProperty("org.netbeans.modules.out") != null; // NOI18N
+  private static final boolean ENABLE_TIM = System.getProperty("org.netbeans.modules.tim") != null; // NOI18N
 }

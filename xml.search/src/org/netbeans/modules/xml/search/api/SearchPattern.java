@@ -59,9 +59,7 @@ public final class SearchPattern {
       myText = replace(myText);
 //out("===    repl: '" + myText + "'");
     }
-    if (mySearchMatch == SearchMatch.PATTERN ||
-      mySearchMatch == SearchMatch.REGULAR_EXPRESSION)
-    {
+    if (mySearchMatch == SearchMatch.PATTERN || mySearchMatch == SearchMatch.REGULAR_EXPRESSION) {
       int flags = 0;
 
       if ( !myCaseSensitive) {
@@ -79,9 +77,7 @@ public final class SearchPattern {
     if (myText == null) {
       return value == null;
     }
-    if (mySearchMatch == SearchMatch.PATTERN ||
-      mySearchMatch == SearchMatch.REGULAR_EXPRESSION)
-    {
+    if (mySearchMatch == SearchMatch.PATTERN || mySearchMatch == SearchMatch.REGULAR_EXPRESSION) {
 //out("=== return: '" + regexp(value));
       return regexp(value);
     }

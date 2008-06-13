@@ -48,17 +48,20 @@ import org.w3c.dom.Element;
 
 import javax.xml.namespace.QName;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
 public class RMFactories {
 
     public static class RMAssertionFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(RMQName.RMASSERTION.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new RMAssertionImpl(context.getModel()));
+            HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(RMQName.RMASSERTION.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -69,10 +72,7 @@ public class RMFactories {
     public static class AcknowledgementIntervalFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(RMQName.ACKNOWLEDGEMENTINTERVAL.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new AcknowledgementIntervalImpl(context.getModel()));
+            return Collections.singleton(RMQName.ACKNOWLEDGEMENTINTERVAL.getQName(ConfigVersion.CONFIG_1_0));
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -80,45 +80,94 @@ public class RMFactories {
         }
     }
 
-    public static class BaseRetransmissionIntervalFactory extends ElementFactory {
+    public static class DeliveryAssuranceFactory extends ElementFactory {
+
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(RMQName.BASERETRANSMISSIONINTERVAL.getQName());
+            return Collections.singleton(RMQName.DELIVERYASSURANCE.getQName(ConfigVersion.CONFIG_1_2));
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new BaseRetransmissionIntervalImpl(context.getModel()));
-        }
+
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
-            return new BaseRetransmissionIntervalImpl(context.getModel(), element);
+            return new DeliveryAssuranceImpl(context.getModel(), element);
         }
     }
 
-    public static class ExponentialBackoffFactory extends ElementFactory {
+    public static class ExactlyOnceFactory extends ElementFactory {
+
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(RMQName.EXPONENTIALBACKOFF.getQName());
+            return Collections.singleton(RMQName.EXACTLYONCE.getQName(ConfigVersion.CONFIG_1_2));
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new ExponentialBackoffImpl(context.getModel()));
-        }
+
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
-            return new ExponentialBackoffImpl(context.getModel(), element);
+            return new ExactlyOnceImpl(context.getModel(), element);
         }
     }
 
-    public static class InactivityTimeoutFactory extends ElementFactory {
+    public static class AtMostOnceFactory extends ElementFactory {
+
         @Override
         public Set<QName> getElementQNames() {
-            return Collections.singleton(RMQName.INACTIVITYTIMEOUT.getQName());
+            return Collections.singleton(RMQName.ATMOSTONCE.getQName(ConfigVersion.CONFIG_1_2));
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new InactivityTimeoutImpl(context.getModel()));
-        }
+
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
-            return new InactivityTimeoutImpl(context.getModel(), element);
+            return new AtMostOnceImpl(context.getModel(), element);
+        }
+    }
+
+    public static class AtLeastOnceFactory extends ElementFactory {
+
+        @Override
+        public Set<QName> getElementQNames() {
+            return Collections.singleton(RMQName.ATLEASTONCE.getQName(ConfigVersion.CONFIG_1_2));
+        }
+
+        @Override
+        public WSDLComponent create(WSDLComponent context, Element element) {
+            return new AtLeastOnceImpl(context.getModel(), element);
+        }
+    }
+
+    public static class InOrderFactory extends ElementFactory {
+
+        @Override
+        public Set<QName> getElementQNames() {
+            return Collections.singleton(RMQName.INORDER.getQName(ConfigVersion.CONFIG_1_2));
+        }
+
+        @Override
+        public WSDLComponent create(WSDLComponent context, Element element) {
+            return new InOrderImpl(context.getModel(), element);
+        }
+    }
+
+    public static class SequenceSTRFactory extends ElementFactory {
+
+        @Override
+        public Set<QName> getElementQNames() {
+            return Collections.singleton(RMQName.SEQUENCESTR.getQName(ConfigVersion.CONFIG_1_2));
+        }
+
+        @Override
+        public WSDLComponent create(WSDLComponent context, Element element) {
+            return new SequenceSTRImpl(context.getModel(), element);
+        }
+    }
+
+    public static class SequenceTransportSecurityFactory extends ElementFactory {
+
+        @Override
+        public Set<QName> getElementQNames() {
+            return Collections.singleton(RMQName.SEQUENCETRANSPORTSECURITY.getQName(ConfigVersion.CONFIG_1_2));
+        }
+
+        @Override
+        public WSDLComponent create(WSDLComponent context, Element element) {
+            return new SequenceTransportSecurityImpl(context.getModel(), element);
         }
     }
     

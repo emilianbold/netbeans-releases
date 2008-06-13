@@ -39,6 +39,8 @@
  * made subject to such option by the copyright holder.
  */
 
+
+
 package org.netbeans.modules.uml.ui.controls.filter;
 
 import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;

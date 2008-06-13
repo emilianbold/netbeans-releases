@@ -45,9 +45,7 @@ package org.netbeans.modules.uml.ui.support.contextmenusupport;
 
 import java.awt.Menu;
 
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawEngine;
 
 /**
  * @author KevinM

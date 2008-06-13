@@ -58,6 +58,9 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.sun.ide.ws.GlassfishJaxWsStack;
+import org.netbeans.modules.websvc.serverapi.spi.WSStackFactory;
+import org.netbeans.modules.websvc.serverapi.spi.WSStackSPI;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
@@ -65,10 +68,12 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.sun.api.Asenv;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 // TODO finish migration towards being an abstract class
+import org.openide.util.lookup.Lookups;
 /**
  */
 public class PlatformImpl extends J2eePlatformImpl {
@@ -648,7 +653,8 @@ public class PlatformImpl extends J2eePlatformImpl {
     public JavaPlatform getJavaPlatform() {
         if (dmProps.getSunDeploymentManager().isLocal()) {
             Asenv envData = new Asenv(root);
-            FileObject currHome = FileUtil.toFileObject(new File(envData.get(Asenv.AS_JAVA)));
+            File jdkPath = new File(envData.get(Asenv.AS_JAVA));
+            FileObject currHome = FileUtil.toFileObject(FileUtil.normalizeFile(jdkPath));
             JavaPlatformManager jpm = JavaPlatformManager.getDefault();
 
             if (currHome != null) {
@@ -736,4 +742,10 @@ public class PlatformImpl extends J2eePlatformImpl {
         }
         return null;
     }
+    
+    public Lookup getLookup() {
+        WSStackSPI metroStack = new GlassfishJaxWsStack(root);
+        return Lookups.fixed(WSStackFactory.createWSStack(metroStack));
+    }
+    
 }

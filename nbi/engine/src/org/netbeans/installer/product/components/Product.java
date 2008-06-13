@@ -36,6 +36,8 @@
 
 package org.netbeans.installer.product.components;
 
+import org.netbeans.installer.utils.cli.options.ForceUninstallOption;
+import org.netbeans.installer.utils.cli.options.TargetOption;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -52,6 +54,7 @@ import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.helper.DependencyType;
 import org.netbeans.installer.utils.helper.DetailedStatus;
 import org.netbeans.installer.utils.helper.RemovalMode;
+import org.netbeans.installer.utils.cli.*;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ErrorManager;
@@ -343,8 +346,12 @@ public final class Product extends RegistryNode implements StatusInterface {
         if (configurationLogic.registerInSystem()) {
             try {
                 progress.setDetail(StringUtils.format(MESSAGE_SYSTEM_REGISTRATION_STRING));
-                SystemUtils.addComponentToSystemInstallManager(getApplicationDescriptor());
+                installedFiles.add(SystemUtils.addComponentToSystemInstallManager(getApplicationDescriptor()));
             } catch (NativeException e) {
+                throw new InstallationException(ResourceUtils.getString(Product.class,
+                        ERROR_SYSTEM_INTEGRATION_FAILER_KEY,
+                        getDisplayName()),e);
+            } catch (IOException e) {
                 throw new InstallationException(ResourceUtils.getString(Product.class,
                         ERROR_SYSTEM_INTEGRATION_FAILER_KEY,
                         getDisplayName()),e);
@@ -363,6 +370,7 @@ public final class Product extends RegistryNode implements StatusInterface {
         
         installationPhase = InstallationPhase.COMPLETE;
         progress.setPercentage(Progress.COMPLETE);
+        progress.setDetail(StringUtils.EMPTY_STRING);
         setStatus(Status.INSTALLED);
         LogManager.logUnindent("... finished installation of " + getDisplayName() + "(" + getUid() + "/" + getVersion()+")");
     }
@@ -647,7 +655,13 @@ public final class Product extends RegistryNode implements StatusInterface {
         } catch (IllegalAccessException e) {
             throw new InitializationException(ResourceUtils.getString(Product.class,
                     ERROR_CANNOT_LOAD_LOGIC_KEY, getDisplayName()), e);
-        }
+        } catch (NoClassDefFoundError e) {
+            throw new InitializationException(ResourceUtils.getString(Product.class,
+                    ERROR_CANNOT_LOAD_LOGIC_KEY, getDisplayName()), e);
+        } catch (UnsupportedClassVersionError e) {
+            throw new InitializationException(ResourceUtils.getString(Product.class,
+                    ERROR_CANNOT_LOAD_LOGIC_KEY, getDisplayName()), e);
+        } 
     }
     
     // installation data ////////////////////////////////////////////////////////////
@@ -854,7 +868,7 @@ public final class Product extends RegistryNode implements StatusInterface {
         return PRODUCT_TAG_NAME;
     }
     
-    public Element saveToDom(final Element element) throws FinalizationException {
+    protected Element saveToDom(final Element element) throws FinalizationException {
         super.saveToDom(element);
         
         final Document document = element.getOwnerDocument();
@@ -1019,10 +1033,10 @@ public final class Product extends RegistryNode implements StatusInterface {
         }
         
         final String[] modifyCommand = new String[] {
-            Installer.TARGET_ARG, uid, version.toString()};
+            TargetOption.TARGET_ARG, uid, version.toString()};
         
         final String[] uninstallCommand = new String[] {
-            Installer.TARGET_ARG, uid, version.toString(), Installer.FORCE_UNINSTALL_ARG};
+            TargetOption.TARGET_ARG, uid, version.toString(), ForceUninstallOption.FORCE_UNINSTALL_ARG};
         
         if (configurationLogic.allowModifyMode()) {
             return new ApplicationDescriptor(

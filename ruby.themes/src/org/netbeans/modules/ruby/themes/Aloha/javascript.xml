@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+<fontscolors>
+    <fontcolor default="field" name="mod-global"/>
+    <fontcolor bgColor="ff38566f" name="mark-occurrences"/>
+    <fontcolor foreColor="ff2e92c7" name="TYPE_SYMBOL"/>
+    <fontcolor foreColor="ff99006b" name="TODO">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="number" name="FLOAT_LITERAL"/>
+    <fontcolor default="keyword" name="ANY_KEYWORD"/>
+    <fontcolor name="mod-interface"/>
+    <fontcolor default="number" name="DOUBLE_LITERAL"/>
+    <fontcolor name="mod-public"/>
+    <fontcolor default="field" name="mod-field"/>
+    <fontcolor name="mod-constructor">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor foreColor="fff3c55f" name="mod-method">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="comment" name="BLOCK_COMMENT"/>
+    <fontcolor foreColor="ffca4344" name="mod-regexp"/>
+    <fontcolor name="mod-protected"/>
+    <fontcolor default="error" name="ERROR"/>
+    <fontcolor name="mod-enum"/>
+    <fontcolor default="comment" name="js-comment-tag">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="comment" name="LINE_COMMENT"/>
+    <fontcolor name="mod-local-variable"/>
+    <fontcolor name="mod-private"/>
+    <fontcolor default="comment" name="html-tag">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor foreColor="black" name="GLOBAL_VAR">
+        <font style="italic"/>
+    </fontcolor>
+    <fontcolor default="whitespace" name="WHITESPACE"/>
+    <fontcolor name="mod-deprecated" strikeThrough="darkGray"/>
+    <fontcolor name="mod-annotation-type"/>
+    <fontcolor foreColor="ff9933cc" name="REGEXP_LITERAL"/>
+    <fontcolor name="mod-class"/>
+    <fontcolor foreColor="black" name="CONSTANT">
+        <font style="italic"/>
+    </fontcolor>
+    <fontcolor foreColor="ffa06001" name="mod-parameter"/>
+    <fontcolor name="mod-unused" waveUnderlined="ff999999"/>
+    <fontcolor foreColor="ff098618" name="CLASS_VAR">
+        <font style="bold+italic"/>
+    </fontcolor>
+    <fontcolor name="mod-package-private"/>
+    <fontcolor default="comment" name="right-curly"/>
+    <fontcolor default="string" name="STRING_LITERAL"/>
+    <fontcolor default="field" name="INSTANCE_VAR"/>
+    <fontcolor default="operator" name="ANY_OPERATOR"/>
+    <fontcolor name="mod-static">
+        <font style="italic"/>
+    </fontcolor>
+    <fontcolor default="comment" name="DOCUMENTATION"/>
+    <fontcolor default="identifier" name="IDENTIFIER"/>
+    <fontcolor default="string" name="QUOTED_STRING_LITERAL"/>
+    <fontcolor default="comment" name="left-curly"/>
+    <fontcolor name="mod-abstract"/>
+    <fontcolor default="number" name="INT_LITERAL"/>
+    <fontcolor default="number" foreColor="ff66cc00" name="LONG_LITERAL"/>
+</fontscolors>

@@ -41,9 +41,9 @@
 
 package org.netbeans.spi.project.ant;
 
-import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.project.ant.AntBuildExtenderAccessor;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 /**
  * Factory class for creation of AntBuildExtender instances
@@ -61,9 +61,23 @@ public final class AntBuildExtenderFactory {
      * to be included in project's lookup.
      * @param implementation project type's spi implementation
      * @return resulting <code>AntBuildExtender</code> instance
+     * @deprecated 
+     * @see createAntExtender(AntBuildExtenderImplementation, ReferenceHelper)
      */
     public static AntBuildExtender createAntExtender(AntBuildExtenderImplementation implementation) {
         return AntBuildExtenderAccessor.DEFAULT.createExtender(implementation);
+    }
+    
+    /**
+     * Create instance of {@link org.netbeans.api.project.ant.AntBuildExtender} that is
+     * to be included in project's lookup.
+     * @param implementation project type's spi implementation
+     * @param refHelper project related reference helper
+     * @return resulting <code>AntBuildExtender</code> instance
+     * @since 1.21
+     */
+    public static AntBuildExtender createAntExtender(AntBuildExtenderImplementation implementation, ReferenceHelper refHelper) {
+        return AntBuildExtenderAccessor.DEFAULT.createExtender(implementation, refHelper);
     }
     
 }

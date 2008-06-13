@@ -675,8 +675,12 @@ public final class LibrariesNode extends AbstractNode {
         }
 
         public void actionPerformed(ActionEvent e) {
-            org.netbeans.api.project.ant.FileChooser chooser = 
-                    new org.netbeans.api.project.ant.FileChooser(helper, true);
+            org.netbeans.api.project.ant.FileChooser chooser;
+            if (helper.isSharableProject()) {
+                chooser = new org.netbeans.api.project.ant.FileChooser(helper, true);
+            } else {
+                chooser = new org.netbeans.api.project.ant.FileChooser(FileUtil.toFile(helper.getProjectDirectory()), null);
+            }
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
             chooser.setMultiSelectionEnabled( true );

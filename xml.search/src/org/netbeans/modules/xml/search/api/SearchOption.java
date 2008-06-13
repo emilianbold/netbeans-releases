@@ -87,14 +87,7 @@ public interface SearchOption {
   // ------------------------------------------
   public class Adapter implements SearchOption {
 
-    public Adapter(
-      String text,
-      SearchProvider provider,
-      SearchTarget target,
-      SearchMatch match,
-      boolean caseSensitive,
-      boolean useSelection)
-    {
+    public Adapter(String text, SearchProvider provider, SearchTarget target, SearchMatch match, boolean caseSensitive, boolean useSelection) {
       myText = text;
       myProvider = provider;
       myTarget = target;

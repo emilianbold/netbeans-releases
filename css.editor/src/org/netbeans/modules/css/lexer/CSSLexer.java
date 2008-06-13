@@ -99,9 +99,11 @@ public final class CSSLexer implements Lexer<CSSTokenId> {
                     //        } else if(array_index == 3) {
                     //            //COMMENT
                     //            array_index = 2;
+                } else if (array_index == 4) {
+                    array_index = 2; 
                 } else {
                     //the rest of tokens 
-                    array_index -= 3;
+                    array_index -= 5;
                 }
 
                 //return netbeans lexer's token based on the type of the obtained javacc token

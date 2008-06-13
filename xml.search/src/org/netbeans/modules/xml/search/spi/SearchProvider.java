@@ -239,20 +239,17 @@ public interface SearchProvider {
       }
 
       @Override
-      public void gotoSource()
-      {
+      public void gotoSource() {
         SearchProvider.Adapter.this.gotoSource(myComponent);
       }
 
       @Override
-      public void gotoVisual() 
-      {
+      public void gotoVisual() {
         SearchProvider.Adapter.this.gotoVisual(myComponent);
       }
 
       @Override
-      public boolean isDeleted()
-      {
+      public boolean isDeleted() {
         return myComponent.getModel() == null;
       }
 

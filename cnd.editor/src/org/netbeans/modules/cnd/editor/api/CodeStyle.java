@@ -102,6 +102,11 @@ public final class CodeStyle {
                          EditorOptions.indentSizeDefault);
     }
 
+    public boolean expandTabToSpaces() {
+        return getOption(EditorOptions.expandTabToSpaces,
+                         EditorOptions.expandTabToSpacesDefault);
+    }
+
     public int getFormatStatementContinuationIndent() {
         return getOption(EditorOptions.statementContinuationIndent,
                          EditorOptions.statementContinuationIndentDefault);

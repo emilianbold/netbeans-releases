@@ -54,6 +54,8 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -140,6 +142,22 @@ final class NodeListener implements MouseListener, KeyListener,
             }
         }
     }
+
+    /**
+     * Checks whether all given tree paths are of the expected length.
+     * @param  paths  paths to be checked
+     * @param  expLength  expected length of the paths
+     * @return  {@code true} if all the paths are of the expected length,
+     *          {@code false} otherwise
+     */
+    private static boolean checkPathCounts(TreePath[] paths, int expLength) {
+        for (TreePath path : paths) {
+            if (path.getPathCount() != expLength) {
+                return false;
+            }
+        }
+        return true;
+    }
     
     private void popupTriggerEventFired(MouseEvent e) {
         final JTree tree = (JTree) e.getSource();
@@ -150,9 +168,13 @@ final class NodeListener implements MouseListener, KeyListener,
         if (!isPathSelected(path, tree)) {
             tree.setSelectionPath(path);
         }
-        if (tree.getSelectionCount() >= 1) {
+
+        int selCount = tree.getSelectionCount();
+        if (selCount >= 1) {
             final ResultModel resultModel = getResultModel(tree);
-            if (!isInsideCheckBox(tree, path, resultModel, e)) {
+            if (selCount > 1) {
+                showPopup(tree, null, resultModel, e);
+            } else if (!isInsideCheckBox(tree, path, resultModel, e)) {
                 showPopup(tree, path, resultModel, e);
             }
         }
@@ -207,7 +229,8 @@ final class NodeListener implements MouseListener, KeyListener,
      * given by a tree path.
      * 
      * @param  tree  tree in which the menu should be displayed
-     * @param  path  tree path specification of a node
+     * @param  path  tree path specification of a node,
+     *               or {@code null} if there are multiple nodes selected
      * @param  resultModel  data model of the tree
      * @param  e  mouse event which triggered display of the pop-up menu,
      *            or {@code null} if it was something else than a mouse
@@ -217,72 +240,70 @@ final class NodeListener implements MouseListener, KeyListener,
                            final TreePath path,
                            final ResultModel resultModel,
                            final MouseEvent e) {
-        final int pathCount = path.getPathCount();
-        if (tree.getSelectionCount() > 1) {
-            // check if path depth is same for all selected nodes
-            for (TreePath tp : tree.getSelectionPaths()) {
-                if (tp.getPathCount() != 2) {
-                    // no popup-menu for multiple selection of various depth
-                    return;
-                }
+        final int pathCount;
+        final TreePath[] paths;
+        if (path != null) {
+            paths = null;
+            pathCount = path.getPathCount();
+        } else {
+            paths = tree.getSelectionPaths();
+            assert paths.length > 1;
+            if (checkPathCounts(paths, 2)) {
+                pathCount = 2;
+            } else {
+                // no popup-menu for multiple selection of various depth
+                return;
             }
         }
+
         if (pathCount == 1) {               //root node
             //no popup-menu for the root node
         } else if (pathCount == 2) {
+            JPopupMenu popup = null;
             if (tree.getSelectionCount() > 1) {
                 // prepare "best effort" popup menu for multiple selected nodes
-                Node nbNode;
-                Action action;
-                JMenuItem menuItem;
+                StringBuilder wholeNameBuf = new StringBuilder(30);
                 Set<String> labels = new HashSet<String>();
-                for (TreePath tp : tree.getSelectionPaths()) {
-                    nbNode = getNbNode(tp, resultModel);
+                final List<Node> nbNodes = new ArrayList<Node>(paths.length);
+                for (TreePath tp : paths) {
+                    Node nbNode = getNbNode(tp, resultModel);
                     if (nbNode != null) {
-                        action = getDefaultAction(nbNode);
-                        if (action == null) continue;
-                        menuItem = (action instanceof Presenter.Popup)
-                             ? ((Presenter.Popup) action).getPopupPresenter()
-                             : null;
-                        if ( menuItem != null ) {
-                            labels.add(menuItem.getText());
-                        } else {
-                            labels.add((String) action.getValue(Action.NAME));
+                        nbNodes.add(nbNode);
+                        Action action = getDefaultAction(nbNode);
+                        if (action == null) {
+                            continue;
+                        }
+                        String partName = getMenuItemLabel(action);
+                        if ((partName.length() != 0) && labels.add(partName)) {
+                            wholeNameBuf.append('/').append(partName);
                         }
                     }
                 }
-                if (labels.size()>0) {
-                    JPopupMenu popup = new JPopupMenu();
-                    menuItem = new JMenuItem();
-                    String newLabel = "";
-                    for (String label : labels) {
-                        if (newLabel.length()>0) {
-                            newLabel += "/" + label;
-                        } else {
-                            newLabel = label;
-                        }
-                    }
-                    menuItem.setText(newLabel);
-                    menuItem.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                callResultNodesDefaultActions(e,tree);
-                            }
+                if (labels.isEmpty()) {
+                    //no named popup actions collected
+                    return;
+                }
 
+                JMenuItem menuItem = new JMenuItem(
+                        wholeNameBuf.toString().substring(1)); //strip initial '/'
+                menuItem.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            callResultNodesDefaultActions(nbNodes, e);
                         }
-                    );
-                    popup.add(menuItem);
-                    Point location = getPopupMenuLocation(tree, path, e);
-                    popup.show(tree, location.x, location.y);
-                }
+
+                    }
+                );
+                popup = new JPopupMenu();
+                popup.add(menuItem);
             } else {
                 Node nbNode = getNbNode(path, resultModel);
                 if (nbNode != null) {
-                    JPopupMenu popup = createFileNodePopupMenu(nbNode);
-                    if (popup != null) {
-                        Point location = getPopupMenuLocation(tree, path, e);
-                        popup.show(tree, location.x, location.y);
-                    }
+                    popup = createFileNodePopupMenu(nbNode);
                 }
+            }
+            if (popup != null) {
+                Point location = getPopupMenuLocation(tree, path, e);
+                popup.show(tree, location.x, location.y);
             }
         } else if (pathCount == 3) {        //detail node
             if (tree.getSelectionCount() == 1) {
@@ -302,16 +323,14 @@ final class NodeListener implements MouseListener, KeyListener,
      * Performs default action on all file nodes selected in
      * @param e  ActionEvent performed
      */
-    private void callResultNodesDefaultActions(ActionEvent e, JTree tree) {
-        if ((tree != null) && (tree.getSelectionCount() >= 1)) {
-            Node nbNode;
-            ResultModel resultModel = getResultModel(tree);
-            for (TreePath tp : tree.getSelectionPaths()) {
-                nbNode = getNbNode(tp, resultModel);
-                if ((nbNode != null) && (tp.getPathCount() ==2)) {
-                    callDefaultAction(nbNode, e.getSource(), e.getID(), "click"); // NOI18N
-                }
-            }
+    private void callResultNodesDefaultActions(Collection<Node> nbNodes,
+                                               ActionEvent e) {
+        assert (nbNodes != null) && !nbNodes.isEmpty();
+
+        Object eSource = e.getSource();
+        int eID = e.getID();
+        for (Node nbNode : nbNodes) {
+            callDefaultAction(nbNode, eSource, eID, "click");           //NOI18N
         }
     }
     
@@ -329,8 +348,16 @@ final class NodeListener implements MouseListener, KeyListener,
                                               MouseEvent e) {
         if (e != null) {
             return new Point(e.getX(), e.getY());
-        } else {
+        } else if (path != null) {
             return tree.getPathBounds(path).getLocation();
+        } else {
+            Point pos = tree.getMousePosition();
+            if (pos == null) {
+                java.awt.Rectangle r = tree.getVisibleRect();
+                pos = new Point(r.x + r.width / 2,
+                                r.y + r.height / 2);
+            }
+            return pos;
         }
     }
     
@@ -504,7 +531,7 @@ final class NodeListener implements MouseListener, KeyListener,
         return ((ResultTreeModel) tree.getPathForRow(0).getPathComponent(0))
                .resultModel;
     }
-    
+
     /**
      * Returns a NetBeans explorer node corresponding to the given object.
      * 
@@ -563,9 +590,7 @@ final class NodeListener implements MouseListener, KeyListener,
         
         assert action.isEnabled();
         
-        JMenuItem menuItem = (action instanceof Presenter.Popup)
-                             ? ((Presenter.Popup) action).getPopupPresenter()
-                             : null;
+        JMenuItem menuItem = getJMenuItem(action);
         JPopupMenu popupMenu = new JPopupMenu();
         if (menuItem != null) {
             popupMenu.add(menuItem);
@@ -573,6 +598,19 @@ final class NodeListener implements MouseListener, KeyListener,
             popupMenu.add(action);
         }
         return popupMenu;
+    }
+
+    private static String getMenuItemLabel(Action action) {
+        JMenuItem menuItem = getJMenuItem(action);
+        return (menuItem != null) ? menuItem.getText()
+                                  : (String) action.getValue(Action.NAME);
+
+    }
+
+    private static JMenuItem getJMenuItem(Action action) {
+        return (action instanceof Presenter.Popup)
+               ? ((Presenter.Popup) action).getPopupPresenter()
+               : null;
     }
     
     /**
@@ -732,24 +770,47 @@ final class NodeListener implements MouseListener, KeyListener,
                    && (e.getModifiersEx() == 0)) {
             final JTree tree = (JTree) e.getSource();
             final TreeSelectionModel selectionModel = tree.getSelectionModel();
-            if (selectionModel.getSelectionCount() != 1) {
+            if (selectionModel.getSelectionCount() == 0) {
                 return;
             }
-            final TreePath selectedPath = selectionModel.getLeadSelectionPath();
-            if ((selectedPath == null) || (selectedPath.getParentPath() == null)) {
-                // empty selection or root node selected
-                return;
+
+            ResultModel resultModel = getResultModel(tree);
+            List<TreePath> mainNodes;
+            if (selectionModel.getSelectionCount() == 1) {
+                final TreePath selectedPath = selectionModel.getLeadSelectionPath();
+                if ((selectedPath == null) || (selectedPath.getParentPath() == null)) {
+                    // empty selection or root node selected
+                    return;
+                }
+                mainNodes = Collections.<TreePath>singletonList(selectedPath);
+            } else {
+                TreePath[] selectedPaths = selectionModel.getSelectionPaths();
+                if ((selectedPaths == null) || (selectedPaths.length < 2)) {
+                    // this should not happen because (selectionCount >= 2)
+                    assert false;
+                    return;
+                }
+                mainNodes = NodeSelector.selectMainNodes(
+                                                selectedPaths,
+                                                resultModel.canHaveDetails());
             }
-            Node nbNode = getNbNode(selectedPath, getResultModel(tree));
-            callDefaultAction(nbNode, e.getSource(), e.getID(), "enter");   //NOI18N
+            for (TreePath mainNode : mainNodes) {
+                Node nbNode = getNbNode(mainNode, resultModel);
+                callDefaultAction(nbNode, e.getSource(), e.getID(), "enter");   //NOI18N
+            }
         } else if ((e.getKeyCode() == KeyEvent.VK_CONTEXT_MENU)
                    && (e.getModifiersEx() == 0)) {
             e.consume();
             JTree tree = (JTree) e.getSource();
-            if (tree.getSelectionCount() == 1) {
-                TreePath path = tree.getSelectionPath();
+            int selCount = tree.getSelectionCount();
+            if (selCount >= 1) {
                 ResultModel resultModel = getResultModel(tree);
-                showPopup(tree, path, resultModel, null);
+                if (selCount > 1) {
+                    showPopup(tree, null, resultModel, null);
+                } else {
+                    TreePath path = tree.getSelectionPath();
+                    showPopup(tree, path, resultModel, null);
+                }
             }
         }
     }

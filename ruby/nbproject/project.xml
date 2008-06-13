@@ -60,14 +60,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.options</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.5</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.editor.settings</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -260,6 +252,7 @@
                 <friend>org.netbeans.modules.ruby.kit</friend>
                 <friend>org.netbeans.modules.ruby.debugger</friend>
                 <friend>org.netbeans.modules.ruby.javaint</friend>
+                <friend>org.netbeans.modules.ruby.testrunner</friend>
                 <friend>org.netbeans.modules.gsf.tools</friend>
                 <friend>org.netbeans.modules.spellchecker.bindings.ruby</friend>
                 <package>org.netbeans.modules.ruby</package>

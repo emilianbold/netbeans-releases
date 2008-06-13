@@ -46,7 +46,9 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
+import java.net.URL;
 import java.util.*;
+import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
@@ -54,13 +56,18 @@ import javax.swing.text.Position;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.Modifier;
+//import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
+import org.netbeans.modules.gsf.api.CodeCompletionResult;
+import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Code completion items originating from the language plugin.
@@ -74,16 +81,20 @@ public abstract class GsfCompletionItem implements CompletionItem {
     static org.netbeans.modules.gsf.api.CompletionProposal tipProposal;
     
     protected CompilationInfo info;
+    protected CodeCompletionResult completionResult;
     
     protected static int SMART_TYPE = 1000;
         
     private static class DelegatedItem extends GsfCompletionItem {
         private org.netbeans.modules.gsf.api.CompletionProposal item;
-        private static ImageIcon icon[][] = new ImageIcon[2][4];
+        //private static ImageIcon iconCache[][] = new ImageIcon[2][4];
         
-        private DelegatedItem(CompilationInfo info, org.netbeans.modules.gsf.api.CompletionProposal item) {
+        private DelegatedItem(CompilationInfo info, 
+                CodeCompletionResult completionResult, 
+                org.netbeans.modules.gsf.api.CompletionProposal item) {
             super(item.getAnchorOffset());
             this.item = item;
+            this.completionResult = completionResult;
             this.info = info;
         }
         
@@ -178,9 +189,9 @@ public abstract class GsfCompletionItem implements CompletionItem {
                 return ic;
             }
             
-            ImageIcon icon = org.netbeans.modules.gsfret.navigation.Icons.getElementIcon(item.getKind(), item.getModifiers());
+            ImageIcon imageIcon = org.netbeans.modules.gsfret.navigation.Icons.getElementIcon(item.getKind(), item.getModifiers());
             // TODO - cache!
-            return icon;
+            return imageIcon;
 //                    
 //
 //            ElementKind kind = item.getKind();
@@ -264,6 +275,20 @@ public abstract class GsfCompletionItem implements CompletionItem {
     
         @Override
         protected void substituteText(final JTextComponent c, int offset, int len, String toAdd) {
+            if (completionResult != null) {
+                completionResult.beforeInsert(item);
+                
+                if (!completionResult.insert(item)) {
+                    defaultSubstituteText(c, offset, len, toAdd);
+                }
+                
+                completionResult.afterInsert(item);
+            } else {
+                defaultSubstituteText(c, offset, len, toAdd);
+            }
+        }
+            
+        private void defaultSubstituteText(final JTextComponent c, int offset, int len, String toAdd) {
             String template = item.getCustomInsertTemplate();
             if (template != null) {
                 BaseDocument doc = (BaseDocument)c.getDocument();
@@ -334,8 +359,88 @@ public abstract class GsfCompletionItem implements CompletionItem {
     }
     
 
-    public static final GsfCompletionItem createItem(CompletionProposal proposal, CompilationInfo info) {
-        return new DelegatedItem(info, proposal);
+    public static final GsfCompletionItem createItem(CompletionProposal proposal, CodeCompletionResult result, CompilationInfo info) {
+        return new DelegatedItem(info, result, proposal);
+    }
+    
+    public static final GsfCompletionItem createTruncationItem() {
+        return new TruncationItem();
+    }
+    
+    /**
+     * Special code completion item used to show truncated completion results
+     * along with a description.
+     */
+    private static class TruncationItem extends GsfCompletionItem implements CompletionTask, CompletionDocumentation {
+        
+        private TruncationItem() {
+            super(0);
+        }
+        @Override
+        protected ImageIcon getIcon() {
+            return new ImageIcon(Utilities.loadImage("org/netbeans/modules/gsfret/editor/completion/warning.png")); // NOI18N
+        }
+
+        public int getSortPriority() {
+            // Sort to the bottom!
+            //return Integer.MAX_VALUE;
+            // Sort it to the top
+            return -20000;
+        }
+
+        public CharSequence getSortText() {
+            return ""; // NOI18N
+        }
+
+        public CharSequence getInsertPrefix() {
+            // Length 0 - won't be inserted
+            return ""; // NOI18N
+        }
+        
+        @Override
+        protected String getLeftHtmlText() {
+            return "<b>" + NbBundle.getMessage(GsfCompletionItem.class, "ListTruncated") + "</b>"; // NOI18N
+        }
+
+        @Override
+        public CompletionTask createDocumentationTask() {
+            return this;
+        }
+
+        // Implements CompletionTask
+        
+        public void query(CompletionResultSet resultSet) {
+            resultSet.setDocumentation(this);
+            resultSet.finish();
+        }
+
+        public void refresh(CompletionResultSet resultSet) {
+            resultSet.setDocumentation(this);
+            resultSet.finish();
+        }
+
+        public void cancel() {
+        }
+        
+        // Implements CompletionDocumentation
+        
+        public String getText() {
+            return NbBundle.getMessage(GsfCompletionItem.class, "TruncatedHelpHtml"); // NOI18N
+        }
+
+        public URL getURL() {
+            //throw new UnsupportedOperationException("Not supported yet.");
+            return null;
+        }
+
+        public CompletionDocumentation resolveLink(String link) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Action getGotoSourceAction() {
+            //throw new UnsupportedOperationException("Not supported yet.");
+            return null;
+        }
     }
 
     public static final String COLOR_END = "</font>"; //NOI18N
@@ -503,18 +608,18 @@ public abstract class GsfCompletionItem implements CompletionItem {
     
     
 
-    private static final int PUBLIC_LEVEL = 3;
-    private static final int PROTECTED_LEVEL = 2;
-    private static final int PACKAGE_LEVEL = 1;
-    private static final int PRIVATE_LEVEL = 0;
-    
-    private static int getProtectionLevel(Set<Modifier> modifiers) {
-        if(modifiers.contains(Modifier.PUBLIC))
-            return PUBLIC_LEVEL;
-        if(modifiers.contains(Modifier.PROTECTED))
-            return PROTECTED_LEVEL;
-        if(modifiers.contains(Modifier.PRIVATE))
-            return PRIVATE_LEVEL;
-        return PACKAGE_LEVEL;
-    }    
+//    private static final int PUBLIC_LEVEL = 3;
+//    private static final int PROTECTED_LEVEL = 2;
+//    private static final int PACKAGE_LEVEL = 1;
+//    private static final int PRIVATE_LEVEL = 0;
+//    
+//    private static int getProtectionLevel(Set<Modifier> modifiers) {
+//        if(modifiers.contains(Modifier.PUBLIC))
+//            return PUBLIC_LEVEL;
+//        if(modifiers.contains(Modifier.PROTECTED))
+//            return PROTECTED_LEVEL;
+//        if(modifiers.contains(Modifier.PRIVATE))
+//            return PRIVATE_LEVEL;
+//        return PACKAGE_LEVEL;
+//    }    
 }

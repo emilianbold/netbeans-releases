@@ -46,6 +46,6 @@ public class WrongJsDocTest extends HintTestBase {
     }            
 
     public void testHint1() throws Exception {
-        findHints(this, new WrongJsDoc(), "testfiles/wrongdocs.js", null);
+        checkHints(this, new WrongJsDoc(), "testfiles/wrongdocs.js", null);
     }
 }

@@ -381,7 +381,10 @@ public final class AntBridge {
                 cp.add(toolsJar);
             }
         }
-        // XXX consider adding ${user.home}/.ant/lib/*.jar (org.apache.tools.ant.launch.Launcher.USER_LIBDIR)
+        File[] standardExtensions = new File(new File(System.getProperty("user.home"), ".ant"), "lib").listFiles(new JarFilter());
+        if (standardExtensions != null) {
+            cp.addAll(Arrays.asList(standardExtensions));
+        }
         cp.addAll(AntSettings.getExtraClasspath());
         cp.addAll(AntSettings.getAutomaticExtraClasspath());
         // XXX note that systemClassLoader will include boot.jar, and perhaps anything else

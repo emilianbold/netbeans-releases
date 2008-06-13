@@ -71,7 +71,7 @@ public class CopyTest extends AbstractCLITest {
         assertNotNull(info);
         assertEquals(getFileUrl(filecopy), info.getUrl());
         
-        // XXX notify
+        assertNotifiedFiles(new File[] {});
     }        
     
     public void testCopyURL2URLPrevRevision() throws Exception {                                        
@@ -93,7 +93,7 @@ public class CopyTest extends AbstractCLITest {
 
         InputStream is = getContent(getFileUrl(filecopy));
         assertContents(is, 1);
-        
+        assertNotifiedFiles(new File[] {});
     }        
 
     public void testCopyFile2URL() throws Exception {                                        
@@ -109,6 +109,7 @@ public class CopyTest extends AbstractCLITest {
         ISVNInfo info = getInfo(getFileUrl(filecopy));
         assertNotNull(info);
         assertEquals(getFileUrl(filecopy), info.getUrl());
+        assertNotifiedFiles(new File[] {});
     }        
     
     public void testCopyURL2File() throws Exception {                                        
@@ -124,7 +125,7 @@ public class CopyTest extends AbstractCLITest {
 
         assertTrue(filecopy.exists());
         assertStatus(SVNStatusKind.ADDED, filecopy);
-                
+        assertNotifiedFiles(new File[] {filecopy});        
     }        
     
     public void testCopyURL2FilePrevRevision() throws Exception {                                        
@@ -143,6 +144,7 @@ public class CopyTest extends AbstractCLITest {
         c.copy(getFileUrl(file), filecopy, prevRev);
         
         assertContents(filecopy, 1);
+        assertNotifiedFiles(new File[] {filecopy});        
     }            
     
 }

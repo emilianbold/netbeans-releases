@@ -239,7 +239,8 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         if (rev.getFile() == null) return;
         long revision2 = Long.parseLong(rev.getLogInfoHeader().getLog().getRevision());
         
-        showDiff(rev, Long.toString(revision2 - 1), Long.toString(revision2), showLastDifference);
+        String ancestor = rev.getLogInfoHeader().getLog().getAncestor();        
+        showDiff(rev, ancestor != null? ancestor: Long.toString(revision2 - 1), Long.toString(revision2), showLastDifference);
     }
 
     private void showContainerDiff(RepositoryRevision container, boolean showLastDifference) {        
@@ -260,7 +261,8 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         }        
         if (newest.getFile() == null) return;
         long rev = Long.parseLong(newest.getLogInfoHeader().getLog().getRevision());
-        showDiff(newest, Long.toString(rev - 1), Long.toString(rev), showLastDifference);
+        String ancestor = newest.getLogInfoHeader().getLog().getAncestor();        
+        showDiff(newest, ancestor != null? ancestor: Long.toString(rev - 1), Long.toString(rev), showLastDifference);
     }
     
     void onNextButton() {

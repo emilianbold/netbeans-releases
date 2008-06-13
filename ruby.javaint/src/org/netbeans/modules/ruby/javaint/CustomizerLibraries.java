@@ -65,7 +65,11 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
     public CustomizerLibraries(Project project, SharedRubyProjectProperties uiProperties,
             CustomizerProviderImpl.SubCategoryProvider subcat ) {
         this.uiProperties = uiProperties;        
-        initComponents();        
+        initComponents();  
+        
+        // hidden until it is possible to use them (issue 134386)
+        jButtonAddArtifactC.setVisible(false);
+        jButtonAddLibraryC.setVisible(false);
         
         this.putClientProperty( "HelpID", "J2SE_CustomizerGeneral" ); // NOI18N
 

@@ -93,7 +93,16 @@ public abstract class TabDisplayerUI extends ComponentUI {
     public void uninstallUI(JComponent c) {
         assert c == displayer;
     }
-
+    
+    protected Font getTxtFont() {
+        Font result = UIManager.getFont("TabbedPane.font");
+        if (result != null) {
+            return result;
+        }
+        result = UIManager.getFont("controlFont");
+        return result;
+    }
+    
     /**
      * Get a shape representing the exact outline of the numbered tab. The
      * implementations in the package will return instances of

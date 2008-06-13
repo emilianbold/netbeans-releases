@@ -65,7 +65,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
 
     public static final String CUSTOMIZER_FOLDER_PATH = "Projects/org-netbeans-modules-php-project/Customizer"; //NO18N
 
-    private static final Map<Project, Dialog> project2Dialog = new HashMap<Project, Dialog>();
+    private static final Map<Project, Dialog> PROJECT_2_DIALOG = new HashMap<Project, Dialog>();
     private final PhpProject project;
 
     public CustomizerProviderImpl(PhpProject project) {
@@ -77,7 +77,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     }
 
     public void showCustomizer(String preselectedCategory) {
-        Dialog dialog = project2Dialog.get(project);
+        Dialog dialog = PROJECT_2_DIALOG.get(project);
         if (dialog != null) {
             dialog.setVisible(true);
             return;
@@ -96,15 +96,14 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_Customizer_Title"),
                 ProjectUtils.getInformation(project).getDisplayName()));
 
-        project2Dialog.put(project, dialog);
+        PROJECT_2_DIALOG.put(project, dialog);
         dialog.setVisible(true);
     }
 
     private class StoreListener implements ActionListener {
-
         private final PhpProjectProperties uiProperties;
 
-        StoreListener(PhpProjectProperties uiProperties ) {
+        StoreListener(PhpProjectProperties uiProperties) {
             this.uiProperties = uiProperties;
         }
 
@@ -114,7 +113,6 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     }
 
     private static class OptionListener extends WindowAdapter implements ActionListener {
-
         private final Project project;
 
         OptionListener(Project project) {
@@ -124,7 +122,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         // Listening to OK button ----------------------------------------------
         public void actionPerformed( ActionEvent e ) {
             // Close & dispose the the dialog
-            Dialog dialog = project2Dialog.get(project);
+            Dialog dialog = PROJECT_2_DIALOG.get(project);
             if (dialog != null) {
                 dialog.setVisible(false);
                 dialog.dispose();
@@ -134,14 +132,14 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         // Listening to window events ------------------------------------------
         @Override
         public void windowClosed(WindowEvent e) {
-            project2Dialog.remove(project);
+            PROJECT_2_DIALOG.remove(project);
         }
 
         @Override
         public void windowClosing(WindowEvent e) {
             //Dispose the dialog otherwsie the {@link WindowAdapter#windowClosed}
             //may not be called
-            Dialog dialog = project2Dialog.get(project);
+            Dialog dialog = PROJECT_2_DIALOG.get(project);
             if (dialog != null) {
                 dialog.setVisible(false);
                 dialog.dispose();

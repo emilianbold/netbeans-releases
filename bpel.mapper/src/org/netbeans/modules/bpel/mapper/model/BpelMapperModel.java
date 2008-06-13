@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -54,6 +55,7 @@ import org.netbeans.modules.soa.mappercore.utils.Utils;
  * 
  * @author nk160297
  * @author Vitaly Bychkov
+ * @author AlexanderPermyakov
  */
 public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
 
@@ -418,7 +420,7 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
                 graphSubset = null;
             }
         } else {
-            graphSubset = new GraphSubset(graphSubset);
+            graphSubset = new GraphSubset(graphSubset, treePath);
         }
         
         if (graphSubset == null) {
@@ -430,9 +432,12 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         int x0 = 0;
         int y0 = 0;
         if (graphSubset.getVertexCount() > 0) {
-            x0 = graphSubset.getVertex(0).getX();
-            y0 = graphSubset.getVertex(0).getY();
+            x0 = graphSubset.getMinYVertex().getX();
+            y0 = graphSubset.getMinYVertex().getY();
         }
+        
+        if (y < 0) {y = 0;}
+            
         for (int i = 0; i < graphSubset.getVertexCount(); i++) {
             Vertex vertex = graphSubset.getVertex(i);
 
@@ -472,12 +477,16 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         int x0 = 0;
         int y0 = 0;
         if (graphSubset.getVertexCount() > 0) {
-            x0 = graphSubset.getVertex(0).getX();
-            y0 = graphSubset.getVertex(0).getY();
+            x0 = graphSubset.getMinYVertex().getX();
+            y0 = graphSubset.getMinYVertex().getY();
         }
+        
+
+        if (newY < 0) {newY = 0;}
+        
         for (int i = graphSubset.getVertexCount() - 1; i >= 0; i--) {
             Vertex vertex = graphSubset.getVertex(i);
-
+                        
             if (vertex.getGraph() != null) {
                 oldGraph = vertex.getGraph();
                 if (oldGraph != graph) {
@@ -496,13 +505,14 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
                         }
                     }
                 }
-
+                
                 int xi = graphSubset.getVertex(i).getX();
                 int yi = graphSubset.getVertex(i).getY();
+                
                 vertex.setLocation(xi - x0 + newX, yi - y0 + newY);
             }
         }
-        
+                
         if (oldGraph != graph) {
             for (int i = graphSubset.getLinkCount() - 1; i >= 0; i--) {
                 Link link = graphSubset.getLink(i);
@@ -536,6 +546,41 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         fireGraphChanged(treePath);
         mRightTreeModel.fireTreeChanged(this, treePath);
     }
+    
+    public void delete(TreePath currentTreePath, GraphSubset graphGroup) {
+        HashSet<Link> linkSet = new HashSet<Link>();
+        //
+        // Add to selection all links which connected to the selected verteces
+        
+        for (int i = graphGroup.getVertexCount() - 1; i >= 0; i--) {
+            List<Link> connectedLinkList = 
+                    BpelMapperUtils.getConnectedLinkList(graphGroup.getVertex(i));
+            linkSet.addAll(connectedLinkList);
+        }
+        
+        for (int i = graphGroup.getLinkCount() - 1; i >=0; i--) {
+            linkSet.add(graphGroup.getLink(i));
+        }
+        // Remove the selected verteces and links
+        Graph graph = graphGroup.getGraph();
+        for (Link link : linkSet) {
+            link.disconnect();
+        }
+        for (int i = graphGroup.getVertexCount() - 1; i >= 0; i--) {
+            graph.removeVertex(graphGroup.getVertex(i));
+        }
+        
+        //
+        // Initiate graph repaint
+        fireGraphChanged(currentTreePath);
+    }
+    
+    public boolean canEditInplace(VertexItem vItem) {
+        //return vItem.getIngoingLink() == null;
+        return true;
+    }
+
+
 
     public void fireGraphChanged(TreePath treePath) {
         if (mChangeProcessor != null) {
@@ -660,10 +705,5 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
                 link.disconnect();
             }
         }
-    }
-
-    public boolean canEditInplace(VertexItem vItem) {
-        //return vItem.getIngoingLink() == null;
-        return true;
     }
 }

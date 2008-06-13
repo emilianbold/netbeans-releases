@@ -68,6 +68,7 @@ import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
@@ -301,6 +302,7 @@ public final class J2eePlatform {
      *
      * @param  toolName tool name, for example {@link #TOOL_APP_CLIENT_RUNTIME}.
      * @return classpath for the specified tool.
+     * @deprecated {@link #getLookup()} should be used to obtain tool specifics
      */
     public File[] getToolClasspathEntries(String toolName) {
         return impl.getToolClasspathEntries(toolName);
@@ -323,6 +325,7 @@ public final class J2eePlatform {
      *         specified tool.
      *
      * @since 1.16
+     * @deprecated {@link #getLookup()} should be used to obtain tool specifics
      */
     public String getToolProperty(String toolName, String propertyName) {
         return impl.getToolProperty(toolName, propertyName);
@@ -335,6 +338,7 @@ public final class J2eePlatform {
      * @param  toolName tool name, for example {@link #TOOL_APP_CLIENT_RUNTIME}.
      * @return <code>true</code> if platform supports tool of the given name,
      *         <code>false</code> otherwise.
+     * @deprecated {@link #getLookup()} should be used to obtain tool specifics
      */
     public boolean isToolSupported(String toolName) {
         return impl.isToolSupported(toolName);
@@ -546,6 +550,21 @@ public final class J2eePlatform {
                 getVolumeContent(this, J2eeLibraryTypeProvider.VOLUME_TYPE_SRC), contentItem);
 
         return manager.createURILibrary(ServerLibraryTypeProvider.LIBRARY_TYPE, libraryName, content); // NOI18N
+    }
+
+    /**
+     * Lookup providing a way to find non mandatory technologies supported
+     * by the platform.
+     * <p>
+     * <div class="nonnormative">
+     * The typical example of such support is a webservice stack.
+     * </div>
+     *
+     * @return Lookup providing way to find other supported technologies
+     * @since 1.44
+     */
+    public Lookup getLookup() {
+        return impl.getLookup();
     }
 
     private FileObject[] getVolumeContent(J2eePlatform platform, String volumeType) {

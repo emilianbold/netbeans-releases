@@ -5,7 +5,3 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/persistence/ui/resou
 OpenIDE-Module-Needs: javax.script.ScriptEngine.freemarker
 OpenIDE-Module-Implementation-Version: 1
 AutoUpdate-Show-In-Client: false
-
-Name: org/netbeans/modules/j2ee/persistence/unit/PUDataLoader.class
-OpenIDE-Module-Class: Loader
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject

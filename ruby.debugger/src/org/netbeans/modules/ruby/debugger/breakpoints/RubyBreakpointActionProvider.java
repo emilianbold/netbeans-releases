@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.ruby.debugger.EditorUtil;
 import org.netbeans.modules.ruby.debugger.Util;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
@@ -79,12 +80,12 @@ public final class RubyBreakpointActionProvider extends ActionsProviderSupport
     public void doAction(Object action) {
         RubyBreakpoint breakpoint = RubyBreakpointManager.getCurrentLineBreakpoint();
         if (breakpoint != null) {
-            RubyBreakpointManager.removeBreakpoint(breakpoint);
+            DebuggerManager.getDebuggerManager().removeBreakpoint(breakpoint);
         } else { // new breakpoint
             try {
                 Line line = EditorUtil.getCurrentLine();
                 if (line != null) {
-                    RubyBreakpointManager.addBreakpoint(line);
+                    RubyBreakpointManager.addLineBreakpoint(line);
                 }
             } catch (RubyDebuggerException e) {
                 Util.LOGGER.log(Level.WARNING, "Unable to add breakpoint.", e);

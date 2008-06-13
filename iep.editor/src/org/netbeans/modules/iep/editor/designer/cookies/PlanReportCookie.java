@@ -73,10 +73,10 @@ public class PlanReportCookie implements ReportCookie {
     private static List<String> filterPropertyNames = new ArrayList<String>();
 
     static {
-    	for(int i = 0; i < filterTheseProperties.length; i++) {
-    		String propName = filterTheseProperties[i];
-    		filterPropertyNames.add(propName);
-    	}
+        for(int i = 0; i < filterTheseProperties.length; i++) {
+            String propName = filterTheseProperties[i];
+            filterPropertyNames.add(propName);
+        }
     }
     public PlanReportCookie(PlanDataObject dataObject) {
         this.mDataObject = dataObject;
@@ -100,26 +100,26 @@ public class PlanReportCookie implements ReportCookie {
     
     
     private void fillReport(Report report) throws ReportException {
-    	ReportElementFactory elementFactory = ReportElementFactory.getDefault();
-    	
-    	//report level stuff
-    	//report name
-    	report.setName("Report of "+ mDataObject.getPrimaryFile().getNameExt());
-    	
-    	//report description
-    	IEPModel model = mDataObject.getPlanEditorSupport().getModel();
-    	PlanComponent planComponent = model.getPlanComponent();
-    	Documentation doc = planComponent.getDocumentation();
-    	String reportDescription = "";
-    	if(doc != null) {
-    		reportDescription = doc.getTextContent();
-    	} else {
-    		reportDescription = "This is a report for "+ this.mDataObject.getPrimaryFile().getNameExt() + ". Following is an overview of the iep process.";
-    	}
-    	
+        ReportElementFactory elementFactory = ReportElementFactory.getDefault();
+        
+        //report level stuff
+        //report name
+        report.setName("Report of "+ mDataObject.getPrimaryFile().getNameExt());
+        
+        //report description
+        IEPModel model = mDataObject.getPlanEditorSupport().getModel();
+        PlanComponent planComponent = model.getPlanComponent();
+        Documentation doc = planComponent.getDocumentation();
+        String reportDescription = "";
+        if(doc != null) {
+            reportDescription = doc.getTextContent();
+        } else {
+            reportDescription = "This is a report for "+ this.mDataObject.getPrimaryFile().getNameExt() + ". Following is an overview of the iep process.";
+        }
+        
         report.setDescription(reportDescription);
         report.setOverViewImage(createOverviewImage());
-    	
+        
         File iepFile = FileUtil.toFile(mDataObject.getPrimaryFile());
         ReportAttribute ra1 = elementFactory.createReportAttribute();
         ra1.setName("Name:");
@@ -142,22 +142,22 @@ public class PlanReportCookie implements ReportCookie {
         ra4.setValue(new Date(iepFile.lastModified()));
         report.addAttribute(ra4);
         
-    	//report body
-    	ReportBody body = elementFactory.createReportBody();
-    	report.setBody(body);
-    	
-    	ReportSection section = elementFactory.createReportSection();
-    	section.setDescription("Following section describe Operators used in this IEP Process.");
-    	body.addReportSection(section);
-    	
-    	PlanDesignViewMultiViewElement designElement = mDataObject.getPlanEditorSupport().getPlanDesignMultiviewElement();
-    	PlanCanvas canvas = designElement.getGraphView().getPlanCanvas();
-    	
-    	JGoDocument document = canvas.getDocument();
-    	
-    	List<EntityNode> nodes = new ArrayList<EntityNode>();
-    	
-    	JGoListPosition pos = document.getFirstObjectPos();
+        //report body
+        ReportBody body = elementFactory.createReportBody();
+        report.setBody(body);
+        
+        ReportSection section = elementFactory.createReportSection();
+        section.setDescription("Following section describe Operators used in this IEP Process.");
+        body.addReportSection(section);
+        
+        PlanDesignViewMultiViewElement designElement = mDataObject.getPlanEditorSupport().getPlanDesignMultiviewElement();
+        PlanCanvas canvas = designElement.getGraphView().getPlanCanvas();
+        
+        JGoDocument document = canvas.getDocument();
+        
+        List<EntityNode> nodes = new ArrayList<EntityNode>();
+        
+        JGoListPosition pos = document.getFirstObjectPos();
         while (pos != null) {
             JGoObject obj = document.getObjectAtPos(pos);
             pos = document.getNextObjectPos(pos);
@@ -179,8 +179,8 @@ public class PlanReportCookie implements ReportCookie {
         Iterator<EntityNode> it = nodes.iterator();
         
         while(it.hasNext()) {
-        	EntityNode node = it.next();
-        	createAndfillReportElement(node, elementFactory, section, planCanvas);
+            EntityNode node = it.next();
+            createAndfillReportElement(node, elementFactory, section, planCanvas);
         }
         
         
@@ -188,18 +188,18 @@ public class PlanReportCookie implements ReportCookie {
     }
     
     private void createAndfillReportElement(EntityNode node, 
-    										ReportElementFactory elementFactory,
-    										ReportSection section,
-    										PlanCanvas planCanvas) {
-    	
-    	OperatorComponent c = node.getModelComponent();
+                                            ReportElementFactory elementFactory,
+                                            ReportSection section,
+                                            PlanCanvas planCanvas) {
+        
+        OperatorComponent c = node.getModelComponent();
         
         ReportElement element = elementFactory.createReportElement();
         //element.setImage(createEntityNodeImage(node, planCanvas));
         element.setImage(node.getIcon().getImage());
         element.setName(c.getDisplayName());
         if(c.getDocumentation() != null) {
-        	element.setDescription(c.getDocumentation().getTextContent());
+            element.setDescription(c.getDocumentation().getTextContent());
         }
         section.addReportElement(element);
         
@@ -207,25 +207,25 @@ public class PlanReportCookie implements ReportCookie {
     }
     
     private void fillOperatorAttributes(OperatorComponent comp, 
-    								    ReportElement element, 
-    								    ReportElementFactory elementFactory) {
-    	List<Property> properties =  comp.getProperties();
-    	List<Property> filteredProperties = filterProperties(properties);
-    	Iterator<Property> it = filteredProperties.iterator();
-    	
-    	while(it.hasNext()) {
-    		Property p = it.next();
-    		String name = p.getName();
-    		String value = p.getValue();
-    		if(value != null && !value.equals("")) {
-    			String newVal = modifyPropertyValue(comp, p);
-    			
-	    		ReportAttribute attr = elementFactory.createReportAttribute();
-	    		attr.setName(name);
-	    		attr.setValue(newVal);
-	    		element.addAttribute(attr);
-    		}
-    	}
+                                        ReportElement element, 
+                                        ReportElementFactory elementFactory) {
+        List<Property> properties =  comp.getProperties();
+        List<Property> filteredProperties = filterProperties(properties);
+        Iterator<Property> it = filteredProperties.iterator();
+        
+        while(it.hasNext()) {
+            Property p = it.next();
+            String name = p.getName();
+            String value = p.getValue();
+            if(value != null && !value.equals("")) {
+                String newVal = modifyPropertyValue(comp, p);
+                
+                ReportAttribute attr = elementFactory.createReportAttribute();
+                attr.setName(name);
+                attr.setValue(newVal);
+                element.addAttribute(attr);
+            }
+        }
     }
     
     private Image createOverviewImage() {
@@ -251,7 +251,7 @@ public class PlanReportCookie implements ReportCookie {
     }
     
     private Image createEntityNodeImage(EntityNode node,
-    									PlanCanvas planCanvas) {
+                                        PlanCanvas planCanvas) {
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice gd = ge.getDefaultScreenDevice();
         GraphicsConfiguration gc = gd.getDefaultConfiguration();
@@ -274,62 +274,62 @@ public class PlanReportCookie implements ReportCookie {
     
     
     private List<Property> filterProperties(List<Property> properties) {
-    	List<Property> filteredProperties = new ArrayList<Property>();
-    	Iterator<Property> it = properties.iterator();
-    	while(it.hasNext()) {
-    		Property prop = it.next();
-    		String name = prop.getName();
-    		if(!filterPropertyNames.contains(name)) {
-    			filteredProperties.add(prop);
-    		}
-    	}
-    	return filteredProperties;
+        List<Property> filteredProperties = new ArrayList<Property>();
+        Iterator<Property> it = properties.iterator();
+        while(it.hasNext()) {
+            Property prop = it.next();
+            String name = prop.getName();
+            if(!filterPropertyNames.contains(name)) {
+                filteredProperties.add(prop);
+            }
+        }
+        return filteredProperties;
     }
     
     private String modifyPropertyValue(OperatorComponent comp, Property prop) {
-    	String name = prop.getName();
-    	String value = prop.getValue();
-    	String modifiedPropertyValue = prop.getValue();
-    	
-    	if(OperatorComponent.PROP_INPUTTYPE.equals(name)) {
-    		modifiedPropertyValue = TcgPsI18n.getI18nStringStripI18N(value);
-    	} else if(OperatorComponent.PROP_OUTPUTTYPE.equals(name)) {
-    		modifiedPropertyValue = TcgPsI18n.getI18nStringStripI18N(value);
-    	} else if(OperatorComponent.PROP_INPUT_ID_LIST.equals(name)) {
-    		StringBuffer str = new StringBuffer("");
-    		List<OperatorComponent> inputs =  comp.getInputOperatorList();
-    		Iterator<OperatorComponent> it = inputs.iterator();
-    		while(it.hasNext()) {
-    			OperatorComponent input = it.next();
-    			str.append(input.getDisplayName());
-    			
-    			if(it.hasNext()) {
-    				str.append(",");
-    			}
-    		}
-    		
-    		modifiedPropertyValue = str.toString();
-    	}
-    	
-    	return modifiedPropertyValue;
+        String name = prop.getName();
+        String value = prop.getValue();
+        String modifiedPropertyValue = prop.getValue();
+        
+        if(OperatorComponent.PROP_INPUTTYPE.equals(name)) {
+            modifiedPropertyValue = TcgPsI18n.getI18nStringStripI18N(value);
+        } else if(OperatorComponent.PROP_OUTPUTTYPE.equals(name)) {
+            modifiedPropertyValue = TcgPsI18n.getI18nStringStripI18N(value);
+        } else if(OperatorComponent.PROP_INPUT_ID_LIST.equals(name)) {
+            StringBuffer str = new StringBuffer("");
+            List<OperatorComponent> inputs =  comp.getInputOperatorList();
+            Iterator<OperatorComponent> it = inputs.iterator();
+            while(it.hasNext()) {
+                OperatorComponent input = it.next();
+                str.append(input.getDisplayName());
+                
+                if(it.hasNext()) {
+                    str.append(",");
+                }
+            }
+            
+            modifiedPropertyValue = str.toString();
+        }
+        
+        return modifiedPropertyValue;
     }
     
     class EntityNodeComparator implements Comparator<EntityNode> {
 
-		public int compare(EntityNode o1, EntityNode o2) {
-			Rectangle rect1 = o1.getBoundingRect();
-			Rectangle rect2 = o2.getBoundingRect();
-			
-			if(rect1.x < rect2.x && rect1.y < rect2.y) {
-				return -1;
-			} else if(rect1.x > rect2.x && rect1.y > rect2.y) {
-				return 1;
-			} else {
-				return 0;
-			}
-		}
+        public int compare(EntityNode o1, EntityNode o2) {
+            Rectangle rect1 = o1.getBoundingRect();
+            Rectangle rect2 = o2.getBoundingRect();
+            
+            if(rect1.x < rect2.x && rect1.y < rect2.y) {
+                return -1;
+            } else if(rect1.x > rect2.x && rect1.y > rect2.y) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
 
 
-    	
+        
     }
 }

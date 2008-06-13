@@ -60,6 +60,21 @@ class DbSchemaEntityMember extends EntityMember {
      * Original mapping to sql type
      */
     private SQLType sqlType;
+    
+    /**
+     * The length (only applies to character types).
+     */
+    private Integer length;
+    
+    /**
+     * The precision (only applies to numeric types).
+     */
+    private Integer precision;
+    
+    /**
+     * The precision (only applies to numeric types).
+     */
+    private Integer scale;
 
     /**
      * Column Element providing metadata
@@ -72,6 +87,13 @@ class DbSchemaEntityMember extends EntityMember {
         setMemberName(makeFieldName(element.getName().getName()));
 	isPrimaryKey = false;
         setMemberType(sqlType.getMemberType(element));
+        if (element.isCharacterType()) {
+            length = element.getLength();
+        }
+        if (element.isNumericType()) {
+            precision = element.getPrecision();
+            scale = element.getScale();
+        }
     }
 
     public boolean isNullable() {
@@ -81,7 +103,7 @@ class DbSchemaEntityMember extends EntityMember {
     public boolean isPrimaryKey() {
         return isPrimaryKey;
     }
-
+    
     public void setPrimaryKey(boolean isPk, boolean isPkField) {
         isPrimaryKey = isPk;
 
@@ -139,5 +161,34 @@ class DbSchemaEntityMember extends EntityMember {
     public boolean isLobType() {
         return SQLTypeUtil.isLob(getColumnElement().getType());
     }
-    
+
+    /** 
+     * Get the length of the column - for character type fields only.
+     * 
+     * @return the length, <code>null</code> if it is not a character type
+     * field or there is no length.
+     */
+    public Integer getLength() {
+        return length;
+    }
+
+    /** 
+     * Get the precision of the column - for numeric type fields only.
+     * 
+     * @return the precision, <code>null</code> if it is not a numeric type
+     * field or there is no precision.
+     */
+    public Integer getPrecision() {
+        return precision;
+    }
+
+    /** 
+     * Get the scale of the column - for numeric type fields only.
+     * 
+     * @return the scale, <code>null</code> if it is not a numeric type
+     * field or there is no scale.
+     */
+    public Integer getScale() {
+        return scale;
+    }
 }

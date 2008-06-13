@@ -60,9 +60,9 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
 
     /**
      * <p>Specific php sources type.
-     * <p>Should be used in <pre>Sources_instance.getSourceGroups(String)</pre> 
-     * to retrieve php project source folders. 
-     * General {@link  org.netbeans.api.project.Sources#TYPE_GENERIC} 
+     * <p>Should be used in <pre>Sources_instance.getSourceGroups(String)</pre>
+     * to retrieve php project source folders.
+     * General {@link  org.netbeans.api.project.Sources#TYPE_GENERIC}
      * will not return php source folders.
      * <pre>
      * Sources sources = ProjectUtils.getSources(phpProject);
@@ -73,8 +73,8 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
      */
     public static final String TYPE_PHP = "PHPSOURCE"; // NOI18N
 
-    private final AntProjectHelper myHelper;
-    private PropertyEvaluator myEvaluator;
+    private final AntProjectHelper helper;
+    private PropertyEvaluator evaluator;
 
     private SourcesHelper sourcesHelper;
     private Sources delegate;
@@ -85,17 +85,18 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     public PhpSources(AntProjectHelper helper, PropertyEvaluator evaluator) {
-        this.myHelper = helper;
-        this.myEvaluator = evaluator;
+        assert helper != null;
+        assert evaluator != null;
 
-        myEvaluator.addPropertyChangeListener(this);
-        
+        this.helper = helper;
+        this.evaluator = evaluator;
+
+        evaluator.addPropertyChangeListener(this);
         initSources(); // have to register external build roots eagerly
     }
 
     public SourceGroup[] getSourceGroups(final String type) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<SourceGroup[]>() {
-
             public SourceGroup[] run() {
                 Sources _delegate;
                 synchronized (PhpSources.this) {
@@ -119,7 +120,7 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
     }
 
     private Sources initSources() {
-        this.sourcesHelper = new SourcesHelper(myHelper, myEvaluator);
+        sourcesHelper = new SourcesHelper(helper, evaluator);
         /*
          * Main source root config.
          */
@@ -134,11 +135,8 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
             sourcesHelper.addTypedSourceRoot(roots.get(i), TYPE_PHP, labels.get(i), null, null);
         }
 
-
-
         externalRootsRegistered = false;
         ProjectManager.mutex().postWriteRequest(new Runnable() {
-
             public void run() {
                 if (!externalRootsRegistered) {
                     sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
@@ -146,14 +144,13 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
                 }
             }
         });
-        return this.sourcesHelper.createSources();
+        return sourcesHelper.createSources();
     }
 
     private void readSources(final List<String> labels, final List<String> roots) {
-        ProjectManager.mutex().readAccess(new Mutex.Action<Object>() {
-
-            public Object run() {
-                EditableProperties props = myHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ProjectManager.mutex().readAccess(new Runnable() {
+            public void run() {
+                EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                 for (Entry<String, String> entry : props.entrySet()) {
                     String key = entry.getKey();
                     String value = entry.getValue();
@@ -166,7 +163,6 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
                     }
                     continue;
                 }
-                return null;
             }
         });
     }
@@ -187,7 +183,7 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
     public void propertyChange(PropertyChangeEvent evt) {
         String property = evt.getPropertyName();
         if (PhpProjectProperties.SRC_DIR.equals(property)) {
-           this.fireChange();
+           fireChange();
         }
     }
 
@@ -197,7 +193,7 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
      * wrapped by this one.
      */
     public void stateChanged(ChangeEvent e) {
-        this.fireChange();
+        fireChange();
     }
 
     private void fireChange() {
@@ -209,5 +205,4 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
         }
         changeSupport.fireChange();
     }
-
 }

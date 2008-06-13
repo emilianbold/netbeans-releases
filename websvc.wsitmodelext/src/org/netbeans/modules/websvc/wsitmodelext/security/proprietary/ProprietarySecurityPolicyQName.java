@@ -52,6 +52,7 @@ import java.util.Set;
 public enum ProprietarySecurityPolicyQName {
     KEYSTORE(createSecurityPolicyQName("KeyStore")),  //NOI18N
     TRUSTSTORE(createSecurityPolicyQName("TrustStore")),  //NOI18N
+    KERBEROSCONFIG(createSecurityPolicyQName("KerberosConfig")),  //NOI18N
     TIMESTAMP(createSecurityPolicyQName("Timestamp")), //NOI18N
     VALIDATORCONFIGURATION(createSecurityPolicyQName("ValidatorConfiguration")),  //NOI18N
     VALIDATOR(createSecurityPolicyQName("Validator")),  //NOI18N

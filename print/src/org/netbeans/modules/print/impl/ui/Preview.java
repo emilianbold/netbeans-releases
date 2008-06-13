@@ -179,8 +179,7 @@ public final class Preview extends Dialog implements Percent.Listener {
   }
 
   @Override
-  protected void updated()
-  {
+  protected void updated() {
 //out("Update content");
     createPapers();
     toggle();
@@ -695,8 +694,7 @@ public final class Preview extends Dialog implements Percent.Listener {
   }
       
   @Override
-  protected DialogDescriptor createDescriptor()
-  {
+  protected DialogDescriptor createDescriptor() {
     Object [] rightButtons = getRightButtons();
     Object [] leftButtons = getLeftButtons();
 
@@ -717,15 +715,13 @@ public final class Preview extends Dialog implements Percent.Listener {
   }
 
   @Override
-  protected void opened()
-  {
+  protected void opened() {
 //out("Opened");
     myScrollPane.requestFocus();
   }
 
   @Override
-  protected void resized()
-  {
+  protected void resized() {
     if (myScale.isCustomValue()) {
       showCustom(false);
     }

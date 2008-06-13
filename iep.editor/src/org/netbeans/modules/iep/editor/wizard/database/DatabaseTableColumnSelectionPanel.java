@@ -7,14 +7,17 @@
 package org.netbeans.modules.iep.editor.wizard.database;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeCellRenderer;
 
-import org.netbeans.module.iep.editor.xsd.SchemaArtifactTreeCellEditor;
-import org.netbeans.module.iep.editor.xsd.SchemaArtifactTreeCellRenderer;
-import org.netbeans.modules.xml.axi.AXIComponent;
+import javax.swing.tree.TreePath;
+import org.netbeans.modules.iep.editor.xsd.SchemaArtifactTreeCellEditor;
+import org.netbeans.modules.iep.editor.xsd.SchemaArtifactTreeCellRenderer;
 
 /**
  *
@@ -22,8 +25,9 @@ import org.netbeans.modules.xml.axi.AXIComponent;
  */
 public class DatabaseTableColumnSelectionPanel extends javax.swing.JPanel {
 
-	private List<ColumnInfo> mExistingColumnNames = new ArrayList<ColumnInfo>();
-	
+    private List<ColumnInfo> mExistingColumnNames = new ArrayList<ColumnInfo>();
+
+    
     /** Creates new form DatabaseTableColumnSelectionPanel */
     public DatabaseTableColumnSelectionPanel() {
         initComponents();
@@ -39,39 +43,10 @@ public class DatabaseTableColumnSelectionPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        jPanel2 = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTree1 = new javax.swing.JTree();
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(DatabaseTableColumnSelectionPanel.class, "DatabaseTableColumnSelectionPanel.jLabel1.text")); // NOI18N
-
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(DatabaseTableColumnSelectionPanel.class, "DatabaseTableColumnSelectionPanel.jLabel2.text")); // NOI18N
-
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
-
-        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
-            .add(jPanel2Layout.createSequentialGroup()
-                .add(jLabel2)
-                .addContainerGap())
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(jLabel2)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 64, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
 
         jScrollPane2.setViewportView(jTree1);
 
@@ -79,34 +54,32 @@ public class DatabaseTableColumnSelectionPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 400, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .addContainerGap())
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
-                            .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addContainerGap())))
+                    .add(jLabel1)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE)
-                .add(18, 18, 18)
-                .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     public void setSelectedTables(List<TableInfo> tables) {
-        DBArtifactTreeModel model = new DBArtifactTreeModel(new DefaultMutableTreeNode("root"), tables);
+    	if(tables == null) {
+    		return;
+    	}
+    	
+    	updateExistColumnList(tables);
+    	
+        DBArtifactTreeModel model = new DBArtifactTreeModel(new DefaultMutableTreeNode("root"), tables, this.mExistingColumnNames);
         this.jTree1.setModel(model);
         this.jTree1.setRootVisible(false);
         TreeCellRenderer renderer = new SchemaArtifactTreeCellRenderer();
@@ -114,27 +87,53 @@ public class DatabaseTableColumnSelectionPanel extends javax.swing.JPanel {
         this.jTree1.setCellRenderer(renderer);
         this.jTree1.setCellEditor(editor);
         this.jTree1.setEditable(true);
+        
+        final List<TableNode> tableNodes = model.getTableNodes();
+        
+        Runnable r = new Runnable() {
+        	public void run() {
+                    Iterator<TableNode> it = tableNodes.iterator();
+                
+                    while(it.hasNext()) {
+                            TableNode node = it.next();
+                            TreePath path = new TreePath(node.getPath());
+                            jTree1.expandPath(path);
+                    }
+        		
+        	}
+        };
+        
+        
+        SwingUtilities.invokeLater(r);
     }
     
-    public void setJoinCondition(String joinCondition) {
-    	this.jTextArea1.setText(joinCondition);
-    }
-    
-    public String getJoinCondition() {
-        return this.jTextArea1.getText();
-    }
     
     public List<ColumnInfo> getSelectedColumns() {
     	return this.mExistingColumnNames;
     }
     
+    
+    private void updateExistColumnList(List<TableInfo> tables) {
+    	
+    	List<ColumnInfo> invalidExistingColumns = new ArrayList<ColumnInfo>();
+    	
+    	Iterator<ColumnInfo> it = this.mExistingColumnNames.iterator();
+    	while(it.hasNext()) {
+    		ColumnInfo column = it.next();
+    		TableInfo table = column.getTable();
+    		if(!tables.contains(table)) {
+    			invalidExistingColumns.add(column);
+    		}
+    	}
+    	
+    	//remove old invalid columns
+    	this.mExistingColumnNames.removeAll(invalidExistingColumns);
+    	
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTree jTree1;
     // End of variables declaration//GEN-END:variables
 

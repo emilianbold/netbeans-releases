@@ -95,11 +95,7 @@ final class Tree extends JTree {
     addElement(myRoot, element, getParents(element));
   }
 
-  private void addElement(
-    MutableTreeNode root,
-    SearchElement element,
-    Iterator<SearchElement> parents)
-  {
+  private void addElement(MutableTreeNode root, SearchElement element, Iterator<SearchElement> parents) {
     SearchElement next = null;
 
     if (parents.hasNext()) {
@@ -153,8 +149,7 @@ final class Tree extends JTree {
   }
 
   @Override
-  public String toString()
-  {
+  public String toString() {
     return myText;
   }
 
@@ -671,14 +666,7 @@ final class Tree extends JTree {
   }
 
   @Override
-  public String convertValueToText(
-    Object node,
-    boolean selected,
-    boolean expanded,
-    boolean leaf,
-    int row,
-    boolean hasFocus)
-  {
+  public String convertValueToText(Object node, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
     if (node != null) {
       String text = node.toString();
   
@@ -701,10 +689,7 @@ final class Tree extends JTree {
   // ----------------------------------------------------------------------
   private static final class TreeRenderer extends DefaultTreeCellRenderer {
 
-    public Component getTreeCellRendererComponent (
-      JTree tree, Object value, boolean select, boolean expanded,
-      boolean leaf, int row, boolean focus)
-    {
+    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean select, boolean expanded,boolean leaf, int row, boolean focus) {
       super.getTreeCellRendererComponent(tree, value, select, expanded, leaf, row, focus);
       SearchElement element = getUserObject(value);
       setText(getHtml(getHtmlName(element.getName(), leaf, row)));

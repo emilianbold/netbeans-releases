@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,6 +44,7 @@ package org.netbeans.modules.options.advanced;
 import java.awt.BorderLayout;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -51,10 +52,10 @@ import javax.swing.JTabbedPane;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.options.OptionsPanelControllerAccessor;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.netbeans.modules.options.*;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 
@@ -65,16 +66,26 @@ import org.openide.util.LookupListener;
  * @author Jan Jancura
  */
 public final class AdvancedPanel extends JPanel {    
-    JTabbedPane     tabbedPanel;    
+    JTabbedPane     tabbedPanel;
+    private static final Logger LOGGER = Logger.getLogger(AdvancedPanel.class.getName());
     private LookupListener listener = new LookupListenerImpl();
-    private Model   model = new Model (listener);
+    private Model model;
+    private String subpath;
     private ChangeListener changeListener = new ChangeListener () {
             public void stateChanged(ChangeEvent e) {
                 handleTabSwitched();
             }
         };
     
-    AdvancedPanel () {}
+     /*
+     * @param subpath path to folder under OptionsDialog folder containing 
+     * instances of AdvancedOption class. Path is composed from registration 
+     * names divided by slash.
+     */
+    AdvancedPanel(String subpath) {
+        this.subpath = subpath;
+        this.model = new Model(subpath, listener);
+    }
         
     public void update () {
         int idx = tabbedPanel.getSelectedIndex();
@@ -117,7 +128,7 @@ public final class AdvancedPanel extends JPanel {
         add (tabbedPanel, BorderLayout.CENTER);
         initTabbedPane (masterLookup);
     }
-    
+
     private void initTabbedPane(Lookup masterLookup) {
         tabbedPanel.removeChangeListener(changeListener);
         tabbedPanel.removeAll();
@@ -130,6 +141,38 @@ public final class AdvancedPanel extends JPanel {
         }
         tabbedPanel.addChangeListener(changeListener);
         handleTabSwitched();
+    }
+    
+    public void setCurrentSubcategory(String path) {
+        String subcategoryID = path.indexOf('/') == -1 ? path : path.substring(0, path.indexOf('/'));
+        final String subcategorySubpath = path.indexOf('/') == -1 ? null : path.substring(path.indexOf('/')+1);
+        LOGGER.fine("Set current subcategory: "+path); // NOI18N
+        if(!model.getIDs().contains(subcategoryID)) {
+            LOGGER.warning("Subcategory "+subcategoryID+" not found.");  //NOI18N
+            return;
+        }
+        String newDisplayName = model.getDisplayName(subcategoryID);
+        String currentDisplayName = getSelectedDisplayName();
+        if (!newDisplayName.equals(currentDisplayName)) {
+            for (int i = 0; i < tabbedPanel.getComponentCount(); i++) {
+                if (tabbedPanel.getTitleAt(i).equals(newDisplayName)) {
+                    tabbedPanel.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
+        if(subcategorySubpath != null) {
+            OptionsPanelControllerAccessor.getDefault().setCurrentSubcategory(model.getController(subcategoryID), subcategorySubpath);
+        }
+    }
+    
+    private String getSelectedDisplayName() {
+        String categoryDisplayName = null;
+        final int selectedIndex = tabbedPanel.getSelectedIndex();
+        if (selectedIndex != -1) {
+            categoryDisplayName = tabbedPanel.getTitleAt(selectedIndex);
+        }
+        return categoryDisplayName;
     }
 
     private void handleTabSwitched() {        
@@ -148,7 +191,7 @@ public final class AdvancedPanel extends JPanel {
     private class LookupListenerImpl implements LookupListener {
         public void resultChanged(LookupEvent ev) {
             Lookup masterLookup = model.getLookup();
-            model = new Model(listener);
+            model = new Model(subpath, listener);
             initTabbedPane(masterLookup);
         }        
     }

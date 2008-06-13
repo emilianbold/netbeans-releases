@@ -49,24 +49,5 @@ import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
  */
 public interface RMAssertion extends ExtensibilityElement {
     public static final String RMASSERTION_PROPERTY = "RMRMASSERTION";     //NOI18N
-    public static final String INACTIVITY_TIMEOUT_PROPERTY = "INACTIVITY_TIMEOUT";     //NOI18N
-    public static final String BASE_RETRANSMISSION_INTERVAL_PROPERTY = "BASE_TRANSMISSION_INTERVAL";     //NOI18N
-    public static final String EXPONENTIAL_BACKOFF_PROPERTY = "EXPONENTIAL_BACKOFF";     //NOI18N
-    public static final String ACKNOWLEDGEMENT_INTERVAL_PROPERTY = "ACKNOWLEDGEMENT_INTERVAL";     //NOI18N
     
-    InactivityTimeout getInactivityTimeout();
-    void setInactivityTimeout(InactivityTimeout inactivityTimeout);
-    void removeInactivityTimeout(InactivityTimeout inactivityTimeout);
-
-    BaseRetransmissionInterval getBaseRetransmissionInterval();
-    void setBaseRetransmissionInterval(BaseRetransmissionInterval baseRetransmissionInterval);
-    void removeBaseRetransmissionInterval(BaseRetransmissionInterval baseRetransmissionInterval);
-    
-    ExponentialBackoff getExponentialBackoff();
-    void setExponentialBackoff(ExponentialBackoff exponentialBackoff);
-    void removeExponentialBackoff(ExponentialBackoff exponentialBackoff);
-
-    AcknowledgementInterval getAcknowledgementInterval();
-    void setAcknowledgementInterval(AcknowledgementInterval acknowledgementInterval);
-    void removeAcknowledgementInterval(AcknowledgementInterval acknowledgementInterval);
 }

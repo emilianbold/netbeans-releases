@@ -41,7 +41,6 @@ package org.netbeans.modules.ruby.hints.introduce;
 
 import org.netbeans.modules.ruby.ParseTreeWalker;
 import java.util.MissingResourceException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -59,13 +58,15 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.EditList;
+import org.netbeans.modules.gsf.api.PreviewableFix;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.ruby.RubyFormatter;
 import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyMimeResolver;
-import org.netbeans.modules.ruby.hints.spi.EditList;
-import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -82,20 +83,24 @@ class IntroduceFix implements PreviewableFix {
     private static final boolean FORCE_COMPLETION_SPACES = Boolean.getBoolean("ruby.complete.spaces"); // NOI18N
     private static final boolean COMMENT_NEW_ELEMENTS = !Boolean.getBoolean("ruby.create.nocomments"); // NOI18N
 
+    private final RubyRuleContext context;
     private final CompilationInfo info;
     private final OffsetRange lexRange;
     private final OffsetRange astRange;
     private final IntroduceKind kind;
     private final List<Node> nodes;
-    private BaseDocument doc;
+    private final BaseDocument doc;
     private int commentOffset = -1;
     
-    IntroduceFix(CompilationInfo info, List<Node> nodes, OffsetRange lexRange, OffsetRange astRange, IntroduceKind kind) {
-        this.info = info;
+    IntroduceFix(RubyRuleContext context, List<Node> nodes, OffsetRange lexRange, OffsetRange astRange, IntroduceKind kind) {
+        this.context = context;
         this.nodes = nodes;
         this.lexRange = lexRange;
         this.astRange = astRange;
         this.kind = kind;
+        
+        this.info = context.compilationInfo;
+        this.doc = context.doc;
     }
 
     public String getKeyExt() {
@@ -160,13 +165,6 @@ class IntroduceFix implements PreviewableFix {
     }
     
     private EditList createEdits(String name) throws Exception {
-        try {
-            doc = (BaseDocument) info.getDocument();
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-            return null;
-        }
-
         String guessedName = AstUtilities.guessName(info, lexRange, astRange);
         RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
         AstPath startPath = new AstPath(AstUtilities.getRoot(info), astRange.getStart());
@@ -330,6 +328,8 @@ class IntroduceFix implements PreviewableFix {
         }
         
         EditList edits = new EditList(doc);
+        edits.setFormatter(new RubyFormatter(), false);
+
         edits.replace(lexStart, lexEnd-lexStart, name, true, 1);
         edits.replace(begin, 0, sb.toString(), true, 2);
 
@@ -386,6 +386,7 @@ class IntroduceFix implements PreviewableFix {
 
         StringBuilder sb = new StringBuilder();
         EditList edits = new EditList(doc);
+        edits.setFormatter(new RubyFormatter(), false);
         boolean isAbove = prevEnd < astRange.getStart();
         sb.append("\n");
         if (!isAbove) {

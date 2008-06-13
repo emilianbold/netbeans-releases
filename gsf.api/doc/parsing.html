@@ -1,0 +1,96 @@
+<html>
+    <body>
+        <h2>GSF Parsing</h2>
+        <blockquote style="background-color: #ffdddd; color: black; padding: 20px; border: solid 1px black">
+            NOTE: There is a new Parsing API underway. This will be something
+            equivalent to the Lexer API, but applied to parsing. The plan is for GSF
+            to remove its own Parser registration and interfaces and replace it with
+            the standard Parser API. This will allow embedding and coordination
+            not just among GSF-based languages, but for all languages that implement
+            the parsing API (such as Java, and C/C++, which are not GSF based).
+        </blockquote>
+        <p>
+            You need to implement the 
+            <a href="org/netbeans/modules/gsf/api/Parser.html">Parser</a> interface,
+            and <a href="registration.html">register</a> it with GSF.
+            Once you've done that, your Parser will be called whenever some feature
+            needs a parse tree, and one isn't available or up to date already.
+        </p>
+        <p>
+            Typically, you'll probably just wrap an existing parser here -
+            for Ruby we're using the JRuby parser, for JavaScript we're using
+            Rhino, for Groovy we're using groovyc, etc. However, you can
+            obviously write a parser from scratch as well - I think that's the
+            approach the PHP editor team has taken (though I'm not sure of the
+            details).
+        </p>
+        <p>
+            The key thing is that you parse the file, and then return a ParserResult
+            from your Parser.  The ParserResult is typically going to be your
+            <b>own</b> subclass of <code>ParserResult</code> where you store
+            additional state, such as your own AST (abstract syntax tree).
+            Then, when you're implementing the various features, you're
+            handed back your own <code>ParserResult</code>, you can cast it
+            to your own result class and pull out the AST which you can then
+            use to do semantic code analysis.
+        </p>
+        <h3>Error Recovery</h3>
+        <p>
+            One of the trickiest part about wrapping an existing parser, is handling
+            error recovery.  Most parsers aren't used to having to deal with
+            erroneous source - well, they can abort with an error message.
+            In the IDE however, parsing broken source is the norm. If the
+            user is trying to do code completion, the source code may look like
+            this:
+            <pre style="background: #ffffcc; color: black; border: solid 1px black; padding: 5px">    
+            def foo(bar)
+               bar.|
+            end
+            </pre>
+            the user is trying to complete methods on the bar symbol - but obviously
+            the source is currently broken. Your parser needs to be able to handle
+            this scenario!
+        </p>
+        <p>
+            There are a number of strategies for attacking this problem. You
+            can take a look at the RubyParser and the JsParser implementations
+            for Ruby and JavaScript for some inspiration.
+        </p>
+        <h3>Incremental Parsing</h3>
+        <p>
+            GSF does not yet support incremental parsing, but it's planned for
+            both the Parsing API, and obviously I will be updating all the
+            feature implementation interfaces in GSF to account for it.
+        </p>
+        <p>
+            The idea is that your parser will be told about recent editing
+            regions (e.g. the "damage area" since your last parse job).
+            You will also be handed your old parse tree. Your parser then
+            has the option of deciding that the editing range is small,
+            for example completely contained within a single function,
+            and you can run your parser in such a way that you <b>only</b>
+            parse that single function, and then perform some AST surgery
+            to update the AST offsets (after the damage range) and replace
+            the function node with the new function node. (Or in other cases,
+            cloning the AST tree with modifications, as appropriate).
+        </p>
+        <p>
+            Your parser will have a way to indicate whether it supports incremental
+            parsing. If it doesn't, GSF doesn't have to store ParserResults around,
+            as well as other data to help with incremental updates (such as
+            your previous semantic highlighting results, etc).
+        </p>
+        <p>
+            In your parser, you'll store information about the incremental update
+            if you performed one.  When your other features like semantic
+            highlighting are running, they have the option of performing a
+            an incremental update to their own data, e.g. only updating the
+            semantic highlights for the current function. Obviously, some features
+            may include looking outside the current function or the whole
+            file (for example, unused private method detection) - but that will
+            be up to each individual language plugin and feature implementation.
+        </p>
+        <br/>
+        <span style="color: #cccccc">Tor Norbye &lt;tor@netbeans.org&gt;</span>
+    </body>
+</html>

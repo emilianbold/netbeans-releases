@@ -56,9 +56,10 @@ public class FindUsagesClassOperator extends ParametersPanelOperator {
         super(java.util.ResourceBundle.getBundle("org.netbeans.modules.refactoring.spi.impl.Bundle").getString("LBL_FindUsagesDialog"));
     }
     private JButtonOperator find;
+    private JButtonOperator cancel;
     private JLabelOperator label;
     private JCheckBoxOperator searchInComments;
-    private JRadioButtonOperator findUsages;
+    private JRadioButtonOperator findUsages;    
     private JRadioButtonOperator findDirectSubtypes;
     private JRadioButtonOperator findAllSubtypes;
     private JCheckBoxOperator findOverridding;
@@ -72,6 +73,13 @@ public class FindUsagesClassOperator extends ParametersPanelOperator {
             find = new JButtonOperator(this, "Find");
         }
         return find;
+    }
+    
+    public JButtonOperator getCancel() {
+        if (cancel == null) {
+            cancel = new JButtonOperator(this, "Cancel");
+        }
+        return cancel;
     }
 
     public JLabelOperator getLabel() {
@@ -126,7 +134,7 @@ public class FindUsagesClassOperator extends ParametersPanelOperator {
 
     public JCheckBoxOperator getFindMethodUsage() {
         if (findMethodUsage == null) {
-            findMethodUsage = new JCheckBoxOperator(this,  getBungleText("org.netbeans.modules.refactoring.java.ui.Bundle","LBL_SearchInComents"));
+            findMethodUsage = new JCheckBoxOperator(this,  getBungleText("org.netbeans.modules.refactoring.java.ui.Bundle","LBL_FindUsages"));
         }
         return findMethodUsage;
     }

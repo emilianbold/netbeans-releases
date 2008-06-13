@@ -40,9 +40,11 @@
  */
 package org.netbeans.modules.php.project;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.util.Collections;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
@@ -57,12 +59,15 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.netbeans.spi.project.support.ant.FilterPropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyProvider;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
@@ -83,50 +88,69 @@ public class PhpProject implements Project, AntProjectListener {
     private static final Icon PROJECT_ICON = new ImageIcon(
             Utilities.loadImage("org/netbeans/modules/php/project/ui/resources/phpProject.png")); // NOI18N
 
-    PhpProject( AntProjectHelper helper ) {
-        myHelper = helper;
-        AuxiliaryConfiguration configuration = 
-            helper.createAuxiliaryConfiguration();
-        myRefHelper = new ReferenceHelper(helper, configuration, getEvaluator());
-        myGenFilesHelper = new GeneratedFilesHelper( helper );
+    private final AntProjectHelper helper;
+    private final ReferenceHelper refHelper;
+    private Lookup lookup;
+    private final PropertyEvaluator eval;    
+    
+
+    PhpProject(AntProjectHelper helper) {
+        assert helper != null;
+
+        this.helper = helper;
+        AuxiliaryConfiguration configuration = helper.createAuxiliaryConfiguration();
+        eval = createEvaluator();
+        refHelper = new ReferenceHelper(helper, configuration, getEvaluator());
         helper.addAntProjectListener(this);
-        initLookup( configuration );
+        initLookup(configuration);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.api.project.Project#getLookup()
-     */
     public Lookup getLookup() {
-        return myLookup;
+        return lookup;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.api.project.Project#getProjectDirectory()
-     */
+    public PropertyEvaluator getEvaluator() {
+        return eval;
+    }
+    
+    private PropertyEvaluator createEvaluator() {
+        // It is currently safe to not use the UpdateHelper for PropertyEvaluator; UH.getProperties() delegates to APH
+        // Adapted from APH.getStandardPropertyEvaluator (delegates to ProjectProperties):
+        PropertyEvaluator baseEval1 = PropertyUtils.sequentialPropertyEvaluator(
+                helper.getStockPropertyPreprovider(),
+                helper.getPropertyProvider(PhpConfigurationProvider.CONFIG_PROPS_PATH));
+        PropertyEvaluator baseEval2 = PropertyUtils.sequentialPropertyEvaluator(
+                helper.getStockPropertyPreprovider(),
+                helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
+        return PropertyUtils.sequentialPropertyEvaluator(
+                helper.getStockPropertyPreprovider(),
+                helper.getPropertyProvider(PhpConfigurationProvider.CONFIG_PROPS_PATH),
+                new ConfigPropertyProvider(baseEval1, "nbproject/private/configs", helper), // NOI18N
+                helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
+                helper.getProjectLibrariesPropertyProvider(),
+                PropertyUtils.userPropertiesProvider(baseEval2,
+                    "user.properties.file", FileUtil.toFile(getProjectDirectory())), // NOI18N
+                new ConfigPropertyProvider(baseEval1, "nbproject/configs", helper), // NOI18N
+                helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
+    }    
+     
     public FileObject getProjectDirectory() {
         return getHelper().getProjectDirectory();
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.project.support.ant.AntProjectListener#configurationXmlChanged(org.netbeans.spi.project.support.ant.AntProjectEvent)
-     */
-    public void configurationXmlChanged( AntProjectEvent event ) {
+    public void configurationXmlChanged(AntProjectEvent event) {
         /*
          *  The code below is standart and copied f.e. from MakeProject
          */
-        if (event.getPath().equals( AntProjectHelper.PROJECT_XML_PATH ) ) {
+        if (event.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
             // Could be various kinds of changes, but name & displayName might have changed.
-            Info info = (Info)getLookup().lookup( ProjectInformation.class );
-            info.firePropertyChange( ProjectInformation.PROP_NAME );
-            info.firePropertyChange( ProjectInformation.PROP_DISPLAY_NAME );
+            Info info = (Info) getLookup().lookup(ProjectInformation.class);
+            info.firePropertyChange(ProjectInformation.PROP_NAME);
+            info.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);
         }
-
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.project.support.ant.AntProjectListener#propertiesChanged(org.netbeans.spi.project.support.ant.AntProjectEvent)
-     */
-    public void propertiesChanged( AntProjectEvent arg0 ) {
+    public void propertiesChanged(AntProjectEvent ev) {
         // We are interested only to listen to changes in sources.
         // PhpSources will do it itself
         /*
@@ -134,42 +158,35 @@ public class PhpProject implements Project, AntProjectListener {
          */
         //  currently ignored (probably better to listen to evaluator() if you need to)
     }
-    
+
     /*
      * Copied from MakeProject.
      */
     public String getName() {
-        return ProjectManager.mutex().readAccess(
-                new Mutex.Action<String>() 
-                {
-
-                    public String run() {
-                        Element data = getHelper().getPrimaryConfigurationData(true);
-                        NodeList nl = data.getElementsByTagNameNS(
-                                PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
-                        if (nl.getLength() == 1) {
-                            nl = nl.item(0).getChildNodes();
-                            if (nl.getLength() == 1
-                                    && nl.item(0).getNodeType() == Node.TEXT_NODE)
-                            {
-                                return ((Text) nl.item(0)).getNodeValue();
-                            }
-                        }
-                        return "???";                                           // NOI18N
+        return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
+            public String run() {
+                Element data = getHelper().getPrimaryConfigurationData(true);
+                NodeList nl = data.getElementsByTagNameNS(PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
+                if (nl.getLength() == 1) {
+                    nl = nl.item(0).getChildNodes();
+                    if (nl.getLength() == 1
+                            && nl.item(0).getNodeType() == Node.TEXT_NODE) {
+                        return ((Text) nl.item(0)).getNodeValue();
                     }
-                });
+                }
+                return "???"; // NOI18N
+            }
+        });
     }
-    
+
     /*
      * Copied from MakeProject.
      */
-    public void setName( final String name ) {
-        ProjectManager.mutex().writeAccess(new Mutex.Action<Object>() {
-
-            public Object run() {
+    public void setName(final String name) {
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
                 Element data = getHelper().getPrimaryConfigurationData(true);
-                NodeList nl = data.getElementsByTagNameNS(
-                        PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
+                NodeList nl = data.getElementsByTagNameNS(PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
                 Element nameEl;
                 if (nl.getLength() == 1) {
                     nameEl = (Element) nl.item(0);
@@ -177,47 +194,40 @@ public class PhpProject implements Project, AntProjectListener {
                     while (deadKids.getLength() > 0) {
                         nameEl.removeChild(deadKids.item(0));
                     }
-                }
-                else {
+                } else {
                     nameEl = data.getOwnerDocument().createElementNS(
                             PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
-                    data.insertBefore(nameEl, /* OK if null */data
-                            .getChildNodes().item(0));
+                    data.insertBefore(nameEl, /* OK if null */data.getChildNodes().item(0));
                 }
-                nameEl.appendChild(data.getOwnerDocument().createTextNode(
-                                name));
+                nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
                 getHelper().putPrimaryConfigurationData(data, true);
-                return null;
             }
         });
     }
-    
+
     public AntProjectHelper getHelper() {
-        return myHelper;
-    }
-    
-    public PropertyEvaluator getEvaluator() {
-        return myHelper.getStandardPropertyEvaluator();
+        return helper;
     }
 
     CopySupport getCopySupport() {
         return getLookup().lookup(CopySupport.class);
     }
 
-    private void initLookup( AuxiliaryConfiguration configuration ) {        
+    private void initLookup(AuxiliaryConfiguration configuration) {
         PhpSources phpSources = new PhpSources(getHelper(), getEvaluator());
-        myLookup = Lookups.fixed(new Object[] {
-		CopySupport.getInstance(),
+        lookup = Lookups.fixed(new Object[] {
+                CopySupport.getInstance(),
                 new Info(),
                 configuration,
                 new PhpOpenedHook(),
-                new PhpActionProvider( this ),
+                new PhpActionProvider(this),
+                new PhpConfigurationProvider(this),
                 getHelper().createCacheDirectoryProvider(), // XXX needed?
                 new ClassPathProviderImpl(getHelper(), getEvaluator(), phpSources),
                 new PhpLogicalViewProvider(this),
                 new CustomizerProviderImpl(this),
-                getHelper().createSharabilityQuery( getEvaluator(), 
-                    new String[] { "${" + PhpProjectProperties.SRC_DIR + "}" } , new String[] {} ), // NOI18N
+                getHelper().createSharabilityQuery(getEvaluator(),
+                    new String[] {"${" + PhpProjectProperties.SRC_DIR + "}"} , new String[] {}), // NOI18N
                 new PhpProjectOperations(this) ,
                 new PhpProjectEncodingQueryImpl(getEvaluator()),
                 new PhpTemplates(),
@@ -229,93 +239,88 @@ public class PhpProject implements Project, AntProjectListener {
     }
 
     public ReferenceHelper getRefHelper() {
-        return myRefHelper;
+        return refHelper;
     }
-    
-    private final class Info implements ProjectInformation {
 
-        /* (non-Javadoc)
-         * @see org.netbeans.api.project.ProjectInformation#addPropertyChangeListener(java.beans.PropertyChangeListener)
-         */
-        public void addPropertyChangeListener( PropertyChangeListener  listener  ) {
-            mySupport.addPropertyChangeListener( listener );
+    private final class Info implements ProjectInformation {
+        private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+        public void addPropertyChangeListener(PropertyChangeListener  listener) {
+            propertyChangeSupport.addPropertyChangeListener(listener);
         }
 
-        /* (non-Javadoc)
-         * @see org.netbeans.api.project.ProjectInformation#getDisplayName()
-         */
         public String getDisplayName() {
             return PhpProject.this.getName();
         }
 
-        /* (non-Javadoc)
-         * @see org.netbeans.api.project.ProjectInformation#getIcon()
-         */
         public Icon getIcon() {
             return PROJECT_ICON;
         }
 
-        /* (non-Javadoc)
-         * @see org.netbeans.api.project.ProjectInformation#getName()
-         */
         public String getName() {
             return PhpProject.this.getName();
         }
 
-        /* (non-Javadoc)
-         * @see org.netbeans.api.project.ProjectInformation#getProject()
-         */
         public Project getProject() {
             return PhpProject.this;
         }
 
-        /* (non-Javadoc)
-         * @see org.netbeans.api.project.ProjectInformation#removePropertyChangeListener(java.beans.PropertyChangeListener)
-         */
-        public void removePropertyChangeListener( PropertyChangeListener listener ){
-            mySupport.removePropertyChangeListener(listener);
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            propertyChangeSupport.removePropertyChangeListener(listener);
         }
-        
+
         void firePropertyChange(String prop) {
-            mySupport.firePropertyChange( prop , null, null );
+            propertyChangeSupport.firePropertyChange(prop , null, null);
         }
-        
-        private final PropertyChangeSupport mySupport = 
-            new PropertyChangeSupport(this);
- 
     }
-    
-    private final class PhpOpenedHook extends ProjectOpenedHook {	
+
+    private final class PhpOpenedHook extends ProjectOpenedHook {
         protected void projectOpened() {
-            ClassPathProviderImpl cpProvider = myLookup.lookup(ClassPathProviderImpl.class);
+            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
-	    final CopySupport copySupport = getCopySupport();
-	    if (copySupport != null) {
-		copySupport.projectOpened(PhpProject.this);
-	    }
+            final CopySupport copySupport = getCopySupport();
+            if (copySupport != null) {
+                copySupport.projectOpened(PhpProject.this);
+            }
         }
-        
+
         protected void projectClosed() {
-	    final CopySupport copySupport = getCopySupport();
-	    if (copySupport != null) {
-		copySupport.projectClosed(PhpProject.this);
-	    }	    
+            final CopySupport copySupport = getCopySupport();
+            if (copySupport != null) {
+                copySupport.projectClosed(PhpProject.this);
+            }
             try {
-                ProjectManager.getDefault().saveProject( PhpProject.this);
+                ProjectManager.getDefault().saveProject(PhpProject.this);
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
     }
     
-    
-    private final AntProjectHelper myHelper;
-    
-    private final ReferenceHelper myRefHelper;
-    
-    private GeneratedFilesHelper myGenFilesHelper;
-
-    private Lookup myLookup;
-
+    private static final class ConfigPropertyProvider extends FilterPropertyProvider implements PropertyChangeListener {
+        private final PropertyEvaluator baseEval;
+        private final String prefix;
+        private final AntProjectHelper helper;
+        public ConfigPropertyProvider(PropertyEvaluator baseEval, String prefix, AntProjectHelper helper) {
+            super(computeDelegate(baseEval, prefix, helper));
+            this.baseEval = baseEval;
+            this.prefix = prefix;
+            this.helper = helper;
+            baseEval.addPropertyChangeListener(this);
+        }
+        public void propertyChange(PropertyChangeEvent ev) {
+            if (PhpConfigurationProvider.PROP_CONFIG.equals(ev.getPropertyName())) {
+                setDelegate(computeDelegate(baseEval, prefix, helper));
+            }
+        }
+        private static PropertyProvider computeDelegate(PropertyEvaluator baseEval, String prefix, AntProjectHelper helper) {
+            String config = baseEval.getProperty(PhpConfigurationProvider.PROP_CONFIG);
+            if (config != null) {
+                return helper.getPropertyProvider(prefix + "/" + config + ".properties"); // NOI18N
+            } else {
+                return PropertyUtils.fixedPropertyProvider(Collections.<String,String>emptyMap());
+            }
+        }
+    }    
 }

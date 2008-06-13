@@ -70,6 +70,7 @@ public class MySQLActionProvider implements ActionProvider {
     public List<Action> getActions() {
         // If we're registered, then don't provide the action
         // to register the server...
+        
         if ( ServerNodeProvider.getDefault().isRegistered()){
             return emptyActions;
         } else {

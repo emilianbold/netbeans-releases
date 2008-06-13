@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -47,6 +47,9 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.Stack;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -59,6 +62,7 @@ import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
+import org.netbeans.modules.ruby.debugger.breakpoints.RubyLineBreakpoint;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
@@ -66,6 +70,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.text.Line;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.Lookups;
 import org.rubyforge.debugcommons.RubyDebugEvent;
 import org.rubyforge.debugcommons.RubyDebugEventListener;
@@ -113,9 +118,15 @@ public abstract class TestBase extends RubyTestBase {
         doCleanUp();
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        doCleanUp();
+    }
+
     private void doCleanUp() {
         for (RubyBreakpoint bp : RubyBreakpointManager.getBreakpoints()) {
-            RubyBreakpointManager.removeBreakpoint(bp);
+            DebuggerManager.getDebuggerManager().addBreakpoint(bp);
         }
         DebuggerManager.getDebuggerManager().finishAllSessions();
     }
@@ -222,11 +233,11 @@ public abstract class TestBase extends RubyTestBase {
         return FileUtil.toFile(script);
     }
     
-    protected static RubyBreakpoint addBreakpoint(final FileObject fo, final int line) throws RubyDebuggerException {
-        return RubyBreakpointManager.addBreakpoint(createDummyLine(fo, line - 1));
+    protected static RubyLineBreakpoint addBreakpoint(final FileObject fo, final int line) throws RubyDebuggerException {
+        return RubyBreakpointManager.addLineBreakpoint(createDummyLine(fo, line - 1));
     }
     
-    static void doAction(final Object action) throws InterruptedException {
+    public static void doAction(final Object action) throws InterruptedException {
         if (watchStepping) {
             Thread.sleep(3000);
         }
@@ -247,7 +258,26 @@ public abstract class TestBase extends RubyTestBase {
             }
         });
     }
-    
+
+    protected void waitFor(final Process p) throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    p.waitFor();
+                    latch.countDown();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }).start();
+        latch.await(10, TimeUnit.SECONDS);
+        if (latch.getCount() > 0) {
+            fail("Process " + p + " was not finished.");
+            p.destroy();
+        }
+    }
+
     protected void waitForEvents(RubyDebuggerProxy proxy, int n, Runnable block) throws InterruptedException {
         final CountDownLatch events = new CountDownLatch(n);
         RubyDebugEventListener listener = new RubyDebugEventListener() {
@@ -290,7 +320,7 @@ public abstract class TestBase extends RubyTestBase {
                 File cd = new File(rubydebugDir, "classic-debug.rb");
                 assertTrue("classic-debug found in " + rubydebugDir, cd.isFile());
                 return cd;
-            } else if (relativePath.equals("jruby-1.1")) {
+            } else if (relativePath.equals("jruby-1.1.2")) {
                 return TestUtil.getXTestJRubyHome();
             } else {
                 return null;

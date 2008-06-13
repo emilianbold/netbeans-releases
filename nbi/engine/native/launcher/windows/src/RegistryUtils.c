@@ -36,9 +36,10 @@
 
 #include "RegistryUtils.h"
 #include "StringUtils.h"
+#include "SystemUtils.h"
 #include "FileUtils.h"
 
-WCHAR * getStringValue(HKEY root, WCHAR *key, WCHAR *valueName) {
+WCHAR * getStringValue(HKEY root, WCHAR *key, WCHAR *valueName, BOOL access64key) {
     
     HKEY hkey = 0 ;
     WCHAR *result = NULL;
@@ -46,7 +47,7 @@ WCHAR * getStringValue(HKEY root, WCHAR *key, WCHAR *valueName) {
     DWORD  size  = 0;
     byte*  value = NULL;
     
-    if(RegOpenKeyExW(root, key, 0, KEY_READ, &hkey) == ERROR_SUCCESS) {
+    if(RegOpenKeyExW(root, key, 0, KEY_READ | ((access64key && IsWow64) ? KEY_WOW64_64KEY : 0), &hkey) == ERROR_SUCCESS) {
         
         if (RegQueryValueExW(hkey, valueName, NULL, &type, NULL, &size) == ERROR_SUCCESS) {
             
@@ -68,9 +69,9 @@ WCHAR * getStringValue(HKEY root, WCHAR *key, WCHAR *valueName) {
     }
     return result;
 }
-WCHAR * getStringValuePC(HKEY root, WCHAR *parentkey, WCHAR *childkey, WCHAR *valueName) {
+WCHAR * getStringValuePC(HKEY root, WCHAR *parentkey, WCHAR *childkey, WCHAR *valueName, BOOL access64key) {
     WCHAR * key = appendStringW(appendStringW(appendStringW(NULL, parentkey), L"\\"), childkey);
-    WCHAR *value = getStringValue(root, key, valueName);
+    WCHAR *value = getStringValue(root, key, valueName, access64key);
     FREE(key);
     return value;
 }

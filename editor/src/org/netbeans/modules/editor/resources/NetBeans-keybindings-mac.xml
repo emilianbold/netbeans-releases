@@ -84,6 +84,9 @@ made subject to such option by the copyright holder.
     <bind key="D-DOWN" remove="true"/>
     <bind actionName="scroll-up" key="C-DOWN"/>
 
+    <bind key="O-I" actionName="generate-code"/>
+    <!-- remove Ctrl-INSERT on Mac (no INSERT on Mac keyboard)-->
+    <bind key="O-INSERT" remove="true"/>
     
     <!-- Things we add only on the mac -->
     

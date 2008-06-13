@@ -40,13 +40,13 @@
  */
 package org.netbeans.modules.java.editor.codegen;
 
+import org.netbeans.spi.editor.codegen.CodeGenerator;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.awt.Dialog;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +66,7 @@ import org.netbeans.modules.java.editor.codegen.ui.ImplementOverridePanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -75,19 +76,23 @@ import org.openide.util.NbBundle;
 public class ImplementOverrideMethodGenerator implements CodeGenerator {
 
     public static class Factory implements CodeGenerator.Factory {
-        
-        public Factory() {            
-        }
-        
-        public Iterable<? extends CodeGenerator> create(CompilationController controller, TreePath path) throws IOException {
-            List<CodeGenerator> ret = new ArrayList<CodeGenerator>();
-            path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
-            if (path == null)
+
+        public List<? extends CodeGenerator> create(Lookup context) {
+            ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
+            JTextComponent component = context.lookup(JTextComponent.class);
+            CompilationController controller = context.lookup(CompilationController.class);
+            TreePath path = context.lookup(TreePath.class);
+            path = path != null ? Utilities.getPathElementOfKind(Tree.Kind.CLASS, path) : null;
+            if (component == null || controller == null || path == null)
                 return ret;
-            controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            try {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            } catch (IOException ioe) {
+                return ret;
+            }
             TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
             if (typeElement == null || !typeElement.getKind().isClass())
-                return Collections.emptySet();
+                return ret;
             Map<Element, List<ElementNode.Description>> map = new LinkedHashMap<Element, List<ElementNode.Description>>();
             for (ExecutableElement method : GeneratorUtils.findUndefs(controller, typeElement)) {
                 List<ElementNode.Description> descriptions = map.get(method.getEnclosingElement());
@@ -101,7 +106,7 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
             for (Map.Entry<Element, List<ElementNode.Description>> entry : map.entrySet())
                 implementDescriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
             if (!implementDescriptions.isEmpty())
-                ret.add(new ImplementOverrideMethodGenerator(ElementNode.Description.create(implementDescriptions), true));
+                ret.add(new ImplementOverrideMethodGenerator(component, ElementNode.Description.create(implementDescriptions), true));
             map = new LinkedHashMap<Element, List<ElementNode.Description>>();
             ArrayList<Element> orderedElements = new ArrayList<Element>();
             for (ExecutableElement method : GeneratorUtils.findOverridable(controller, typeElement)) {
@@ -119,16 +124,18 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
             for (Element e : orderedElements)
                 overrideDescriptions.add(ElementNode.Description.create(e, map.get( e ), false, false));
             if (!overrideDescriptions.isEmpty())
-                ret.add(new ImplementOverrideMethodGenerator(ElementNode.Description.create(overrideDescriptions), false));
+                ret.add(new ImplementOverrideMethodGenerator(component, ElementNode.Description.create(overrideDescriptions), false));
             return ret;
         }
     }
-    
+
+    private JTextComponent component;
     private ElementNode.Description description;
     private boolean isImplement;
     
     /** Creates a new instance of OverrideMethodGenerator */
-    private ImplementOverrideMethodGenerator(ElementNode.Description description, boolean isImplement) {
+    private ImplementOverrideMethodGenerator(JTextComponent component, ElementNode.Description description, boolean isImplement) {
+        this.component = component;
         this.description = description;
         this.isImplement = isImplement;
     }
@@ -137,7 +144,7 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
         return org.openide.util.NbBundle.getMessage(ImplementOverrideMethodGenerator.class, isImplement ? "LBL_implement_method" : "LBL_override_method"); //NOI18N
     }
 
-    public void invoke(JTextComponent component) {
+    public void invoke() {
         final ImplementOverridePanel panel = new ImplementOverridePanel(description, isImplement);
         DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, 
                 NbBundle.getMessage(ConstructorGenerator.class, isImplement ?  "LBL_generate_implement" : "LBL_generate_override")); //NOI18N  //NOI18N

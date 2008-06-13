@@ -71,6 +71,7 @@ public class RubyProjectOperationsTest extends RubyProjectTestBase {
         FileObject[] expectedDataFiles = {
             prjDir.getFileObject("lib"),
             prjDir.getFileObject("test"),
+            prjDir.getFileObject("spec"),
         };
         assertEquals("correct data files", Arrays.asList(expectedDataFiles), ProjectOperations.getDataFiles(project));
     }

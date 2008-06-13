@@ -42,11 +42,9 @@
 package org.netbeans.modules.spring.beans.refactoring;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.spring.api.Action;
-import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel.DocumentAccess;
 import org.netbeans.modules.spring.beans.ConfigFileTestCase;
@@ -70,8 +68,7 @@ public class JavaElementRefFinderTest extends ConfigFileTestCase {
         final String CLASS = PACKAGE + ".Foo";
         final String contents = TestUtils.createXMLConfigText("<bean id='foo' class='" + CLASS + "'/>");
         TestUtils.copyStringToFile(contents, configFile);
-        ConfigFileGroup group = ConfigFileGroup.create(Collections.singletonList(configFile));
-        SpringConfigModel model = new SpringConfigModel(group);
+        SpringConfigModel model = createConfigModel(configFile);
         model.runDocumentAction(new Action<DocumentAccess>() {
             public void run(DocumentAccess docAccess) {
                 JavaElementRefFinder finder = new JavaElementRefFinder(docAccess);
@@ -100,8 +97,7 @@ public class JavaElementRefFinderTest extends ConfigFileTestCase {
                 "<bean id='foo' class='" + FOO_CLASS + "'/>" +
                 "<bean id='bar' class='" + BAR_CLASS + "'/>");
         TestUtils.copyStringToFile(contents, configFile);
-        ConfigFileGroup group = ConfigFileGroup.create(Collections.singletonList(configFile));
-        SpringConfigModel model = new SpringConfigModel(group);
+        SpringConfigModel model = createConfigModel(configFile);
         model.runDocumentAction(new Action<DocumentAccess>() {
             public void run(DocumentAccess docAccess) {
                 JavaElementRefFinder finder = new JavaElementRefFinder(docAccess);

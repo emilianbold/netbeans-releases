@@ -49,7 +49,7 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  */
 public abstract class TcgComponentNodePropertyCustomizer extends JPanel{
     
-	protected TcgPropertyType mPropertyType;
+    protected TcgPropertyType mPropertyType;
     protected OperatorComponent mComponent;
     protected IEPModel mModel;
     
@@ -68,7 +68,7 @@ public abstract class TcgComponentNodePropertyCustomizer extends JPanel{
      * Creates a new instance of TcgComponentNodePropertyCustomizer
      */
     public TcgComponentNodePropertyCustomizer(TcgPropertyType propertyType, OperatorComponent component, PropertyEnv env) {
-    	mPropertyType = propertyType;
+        mPropertyType = propertyType;
         mComponent = component;
         mModel = component.getModel();
         mEnv = env;
@@ -95,11 +95,11 @@ public abstract class TcgComponentNodePropertyCustomizer extends JPanel{
     }
     
     public OperatorComponent getOperatorComponent() {
-    	return this.mComponent;
+        return this.mComponent;
     }
     
     public TcgPropertyType getPropertyType() {
-    	return this.mPropertyType;
+        return this.mPropertyType;
     }
     
     protected abstract void initialize();
@@ -130,18 +130,18 @@ public abstract class TcgComponentNodePropertyCustomizer extends JPanel{
     public abstract void setValue();
     
     protected void setDocumentation() {
-//    	set documentation
+//        set documentation
         String doc = getDocumentation();
         if(doc != null && !doc.trim().equals("")) {
-        	Documentation documentation = mModel.getFactory().createDocumentation(mModel);
-        	documentation.setTextContent(doc);
-        	mModel.startTransaction();
-        	mComponent.setDocumentation(documentation);
-        	mModel.endTransaction();
+            Documentation documentation = mModel.getFactory().createDocumentation(mModel);
+            documentation.setTextContent(doc);
+            mModel.startTransaction();
+            mComponent.setDocumentation(documentation);
+            mModel.endTransaction();
         } else {
-        	mModel.startTransaction();
-        	mComponent.setDocumentation(null);
-        	mModel.endTransaction();
+            mModel.startTransaction();
+            mComponent.setDocumentation(null);
+            mModel.endTransaction();
         }
     }
     class Validator implements VetoableChangeListener, PropertyChangeListener {
@@ -178,38 +178,38 @@ public abstract class TcgComponentNodePropertyCustomizer extends JPanel{
     }
     
     public JComponent getContentPane() {
-    	return this.contentPane;
+        return this.contentPane;
     }
     
     public String getDocumentation() {
-    	return this.documentationArea.getText();
+        return this.documentationArea.getText();
     }
     
     public void setDocumentation(String documentation) {
-    	this.documentationArea.setText(documentation);
+        this.documentationArea.setText(documentation);
     }
     
     private void initGUI() {
-    	this.setLayout(new BorderLayout());
-    	
-    	JTabbedPane tabPane = new JTabbedPane();
-    	this.contentPane = new JPanel();
-    	this.contentPane.setName("Operator Configuration");
-    	tabPane.add(this.contentPane);
-    	this.add(tabPane, BorderLayout.CENTER);
-    	
-    	this.documentationArea = new JTextArea();
-    	this.documentationArea.setName("Documentation");
-    	this.documentationArea.setWrapStyleWord(true);
-    	this.documentationArea.setLineWrap(true);
-    	tabPane.add(this.documentationArea);
-    	
-    	Documentation doc = this.getOperatorComponent().getDocumentation();
-    	if(doc != null && doc.getTextContent() != null) {
-    		setDocumentation(doc.getTextContent());
-    	}
-    	
-    	mStatusLbl = new JLabel();
+        this.setLayout(new BorderLayout());
+        
+        JTabbedPane tabPane = new JTabbedPane();
+        this.contentPane = new JPanel();
+        this.contentPane.setName("Operator Configuration");
+        tabPane.add(this.contentPane);
+        this.add(tabPane, BorderLayout.CENTER);
+        
+        this.documentationArea = new JTextArea();
+        this.documentationArea.setName("Documentation");
+        this.documentationArea.setWrapStyleWord(true);
+        this.documentationArea.setLineWrap(true);
+        tabPane.add(this.documentationArea);
+        
+        Documentation doc = this.getOperatorComponent().getDocumentation();
+        if(doc != null && doc.getTextContent() != null) {
+            setDocumentation(doc.getTextContent());
+        }
+        
+        mStatusLbl = new JLabel();
         mStatusLbl.setForeground(Color.RED);
         mStatusLbl.setPreferredSize(new Dimension(160, 20));
         add(mStatusLbl, BorderLayout.SOUTH);

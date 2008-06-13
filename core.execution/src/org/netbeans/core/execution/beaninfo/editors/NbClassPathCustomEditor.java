@@ -281,6 +281,7 @@ class NbClassPathCustomEditor extends javax.swing.JPanel {
   private void addJarButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addJarButtonActionPerformed
 
         JFileChooser chooser = FileEditor.createHackedFileChooser();
+        chooser.setFileHidingEnabled(false);
         setHelpToChooser( chooser );
         
         chooser.setFileFilter(new FileFilter() {
@@ -322,6 +323,7 @@ class NbClassPathCustomEditor extends javax.swing.JPanel {
 
   private void addDirButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addDirButtonActionPerformed
         JFileChooser chooser = FileEditor.createHackedFileChooser();
+        chooser.setFileHidingEnabled(false);
         setHelpToChooser( chooser );
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setDialogTitle(getString("CTL_FileSystemPanel.Local_Dialog_Title"));

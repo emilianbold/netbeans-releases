@@ -107,7 +107,7 @@ public class NbEditorUI extends ExtEditorUI {
     
     /**
      *
-     * @deprecated - use {@link attachSystemActionPerformer(String)} instead
+     * @deprecated - use {@link #attachSystemActionPerformer(String)} instead
      */
     protected SystemActionUpdater createSystemActionUpdater(
         String editorActionName, boolean updatePerformer, boolean syncEnabling) {

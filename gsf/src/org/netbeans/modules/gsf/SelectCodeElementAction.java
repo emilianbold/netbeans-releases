@@ -59,7 +59,7 @@ import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.BracketCompletion;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -200,7 +200,7 @@ public final class SelectCodeElementAction extends BaseAction {
             }
         }
         
-        private BracketCompletion getBracketCompletion(Document doc, int offset) {
+        private KeystrokeHandler getBracketCompletion(Document doc, int offset) {
             BaseDocument baseDoc = (BaseDocument)doc;
             List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
             for (Language l : list) {
@@ -213,7 +213,7 @@ public final class SelectCodeElementAction extends BaseAction {
         }
         
         private SelectionInfo[] initSelectionPath(JTextComponent target, CompilationController ci) {
-            BracketCompletion bc = getBracketCompletion(target.getDocument(), target.getCaretPosition());
+            KeystrokeHandler bc = getBracketCompletion(target.getDocument(), target.getCaretPosition());
             if (bc != null) {
                 List<OffsetRange> ranges = bc.findLogicalRanges(ci, target.getCaretPosition());
                 SelectionInfo[] result = new SelectionInfo[ranges.size()];

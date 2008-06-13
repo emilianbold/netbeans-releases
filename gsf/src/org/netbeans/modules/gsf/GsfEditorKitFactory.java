@@ -42,7 +42,6 @@ package org.netbeans.modules.gsf;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.swing.Action;
@@ -57,8 +56,7 @@ import javax.swing.text.Keymap;
 import javax.swing.text.TextAction;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
-import org.netbeans.modules.gsf.api.BracketCompletion;
-import org.netbeans.modules.gsf.api.EditorAction;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseAction;
@@ -79,9 +77,9 @@ import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.gsfret.InstantRenameAction;
 import org.netbeans.modules.gsfret.editor.fold.GsfFoldManager;
 import org.netbeans.modules.gsfret.editor.hyperlink.GoToSupport;
+import org.netbeans.modules.gsfret.editor.semantic.GoToMarkOccurrencesAction;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 
@@ -131,7 +129,7 @@ public class GsfEditorKitFactory {
         return null;
     }
 
-    static BracketCompletion getBracketCompletion(Document doc, int offset) {
+    static KeystrokeHandler getBracketCompletion(Document doc, int offset) {
         BaseDocument baseDoc = (BaseDocument)doc;
         List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
         for (Language l : list) {
@@ -192,7 +190,7 @@ public class GsfEditorKitFactory {
                 public int[] findMatchingBlock(int offset, boolean simpleSearch)
                         throws BadLocationException {
                     // Do parenthesis matching, if applicable
-                    BracketCompletion bracketCompletion = getBracketCompletion(doc, offset);
+                    KeystrokeHandler bracketCompletion = getBracketCompletion(doc, offset);
                     if (bracketCompletion != null) {
                         OffsetRange range = bracketCompletion.findMatching(getDocument(), offset/*, simpleSearch*/);
                         if (range == OffsetRange.NONE) {
@@ -243,11 +241,6 @@ public class GsfEditorKitFactory {
                 actions.add(new ToggleCommentAction(lineCommentPrefix));
             }
 
-            Collection<? extends EditorAction> extraActions = Lookup.getDefault().lookupAll(EditorAction.class);
-            for (EditorAction action : extraActions) {
-                actions.add(new EditorActionWrapper(action));
-            }
-            
             actions.add(new InstantRenameAction());
             actions.add(new GenericGoToDeclarationAction());
             actions.add(new GenericGenerateGoToPopupAction());
@@ -261,6 +254,11 @@ public class GsfEditorKitFactory {
             actions.add(new SelectPreviousCamelCasePosition(findAction(superActions, selectionPreviousWordAction)));
             actions.add(new DeleteToNextCamelCasePosition(findAction(superActions, removeNextWordAction)));
             actions.add(new DeleteToPreviousCamelCasePosition(findAction(superActions, removePreviousWordAction)));
+            
+            if (language.hasOccurrencesFinder()) {
+                actions.add(new GoToMarkOccurrencesAction(false));
+                actions.add(new GoToMarkOccurrencesAction(true));
+            }
             
             return TextAction.augmentList(superActions,
                 actions.toArray(new Action[actions.size()]));
@@ -280,7 +278,7 @@ public class GsfEditorKitFactory {
             protected void insertString(BaseDocument doc, int dotPos, Caret caret, String str,
                 boolean overwrite) throws BadLocationException {
                 if (completionSettingEnabled()) {
-                    BracketCompletion bracketCompletion = getBracketCompletion(doc, dotPos);
+                    KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
 
                     if (bracketCompletion != null) {
                         // TODO - check if we're in a comment etc. and if so, do nothing
@@ -311,7 +309,7 @@ public class GsfEditorKitFactory {
                     BaseDocument doc = (BaseDocument)document;
 
                     if (completionSettingEnabled()) {
-                        BracketCompletion bracketCompletion = getBracketCompletion(doc, dotPos);
+                        KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
 
                         if (bracketCompletion != null) {
                             try {
@@ -355,7 +353,7 @@ public class GsfEditorKitFactory {
             @Override
             protected Object beforeBreak(JTextComponent target, BaseDocument doc, Caret caret) {
                 if (completionSettingEnabled()) {
-                    BracketCompletion bracketCompletion = getBracketCompletion(doc, caret.getDot());
+                    KeystrokeHandler bracketCompletion = getBracketCompletion(doc, caret.getDot());
 
                     if (bracketCompletion != null) {
                         try {
@@ -412,7 +410,7 @@ public class GsfEditorKitFactory {
             protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch)
                 throws BadLocationException {
                 if (completionSettingEnabled()) {
-                    BracketCompletion bracketCompletion = getBracketCompletion(doc, dotPos);
+                    KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
 
                     if (bracketCompletion != null) {
                         boolean success = bracketCompletion.charBackspaced(doc, dotPos, currentTarget, ch);
@@ -541,27 +539,6 @@ public class GsfEditorKitFactory {
                 //addAction(target, jm, ExtKit.gotoAction);
                 return jm;
             }
-        }
-    }
-
-    /** Wrap a Swing Action implementing the EditorAction interface into a proper BaseAction action */
-    private class EditorActionWrapper extends BaseAction {
-        EditorAction gotoAction;
-        
-        public EditorActionWrapper(EditorAction gotoAction) {
-            super(gotoAction.getActionName(),
-                  // Not sure about these flags?
-                  ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET | SAVE_POSITION);
-            this.gotoAction = gotoAction;
-        }
-
-        public void actionPerformed(ActionEvent evt, final JTextComponent target) {
-            gotoAction.actionPerformed(evt, target);
-        }
-
-        @Override
-        protected Class getShortDescriptionBundleClass() {
-            return gotoAction.getShortDescriptionBundleClass();
         }
     }
 

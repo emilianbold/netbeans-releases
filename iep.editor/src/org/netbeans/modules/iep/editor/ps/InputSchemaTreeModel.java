@@ -47,55 +47,55 @@ class InputSchemaTreeModel extends DefaultTreeModel implements SharedConstants {
     public InputSchemaTreeModel(DefaultMutableTreeNode root, IEPModel model, OperatorComponent component) {
         super(root);
         try {
-        	List<OperatorComponent> inputs = component.getInputOperatorList();
-        	Iterator<OperatorComponent> itIn = inputs.iterator();
-        	while(itIn.hasNext()) {
-        		OperatorComponent  input = itIn.next();
-        		if(input != null) {
+            List<OperatorComponent> inputs = component.getInputOperatorList();
+            Iterator<OperatorComponent> itIn = inputs.iterator();
+            while(itIn.hasNext()) {
+                OperatorComponent  input = itIn.next();
+                if(input != null) {
                     String inputName = input.getDisplayName();
                     DefaultMutableTreeNode inputNode = new DefaultMutableTreeNode(inputName);
                     root.add(inputNode);
                     SchemaComponent outputSchema = input.getOutputSchemaId();
                     if(outputSchema != null) {
-                    	List<SchemaAttribute> attrs =  outputSchema.getSchemaAttributes();
-                    	Iterator<SchemaAttribute> attrsIt = attrs.iterator();
-                    	while(attrsIt.hasNext()) {
-                    		SchemaAttribute sa = attrsIt.next();
-                    		AttributeInfo ai = new AttributeInfo(inputName, sa);
+                        List<SchemaAttribute> attrs =  outputSchema.getSchemaAttributes();
+                        Iterator<SchemaAttribute> attrsIt = attrs.iterator();
+                        while(attrsIt.hasNext()) {
+                            SchemaAttribute sa = attrsIt.next();
+                            AttributeInfo ai = new AttributeInfo(inputName, sa);
                             DefaultMutableTreeNode columnNode = new DefaultMutableTreeNode(ai);
                             inputNode.add(columnNode);
-                    	}
+                        }
                     }
                 }
-        	}
-        	
-        	List<OperatorComponent> tableInputs = component.getStaticInputTableList();
-        	Iterator<OperatorComponent> tableInIt = tableInputs.iterator();
-        	while(tableInIt.hasNext()) {
-        		OperatorComponent input = tableInIt.next();
-        		
-        		if(input != null) {
+            }
+            
+            List<OperatorComponent> tableInputs = component.getStaticInputTableList();
+            Iterator<OperatorComponent> tableInIt = tableInputs.iterator();
+            while(tableInIt.hasNext()) {
+                OperatorComponent input = tableInIt.next();
+                
+                if(input != null) {
                     String inputName = input.getDisplayName();
                     DefaultMutableTreeNode inputNode = new DefaultMutableTreeNode(inputName);
                     root.add(inputNode);
                     SchemaComponent outputSchema = input.getOutputSchemaId();
                     if(outputSchema != null) {
-                    	List<SchemaAttribute> attrs = outputSchema.getSchemaAttributes();
-                    	Iterator<SchemaAttribute> attrsIt = attrs.iterator();
-                    	while(attrsIt.hasNext()) {
-                    		SchemaAttribute sa = attrsIt.next();
-                    		AttributeInfo ai = new AttributeInfo(inputName, sa);
+                        List<SchemaAttribute> attrs = outputSchema.getSchemaAttributes();
+                        Iterator<SchemaAttribute> attrsIt = attrs.iterator();
+                        while(attrsIt.hasNext()) {
+                            SchemaAttribute sa = attrsIt.next();
+                            AttributeInfo ai = new AttributeInfo(inputName, sa);
                             DefaultMutableTreeNode columnNode = new DefaultMutableTreeNode(ai);
                             inputNode.add(columnNode);
-                    	}
+                        }
                         
                     }
                 }
-        		
-        	}
-        	
-        	
-        	/*
+                
+            }
+            
+            
+            /*
             List inputIdList = component.getProperty(INPUT_ID_LIST_KEY).getListValue();
             for(int i = 0, I = inputIdList.size(); i < I; i++) {
                 String id = (String)inputIdList.get(i);

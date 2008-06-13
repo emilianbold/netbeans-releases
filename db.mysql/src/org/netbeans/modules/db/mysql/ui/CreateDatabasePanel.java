@@ -170,14 +170,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             Object response = DialogDisplayer.getDefault().notify(ndesc);
             
             if ( response == NotifyDescriptor.YES_OPTION ) {
-                try {
-                    server.dropDatabase(dbname);
-                } catch ( DatabaseException exc ) {
-                    Utils.displayError(
-                        NbBundle.getMessage(CreateDatabasePanel.class, 
-                           "CreateDatabasePanel.MSG_DeleteFailed"), 
-                        ex);
-                }
+                server.dropDatabase(dbname);
             }
         }
     }

@@ -83,6 +83,11 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
         JavaSource js = JavaSource.forFileObject(java);
         assertNotNull("Created", js);
         
+        final JTextArea c = new JTextArea();
+        c.getDocument().putProperty(JavaSource.class, new WeakReference<Object>(js));
+        c.getDocument().insertString(0, what, null);
+        c.setCaretPosition(what1.length());
+        
         class Task implements org.netbeans.api.java.source.Task<CompilationController> {
             EqualsHashCodeGenerator generator;
             
@@ -90,7 +95,7 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
             public void run(CompilationController cc) throws Exception {
                 cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 Element el = cc.getElements().getTypeElement("X");
-                generator = EqualsHashCodeGenerator.createEqualsHashCodeGenerator(cc, el);
+                generator = EqualsHashCodeGenerator.createEqualsHashCodeGenerator(c, cc, el);
             }
             
             
@@ -110,12 +115,7 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
         t.post();
         
         
-        JTextArea c = new JTextArea();
-        c.getDocument().putProperty(JavaSource.class, new WeakReference<Object>(js));
-        c.getDocument().insertString(0, what, null);
-        c.setCaretPosition(what1.length());
-        
-        t.generator.invoke(c);
+        t.generator.invoke();
         
         //String text = c.getDocument().getText(0, c.getDocument().getLength());
         String text = GeneratorUtilsTest.readFromFile(java);
@@ -160,7 +160,7 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
             public void run(CompilationController cc) throws Exception {
                 cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 Element el = cc.getElements().getTypeElement("X");
-                generator = EqualsHashCodeGenerator.createEqualsHashCodeGenerator(cc, el);
+                generator = EqualsHashCodeGenerator.createEqualsHashCodeGenerator(null, cc, el);
             }
             
             
@@ -203,7 +203,7 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
             public void run(CompilationController cc) throws Exception {
                 cc.toPhase(JavaSource.Phase.RESOLVED);
                 Element el = cc.getTrees().getElement(cc.getTreeUtilities().pathFor(what1.length()));
-                assertNull(EqualsHashCodeGenerator.createEqualsHashCodeGenerator(cc, el));
+                assertNull(EqualsHashCodeGenerator.createEqualsHashCodeGenerator(null, cc, el));
             }
         }
         TaskImpl t = new TaskImpl();

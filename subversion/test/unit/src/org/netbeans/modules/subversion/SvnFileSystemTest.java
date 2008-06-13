@@ -46,7 +46,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.masterfs.filebasedfs.BaseFileObjectTestHid;
@@ -216,7 +218,7 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
     }
     
     private SVNUrl getRepoUrl() throws MalformedURLException {
-        return new SVNUrl("file:///" + getRepoDir().getAbsolutePath());
-    }
+        return new SVNUrl("file:///" + getRepoDir().getAbsolutePath().replaceAll("\\\\", "/")); 
+    }    
 
 }

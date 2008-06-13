@@ -52,27 +52,10 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
 
-    <testbag testattribs="all,suite2" name="properties_editing">
+    <testbag testattribs="all,editing,test" name="Test tesbag - this testbag should be used only for testing purpose! Do not use it!">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="org/netbeans/properties/jelly2tests/suites/EditingPropertiesFile.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-
-    <testbag testattribs="all,suite3" name="properties_customizing">
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="org/netbeans/properties/jelly2tests/suites/CustomizingPropertiesFile.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-
-
-    <testbag testattribs="test" name="Test tesbag - this testbag should be used only for testing purpose! Do not use it!">
-        <testset dir="qa-functional/src">
-            <patternset>
-		 <include name="org/netbeans/properties/jelly2tests/suites/editing_properties_file/EditNewFileInPropertyEditorAddProperty1.class"/>
+		 <include name="org/netbeans/properties/jelly2tests/suites/properties_editing/*.*"/>
             </patternset>
         </testset>
     </testbag>

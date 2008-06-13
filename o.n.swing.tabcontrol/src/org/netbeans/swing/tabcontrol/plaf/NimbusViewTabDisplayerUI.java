@@ -210,7 +210,7 @@ key:TabbedPane:TabbedPaneTab[Selected].backgroundPainter
         Object o = null;
         if (isSelected(index)) {
             if (isActive()) {
-                o = UIManager.get("TabbedPane:TabbedPaneTab[Focused+Selected].backgroundPainter");
+                o = UIManager.get("TabbedPane:TabbedPaneTab[Pressed+Selected].backgroundPainter");
             } else {
                 o = UIManager.get("TabbedPane:TabbedPaneTab[Selected].backgroundPainter");
             }

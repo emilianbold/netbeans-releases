@@ -30,9 +30,8 @@ package org.netbeans.modules.java.ui;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
-import com.sun.tools.javac.util.Context;
+import javax.lang.model.element.Name;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 
 /** Temporary Should be removed soon
@@ -44,21 +43,21 @@ public class ElementHeaderFormater {
     private ElementHeaderFormater() {
     }
     
-    public static String getMethodHeader(MethodTree tree, CompilationInfo info, String s) {
-        Context context = JavaSourceAccessor.getINSTANCE().getJavacTask(info).getContext();
-        VeryPretty veryPretty = new VeryPretty(context);
+    public static String getMethodHeader(MethodTree tree, Name enclosingClassName, CompilationInfo info, String s) {
+        VeryPretty veryPretty = new VeryPretty(info);
+        if (enclosingClassName != null) {
+            veryPretty.enclClassName = (com.sun.tools.javac.util.Name) enclosingClassName;
+        }
         return veryPretty.getMethodHeader(tree, s);
     }
 
     public static String getClassHeader(ClassTree tree, CompilationInfo info, String s) {
-        Context context = JavaSourceAccessor.getINSTANCE().getJavacTask(info).getContext();
-        VeryPretty veryPretty = new VeryPretty(context);
+        VeryPretty veryPretty = new VeryPretty(info);
         return veryPretty.getClassHeader(tree, s);
     }
     
     public static String getVariableHeader(VariableTree tree, CompilationInfo info, String s) {
-        Context context = JavaSourceAccessor.getINSTANCE().getJavacTask(info).getContext();
-        VeryPretty veryPretty = new VeryPretty(context);
+        VeryPretty veryPretty = new VeryPretty(info);
         return veryPretty.getVariableHeader(tree, s);
     }
     

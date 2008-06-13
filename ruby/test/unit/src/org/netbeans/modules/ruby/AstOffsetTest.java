@@ -68,6 +68,7 @@ public class AstOffsetTest extends RubyTestBase {
             AstPath path = new AstPath(AstUtilities.getRoot(info), node);
             Iterator<Node> it = path.leafToRoot();
             BaseDocument doc = (BaseDocument) info.getDocument();
+            assertNotNull(doc);
             String s = null;
             while (it.hasNext()) {
                 node = it.next();
@@ -114,6 +115,9 @@ public class AstOffsetTest extends RubyTestBase {
         List<Node> children = node.childNodes();
         if (children.size() > 0) {
             for (Node child : children) {
+                if (child.isInvisible()) {
+                    continue;
+                }
                 assert child != null;
                 initialize(child, validNodes, invalidNodes, positions, doc);
             }

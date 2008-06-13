@@ -52,21 +52,27 @@ import org.openide.util.Lookup;
  */
 public class RunSingleCommand extends RunCommand {
     public static final String ID = ActionProvider.COMMAND_RUN_SINGLE;
+    private final RunLocalCommand localCommand;
+    
     /**
      * @param project
      */
     public RunSingleCommand(PhpProject project) {
         super(project);
+        localCommand = new RunLocalCommand(project);        
     }
-    
+
     @Override
     public void invokeAction(Lookup context) throws IllegalArgumentException {
-        LifecycleManager.getDefault().saveAll ();
-        try {
-            showURLForContext(context);
-        } catch (MalformedURLException ex) {
-            //TODO: improve error handling
-            Exceptions.printStackTrace(ex);
+        if (useInterpreter()) {
+            localCommand.invokeAction(context);
+        } else {
+            try {
+                showURLForContext(context);
+            } catch (MalformedURLException ex) {
+                //TODO: improve error handling
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 
@@ -74,9 +80,9 @@ public class RunSingleCommand extends RunCommand {
     public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
         return fileForContext(context) != null;
     }
-    
+
     @Override
     public String getCommandId() {
         return ID;
-    }    
+    }
 }

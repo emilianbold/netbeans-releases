@@ -86,8 +86,7 @@ public final class Search extends Dialog {
   }
 
   @Override
-  protected void updated()
-  {
+  protected void updated() {
 //out("UPDATED");
     setItems(myTarget, myTargets);
     myTarget.init();
@@ -252,8 +251,7 @@ public final class Search extends Dialog {
   }
 
   @Override
-  protected DialogDescriptor createDescriptor()
-  {
+  protected DialogDescriptor createDescriptor() {
     Object [] buttons = getButtons();
     myDescriptor = new DialogDescriptor(
       getResizable(createPanel()),

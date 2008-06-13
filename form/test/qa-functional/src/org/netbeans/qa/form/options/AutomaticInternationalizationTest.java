@@ -41,18 +41,13 @@
 
 package org.netbeans.qa.form.options;
 
-import org.netbeans.qa.form.*;
-import org.netbeans.qa.form.visualDevelopment.*;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
-import org.netbeans.jellytools.properties.Property;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.jellytools.actions.*;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.properties.Property;
 import org.netbeans.qa.form.ExtJellyTestCase;
-import java.util.*;
 
 /**
  * Automatic internationalization test
@@ -76,7 +71,7 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
         NbTestSuite suite = new NbTestSuite();
         
         suite.addTest(new AutomaticInternationalizationTest("testAutomaticInternationalizationEnabled")); // NOI18N
-        suite.addTest(new AutomaticInternationalizationTest("testAutomaticInternationalizationDisabled")); // NOI18N
+//        suite.addTest(new AutomaticInternationalizationTest("testAutomaticInternationalizationDisabled")); // NOI18N
         
         return suite;
     }
@@ -102,15 +97,25 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
      */
     private void testAutomaticInternationalization(Boolean enabled) {
         OptionsOperator.invoke();
+        //add timeout
+        waitNoEvent(2000);
+        log("Option dialog was opened");
+        
         OptionsOperator options = new OptionsOperator();
         options.switchToClassicView();
+        //add timeout
+        waitNoEvent(2000);
         
         options.selectOption("Editing|GUI Builder"); // NOI18N
+        //add timeout
+        waitNoEvent(2000);
 
         Property property = new Property(options.getPropertySheet("Editing|GUI Builder"), "Automatic Resource Management"); // NOI18N
         property.setValue(String.valueOf( enabled ? "On" : "Off"));
         options.close();
-        waitAMoment();        
+        //add timeout
+        waitNoEvent(2000);
+        log("AutomaticResource Management was set");
 
         String name = createJFrameFile();        
         FormDesignerOperator designer = new FormDesignerOperator(name);
@@ -121,12 +126,13 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
         
         String baseName = "[JFrame]"; // NOI18N
         Node dialogNode = new Node(inspector.treeComponents(), baseName);
-        String[] names = dialogNode.getChildren();
+        //String[] names = dialogNode.getChildren();
         
         inspector.selectComponent("[JFrame]|jButton1");
             
         Property prop = new Property(inspector.properties(), "text"); // NOI18N
         prop.setValue("Lancia Lybra");
+        log("text component of button was set");
         
         if (enabled)
             findInCode("jButton1.setText(bundle.getString(\"MyJFrame", designer);

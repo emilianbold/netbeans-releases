@@ -22,12 +22,12 @@ import com.nwoods.jgo.JGoView;
  */
 public class DocumentationComponent extends javax.swing.JPanel {
 
-	private JGoView mView;
-	
-	private JGoControl mControl;
-	
-	private EntityNode mNode;
-	
+    private JGoView mView;
+    
+    private JGoControl mControl;
+    
+    private EntityNode mNode;
+    
     /** Creates new form DocumentationComponent */
     public DocumentationComponent() {
         initComponents();
@@ -35,14 +35,14 @@ public class DocumentationComponent extends javax.swing.JPanel {
     }
     
     public DocumentationComponent(JGoView view, JGoControl control, EntityNode node) {
-    	this();
-    	this.mView = view;
-    	this.mControl = control;
-    	this.mNode = node;
-    	Documentation doc = mNode.getModelComponent().getDocumentation();
-    	if(doc != null && doc.getTextContent() != null) {
-    		setDocumentation(doc.getTextContent());
-    	}
+        this();
+        this.mView = view;
+        this.mControl = control;
+        this.mNode = node;
+        Documentation doc = mNode.getModelComponent().getDocumentation();
+        if(doc != null && doc.getTextContent() != null) {
+            setDocumentation(doc.getTextContent());
+        }
     }
 
     /** This method is called from within the constructor to
@@ -98,75 +98,75 @@ public class DocumentationComponent extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
-	this.mView.removeObject(this.mControl);
-	String docStr = this.documentationTextArea.getText();
-	OperatorComponent opComp = this.mNode.getModelComponent();
-	Documentation doc = this.mNode.getModelComponent().getDocumentation();
-	
-	if(docStr != null) {
-		
-		if(doc != null) {
-			opComp.getModel().startTransaction();
-			doc.setTextContent(docStr);
-			opComp.getModel().endTransaction();
-		} else {
-			doc = opComp.getModel().getFactory().createDocumentation(opComp.getModel());
-			doc.setTextContent(docStr);
-			opComp.getModel().startTransaction();
-			opComp.setDocumentation(doc);
-			opComp.getModel().endTransaction();
-		}
-	} else {
-		opComp.setDocumentation(null);
-	}
-	
+    this.mView.removeObject(this.mControl);
+    String docStr = this.documentationTextArea.getText();
+    OperatorComponent opComp = this.mNode.getModelComponent();
+    Documentation doc = this.mNode.getModelComponent().getDocumentation();
+    
+    if(docStr != null) {
+        
+        if(doc != null) {
+            opComp.getModel().startTransaction();
+            doc.setTextContent(docStr);
+            opComp.getModel().endTransaction();
+        } else {
+            doc = opComp.getModel().getFactory().createDocumentation(opComp.getModel());
+            doc.setTextContent(docStr);
+            opComp.getModel().startTransaction();
+            opComp.setDocumentation(doc);
+            opComp.getModel().endTransaction();
+        }
+    } else {
+        opComp.setDocumentation(null);
+    }
+    
 }//GEN-LAST:event_closeButtonActionPerformed
 
     private void initGUI() {
-//    	try {
-//    		ImageIcon icon = new ImageIcon( DocumentationComponent.class.getResource("/images/error_badge.png"));
-//    		closeButton.setIcon(icon);
-//    	} catch(Exception ex) {
-//    		ex.printStackTrace();
-//    	}
-    	documentationTitleLabel.setText("<html><body><b>Documentation</b><body></html>");
-    	
+//        try {
+//            ImageIcon icon = new ImageIcon( DocumentationComponent.class.getResource("/images/error_badge.png"));
+//            closeButton.setIcon(icon);
+//        } catch(Exception ex) {
+//            ex.printStackTrace();
+//        }
+        documentationTitleLabel.setText("<html><body><b>Documentation</b><body></html>");
+        
     }
     
     public void setDocumentation(String text) {
-    	this.documentationTextArea.setText(text);
+        this.documentationTextArea.setText(text);
     }
     
     public String getDocumentation() {
-    	return this.documentationTextArea.getText();
+        return this.documentationTextArea.getText();
     }
     
     public void storeDocumentation() {
-    	String docStr = getDocumentation();
-    	OperatorComponent opComp = this.mNode.getModelComponent();
-		if(opComp == null || opComp.getModel() == null) {
-			return;
-		}
-		
-    	if(docStr != null) {
-    		Documentation doc = opComp.getDocumentation();
-    		if(doc == null) {
-    			doc  = opComp.getModel().getFactory().createDocumentation(opComp.getModel());
-    			doc.setTextContent(docStr);
-    			opComp.getModel().startTransaction();
-    			opComp.setDocumentation(doc);
-    			opComp.getModel().endTransaction();
-    		} else {
-    			opComp.getModel().startTransaction();
-    			doc.setTextContent(docStr);
-    			opComp.getModel().endTransaction();
-    		}
-    	} else {
-    		opComp.getModel().startTransaction();
-			opComp.setDocumentation(null);
-			opComp.getModel().endTransaction();
-    	}
-	}
+        String docStr = getDocumentation();
+        OperatorComponent opComp = this.mNode.getModelComponent();
+        if(opComp == null || opComp.getModel() == null) {
+            return;
+        }
+        
+        if(docStr != null) {
+            Documentation doc = opComp.getDocumentation();
+            if(doc == null) {
+                doc  = opComp.getModel().getFactory().createDocumentation(opComp.getModel());
+                doc.setTextContent(docStr);
+                opComp.getModel().startTransaction();
+                opComp.setDocumentation(doc);
+                opComp.getModel().endTransaction();
+            } else {
+                opComp.getModel().startTransaction();
+                doc.setTextContent(docStr);
+                opComp.getModel().endTransaction();
+            }
+        } else {
+            opComp.getModel().startTransaction();
+            opComp.setDocumentation(null);
+            opComp.getModel().endTransaction();
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton closeButton;

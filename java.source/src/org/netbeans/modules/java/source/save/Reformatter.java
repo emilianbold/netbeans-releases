@@ -54,6 +54,7 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
@@ -94,8 +95,9 @@ public class Reformatter implements ReformatTask {
             if (controller == null)
                 return;
         }
+        CodeStyle cs = CodeStyle.getDefault(FileOwnerQuery.getOwner(controller.getFileObject()));
         for (Context.Region region : context.indentRegions())
-            reformatImpl(region);
+            reformatImpl(region, cs);
     }
     
     public static String reformat(String text, CodeStyle style) {
@@ -124,7 +126,7 @@ public class Reformatter implements ReformatTask {
         return sb.toString();
     }
     
-    private void reformatImpl(Context.Region region) throws BadLocationException {
+    private void reformatImpl(Context.Region region, CodeStyle cs) throws BadLocationException {
         boolean templateEdit = doc.getProperty(CT_HANDLER_DOC_PROPERTY) != null;
         int startOffset = region.getStartOffset() - shift;
         int endOffset = region.getEndOffset() - shift;
@@ -170,7 +172,7 @@ public class Reformatter implements ReformatTask {
         TreePath path = getCommonPath(startOffset, endOffset);
         if (path == null)
             return;
-        for (Diff diff : Pretty.reformat(controller, path, CodeStyle.getDefault(null), templateEdit)) {
+        for (Diff diff : Pretty.reformat(controller, path, cs, templateEdit)) {
             int start = diff.getStartOffset();
             int end = diff.getEndOffset();
             String text = diff.getText();
@@ -618,11 +620,15 @@ public class Reformatter implements ReformatTask {
                                         blankLines(cs.getBlankLinesAfterFields());
                                     }
                                 } else {
-                                    if (!fieldGroup && !first)
-                                        blankLines(cs.getBlankLinesBeforeFields());
-                                    scan(member, p);
-                                    if(!fieldGroup)
-                                        blankLines(cs.getBlankLinesAfterFields());
+                                    boolean b = tokens.moveNext();
+                                    if (b) {
+                                        tokens.movePrevious();
+                                        if (!fieldGroup && !first)
+                                            blankLines(cs.getBlankLinesBeforeFields());
+                                        scan(member, p);
+                                        if(!fieldGroup)
+                                            blankLines(cs.getBlankLinesAfterFields());
+                                    }
                                 }
                                 break;
                             case METHOD:
@@ -2727,8 +2733,10 @@ public class Reformatter implements ReformatTask {
             int idx = 0;
             while ((idx = text.indexOf('\n', idx)) >= 0) { //NOI18N
                 int i = idx + 1;
-                while(text.charAt(i) <= ' ' && text.charAt(i) != '\n') //NOI18N
+                while(i < text.length() && text.charAt(i) <= ' ' && text.charAt(i) != '\n') //NOI18N
                     i++;
+                if (i >= text.length())
+                    break;
                 String s = text.charAt(i) == '*' ? indent + SPACE : indent;
                 if (!s.equals(text.substring(idx + 1, i)))
                     diffs.addFirst(new Diff(tokens.offset() + idx + 1, tokens.offset() + i, s)); //NOI18N

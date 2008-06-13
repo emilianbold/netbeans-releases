@@ -44,27 +44,32 @@ import java.awt.Component;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 
 import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.FinishablePanel;
 import org.openide.WizardValidationException;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.WizardDescriptor.ValidatingPanel;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import sun.font.TrueTypeFont;
 
 
 /**
  * @author ads
  *
  */
-class JavaMELibsWizardPanel implements Panel, ValidatingPanel {
+class JavaMELibsWizardPanel implements Panel, ValidatingPanel, FinishablePanel {
     
     JavaMELibsWizardPanel(){
         myListeners = new CopyOnWriteArrayList<ChangeListener>();
     }
 
+    public boolean isFinishPanel() {
+        return true;
+    }
+    
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#addChangeListener(javax.swing.event.ChangeListener)
      */
@@ -77,7 +82,7 @@ class JavaMELibsWizardPanel implements Panel, ValidatingPanel {
      */
     public Component getComponent() {
         if (myComponent == null) {
-            myComponent = new JavaMELibsVisualPanel();
+            myComponent = new JavaMELibsVisualPanel( );
             myComponent.setName(
                     NbBundle.getMessage(BasicModuleConfWizardPanel.class, 
                     CustomComponentWizardIterator.LBL_LIBRARIES));
@@ -103,9 +108,9 @@ class JavaMELibsWizardPanel implements Panel, ValidatingPanel {
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#readSettings(java.lang.Object)
      */
-    public void readSettings( Object arg0 ) {
-        // TODO Auto-generated method stub
-        
+    public void readSettings( Object settings  ) {
+        myWizardDescriptor = (WizardDescriptor)settings;
+        myComponent.readData( myWizardDescriptor );
     }
 
     /* (non-Javadoc)
@@ -118,9 +123,9 @@ class JavaMELibsWizardPanel implements Panel, ValidatingPanel {
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#storeSettings(java.lang.Object)
      */
-    public void storeSettings( Object arg0 ) {
-        // TODO Auto-generated method stub
-        
+    public void storeSettings( Object settings ) {
+        //myWizardDescriptor = (WizardDescriptor)settings;
+        myComponent.storeData( myWizardDescriptor );
     }
 
     /* (non-Javadoc)
@@ -134,5 +139,6 @@ class JavaMELibsWizardPanel implements Panel, ValidatingPanel {
     private List<ChangeListener> myListeners; 
     private WizardDescriptor myWizardDescriptor;
     private JavaMELibsVisualPanel myComponent;
+
 
 }
