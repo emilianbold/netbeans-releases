@@ -36,32 +36,31 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jumpto.type;
 
-import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.jumpto.type.SearchType;
-import org.netbeans.spi.jumpto.type.TypeDescriptor;
-import static org.netbeans.spi.jumpto.type.TypeProvider.*;
 
+package org.netbeans.modules.quicksearch.recent;
+
+import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
+import org.netbeans.spi.quicksearch.SearchProvider;
+import org.netbeans.spi.quicksearch.SearchRequest;
+import org.netbeans.spi.quicksearch.SearchResponse;
+
+    
 /**
- * Accessor class.
- * 
- * @author Pavel Flaska
+ * Recent searches
+ * @author  Jan Becicka
  */
-public abstract class TypeProviderAccessor {
+public class RecentProvider implements SearchProvider {
 
-    public static TypeProviderAccessor DEFAULT;
-
-    static {
-        try {
-            Class.forName(Context.class.getName(), true, Context.class.getClassLoader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
+    public void evaluate(SearchRequest request, SearchResponse response) {
+        for (ItemResult itemR : RecentSearches.getDefault().getSearches()) {
+            if (itemR.getDisplayName().toLowerCase().indexOf(request.getText().toLowerCase()) != -1) {
+                if (!response.addResult(itemR.getAction(), itemR.getDisplayName(),
+                        itemR.getDisplayHint(), itemR.getShortcut())) {
+                    break;
+                }
+            }
         }
     }
 
-    public abstract Context createContext(Project p, String text, SearchType t);
-
-    public abstract Result createResult(List<? super TypeDescriptor> result, String[] message);
 }

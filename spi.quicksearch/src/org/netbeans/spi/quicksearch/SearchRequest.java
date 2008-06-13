@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,32 +36,57 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jumpto.type;
 
-import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.jumpto.type.SearchType;
-import org.netbeans.spi.jumpto.type.TypeDescriptor;
-import static org.netbeans.spi.jumpto.type.TypeProvider.*;
+package org.netbeans.spi.quicksearch;
+
+import javax.swing.KeyStroke;
+import org.netbeans.modules.quicksearch.Accessor;
 
 /**
- * Accessor class.
+ * Description of quick search request.
  * 
- * @author Pavel Flaska
+ * Implementors of {@link SearchProvider} are expected to get information from
+ * SearchRequest instance and perform search appropriately in 
+ * {@link SearchProvider#evaluate} method.
+ *
+ * @author Dafe Simonek
  */
-public abstract class TypeProviderAccessor {
-
-    public static TypeProviderAccessor DEFAULT;
-
+public final class SearchRequest {
+    
     static {
-        try {
-            Class.forName(Context.class.getName(), true, Context.class.getClassLoader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        // init of accessor implementation, part of Accessor pattern
+        Accessor.DEFAULT = new AccessorImpl();
+    }    
+    
+    /** Text to search for */
+    private String text;
+    
+    /** Shortcut to search for */
+    private KeyStroke stroke;
+
+    SearchRequest (String text, KeyStroke stroke) {
+        this.text = text;
+        this.stroke = stroke;
     }
 
-    public abstract Context createContext(Project p, String text, SearchType t);
+    /**
+     * Access to text used for searching. Can be null if shortcut was entered by
+     * user instead of plain text.
+     * 
+     * @return Text entered by user into Quick Search UI or null.
+     */
+    public String getText () {
+        return text;
+    }
+       
+    /**
+     * Access to shortcut used for searching. Can be null if plain text was
+     * entered by user instead of shortcut.
+     * 
+     * @return Shortcut entered by user into Quick Search UI or null.
+     */
+    public KeyStroke getShortcut () {
+        return stroke;
+    }
 
-    public abstract Result createResult(List<? super TypeDescriptor> result, String[] message);
 }

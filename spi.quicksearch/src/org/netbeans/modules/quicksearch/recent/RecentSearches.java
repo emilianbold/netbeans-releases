@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,32 +36,49 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jumpto.type;
 
+package org.netbeans.modules.quicksearch.recent;
+
+import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.jumpto.type.SearchType;
-import org.netbeans.spi.jumpto.type.TypeDescriptor;
-import static org.netbeans.spi.jumpto.type.TypeProvider.*;
+import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
+
 
 /**
- * Accessor class.
- * 
- * @author Pavel Flaska
+ *
+ * @author Jan Becicka
  */
-public abstract class TypeProviderAccessor {
+public class RecentSearches {
+    private LinkedList<ItemResult> recent;
+    private static final int MAX_ITEMS = 5;
+    private static RecentSearches instance;
 
-    public static TypeProviderAccessor DEFAULT;
-
-    static {
-        try {
-            Class.forName(Context.class.getName(), true, Context.class.getClassLoader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+    private RecentSearches() {
+        recent = new LinkedList<ItemResult>();
     }
-
-    public abstract Context createContext(Project p, String text, SearchType t);
-
-    public abstract Result createResult(List<? super TypeDescriptor> result, String[] message);
+    
+    public static RecentSearches getDefault() {
+        if (instance==null) {
+            instance = new RecentSearches();
+        }
+        return instance;
+    } 
+    
+    public void add(ItemResult result) {
+        // don't create duplicates, however poor-man's test only
+        for (ItemResult ir : recent) {
+            if (ir.getDisplayName().equals(result.getDisplayName())) {
+                return;
+            }
+        }
+        
+        if (recent.size()>=MAX_ITEMS) {
+            recent.removeLast();
+        }
+        recent.addFirst(result);
+    }
+    
+    public List<ItemResult> getSearches() {
+        return recent;
+    }
 }

@@ -36,32 +36,42 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jumpto.type;
 
-import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.jumpto.type.SearchType;
+
+package org.netbeans.modules.jumpto.quicksearch;
+
+import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
-import static org.netbeans.spi.jumpto.type.TypeProvider.*;
+import org.netbeans.spi.quicksearch.SearchRequest;
+import org.netbeans.spi.quicksearch.SearchResponse;
 
 /**
- * Accessor class.
- * 
- * @author Pavel Flaska
+ *
+ * @author  Jan Becicka
  */
-public abstract class TypeProviderAccessor {
+public class JavaTypeSearchProvider implements SearchProvider {
 
-    public static TypeProviderAccessor DEFAULT;
+    public void evaluate(SearchRequest request, SearchResponse response) {
+        GoToTypeWorker worker = new GoToTypeWorker(request.getText());
+        worker.run();
+        
+        for (TypeDescriptor td : worker.getTypes()) {
+            if (!response.addResult(new GoToTypeCommand(td), td.getSimpleName())) {
+                break;
+            }
+        }
+    }
+    
+    private static class GoToTypeCommand implements Runnable {
+        private TypeDescriptor command;
+        
+        public GoToTypeCommand(TypeDescriptor command) {
+            this.command = command;
+        }
 
-    static {
-        try {
-            Class.forName(Context.class.getName(), true, Context.class.getClassLoader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        public void run() {
+            command.open();
         }
     }
 
-    public abstract Context createContext(Project p, String text, SearchType t);
-
-    public abstract Result createResult(List<? super TypeDescriptor> result, String[] message);
 }
