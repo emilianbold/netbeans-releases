@@ -47,10 +47,10 @@ import java.awt.Component;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
-import javax.swing.ComboBoxModel;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -135,10 +135,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         }
 
         // encoding
-        Charset encoding = getEncoding();
-        if (encoding != null) {
-            configureProjectPanelVisual.setEncoding(encoding);
-        }
+        configureProjectPanelVisual.setEncoding(getEncoding());
 
         // set as main project
         Boolean setAsMain = isSetAsMain();
@@ -261,7 +258,12 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private Charset getEncoding() {
-        return (Charset) descriptor.getProperty(ENCODING);
+        Charset enc = (Charset) descriptor.getProperty(ENCODING);
+        if (enc == null) {
+            // #136917
+            enc = FileEncodingQuery.getDefaultEncoding();
+        }
+        return enc;
     }
 
     private LocalServer getLocalServer() {
