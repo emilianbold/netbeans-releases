@@ -46,7 +46,10 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
@@ -147,21 +150,18 @@ public final class ThreadsHistoryAction extends AbstractAction {
         }
     }
     
-    /* Only here for fix #41477:, called from layer.xml:
-     * For KDE on unixes, Ctrl+TAB is occupied by OS,
-     * so we also register Ctrl+BACk_QUOTE as recent view list action shortcut.
-     * For other OS's, Ctrl+TAB is the only default, because we create link
-     * not pointing to anything by returning null
-     */
-//    public static String getStringRep4Unixes() {
-//        if (Utilities.isUnix()) {
-//            return "Actions/Window/org-netbeans-core-windows-actions-RecentViewListAction.instance"; //NOI18N
-//        }
-//        return null;
-//    }
-    
     private List<JPDAThread> getThreads() {
-        return ThreadsListener.getDefault().getCurrentThreadsHistory();
+        List<JPDAThread> history = ThreadsListener.getDefault().getCurrentThreadsHistory();
+        List<JPDAThread> allThreads = ThreadsListener.getDefault().getThreads();
+        Set set = new HashSet(history);
+        List<JPDAThread> result = new ArrayList<JPDAThread>(allThreads.size());
+        result.addAll(history);
+        for (JPDAThread thread : allThreads) {
+            if (!set.contains(thread) && thread.isSuspended()) {
+                result.add(thread);
+            }
+        }
+        return result;
     }
 }
 

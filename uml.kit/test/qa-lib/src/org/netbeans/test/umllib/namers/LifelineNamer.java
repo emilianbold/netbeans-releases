@@ -56,6 +56,7 @@ import org.netbeans.modules.uml.diagrams.nodes.EditableCompartmentWidget;
 import org.netbeans.modules.uml.diagrams.nodes.sqd.LifelineBoxWidget;
 import org.netbeans.test.umllib.DiagramElementOperator;
 import org.netbeans.test.umllib.DiagramOperator;
+import org.netbeans.test.umllib.DrawingAreaOperator;
 import org.netbeans.test.umllib.EditControlOperator;
 import org.netbeans.test.umllib.SetName;
 import org.netbeans.test.umllib.UMLWidgetOperator;
@@ -76,42 +77,60 @@ public class LifelineNamer  implements SetName {
      * @param dia 
      * @param name
      */
-    public void setName(DiagramOperator dia,  String newName, String oldName) {
+    public void setName(DiagramOperator dia, String newName, String oldName) {
+        DrawingAreaOperator drawingArea = dia.getDrawingArea();
         int semicolonPos = newName.indexOf(':');
         String lineName = "";
         lineName = newName;
         String classifierName = "";
-        if (semicolonPos>0){
-            lineName = newName.substring(0,semicolonPos);
+        if (semicolonPos > 0) {
+            lineName = newName.substring(0, semicolonPos);
         }
         //if (semicolonPos<name.length()-1){
-        if (semicolonPos>-1){
-            classifierName = newName.substring(semicolonPos+1);
-        }        
-        new EventTool().waitNoEvent(500);            
-        try{Thread.sleep(100);}catch(Exception ex){}
-        
+        if (semicolonPos > -1) {
+            classifierName = newName.substring(semicolonPos + 1);
+        }
+        new EventTool().waitNoEvent(500);
+        try {
+            Thread.sleep(100);
+        } catch (Exception ex) {
+        }
 
-        
         DiagramElementOperator currentElement = new DiagramElementOperator(dia, oldName);
-        UMLWidgetOperator lwo = new UMLWidgetOperator(currentElement.getGraphObject()); 
-        try {           
-            UMLWidgetOperator ewo = lwo.findEditableCompartmentWidget();
-            Point p = ewo.getCenterPoint();
-            //There is offset of center point, so add it on
-            p = new Point((int) p.getX(), (int) p.getY() + 35);
-            ewo.clickOn(p, 3);
-            new EventTool().waitNoEvent(500);
+        UMLWidgetOperator lwo = new UMLWidgetOperator(currentElement.getGraphObject());
+        lwo.clickOnCenterPoint();
+        try {
 
+            new EventTool().waitNoEvent(500);
+            drawingArea.pushKey(KeyEvent.VK_ENTER);
             EditControlOperator ec = new EditControlOperator(MainWindowOperator.getDefault());
-            JTextFieldOperator textFieldOperator = ec.getTextFieldOperator();
-            textFieldOperator.clearText();
-            textFieldOperator.enterText(newName);
-            //DiagramOperator.getDrawingArea().clickMouse();
+
+            for (int i = ec.getTextFieldOperator().getText().length() + 3; i >= 0; i--) {
+                ec.getTextFieldOperator().pushKey(KeyEvent.VK_BACK_SPACE);
+            }
+
+            for (int i = 0; i < lineName.length(); i++) {
+                ec.getTextFieldOperator().typeKey(lineName.charAt(i));
+                new Timeout("", 100).sleep();
+            }
+            if (semicolonPos > -1) {
+                ec.getTextFieldOperator().typeKey(':');
+            }
+            for (int i = 0; i < classifierName.length(); i++) {
+                ec.getTextFieldOperator().typeKey(classifierName.charAt(i));
+                new Timeout("", 100).sleep();
+            }
+
+            new EventTool().waitNoEvent(1000);
+
+            ec.getTextFieldOperator().typeKey('\n');
+
+            new Timeout("", 500).sleep();
             new EventTool().waitNoEvent(500);
         } catch (Exception ex) {
-
         }
+
+
     }
 
     /**
@@ -123,60 +142,69 @@ public class LifelineNamer  implements SetName {
         String lineName = "";
         lineName = name;
         String classifierName = "";
-        if (semicolonPos>0){
-            lineName = name.substring(0,semicolonPos);
+        if (semicolonPos > 0) {
+            lineName = name.substring(0, semicolonPos);
         }
         //if (semicolonPos<name.length()-1){
-        if (semicolonPos>-1){
-            classifierName = name.substring(semicolonPos+1);
-        }        
-        new EventTool().waitNoEvent(1000);            
-        try{Thread.sleep(100);}catch(Exception ex){}
+        if (semicolonPos > -1) {
+            classifierName = name.substring(semicolonPos + 1);
+        }
+        new EventTool().waitNoEvent(1000);
+        try {
+            Thread.sleep(100);
+        } catch (Exception ex) {
+        }
         drawingArea.clickMouse(x, y, 1);
-        try{Thread.sleep(100);}catch(Exception ex){}
-        new EventTool().waitNoEvent(1000);            
-        
-        EditControlOperator ec=null;
+        try {
+            Thread.sleep(100);
+        } catch (Exception ex) {
+        }
+        new EventTool().waitNoEvent(1000);
+
+        EditControlOperator ec = null;
         /*try
         {
-            ec=new EditControlOperator();
+        ec=new EditControlOperator();
         }
         catch(org.netbeans.jemmy.TimeoutExpiredException ex)
         {*/
-            drawingArea.pushKey(KeyEvent.VK_F2);
-            try{Thread.sleep(100);}catch(Exception ex2){}
-            ec=new EditControlOperator();
+        drawingArea.pushKey(KeyEvent.VK_F2);
+        try {
+            Thread.sleep(100);
+        } catch (Exception ex2) {
+        }
+        ec = new EditControlOperator();
         //}
         //remove old and shifts to left
-        for(int i=ec.getTextFieldOperator().getText().length()+3;i>=0;i--)
-        {
+        for (int i = ec.getTextFieldOperator().getText().length() + 3; i >= 0; i--) {
             ec.getTextFieldOperator().pushKey(KeyEvent.VK_BACK_SPACE);
         }
-        
-        for(int i=0;i<lineName.length();i++) {
+
+        for (int i = 0; i < lineName.length(); i++) {
             ec.getTextFieldOperator().typeKey(lineName.charAt(i));
-            new Timeout("",100).sleep();
+            new Timeout("", 100).sleep();
         }
-        if(semicolonPos>-1)ec.getTextFieldOperator().typeKey(':');
-        for(int i=0;i<classifierName.length();i++) {            
+        if (semicolonPos > -1) {
+            ec.getTextFieldOperator().typeKey(':');
+        }
+        for (int i = 0; i < classifierName.length(); i++) {
             ec.getTextFieldOperator().typeKey(classifierName.charAt(i));
-            new Timeout("",100).sleep();
+            new Timeout("", 100).sleep();
         }
-        
-        new EventTool().waitNoEvent(1000);            
-                
+
+        new EventTool().waitNoEvent(1000);
+
         ec.getTextFieldOperator().typeKey('\n');
-        
-        new Timeout("",500).sleep();
+
+        new Timeout("", 500).sleep();
     }
-    
-    
-     /**
-      * for debug only
-      * @param dia
-      */
-     public void getLifelineInfo(DiagramOperator dia) {
-         //        //********************************
+
+    /**
+     * for debug only
+     * @param dia
+     */
+    public void getLifelineInfo(DiagramOperator dia) {
+        //        //********************************
 //       Get element name
 //        if (dia.getDiagramElements() != null) {
 //            Utils.log("DiagramOperator - getDiagramElement(): number of element found = " + dia.getDiagramElements().size());
@@ -186,9 +214,6 @@ public class LifelineNamer  implements SetName {
 //            }
 //        }
 //        //*******************************
-        
-        
-        
 //        DiagramElementOperator currentElement = new DiagramElementOperator(dia, oldName);
 //        
 //        UMLWidgetOperator wo = new UMLWidgetOperator(currentElement.getGraphObject());

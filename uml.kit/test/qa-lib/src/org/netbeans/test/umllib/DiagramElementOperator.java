@@ -561,22 +561,20 @@ public class DiagramElementOperator extends Operator implements Actionable {
      */
     public HashSet<LinkOperator> getLinks() {
         HashSet<LinkOperator> links = new HashSet<LinkOperator>();
-     Widget sObject = getGraphObject();
+        Widget sObject = getGraphObject();
         if ((sObject != null) && (sObject instanceof UMLNodeWidget)) {
             UMLNodeWidget node = (UMLNodeWidget) sObject;
             UMLWidgetOperator wo = new UMLWidgetOperator(sObject);
-            Collection<UMLEdgeWidget> edges = wo.getScene().findNodeEdges(wo.getPresentationElement(), true, true);
-            Iterator<UMLEdgeWidget> it = edges.iterator();
+            Collection<Object> edges = wo.getScene().findNodeEdges(wo.getPresentationElement(), true, true);
+            Iterator<Object> it = edges.iterator();
             UMLWidgetOperator eo ;
-              while (it.hasNext()) {
-                UMLEdgeWidget edge = (UMLEdgeWidget) it.next();
-                  eo = new UMLWidgetOperator(edge);
-                IPresentationElement presentation = eo.getPresentationElement();
+            while (it.hasNext()) {  
+                Object presentation = it.next();
                 if (presentation != null) {
-                    links.add(new LinkOperator(diagramOperator, edge));
+                    links.add(new LinkOperator(diagramOperator, wo.getScene().findWidget(presentation)));
                 }
             }
-         }
+        }
         return links;
     }
 
@@ -587,22 +585,22 @@ public class DiagramElementOperator extends Operator implements Actionable {
     public HashSet<LinkOperator> getInLinks() {
         HashSet<LinkOperator> links = new HashSet<LinkOperator>();
     
-     Widget sObject = getGraphObject();
+        Widget sObject = getGraphObject();
         if ((sObject != null) && (sObject instanceof UMLNodeWidget)) {
             UMLNodeWidget node = (UMLNodeWidget) sObject;
             UMLWidgetOperator wo = new UMLWidgetOperator(sObject);
-            Collection<UMLEdgeWidget> edges = wo.getScene().findNodeEdges(wo.getPresentationElement(), true, false);
-            Iterator<UMLEdgeWidget> it = edges.iterator();
-            UMLWidgetOperator eo ;
+            Collection<Object> edges = wo.getScene().findNodeEdges(wo.getPresentationElement(), false, true);
+            Iterator<Object> it = edges.iterator();
+            Object presentation = null;
               while (it.hasNext()) {
-                UMLEdgeWidget edge = (UMLEdgeWidget) it.next();
-                  eo = new UMLWidgetOperator(edge);
-                IPresentationElement presentation = eo.getPresentationElement();
+                presentation = it.next();
                 if (presentation != null) {
-                    links.add(new LinkOperator(diagramOperator, edge));
+                    Utils.log("=== presentation != null");
+                    Utils.log("=== presentation == "+presentation.toString());
+                    links.add(new LinkOperator(diagramOperator, wo.getScene().findWidget(presentation)));
                 }
             }
-         }
+        }
         return links;
     }
 
@@ -617,16 +615,20 @@ public class DiagramElementOperator extends Operator implements Actionable {
         if ((sObject != null) && (sObject instanceof UMLNodeWidget)) {
             UMLNodeWidget node = (UMLNodeWidget) sObject;
             UMLWidgetOperator wo = new UMLWidgetOperator(sObject);
-            Collection<UMLEdgeWidget> edges = wo.getScene().findNodeEdges(wo.getPresentationElement(), false, true);
-            Iterator<UMLEdgeWidget> it = edges.iterator();
-            UMLWidgetOperator eo;
-            while (it.hasNext()) {
-                UMLEdgeWidget edge = (UMLEdgeWidget) it.next();
-                eo = new UMLWidgetOperator(edge);
-                IPresentationElement presentation = eo.getPresentationElement();
+            Utils.log(" === getOutLink() ==");
+             
+            Collection<Object> edges = wo.getScene().findNodeEdges(wo.getPresentationElement(), true, false);
+            Iterator<Object> it = edges.iterator();
+            Object presentation = null;
+            Utils.log("==== any OUT edge?  "+ edges.toString());
+            Utils.log("==== find any OUT edge?  "+ it.hasNext());
+              while (it.hasNext()) {
+              
+                presentation = it.next();
                 if (presentation != null) {
-                    links.add(new LinkOperator(diagramOperator, edge));
-                }
+                    Utils.log("=== presentation != null");
+                    links.add(new LinkOperator(diagramOperator, wo.getScene().findWidget(presentation)));
+                } 
             }
         }
         return links;

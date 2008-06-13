@@ -55,7 +55,6 @@ import org.netbeans.modules.uml.core.support.umlsupport.INamedCollection;
 import org.netbeans.modules.uml.core.support.umlsupport.NamedCollection;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.products.ad.diagramengines.actions.OrthogonalLayoutAction;
 
 /**
  * @author aztec

@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.xml.text.syntax.XMLKit;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.TestModel;
 import org.netbeans.modules.xml.xam.dom.ElementIdentity;
@@ -97,7 +97,7 @@ public class Util {
     }
     
     public static Document loadDocument(InputStream in) throws Exception {
-        Document sd = new BaseDocument(XMLKit.class, false);
+        Document sd = new BaseDocument(BaseKit.class, false);
         BufferedReader br = new BufferedReader(new InputStreamReader(in,"UTF-8"));
         StringBuffer sbuf = new StringBuffer();
         try {

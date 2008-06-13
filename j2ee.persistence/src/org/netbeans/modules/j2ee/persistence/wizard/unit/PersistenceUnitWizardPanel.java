@@ -80,8 +80,6 @@ public abstract class PersistenceUnitWizardPanel extends JPanel {
     
     public abstract String getPersistenceUnitName();
     
-    public abstract Library getPersistenceLibrary();
-
     public abstract String getTableGeneration();
     
     public abstract boolean isValidPanel();

@@ -105,7 +105,6 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
         protected PropertyPanel mDatabaseJndiNamePanel;
         protected PropertyPanel mIsDeleteRecordsPanel;
         
-        private SchemaComponent mRecordIdentifyingColumnsSchema;
         
         public MyCustomizer(TcgPropertyType propertyType, OperatorComponent component, PropertyEnv env) {
             super(propertyType, component, env);
@@ -380,7 +379,7 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
                 }
             }
                     
-            String displayColumnNames = convertListToCommaSeperatedValues(columnList);
+            String displayColumnNames = GUIUtil.convertListToCommaSeperatedValues(columnList);
 //            mRecordIdentifyingColumnsPanel = PropertyPanel.createSingleLineTextPanelWithoutFilter(recordIdentifyingColumnsLabel, recordIdentifyingColumns, false);
 //            mRecordIdentifyingColumnsPanel.setStringValue();
             
@@ -490,54 +489,35 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
             mIsDeleteRecordsPanel.store();
             
             
-            //store record identifying columns
-            Property recordIdentifyingColumnsSchema = mComponent.getProperty(ExternalTablePollingStreamOperatorComponent.PROP_RECORD_IDENTIFIER_COLUMNS_SCHEMA);
-            String ridschemaName = recordIdentifyingColumnsSchema.getValue();
-            if(mRecordIdentifyingColumnsSchema != null) {
-                IEPModel model = getOperatorComponent().getModel();
-                model.startTransaction();
-                SchemaComponentContainer sc = model.getPlanComponent().getSchemaComponentContainer();
-                //remove previous record identifer schema component if
-                //any
-                if(ridschemaName != null && !ridschemaName.trim().equals("")) {
-                    SchemaComponent sComp = sc.findSchema(ridschemaName);
-                    if(sComp != null) {
-                        sc.removeSchemaComponent(sComp);
-                    }
-                }
-                sc.addSchemaComponent(mRecordIdentifyingColumnsSchema);
-                recordIdentifyingColumnsSchema.setValue(mRecordIdentifyingColumnsSchema.getName());
-                model.endTransaction();
-            } else {
-                IEPModel model = getOperatorComponent().getModel();
-                model.startTransaction();
+            IEPModel model = getOperatorComponent().getModel();
+            
+            //Store record identifying columns
+            String recordIdColumns = mRecordIdentifyingColumnsTextField.getText();
+            SchemaComponent recordIdSchema = GUIUtil.createRecordIdentifierSchema(recordIdColumns, mComponent, mOutputSchemaNamePanel.getStringValue(), mSelectPanel);
+            
+            if(recordIdSchema != null) {
                 
+                //existing record id schema should be removed
+                Property recordIdentifyingColumnsSchema = mComponent.getProperty(ExternalTablePollingStreamOperatorComponent.PROP_RECORD_IDENTIFIER_COLUMNS_SCHEMA);
+                String ridschemaName = recordIdentifyingColumnsSchema.getValue();
                 if(ridschemaName != null && !ridschemaName.trim().equals("")) {
                     SchemaComponentContainer sc = model.getPlanComponent().getSchemaComponentContainer();
                     SchemaComponent sComp = sc.findSchema(ridschemaName);
                     if(sComp != null) {
+                        model.startTransaction();
                         sc.removeSchemaComponent(sComp);
+                        model.endTransaction();
                     }
                 }
                 
-                recordIdentifyingColumnsSchema.setValue("");
+                model.startTransaction();
+                SchemaComponentContainer sc = model.getPlanComponent().getSchemaComponentContainer();
+                sc.addSchemaComponent(recordIdSchema);
+                recordIdentifyingColumnsSchema.setValue(recordIdSchema.getName());
                 model.endTransaction();
-            }
+            } 
             
-//            String columns = mRecordIdentifyingColumnsPanel.getStringValue();
-//            StringTokenizer st = new StringTokenizer(columns, ",");
-//            List<String> cList = new ArrayList<String>();
-//            
-//            while(st.hasMoreElements()) {
-//                String c = (String) st.nextElement();
-//                cList.add(c);
-//            }
-//            
-//            String val = recordIdentifyingColumns.getPropertyType().getType().format(cList);
-//            mComponent.getModel().startTransaction();
-//            recordIdentifyingColumns.setValue(val);
-//            mComponent.getModel().endTransaction();
-//            
+            
             //store from clause
             
             if(mFromClause != null) {
@@ -561,49 +541,6 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
 
         }
         
-        private String convertListToCommaSeperatedValues(List<String> list) {
-            StringBuffer strBuf = new StringBuffer();
-            Iterator<String> it = list.iterator();
-            while(it.hasNext()) {
-                String value = it.next();
-                strBuf.append(value);
-                if(it.hasNext()) {
-                    strBuf.append(",");
-                }
-            }
-            
-            return strBuf.toString();
-        }
-        
-        
-       
-        
-        private String generateUniqueAsColumnName(ColumnInfo column, 
-                                                  Set<String> nameSet) {
-            String baseName = column.getColumnName();
-            
-            String newName = baseName;
-            
-            int counter = 0;
-            while(nameSet.contains(newName)) {
-                newName = baseName + "_" + counter;
-                counter++;
-            }
-            return newName;
-        
-        }
-        
-        private Set<String> getColumnNames(List<ColumnInfo> remainingColumns) {
-            Set<String> nameSet = new HashSet<String>();
-            
-            for (int i = 0; i < remainingColumns.size(); i++) {
-                ColumnInfo c = remainingColumns.get(i);
-                String colName = c.getColumnName();
-                nameSet.add(colName);
-            }
-            
-            return nameSet;
-        }
         
         
         class SelectIEPProcessOperatorActionListener implements ActionListener {
@@ -666,7 +603,7 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
                         remainingColumns.remove(column);
                         String asColumnName = null;
                         
-                        asColumnName = generateUniqueAsColumnName(column, usedupNames);
+                        asColumnName = GUIUtil.generateUniqueAsColumnName(column, usedupNames);
                             
                         usedupNames.add(asColumnName);
                         SchemaAttribute sa = DatabaseMetaDataHelper.createSchemaAttributeFromColumnInfo(column, asColumnName, model);
@@ -686,12 +623,6 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
                     }
                     
                     if(recordIdentifyingColumns != null && recordIdentifyingColumns.size() > 0) {
-                        List<String> skipSchemaNames = new ArrayList<String>();
-                        skipSchemaNames.add(mOutputSchemaNamePanel.getStringValue());
-                        String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer(), skipSchemaNames);
-                        mRecordIdentifyingColumnsSchema = model.getFactory().createSchema(model);
-                        mRecordIdentifyingColumnsSchema.setName(schemaName);
-                        
                         List<String> columnList = new ArrayList<String>();
                         attrs = new ArrayList<SchemaAttribute>();
                         
@@ -704,12 +635,10 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
                             columnList.add(sa.getAttributeName());
                         }
                         
-                        mRecordIdentifyingColumnsSchema.setSchemaAttributes(attrs);
-                        mRecordIdentifyingColumnsTextField.setText(convertListToCommaSeperatedValues(columnList));
+                        mRecordIdentifyingColumnsTextField.setText(GUIUtil.convertListToCommaSeperatedValues(columnList));
                         
 //                        mRecordIdentifyingColumnsPanel.setStringValue(convertListToCommaSeperatedValues(columnList));
                     } else {
-                        mRecordIdentifyingColumnsSchema = null;
                         mRecordIdentifyingColumnsTextField.setText("");
                     }
                     
@@ -717,6 +646,64 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
             }
         }
         
+        
+        class MySelectPanel extends SelectPanel {
+
+            /**
+             * 
+             */
+            private static final long serialVersionUID = -4195259789503600814L;
+
+            public MySelectPanel(IEPModel model, OperatorComponent component) {
+                super(model, component);
+            }
+
+            @Override
+            protected boolean isAddEmptyRow() {
+                return false;
+            }
+
+                    @Override
+                    protected boolean isShowButtons() {
+                        return false;
+                    }
+
+
+            @Override
+            protected DefaultMoveableRowTableModel createTableModel() {
+                return new MyTableModel();
+            }
+        }
+    
+        class MyTableModel extends DefaultMoveableRowTableModel {
+
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                if(column == 0 || column == 1) {
+                    return true;
+                }
+                return false;
+            }
+
+            @Override
+            public void setValueAt(Object aValue, int row, int column) {
+                //to column is changed
+                //we need to update record identifier column as well
+                if(column == 1) {
+                    String oldToColumn = (String) getValueAt(row, column);
+                    //update gui
+                    String recordIdColumns = mRecordIdentifyingColumnsTextField.getText();
+                    if(!recordIdColumns.equals("")) {
+                        recordIdColumns = recordIdColumns.replace(oldToColumn, (String) aValue);
+                        mRecordIdentifyingColumnsTextField.setText(recordIdColumns);
+                    }
+                        
+                }
+                super.setValueAt(aValue, row, column);
+            }
+
+
+        }
     }
     
     
@@ -778,42 +765,5 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
         
     }
     
-    class MySelectPanel extends SelectPanel {
-
-        /**
-         * 
-         */
-        private static final long serialVersionUID = -4195259789503600814L;
-
-        public MySelectPanel(IEPModel model, OperatorComponent component) {
-            super(model, component);
-        }
-        
-        @Override
-        protected boolean isAddEmptyRow() {
-            return false;
-        }
-
-                @Override
-                protected boolean isShowButtons() {
-                    return false;
-                }
-        
-                
-        @Override
-        protected DefaultMoveableRowTableModel createTableModel() {
-            return new MyTableModel();
-        }
-    }
     
-    class MyTableModel extends DefaultMoveableRowTableModel {
-        
-        @Override
-        public boolean isCellEditable(int row, int column) {
-            if(column == 0 || column == 1) {
-                return true;
-            }
-            return false;
-        }
-    }
 }

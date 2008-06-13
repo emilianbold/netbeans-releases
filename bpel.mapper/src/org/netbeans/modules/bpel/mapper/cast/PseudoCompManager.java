@@ -27,21 +27,22 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
+import org.netbeans.modules.bpel.mapper.model.BpelMapperUtils;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.BPELElementsBuilder;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
-import org.netbeans.modules.bpel.model.api.Variable;
+import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.ext.editor.api.Editor;
 import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComp;
 import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComps;
 import org.netbeans.modules.bpel.model.ext.editor.api.Source;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
 import org.openide.ErrorManager;
 
 /**
@@ -104,10 +105,10 @@ public class PseudoCompManager {
     
     //-------------------------------------------------------
     
-    public List<AbstractPseudoComp> getPseudoComp(
+    public List<XPathPseudoComp> getPseudoComp(
             Iterable<Object> paretnPathItrb) {
         //
-        ArrayList<AbstractPseudoComp> result = new ArrayList<AbstractPseudoComp>();
+        ArrayList<XPathPseudoComp> result = new ArrayList<XPathPseudoComp>();
         //
         for (CachedPseudoComp cPseudoComp : mCachedPseudoCompList) {
             if (cPseudoComp.hasSameLocation(paretnPathItrb, false)) {
@@ -118,13 +119,13 @@ public class PseudoCompManager {
         return result;
     }
     
-    public AbstractPseudoComp getPseudoComp(Iterable<Object> pathItrb, 
+    public XPathPseudoComp getPseudoComp(Iterable<Object> pathItrb, 
             boolean skipPathFirst, String soughtName, String soughtNamespace, 
             boolean isAttribute) {
         //
         for (CachedPseudoComp cPseudoComp : mCachedPseudoCompList) {
             if (cPseudoComp.hasSameLocation(pathItrb, true)) {
-                AbstractPseudoComp pseudo = cPseudoComp.getPseudoComp();
+                XPathPseudoComp pseudo = cPseudoComp.getPseudoComp();
                 if (pseudo.isAttribute() == isAttribute && 
                         pseudo.getName().equals(soughtName) && 
                         pseudo.getNamespace().equals(soughtNamespace)) {
@@ -151,7 +152,7 @@ public class PseudoCompManager {
         return false;
     }
     
-    private boolean addPseudoCompImpl(List<Object> parentCompPath, AbstractPseudoComp pseudo) {
+    private boolean addPseudoCompImpl(List<Object> parentCompPath, XPathPseudoComp pseudo) {
         //
         for (CachedPseudoComp cPseudoComp : mCachedPseudoCompList) {
             if (cPseudoComp.hasSameLocation(parentCompPath, false) && 
@@ -214,7 +215,7 @@ public class PseudoCompManager {
     }
     
     public void registerPseudoComp(ExtensibleElements destination, 
-            AbstractPseudoComp newPseudoComp) throws ExtRegistrationException {
+            XPathPseudoComp newPseudoComp) throws ExtRegistrationException {
         //
         BpelModel bpelModel = destination.getBpelModel();
         BPELElementsBuilder builder = bpelModel.getBuilder();
@@ -245,7 +246,8 @@ public class PseudoCompManager {
             PseudoComp newPseudo = builder.createExtensionEntity(PseudoComp.class);
             pseudoComps.addPseudoComp(newPseudo);
             try {
-                newPseudoComp.populatePseudoComp(newPseudo, pseudoComps, mInLeftMapperTree);
+                AbstractPseudoComp.populatePseudoComp(
+                        newPseudoComp, newPseudo, pseudoComps, mInLeftMapperTree);
             } catch (ExtRegistrationException ex) {
                 // 
                 // Delete the last PseudoComponent
@@ -260,7 +262,7 @@ public class PseudoCompManager {
     }
     
     public void registerPseudoComp(ExtensibleElements destination, 
-            Collection<AbstractPseudoComp> newPseudoComps) {
+            Collection<XPathPseudoComp> newPseudoComps) {
         //
         BpelModel bpelModel = destination.getBpelModel();
         BPELElementsBuilder builder = bpelModel.getBuilder();
@@ -269,7 +271,7 @@ public class PseudoCompManager {
         //
         PseudoComp[] pseudoCompArr = pseudoComps.getPseudoComps();
         //
-        for (AbstractPseudoComp pseudoComp : newPseudoComps) {
+        for (XPathPseudoComp pseudoComp : newPseudoComps) {
             boolean isEqualFound = false;
             for (PseudoComp pseudo : pseudoCompArr) {
                 //
@@ -292,7 +294,8 @@ public class PseudoCompManager {
                 PseudoComp newPseudoComp = builder.createExtensionEntity(PseudoComp.class);
                 pseudoComps.addPseudoComp(newPseudoComp);
                 try {
-                    pseudoComp.populatePseudoComp(newPseudoComp, pseudoComps, mInLeftMapperTree);
+                    AbstractPseudoComp.populatePseudoComp(
+                        pseudoComp, newPseudoComp, pseudoComps, mInLeftMapperTree);
                 } catch (ExtRegistrationException ex) {
                     // 
                     // Delete the last PseudoComponent
@@ -307,8 +310,10 @@ public class PseudoCompManager {
         }
     }
     
-    public void deletePseudoComp(final AbstractPseudoComp pseudoToUnreg) {
-        final AbstractVariableDeclaration var = pseudoToUnreg.getBaseVariable();
+    public void deletePseudoComp(Iterable<Object> locationItrb, 
+            final XPathPseudoComp pseudoToUnreg) {
+        //
+        final VariableDeclaration var = BpelMapperUtils.getBaseVariable(locationItrb);
         if (var != null) {
             //
             // TODO: check if the deleted cast is used somewhere and ask 
@@ -338,7 +343,7 @@ public class PseudoCompManager {
      * @param pseudoToUnreg
      */
     public void unregisterPseudoComp(ExtensibleElements destination, 
-            AbstractPseudoComp pseudoToUnreg) {
+            XPathPseudoComp pseudoToUnreg) {
         //
         BpelModel bpelModel = destination.getBpelModel();
         BPELElementsBuilder builder = bpelModel.getBuilder();
@@ -411,11 +416,11 @@ public class PseudoCompManager {
      * Removes the specified PseudoComp from the cache.
      * @param pseudoToDelete
      */
-    public void removePseudoComp(AbstractPseudoComp pseudoToDelete) {
+    public void removePseudoComp(XPathPseudoComp pseudoToDelete) {
         ListIterator<CachedPseudoComp> itr = mCachedPseudoCompList.listIterator();
         while (itr.hasNext()) {
             CachedPseudoComp cPseudo = itr.next();
-            AbstractPseudoComp pseudo = cPseudo.getPseudoComp();
+            XPathPseudoComp pseudo = cPseudo.getPseudoComp();
             if (pseudo.equals(pseudoToDelete)) {
                 itr.remove();
                 return;
@@ -426,16 +431,17 @@ public class PseudoCompManager {
     
     public void registerVariablePseudoComp(final SyntheticPseudoComp pseudo) 
             throws Exception {
-        final Variable var = pseudo.getBaseVariable();
+        final VariableDeclaration var = pseudo.getBaseVariable();
+        assert var instanceof ExtensibleElements;
         if (var != null) {
             //
-            BpelModel bpelModel = var.getBpelModel();
+            BpelModel bpelModel = ((BpelEntity)var).getBpelModel();
             bpelModel.invoke(new Callable<Object>() {
                 public Object call() throws Exception {
                     try {
-                        registerPseudoComp(var, pseudo);
+                        registerPseudoComp((ExtensibleElements)var, pseudo);
                     } finally {
-                        clearEmptyEditorEntity(var);
+                        clearEmptyEditorEntity((ExtensibleElements)var);
                     }
                     return null;
                 }
@@ -472,14 +478,14 @@ public class PseudoCompManager {
         private List<Object> mParentPath;
 
         // The type cast.
-        private AbstractPseudoComp mPseudoComp;
+        private XPathPseudoComp mPseudoComp;
         
-        public CachedPseudoComp(List<Object> parentPath, AbstractPseudoComp pseudo) {
+        public CachedPseudoComp(List<Object> parentPath, XPathPseudoComp pseudo) {
             mParentPath = parentPath;
             mPseudoComp = pseudo;
         }
         
-        public AbstractPseudoComp getPseudoComp() {
+        public XPathPseudoComp getPseudoComp() {
             return mPseudoComp;
         }
         
@@ -491,8 +497,8 @@ public class PseudoCompManager {
             return mParentPath;
         }
         
-        public boolean hasSamePseudoComp(AbstractPseudoComp pseudo) {
-            return getPseudoComp().equalTypeName(pseudo);
+        public boolean hasSamePseudoComp(XPathPseudoComp pseudo) {
+            return AbstractPseudoComp.equalTypeName(getPseudoComp(), pseudo);
         }
         
 //        public boolean hasSameCastedCompLocation(RestartableIterator castedCompItr) {

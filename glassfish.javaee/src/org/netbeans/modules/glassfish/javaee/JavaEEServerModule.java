@@ -40,7 +40,7 @@
 package org.netbeans.modules.glassfish.javaee;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.spi.glassfish.RemoveCookie;
+import org.netbeans.modules.glassfish.spi.RemoveCookie;
 import org.openide.util.Lookup;
 
 

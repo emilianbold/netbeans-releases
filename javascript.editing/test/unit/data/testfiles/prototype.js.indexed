@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/prototype.js
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   base : $$;;$$;|FUNCTION|;;0;;;;
   base : $;;$;|FUNCTION|;element;0;;;;
   base : $a;;$A;|GLOBAL|;;0;;;;
@@ -638,4 +633,4 @@ Indexed:
   fqn : try.these;;Try.these;|FUNCTION|;;0;;;;
   fqn : try;;Try;|PROPERTY|;;0;;;;
 
-Not Indexed:
+Not Searchable Keys:

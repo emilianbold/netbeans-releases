@@ -43,7 +43,6 @@ package org.netbeans.modules.groovy.editor;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaMethod;
-import groovy.util.Node;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -61,7 +60,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.codehaus.groovy.ast.ASTNode;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler;
@@ -71,7 +69,6 @@ import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.modules.groovy.editor.elements.KeywordElement;
 import org.netbeans.modules.groovy.editor.parser.GroovyParser;
@@ -80,7 +77,6 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.ClassNode;
@@ -88,7 +84,6 @@ import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Variable;
-import org.codehaus.groovy.ast.VariableScope;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
@@ -119,8 +114,8 @@ import org.openide.util.Utilities;
 
 public class CodeCompleter implements CodeCompletionHandler {
 
-    private static ImageIcon classIcon;
-    private boolean caseSensitive;
+    private static ImageIcon groovyIcon;
+    private static ImageIcon javaIcon;
     private int anchor;
     private final Logger LOG = Logger.getLogger(CodeCompleter.class.getName());
     private String jdkJavaDocBase = null;
@@ -128,7 +123,7 @@ public class CodeCompleter implements CodeCompletionHandler {
     private String gapiDocBase = null;
 
     public CodeCompleter() {
-        // LOG.setLevel(Level.FINEST);
+        LOG.setLevel(Level.OFF);
 
         JavaPlatformManager platformMan = JavaPlatformManager.getDefault();
         JavaPlatform platform = platformMan.getDefaultPlatform();
@@ -211,18 +206,18 @@ public class CodeCompleter implements CodeCompletionHandler {
         LOG.log(Level.FINEST, "toString()          : " + mm.toString());
         LOG.log(Level.FINEST, "getDescriptor()     : " + mm.getDescriptor());
         LOG.log(Level.FINEST, "getSignature()      : " + mm.getSignature());
-        LOG.log(Level.FINEST, "getParamTypes()     : " + mm.getParameterTypes());
+        // LOG.log(Level.FINEST, "getParamTypes()     : " + mm.getParameterTypes());
         LOG.log(Level.FINEST, "getDeclaringClass() : " + mm.getDeclaringClass());
     }
 
-    private boolean startsWith(String theString, String prefix) {
-        if (prefix.length() == 0) {
-            return true;
-        }
-
-        return caseSensitive ? theString.startsWith(prefix)
-            : theString.toLowerCase().startsWith(prefix.toLowerCase());
-    }
+//    private boolean startsWith(String theString, String prefix) {
+//        if (prefix.length() == 0) {
+//            return true;
+//        }
+//
+//        return caseSensitive ? theString.startsWith(prefix)
+//            : theString.toLowerCase(Locale.ENGLISH).startsWith(prefix.toLowerCase());
+//    }
 
     /**
      * Get the closest ASTNode related to this request. This is used to complete
@@ -239,7 +234,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             return null;
         }
 
-        ASTNode closest = null;
+        ASTNode closest;
 
         if (request.prefix.equals("")) {
             closest = path.leaf();
@@ -301,9 +296,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         if (root == null) {
             LOG.log(Level.FINEST, "root == null"); // NOI18N
             LOG.log(Level.FINEST, "request.info   = {0}", request.info); // NOI18N
-            LOG.log(Level.FINEST, "request.path   = {0}", request.path); // NOI18N
             LOG.log(Level.FINEST, "request.prefix = {0}", request.prefix); // NOI18N
-            LOG.log(Level.FINEST, "request.node   = {0}", request.node); // NOI18N
             
             return null;
         }
@@ -312,34 +305,35 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
 
     /**
-     * Complete Groovy Keywords.
+     * Complete Groovy or Java Keywords.
      * 
+     * @see GroovyUtils.GROOVY_KEYWORDS or GroovyUtils.JAVA_KEYWORDS
      * @param proposals
      * @param request
-     * @param isSymbol
      * @return
      */
-    private boolean completeKeywords(List<CompletionProposal> proposals, CompletionRequest request, boolean isSymbol) {
-
+    private boolean completeKeywords(List<CompletionProposal> proposals, CompletionRequest request) {
         String prefix = request.prefix;
 
-        // Keywords
-
         for (String keyword : GroovyUtils.GROOVY_KEYWORDS) {
-            if (startsWith(keyword, prefix)) {
-                KeywordItem item = new KeywordItem(keyword, null, anchor, request);
-
-                if (isSymbol) {
-                    item.setSymbol(true);
-                }
-
+            if (keyword.startsWith(prefix)) {
+                KeywordItem item = new KeywordItem(keyword, null, anchor, request, true);
+                item.setSymbol(true);
                 proposals.add(item);
             }
         }
-
-        return false;
+        
+        for (String keyword : GroovyUtils.JAVA_KEYWORDS) {
+            if (keyword.startsWith(prefix)) {
+                KeywordItem item = new KeywordItem(keyword, null, anchor, request, false);
+                item.setSymbol(true);
+                proposals.add(item);
+            }
+        }
+        
+        return true;
     }
-
+    
     private boolean completeFields(List<CompletionProposal> proposals, CompletionRequest request) {
         LOG.log(Level.FINEST, "-> completeFields"); // NOI18N
 
@@ -430,18 +424,20 @@ public class CodeCompleter implements CodeCompletionHandler {
                     ts.moveNext();
                     ts.moveNext();
 
-                    String pkgPrefix = "";
+                    StringBuffer buf = new StringBuffer();
 
                     while (ts.isValid() && ts.moveNext() && ts.offset() < position) {
                         Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
 
                         if (t.id() == GroovyTokenId.DOT || t.id() == GroovyTokenId.IDENTIFIER) {
-                            pkgPrefix = pkgPrefix + t.text().toString();
+                            buf.append(t.text().toString());
                         } else {
                             break;
                         }
                     }
 
+                    String pkgPrefix = buf.toString();
+                    
                     LOG.log(Level.FINEST, "Token prefix = >{0}<", pkgPrefix);
 
                     DataObject dob = NbEditorUtilities.getDataObject(request.doc);
@@ -549,7 +545,7 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
 
     private ClassNode getDeclaringClass(ASTNode closest) {
-        ClassNode declClass = null;
+        ClassNode declClass;
 
         if (closest != null && closest instanceof AnnotatedNode) {
             LOG.log(Level.FINEST, "closest: AnnotatedNode"); // NOI18N
@@ -594,7 +590,6 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         ASTNode closest = getClosestNode(request);
 
-        Class clz = null;
         ClassNode declClass = getDeclaringClass(closest);
 
         if (declClass == null) {
@@ -602,13 +597,13 @@ public class CodeCompleter implements CodeCompletionHandler {
             return false;
         }
 
-        if (clz == null) {
-            try {
-                clz = Class.forName(declClass.getName());
-            } catch (Exception e) {
-                LOG.log(Level.FINEST, "Class.forName() failed: {0}", e.getMessage()); // NOI18N
-                return false;
-            }
+        Class clz;
+        
+        try {
+            clz = Class.forName(declClass.getName());
+        } catch (ClassNotFoundException e) {
+            LOG.log(Level.FINEST, "Class.forName() failed: {0}", e.getMessage()); // NOI18N
+            return false;
         }
 
         if (clz != null) {
@@ -632,9 +627,6 @@ public class CodeCompleter implements CodeCompletionHandler {
         CompilationInfo info = context.getInfo();
         int lexOffset = context.getCaretOffset();
         String prefix = context.getPrefix();
-        NameKind kind = context.getNameKind();
-        QueryType queryType = context.getQueryType();
-        this.caseSensitive = context.isCaseSensitive();
         HtmlFormatter formatter = context.getFormatter();
 
         final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
@@ -660,9 +652,9 @@ public class CodeCompleter implements CodeCompletionHandler {
 //        lexOffset = AstUtilities.boundCaretOffset(info, lexOffset);
 
         // Discover whether we're in a require statement, and if so, use special completion
-        final TokenHierarchy<Document> th = TokenHierarchy.get(document);
+        // final TokenHierarchy<Document> th = TokenHierarchy.get(document);
         final BaseDocument doc = (BaseDocument) document;
-        final FileObject fileObject = info.getFileObject();
+        // final FileObject fileObject = info.getFileObject();
 
         doc.readLock(); // Read-lock due to Token hierarchy use
 
@@ -677,16 +669,9 @@ public class CodeCompleter implements CodeCompletionHandler {
             request.doc = doc;
             request.info = info;
             request.prefix = prefix;
-            request.th = th;
-            request.kind = kind;
-            request.queryType = queryType;
-            request.fileObject = fileObject;
-
-            // No - we don't complete keywords, since one can get'em by hitting
-            // ctrl-k or use an abbrevation. Displaying them without a documentation
-            // makes no sense as well, see:
-            // http://www.netbeans.org/issues/show_bug.cgi?id=126500
-            // completeKeywords(proposals, request, showSymbols);
+            
+            // complette keywords
+            completeKeywords(proposals, request);
 
             // complete methods
             completeMethods(proposals, request);
@@ -699,7 +684,6 @@ public class CodeCompleter implements CodeCompletionHandler {
             
             // complete local variables
             completeLocalVars(proposals, request);
-
 
             return new DefaultCompletionResult(proposals, false);
         } finally {
@@ -807,7 +791,12 @@ public class CodeCompleter implements CodeCompletionHandler {
                 String typeName = encodedType.substring(i, semicolon);
                 typeName = typeName.replace('/', '.');
 
-                sb.append(typeName);
+                if (forURL) {
+                    sb.append(typeName);
+                } else {
+                    sb.append(NbUtilities.stripPackage(typeName));
+                }
+                
                 i = semicolon;
             }
 
@@ -852,7 +841,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
             // figure out who originally defined this method
 
-            String className = null;
+            String className;
 
             if (ame.isGDK()) {
                 className = mm.getDeclaringClass().getCachedClass().getName();
@@ -964,17 +953,15 @@ public class CodeCompleter implements CodeCompletionHandler {
 
     private static class CompletionRequest {
 
-        private TokenHierarchy<Document> th;
+        // private TokenHierarchy<Document> th;
         private CompilationInfo info;
-        private AstPath path;
-        private Node node;
         private int lexOffset;
         private int astOffset;
         private BaseDocument doc;
         private String prefix = "";
-        private NameKind kind;
-        private QueryType queryType;
-        private FileObject fileObject;
+        // private NameKind kind;
+        // private QueryType queryType;
+        // private FileObject fileObject;
         private HtmlFormatter formatter;
     }
 
@@ -1086,11 +1073,9 @@ public class CodeCompleter implements CodeCompletionHandler {
         HtmlFormatter formatter;
         boolean isGDK;
         AstMethodElement methodElement;
-        Class clz;
 
         MethodItem(Class clz, MetaMethod method, int anchorOffset, CompletionRequest request, boolean isGDK) {
             super(null, anchorOffset, request);
-            this.clz = clz;
             this.method = method;
             this.formatter = request.formatter;
             this.isGDK = isGDK;
@@ -1102,7 +1087,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         @Override
         public String getName() {
-            return method.getName().toString() + "()";
+            return method.getName() + "()";
         }
 
         @Override
@@ -1124,7 +1109,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             formatter.name(kind, true);
 
             if (isGDK) {
-                formatter.appendText(method.getName().toString());
+                formatter.appendText(method.getName());
 
                 // construct signature by removing package names.
 
@@ -1134,15 +1119,16 @@ public class CodeCompleter implements CodeCompletionHandler {
 
                 String sig = signature.substring(start + 1, end);
 
-                String simpleSig = "";
+                StringBuffer buf = new StringBuffer();
 
                 for (String param : sig.split(",")) {
-                    if (!simpleSig.equals("")) {
-                        simpleSig = simpleSig + ", ";
+                    if (buf.length() > 0) {
+                        buf.append(", ");
                     }
-                    simpleSig = simpleSig + NbUtilities.stripPackage(param);
+                    buf.append(NbUtilities.stripPackage(param));
                 }
 
+                String simpleSig = buf.toString();
                 formatter.appendText("(" + simpleSig + ")");
             } else {
                 formatter.appendText(getMethodSignature(method, false, isGDK));
@@ -1178,11 +1164,11 @@ public class CodeCompleter implements CodeCompletionHandler {
                 return null;
             }
 
-            if (classIcon == null) {
-                classIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GROOVY_METHOD));
+            if (groovyIcon == null) {
+                groovyIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GROOVY_METHOD));
             }
 
-            return classIcon;
+            return groovyIcon;
         }
 
         @Override
@@ -1204,13 +1190,16 @@ public class CodeCompleter implements CodeCompletionHandler {
     private class KeywordItem extends GroovyCompletionItem {
 
         private static final String GROOVY_KEYWORD = "org/netbeans/modules/groovy/editor/resources/groovydoc.png"; //NOI18N
+        private static final String JAVA_KEYWORD   = "org/netbeans/modules/groovy/editor/resources/duke.png"; //NOI18N
         private final String keyword;
         private final String description;
+        private final boolean isGroovy;
 
-        KeywordItem(String keyword, String description, int anchorOffset, CompletionRequest request) {
+        KeywordItem(String keyword, String description, int anchorOffset, CompletionRequest request, boolean isGroovy) {
             super(null, anchorOffset, request);
             this.keyword = keyword;
             this.description = description;
+            this.isGroovy = isGroovy;
         }
 
         @Override
@@ -1239,11 +1228,18 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         @Override
         public ImageIcon getIcon() {
-            if (classIcon == null) {
-                classIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GROOVY_KEYWORD));
+            
+            if (isGroovy) {
+                if (groovyIcon == null) {
+                    groovyIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GROOVY_KEYWORD));
+                }
+                return groovyIcon;
+            } else {
+                if (javaIcon == null) {
+                    javaIcon = new ImageIcon(org.openide.util.Utilities.loadImage(JAVA_KEYWORD));
+                }
+                return javaIcon;
             }
-
-            return classIcon;
         }
 
         @Override

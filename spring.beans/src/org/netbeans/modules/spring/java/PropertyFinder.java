@@ -44,8 +44,6 @@ import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.ElementUtilities;
 
@@ -56,22 +54,21 @@ import org.netbeans.api.java.source.ElementUtilities;
  */
 public class PropertyFinder {
     
-    private static final String GET_PREFIX = "get"; // NOI18N
-    private static final String SET_PREFIX = "set"; // NOI18N
-    private static final String IS_PREFIX = "is"; // NOI18N
-    
-    private ElementUtilities eu;
-    private TypeMirror type;
-    private String propPrefix;
-    private Map<String, Property> name2Prop = new HashMap<String, Property>();
+    private final ElementUtilities eu;
+    private final TypeMirror type;
+    private final String matchText;
+    private final Map<String, Property> name2Prop = new HashMap<String, Property>();
+    private final MatchType matchType;
 
-    public PropertyFinder(TypeMirror type, String propertyName, ElementUtilities eu) {
+    public PropertyFinder(TypeMirror type, String matchText, ElementUtilities eu, MatchType matchType) {
         this.type = type;
-        this.propPrefix = propertyName;
+        this.matchText = matchText;
         this.eu = eu;
+        this.matchType = matchType;
     }
 
     public Property[] findProperties() {
+        name2Prop.clear();
         eu.getMembers(type, new ElementUtilities.ElementAcceptor() {
             public boolean accept(Element e, TypeMirror type) {
 
@@ -82,17 +79,11 @@ public class PropertyFinder {
 
                 ExecutableElement ee = (ExecutableElement) e;
                 String methodName = ee.getSimpleName().toString();
-                TypeMirror retType = ee.getReturnType();
-                
-                // discard private and static methods
-                if (ee.getModifiers().contains(Modifier.PRIVATE) || ee.getModifiers().contains(Modifier.STATIC)) {
-                    return false;
-                }
                 
                 // only accept getXXX and isXXX (for boolean)
-                if (isGetter(methodName, ee, retType)) {
-                    String propName = getPropertyName(methodName);
-                    if(!propName.startsWith(propPrefix)) {
+                if (JavaUtils.isGetter(ee)) {
+                    String propName = JavaUtils.getPropertyName(methodName);
+                    if(!match(propName)) {
                         return false;
                     }
                     
@@ -101,9 +92,9 @@ public class PropertyFinder {
                 }
                 
                 // only accept setXXX
-                if (isSetter(methodName, ee, retType)) {
-                    String propName = getPropertyName(methodName);
-                    if(!propName.startsWith(propPrefix)) {
+                if (JavaUtils.isSetter(ee)) {
+                    String propName = JavaUtils.getPropertyName(methodName);
+                    if(!match(propName)) {
                         return false;
                     }
                     
@@ -138,31 +129,8 @@ public class PropertyFinder {
         return prop;
     }
     
-    private String getPropertyName(String methodName) {
-        if(methodName.startsWith(GET_PREFIX) || methodName.startsWith(SET_PREFIX)) {
-            return convertToPropertyName(methodName.substring(3));
-        } else if(methodName.startsWith(IS_PREFIX)) {
-            return convertToPropertyName(methodName.substring(2));
-        }
-        
-        return null;
-    }
-    
-    private String convertToPropertyName(String name) {
-        char[] vals = name.toCharArray();
-        vals[0] = Character.toLowerCase(vals[0]);
-        return String.valueOf(vals);
-    }
-    
-    private boolean isGetter(String methodName, ExecutableElement ee, TypeMirror retType) {
-        boolean retVal = methodName.startsWith(GET_PREFIX) && methodName.length() > GET_PREFIX.length() && retType.getKind() != TypeKind.VOID;
-        retVal = retVal || methodName.startsWith(IS_PREFIX) && methodName.length() > IS_PREFIX.length() && retType.getKind() == TypeKind.BOOLEAN;
-        
-        return retVal;
-    }
-    
-    private boolean isSetter(String methodName, ExecutableElement ee, TypeMirror retType) {
-        return methodName.startsWith(SET_PREFIX) && methodName.length() > SET_PREFIX.length() 
-                && retType.getKind() == TypeKind.VOID && ee.getParameters().size() == 1;
+    private boolean match(String propName) {
+        int length = matchType == MatchType.PREFIX ? matchText.length() : Math.max(propName.length(), matchText.length());
+        return propName.regionMatches(0, matchText, 0, length);
     }
 }

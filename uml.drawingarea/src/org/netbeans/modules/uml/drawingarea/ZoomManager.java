@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.uml.drawingarea;
 
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -62,6 +63,8 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
+import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
+import org.openide.util.Utilities;
 
 /**
  * Manages the zoom level for a particular Scene instance.
@@ -76,7 +79,7 @@ public class ZoomManager implements Scene.SceneListener
     /** The minimum zoom percent value. */
     public static final int MIN_ZOOM_PERCENT = 1;
     /** The maximum zoom percent value. */
-    public static final int MAX_ZOOM_PERCENT = 1000;
+    public static final int MAX_ZOOM_PERCENT = 1600;
     /** Point at which the zoom increments/decrements more or less
      * (less below the threshold, more above the threshold). */
     private static final int ZOOM_STEP_THRESHOLD = DEFAULT_ZOOM_PERCENT;
@@ -92,6 +95,9 @@ public class ZoomManager implements Scene.SceneListener
     private EventListenerList listeners;
 
     private int lastZoomLevel;
+    
+    private Cursor zoomCursor;
+    private Cursor zoomStopCursor;
     
     /**
      * Creates a new instance of ZoomManager.
@@ -187,7 +193,8 @@ public class ZoomManager implements Scene.SceneListener
         if(percent != lastZoomLevel)
         {
             lastZoomLevel = percent;
-            
+            // update variable zoompercent
+            zoomPercentage = percent;
             Object[] list = listeners.getListenerList();
             ZoomEvent event = null;
             for (int ii = list.length - 2; ii >= 0; ii -= 2)
@@ -383,7 +390,7 @@ public class ZoomManager implements Scene.SceneListener
             // instead, give it a prototype value and then ask for the
             // preferred size, making that the maximum size
             // (make it wide enough to accomodate the '%').
-            setPrototypeDisplayValue(new Integer(10000));
+            setPrototypeDisplayValue(new Integer(100000));
             setMaximumSize(getPreferredSize());
             setEditable(true);
             Listener l = new Listener(manager);
@@ -402,16 +409,17 @@ public class ZoomManager implements Scene.SceneListener
              * Creates a new instance of Model.
              */
             public Model()
-            {
+            {               
                 addElement(new Value(10));
                 addElement(new Value(25));
                 addElement(new Value(50));
                 addElement(new Value(75));
-                // We are assuming the default is between 75 and 150...
                 Value def = new Value(DEFAULT_ZOOM_PERCENT);
                 addElement(def);
                 addElement(new Value(150));
                 addElement(new Value(200));
+                addElement(new Value(400));
+                addElement(new Value(MAX_ZOOM_PERCENT));
                 setSelectedItem(def);
             }
         }
@@ -803,5 +811,41 @@ public class ZoomManager implements Scene.SceneListener
     public void sceneValidated()
     {
         fireZoomEvent((int)(scene.getZoomFactor() * 100));
+        if (scene.getZoomFactor() * 100 >= MAX_ZOOM_PERCENT || 
+            scene.getZoomFactor() * 100 <= MIN_ZOOM_PERCENT)
+        {
+            // disable marquee zoom 
+            if (scene.getActiveTool().equals(DesignerTools.MARQUEE_ZOOM))
+                scene.setCursor(getMarqueeZoomStopCursor());
+        }
+        else
+        {
+            // reset marquee zoom cursor
+            if (scene.getActiveTool().equals(DesignerTools.MARQUEE_ZOOM))
+            {
+                scene.setCursor(getMarqueeZoomCursor());
+            }           
+        }
+            
+    }
+    
+    private Cursor getMarqueeZoomCursor()
+    {
+        if (zoomCursor == null)
+        {
+            zoomCursor = Utilities.createCustomCursor(scene.getView(), 
+                        Utilities.icon2Image(ImageUtil.instance().getIcon("marquee-zoom.gif")), "MarqueeZoom");
+        }
+        return zoomCursor;
+    }
+    
+    private Cursor getMarqueeZoomStopCursor()
+    {
+        if (zoomStopCursor == null)
+        {
+            zoomStopCursor = Utilities.createCustomCursor(scene.getView(), 
+                        Utilities.icon2Image(ImageUtil.instance().getIcon("marquee-zoom-stop.gif")), "MarqueeZoomStop");
+        }
+        return zoomStopCursor;
     }
 }

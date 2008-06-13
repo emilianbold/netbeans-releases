@@ -38,12 +38,10 @@
  */
 package org.netbeans.modules.hibernate.hqleditor;
 
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -53,7 +51,6 @@ import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
-import org.openide.util.Mutex;
 
 /**
  * HQL Editor controller. Controls overall HQL query execution.
@@ -65,8 +62,7 @@ public class HQLEditorController {
     private Logger logger = Logger.getLogger(HQLEditorController.class.getName());
     HQLEditorTopComponent editorTopComponent = null;
 
-    public HQLResult executeHQLQuery(final String hql, final FileObject configFileObject) {
-        HQLResult result = new HQLResult();
+    public void executeHQLQuery(final String hql, final FileObject configFileObject) {
         final List<URL> localResourcesURLList = new ArrayList<URL>();
 
         try {
@@ -91,60 +87,17 @@ public class HQLEditorController {
             public void run() {
                 Thread.currentThread().setContextClassLoader(customClassLoader);
                 HQLExecutor queryExecutor = new HQLExecutor();
+                try {
                 HQLResult r = queryExecutor.execute(hql, configFileObject);
-                if (r.getResults() != null && r.getResults().size() != 0) {
-                   // logger.info(r.getResults().toString());
-                    final Vector<String> tableHeaders = new Vector<String>();
-                    final Vector<Vector> tableData = new Vector<Vector>();
-                    // Construct the table headers//
-
-                    Object firstObject = r.getResults().get(0);
-                    for (java.lang.reflect.Method m : firstObject.getClass().getDeclaredMethods()) {
-                        String methodName = m.getName();
-                        if (methodName.startsWith("get")) {
-                            if (!tableHeaders.contains(methodName)) {
-                                tableHeaders.add(m.getName().substring(3));
-                            }
-                        }
-                    }
-                    for (Object o : r.getResults()) {
-                        try {
-                            Vector oneRow = new Vector();
-                            for (java.lang.reflect.Method m : o.getClass().getDeclaredMethods()) {
-                                String methodName = m.getName();
-                                if (methodName.startsWith("get")) {
-                                    oneRow.add(m.invoke(o, new Object[]{}));
-                                }
-                            }
-                            tableData.add(oneRow);
-                        } catch (IllegalAccessException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (IllegalArgumentException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (InvocationTargetException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (SecurityException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-
-                    }
-                    Mutex.EVENT.readAccess(new Runnable() {
-
-                        public void run() {
-                            editorTopComponent.setResult(tableData, tableHeaders);
-                            editorTopComponent.requestActive();
-                        }
-                    });
-
-
-                } else {
-                    logger.info("HQL Query result is null");
+                   editorTopComponent.setResult(r);
+                } catch (Exception e) {
+                    System.out.println("exception " + e);   
                 }
+             
             }
         };
         t.setContextClassLoader(customClassLoader);
         t.start();
-        return result;
     }
 
     public void init(Node[] activatedNodes) {

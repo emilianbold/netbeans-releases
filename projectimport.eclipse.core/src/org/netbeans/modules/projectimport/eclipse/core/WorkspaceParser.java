@@ -69,6 +69,9 @@ final class WorkspaceParser {
     private static final String VARIABLE_PREFIX = "org.eclipse.jdt.core.classpathVariable."; // NOI18N
     private static final int VARIABLE_PREFIX_LENGTH = VARIABLE_PREFIX.length();
     
+    private static final String RESOURCES_VARIABLE_PREFIX = "pathvariable."; // NOI18N
+    private static final int RESOURCES_VARIABLE_PREFIX_LENGTH = RESOURCES_VARIABLE_PREFIX.length();
+
     private static final String USER_LIBRARY_PREFIX = "org.eclipse.jdt.core.userLibrary."; // NOI18N
     private static final int USER_LIBRARY_PREFIX_LENGTH = USER_LIBRARY_PREFIX.length();
     
@@ -84,6 +87,7 @@ final class WorkspaceParser {
         try {
             parseLaunchingPreferences();
             parseCorePreferences();
+            parseResourcesPreferences();
             parseWorkspaceProjects();
         } catch (IOException e) {
             throw new ProjectImporterException(
@@ -111,14 +115,28 @@ final class WorkspaceParser {
             String key = (String) entry.getKey();
             String value = (String) entry.getValue();
             if (key.startsWith(VARIABLE_PREFIX)) {
-                Workspace.Variable var = new Workspace.Variable();
-                var.setName(key.substring(VARIABLE_PREFIX_LENGTH));
-                var.setLocation(value);
+                Workspace.Variable var = new Workspace.Variable(key.substring(VARIABLE_PREFIX_LENGTH), value);
                 workspace.addVariable(var);
             } else if (key.startsWith(USER_LIBRARY_PREFIX) && !value.startsWith(IGNORED_CP_ENTRY)) { // #73542
                 String libName = key.substring(USER_LIBRARY_PREFIX_LENGTH);
                 workspace.addUserLibrary(libName, UserLibraryParser.getJars(value));
             } // else we don't use other properties in the meantime
+        }
+    }
+    
+    private void parseResourcesPreferences() throws IOException, ProjectImporterException {
+        if (!workspace.getResourcesPreferenceFile().exists()) {
+            return;
+        }
+        Properties coreProps = EclipseUtils.loadProperties(workspace.getResourcesPreferenceFile());
+        for (Iterator it = coreProps.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry entry = (Map.Entry) it.next();
+            String key = (String) entry.getKey();
+            String value = (String) entry.getValue();
+            if (key.startsWith(RESOURCES_VARIABLE_PREFIX)) {
+                Workspace.Variable var = new Workspace.Variable(key.substring(RESOURCES_VARIABLE_PREFIX_LENGTH), value);
+                workspace.addResourcesVariable(var);
+            }
         }
     }
     
@@ -143,7 +161,7 @@ final class WorkspaceParser {
                 if (!projectsDirs.contains(prjDir.getName())) {
                     addLightProject(projectsDirs, prjDir, true);
                 } else {
-                    logger.warning("Trying to add the same project twice: " // NOI18N
+                    logger.finest("Trying to add the same project twice: " // NOI18N
                             + prjDir.getAbsolutePath());
                 }
             } // else .metadata or something we don't care about yet
@@ -161,11 +179,11 @@ final class WorkspaceParser {
                     if (!projectsDirs.contains(location.getName())) {
                         addLightProject(projectsDirs, location, false);
                     } else {
-                        logger.warning("Trying to add the same project twice: " // NOI18N
+                        logger.finest("Trying to add the same project twice: " // NOI18N
                                 + location.getAbsolutePath());
                     }
                 } else {
-                    logger.warning(location.getAbsolutePath() + " does not contain regular project"); // NOI18N
+                    logger.finest(location.getAbsolutePath() + " does not contain regular project"); // NOI18N
                 }
             }
         }

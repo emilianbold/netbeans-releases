@@ -1,4 +1,6 @@
-Results for /reg/ with queryType=COMPLETION and nameKind=PREFIX
+Code completion result for source line:
+y = /re|g/
+(QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
 KEYWORD    $                                          End of line
 KEYWORD    ()                                         Grouping
