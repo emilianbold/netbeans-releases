@@ -1929,7 +1929,11 @@ public class EntityResourcesGenerator extends AbstractGenerator {
     }
 
     private String getItemName(EntityResourceBean bean) {
-        return Util.getSingularName(bean);
+        if (!bean.isContainer()) {
+            return bean.getName();
+        } else {
+            return bean.getSubResources().iterator().next().getResourceBean().getName();
+        }
     }
 
     private String getItemResourceName(EntityResourceBean bean) {
