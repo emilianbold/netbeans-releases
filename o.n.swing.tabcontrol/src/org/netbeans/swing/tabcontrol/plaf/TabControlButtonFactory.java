@@ -62,6 +62,7 @@ import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 import org.netbeans.swing.tabcontrol.TabListPopupAction;
 import org.netbeans.swing.tabcontrol.WinsysInfoForTabbed;
+import org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer;
 
 /**
  * A factory to create tab control buttons.
@@ -151,11 +152,12 @@ public class TabControlButtonFactory {
             return TabDisplayer.COMMAND_ENABLE_AUTO_HIDE;
         }
 
+        @Override
         protected int getButtonId() {
             int retValue = TabControlButton.ID_PIN_BUTTON;
             Component currentTab = getActiveTab( getTabDisplayer() );
             if( null != currentTab ) {
-                WinsysInfoForTabbed winsysInfo = getTabDisplayer().getWinsysInfo();
+                WinsysInfoForTabbedContainer winsysInfo = getTabDisplayer().getContainerWinsysInfo();
                 if( null != winsysInfo ) {
                     Object orientation = winsysInfo.getOrientation( currentTab );
                     if( TabDisplayer.ORIENTATION_EAST.equals( orientation ) ) 
@@ -189,11 +191,12 @@ public class TabControlButtonFactory {
             return TabDisplayer.COMMAND_MAXIMIZE;
         }
 
+        @Override
         protected int getButtonId() {
             int retValue = TabControlButton.ID_MAXIMIZE_BUTTON;
             Component currentTab = getActiveTab( getTabDisplayer() );
             if( null != currentTab ) {
-                WinsysInfoForTabbed winsysInfo = getTabDisplayer().getWinsysInfo();
+                WinsysInfoForTabbedContainer winsysInfo = getTabDisplayer().getContainerWinsysInfo();
                 if( null != winsysInfo ) {
                     if( winsysInfo.inMaximizedMode( currentTab ) ) {
                         retValue = TabControlButton.ID_RESTORE_BUTTON;
