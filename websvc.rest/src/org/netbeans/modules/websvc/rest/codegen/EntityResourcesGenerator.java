@@ -676,12 +676,13 @@ public class EntityResourcesGenerator extends AbstractGenerator {
 
         Object returnType = getConverterType(bean);
 
-        String[] parameters = new String[]{"start", "max", "expandLevel"};        //NOI18N
+        String[] parameters = new String[]{"start", "max", "expandLevel", "query"};        //NOI18N
 
         String intType = Integer.TYPE.getName();
-        Object[] paramTypes = new String[]{intType, intType, intType};          //NOI18N
+        Object[] paramTypes = new String[]{intType, intType, intType, String.class.getSimpleName()};          //NOI18N
 
         String[][] paramAnnotations = new String[][]{
+            {RestConstants.QUERY_PARAM_ANNOTATION, RestConstants.DEFAULT_VALUE_ANNOTATION},
             {RestConstants.QUERY_PARAM_ANNOTATION, RestConstants.DEFAULT_VALUE_ANNOTATION},
             {RestConstants.QUERY_PARAM_ANNOTATION, RestConstants.DEFAULT_VALUE_ANNOTATION},
             {RestConstants.QUERY_PARAM_ANNOTATION, RestConstants.DEFAULT_VALUE_ANNOTATION}
@@ -691,10 +692,11 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             {"start", "0"},
             {"max", "10"},
             {"expandLevel", "1"},
+            {"query", "SELECT e FROM " + getEntityClassName(bean) + " e"}
         };
 
         String bodyText = "{ try {" +
-                "return new $CONVERTER$(getEntities(start, max), context.getAbsolutePath(), expandLevel);" +
+                "return new $CONVERTER$(getEntities(start, max, query), context.getAbsolutePath(), expandLevel);" +
                 "} finally {" +
                 "PersistenceService.getInstance().close();" +
                 "}" +
@@ -800,12 +802,12 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                 new String[]{getEntityClassType(bean)});
 
         String bodyText = "{" +
-                "return PersistenceService.getInstance().createQuery(\"SELECT e FROM $CLASS$ e\")." +
+                "return PersistenceService.getInstance().createQuery(query)." +
                 "setFirstResult(start).setMaxResults(max).getResultList();" +
                 "}";
 
-        String[] parameters = new String[]{"start", "max"};
-        Object[] paramTypes = new Object[]{"int", "int"};
+        String[] parameters = new String[]{"start", "max", "query"};
+        Object[] paramTypes = new Object[]{"int", "int", "String"};
 
         bodyText = bodyText.replace("$CLASS$", getEntityClassName(bean));
 
@@ -1103,7 +1105,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             bodyText = "{" +
                     "final $CLASS$ parent = getEntity();" +
                     "return new $RESOURCE$(context) {" +
-                    "@Override protected Collection<$SUBCLASS$> getEntities(int start, int max) {" +
+                    "@Override protected Collection<$SUBCLASS$> getEntities(int start, int max, String query) {" +
                     "Collection<$SUBCLASS$> result = new java.util.ArrayList<$SUBCLASS$>();" +
                     "int index = 0;" +
                     "for ($SUBCLASS$ e : parent.$GETTER$()) {" +
