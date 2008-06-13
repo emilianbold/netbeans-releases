@@ -273,34 +273,24 @@ public class Util {
         return deriveResourceClassName(Inflector.getInstance().pluralize((resourceName)));
     }
     
-    public static String singularize(String name) {
-        // get around inflector bug:  'address' -> 'addres'
-        if (name.endsWith("ss")) {
-            String plural = Inflector.getInstance().pluralize(name);
-            if (! name.equals(plural)) {
-                return name;
-            }
-        }
-        return Inflector.getInstance().singularize(name);
-    }
-    
+//    public static String singularize(String name) {
+//        // get around inflector bug:  'address' -> 'addres'
+//        if (name.endsWith("ss")) {
+//            String plural = Inflector.getInstance().pluralize(name);
+//            if (! name.equals(plural)) {
+//                return name;
+//            }
+//        }
+//        return Inflector.getInstance().singularize(name);
+//    }
+//    
     public static String pluralize(String name) {
-        return Inflector.getInstance().pluralize(singularize(name));
-    }
-    
-    public static String getPluralName(EntityResourceBean bean) {
-        if (bean.isContainer()) {
-            return bean.getName();
+        String pluralName = Inflector.getInstance().pluralize(name);
+        
+        if (name.equals(pluralName)) {
+            return name + "Collection";         //NOI18N
         } else {
-            return pluralize(bean.getName());
-        }
-    }
-    
-    public static String getSingularName(EntityResourceBean bean) {
-        if (bean.isContainer()) {
-            return singularize(bean.getName());
-        } else {
-            return bean.getName();
+            return pluralName;
         }
     }
 
