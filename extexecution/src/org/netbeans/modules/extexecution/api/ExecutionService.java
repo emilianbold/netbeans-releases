@@ -124,9 +124,9 @@ public final class ExecutionService {
 
     private final String originalDisplayName;
 
-    private InputOutput io;
+    private InputOutput workingIO;
 
-    private InputOutput customio;
+    private InputOutput customIO;
 
     private StopAction stopAction;
 
@@ -134,7 +134,7 @@ public final class ExecutionService {
 
     private String displayName;
 
-    private volatile Future<Integer> current;
+    private Future<Integer> current;
 
     private boolean rerun;
 
@@ -182,7 +182,7 @@ public final class ExecutionService {
             }
 
             try {
-                io.getOut().reset();
+                workingIO.getOut().reset();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -205,73 +205,73 @@ public final class ExecutionService {
             }
 
             if (!rerun) {
-                customio = descriptor.getInputOutput();
-                if (customio != null) {
-                    io = customio;
+                customIO = descriptor.getInputOutput();
+                if (customIO != null) {
+                    workingIO = customIO;
                     try {
-                        io.getOut().reset();
+                        workingIO.getOut().reset();
                     } catch (IOException exc) {
                         LOGGER.log(Level.INFO, null, exc);
                     }
 
                     // Note - do this AFTER the reset() call above; if not, weird bugs occur
-                    io.setErrSeparated(false);
+                    workingIO.setErrSeparated(false);
 
                     // Open I/O window now. This should probably be configurable.
                     if (descriptor.isFrontWindow()) {
-                        io.select();
+                        workingIO.select();
                     }
                 }
 
                 // try to find free output windows
                 synchronized (this) {
-                    if (io == null) {
+                    if (workingIO == null) {
                         ManagedInputOutput freeIO = ManagedInputOutput.getInputOutput(
                                 originalDisplayName, descriptor.isControllable());
 
                         if (freeIO != null) {
-                            io = freeIO.getInputOutput();
+                            workingIO = freeIO.getInputOutput();
                             displayName = freeIO.getDisplayName();
                             stopAction = freeIO.getStopAction();
                             rerunAction = freeIO.getRerunAction();
                             if (descriptor.isFrontWindow()) {
-                                io.select();
+                                workingIO.select();
                             }
                         }
                     }
                 }
 
-                if (io == null) { // free IO was not found, create new one
+                if (workingIO == null) { // free IO was not found, create new one
                     displayName = getNonActiveDisplayName(originalDisplayName);
 
                     stopAction = new StopAction();
                     if (descriptor.isControllable()) {
                         rerunAction = new RerunAction();
 
-                        io = IOProvider.getDefault().getIO(displayName,
+                        workingIO = IOProvider.getDefault().getIO(displayName,
                                 new Action[]{rerunAction, stopAction});
                     } else {
-                        io = IOProvider.getDefault().getIO(displayName, true);
+                        workingIO = IOProvider.getDefault().getIO(displayName, true);
                     }
 
                     try {
-                        io.getOut().reset();
+                        workingIO.getOut().reset();
                     } catch (IOException exc) {
                         LOGGER.log(Level.INFO, null, exc);
                     }
 
                     // Note - do this AFTER the reset() call above; if not, weird bugs occur
-                    io.setErrSeparated(false);
+                    workingIO.setErrSeparated(false);
 
                     // Open I/O window now. This should probably be configurable.
                     if (descriptor.isFrontWindow()) {
-                        io.select();
+                        workingIO.select();
                     }
                 }
             }
 
             ACTIVE_DISPLAY_NAMES.add(displayName);
-            io.setInputVisible(descriptor.isInputVisible());
+            workingIO.setInputVisible(descriptor.isInputVisible());
 
             final InputProcessor outProcessor = descriptor.getOutProcessor();
             try {
@@ -314,7 +314,7 @@ public final class ExecutionService {
 
                         process = processCreator.call();
 
-                        executionProcessing(process, io, descriptor.isInputVisible());
+                        executionProcessing(process, workingIO, descriptor.isInputVisible());
                     } catch (InterruptedException ex) {
                         LOGGER.log(Level.FINE, null, ex);
                         interrupted = true;
@@ -423,8 +423,8 @@ public final class ExecutionService {
     }
 
     private Integer executionCleanup(Process process, ProgressHandle handle) {
-        if (io != null && io != customio) {
-            ManagedInputOutput.addInputOutput(io, displayName,
+        if (workingIO != null && workingIO != customIO) {
+            ManagedInputOutput.addInputOutput(workingIO, displayName,
                     descriptor.isControllable() ? stopAction : null, rerunAction);
         }
 
@@ -514,7 +514,7 @@ public final class ExecutionService {
     private class ProgressAction extends AbstractAction {
 
         public void actionPerformed(ActionEvent e) {
-            io.select();
+            workingIO.select();
         }
     }
 
