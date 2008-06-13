@@ -65,7 +65,7 @@ public class XSLTCompletionResultItem implements CompletionItem, Runnable {
     
     private String itemText;
     private Document document;
-    private int caretOffset;
+    private int caretOffset, sortPriority;
     private JTextComponent textComponent;
     private boolean enabled;
 
@@ -118,8 +118,7 @@ public class XSLTCompletionResultItem implements CompletionItem, Runnable {
     public void processKeyEvent(KeyEvent evt) {}
     
     public int getPreferredWidth(Graphics g, Font defaultFont) {
-        return CompletionUtilities.getPreferredWidth(
-        itemText, null, g, defaultFont);
+        return CompletionUtilities.getPreferredWidth(itemText, null, g, defaultFont);
     }
     
     public void render(Graphics g, Font defaultFont, Color defaultColor, 
@@ -132,13 +131,18 @@ public class XSLTCompletionResultItem implements CompletionItem, Runnable {
     
     public CompletionTask createToolTipTask() {return null;}
     
-    public boolean instantSubstitution(JTextComponent component) {return true;}
+    public boolean instantSubstitution(JTextComponent component) {return false;}
     
-    public int getSortPriority() {return 0;}
+    public int getSortPriority() {return sortPriority;}
+    public void setSortPriority(int sortPriority) {this.sortPriority = sortPriority;}
     
     public CharSequence getSortText() {return getText();}
     
     public CharSequence getInsertPrefix() {return getText();}
     
-    public String getText() {return itemText;}    
+    public String getText() {return itemText;}
+
+
+    public boolean isEnabled() {return enabled;}
+    public void setEnabled(boolean enabled) {this.enabled = enabled;}
 }

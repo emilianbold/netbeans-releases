@@ -14,7 +14,7 @@ import org.openide.util.NbBundle;
 
 public final class DatabaseTableSelectionVisualPanel1 extends JPanel {
 
-    private DatabaseTableSelectionPanel mDBTableSelectionPanel;
+    private DatabaseSingleTableSelectionPanel mDBTableSelectionPanel;
     
     /** Creates new form DatabaseTableSelectionVisualPanel1 */
     public DatabaseTableSelectionVisualPanel1() {
@@ -29,7 +29,7 @@ public final class DatabaseTableSelectionVisualPanel1 extends JPanel {
 
     private void init() {
         this.setLayout(new BorderLayout());
-        mDBTableSelectionPanel = new DatabaseTableSelectionPanel();
+        mDBTableSelectionPanel = new DatabaseSingleTableSelectionPanel();
         this.add(mDBTableSelectionPanel, BorderLayout.CENTER);
     }
     

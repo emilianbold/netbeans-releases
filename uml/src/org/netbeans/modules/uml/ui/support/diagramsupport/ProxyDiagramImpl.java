@@ -41,8 +41,6 @@
 package org.netbeans.modules.uml.ui.support.diagramsupport;
 
 import java.io.File;
-import java.util.Iterator;
-import java.util.ArrayList;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.IApplication;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
@@ -53,7 +51,6 @@ import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramDetails;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
-import org.netbeans.modules.uml.core.metamodel.diagrams.ModelElementXMIIDPair;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlsupport.FileExtensions;
 import org.netbeans.modules.uml.core.support.umlsupport.FileSysManip;
@@ -147,53 +144,47 @@ public class ProxyDiagramImpl implements IProxyDiagram,
      */
     public void setName(String value)
     {
-        IProxyDiagramManager manager = ProxyDiagramManager.instance();
         String validDiagramName = value; 
-        
-        IDrawingAreaEventDispatcher dispatcher = m_DispatchHelper.getDrawingAreaDispatcher(); 
-        IEventPayload postPayload = dispatcher.createPayload("FireDrawingAreaPostPropertyChange");
-         
-        boolean proceed = false;
         IDiagram diagram = getDiagram();
         if (diagram != null)
         {
-            // must setName before firing fireDrawingAreaPostPropertyChange
             diagram.setName(validDiagramName);   
-            dispatcher.fireDrawingAreaPostPropertyChange(this, DAPK_NAME, postPayload);
         }
-        else  // diagram is not open
-        {      
-            // TODO: rewrite for meteora - this is the case when a diagram has
-            // not yet opened.
-            
-            // Since we are a proxy to the real diagram we have to send the event
-            // ourself.  The process will be to first send a pre event to allow
-            // listeners to reject the change.  If the name change is excepted
-            // then we make the change and sent the post event.
-            // If we can not obtain a product archive do not even bother sending the
-            // pre event because we will not be able to store the value.
-            IProductArchive productArchive = getArchive();
-            if (productArchive != null)
-            {
-                try
-                {
-                    //proceed = dispatcher.fireDrawingAreaPrePropertyChange(this, DAPK_NAME, prePayload);
-
-                    if (proceed == true)
-                    {
-                        // The diagram is closed, go into the xml file and set it
-                        IProductArchiveElement element = productArchive.getElement(DIAGRAMINFO_STRING);
-                        element.addAttributeString(DIAGRAMNAME_STRING, validDiagramName);
-                        saveArchive(productArchive);
-                        dispatcher.fireDrawingAreaPostPropertyChange(this, DAPK_NAME, postPayload);
-                    }
-                }
-                catch (NullPointerException e)
-                {
-                    // Ignore I just want to stop processing.
-                }
-            }
-        }
+//        else  // diagram is not open
+//        {      
+//            // TODO: rewrite for meteora - this is the case when a diagram has
+//            // not yet opened.
+//            
+//            // Since we are a proxy to the real diagram we have to send the event
+//            // ourself.  The process will be to first send a pre event to allow
+//            // listeners to reject the change.  If the name change is excepted
+//            // then we make the change and sent the post event.
+//            // If we can not obtain a product archive do not even bother sending the
+//            // pre event because we will not be able to store the value.
+//            IProductArchive productArchive = getArchive();
+//            if (productArchive != null)
+//            {
+//                boolean proceed = true;
+//                try
+//                {
+//                    //proceed = dispatcher.fireDrawingAreaPrePropertyChange(this, DAPK_NAME, prePayload);
+//                    IDrawingAreaEventDispatcher dispatcher = m_DispatchHelper.getDrawingAreaDispatcher(); 
+//                    IEventPayload postPayload = dispatcher.createPayload("FireDrawingAreaPostPropertyChange");
+//                    if (proceed == true)
+//                    {
+//                        // The diagram is closed, go into the xml file and set it
+//                        IProductArchiveElement element = productArchive.getElement(DIAGRAMINFO_STRING);
+//                        element.addAttributeString(DIAGRAMNAME_STRING, validDiagramName);
+//                        saveArchive(productArchive);
+//                        dispatcher.fireDrawingAreaPostPropertyChange(this, DAPK_NAME, postPayload);
+//                    }
+//                }
+//                catch (NullPointerException e)
+//                {
+//                    // Ignore I just want to stop processing.
+//                }
+//            }
+//        }
     }
 
     // TODO: meteora
@@ -239,34 +230,34 @@ public class ProxyDiagramImpl implements IProxyDiagram,
             {
                 curDiagram.setAlias(value);
             }
-            else
-            {
-                try
-                {
-                    IDrawingAreaEventDispatcher dispatcher = m_DispatchHelper.getDrawingAreaDispatcher();
-                    IEventPayload payload = dispatcher.createPayload("DrawingAreaPrePropertyChanged");
-
-                    if (dispatcher.fireDrawingAreaPrePropertyChange(this, DAPK_ALIAS, payload) == true)
-                    {
-                        IProductArchive archive = getArchive();
-                        if (archive != null)
-                        {
-                            IProductArchiveElement aElement = archive.getElement(DIAGRAMINFO_STRING);
-                            if (aElement != null)
-                            {
-                                aElement.addAttributeString(DIAGRAMALIAS_STRING, value);
-                                saveArchive(archive);
-                                IEventPayload postPayload = dispatcher.createPayload("DrawingAreaPostPropertyChanged");
-                                dispatcher.fireDrawingAreaPostPropertyChange(this, DAPK_ALIAS, postPayload);
-                            }
-                        }
-                    }
-                }
-                catch (NullPointerException e)
-                {
-                    // Do nothing.  I just want to exit.
-                }
-            }
+//            else
+//            {
+//                try
+//                {
+//                    IDrawingAreaEventDispatcher dispatcher = m_DispatchHelper.getDrawingAreaDispatcher();
+//                    IEventPayload payload = dispatcher.createPayload("DrawingAreaPrePropertyChanged");
+//
+//                    if (dispatcher.fireDrawingAreaPrePropertyChange(this, DAPK_ALIAS, payload) == true)
+//                    {
+//                        IProductArchive archive = getArchive();
+//                        if (archive != null)
+//                        {
+//                            IProductArchiveElement aElement = archive.getElement(DIAGRAMINFO_STRING);
+//                            if (aElement != null)
+//                            {
+//                                aElement.addAttributeString(DIAGRAMALIAS_STRING, value);
+//                                saveArchive(archive);
+//                                IEventPayload postPayload = dispatcher.createPayload("DrawingAreaPostPropertyChanged");
+//                                dispatcher.fireDrawingAreaPostPropertyChange(this, DAPK_ALIAS, postPayload);
+//                            }
+//                        }
+//                    }
+//                }
+//                catch (NullPointerException e)
+//                {
+//                    // Do nothing.  I just want to exit.
+//                }
+//            }
         }
     }
 

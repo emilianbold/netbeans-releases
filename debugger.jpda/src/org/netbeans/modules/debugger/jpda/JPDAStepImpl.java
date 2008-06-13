@@ -630,6 +630,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         
         public void done() {
             synchronized (this) {
+                if (watchTask == null) return;
                 watchTask.cancel();
                 watchTask = null;
                 if (dialog != null) {

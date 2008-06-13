@@ -39,9 +39,11 @@
 
 package org.netbeans.modules.projectimport.eclipse.core;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.Repository;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Exceptions;
@@ -52,6 +54,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 public class Installer extends ModuleInstall {
 
@@ -60,36 +63,45 @@ public class Installer extends ModuleInstall {
         // Disable old importer module if present.
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(
+                final FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(
                         "Modules/org-netbeans-modules-projectimport.xml"); // NOI18N
                 if (fo == null) {
                     return;
                 }
                 try {
-                    Document doc;
-                    InputStream is = fo.getInputStream();
-                    try {
-                        doc = XMLUtil.parse(new InputSource(is), false, true, /* XXX #136595 */null, null);
-                    } finally {
-                        is.close();
-                    }
-                    NodeList params = doc.getDocumentElement().getElementsByTagName("param"); // NOI18N
-                    for (int i = 0; i < params.getLength(); i++) {
-                        Element param = (Element) params.item(i);
-                        if (param.getAttribute("name").equals("enabled")) { // NOI18N
-                            Text text = (Text) param.getChildNodes().item(0); // XXX #136595
-                            if (text.getNodeValue().equals("true")) { // NOI18N
-                                text.setNodeValue("false"); // NOI18N
-                                OutputStream os = fo.getOutputStream();
+                    fo.getFileSystem().runAtomicAction(new AtomicAction() {
+                        public void run() throws IOException {
+                            Document doc;
+                            InputStream is = fo.getInputStream();
+                            try {
                                 try {
-                                    XMLUtil.write(doc, os, "UTF-8");
-                                } finally {
-                                    os.close();
+                                    doc = XMLUtil.parse(new InputSource(is), false, true, null, null);
+                                } catch (SAXException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                    return;
                                 }
-                                break;
+                            } finally {
+                                is.close();
+                            }
+                            NodeList params = doc.getDocumentElement().getElementsByTagName("param"); // NOI18N
+                            for (int i = 0; i < params.getLength(); i++) {
+                                Element param = (Element) params.item(i);
+                                if (param.getAttribute("name").equals("enabled")) { // NOI18N
+                                    Text text = (Text) param.getChildNodes().item(0); // XXX #136595
+                                    if (text.getNodeValue().equals("true")) { // NOI18N
+                                        text.setNodeValue("false"); // NOI18N
+                                        OutputStream os = fo.getOutputStream();
+                                        try {
+                                            XMLUtil.write(doc, os, "UTF-8");
+                                        } finally {
+                                            os.close();
+                                        }
+                                        break;
+                                    }
+                                }
                             }
                         }
-                    }
+                    });
                 } catch (Exception x) {
                     Exceptions.printStackTrace(x);
                 }

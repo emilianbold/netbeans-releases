@@ -47,6 +47,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.ComboBoxModel;
@@ -509,6 +511,7 @@ public class FmtOptions {
         
         private boolean changed = false;
         private JPanel panel;
+        private List<JComponent> components = new LinkedList<JComponent>();                
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
         
         protected Preferences preferences;
@@ -517,29 +520,30 @@ public class FmtOptions {
             super(nameKey);
             this.preferences = preferences;
             this.panel = panel;            
+            scan(panel, components);
             this.previewText = previewText == null ? this.previewText : previewText;
             this.forcedOptions = forcedOptions;
             addListeners();
         }
         
         protected void addListeners() {
-            scan(panel, ADD_LISTENERS, null);
+            scan(ADD_LISTENERS, null);
         }
         
         public void update() {
-            scan(panel, LOAD, preferences);
+            scan(LOAD, preferences);
         }
 
         public void applyChanges() {
-            scan(panel, STORE, preferences);
+            scan(STORE, preferences);
         }
 
         public void loadFrom(Preferences preferences) {
-            scan(panel, LOAD, preferences);
+            scan(LOAD, preferences);
         }
 
         public void storeTo(Preferences preferences) {
-            scan(panel, STORE, preferences);
+            scan(STORE, preferences);
         }
 
         public void refreshPreview(JEditorPane pane, Preferences p ) {
@@ -622,30 +626,36 @@ public class FmtOptions {
                 
         // Private methods -----------------------------------------------------
         
-        private void scan( Container container, int what, Preferences p ) {
-            for (Component c : container.getComponents() ) {
-                if (c instanceof JComponent ) {
+        private void scan(int what, Preferences p ) {
+            for (JComponent jc : components) {
+                Object o = jc.getClientProperty(OPTION_ID);
+                if (o instanceof String) {
+                    switch(what) {
+                    case LOAD:
+                        loadData(jc, (String)o, p);
+                        break;
+                    case STORE:
+                        storeData(jc, (String)o, p);
+                        break;
+                    case ADD_LISTENERS:
+                        addListener(jc);
+                        break;
+                    }
+                }                    
+            }
+        }
+
+        private void scan(Container container, List<JComponent> components) {
+            for (Component c : container.getComponents()) {
+                if (c instanceof JComponent) {
                     JComponent jc = (JComponent)c;
                     Object o = jc.getClientProperty(OPTION_ID);
-                    if ( o != null && o instanceof String ) {
-                        switch( what ) {
-                        case LOAD:
-                            loadData( jc, (String)o, p );
-                            break;
-                        case STORE:
-                            storeData( jc, (String)o, p );
-                            break;
-                        case ADD_LISTENERS:
-                            addListener( jc );
-                            break;
-                        }
-                    }                    
-                }
-                if ( c instanceof Container ) {
-                    scan((Container)c, what, p);
-                }
+                    if (o instanceof String)
+                        components.add(jc);
+                }                    
+                if (c instanceof Container)
+                    scan((Container)c, components);
             }
-
         }
 
         /** Very smart method which tries to set the values in the components correctly

@@ -44,7 +44,6 @@ package org.netbeans.modules.java.project;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -70,7 +69,6 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 public class BrokenReferencesModel extends AbstractListModel {
@@ -90,7 +88,7 @@ public class BrokenReferencesModel extends AbstractListModel {
         references = new ArrayList<OneReference>();
         refresh();
     }
-    
+
     public void refresh() {
         Set<OneReference> all = new LinkedHashSet<OneReference>();
         Set<OneReference> s = getReferences(helper, resolver, helper.getStandardPropertyEvaluator(), props, false);
@@ -106,17 +104,25 @@ public class BrokenReferencesModel extends AbstractListModel {
         String bundleID;
         switch (or.type) {
             case REF_TYPE_LIBRARY:
-            case REF_TYPE_LIBRARY_CONTENT:
                 bundleID = "LBL_BrokenLinksCustomizer_BrokenLibrary"; // NOI18N
+                break;
+            case REF_TYPE_LIBRARY_CONTENT:
+                bundleID = "LBL_BrokenLinksCustomizer_BrokenLibraryContent"; // NOI18N
                 break;
             case REF_TYPE_PROJECT:
                 bundleID = "LBL_BrokenLinksCustomizer_BrokenProjectReference"; // NOI18N
                 break;
             case REF_TYPE_FILE:
-                bundleID = "LBL_BrokenLinksCustomizer_BrokenFileReference";
+                bundleID = "LBL_BrokenLinksCustomizer_BrokenFileReference"; // NOI18N
+                break;
+            case REF_TYPE_VARIABLE:
+                bundleID = "LBL_BrokenLinksCustomizer_BrokenVariable"; // NOI18N
+                break;
+            case REF_TYPE_VARIABLE_CONTENT:
+                bundleID = "LBL_BrokenLinksCustomizer_BrokenVariableContent"; // NOI18N
                 break;
             case REF_TYPE_PLATFORM:
-                bundleID = "LBL_BrokenLinksCustomizer_BrokenPlatform";
+                bundleID = "LBL_BrokenLinksCustomizer_BrokenPlatform"; // NOI18N
                 break;
             default:
                 assert false;
@@ -139,10 +145,16 @@ public class BrokenReferencesModel extends AbstractListModel {
                 bundleID = "LBL_BrokenLinksCustomizer_BrokenProjectReferenceDesc"; // NOI18N
                 break;
             case REF_TYPE_FILE:
-                bundleID = "LBL_BrokenLinksCustomizer_BrokenFileReferenceDesc";
+                bundleID = "LBL_BrokenLinksCustomizer_BrokenFileReferenceDesc"; // NOI18N
+                break;
+            case REF_TYPE_VARIABLE:
+                bundleID = "LBL_BrokenLinksCustomizer_BrokenVariableReferenceDesc"; // NOI18N
+                break;
+            case REF_TYPE_VARIABLE_CONTENT:
+                bundleID = "LBL_BrokenLinksCustomizer_BrokenVariableContentDesc"; // NOI18N
                 break;
             case REF_TYPE_PLATFORM:
-                bundleID = "LBL_BrokenLinksCustomizer_BrokenPlatformDesc";
+                bundleID = "LBL_BrokenLinksCustomizer_BrokenPlatformDesc"; // NOI18N
                 break;
             default:
                 assert false;
@@ -189,18 +201,20 @@ public class BrokenReferencesModel extends AbstractListModel {
             // references which could not be evaluated
             for (String v : vals) {
                 // we are checking only: project reference, file reference, library reference
-                if (!(v.startsWith("${file.reference.") || v.startsWith("${project.") || v.startsWith("${libs."))) {
+                if (!(v.startsWith("${file.reference.") || v.startsWith("${project.") || v.startsWith("${libs.") || v.startsWith("${var."))) { // NOI18N
                     all.append(v);
                     continue;
                 }
-                if (v.startsWith("${project.")) {
+                if (v.startsWith("${project.")) { // NOI18N
                     // something in the form: "${project.<projID>}/dist/foo.jar"
-                    String val = v.substring(2, v.indexOf('}'));
+                    String val = v.substring(2, v.indexOf('}')); // NOI18N
                     set.add(new OneReference(REF_TYPE_PROJECT, val, true));
                 } else {
                     int type = REF_TYPE_LIBRARY;
-                    if (v.startsWith("${file.reference")) {
+                    if (v.startsWith("${file.reference")) { // NOI18N
                         type = REF_TYPE_FILE;
+                    } else if (v.startsWith("${var")) { // NOI18N
+                        type = REF_TYPE_VARIABLE;
                     }
                     String val = v.substring(2, v.length() - 1);
                     set.add(new OneReference(type, val, true));
@@ -212,6 +226,27 @@ public class BrokenReferencesModel extends AbstractListModel {
             if (set.size() > 0 && abortAfterFirstProblem) {
                 break;
             }
+            
+            // test that resolved variable based property points to an existing file
+            EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            for (String v : PropertyUtils.tokenizePath(ep.getProperty(p))) {
+                if (v.startsWith("${file.reference.")) {    //NOI18N
+                    v = ep.getProperty(v.substring(2, v.length() - 1));
+                }
+                if (v != null && v.startsWith("${var.")) {    //NOI18N
+                    String value = evaluator.evaluate(v);
+                    if (value.startsWith("${var.")) { // NOI18N
+                        // this problem was already reported
+                        continue;
+                    }
+                    File f = getFile(helper, evaluator, value);
+                    if (f.exists()) {
+                        continue;
+                    }
+                    set.add(new OneReference(REF_TYPE_VARIABLE_CONTENT, v, true));
+                }
+            }
+            
         }
         
         // Check also that all referenced project really exist and are reachable.
@@ -235,7 +270,9 @@ public class BrokenReferencesModel extends AbstractListModel {
             }
             else if (key.startsWith("file.reference")) {    //NOI18N
                 File f = getFile(helper, evaluator, value);
-                if (f.exists() || all.indexOf(value) == -1) {
+                boolean alreadyChecked = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).
+                        getProperty(key).startsWith("${var."); // NOI18N
+                if (f.exists() || all.indexOf(value) == -1 || alreadyChecked) { // NOI18N
                     continue;
                 }
                 set.add(new OneReference(REF_TYPE_FILE, key, true));
@@ -305,7 +342,7 @@ public class BrokenReferencesModel extends AbstractListModel {
             File f = new File(name);
             if (!f.exists()) {
                 // perhaps the file is relative?
-                String basedir = evaluator.getProperty("basedir");
+                String basedir = evaluator.getProperty("basedir"); // NOI18N
                 assert basedir != null;
                 f = new File(new File(basedir), name);
             }
@@ -325,8 +362,8 @@ public class BrokenReferencesModel extends AbstractListModel {
                 // XXX: the J2ME stores in project.properties also platform 
                 // display name and so show this display name instead of just
                 // prop ID if available.
-                if (evaluator.getProperty(pprop + ".description") != null) {
-                    prop = evaluator.getProperty(pprop + ".description");
+                if (evaluator.getProperty(pprop + ".description") != null) { // NOI18N
+                    prop = evaluator.getProperty(pprop + ".description"); // NOI18N
                 }
                 
                 set.add(new OneReference(REF_TYPE_PLATFORM, prop, true));
@@ -436,6 +473,8 @@ public class BrokenReferencesModel extends AbstractListModel {
     public static final int REF_TYPE_LIBRARY = 3;
     public static final int REF_TYPE_PLATFORM = 4;
     public static final int REF_TYPE_LIBRARY_CONTENT = 5;
+    public static final int REF_TYPE_VARIABLE = 6;
+    public static final int REF_TYPE_VARIABLE_CONTENT = 7;
     
     public static class OneReference {
         
@@ -471,6 +510,12 @@ public class BrokenReferencesModel extends AbstractListModel {
                     
                 case REF_TYPE_PLATFORM:
                     return ID;
+                    
+                case REF_TYPE_VARIABLE:
+                    return ID.substring(4, ID.indexOf("}")); // NOI18N
+                    
+                case REF_TYPE_VARIABLE_CONTENT:
+                    return ID.substring(6, ID.indexOf("}")) + ID.substring(ID.indexOf("}")+1); // NOI18N
                     
                 default:
                     assert false;

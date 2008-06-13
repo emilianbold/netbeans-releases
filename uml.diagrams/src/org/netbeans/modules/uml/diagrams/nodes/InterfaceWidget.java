@@ -44,8 +44,6 @@ import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.diagrams.DefaultWidgetContext;
-import org.netbeans.modules.uml.diagrams.actions.ClassifierSelectAction;
 import org.netbeans.modules.uml.drawingarea.actions.SceneSelectAction;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
@@ -62,8 +60,8 @@ public class InterfaceWidget extends UMLClassWidget
         WidgetAction.Chain actions = createActions(DesignerTools.SELECT);
         actions.addAction(new SceneSelectAction());
         
-        addToLookup(initializeContextPalette());
-        addToLookup(new DefaultWidgetContext("Class"));
+        //addToLookup(initializeContextPalette());
+        //addToLookup(new DefaultWidgetContext("Class"));
 //        addToLookup(new ClassifierSelectAction());
         
     }
@@ -74,7 +72,7 @@ public class InterfaceWidget extends UMLClassWidget
         initializeNode(pe);
     }
 
-    private DefaultContextPaletteModel initializeContextPalette()
+    protected DefaultContextPaletteModel initializeContextPalette()
     {
         DefaultContextPaletteModel paletteModel = new DefaultContextPaletteModel(this);
         paletteModel.initialize("UML/context-palette/Interface");

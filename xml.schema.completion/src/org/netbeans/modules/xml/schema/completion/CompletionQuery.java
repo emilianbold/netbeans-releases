@@ -99,7 +99,7 @@ public class CompletionQuery extends AsyncCompletionQuery {
         context = new CompletionContextImpl(primaryFile, support, caretOffset);
         
         //Step 2: Accumulate all models and initialize the context
-        if(!context.initModels() || !context.initContext()) {
+        if(!context.initContext() || !context.initModels() ) {
             return null;
         }
                 
