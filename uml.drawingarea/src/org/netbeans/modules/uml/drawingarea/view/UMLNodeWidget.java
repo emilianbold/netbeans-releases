@@ -123,7 +123,8 @@ public abstract class UMLNodeWidget extends Widget
     public final String PSK_RESIZE_ASNEEDED = "PSK_RESIZE_ASNEEDED";
     public final String PSK_RESIZE_EXPANDONLY = "PSK_RESIZE_EXPANDONLY";
     public final String PSK_RESIZE_UNLESSMANUAL = "PSK_RESIZE_UNLESSMANUAL";
-    public final String PSK_RESIZE_NEVER = "PSK_RESIZE_NEVER";    
+    public final String PSK_RESIZE_NEVER = "PSK_RESIZE_NEVER";   
+    public final String VIEW_NAME = "ViewName";
 
     
     public UMLNodeWidget(Scene scene)
@@ -497,7 +498,7 @@ public abstract class UMLNodeWidget extends Widget
             }
         }
         //get the view name
-        String viewName = nodeReader.getViewName();
+        String viewName = props.get(VIEW_NAME);
         //Now try to see if this is a Switchable widget.. if yes, set the correct view
         if (viewName != null && viewName.length() > 0)
         {

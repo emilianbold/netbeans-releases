@@ -300,7 +300,7 @@ public abstract class SwitchableWidget extends UMLNodeWidget
     public void save(NodeWriter nodeWriter) {
 //        nodeWriter.setViewName(this.viewName);
         HashMap map = nodeWriter.getProperties();
-        map.put("ViewName", this.viewName);
+        map.put(VIEW_NAME, this.viewName);
         nodeWriter.setProperties(map);
         super.save(nodeWriter);
     }       
