@@ -47,7 +47,7 @@ import java.io.IOException;
 * execution and compilation is not supported on a given filesystem.
 *
 * @author Jaroslav Tulach
-* @deprecated Please use the <a href="@org-netbeans-api-java@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
+* @deprecated Please use the <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
 */
 @Deprecated
 public class EnvironmentNotSupportedException extends IOException {

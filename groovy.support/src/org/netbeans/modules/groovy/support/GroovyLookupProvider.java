@@ -59,7 +59,7 @@ public class GroovyLookupProvider implements LookupProvider {
     }
 
     private GroovyLookupProvider() {}
-    
+
     public Lookup createAdditionalLookup(Lookup baseContext) {
         Project project = baseContext.lookup(Project.class);
         if (project == null) {
@@ -67,6 +67,8 @@ public class GroovyLookupProvider implements LookupProvider {
         }
         List<Object> instances = new ArrayList<Object>(3);
         instances.add(new GroovyProjectExtender(project));
+//        instances.add(LookupMergerSupport.createActionProviderLookupMerger());
+//        instances.add(new GroovyActionProvider(project));
         return Lookups.fixed(instances.toArray(new Object[instances.size()]));
     }
 

@@ -80,6 +80,8 @@ public class ModelObjectFactory {
                 opComponent = model.getFactory().createInvokeStreamOperator(model);
             } else if(componentType.getPath().endsWith("ExternalTablePollingStream")) {
                 opComponent = model.getFactory().createExternalTablePollingStreamOperator(model);
+            } else if(componentType.getPath().endsWith("ReplayStream")) {
+                opComponent = model.getFactory().createReplayStreamOperatorComponent(model); 
             } else {
                 opComponent = model.getFactory().createOperator(model);
             }

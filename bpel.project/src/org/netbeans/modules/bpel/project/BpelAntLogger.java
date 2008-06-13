@@ -98,8 +98,6 @@ public class BpelAntLogger extends AntLogger {
                 session.consumeException(t);
             }
         }
-        
-//        System.out.println("BpelAntLogger "+ event.getMessage());
     }
 
     public void messageLogged(AntEvent event) {
@@ -110,5 +108,4 @@ public class BpelAntLogger extends AntLogger {
             event.consume();
         }
     }
-
 }

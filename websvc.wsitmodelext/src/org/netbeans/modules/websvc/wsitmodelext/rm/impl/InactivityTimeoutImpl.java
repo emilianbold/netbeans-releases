@@ -49,7 +49,7 @@ import org.w3c.dom.Element;
  *
  * @author Martin Grebac
  */
-public class InactivityTimeoutImpl extends RMComponentImpl implements InactivityTimeout {
+public class InactivityTimeoutImpl extends RMMS13ComponentImpl implements InactivityTimeout {
     
     /**
      * Creates a new instance of InactivityTimeoutImpl

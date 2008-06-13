@@ -152,15 +152,16 @@ public class DbSchemaEjbGenerator {
         
         bean = new EntityClass(
                 genTables.isFullyQualifiedTableNames(),
-                genTables.getSchema(tableName),
                 genTables.getCatalog(tableName),
+                genTables.getSchema(tableName),
                 tableName,
                 genTables.getRootFolder(tableName),
                 genTables.getPackageName(tableName),
                 genTables.getClassName(tableName),
                 genTables.getFetchType(),
                 genTables.isRegenSchemaAttrs(),
-                genTables.getUniqueConstraints(tableName));
+                genTables.getUniqueConstraints(tableName),
+                genTables.getCollectionType());
         beans.put(tableName, bean);
         
         return bean;

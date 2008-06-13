@@ -25,10 +25,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
-import org.netbeans.modules.bpel.mapper.cast.CastManager;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathUtils;
@@ -66,12 +64,12 @@ public class PredicateManager {
     }
     
     public List<AbstractPredicate> getPredicates(
-            RestartableIterator<Object> parentPath, SchemaComponent sComp) {
+            Iterable<Object> parentPathItrb, SchemaComponent sComp) {
         //    
         ArrayList<AbstractPredicate> result = new ArrayList<AbstractPredicate>();
         
         for (CachedPredicate cPred : mPredicates) {
-            if (cPred.hasSameBase(sComp) && cPred.hasSameLocation(parentPath)) {
+            if (cPred.hasSameBase(sComp) && cPred.hasSameLocation(parentPathItrb)) {
                 result.add(cPred.getPredicate());
             }
         }
@@ -92,11 +90,11 @@ public class PredicateManager {
         return true;
     }
 
-    public boolean addPredicate(RestartableIterator<Object> parentItr, 
+    public boolean addPredicate(Iterable<Object> parentItrb, 
             AbstractPredicate pred) {
         //
         List<Object> parentPath = 
-                PathConverter.constructObjectLocationtList(parentItr, true);
+                PathConverter.constructObjectLocationtList(parentItrb, true, false);
         //
         if (parentPath != null) {
             return addPredicate(parentPath, pred);
@@ -206,14 +204,8 @@ public class PredicateManager {
             return pComp.equals(pred);
         }
         
-        public boolean hasSameLocation(RestartableIterator parentPathItr) {
-            parentPathItr.restart();
-            return hasSameLocationImpl(parentPathItr);
-        }
-        
-        public boolean hasSameLocation(List<Object> parentPath) {
-            Iterator externalItr = parentPath.iterator();
-            return hasSameLocationImpl(externalItr);
+        public boolean hasSameLocation(Iterable parentPathItrb) {
+            return hasSameLocationImpl(parentPathItrb.iterator());
         }
         
         private boolean hasSameLocationImpl(Iterator externalItr) {

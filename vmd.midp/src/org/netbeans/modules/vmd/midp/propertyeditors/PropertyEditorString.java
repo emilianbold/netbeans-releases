@@ -90,9 +90,9 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     private boolean useTextArea;
     private TypeID parentTypeID;
     private String label;
-    private String dataSetPropertyName;
-    private String dataSetExpression;
     private DataSetElement dataSetElement;
+    private String bindedProperty;
+
 
     /**
      * Creates instance of PropertyEditorString.
@@ -111,8 +111,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
                                    String label,
                                    TypeID parentTypeID,
                                    boolean databinding,
-                                   String dataSetPropertyName,
-                                   String dataSetExpression) {
+                                   String bindedProperty) {
         
         super(NbBundle.getMessage(PropertyEditorString.class, "LBL_STRING_STR")); // NOI18N
         this.comment = comment;
@@ -120,7 +119,6 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         this.useTextArea = useTextArea;
         this.label = label;
         this.parentTypeID = parentTypeID;
-        this.dataSetExpression = dataSetExpression;
         initComponents();
         
         if (databinding) {
@@ -128,7 +126,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
             dataSetElement = new DataSetElement();
             elements.add(dataSetElement);
             elements.add(this);
-            this.dataSetPropertyName = dataSetPropertyName; 
+            this.bindedProperty = bindedProperty;
             initElements(elements);
         } else {
             initElements(Collections.<PropertyEditorElement>singleton(this));
@@ -154,10 +152,9 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
                                  String defaultValue,
                                  String label,
                                  boolean databinding,
-                                 String dataSetPropertyName,
-                                 String dataSetExpression) {
+                                 String bindedProperty) {
         
-        this(comment, dependence, true, label, null, databinding, dataSetPropertyName, dataSetExpression);
+        this(comment, dependence, true, label, null, databinding, bindedProperty);
         this.defaultValue = defaultValue;
     }
     
@@ -165,10 +162,9 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
                                                                            int dependence,
                                                                            String defaultValue,
                                                                            String label,
-                                                                           String dataSetPropertyName,
-                                                                           String dataSetExpression) {
+                                                                           String bindedProperty) {
         
-        return new PropertyEditorString(comment, dependence, defaultValue, label, true, dataSetPropertyName, dataSetExpression);
+        return new PropertyEditorString(comment, dependence, defaultValue, label, true, bindedProperty);
     }
     
      public static final PropertyEditorString createInstanceWithDatabinding(String comment,
@@ -176,17 +172,16 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
                                                                             boolean useTextArea,
                                                                             String label,
                                                                             TypeID parentTypeID,
-                                                                            String dataSetPropertyName,
-                                                                            String dataSetExpression) {
+                                                                            String bindedProperty) {
          
-        return new PropertyEditorString(comment, dependence,useTextArea, label, parentTypeID, true, dataSetPropertyName, dataSetExpression);
+        return new PropertyEditorString(comment, dependence,useTextArea, label, parentTypeID, true, bindedProperty);
     }
     
     /**
      * Creates instance of PropertyEditorString without dependences.
      */
     public static final PropertyEditorString createInstance(String label) {
-        return new PropertyEditorString(null, DEPENDENCE_NONE, true, label, null, false, null, null);
+        return new PropertyEditorString(null, DEPENDENCE_NONE, true, label, null, false, null);
     }
 
     /**
@@ -195,11 +190,14 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * @see PropertyEditorString(String comment, int dependence)
      */
     public static final PropertyEditorString createInstance(int dependence, String label) {
-        return new PropertyEditorString(null, dependence, true, label, null, false, null, null);
+        return new PropertyEditorString(null, dependence, true, label, null, false, null);
     }
     
-    public static final PropertyEditorString createInstanceWithDatabinding(int dependence, String label, String dataSetPropertyName, String dataSetExpression) {
-        return new PropertyEditorString(null, dependence, true, label, null, true, dataSetPropertyName, dataSetExpression);
+    public static final PropertyEditorString createInstanceWithDatabinding(int dependence,
+                                                                           String label,
+                                                                           String bindedProperty) {
+        
+        return new PropertyEditorString(null, dependence, true, label, null, true, bindedProperty);
     }
 
     /**
@@ -209,28 +207,28 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * @see PropertyEditorString(String comment, int dependence)
      */
     public static final PropertyEditorString createInstance(String label, TypeID parentTypeID) {
-        return new PropertyEditorString(null, DEPENDENCE_NONE, true, label, parentTypeID, false, null, null);
+        return new PropertyEditorString(null, DEPENDENCE_NONE, true, label, parentTypeID, false, null);
     }
 
     /**
      * Creates instance of PropertyEditorString using JTExtField.
      */
     public static final PropertyEditorString createTextFieldInstance(String label) {
-        return new PropertyEditorString(null, DEPENDENCE_NONE, false, label, null, false, null, null);
+        return new PropertyEditorString(null, DEPENDENCE_NONE, false, label, null, false, null);
     }
 
     /**
      * Creates instance of PropertyEditorString without dependences with default value.
      */
     public static final PropertyEditorString createInstanceWithDefaultValue(String defaultValue, String label) {
-        return new PropertyEditorString(null, DEPENDENCE_NONE, defaultValue, label, false, null, null);
+        return new PropertyEditorString(null, DEPENDENCE_NONE, defaultValue, label, false, null);
     }
 
     /**
      * Creates instance of PropertyEditorString without dependences with default value.
      */
     public static final PropertyEditorString createInstanceWithComment(String comment, String label) {
-        return new PropertyEditorString(comment, DEPENDENCE_NONE, null, label, false, null, null);
+        return new PropertyEditorString(comment, DEPENDENCE_NONE, null, label, false, null);
     }
 
     private void initComponents() {
@@ -515,7 +513,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
 
         public JComponent getCustomEditorComponent() {
            if (customEditor == null) {
-               customEditor = new DataSetElementUI(PropertyEditorString.this.dataSetPropertyName, PropertyEditorString.this.dataSetExpression);
+               customEditor = new DataSetElementUI(bindedProperty);
            }
            return customEditor;
         }

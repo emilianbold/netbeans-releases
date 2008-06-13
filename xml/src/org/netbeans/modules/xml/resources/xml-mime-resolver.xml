@@ -50,9 +50,4 @@ made subject to such option by the copyright holder.
         <resolver mime="text/xml"/>
     </file>
     
-    <file>
-        <ext name="xml"/>
-        <resolver mime="application/xml"/>
-    </file>
-    
 </MIME-resolver>

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.syntaxerr;
 
+import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ParserErrorFilter;
 import antlr.RecognitionException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -61,10 +62,12 @@ public abstract class BaseParserErrorFilter extends ParserErrorFilter {
         return result;
     }
 
+    
     protected CsmErrorInfo toErrorInfo(RecognitionException e, BaseDocument doc) {
-        String message = e.getMessage();
-        int line = e.getLine();
-        int column = e.getColumn();
+        return toErrorInfo(e.getMessage(), e.getLine(), e.getColumn(), doc);
+    }
+    
+    protected CsmErrorInfo toErrorInfo(String message, int line, int column, BaseDocument doc) {
         CharSeq text = doc.getText();
         int start = 0;
         int currLine = 1;
@@ -85,7 +88,10 @@ public abstract class BaseParserErrorFilter extends ParserErrorFilter {
             }
         }
         end--;
-        return new SimpleErrorInfo(start, end, message);
+        return new SimpleErrorInfo(start, end, message, getDefaultSeverity());
     }
     
+    protected CsmErrorInfo.Severity getDefaultSeverity() {
+        return CsmErrorInfo.Severity.ERROR;
+    }
 }

@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.bpel.mapper.predicates.PredicateManager;
 import org.netbeans.modules.bpel.mapper.cast.CastManager;
+import org.netbeans.modules.bpel.mapper.cast.PseudoCompManager;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
@@ -53,10 +54,12 @@ import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 import org.netbeans.modules.bpel.model.ext.editor.api.Casts;
 import org.netbeans.modules.bpel.model.ext.editor.api.Editor;
+import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComp;
+import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComps;
 import org.netbeans.modules.bpel.model.ext.editor.api.Source;
 
 /**
- * Process special BPEL extensions like <editor>, <cast>
+ * Process special BPEL extensions like <editor>, <cast>, <pseudoComp>
  * 
  * @author nk160297
  */
@@ -66,8 +69,10 @@ public class EditorExtensionProcessor {
     private BpelDesignContext mDContext;
     
     private CastManager mLeftCastManager;
+    private PseudoCompManager mLeftPseudoCompManager;
     private PredicateManager mLeftPredicateManager;
     private CastManager mRightCastManager;
+    private PseudoCompManager mRightPseudoCompManager;
     private PredicateManager mRightPredicateManager;
     
     public EditorExtensionProcessor(BpelMapperModel mm, BpelDesignContext context) {
@@ -81,15 +86,19 @@ public class EditorExtensionProcessor {
                 getVisibleVariables().getAllVisibleVariables();
         //
         for (VariableDeclaration varDecl : visVars) {
-            BpelEntityCasts castList = getCastList(varDecl);
-            registerCasts(castList.getFromCasts());
-            registerCasts(castList.getToCasts());
+            BpelEditorExtensions exts = getExtList(varDecl);
+            //
+            registerCasts(exts.getFromCasts());
+            registerCasts(exts.getToCasts());
+            //
+            registerPseudoComps(exts.getFromPseudoComps());
+            registerPseudoComps(exts.getToPseudoComps());
         }
     }
     
-    public void registerCasts(BpelEntityCasts castList) {
-        registerCasts(castList.getFromCasts());
-        registerCasts(castList.getToCasts());
+    public void registerCasts(BpelEditorExtensions extList) {
+        registerCasts(extList.getFromCasts());
+        registerCasts(extList.getToCasts());
     }
     
     public boolean registerCasts(List<Cast> castList) {
@@ -109,8 +118,36 @@ public class EditorExtensionProcessor {
         return anyRegistered;
     }
     
-    public BpelEntityCasts getCastList(BpelEntity bpelEntity) {
-        BpelEntityCasts result = new BpelEntityCasts();
+    public void registerPseudoComps(BpelEditorExtensions extList) {
+        registerPseudoComps(extList.getFromPseudoComps());
+        registerPseudoComps(extList.getToPseudoComps());
+    }
+    
+    public boolean registerPseudoComps(List<PseudoComp> pseudoCompList) {
+        boolean anyRegistered = false;
+        //
+        for (PseudoComp pseudo : pseudoCompList) {
+            Source source = pseudo.getSource();
+            boolean useLeftTree = (source != Source.TO);
+            PseudoCompManager pseudoManager = getPseudoCompManager(useLeftTree);
+            if (pseudoManager != null) {
+                if(pseudoManager.addPseudoComp(pseudo)) {
+                    anyRegistered = true;
+                }
+            }
+        }
+        //
+        return anyRegistered;
+    }
+    
+    /**
+     * Collects all BPEL editor extensions from the specified entity and 
+     * returns them as one container object BpelEditorExtensions.
+     * @param bpelEntity
+     * @return
+     */
+    public BpelEditorExtensions getExtList(BpelEntity bpelEntity) {
+        BpelEditorExtensions result = new BpelEditorExtensions();
         List<Editor> editorList = bpelEntity.getChildren(Editor.class);
         for (Editor editorExt : editorList) {
             List<Cast> castList = getCastList(editorExt);
@@ -120,6 +157,16 @@ public class EditorExtensionProcessor {
                         result.getToCasts().add(cast);
                     } else {
                         result.getFromCasts().add(cast);
+                    }
+                }
+            }
+            List<PseudoComp> pseudoCompList = getPseudoCompList(editorExt);
+            if (pseudoCompList != null) {
+                for (PseudoComp pseudoComp : pseudoCompList) {
+                    if (pseudoComp.getSource() == Source.TO) {
+                        result.getToPseudoComps().add(pseudoComp);
+                    } else {
+                        result.getFromPseudoComps().add(pseudoComp);
                     }
                 }
             }
@@ -139,6 +186,18 @@ public class EditorExtensionProcessor {
         return null;
     }
     
+    public List<PseudoComp> getPseudoCompList(Editor editorExt) {
+        PseudoComps pseudoComps = editorExt.getPseudoComps();
+        if (pseudoComps != null) {
+            PseudoComp[] pseudoCompArr = pseudoComps.getPseudoComps();
+            if (pseudoCompArr.length > 0) {
+                return Arrays.asList(pseudoCompArr);
+            }
+        }
+        //
+        return null;
+    }
+    
     public CastManager getCastManager(boolean forLeftTree) {
         if (forLeftTree) {
             if (mLeftCastManager == null) {
@@ -150,6 +209,20 @@ public class EditorExtensionProcessor {
                 initManagers(forLeftTree);
             }
             return mRightCastManager;
+        }
+    }
+    
+    public PseudoCompManager getPseudoCompManager(boolean forLeftTree) {
+        if (forLeftTree) {
+            if (mLeftPseudoCompManager == null) {
+                initManagers(forLeftTree);
+            }
+            return mLeftPseudoCompManager;
+        } else {
+            if (mRightPseudoCompManager == null) {
+                initManagers(forLeftTree);
+            }
+            return mRightPseudoCompManager;
         }
     }
     
@@ -179,21 +252,30 @@ public class EditorExtensionProcessor {
         //
         if (forLeftTree) {
             mLeftCastManager = CastManager.getCastManager(sourceModel);
+            mLeftPseudoCompManager = PseudoCompManager.getPseudoCompManager(sourceModel);
             mLeftPredicateManager = PredicateManager.getPredicateManager(sourceModel);
         } else {
             mRightCastManager = CastManager.getCastManager(sourceModel);
+            mRightPseudoCompManager = PseudoCompManager.getPseudoCompManager(sourceModel);
             mRightPredicateManager = PredicateManager.getPredicateManager(sourceModel);
         }
     }
     
-    public class BpelEntityCasts {
+    /**
+     * The temporary object for loading all BPEL Editor extensions.
+     */
+    public class BpelEditorExtensions {
         
         private ArrayList<Cast> mFromCasts;
         private ArrayList<Cast> mToCasts;
+        private ArrayList<PseudoComp> mFromPseudoComps;
+        private ArrayList<PseudoComp> mToPseudoComps;
         
-        public BpelEntityCasts() {
+        public BpelEditorExtensions() {
             mFromCasts = new ArrayList<Cast>();
             mToCasts = new ArrayList<Cast>();
+            mFromPseudoComps = new ArrayList<PseudoComp>();
+            mToPseudoComps = new ArrayList<PseudoComp>();
         }
         
         public List<Cast> getFromCasts() {
@@ -204,9 +286,20 @@ public class EditorExtensionProcessor {
             return mToCasts;
         }
         
+        public List<PseudoComp> getFromPseudoComps() {
+            return mFromPseudoComps;
+        }
+        
+        public List<PseudoComp> getToPseudoComps() {
+            return mToPseudoComps;
+        }
+        
         @Override
         public String toString() {
-            return "From: " + mFromCasts + " To: " + mToCasts;
+            return "FromCast: " + mFromCasts + 
+                    " FromPseudoComp: " + mFromPseudoComps + 
+                    " ToCast: " + mToCasts + 
+                    " ToPseudoComp: " + mToPseudoComps;
         }
         
     }

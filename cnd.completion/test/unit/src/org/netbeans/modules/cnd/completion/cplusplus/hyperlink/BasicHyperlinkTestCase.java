@@ -138,6 +138,16 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("static_variable.c", 4, 16, "static_variable.h", 2, 1);
         performTest("static_variable.c", 5, 15, "static_variable.h", 1, 1);
     }
+
+    public void testIZ131555() throws Exception {
+        for (int i = 5; i <=13; i++ ) {
+            performTest("IZ131555.c", i, 16, "IZ131555.c", 2, 5);
+        }
+    }
+
+    public void testIZ136730() throws Exception {
+        performTest("IZ136730.c", 2, 11, "IZ136730.c", 3, 1);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 

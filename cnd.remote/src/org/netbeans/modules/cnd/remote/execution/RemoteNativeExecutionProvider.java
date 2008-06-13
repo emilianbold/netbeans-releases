@@ -58,10 +58,13 @@ public class RemoteNativeExecutionProvider implements NativeExecutionProvider {
     }
 
     /**
-     *  Since cnd.remote depends on cnd.makeproject, we can get the current project
-     *  and verify its a cnd.makeproject. If it is, we can ask if its a remote project
-     *  (although the 2 calls I make below are imaginary, we should be able to do the
-     *  eqivalent with some cnd.makeproject API).
+     * Since cnd.remote depends on cnd.makeproject, we can get the current project
+     * and verify its a cnd.makeproject. If it is, we can ask if its a remote project
+     * (although the 2 calls I make below are imaginary, we should be able to do the
+     * eqivalent with some cnd.makeproject API).
+     * 
+     * Should we also verify that the project directory is shared? We'll get a failure
+     * if it isn't...
      */
     private static boolean isRemote() {
         boolean remote = Boolean.getBoolean("cnd.remote.enabled");

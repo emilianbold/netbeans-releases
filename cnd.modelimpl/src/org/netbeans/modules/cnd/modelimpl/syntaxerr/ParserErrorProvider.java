@@ -38,17 +38,17 @@
  */
 package org.netbeans.modules.cnd.modelimpl.syntaxerr;
 
+import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ParserErrorFilter;
 import antlr.RecognitionException;
 import java.util.ArrayList;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.CharSeq;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
-import org.openide.util.Utilities;
+import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
 
 /**
  * Error provider based on parser errors
@@ -62,8 +62,9 @@ public class ParserErrorProvider extends CsmErrorProvider {
     public Collection<CsmErrorInfo> getErrors(BaseDocument doc, CsmFile file) {
         if (ENABLE) {
             Collection<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
-            Collection<RecognitionException> errors = ((FileImpl) file).getErrors();
-            ParserErrorFilter.getDefault().filter(errors, result, doc);
+            Collection<RecognitionException> errors = new ArrayList<RecognitionException>();
+            ReadOnlyTokenBuffer buffer = ((FileImpl) file).getErrors(errors);
+            ParserErrorFilter.getDefault().filter(errors, result, buffer, doc);
             return result;
         } else {
             return Collections.<CsmErrorInfo>emptyList();

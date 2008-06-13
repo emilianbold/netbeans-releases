@@ -63,7 +63,7 @@ public class NotImportedModelRetrieverImpl implements NotImportedModelRetriever 
         // 
         Project project = Utils.safeGetProject(model);
         List<FileObject> schemaFoList = ProjectUtilities.
-                getXSDFilesRecursively(project);
+                getXSDFilesRecursively(project, false);
         Collection<SchemaModel> resultList = new ArrayList<SchemaModel>();
         for (FileObject fo : schemaFoList) {
             SchemaModel sModel = Utils.getSchemaModel(fo);

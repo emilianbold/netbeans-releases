@@ -211,6 +211,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             /*, URLClassLoader waClassLoader*/) {
         // PENDING - do caching for individual JSPs
         //  in fact should not be needed - see FastOpenInfoParser.java
+        checkReinitCachesTask();
         JspCompilationContext ctxt = createCompilationContext(jspFile, useEditor);
         ExtractPageData epd = new ExtractPageData(ctxt);
         try {
@@ -405,6 +406,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     public JspParserAPI.ParseResult analyzePage(FileObject jspFile, /*String compilationURI, */
             int errorReportingMode) {
         // PENDING - do caching for individual JSPs
+        checkReinitCachesTask();
         JspCompilationContext ctxt = createCompilationContext(jspFile, true);
         
         return callTomcatParser(jspFile, ctxt, waContextClassLoader, errorReportingMode);
@@ -421,11 +423,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         // useEditor not needed, both caches are the same
         // we have to clear all the caches when the class path is not current or the taglibmap is not initialized yet
 
-        // process sliding task
-        if (!reinitCachesTask.isFinished()) {
-            reinitCachesTask.cancel();
-            reinitCaches();
-        }
+        checkReinitCachesTask();
         // XXX return deep copy (not needed now, only jsp editor uses it)
         return new HashMap<String, String[]>(mappings);
     }
@@ -712,6 +710,14 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         return returnMap;
     }
 
+    private synchronized void checkReinitCachesTask() {
+        // process sliding task
+        if (!reinitCachesTask.isFinished()) {
+            reinitCachesTask.cancel();
+            reinitCaches();
+        }
+    }
+
     void reinitCaches() {
         assert Thread.holdsLock(this);
         final long counter = cpCurrent.get();
@@ -955,6 +961,11 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                         || (FileUtil.isParentOf(webInf, fo))) {
                     LOG.fine("File " + fo + " has changed, reinitCaches() called");
                     // our file => process caches
+                    // #133702
+                    if (fo.getNameExt().equals("web.xml")) {
+                        // clear JspConfig cache as well
+                        cpCurrent.incrementAndGet();
+                    }
                     reinitCachesTask.schedule(REINIT_CACHES_DELAY);
                 }
             }
