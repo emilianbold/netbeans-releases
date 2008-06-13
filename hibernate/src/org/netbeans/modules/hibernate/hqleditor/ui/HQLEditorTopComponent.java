@@ -124,7 +124,7 @@ public final class HQLEditorTopComponent extends TopComponent {
             for (FileObject configFileObject : configFileObjects) {
                 try {
                     HibernateCfgDataObject hibernateCfgDataObject = (HibernateCfgDataObject) DataObject.find(configFileObject);
-                    String configName = hibernateCfgDataObject.getHibernateConfiguration().getSessionFactory().getAttributeValue("name");
+                    String configName = hibernateCfgDataObject.getHibernateConfiguration().getSessionFactory().getAttributeValue("name"); //NOI18N
                     if (configName == null || configName.equals("")) {
                         configName = configFileObject.getName();
                     }
@@ -135,7 +135,7 @@ public final class HQLEditorTopComponent extends TopComponent {
             }
             hibernateConfigurationComboBox.setModel(new DefaultComboBoxModel(hibernateConfigMap.keySet().toArray()));
             HibernateConfiguration config = ((HibernateCfgDataObject) dO).getHibernateConfiguration();
-            String selectedConfigName = config.getSessionFactory().getAttributeValue("name");
+            String selectedConfigName = config.getSessionFactory().getAttributeValue("name"); //NOI18N
             if (selectedConfigName == null || selectedConfigName.equals("")) {
                 selectedConfigName = dO.getPrimaryFile().getName();
             }
@@ -152,7 +152,7 @@ public final class HQLEditorTopComponent extends TopComponent {
             // logger.info(r.getQueryResults().toString());
             switchToResultView();
             StringBuilder strBuffer = new StringBuilder();
-            String space = " ", separator = "; ";
+            String space = " ", separator = "; "; //NOI18N
             strBuffer.append(result.getUpdateOrDeleteResult());
             strBuffer.append(space);
             strBuffer.append(NbBundle.getMessage(HQLEditorTopComponent.class, "queryUpdatedOrDeleted"));
@@ -218,7 +218,7 @@ public final class HQLEditorTopComponent extends TopComponent {
     private void createTableHeaders(Vector<String> tableHeaders, Object oneObject) {
         for (java.lang.reflect.Method m : oneObject.getClass().getDeclaredMethods()) {
             String methodName = m.getName();
-            if (methodName.startsWith("get")) {
+            if (methodName.startsWith("get")) { //NOI18N
                 if (!tableHeaders.contains(methodName)) {
                     tableHeaders.add(m.getName().substring(3));
                 }
@@ -231,7 +231,7 @@ public final class HQLEditorTopComponent extends TopComponent {
         for (Object oneObject : rowObject) {
             for (java.lang.reflect.Method m : oneObject.getClass().getDeclaredMethods()) {
                 String methodName = m.getName();
-                if (methodName.startsWith("get")) {
+                if (methodName.startsWith("get")) { //NOI18N
                     try {
                         oneRow.add(m.invoke(oneObject, new Object[]{}));
                     } catch (IllegalAccessException ex) {
@@ -354,7 +354,7 @@ public final class HQLEditorTopComponent extends TopComponent {
         spacerPanel1.setLayout(spacerPanel1Layout);
         spacerPanel1Layout.setHorizontalGroup(
             spacerPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 202, Short.MAX_VALUE)
+            .add(0, 204, Short.MAX_VALUE)
         );
         spacerPanel1Layout.setVerticalGroup(
             spacerPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -367,7 +367,7 @@ public final class HQLEditorTopComponent extends TopComponent {
         spacerPanel2.setLayout(spacerPanel2Layout);
         spacerPanel2Layout.setHorizontalGroup(
             spacerPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 94, Short.MAX_VALUE)
+            .add(0, 96, Short.MAX_VALUE)
         );
         spacerPanel2Layout.setVerticalGroup(
             spacerPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
