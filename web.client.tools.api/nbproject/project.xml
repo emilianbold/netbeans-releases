@@ -33,6 +33,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.web.client.javascript.debugger.ant</friend>
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>
+                <friend>org.netbeans.modules.web.client.tools.impl</friend>
                 <package>org.netbeans.modules.web.client.tools.api</package>
             </friend-packages>
         </data>
