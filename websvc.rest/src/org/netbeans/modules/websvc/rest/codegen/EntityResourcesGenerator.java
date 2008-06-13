@@ -455,7 +455,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
 
                     modifiedTree = addGetEntityMethod(copy, modifiedTree, bean);
                     modifiedTree = addUpdateEntityMethod(copy, modifiedTree, bean);
-                    //modifiedTree = addGetUriMethod(copy, modifiedTree, bean);
+                    modifiedTree = addDeleteEntityMethod(copy, modifiedTree, bean);
 
                     copy.rewrite(tree, modifiedTree);
                 }
@@ -1047,7 +1047,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                 "try {" +
                 "persistenceSvc.beginTx();" +
                 "$CLASS$ entity = getEntity();" +
-                "persistenceSvc.removeEntity(entity);" +
+                "deleteEntity(entity);" +
                 "persistenceSvc.commitTx();" +
                 "} finally {" +
                 "persistenceSvc.close();" +
@@ -1382,6 +1382,76 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         return bodyText;
     }
     
+    private ClassTree addDeleteEntityMethod(WorkingCopy copy, ClassTree tree,
+            EntityResourceBean bean) {
+        Modifier[] modifiers = new Modifier[]{Modifier.PROTECTED};
+        String methodName = "deleteEntity";                 //NOI18N
+        Object returnType = Constants.VOID;
+        String[] params = new String[]{"entity"};           //NOI18N
+        Object[] paramTypes = new Object[]{
+            getEntityClassType(bean)
+        };
+
+        String bodyText = "{" + getDeleteRelationshipsSubText(bean);        //NOI18N
+
+        bodyText = bodyText +
+                "PersistenceService.getInstance().removeEntity(entity);}";   //NOI18N
+
+        String comment = "Deletes the entity.\n\n" +
+                "@param entity the entity to deletle\n";                    //NOI18N
+
+        return JavaSourceHelper.addMethod(copy, tree,
+                modifiers, null, null,
+                methodName, returnType, params, paramTypes,
+                null, null, bodyText, comment);
+    }
+    
+    private String getDeleteRelationshipsSubText(EntityResourceBean bean) {
+        String oneToOneTemplate = "$CLASS$ $FIELD$ = entity.$GETTER$();" +
+                "if ($FIELD$ != null) {" +
+                "$FIELD$.$REVERSE_SETTER$(null);" +
+                "}";                                                //NOI18N
+        
+        String manyToOneTemplate = "$CLASS$ $FIELD$ = entity.$GETTER$();" +
+                "if ($FIELD$ != null) {" +
+                "$FIELD$.$REVERSE_GETTER$().remove(entity);" +
+                "}";                                                //NOI18N
+        
+        String manyToManyTemplate = "for ($CLASS$ value : entity.$GETTER$()) {" +
+                "value.$REVERSE_GETTER$().remove(entity);" +
+                "}";                                                //NOI18N
+ 
+        String bodyText = "";
+     
+        for (RelatedEntityResource subResource : bean.getSubResources()) {
+            FieldInfo reverseFieldInfo = subResource.getReverseFieldInfo();
+          
+            if (reverseFieldInfo == null) continue;
+            
+            FieldInfo fieldInfo = subResource.getFieldInfo();
+            String template = "";
+            
+            if (fieldInfo.isOneToOne()) {
+                template = oneToOneTemplate.replace("$CLASS$", fieldInfo.getSimpleTypeName()).
+                        replace("$FIELD$", fieldInfo.getName()).
+                        replace("$GETTER$", getGetterName(fieldInfo)).
+                        replace("$REVERSE_SETTER$", getSetterName(reverseFieldInfo));
+            } else if (fieldInfo.isManyToOne()) {
+                template = manyToOneTemplate.replace("$CLASS$", fieldInfo.getSimpleTypeName()).
+                        replace("$FIELD$", fieldInfo.getName()).
+                        replace("$GETTER$", getGetterName(fieldInfo)).
+                        replace("$REVERSE_GETTER$", getGetterName(reverseFieldInfo));
+            } else if (fieldInfo.isManyToMany()) {
+                template = manyToManyTemplate.replace("$CLASS$", fieldInfo.getSimpleTypeArgName()).
+                        replace("$GETTER$", getGetterName(fieldInfo)).
+                        replace("$REVERSE_GETTER$", getGetterName(reverseFieldInfo));
+            }
+            
+            bodyText += template;
+        }
+        
+        return bodyText;
+    }
     
     private String getRemoveOneToManyRelSubText(EntityResourceBean bean) {
         String template = "entity.$GETTER$().removeAll(newEntity.$GETTER$());" +
