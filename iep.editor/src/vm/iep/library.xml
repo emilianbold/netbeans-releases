@@ -641,7 +641,7 @@ type CDATA #REQUIRED
     <!-- External -->
     <component_type_group name="External" icon="" title="IEP.External.title" description="IEP.External.description">
         <!-- invoke operator -->
-        <component_type name="InvokeStream" icon="streamInputx32.png" title="IEP.External.InvokeStream.title" description="IEP.External.InvokeStream.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
+        <component_type name="InvokeStream" icon="invokeStreamx32.png" title="IEP.External.InvokeStream.title" description="IEP.External.InvokeStream.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.InvokeStreamCustomEditor"/>
@@ -665,7 +665,7 @@ type CDATA #REQUIRED
         </component_type>
         
         <!-- external db polling operator -->
-        <component_type name="ExternalTablePollingStream" icon="streamInputx32.png" title="IEP.External.ExternalTablePollingStream.title" description="IEP.External.ExternalTablePollingStream.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
+        <component_type name="ExternalTablePollingStream" icon="externalTablePollingx32.png" title="IEP.External.ExternalTablePollingStream.title" description="IEP.External.ExternalTablePollingStream.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.ExternalTablePollingStreamCustomEditor"/>
@@ -703,7 +703,7 @@ type CDATA #REQUIRED
         </component_type>
         
         <!-- replay operator -->
-        <component_type name="ReplayStream" icon="streamInputx32.png" title="IEP.External.ExternalTablePollingStream.title" description="IEP.External.ExternalTablePollingStream.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
+        <component_type name="ReplayStream" icon="replayStreamx32.png" title="IEP.External.ExternalTablePollingStream.title" description="IEP.External.ExternalTablePollingStream.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.ReplayStreamCustomEditor"/>
@@ -737,7 +737,7 @@ type CDATA #REQUIRED
         </component_type>
         
         <!-- save stream: saves stream -->
-        <component_type name="SaveStream" icon="streamInputx32.png" title="IEP.External.SaveStream.title" description="IEP.External.SaveStream.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
+        <component_type name="SaveStream" icon="saveStreamx32.png" title="IEP.External.SaveStream.title" description="IEP.External.SaveStream.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.SaveStreamCustomEditor"/>
