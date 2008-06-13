@@ -152,6 +152,9 @@ public class StringBase extends Datatype {
      * @return enumeration
      */
     public List<String> getEnumerations() {
+        if(enumerations == null)
+            return Collections.EMPTY_LIST;
+        
         return enumerations;
     }
     
