@@ -46,13 +46,19 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="arch-overall">
-  <p>
+    <api 
+        name="WS_Stack_API"
+        type="export"
+        category="friend"
+        group="java"
+        url="http://wiki.netbeans.org/WebServicesServerApi">
    WS Stack API provides the contract between J2EE Server and particular Web Service Stack technology.<br/>
    WS Stack API describes WS Stack features supported by particular J2EE Server.<br/>
    WS Stack API also provides the list of libraries - jar files - related to particular WS Stack
    that represents the subset of J2EE Server libraries included in J2EE Server classpath.<br/>
    WS Stack API consists of SPI part (intended to implement by J2EE Server plugin) and API part (used by particular WS Stack support) 
-  </p>
+  </api>
+
  </answer>
 
 
@@ -120,6 +126,7 @@ Microsystems, Inc. All Rights Reserved.
    On other side, a specific web service support in IDE doesn't have to comunicate with entire J2EE Server but only with the part describing 
    the particular web service technology available in particular J2EE Server.<br/>
    Use cases:
+  </p>
    <usecase id="1" name="JAX-WS Stack in GlassFish">
         GlassFish supports JSR109 deployment style for JAX-WS technology. 
         GlassFish plugin creates a WS Stack object for JAX-WS technology and sets JSR_109 feature to true.<br/> 
@@ -136,7 +143,6 @@ Microsystems, Inc. All Rights Reserved.
        Tomcat supports JAX-WS technology. However it doesn't support JSR109 deployment style. 
        Tomcat plugin creates s WS Stack containing information that JSR109 is not suported.
    </usecase>
-  </p>
  </answer>
 
 

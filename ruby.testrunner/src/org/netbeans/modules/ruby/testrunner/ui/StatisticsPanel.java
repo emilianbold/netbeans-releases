@@ -109,14 +109,14 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
      */
     private JComponent createToolbar() {
         createFilterButton();
-        createSplitOrientationButton();
+//        createSplitOrientationButton();
         createRerunButton();
 
         JToolBar toolbar = new JToolBar(SwingConstants.VERTICAL);
         toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.Y_AXIS));
         toolbar.add(rerunButton);
         toolbar.add(btnFilter);
-        toolbar.add(splitOrientation);
+//        toolbar.add(splitOrientation);
         toolbar.add(Box.createHorizontalGlue());
         
         toolbar.setFocusable(false);

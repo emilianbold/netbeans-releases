@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 public abstract class SimpleDeletingErrorMaker extends BaseErrorMaker {
 
     private String textToDelete;
-    private int searchFrom = 0;
+    private int searchFrom;
 
     public SimpleDeletingErrorMaker(String textToDelete) {
         this.textToDelete = textToDelete;
@@ -64,6 +64,7 @@ public abstract class SimpleDeletingErrorMaker extends BaseErrorMaker {
     @Override
     public void init(BaseDocument document, CsmFile csmFile) {
         super.init(document, csmFile);
+        searchFrom = 0;
     }
     
     public boolean change() throws BadLocationException {
@@ -131,11 +132,12 @@ public abstract class SimpleDeletingErrorMaker extends BaseErrorMaker {
     }
     
     public void printStatistics() {
+        System.err.printf("\nStatistics:\n");
         Stat.printHeader();
         Stat total = new Stat("TOTAL");
         for (Stat stat : stats.values()) {
             stat.print();
-            //total.consume(stat);
+            total.consume(stat);
         }
         total.print();
     }
