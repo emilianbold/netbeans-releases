@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,40 +31,61 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.groovy.support;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.LookupProvider;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
+import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.openide.filesystems.FileObject;
 
 /**
- *
+ * Temporary solution to have GSF indexing enabled on projects with only
+ * Java classpath. It has 2 drawbacks:<br/>
+ * - will not work in closed projects<br/>
+ * - will not update GFS classpath on project source roots changes
+ * 
  * @author Martin Adamek
  */
-public class GroovyLookupProvider implements LookupProvider {
+public class GsfClasspathHook extends ProjectOpenedHook {
 
-    public static GroovyLookupProvider createJavaSE() {
-        return new GroovyLookupProvider();
+    private final Project project;
+    private ClassPath cp;
+    
+    public GsfClasspathHook(Project project) {
+        this.project = project;
+    }
+    
+    @Override
+    protected void projectOpened() {
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (groups.length > 0) {
+            FileObject[] roots = new FileObject[groups.length];
+            for (int i = 0; i < groups.length; i++) {
+                roots[i] = groups[i].getRootFolder();
+            }
+            cp = ClassPathSupport.createClassPath(roots);
+            GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] { cp });
+        }
     }
 
-    private GroovyLookupProvider() {}
-
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        Project project = baseContext.lookup(Project.class);
-        if (project == null) {
-            throw new IllegalStateException("Lookup " + baseContext + " does not contain a Project");
+    @Override
+    protected void projectClosed() {
+        if (cp != null) {
+            GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, new ClassPath[] { cp });
         }
-        List<Object> instances = new ArrayList<Object>(3);
-        instances.add(new GroovyProjectExtender(project));
-        instances.add(LookupMergerSupport.createActionProviderLookupMerger());
-        instances.add(new GroovyActionProvider(project));
-        instances.add(new GsfClasspathHook(project));
-        return Lookups.fixed(instances.toArray(new Object[instances.size()]));
     }
 
 }
