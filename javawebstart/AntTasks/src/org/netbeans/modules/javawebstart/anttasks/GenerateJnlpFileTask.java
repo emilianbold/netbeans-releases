@@ -123,20 +123,13 @@ public class GenerateJnlpFileTask extends Task {
             try {
                 docDom = loadTemplate(template);
             } catch (IOException ex) {
-                Logger.getLogger(GenerateJnlpFileTask.class.getName()).log(Level.SEVERE, null, ex);
+                throw new BuildException(ex, getLocation());
             }
         }
         
         if (docDom == null) {
-            try {
-                DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-                docDom = docBuilder.newDocument();
-            } catch (ParserConfigurationException ex) {
-                Logger.getLogger(GenerateJnlpFileTask.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            throw new BuildException("Template file is either missing or broken XML document, cannot generate JNLP file.", getLocation());
         }
-        
-        assert docDom != null;
         
         // LoadProperties ??
         processDocument(docDom);
@@ -146,15 +139,14 @@ public class GenerateJnlpFileTask extends Task {
             tr = TransformerFactory.newInstance().newTransformer();
             tr.setOutputProperty(OutputKeys.INDENT, "yes");
             tr.setOutputProperty(OutputKeys.METHOD,"xml");
-            //tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
             tr.setOutputProperty(OutputKeys.MEDIA_TYPE, "text/xml");
             tr.transform(new DOMSource(docDom), new StreamResult(new FileOutputStream(destFile)));
         } catch (TransformerConfigurationException ex) {
-            Logger.getLogger(GenerateJnlpFileTask.class.getName()).log(Level.SEVERE, null, ex);
+            throw new BuildException(ex, getLocation());
         } catch (TransformerException ex) {
-            Logger.getLogger(GenerateJnlpFileTask.class.getName()).log(Level.SEVERE, null, ex);
+            throw new BuildException(ex, getLocation());
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(GenerateJnlpFileTask.class.getName()).log(Level.SEVERE, null, ex);
+            throw new BuildException(ex, getLocation());
         }
         
     }
@@ -216,13 +208,12 @@ public class GenerateJnlpFileTask extends Task {
 
     private void processInformationElem(Document docDom) {
         
-        // XXX process multiple information elems !!!
         NodeList nodeList = docDom.getElementsByTagName("information");
         int listLen = nodeList.getLength();
         for (int j = 0; j < listLen; j++) {
-            Node informationElem = docDom.getElementsByTagName("information").item(j);
+            Node informationElem = nodeList.item(j);
             assert informationElem != null;
-        
+            
             NodeList childNodes = informationElem.getChildNodes();
             int len = childNodes.getLength();
             for (int i = 0; i < len; i++) {
