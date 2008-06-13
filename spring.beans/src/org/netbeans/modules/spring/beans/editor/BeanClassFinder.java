@@ -103,10 +103,18 @@ public class BeanClassFinder {
     private SpringBean startBean;
 
     public BeanClassFinder(Map<String, String> beanAttribs, FileObject fileObject) {
+        this(fileObject, SpringXMLConfigEditorUtils.getMergedBean(beanAttribs, fileObject), getBeanIdOrName(beanAttribs));
+    }
+    
+    public BeanClassFinder(SpringBean bean, FileObject fileObject) {
+        this(fileObject, SpringXMLConfigEditorUtils.getMergedBean(bean, fileObject), getBeanIdOrName(bean));
+    }
+    
+    private BeanClassFinder(FileObject fileObject, SpringBean startBean, String startBeanName) {
         this.fileObject = fileObject;
+        this.startBean = startBean;
+        this.startBeanName = startBeanName;
         this.walkedBeanNames = new HashSet<String>();
-        this.startBean = SpringXMLConfigEditorUtils.getMergedBean(beanAttribs, fileObject);
-        this.startBeanName = getBeanIdOrName(beanAttribs);
     }
 
     public String findImplementationClass() {
@@ -271,7 +279,7 @@ public class BeanClassFinder {
         }
     }
     
-    private String getBeanIdOrName(SpringBean bean) {
+    private static String getBeanIdOrName(SpringBean bean) {
         if(bean.getId() != null) {
             return bean.getId();
         }
@@ -283,7 +291,7 @@ public class BeanClassFinder {
         return null;
     }
     
-    private String getBeanIdOrName(Map<String, String> beanAttribs) {
+    private static String getBeanIdOrName(Map<String, String> beanAttribs) {
         String name = beanAttribs.get(BeansAttributes.ID);
         if(name != null) {
             return name;

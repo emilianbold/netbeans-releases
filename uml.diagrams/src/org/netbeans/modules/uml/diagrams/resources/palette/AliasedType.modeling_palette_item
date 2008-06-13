@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<palette_item version="1.0">
+  <element name="AliasedType" />
+
+  <icon16 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/aliased-type.png" />
+  <icon32 urlvalue="nbres:/org/netbeans/modules/uml/resources/images/aliased-type-32.png" />
+
+  <description localizing-bundle="org.netbeans.modules.uml.diagrams.resources.palette.Bundle"
+               display-name-key="NAME_AliasedType"
+               tooltip-key="HINT_AliasedType" />
+</palette_item>

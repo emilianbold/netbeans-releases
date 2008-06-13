@@ -46,6 +46,7 @@ import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.drawingarea.SQDDiagramTopComponent;
+import org.netbeans.modules.uml.drawingarea.ZoomManager;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 
 /**
@@ -57,7 +58,7 @@ public class InteractiveZoomAction extends WidgetAction.Adapter
 
     private Scene scene;
     private Point lastLocation;
-    private static final double zoomMultiplier = 1.01;
+    private double zoomMultiplier;
 
     @Override
     public State mousePressed(Widget widget, WidgetMouseEvent event)
@@ -66,6 +67,8 @@ public class InteractiveZoomAction extends WidgetAction.Adapter
         {
             scene = widget.getScene();
             lastLocation = event.getPoint();
+            lastLocation = widget.getScene().convertSceneToView(lastLocation);
+            
             return State.CONSUMED;
         }
         return State.REJECTED;
@@ -86,19 +89,22 @@ public class InteractiveZoomAction extends WidgetAction.Adapter
         }
 
         Point newLocation = event.getPoint();
+        newLocation = widget.getScene().convertSceneToView(newLocation);
 
         int amount = lastLocation.y - newLocation.y;
-        lastLocation = newLocation;
 
         double zoom = scene.getZoomFactor();
-        if (amount > 0)
-        {
+        zoomMultiplier = 1 + Math.abs(amount)/(zoom*100)/5;
+        if (amount > 0 && zoom < (double)ZoomManager.MAX_ZOOM_PERCENT/100)
+        {        
             zoom *= zoomMultiplier;
-        } else
+            zoom = Math.min(zoom, (double)ZoomManager.MAX_ZOOM_PERCENT/100);
+        } else if (amount < 0 && zoom > (double)ZoomManager.MIN_ZOOM_PERCENT/100)
         {
             zoom /= zoomMultiplier;
+            zoom = Math.max(zoom, (double)ZoomManager.MIN_ZOOM_PERCENT/100);
         }
-        scene.setZoomFactor(zoom);
+        
         if(scene instanceof DesignerScene)
         {
             DesignerScene ds=(DesignerScene) scene;
@@ -108,6 +114,13 @@ public class InteractiveZoomAction extends WidgetAction.Adapter
                 tc.getTrackBar().onPostScrollZoom();
             }
         }
+        
+        if (zoom != scene.getZoomFactor())
+        {                      
+            scene.setZoomFactor(zoom);           
+        }
+        
+        lastLocation = newLocation;
         return State.CONSUMED;
     }
 }

@@ -31,9 +31,9 @@
                   <Component id="jButton1" alignment="0" max="32767" attributes="1"/>
               </Group>
           </Group>
-          <Component id="jLabelErrorMessage" alignment="0" pref="621" max="32767" attributes="0"/>
-          <Component id="jCheckBoxBuildSubprojects" alignment="0" pref="621" max="32767" attributes="0"/>
-          <Component id="jTabbedPane1" alignment="0" pref="621" max="32767" attributes="0"/>
+          <Component id="jLabelErrorMessage" alignment="0" pref="660" max="32767" attributes="0"/>
+          <Component id="jCheckBoxBuildSubprojects" alignment="0" pref="660" max="32767" attributes="0"/>
+          <Component id="jTabbedPane1" alignment="0" pref="660" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -736,9 +736,6 @@
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/web/project/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_Build_Subprojects" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 0, 0, 0]"/>
         </Property>
       </Properties>
       <AccessibilityProperties>

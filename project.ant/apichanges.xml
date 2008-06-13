@@ -108,8 +108,8 @@ is the proper place.
         <change id="libraries-for-ant">
             <api name="general"/>
             <summary>Support for adding/copying libraries used by build process only</summary>
-            <version major="1" minor="21"/>
-            <date day="9" month="6" year="2008"/>
+            <version major="1" minor="23"/>
+            <date day="11" month="6" year="2008"/>
             <author login="mkubec"/>
             <compatibility addition="yes"/>
             <description>
@@ -123,8 +123,34 @@ is the proper place.
             <class package="org.netbeans.api.project.ant" name="AntBuildExtender"/>
             <issue number="136623"/>
         </change>
-
-    <changes>
+        
+        <change id="ide-variables">
+            <api name="general"/>
+            <summary>Support for (IDE) variables in Ant based project types</summary>
+            <version major="1" minor="22"/>
+            <date day="12" month="6" year="2008"/>
+            <author login="dkonecny"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>FileChooser enhanced with "Use Variable Path" option. Following 
+                methods were added:
+                <code>FileChooser.getSelectedPathVariables</code> and 
+                <code>FileChooser.enableVariableBasedSelection</code>.
+                For backward compatibility "Use Variable Path" option is by default
+                switched off and has to be enabled. Existing getSelectedPaths() 
+                method will keep returning either absolute 
+                or relative paths. If "Use Variable Path" option was selected it will 
+                return absolute path. Variable based paths are returned via new 
+                getSelectedPathVariables method.
+                </p>
+                <p>
+                Support class added for showing variables manager.
+                </p>
+            </description>
+            <class package="org.netbeans.api.project.ant" name="FileChooser"/>
+            <class package="org.netbeans.spi.project.support.ant.ui" name="VariablesSupport"/>
+            <issue number="136516"/>
+        </change>
 
         <change id="AntProjectHelper-createAuxiliaryProperties">
             <api name="general"/>
@@ -141,7 +167,7 @@ is the proper place.
             <class package="org.netbeans.spi.project.support.ant" name="AntProjectHelper"/>
             <issue number="134580"/>
         </change>
-        
+
         <change id="ant-project-libraries">
             <api name="general"/>
             <summary>Support for project-specific libraries</summary>

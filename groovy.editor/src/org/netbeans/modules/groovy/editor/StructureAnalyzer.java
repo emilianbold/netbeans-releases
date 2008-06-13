@@ -92,7 +92,6 @@ public class StructureAnalyzer implements StructureScanner {
     
     private HtmlFormatter formatter;
     private GroovyParserResult result;  
-    private CompilationInfo info;
     
     Logger LOG = Logger.getLogger(StructureAnalyzer.class.getName());
 
@@ -102,7 +101,6 @@ public class StructureAnalyzer implements StructureScanner {
 
     public List<? extends StructureItem> scan(CompilationInfo info, HtmlFormatter formatter) {
         this.result = AstUtilities.getParseResult(info);
-        this.info = info;
         this.formatter = formatter;
         
         AnalysisResult ar = result.getStructure();
@@ -242,69 +240,68 @@ public class StructureAnalyzer implements StructureScanner {
         GroovyParserResult rpr = AstUtilities.getParseResult(info);
         AnalysisResult analysisResult = rpr.getStructure();
 
-        Map<String,List<OffsetRange>> folds = new HashMap<String,List<OffsetRange>>();
+        Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
         List<OffsetRange> codefolds = new ArrayList<OffsetRange>();
         folds.put("codeblocks", codefolds); // NOI18N
 
-        try {
-            BaseDocument doc = (BaseDocument)info.getDocument();
-            if (doc == null) {
-                return Collections.emptyMap();
-            }
-            
-            List<OffsetRange> commentfolds = new ArrayList<OffsetRange>();
-            
-            TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
-            
-            int importStart = 0;
-            int importEnd   = 0;
-            
-            boolean startSet = false;
-            
-            while (ts.isValid() && ts.moveNext()) {
-                Token t = ts.token();
-                if (t.id() == GroovyTokenId.LITERAL_import) {
+        BaseDocument doc = (BaseDocument) info.getDocument();
+        if (doc == null) {
+            return Collections.emptyMap();
+        }
+
+        List<OffsetRange> commentfolds = new ArrayList<OffsetRange>();
+
+        TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
+
+        int importStart = 0;
+        int importEnd = 0;
+
+        boolean startSet = false;
+
+        while (ts.isValid() && ts.moveNext()) {
+            Token t = ts.token();
+            if (t.id() == GroovyTokenId.LITERAL_import) {
+                int offset = ts.offset();
+                if (!startSet) {
+                    importStart = offset;
+                    startSet = true;
+                }
+                importEnd = offset;
+            } else if (t.id() == GroovyTokenId.BLOCK_COMMENT) {
+                // does this Block comment (GSF_BLOCK_COMMENT) span
+                // multiple lines? E.g. includes \n ?
+                StringBuffer sb = new StringBuffer(t.text());
+
+                if (sb.indexOf("\n") != -1) {
                     int offset = ts.offset();
-                    if (!startSet) {
-                        importStart = offset;
-                        startSet = true;
-                    }
-                    importEnd = offset;
-                } else if (t.id() == GroovyTokenId.BLOCK_COMMENT) {
-                    // does this Block comment (GSF_BLOCK_COMMENT) span
-                    // multiple lines? E.g. includes \n ?
-                    StringBuffer sb = new StringBuffer(t.text());
-                    
-                    if(sb.indexOf("\n") != -1) {
-                        int offset = ts.offset();
-                        OffsetRange blockRange = new OffsetRange(offset, offset + t.length());
-                        commentfolds.add(blockRange);
-                    }
+                    OffsetRange blockRange = new OffsetRange(offset, offset + t.length());
+                    commentfolds.add(blockRange);
                 }
             }
-            
-            
+        }
+
+        try {
             // see GsfFoldManager.addTree() for suitable blocknames.
-            
+
             importEnd = Utilities.getRowEnd(doc, importEnd);
-            
+
             // same strategy here for the import statements: We have to have
             // *more* than one line to fold them.
-            
+
             if (Utilities.getRowCount(doc, importStart, importEnd) > 1) {
                 List<OffsetRange> importfolds = new ArrayList<OffsetRange>();
                 OffsetRange range = new OffsetRange(importStart, importEnd);
                 importfolds.add(range);
                 folds.put("imports", importfolds); // NOI18N
             }
-            
+
             folds.put("comments", commentfolds); // NOI18N
 
             addFolds(doc, analysisResult.getElements(), folds, codefolds);
-        } catch (Exception ex) {
+        } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
-        
+
         return folds;
     }
     

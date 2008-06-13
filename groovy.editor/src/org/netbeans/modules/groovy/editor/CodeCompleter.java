@@ -54,6 +54,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
@@ -120,7 +121,7 @@ import org.openide.util.Utilities;
 public class CodeCompleter implements CodeCompletionHandler {
 
     private static ImageIcon classIcon;
-    private boolean caseSensitive;
+    // private boolean caseSensitive;
     private int anchor;
     private final Logger LOG = Logger.getLogger(CodeCompleter.class.getName());
     private String jdkJavaDocBase = null;
@@ -211,18 +212,18 @@ public class CodeCompleter implements CodeCompletionHandler {
         LOG.log(Level.FINEST, "toString()          : " + mm.toString());
         LOG.log(Level.FINEST, "getDescriptor()     : " + mm.getDescriptor());
         LOG.log(Level.FINEST, "getSignature()      : " + mm.getSignature());
-        LOG.log(Level.FINEST, "getParamTypes()     : " + mm.getParameterTypes());
+        // LOG.log(Level.FINEST, "getParamTypes()     : " + mm.getParameterTypes());
         LOG.log(Level.FINEST, "getDeclaringClass() : " + mm.getDeclaringClass());
     }
 
-    private boolean startsWith(String theString, String prefix) {
-        if (prefix.length() == 0) {
-            return true;
-        }
-
-        return caseSensitive ? theString.startsWith(prefix)
-            : theString.toLowerCase().startsWith(prefix.toLowerCase());
-    }
+//    private boolean startsWith(String theString, String prefix) {
+//        if (prefix.length() == 0) {
+//            return true;
+//        }
+//
+//        return caseSensitive ? theString.startsWith(prefix)
+//            : theString.toLowerCase(Locale.ENGLISH).startsWith(prefix.toLowerCase());
+//    }
 
     /**
      * Get the closest ASTNode related to this request. This is used to complete
@@ -317,26 +318,26 @@ public class CodeCompleter implements CodeCompletionHandler {
      * @param isSymbol
      * @return
      */
-    private boolean completeKeywords(List<CompletionProposal> proposals, CompletionRequest request, boolean isSymbol) {
-
-        String prefix = request.prefix;
-
-        // Keywords
-
-        for (String keyword : GroovyUtils.GROOVY_KEYWORDS) {
-            if (startsWith(keyword, prefix)) {
-                KeywordItem item = new KeywordItem(keyword, null, anchor, request);
-
-                if (isSymbol) {
-                    item.setSymbol(true);
-                }
-
-                proposals.add(item);
-            }
-        }
-
-        return false;
-    }
+//    private boolean completeKeywords(List<CompletionProposal> proposals, CompletionRequest request, boolean isSymbol) {
+//
+//        String prefix = request.prefix;
+//
+//        // Keywords
+//
+//        for (String keyword : GroovyUtils.GROOVY_KEYWORDS) {
+//            if (startsWith(keyword, prefix)) {
+//                KeywordItem item = new KeywordItem(keyword, null, anchor, request);
+//
+//                if (isSymbol) {
+//                    item.setSymbol(true);
+//                }
+//
+//                proposals.add(item);
+//            }
+//        }
+//
+//        return false;
+//    }
 
     private boolean completeFields(List<CompletionProposal> proposals, CompletionRequest request) {
         LOG.log(Level.FINEST, "-> completeFields"); // NOI18N
@@ -631,9 +632,9 @@ public class CodeCompleter implements CodeCompletionHandler {
         CompilationInfo info = context.getInfo();
         int lexOffset = context.getCaretOffset();
         String prefix = context.getPrefix();
-        NameKind kind = context.getNameKind();
-        QueryType queryType = context.getQueryType();
-        this.caseSensitive = context.isCaseSensitive();
+        // NameKind kind = context.getNameKind();
+        // QueryType queryType = context.getQueryType();
+        // this.caseSensitive = context.isCaseSensitive();
         HtmlFormatter formatter = context.getFormatter();
 
         final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
@@ -659,9 +660,9 @@ public class CodeCompleter implements CodeCompletionHandler {
 //        lexOffset = AstUtilities.boundCaretOffset(info, lexOffset);
 
         // Discover whether we're in a require statement, and if so, use special completion
-        final TokenHierarchy<Document> th = TokenHierarchy.get(document);
+        // final TokenHierarchy<Document> th = TokenHierarchy.get(document);
         final BaseDocument doc = (BaseDocument) document;
-        final FileObject fileObject = info.getFileObject();
+        // final FileObject fileObject = info.getFileObject();
 
         doc.readLock(); // Read-lock due to Token hierarchy use
 
@@ -676,10 +677,11 @@ public class CodeCompleter implements CodeCompletionHandler {
             request.doc = doc;
             request.info = info;
             request.prefix = prefix;
-            request.th = th;
-            request.kind = kind;
-            request.queryType = queryType;
-            request.fileObject = fileObject;
+            
+            // request.th = th;
+            // request.kind = kind;
+            // request.queryType = queryType;
+            // request.fileObject = fileObject;
 
             // No - we don't complete keywords, since one can get'em by hitting
             // ctrl-k or use an abbrevation. Displaying them without a documentation
@@ -806,7 +808,12 @@ public class CodeCompleter implements CodeCompletionHandler {
                 String typeName = encodedType.substring(i, semicolon);
                 typeName = typeName.replace('/', '.');
 
-                sb.append(typeName);
+                if (forURL) {
+                    sb.append(typeName);
+                } else {
+                    sb.append(NbUtilities.stripPackage(typeName));
+                }
+                
                 i = semicolon;
             }
 
@@ -963,15 +970,15 @@ public class CodeCompleter implements CodeCompletionHandler {
 
     private static class CompletionRequest {
 
-        private TokenHierarchy<Document> th;
+        // private TokenHierarchy<Document> th;
         private CompilationInfo info;
         private int lexOffset;
         private int astOffset;
         private BaseDocument doc;
         private String prefix = "";
-        private NameKind kind;
-        private QueryType queryType;
-        private FileObject fileObject;
+        // private NameKind kind;
+        // private QueryType queryType;
+        // private FileObject fileObject;
         private HtmlFormatter formatter;
     }
 
@@ -1129,15 +1136,16 @@ public class CodeCompleter implements CodeCompletionHandler {
 
                 String sig = signature.substring(start + 1, end);
 
-                String simpleSig = "";
+                StringBuffer buf = new StringBuffer();
 
                 for (String param : sig.split(",")) {
-                    if (!simpleSig.equals("")) {
-                        simpleSig = simpleSig + ", ";
+                    if (buf.length() > 0) {
+                        buf.append(", ");
                     }
-                    simpleSig = simpleSig + NbUtilities.stripPackage(param);
+                    buf.append(NbUtilities.stripPackage(param));
                 }
 
+                String simpleSig = buf.toString();
                 formatter.appendText("(" + simpleSig + ")");
             } else {
                 formatter.appendText(getMethodSignature(method, false, isGDK));

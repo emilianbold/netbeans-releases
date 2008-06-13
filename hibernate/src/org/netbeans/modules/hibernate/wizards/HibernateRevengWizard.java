@@ -373,6 +373,8 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
             SessionFactory sf = hco.getHibernateConfiguration().getSessionFactory();
             FileObject pkg = SourceGroups.getFolderForPackage(helper.getLocation(), helper.getPackageName(), false);
             if (pkg != null && pkg.isFolder()) {
+		    // bugfix: 137052
+                pkg.getFileSystem().refresh(true);
                 Enumeration<? extends FileObject> enumeration = pkg.getChildren(true);            
                 while (enumeration.hasMoreElements()) {
                     FileObject fo = enumeration.nextElement();                    

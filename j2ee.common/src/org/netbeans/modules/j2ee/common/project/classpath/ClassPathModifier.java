@@ -174,7 +174,7 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
                             File projectFolderFile = FileUtil.toFile(project.getProjectDirectory());
                             for (int i=0; i< classPathRoots.length; i++) {
                                 String filePath;
-                                if (ADD_NO_HEURISTICS == operation || REMOVE == operation) {
+                                if (ADD_NO_HEURISTICS == operation || REMOVE == operation || !classPathRoots[i].isAbsolute()) {
                                     URI toAdd = LibrariesSupport.getArchiveFile(classPathRoots[i]);
                                     if (toAdd == null) {
                                         toAdd = classPathRoots[i];
@@ -183,8 +183,12 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
                                 } else {
                                     filePath = ClassPathModifier.this.performSharabilityHeuristics(classPathRoots[i], antHelper);
                                 }
-                                File f = antHelper.resolveFile(filePath);
-                                ClassPathSupport.Item item = ClassPathSupport.Item.create( filePath, projectFolderFile, null);
+                                // LibrariesNode calls this method with variable based classpath items:
+                                String filePath2 = filePath;
+                                if (filePath2.startsWith("${var.")) { // NOI18N
+                                    filePath2 = eval.evaluate(filePath);
+                                }
+                                ClassPathSupport.Item item = ClassPathSupport.Item.create( filePath2, projectFolderFile, null, filePath.startsWith("${var.") ? filePath : null); // NOI18N
                                 cpUiSupportCallback.initItem(item);
                                 if ((operation == ADD || operation == ADD_NO_HEURISTICS) && !resources.contains(item)) {
                                     resources.add (item);
@@ -196,7 +200,8 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
                                         // can be broken item
                                         for (Iterator<ClassPathSupport.Item> it = resources.iterator(); it.hasNext();) {
                                             ClassPathSupport.Item resource = it.next();
-                                            if (resource.isBroken() && resource.getType() == ClassPathSupport.Item.TYPE_JAR && filePath.equals(resource.getFilePath())) {
+                                            if (resource.isBroken() && resource.getType() == ClassPathSupport.Item.TYPE_JAR && 
+                                                    (filePath.equals(resource.getFilePath()) || filePath.equals(resource.getVariableBasedProperty()))) {
                                                 it.remove();
                                                 changed = true;
                                             }
