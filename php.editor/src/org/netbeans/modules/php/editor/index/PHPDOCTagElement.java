@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,54 +31,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-/*
- * E2EDataNode.java
- *
- * Created on June 27, 2005, 2:54 PM
- *
- */
-package org.netbeans.modules.mobility.end2end;
+package org.netbeans.modules.php.editor.index;
 
-import java.awt.Image;
-import javax.swing.Action;
-import org.openide.actions.OpenAction;
-import org.openide.loaders.DataNode;
-import org.openide.nodes.Children;
-import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.php.editor.PHPDOCCodeCompletion;
 
 /**
  *
- * @author Michal Skvor
+ * @author tomslot
  */
-public class E2EDataNode extends DataNode {
-    
-    /** Creates a new instance of E2EDataNode */
-    public E2EDataNode( E2EDataObject obj ) {
-        super( obj, Children.LEAF );
+public class PHPDOCTagElement extends PHPElement{
+    private String tagName;
+
+    public PHPDOCTagElement(String tagName) {
+        this.tagName = tagName;
     }
     
     @Override
-    public Image getIcon(@SuppressWarnings("unused")
-	final int type) {
-        return Utilities.loadImage(
-                "org/netbeans/modules/mobility/end2end/resources/e2eclienticon.png" ); // NOI18N
+    public String getName() {
+        return tagName;
     }
-        
+
     @Override
-    public Action getPreferredAction() {
-        return SystemAction.get( OpenAction.class );
+    public ElementKind getKind() {
+        return ElementKind.KEYWORD;
     }
-    
-    @Override
-    public boolean canCopy(){
-        return false;
-    }
-    
-    @Override
-    public boolean canCut(){
-        return false;
+
+    public String getDoc(){
+        return PHPDOCCodeCompletion.getDoc(tagName);
     }
 }

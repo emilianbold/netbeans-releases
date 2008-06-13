@@ -129,7 +129,7 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationPr
      * @param configName String new configuration name
      * @return boolean success
      */
-    public synchronized final boolean addConfiguration(final String configName) {
+    public final boolean addConfiguration(final String configName) {
         if (configName == null || configName.equals(getDefaultConfiguration().getDisplayName())) return false;
         boolean ret = (ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
             public Boolean run() {

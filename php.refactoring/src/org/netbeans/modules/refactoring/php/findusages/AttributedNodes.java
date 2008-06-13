@@ -113,6 +113,9 @@ import org.openide.util.Union2;
  * @author Jan Lahoda, Radek Matous
  */
 public class AttributedNodes extends DefaultVisitor {
+    private static final List<String> SUPERGLOBALS = Arrays.asList(
+            "GLOBALS", "_SERVER", "_GET", "_POST", "_FILES", //NOI18N
+            "_COOKIE", "_SESSION", "_REQUEST", "_ENV"); //NOI18N
 
     public DefinitionScope global;
     private Stack<DefinitionScope> scopes = new Stack<DefinitionScope>();
@@ -597,7 +600,7 @@ public class AttributedNodes extends DefaultVisitor {
                 }
             }
         }
-        super.visit(node);
+        //super.visit(node);
     }
 
     private AttributedElement enterGlobalVariable(String name) {
@@ -1162,7 +1165,7 @@ public class AttributedNodes extends DefaultVisitor {
         }
     }
 
-    public static class ClassElement extends AttributedElement {
+    public  class ClassElement extends AttributedElement {
 
         private final DefinitionScope enclosedElements;
         private ClassElement superClass;
@@ -1244,7 +1247,7 @@ public class AttributedNodes extends DefaultVisitor {
         }
     }
 
-    public static class FunctionElement extends AttributedElement {
+    public  class FunctionElement extends AttributedElement {
 
         private final DefinitionScope enclosedElements;
         private boolean initialized;
@@ -1296,7 +1299,7 @@ public class AttributedNodes extends DefaultVisitor {
         }
     }
 
-    public static class DefinitionScope {
+    public  class DefinitionScope {
 
         private final Map<Kind, Map<String, AttributedElement>> name2Writes = new HashMap<Kind, Map<String, AttributedElement>>();
 //        private final Map<AttributedElement, ASTNode> reads = new HashMap<AttributedElement, ASTNode>();
@@ -1337,6 +1340,13 @@ public class AttributedNodes extends DefaultVisitor {
         }
 
         private AttributedElement enterWrite(String name, Kind k, Union2<ASTNode, IndexedElement> node, AttributedType type) {
+            if (k == Kind.VARIABLE && this != global) {
+                //TODO: review
+                if (SUPERGLOBALS.contains(name)) {
+                    return AttributedNodes.this.enterGlobalVariable(name);
+                }
+            }
+            
             Map<String, AttributedElement> name2El = name2Writes.get(k);
 
             if (name2El == null) {

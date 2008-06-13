@@ -42,12 +42,15 @@ import java.awt.CardLayout;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.table.DefaultTableModel;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
@@ -72,15 +75,22 @@ import org.openide.util.Utilities;
 public final class HQLEditorTopComponent extends TopComponent {
 
     /** path to the icon used by the component and its open action */
-    static final String ICON_PATH = "org/netbeans/modules/hibernate/hqleditor/ui/resources/runsql.png"; //NOI18N
+    static final String ICON_PATH = "org/netbeans/modules/hibernate/hqleditor/ui/resources/queryEditor16X16.png"; //NOI18N
     private Logger logger = Logger.getLogger(HQLEditorTopComponent.class.getName());
     private HashMap<String, FileObject> hibernateConfigMap = new HashMap<String, FileObject>();
-    private static int count = 0;
+    private static List<Integer> windowCounts = new ArrayList<Integer>();
+    private Integer thisWindowCount = new Integer(0);
     private HQLEditorController controller = null;
     private HibernateEnvironment env = null;
+    private ProgressHandle ph = null;
 
-    private static String getNextWindowTitle() {
-        return NbBundle.getMessage(HQLEditorTopComponent.class, "CTL_HQLEditorTopComponent") + (++count);
+    private static int getNextWindowCount() {
+        int count = 0;
+        while (windowCounts.contains(count)) {
+            count++;
+        }
+        windowCounts.add(count);
+        return count;
     }
 
     public static HQLEditorTopComponent getInstance() {
@@ -90,11 +100,13 @@ public final class HQLEditorTopComponent extends TopComponent {
     public HQLEditorTopComponent(HQLEditorController controller) {
         this.controller = controller;
         initComponents();
-        setName(getNextWindowTitle());
+        this.thisWindowCount = getNextWindowCount();
+        setName(NbBundle.getMessage(HQLEditorTopComponent.class, "CTL_HQLEditorTopComponent") + thisWindowCount);
         setToolTipText(NbBundle.getMessage(HQLEditorTopComponent.class, "HINT_HQLEditorTopComponent"));
         setIcon(Utilities.loadImage(ICON_PATH, true));
 
         sqlToggleButton.setSelected(true);
+
     }
 
     public void fillHibernateConfigurations(Node[] activatedNodes) {
@@ -112,14 +124,22 @@ public final class HQLEditorTopComponent extends TopComponent {
             for (FileObject configFileObject : configFileObjects) {
                 try {
                     HibernateCfgDataObject hibernateCfgDataObject = (HibernateCfgDataObject) DataObject.find(configFileObject);
-                    hibernateConfigMap.put(hibernateCfgDataObject.getHibernateConfiguration().getSessionFactory().getAttributeValue("name"), configFileObject);
+                    String configName = hibernateCfgDataObject.getHibernateConfiguration().getSessionFactory().getAttributeValue("name"); //NOI18N
+                    if (configName == null || configName.equals("")) {
+                        configName = configFileObject.getName();
+                    }
+                    hibernateConfigMap.put(configName, configFileObject);
                 } catch (DataObjectNotFoundException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
             hibernateConfigurationComboBox.setModel(new DefaultComboBoxModel(hibernateConfigMap.keySet().toArray()));
             HibernateConfiguration config = ((HibernateCfgDataObject) dO).getHibernateConfiguration();
-            hibernateConfigurationComboBox.setSelectedItem(config.getSessionFactory().getAttributeValue("name"));
+            String selectedConfigName = config.getSessionFactory().getAttributeValue("name"); //NOI18N
+            if (selectedConfigName == null || selectedConfigName.equals("")) {
+                selectedConfigName = dO.getPrimaryFile().getName();
+            }
+            hibernateConfigurationComboBox.setSelectedItem(selectedConfigName);
 
         } else {
             //TODO Don't know whether this case will actually arise..
@@ -132,7 +152,7 @@ public final class HQLEditorTopComponent extends TopComponent {
             // logger.info(r.getQueryResults().toString());
             switchToResultView();
             StringBuilder strBuffer = new StringBuilder();
-            String space = " ", separator = "; ";
+            String space = " ", separator = "; "; //NOI18N
             strBuffer.append(result.getUpdateOrDeleteResult());
             strBuffer.append(space);
             strBuffer.append(NbBundle.getMessage(HQLEditorTopComponent.class, "queryUpdatedOrDeleted"));
@@ -149,37 +169,24 @@ public final class HQLEditorTopComponent extends TopComponent {
             Vector<Vector> tableData = new Vector<Vector>();
 
             if (result.getQueryResults().size() != 0) {
-                // Construct the table headers//
 
                 Object firstObject = result.getQueryResults().get(0);
-                for (java.lang.reflect.Method m : firstObject.getClass().getDeclaredMethods()) {
-                    String methodName = m.getName();
-                    if (methodName.startsWith("get")) {
-                        if (!tableHeaders.contains(methodName)) {
-                            tableHeaders.add(m.getName().substring(3));
-                        }
-                    }
-                }
-                for (Object o : result.getQueryResults()) {
-                    try {
-                        Vector<Object> oneRow = new Vector<Object>();
-                        for (java.lang.reflect.Method m : o.getClass().getDeclaredMethods()) {
-                            String methodName = m.getName();
-                            if (methodName.startsWith("get")) {
-                                oneRow.add(m.invoke(o, new Object[]{}));
-                            }
-                        }
-                        tableData.add(oneRow);
-                    } catch (IllegalAccessException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (IllegalArgumentException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (InvocationTargetException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (SecurityException ex) {
-                        Exceptions.printStackTrace(ex);
+                if (firstObject instanceof Object[]) {
+                    // Join query result.
+                    for (Object oneObject : (Object[]) firstObject) {
+                        createTableHeaders(tableHeaders, oneObject);
                     }
 
+                    for (Object row : result.getQueryResults()) {
+                            createTableData(tableData, (Object[])row);
+                    }
+
+                } else {
+                    // Construct the table headers
+                    createTableHeaders(tableHeaders, firstObject);
+                    for (Object oneObject : result.getQueryResults()) {
+                        createTableData(tableData, oneObject);
+                    }
                 }
 
             }
@@ -187,20 +194,57 @@ public final class HQLEditorTopComponent extends TopComponent {
 
 
         } else {
-            //TODO process errors.
-            logger.info("HQL Query result is null");
+            logger.info("HQL query execution resulted in following " + result.getExceptions().size() + " errors.");
+
             switchToErrorView();
             setStatus(NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionError"));
             errorTextArea.setText("");
-            for(Throwable t : result.getExceptions()) {
+            for (Throwable t : result.getExceptions()) {
                 StringWriter sWriter = new StringWriter();
                 PrintWriter pWriter = new PrintWriter(sWriter);
                 t.printStackTrace(pWriter);
                 errorTextArea.append(sWriter.toString());
             }
+            logger.info(errorTextArea.getText());
         }
-        runHQLButton.setEnabled(true);
+        ph.progress(
+                NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionDone"), 99);
 
+        runHQLButton.setEnabled(true);
+        ph.finish();
+
+    }
+
+    private void createTableHeaders(Vector<String> tableHeaders, Object oneObject) {
+        for (java.lang.reflect.Method m : oneObject.getClass().getDeclaredMethods()) {
+            String methodName = m.getName();
+            if (methodName.startsWith("get")) { //NOI18N
+                if (!tableHeaders.contains(methodName)) {
+                    tableHeaders.add(m.getName().substring(3));
+                }
+            }
+        }
+    }
+
+    private void createTableData(Vector<Vector> tableData, Object... rowObject) {
+        Vector<Object> oneRow = new Vector<Object>();
+        for (Object oneObject : rowObject) {
+            for (java.lang.reflect.Method m : oneObject.getClass().getDeclaredMethods()) {
+                String methodName = m.getName();
+                if (methodName.startsWith("get")) { //NOI18N
+                    try {
+                        oneRow.add(m.invoke(oneObject, new Object[]{}));
+                    } catch (IllegalAccessException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (IllegalArgumentException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (InvocationTargetException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+        tableData.add(oneRow);
     }
 
     private void setStatus(String message) {
@@ -228,6 +272,11 @@ public final class HQLEditorTopComponent extends TopComponent {
         toolBar2 = new javax.swing.JToolBar();
         resultToggleButton = new javax.swing.JToggleButton();
         sqlToggleButton = new javax.swing.JToggleButton();
+        spacerPanel1 = new javax.swing.JPanel();
+        spacerPanel2 = new javax.swing.JPanel();
+        setMaxRowCountPanel = new javax.swing.JPanel();
+        setMaxRowCountLabel = new javax.swing.JLabel();
+        setMaxRowCountComboBox = new javax.swing.JComboBox();
         executionPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         sqlEditorPane = new javax.swing.JEditorPane();
@@ -249,8 +298,9 @@ public final class HQLEditorTopComponent extends TopComponent {
         toolBar.add(hibernateConfigurationComboBox);
         toolBar.add(toolbarSeparator);
 
-        runHQLButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/hibernate/hqleditor/ui/resources/runsql.png"))); // NOI18N
+        runHQLButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/hibernate/hqleditor/ui/resources/runsql16X16.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(runHQLButton, org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "HQLEditorTopComponent.runHQLButton.text")); // NOI18N
+        runHQLButton.setToolTipText(org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "runHQLQueryButtonToolTip")); // NOI18N
         runHQLButton.setFocusable(false);
         runHQLButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         runHQLButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -278,6 +328,7 @@ public final class HQLEditorTopComponent extends TopComponent {
         toolBar2.setRollover(true);
 
         org.openide.awt.Mnemonics.setLocalizedText(resultToggleButton, org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "HQLEditorTopComponent.resultToggleButton.text")); // NOI18N
+        resultToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "showResultTooltipText")); // NOI18N
         resultToggleButton.setFocusable(false);
         resultToggleButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         resultToggleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -289,6 +340,7 @@ public final class HQLEditorTopComponent extends TopComponent {
         toolBar2.add(resultToggleButton);
 
         org.openide.awt.Mnemonics.setLocalizedText(sqlToggleButton, org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "HQLEditorTopComponent.sqlToggleButton.text")); // NOI18N
+        sqlToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "showSQLTooltipText")); // NOI18N
         sqlToggleButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         sqlToggleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         sqlToggleButton.addItemListener(new java.awt.event.ItemListener() {
@@ -297,6 +349,55 @@ public final class HQLEditorTopComponent extends TopComponent {
             }
         });
         toolBar2.add(sqlToggleButton);
+
+        org.jdesktop.layout.GroupLayout spacerPanel1Layout = new org.jdesktop.layout.GroupLayout(spacerPanel1);
+        spacerPanel1.setLayout(spacerPanel1Layout);
+        spacerPanel1Layout.setHorizontalGroup(
+            spacerPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 204, Short.MAX_VALUE)
+        );
+        spacerPanel1Layout.setVerticalGroup(
+            spacerPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 27, Short.MAX_VALUE)
+        );
+
+        toolBar2.add(spacerPanel1);
+
+        org.jdesktop.layout.GroupLayout spacerPanel2Layout = new org.jdesktop.layout.GroupLayout(spacerPanel2);
+        spacerPanel2.setLayout(spacerPanel2Layout);
+        spacerPanel2Layout.setHorizontalGroup(
+            spacerPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 96, Short.MAX_VALUE)
+        );
+        spacerPanel2Layout.setVerticalGroup(
+            spacerPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 27, Short.MAX_VALUE)
+        );
+
+        toolBar2.add(spacerPanel2);
+
+        org.openide.awt.Mnemonics.setLocalizedText(setMaxRowCountLabel, org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "HQLEditorTopComponent.setMaxRowCountLabel.text")); // NOI18N
+
+        setMaxRowCountComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "100", "1000", "10000", "100000" }));
+        setMaxRowCountComboBox.setToolTipText(org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "setMaxRowToolTip")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout setMaxRowCountPanelLayout = new org.jdesktop.layout.GroupLayout(setMaxRowCountPanel);
+        setMaxRowCountPanel.setLayout(setMaxRowCountPanelLayout);
+        setMaxRowCountPanelLayout.setHorizontalGroup(
+            setMaxRowCountPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(setMaxRowCountPanelLayout.createSequentialGroup()
+                .add(setMaxRowCountLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(setMaxRowCountComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        );
+        setMaxRowCountPanelLayout.setVerticalGroup(
+            setMaxRowCountPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(setMaxRowCountPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(setMaxRowCountLabel)
+                .add(setMaxRowCountComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        );
+
+        toolBar2.add(setMaxRowCountPanel);
 
         executionPanel.setLayout(new java.awt.CardLayout());
 
@@ -393,6 +494,16 @@ public final class HQLEditorTopComponent extends TopComponent {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private int getMaxRowCount() {
+        String selectedMaxCount = setMaxRowCountComboBox.getSelectedItem().toString();
+        try {
+            return Integer.parseInt(selectedMaxCount);
+        } catch(NumberFormatException e) {
+            logger.warning("Number Format Error during parsing the max. row count");
+        }
+        return 1000; // Optimum value.
+    }
+    
 private void resultToggleButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_resultToggleButtonItemStateChanged
     if (resultToggleButton.isSelected()) {
         ((CardLayout) (executionPanel.getLayout())).last(executionPanel);
@@ -410,9 +521,14 @@ private void sqlToggleButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GE
 private void runHQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runHQLButtonActionPerformed
     runHQLButton.setEnabled(false);
     try {
+        ph = ProgressHandleFactory.createHandle(
+                NbBundle.getMessage(HQLEditorTopComponent.class, "progressTaskname"));
         FileObject selectedConfigFile = (FileObject) hibernateConfigMap.get(hibernateConfigurationComboBox.getSelectedItem());
-
-        controller.executeHQLQuery(hqlEditor.getText(), selectedConfigFile);
+        ph.start(100);
+        controller.executeHQLQuery(hqlEditor.getText(), 
+                selectedConfigFile, 
+                getMaxRowCount(),
+                ph);
     } catch (Exception ex) {
         Exceptions.printStackTrace(ex);                                            
     }
@@ -433,6 +549,11 @@ private void runHQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JTable resultsTable;
     private javax.swing.JButton runHQLButton;
     private javax.swing.JLabel sessionLabel;
+    private javax.swing.JComboBox setMaxRowCountComboBox;
+    private javax.swing.JLabel setMaxRowCountLabel;
+    private javax.swing.JPanel setMaxRowCountPanel;
+    private javax.swing.JPanel spacerPanel1;
+    private javax.swing.JPanel spacerPanel2;
     private javax.swing.JSplitPane splitPane;
     private javax.swing.JEditorPane sqlEditorPane;
     private javax.swing.JToggleButton sqlToggleButton;
@@ -450,7 +571,7 @@ private void runHQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
     @Override
     protected void componentClosed() {
-        --count;
+        windowCounts.remove(thisWindowCount);
     }
 
     private void switchToResultView() {

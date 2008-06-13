@@ -251,24 +251,16 @@ made subject to such option by the copyright holder.
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
             <file name="cdc-ant-utils.xml" url="Utils.xml"/>
-        </folder>
+        </folder>x  
     </folder>
      <folder name="Loaders">
-        <folder name="content">
-            <folder name="unknown">
+        <folder name="image">
+            <folder name="mbm">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-j2me-cdc-project-mbm-MBMDataLoader.instance">
                         <attr name="position" intvalue="90049"/>
                     </file>
                 </folder>
-            </folder>
-        </folder>
-     </folder>
-            
-<!--    
-     <folder name="Loaders">
-        <folder name="image">
-            <folder name="mbm">
                 <folder name="Actions">
                     <file name="OpenAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
@@ -325,10 +317,8 @@ made subject to such option by the copyright holder.
                     <file name="PropertiesAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
                     </file>
-                </folder>
+                </folder>                
             </folder>
         </folder>
-    </folder>
- -->
-
+     </folder>
 </filesystem>
