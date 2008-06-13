@@ -48,6 +48,7 @@ import java.lang.ref.WeakReference;
 import javax.swing.JTextArea;
 import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -219,26 +220,18 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
         displayer.selectPrev();
         evt.consume();
     } else if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+        returnFocus();
         displayer.invoke();
         evt.consume();
-        if (popup != null) {
-            popup.setVisible(false);
-            popup=null;
-        }
-        SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    if (command.isFocusOwner() && caller != null) {
-                        TopComponent tc = caller.get();
-                        if (tc != null) {
-                            tc.requestActive();
-                            tc.requestFocus();
-                        }
-                    }
-                }
-            });
     } else if ((evt.getKeyCode()) == KeyEvent.VK_ESCAPE) {
+        returnFocus();
+    }
+}//GEN-LAST:event_commandKeyPressed
+
+    private void returnFocus () {
         if (popup != null) {
             popup.setVisible(false);
+            popup = null;
         }
         if (caller != null) {
             TopComponent tc = caller.get();
@@ -247,10 +240,8 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
                 tc.requestFocus();
             }
         }
-
-        popup = null;
     }
-}//GEN-LAST:event_commandKeyPressed
+
 
 private void commandFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_commandFocusLost
     if(popup != null && evt.getOppositeComponent() != null) {
