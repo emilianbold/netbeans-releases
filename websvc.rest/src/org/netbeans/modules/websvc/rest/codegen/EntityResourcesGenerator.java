@@ -1327,7 +1327,12 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                 "$FIELD$New.$REVERSE_GETTER$().add(entity);" +
                 "}";
         
-        String oneToManyTemplate = "for ($CLASS$ value : $FIELD$New) {" +
+        String oneToManyTemplate = "for ($CLASS$ value : $FIELD$) {" +
+                "if (!$FIELD$New.contains(value)) {" +
+                "throw new WebApplicationException(new Throwable(\"Cannot remove items from $FIELD$\"));" +
+                "}" +
+                "}" +
+                "for ($CLASS$ value : $FIELD$New) {" +
                 "if (!$FIELD$.contains(value)) {" +
                 "$ENTITY_CLASS$ oldEntity = value.$REVERSE_GETTER$();" +
                 "value.$REVERSE_SETTER$(entity);" +
@@ -1419,6 +1424,10 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                 "$FIELD$.$REVERSE_GETTER$().remove(entity);" +
                 "}";                                                //NOI18N
         
+        String oneToManyTemplate = "if (!entity.$GETTER$().isEmpty()) {" +
+                "throw new WebApplicationException(new Throwable(\"Cannot delete entity because $FIELD$ is not empty.\"));" +
+                "}";
+        
         String manyToManyTemplate = "for ($CLASS$ value : entity.$GETTER$()) {" +
                 "value.$REVERSE_GETTER$().remove(entity);" +
                 "}";                                                //NOI18N
@@ -1443,6 +1452,9 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                         replace("$FIELD$", fieldInfo.getName()).
                         replace("$GETTER$", getGetterName(fieldInfo)).
                         replace("$REVERSE_GETTER$", getGetterName(reverseFieldInfo));
+            } else if (fieldInfo.isOneToMany()) {
+                template = oneToManyTemplate.replace("$GETTER$", getGetterName(fieldInfo)).
+                        replace("$FIELD$", fieldInfo.getName());
             } else if (fieldInfo.isManyToMany()) {
                 template = manyToManyTemplate.replace("$CLASS$", fieldInfo.getSimpleTypeArgName()).
                         replace("$GETTER$", getGetterName(fieldInfo)).
@@ -1455,67 +1467,6 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         return bodyText;
     }
     
-    private String getRemoveOneToManyRelSubText(EntityResourceBean bean) {
-        String template = "entity.$GETTER$().removeAll(newEntity.$GETTER$());" +
-                "for ($CLASS$ value : entity.$GETTER$()) {" +
-                "value.$SETTER$(null);" +
-                "}";
-
-        String bodyText = "";
-
-        for (RelatedEntityResource subResource : bean.getSubResources()) {
-            FieldInfo fieldInfo = subResource.getFieldInfo();
-
-            if (fieldInfo.isOneToMany() || fieldInfo.isManyToMany()) {
-                EntityResourceBean subBean = subResource.getResourceBean();
-                EntityResourceBean itemResource = getItemSubResource(subBean);
-
-                for (RelatedEntityResource subSubResource : itemResource.getSubResources()) {
-                    EntityResourceBean subSubBean = subSubResource.getResourceBean();
-
-                    if (bean == subSubBean) {
-                        bodyText = bodyText + template.replace("$CLASS$", getEntityClassName(subBean)).
-                                replace("$GETTER$", getGetterName(fieldInfo)).
-                                replace("$SETTER$", getSetterName(subSubResource.getFieldInfo()));
-                        break;
-                    }
-                }
-            }
-        }
-
-        return bodyText;
-    }
-
-    private String getUpdateOneToManyRelSubText(EntityResourceBean bean) {
-        String template = "for ($CLASS$ value : entity.$GETTER$()) {" +
-                "value.$SETTER$(entity);" +
-                "}";
-
-        String bodyText = "";
-
-        for (RelatedEntityResource subResource : bean.getSubResources()) {
-            FieldInfo fieldInfo = subResource.getFieldInfo();
-
-            if (fieldInfo.isOneToMany() || fieldInfo.isManyToMany()) {
-                EntityResourceBean subBean = subResource.getResourceBean();
-                EntityResourceBean itemResource = getItemSubResource(subBean);
-
-                for (RelatedEntityResource subSubResource : itemResource.getSubResources()) {
-                    EntityResourceBean subSubBean = subSubResource.getResourceBean();
-
-                    if (bean == subSubBean) {
-                        bodyText = bodyText + template.replace("$CLASS$", getEntityClassName(subBean)).
-                                replace("$GETTER$", getGetterName(fieldInfo)).
-                                replace("$SETTER$", getSetterName(subSubResource.getFieldInfo()));
-                        break;
-                    }
-                }
-            }
-        }
-
-        return bodyText;
-    }
-
     private ClassTree addConverterFields(WorkingCopy copy, ClassTree tree,
             EntityResourceBean bean) {
         Modifier[] modifiers = new Modifier[]{Modifier.PRIVATE};
