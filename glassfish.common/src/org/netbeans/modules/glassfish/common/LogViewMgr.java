@@ -60,7 +60,7 @@ import org.netbeans.modules.glassfish.common.actions.RefreshAction;
 import org.netbeans.modules.glassfish.common.actions.RestartAction;
 import org.netbeans.modules.glassfish.common.actions.StartServerAction;
 import org.netbeans.modules.glassfish.common.actions.StopServerAction;
-import org.netbeans.spi.glassfish.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;

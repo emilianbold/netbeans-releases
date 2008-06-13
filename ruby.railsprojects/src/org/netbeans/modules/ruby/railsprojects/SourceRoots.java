@@ -287,6 +287,11 @@ public final class SourceRoots {
             }
             result.add(f);
         }
+        // the 'test' folder needs to be included in the source roots as 
+        // it may contain test helpers, but we don't want to display it in the logical view
+        if (test != null) {
+            result.add(test);
+        }
         sourceRoots = Collections.unmodifiableList(result);
         
 //        assert sourceRootNames.size() == sourceRootProperties.size() && 

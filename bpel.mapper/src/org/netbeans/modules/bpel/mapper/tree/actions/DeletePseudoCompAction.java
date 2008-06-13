@@ -95,7 +95,7 @@ public class DeletePseudoCompAction extends MapperAction<Iterable<Object>> {
         PseudoCompManager pseudoCompManager = 
                 PseudoCompManager.getPseudoCompManager(sourceModel);
         if (pseudoCompManager != null) {
-            pseudoCompManager.deletePseudoComp(pseudoComp);
+            pseudoCompManager.deletePseudoComp(itrb, pseudoComp);
         }
         //
         // Update BPEL model

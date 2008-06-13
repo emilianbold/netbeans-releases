@@ -63,6 +63,8 @@ import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.platform.gems.GemPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -586,7 +588,12 @@ public class RubyPlatformCustomizer extends JPanel {
     }//GEN-LAST:event_autoDetectButtonremovePlatform
 
     private void installFastDebuggerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installFastDebuggerActionPerformed
-        if (getSelectedPlatform().installFastDebugger()) {
+        if (getSelectedPlatform().isJRuby()) {
+            // automatic installation is not available yet
+            Util.notifyLocalized(RubyPlatformCustomizer.class,
+                    "RubyPlatformCustomizer.instructionsToInstallJRubyDebugger",
+                    getSelectedPlatform().getFastDebuggerProblemsInHTML());
+        } else if (getSelectedPlatform().installFastDebugger()) {
             refreshDebugger();
         }
     }//GEN-LAST:event_installFastDebuggerActionPerformed
@@ -622,7 +629,7 @@ public class RubyPlatformCustomizer extends JPanel {
 
     private void refreshDebugger() {
         RubyPlatform platform = getSelectedPlatform();
-        boolean supportFastDebuggerInstallation = !platform.isJRuby() && !platform.isRubinius();
+        boolean supportFastDebuggerInstallation = !platform.isRubinius();
         boolean fdInstalled = platform.hasFastDebuggerInstalled();
         installFastDebugger.setEnabled(supportFastDebuggerInstallation && platform.hasRubyGemsInstalled());
         installFastDebugger.setVisible(supportFastDebuggerInstallation && !fdInstalled);
@@ -665,4 +672,5 @@ public class RubyPlatformCustomizer extends JPanel {
     private javax.swing.JLabel rubyDebuggerLabel;
     private javax.swing.JSeparator upperSep;
     // End of variables declaration//GEN-END:variables
+
 }

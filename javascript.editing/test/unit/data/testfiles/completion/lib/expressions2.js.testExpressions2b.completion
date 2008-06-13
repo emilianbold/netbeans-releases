@@ -1,4 +1,6 @@
-Results for ownerDocument. with queryType=COMPLETION and nameKind=PREFIX
+Code completion result for source line:
+document.images[0].ownerDocument.|
+(QueryType=COMPLETION, NameKind=PREFIX)
 METHOD     adoptNode(externalNode) : Node             Document
 METHOD     appendChild(Node newChild) : N             Node
 METHOD     clear() : void                             Document

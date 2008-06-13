@@ -137,6 +137,8 @@ public final class SharableLibrariesUtils {
         }
         lib = FileUtil.normalizeFile(lib);
         FileChooser chooser = new FileChooser(projectLocation, null);
+        // for now variable based paths are disabled for reference to libraries folder
+        // can be revisit if it is needed
         chooser.setCurrentDirectory(lib);
         chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
         chooser.setDialogTitle(NbBundle.getMessage(SharableLibrariesUtils.class,"LBL_Browse_Libraries_Title"));

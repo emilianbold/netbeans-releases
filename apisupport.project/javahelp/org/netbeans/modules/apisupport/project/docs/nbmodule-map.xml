@@ -26,15 +26,19 @@
     <mapID target="apisupport_using_netbeans_api_javadoc" url="create_plugin/using_netbeans_api_javadoc.html"/>	
     <mapID target="apisupport_about_project_wizards" url="create_plugin/projectlevel_create/about_project_wizards.html"/>	
     <mapID target="apisupport_create_module" url="create_plugin/projectlevel_create/create_module.html"/>
-    <mapID target="apisupport_create_library_wrapper_module" url="create_plugin/projectlevel_create/create_library_wrapper_module.html"/>
+    <mapID target="apisupport_create_library_wrapper" url="create_plugin/projectlevel_create/create_library_wrapper.html"/>
     <mapID target="apisupport_create_module_suite" url="create_plugin/projectlevel_create/create_module_suite.html"/>
-    <mapID target="apisupport_create_platform_application" url="create_plugin/projectlevel_create/create_platform_application.html"/>
+    <mapID target="apisupport_create_platform_app" url="create_plugin/projectlevel_create/create_platform_app.html"/>
     <!-- Start of "File-level Creating" section -->
     <mapID target="apisupport_about_file_wizards" url="create_plugin/filelevel_create/about_file_wizards.html"/>
-    <mapID target="apisupport_about_j2se_library_descriptors" url="create_plugin/filelevel_create/about_j2se_library_descriptors.html"/>	
-    <mapID target="apisupport_create_j2se_library_descriptor" url="create_plugin/filelevel_create/create_j2se_library_descriptor.html"/>
+    <mapID target="apisupport_about_j2se_library_descs" url="create_plugin/filelevel_create/about_j2se_library_descs.html"/>	
+    <mapID target="apisupport_create_j2se_library_desc" url="create_plugin/filelevel_create/create_j2se_library_desc.html"/>
     <mapID target="apisupport_about_actions" url="create_plugin/filelevel_create/about_actions.html"/>
     <mapID target="apisupport_create_action" url="create_plugin/filelevel_create/create_action.html"/>
+    <mapID target="apisupport_about_code_generators" url="create_plugin/filelevel_create/about_code_generators.html"/>
+    <mapID target="apisupport_create_code_generators" url="create_plugin/filelevel_create/create_code_generator.html"/>
+    <mapID target="apisupport_about_language_support" url="create_plugin/filelevel_create/about_language_support.html"/>
+    <mapID target="apisupport_create_language_support" url="create_plugin/filelevel_create/create_language_support.html"/>
     <mapID target="apisupport_create_javahelp" url="create_plugin/filelevel_create/create_javahelp.html"/>
     <mapID target="apisupport_about_file_types" url="create_plugin/filelevel_create/about_file_types.html"/>
     <mapID target="apisupport_create_file_type" url="create_plugin/filelevel_create/create_file_type.html"/>
@@ -46,7 +50,7 @@
     <mapID target="apisupport_create_project_template" url="create_plugin/filelevel_create/create_project_template.html"/>
     <mapID target="apisupport_about_update_centers" url="create_plugin/filelevel_create/about_update_centers.html"/>
     <mapID target="apisupport_create_update_centers" url="create_plugin/filelevel_create/create_update_centers.html"/>
- <mapID target="apisupport_create_update_centers_manually" url="create_plugin/filelevel_create/create_update_centers_manually.html"/>
+    <mapID target="apisupport_create_uc_manually" url="create_plugin/filelevel_create/create_uc_manually.html"/>
     <mapID target="apisupport_about_window_components" url="create_plugin/filelevel_create/about_window_components.html"/>
     <mapID target="apisupport_create_window_component" url="create_plugin/filelevel_create/create_window_component.html"/>
     <mapID target="apisupport_about_wizards" url="create_plugin/filelevel_create/about_wizards.html"/>

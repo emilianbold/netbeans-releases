@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/029_add_correct_comment_lifetime.rb
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   class : AddCorrectCommentLifetime
   class-ig : addcorrectcommentlifetime
   extends : ActiveRecord::Migration
@@ -14,69 +9,69 @@ Indexed:
   method : down|STATIC|
   method : up|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
 
 
-Document 2
-Indexed:
+Document 1
+Searchable Keys:
   class : Article
   class-ig : article
   extends : Content
   fqn : AddCorrectCommentLifetime::Article
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : AddCorrectCommentLifetime
 
 
-Document 3
-Indexed:
+Document 2
+Searchable Keys:
   class : Content
   class-ig : content
   extends : ActiveRecord::Base
   fqn : AddCorrectCommentLifetime::Content
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : AddCorrectCommentLifetime
 
 
-Document 4
-Indexed:
+Document 3
+Searchable Keys:
   class : Site
   class-ig : site
   extends : ActiveRecord::Base
   fqn : AddCorrectCommentLifetime::Site
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
   in : AddCorrectCommentLifetime
 
 
-Document 5
-Indexed:
+Document 4
+Searchable Keys:
   dbtable : content_versions
 
-Not Indexed:
+Not Searchable Keys:
+  dbcolumn : expire_comments_at;datetime
+  dbversion : 029
+
+
+Document 5
+Searchable Keys:
+  dbtable : contents
+
+Not Searchable Keys:
   dbcolumn : expire_comments_at;datetime
   dbversion : 029
 
 
 Document 6
-Indexed:
-  dbtable : contents
-
-Not Indexed:
-  dbcolumn : expire_comments_at;datetime
-  dbversion : 029
-
-
-Document 7
-Indexed:
+Searchable Keys:
   dbtable : sites
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : accept_comments;boolean
   dbcolumn : approve_comments;boolean
   dbcolumn : comment_age;integer

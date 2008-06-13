@@ -1,7 +1,42 @@
 /*
- * TableMappingPanel.java
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Created on May 29, 2008, 4:43 PM
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
@@ -17,61 +52,53 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * 
  * @author  Dongmei Cao
  */
 public class MappingOptionsPanel extends javax.swing.JPanel {
     
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private final String[] fetchTypes = new String[] {
-        NbBundle.getMessage(MappingOptionsPanel.class, "LBL_FETCH_DEFAULT"),
-        NbBundle.getMessage(MappingOptionsPanel.class, "LBL_FETCH_EAGER"),
-        NbBundle.getMessage(MappingOptionsPanel.class, "LBL_FETCH_LAZY")
-    };
-    
-    private final String[] collectionTypes = new String[] {
-        "java.util.Collection",  // NOI18N
-        "java.util.List",        // NOI18N
-        "java.util.Set"};        // NOI18N
-
-    /** Creates new form TableMappingPanel */
     public MappingOptionsPanel() {
         initComponents();
-        fetchComboBox.setModel(new DefaultComboBoxModel(fetchTypes));
+        fetchComboBox.setModel(new DefaultComboBoxModel(
+                new String[]{NbBundle.getMessage(MappingOptionsPanel.class, "LBL_FETCH_DEFAULT"),
+                    NbBundle.getMessage(MappingOptionsPanel.class, "LBL_FETCH_EAGER"),
+                    NbBundle.getMessage(MappingOptionsPanel.class, "LBL_FETCH_LAZY")
+                }));
         fetchComboBox.setSelectedIndex(0);
-        
-        collectionTypeComboBox.setModel(new DefaultComboBoxModel(collectionTypes));
+
+        collectionTypeComboBox.setModel(new DefaultComboBoxModel(
+                new String[]{"java.util.Collection", "java.util.List", "java.util.Set"})); // NOI18N
         collectionTypeComboBox.setSelectedIndex(0);
     }
     
     public void initialize(CollectionType collectionType, FetchType fetchType, boolean fullyQualifiedTblName, boolean regenSchemaAttrs) {
         
-        if(fetchType.equals(FetchType.DEFAULT)) {
-            fetchComboBox.setSelectedIndex(0);
-        } else if(fetchType.equals(FetchType.EAGER)) {
-            fetchComboBox.setSelectedIndex(1);
-        } else if(fetchType.equals(FetchType.LAZY)) {
-            fetchComboBox.setSelectedIndex(2);
-        } else {
-            fetchComboBox.setSelectedIndex(0);
+        switch(fetchType) {
+            case EAGER:
+                fetchComboBox.setSelectedIndex(1);
+                break;
+            case LAZY:
+                fetchComboBox.setSelectedIndex(2);
+                break;
+            case DEFAULT:
+            default:
+                fetchComboBox.setSelectedIndex(0);
         }
         
-        if(collectionType.equals(CollectionType.COLLECTION)) {
-            collectionTypeComboBox.setSelectedIndex(0);
-        } else if(collectionType.equals(CollectionType.LIST)) {
-            collectionTypeComboBox.setSelectedIndex(1);
-        } else if(collectionType.equals(CollectionType.SET)) {
-            collectionTypeComboBox.setSelectedIndex(2);
-        } else {
-            collectionTypeComboBox.setSelectedIndex(0);
+        switch(collectionType) {
+            case LIST:
+                collectionTypeComboBox.setSelectedIndex(1);
+                break;
+            case SET:
+                collectionTypeComboBox.setSelectedIndex(2);
+                break;
+            case COLLECTION:
+            default:
+                collectionTypeComboBox.setSelectedIndex(0);
         }
         
         tableNameCheckBox.setSelected(fullyQualifiedTblName);
-        regenSchemaCheckBox.setSelected(regenSchemaAttrs);
-    }
-    
-    public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
+        regenTablesCheckBox.setSelected(regenSchemaAttrs);
     }
     
     public FetchType getFetchType() {
@@ -101,7 +128,7 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
     }
     
     public boolean isRegenSchemaAttributes() {
-        return regenSchemaCheckBox.isSelected();
+        return regenTablesCheckBox.isSelected();
     }
 
     /** This method is called from within the constructor to
@@ -117,7 +144,7 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         fetchLabel = new javax.swing.JLabel();
         fetchComboBox = new javax.swing.JComboBox();
         tableNameCheckBox = new javax.swing.JCheckBox();
-        regenSchemaCheckBox = new javax.swing.JCheckBox();
+        regenTablesCheckBox = new javax.swing.JCheckBox();
         paddingPanel = new javax.swing.JPanel();
         descLabel = new javax.swing.JLabel();
         collectionTypeLabel = new javax.swing.JLabel();
@@ -125,9 +152,8 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        fetchLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/fromdb/Bundle").getString("FETCHR_Mnemonics").charAt(0));
         fetchLabel.setLabelFor(fetchComboBox);
-        fetchLabel.setText(org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "LBL_FETCH")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(fetchLabel, org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "LBL_FETCH")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -143,8 +169,7 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(fetchComboBox, gridBagConstraints);
 
-        tableNameCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/fromdb/Bundle").getString("TABLE_NAMER_Mnemonics").charAt(0));
-        tableNameCheckBox.setText(org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "LBL_TABLE_NAME")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(tableNameCheckBox, org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "LBL_TABLE_NAME")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -153,15 +178,14 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(tableNameCheckBox, gridBagConstraints);
 
-        regenSchemaCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/fromdb/Bundle").getString("REGENERATE_SCHEMAR_Mnemonics").charAt(0));
-        regenSchemaCheckBox.setText(org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "LBL_REGENERATE_SCHEMA")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(regenTablesCheckBox, org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "LBL_REGENERATE_TABLES")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
-        add(regenSchemaCheckBox, gridBagConstraints);
+        add(regenTablesCheckBox, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -179,8 +203,7 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
         add(descLabel, gridBagConstraints);
 
-        collectionTypeLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/fromdb/Bundle").getString("LBL_COLLECTOIN_TYPE_Mnemonics").charAt(0));
-        collectionTypeLabel.setText(org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "LBL_COLLECTOIN_TYPE")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(collectionTypeLabel, org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "LBL_COLLECTOIN_TYPE")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -205,13 +228,12 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox fetchComboBox;
     private javax.swing.JLabel fetchLabel;
     private javax.swing.JPanel paddingPanel;
-    private javax.swing.JCheckBox regenSchemaCheckBox;
+    private javax.swing.JCheckBox regenTablesCheckBox;
     private javax.swing.JCheckBox tableNameCheckBox;
     // End of variables declaration//GEN-END:variables
 
-    public static final class WizardPanel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
+    public static final class WizardPanel implements WizardDescriptor.Panel<WizardDescriptor>  {
 
-        private final ChangeSupport changeSupport = new ChangeSupport(this);
         private MappingOptionsPanel component;
         private boolean componentInitialized;
         private WizardDescriptor wizardDescriptor;
@@ -220,7 +242,6 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         public MappingOptionsPanel getComponent() {
             if (component == null) {
                 component = new MappingOptionsPanel();
-                component.addChangeListener(this);
             }
 
             return component;
@@ -228,18 +249,10 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
 
         public HelpCtx getHelp() {
             if (cmp) {
-                return new HelpCtx("org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp." + DatabaseTablesPanel.class.getSimpleName()); // NOI18N
+                return new HelpCtx("org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp." + MappingOptionsPanel.class.getSimpleName()); // NOI18N
             } else {
-                return new HelpCtx(DatabaseTablesPanel.class);
+                return new HelpCtx(MappingOptionsPanel.class);
             }
-        }
-
-        public void addChangeListener(ChangeListener listener) {
-            changeSupport.addChangeListener(listener);
-        }
-
-        public void removeChangeListener(ChangeListener listener) {
-            changeSupport.removeChangeListener(listener);
         }
 
         public void readSettings(WizardDescriptor settings) {
@@ -251,7 +264,7 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
                 RelatedCMPHelper helper = RelatedCMPWizard.getHelper(wizardDescriptor);
                 FetchType fetchType = helper.getFetchType();
                 boolean fullTblName = helper.isFullyQualifiedTableNames();
-                boolean regenSchema = helper.isRegenSchemaAttrs();
+                boolean regenSchema = helper.isRegenTablesAttrs();
                 CollectionType clcType = helper.getCollectionType();
                 getComponent().initialize(clcType, fetchType, fullTblName, regenSchema);
             }
@@ -262,25 +275,18 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         }
 
         public void storeSettings(WizardDescriptor settings) {
-            WizardDescriptor wiz = settings;
-            Object buttonPressed = wiz.getValue();
-            if (buttonPressed.equals(WizardDescriptor.NEXT_OPTION) ||
-                    buttonPressed.equals(WizardDescriptor.FINISH_OPTION)) {
-                RelatedCMPHelper helper = RelatedCMPWizard.getHelper(wizardDescriptor);
-                MappingOptionsPanel mPanel = getComponent();
-                helper.setFetchType(mPanel.getFetchType());
-                helper.setFullyQualifiedTableNames(mPanel.isFullyQualifiedTableName());
-                helper.setRegenSchemaAttrs(mPanel.isRegenSchemaAttributes());
-                helper.setCollectionType(mPanel.getCollectionType());
-            }
+            RelatedCMPHelper helper = RelatedCMPWizard.getHelper(wizardDescriptor);
+            MappingOptionsPanel mPanel = getComponent();
+            helper.setFetchType(mPanel.getFetchType());
+            helper.setFullyQualifiedTableNames(mPanel.isFullyQualifiedTableName());
+            helper.setRegenTablesAttrs(mPanel.isRegenSchemaAttributes());
+            helper.setCollectionType(mPanel.getCollectionType());
         }
 
-        public void stateChanged(ChangeEvent event) {
-            changeSupport.fireChange();
+        public void addChangeListener(ChangeListener l) {
         }
 
-        private void setErrorMessage(String errorMessage) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", errorMessage); // NOI18N
+        public void removeChangeListener(ChangeListener l) {
         }
     }
 }

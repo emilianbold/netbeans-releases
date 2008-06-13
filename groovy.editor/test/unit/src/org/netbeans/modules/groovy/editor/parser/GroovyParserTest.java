@@ -50,10 +50,10 @@ import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.AstPath;
 import org.netbeans.modules.groovy.editor.AstUtilities;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import org.netbeans.modules.groovy.editor.test.TestCompilationInfo;
 import org.openide.filesystems.FileObject;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 
 /**
  *
@@ -90,7 +90,7 @@ public class GroovyParserTest extends GroovyTestBase {
             assertTrue(lineOffset != -1);
 
             caretOffset = lineOffset + caretDelta;
-            ((TestCompilationInfo)info).setCaretOffset(caretOffset);
+            ((GsfTestCompilationInfo)info).setCaretOffset(caretOffset);
         }
 
         ASTNode root = AstUtilities.getRoot(info);
