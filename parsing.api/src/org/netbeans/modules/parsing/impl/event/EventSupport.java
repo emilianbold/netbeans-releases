@@ -129,7 +129,7 @@ public final class EventSupport {
         }
     }   
     
-    private void resetState (final boolean invalidate) {
+    public void resetState (final boolean invalidate) {
         synchronized (this.source) {
             final Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(this.source);
             flags.add(SourceFlags.CHANGE_EXPECTED);
