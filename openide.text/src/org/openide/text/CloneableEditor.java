@@ -199,6 +199,13 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         private int phase;
         private EditorKit kit;
         private JComponent tmpComp;
+        /** Flag to avoid never ending wait in initDocument. It is to handle case
+         *  when someone closes document ie. sets doc to null between initNonVisual
+         *  and initDocument issue #136601.
+         */
+        private boolean initialized = false;
+        /** Flag to avoid recursive call of initVisual. */
+        private boolean isInInitVisual = false;
 
         public DoInitialize(QuietEditorPane tmp) {
             this.tmp = tmp;
@@ -273,10 +280,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
             
         private void initNonVisual() {
-            if (System.getProperty("editor.log.enabled") != null) {
-                LOG.log(Level.INFO,"++ ++ DoInitialize.initNonVisual Enter"
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE,"DoInitialize.initNonVisual Enter"
+                + " Time:" + System.currentTimeMillis()
                 + " Thread:" + Thread.currentThread().getName()
-                + " [" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+                + " ce:[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+                + " support:[" + Integer.toHexString(System.identityHashCode(support)) + "]"
                 + " Name:" + CloneableEditor.this.getName());
             }
             Task prepareTask = support.prepareDocument();
@@ -310,17 +319,25 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             }
             
             synchronized (this) {
-                doc = support.getDocument();
+                try {
+                    doc = support.openDocument();
+                } catch (IOException exc) {
+                    LOG.log(Level.INFO,"Failed to open document",exc);
+                }
                 kit = k;
-                if (System.getProperty("editor.log.enabled") != null) {
-                    LOG.log(Level.INFO,"++ ++ DoInitialize.initNonVisual doc and kit are set"
+                initialized = true;
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE,"DoInitialize.initNonVisual doc and kit are set"
+                    + " Time:" + System.currentTimeMillis()
                     + " Thread:" + Thread.currentThread().getName()
-                    + " [" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+                    + " ce:[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
                     + " this:[" + Integer.toHexString(System.identityHashCode(this)) + "]"
+                    + " support:[" + Integer.toHexString(System.identityHashCode(support)) + "]"
                     + " Name:" + CloneableEditor.this.getName()
                     + " doc:" + doc
                     + " kit:" + kit);
-                    LOG.log(Level.INFO,"++ ++ DoInitialize.initNonVisual Call notifyAll"
+                    LOG.log(Level.FINE,"DoInitialize.initNonVisual Call notifyAll"
+                    + " Time:" + System.currentTimeMillis()
                     + " Thread:" + Thread.currentThread().getName()
                     + " [" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
                     + " Name:" + CloneableEditor.this.getName());
@@ -366,24 +383,28 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 for (;;) {
                     d = doc;
                     k = kit;
-                    if (d != null && k != null) {
+                    if (initialized) {
                         break;
                     }
                     try {
-                        if (System.getProperty("editor.log.enabled") != null) {
-                            LOG.log(Level.INFO,"++ ++ DoInitialize.initDocument Starting wait"
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.log(Level.FINE,"DoInitialize.initDocument Starting wait"
+                            + " Time:" + System.currentTimeMillis()
                             + " Thread:" + Thread.currentThread().getName()
-                            + " [" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+                            + " ce:[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
                             + " this:[" + Integer.toHexString(System.identityHashCode(this)) + "]"
+                            + " support:[" + Integer.toHexString(System.identityHashCode(support)) + "]"
                             + " Name:" + CloneableEditor.this.getName()
                             + " doc:" + doc
                             + " kit:" + kit);
                         }
                         wait();
-                        if (System.getProperty("editor.log.enabled") != null) {
-                            LOG.log(Level.INFO,"++ ++ DoInitialize.initDocument Wait finished"
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.log(Level.FINE,"DoInitialize.initDocument Wait finished"
                             + " Thread:" + Thread.currentThread().getName()
-                            + " [" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+                            + " ce:[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+                            + " this:[" + Integer.toHexString(System.identityHashCode(this)) + "]"
+                            + " support:[" + Integer.toHexString(System.identityHashCode(support)) + "]"
                             + " Name:" + CloneableEditor.this.getName()
                             + " doc:" + doc
                             + " kit:" + kit);
@@ -402,15 +423,29 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
         
         final void initVisual() {
-            // wait for document and init it
-            if (!initDocument()) {
+            //Do not allow recursive call
+            if (isInInitVisual) {
                 return;
             }
-            if (System.getProperty("editor.log.enabled") != null) {
-                LOG.log(Level.INFO,"++ ++ DoInitialize.initVisual Enter 2"
+            isInInitVisual = true;
+            // wait for document and init it
+            if (!initDocument()) {
+                isInInitVisual = false;
+                return;
+            }
+            if (LOG.isLoggable(Level.FINE)) {
+                /*Exception ex = new Exception();
+                StringWriter sw = new StringWriter(500);
+                PrintWriter pw = new PrintWriter(sw);
+                ex.printStackTrace(pw);*/
+                LOG.log(Level.FINE,"DoInitialize.initVisual Enter"
+                + " Time:" + System.currentTimeMillis()
                 + " Thread:" + Thread.currentThread().getName()
-                + " [" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+                + " ce:[" + Integer.toHexString(System.identityHashCode(CloneableEditor.this)) + "]"
+                + " this:[" + Integer.toHexString(System.identityHashCode(this)) + "]"
+                + " support:[" + Integer.toHexString(System.identityHashCode(support)) + "]"
                 + " Name:" + CloneableEditor.this.getName());
+                //+ " " + sw.toString());
             }
             initCustomEditor();
             if (customComponent != null) {
@@ -443,6 +478,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             }
 
             requestFocusInWindow();
+            isInInitVisual = false;
         }
         
         private void initRest() {
