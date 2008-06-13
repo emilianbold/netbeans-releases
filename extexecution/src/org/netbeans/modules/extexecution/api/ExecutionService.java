@@ -224,19 +224,17 @@ public final class ExecutionService {
                 }
 
                 // try to find free output windows
-                synchronized (this) {
-                    if (workingIO == null) {
-                        ManagedInputOutput freeIO = ManagedInputOutput.getInputOutput(
-                                originalDisplayName, descriptor.isControllable());
+                if (workingIO == null) {
+                    ManagedInputOutput freeIO = ManagedInputOutput.getInputOutput(
+                            originalDisplayName, descriptor.isControllable());
 
-                        if (freeIO != null) {
-                            workingIO = freeIO.getInputOutput();
-                            displayName = freeIO.getDisplayName();
-                            stopAction = freeIO.getStopAction();
-                            rerunAction = freeIO.getRerunAction();
-                            if (descriptor.isFrontWindow()) {
-                                workingIO.select();
-                            }
+                    if (freeIO != null) {
+                        workingIO = freeIO.getInputOutput();
+                        displayName = freeIO.getDisplayName();
+                        stopAction = freeIO.getStopAction();
+                        rerunAction = freeIO.getRerunAction();
+                        if (descriptor.isFrontWindow()) {
+                            workingIO.select();
                         }
                     }
                 }
