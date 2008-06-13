@@ -41,23 +41,21 @@ package org.netbeans.modules.parsing.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.parsing.spi.TaskScheduler;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 
 /**
@@ -72,7 +70,8 @@ public class Scheduler {
         taskSchedulers = Lookup.getDefault ().lookupAll (TaskScheduler.class);
     }
     
-    private static final Map<TaskScheduler,Map<Source,Collection<SchedulerTask>>> tasks = new HashMap<TaskScheduler, Map<Source, Collection<SchedulerTask>>> (); 
+    private static final Map<TaskScheduler,Map<Source,Collection<SchedulerTask>>> 
+                            tasks = new HashMap<TaskScheduler, Map<Source, Collection<SchedulerTask>>> (); 
     
     static void revalidate (final Source source) {
         assert source != null;
@@ -116,6 +115,40 @@ public class Scheduler {
                     TaskProcessor.removePhaseCompletionTask (task, source);
             }
         }
+    }
+    
+    static void schedule (
+        Class<? extends TaskScheduler>
+                            taskScheduler,
+        Collection<Embedding>
+                            embeddings,
+        SchedulerEvent      event
+    ) {
+//        synchronized (tasks) {
+//            Map<Source,Collection<SchedulerTask>> sourceToTasks = tasks.get (taskScheduler);
+//            if (sourceToTasks == null) {
+//                sourceToTasks = new HashMap<Source,Collection<SchedulerTask>> ();
+//                tasks.put (taskScheduler, sourceToTasks);
+//            }
+//            Set<Source> oldSources = new HashSet<Source> (sourceToTasks.keySet ());
+//            for (Source source : sources) {
+//                Collection<SchedulerTask> tasks = sourceToTasks.get (source);
+//                if (tasks == null) {
+//                    tasks = createTasks (source, taskScheduler);
+//                    sourceToTasks.put (source, tasks);
+//                    for (SchedulerTask task : tasks)
+//                        TaskProcessor.addPhaseCompletionTask (task, source, event);
+//                } else
+//                    for (SchedulerTask task : tasks)
+//                        TaskProcessor.rescheduleTask (task, source, event);
+//                oldSources.remove (source);
+//            }
+//            for (Source source : oldSources) {
+//                Collection<SchedulerTask> tasks = sourceToTasks.remove (source);
+//                for (SchedulerTask task : tasks)
+//                    TaskProcessor.removePhaseCompletionTask (task, source);
+//            }
+//        }
     }
     
     private static Collection<SchedulerTask> createTasks (

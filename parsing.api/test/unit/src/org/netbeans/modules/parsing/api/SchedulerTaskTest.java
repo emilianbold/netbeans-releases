@@ -44,11 +44,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.event.ChangeListener;
+
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.MockServices;
@@ -89,7 +86,7 @@ public class SchedulerTaskTest extends NbTestCase {
                     return new Parser () {
 
                         public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
-                            counter.check (1);
+                            counter.check (2);
                         }
 
                         public Result getResult (Task task, SchedulerEvent event) throws ParseException {
@@ -115,7 +112,7 @@ public class SchedulerTaskTest extends NbTestCase {
                     return Arrays.asList (new SchedulerTask[] {
                         new EmbeddingProvider() {
                             public List<Embedding> getEmbeddings (Snapshot snapshot) {
-                                counter.check (2);
+                                counter.check (1);
                                 return Arrays.asList (new Embedding[] {
                                     snapshot.create (10, 10, "text/boo")
                                 });
@@ -222,9 +219,8 @@ public class SchedulerTaskTest extends NbTestCase {
             new MySchedulerEvent ()
         );
         assertEquals (3, counter.count ());
+        System.out.println("end");
     }
-    
-    private Object lock = new Object ();
     
     public static class MyScheduler extends TaskScheduler {
         

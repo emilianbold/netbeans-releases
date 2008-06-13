@@ -73,6 +73,7 @@ import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.ParserBasedEmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
@@ -597,6 +598,11 @@ public class TaskProcessor {
                                             //todo: What the embedding provider should do?
                                             //todo: How to cache the embeddings?
                                             List<Embedding> embeddings = ((EmbeddingProvider) r.task).getEmbeddings (source.createSnapshot());
+                                            Scheduler.schedule (
+                                                r.task.getSchedulerClass (), 
+                                                embeddings, 
+                                                SourceAccessor.getINSTANCE().getEvent (source)
+                                            );
                                         }
                                         else {
                                             final Parser parser = ParserManagerImpl.getParser(source);
@@ -640,6 +646,19 @@ public class TaskProcessor {
                                                     if (r.task instanceof ParserResultTask) {
                                                         try {
                                                             ((ParserResultTask)r.task).run (currentResult,source.createSnapshot());
+                                                        } finally {
+                                                            ParserAccessor.getINSTANCE().invalidate(currentResult);
+                                                        }
+                                                    }
+                                                    else
+                                                    if (r.task instanceof ParserBasedEmbeddingProvider) {
+                                                        try {
+                                                            List<Embedding> embeddings = ((ParserBasedEmbeddingProvider)r.task).getEmbeddings (currentResult,source.createSnapshot());
+                                                            Scheduler.schedule (
+                                                                r.task.getSchedulerClass (), 
+                                                                embeddings, 
+                                                                SourceAccessor.getINSTANCE ().getEvent (source)
+                                                            );
                                                         } finally {
                                                             ParserAccessor.getINSTANCE().invalidate(currentResult);
                                                         }
