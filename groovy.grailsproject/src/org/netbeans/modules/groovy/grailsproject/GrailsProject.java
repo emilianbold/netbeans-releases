@@ -69,7 +69,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.w3c.dom.Element;
 
 
 /**
@@ -116,6 +118,7 @@ public final class GrailsProject implements Project {
                 new GrailsProjectOperations(this),
                 new GrailsProjectEncodingQueryImpl(),
                 new OpenHook(),
+                new AuxiliaryConfigurationImpl(),
                 getSearchInfo(projectDir),
                 // new TemplatesImpl(),
                 logicalView, //Logical view of project implementation
@@ -222,6 +225,20 @@ public final class GrailsProject implements Project {
         }
         
     }
+
+    private static class AuxiliaryConfigurationImpl implements AuxiliaryConfiguration {
+
+        public Element getConfigurationFragment(String elementName, String namespace, boolean shared) {
+            return null;
+        }
+
+        public void putConfigurationFragment(Element fragment, boolean shared) throws IllegalArgumentException {
+        }
+
+        public boolean removeConfigurationFragment(String elementName, String namespace, boolean shared) throws IllegalArgumentException {
+            return false;
+        }
+        
+    }
             
-    
 }
