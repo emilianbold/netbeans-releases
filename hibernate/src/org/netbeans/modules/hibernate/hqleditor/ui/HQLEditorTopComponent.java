@@ -106,7 +106,7 @@ public final class HQLEditorTopComponent extends TopComponent {
         setIcon(Utilities.loadImage(ICON_PATH, true));
 
         sqlToggleButton.setSelected(true);
-        
+
     }
 
     public void fillHibernateConfigurations(Node[] activatedNodes) {
@@ -169,37 +169,24 @@ public final class HQLEditorTopComponent extends TopComponent {
             Vector<Vector> tableData = new Vector<Vector>();
 
             if (result.getQueryResults().size() != 0) {
-                // Construct the table headers//
 
                 Object firstObject = result.getQueryResults().get(0);
-                for (java.lang.reflect.Method m : firstObject.getClass().getDeclaredMethods()) {
-                    String methodName = m.getName();
-                    if (methodName.startsWith("get")) {
-                        if (!tableHeaders.contains(methodName)) {
-                            tableHeaders.add(m.getName().substring(3));
-                        }
-                    }
-                }
-                for (Object o : result.getQueryResults()) {
-                    try {
-                        Vector<Object> oneRow = new Vector<Object>();
-                        for (java.lang.reflect.Method m : o.getClass().getDeclaredMethods()) {
-                            String methodName = m.getName();
-                            if (methodName.startsWith("get")) {
-                                oneRow.add(m.invoke(o, new Object[]{}));
-                            }
-                        }
-                        tableData.add(oneRow);
-                    } catch (IllegalAccessException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (IllegalArgumentException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (InvocationTargetException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (SecurityException ex) {
-                        Exceptions.printStackTrace(ex);
+                if (firstObject instanceof Object[]) {
+                    // Join query result.
+                    for (Object oneObject : (Object[]) firstObject) {
+                        createTableHeaders(tableHeaders, oneObject);
                     }
 
+                    for (Object row : result.getQueryResults()) {
+                            createTableData(tableData, (Object[])row);
+                    }
+
+                } else {
+                    // Construct the table headers
+                    createTableHeaders(tableHeaders, firstObject);
+                    for (Object oneObject : result.getQueryResults()) {
+                        createTableData(tableData, oneObject);
+                    }
                 }
 
             }
@@ -221,12 +208,43 @@ public final class HQLEditorTopComponent extends TopComponent {
             logger.info(errorTextArea.getText());
         }
         ph.progress(
-                NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionDone"), 99
-                );
-        
+                NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionDone"), 99);
+
         runHQLButton.setEnabled(true);
         ph.finish();
 
+    }
+
+    private void createTableHeaders(Vector<String> tableHeaders, Object oneObject) {
+        for (java.lang.reflect.Method m : oneObject.getClass().getDeclaredMethods()) {
+            String methodName = m.getName();
+            if (methodName.startsWith("get")) {
+                if (!tableHeaders.contains(methodName)) {
+                    tableHeaders.add(m.getName().substring(3));
+                }
+            }
+        }
+    }
+
+    private void createTableData(Vector<Vector> tableData, Object... rowObject) {
+        Vector<Object> oneRow = new Vector<Object>();
+        for (Object oneObject : rowObject) {
+            for (java.lang.reflect.Method m : oneObject.getClass().getDeclaredMethods()) {
+                String methodName = m.getName();
+                if (methodName.startsWith("get")) {
+                    try {
+                        oneRow.add(m.invoke(oneObject, new Object[]{}));
+                    } catch (IllegalAccessException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (IllegalArgumentException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (InvocationTargetException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+        tableData.add(oneRow);
     }
 
     private void setStatus(String message) {
@@ -438,8 +456,7 @@ private void runHQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     runHQLButton.setEnabled(false);
     try {
         ph = ProgressHandleFactory.createHandle(
-                NbBundle.getMessage(HQLEditorTopComponent.class, "progressTaskname")
-                );
+                NbBundle.getMessage(HQLEditorTopComponent.class, "progressTaskname"));
         FileObject selectedConfigFile = (FileObject) hibernateConfigMap.get(hibernateConfigurationComboBox.getSelectedItem());
         ph.start(100);
         controller.executeHQLQuery(hqlEditor.getText(), selectedConfigFile, ph);
