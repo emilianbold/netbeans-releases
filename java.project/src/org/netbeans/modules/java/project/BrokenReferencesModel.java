@@ -229,21 +229,24 @@ public class BrokenReferencesModel extends AbstractListModel {
             
             // test that resolved variable based property points to an existing file
             EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            for (String v : PropertyUtils.tokenizePath(ep.getProperty(p))) {
-                if (v.startsWith("${file.reference.")) {    //NOI18N
-                    v = ep.getProperty(v.substring(2, v.length() - 1));
-                }
-                if (v != null && v.startsWith("${var.")) {    //NOI18N
-                    String value = evaluator.evaluate(v);
-                    if (value.startsWith("${var.")) { // NOI18N
-                        // this problem was already reported
-                        continue;
+            String path = ep.getProperty(p);
+            if (path != null) {
+                for (String v : PropertyUtils.tokenizePath(path)) {
+                    if (v.startsWith("${file.reference.")) {    //NOI18N
+                        v = ep.getProperty(v.substring(2, v.length() - 1));
                     }
-                    File f = getFile(helper, evaluator, value);
-                    if (f.exists()) {
-                        continue;
+                    if (v != null && v.startsWith("${var.")) {    //NOI18N
+                        String value = evaluator.evaluate(v);
+                        if (value.startsWith("${var.")) { // NOI18N
+                            // this problem was already reported
+                            continue;
+                        }
+                        File f = getFile(helper, evaluator, value);
+                        if (f.exists()) {
+                            continue;
+                        }
+                        set.add(new OneReference(REF_TYPE_VARIABLE_CONTENT, v, true));
                     }
-                    set.add(new OneReference(REF_TYPE_VARIABLE_CONTENT, v, true));
                 }
             }
             
