@@ -142,4 +142,4 @@ rm -f nbbuild/netbeans/bin/hs_err_*
 ant clean-untracked-files
 
 # Do not halt if there were failures, but do collect results for Hudson:
-ant commit-validation-junit-formt
+ant commit-validation-junit-format
