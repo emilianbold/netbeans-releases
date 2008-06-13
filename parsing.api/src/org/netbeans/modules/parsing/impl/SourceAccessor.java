@@ -100,9 +100,19 @@ public abstract class SourceAccessor {
      */
     public abstract void setParser (Source source, Parser parser) throws IllegalStateException;
     
-    
+    /**
+     * SPI method - don't call it directly.
+     * Called when Source is passed to TaskProcessor to start listening.
+     * @param source to assign listeners to
+     */
     public abstract void assignListeners(Source source);
     
+    /**
+     * SPI method - don't call it directly.
+     * Returns event support, used only by Utilities bridge, will be removed
+     * @param source
+     * @return EventSupport
+     */
     public abstract EventSupport getEventSupport (Source source);
     
     /**
