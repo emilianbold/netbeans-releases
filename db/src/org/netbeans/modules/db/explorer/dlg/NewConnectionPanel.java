@@ -46,7 +46,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.net.MalformedURLException;
 import java.text.MessageFormat;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -79,8 +79,8 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
     private boolean updatingUrl = false;
     private boolean updatingFields = false;
     
-    private final HashMap<String, UrlField> urlFields = 
-            new HashMap<String, UrlField>();
+    private final LinkedHashMap<String, UrlField> urlFields = 
+            new LinkedHashMap<String, UrlField>();
     
     private static final String BUNDLE = "org.netbeans.modules.db.resources.Bundle"; //NOI18N
     
@@ -95,16 +95,18 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
     }
     
     private void initFieldMap() {
-        urlFields.put(JdbcUrl.TOKEN_DB, new UrlField(databaseField, databaseLabel));
+        // These should be in the order of display on the form, so that we correctly 
+        // put focus on the first visible field.
         urlFields.put(JdbcUrl.TOKEN_HOST, new UrlField(hostField, hostLabel));
         urlFields.put(JdbcUrl.TOKEN_PORT, new UrlField(portField, portLabel));
-        urlFields.put(JdbcUrl.TOKEN_SERVERNAME, new UrlField(serverNameField, serverNameLabel));
-        urlFields.put(JdbcUrl.TOKEN_SERVICENAME, new UrlField(serviceField, serviceLabel));
+        urlFields.put(JdbcUrl.TOKEN_DB, new UrlField(databaseField, databaseLabel));
         urlFields.put(JdbcUrl.TOKEN_SID, new UrlField(sidField, sidLabel));
-        urlFields.put(JdbcUrl.TOKEN_DSN, new UrlField(dsnField, dsnLabel));
+        urlFields.put(JdbcUrl.TOKEN_SERVICENAME, new UrlField(serviceField, serviceLabel));
         urlFields.put(JdbcUrl.TOKEN_TNSNAME, new UrlField(tnsField, tnsLabel));                
-        urlFields.put(JdbcUrl.TOKEN_ADDITIONAL, new UrlField(additionalPropsField, additionalPropsLabel));
+        urlFields.put(JdbcUrl.TOKEN_DSN, new UrlField(dsnField, dsnLabel));
+        urlFields.put(JdbcUrl.TOKEN_SERVERNAME, new UrlField(serverNameField, serverNameLabel));
         urlFields.put(JdbcUrl.TOKEN_INSTANCE, new UrlField(instanceField, instanceLabel));
+        urlFields.put(JdbcUrl.TOKEN_ADDITIONAL, new UrlField(additionalPropsField, additionalPropsLabel));
     }
 
     public NewConnectionPanel(ConnectionDialogMediator mediator, String driverClass, DatabaseConnection connection) {
@@ -218,21 +220,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
   }
 
     public void initializeFocus() {
-        getInitiallyFocusedComponent().requestFocusInWindow();
-    }
-
-    private JComponent getInitiallyFocusedComponent() {
-        if (templateComboBox.getItemCount() <= 1) { // the first item is "Add Driver...""
-            return templateComboBox;
-        }
-        if (userField.getText().length() == 0) {
-            return userField;
-        }
-        if (passwordField.getPassword().length == 0) {
-            return passwordField;
-        }
-        // fall back to the host field
-        return hostField;
+        setFocus();
     }
 
     /** This method is called from within the constructor to
@@ -721,16 +709,28 @@ private void urlFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event
             urlLabel.setVisible(true);         
         } else {
             showUrlCheckBox.setVisible(true);
-            /*
-            showUrlCheckBox.setSelected(false);
-            urlField.setVisible(false);
-            urlLabel.setVisible(false);
-            */
         }
 
+        setFocus();
         setUrlField();
         checkValid();
         resize();
+    }
+    
+    private void setFocus() {
+        if (templateComboBox.getItemCount() <= 1) { // the first item is "Add Driver...""
+            templateComboBox.requestFocusInWindow();
+            return;
+        }
+
+        for (Entry<String,UrlField> entry : urlFields.entrySet()) {
+            if (entry.getValue().getField().isVisible()) {
+                entry.getValue().getField().requestFocusInWindow();
+                return;
+            }
+        }
+        
+        userField.requestFocusInWindow();
     }
     
     private JdbcUrl getSelectedJdbcUrl() {
