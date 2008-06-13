@@ -87,8 +87,6 @@ import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
-import org.netbeans.modules.web.client.javascript.debugger.api.IdentityURLMapper;
-import org.netbeans.modules.web.client.javascript.debugger.api.NbJSDebugger;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -451,15 +449,14 @@ public final class RailsServerManager {
                 FileObject projectDocBase = project.getRakeProjectHelper().resolveFileObject("public"); // NOI18N
                 String hostPrefix = "http://localhost:" + port + "/"; // NOI18N
                                   
-                // TODO provide 'welcome file' mapping
+                /* TODO replace with new API
                 IdentityURLMapper mapper = new IdentityURLMapper(hostPrefix, projectDocBase, null);
                 Lookup debugLookup = Lookups.fixed(mapper, project);
                 
                 NbJSDebugger.startDebugging(url.toURI(), getHtmlBrowserFactory(), debugLookup);
+                 */
             }
         } catch (MalformedURLException ex) {
-            ErrorManager.getDefault().notify(ex);
-        } catch (URISyntaxException ex) {
             ErrorManager.getDefault().notify(ex);
         }
     }

@@ -50,8 +50,6 @@ import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.client.javascript.debugger.api.IdentityURLMapper;
-import org.netbeans.modules.web.client.javascript.debugger.api.NbJSDebugger;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.filesystems.FileObject;
@@ -111,18 +109,18 @@ public class NbJsDebugStart extends Task {
             }
 
             String serverPrefix = getWebBaseUrl();
-
+/* TODO replace with new API
             IdentityURLMapper mapper = new IdentityURLMapper(serverPrefix, projectDocBase, welcomeFile);
             Lookup debugLookup = Lookups.fixed(new Object[] { mapper, nbProject });
+*/
 
-            log("JavaScript debugger to be invoked here...");
             log("Project document base: " + FileUtil.getFileDisplayName(projectDocBase));
             log("Server document base: " + getWebBaseUrl());
             log("Client URL: " + webUrl);
 
             URI clientUrl = new URI(webUrl);
             HtmlBrowser.Factory htmlBrowserFactory = getHtmlBrowserFactory();
-            NbJSDebugger.startDebugging(clientUrl, htmlBrowserFactory, debugLookup);
+            //NbJSDebugger.startDebugging(clientUrl, htmlBrowserFactory, debugLookup);
         }catch (Exception ex) {
             throw new BuildException(ex);
         }
