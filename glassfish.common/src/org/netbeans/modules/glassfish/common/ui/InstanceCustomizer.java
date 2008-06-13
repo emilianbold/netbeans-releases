@@ -1,3 +1,4 @@
+// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
@@ -36,6 +37,7 @@
  * 
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
+// </editor-fold>
 
 package org.netbeans.modules.glassfish.common.ui;
 
@@ -62,8 +64,8 @@ public class InstanceCustomizer extends javax.swing.JPanel {
         Map<String, String> ip = commonSupport.getInstanceProperties();
         textLocation.setText(ip.get(GlassfishModule.HOSTNAME_ATTR) + ":" + 
                 ip.get(GlassfishModule.HTTPPORT_ATTR));
-        textDomainsFolder.setText(ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR) + File.separatorChar + "domains"); // NOI18N
-        textDomainName.setText("domain1"); // NOI18N
+        textDomainsFolder.setText(ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR)); // NOI18N
+        textDomainName.setText(ip.get(GlassfishModule.DOMAIN_NAME_ATTR)); // NOI18N
         
 //        boolean cometEnabled = Boolean.parseBoolean(ip.get(GlassfishModule.COMET_FLAG));
         String cometFlag = ip.get(GlassfishModule.COMET_FLAG);
