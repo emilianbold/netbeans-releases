@@ -45,7 +45,6 @@ import groovyjarjarasm.asm.Opcodes;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
@@ -67,7 +66,7 @@ public abstract class AstElement extends GroovyElement {
     protected List<AstElement> children;
     protected String name;
     protected Set<Modifier> modifiers;
-    private String in;
+    protected String in;
     protected String signature;
     
     public AstElement(ASTNode node) {

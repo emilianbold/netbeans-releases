@@ -64,6 +64,15 @@ public interface I18nService {
     I18nValue create(String key, String value, DataObject srcDataObject);
 
     /**
+     * Creates a copy of I18nValue, including data from all locales corresponding
+     * to the actual key. The copied value does not refer to the original
+     * properties file - i.e. can be added to another one.
+     * @param value I18nValue to be copied
+     * @return the copied I18nValue
+     */
+    I18nValue copy(I18nValue value);
+
+    /**
      * Creates a new I18nValue object with a new key. Should do no changes to
      * the bundle file at this moment.
      */

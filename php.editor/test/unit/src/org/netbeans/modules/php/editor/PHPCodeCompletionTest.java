@@ -62,4 +62,20 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testHTML() throws Exception {
         checkCompletion("testfiles/completion/lib/nowdoc02.php", "<title>^</title>", false);
     }
+    
+    public void test136744_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue136744.php", "print $test1^", false);
+    }
+    
+    public void test136744_2() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue136744.php", "print $test2^", false);
+    }
+    
+    public void test136744_3() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue136744.php", "print $test3^", false);
+    }
+    
+    public void test136744_4() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue136744.php", "print $test4^", false);
+    }
 }

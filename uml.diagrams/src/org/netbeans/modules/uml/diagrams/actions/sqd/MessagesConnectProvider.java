@@ -1651,7 +1651,7 @@ public class MessagesConnectProvider implements SQDMessageConnectProvider
     private static final String BUNDLE_NAME = "org.netbeans.modules.uml.diagrams.engines.Bundle"; //$NON-NLS-1$
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
 
-    public Widget createTargetWidget(Scene scene, Widget soruceWidget) {
+    public Widget createTargetWidget(Scene scene, Widget soruceWidget, Point location) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
     

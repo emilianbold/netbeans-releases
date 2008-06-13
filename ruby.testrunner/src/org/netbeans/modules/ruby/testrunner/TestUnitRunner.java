@@ -48,6 +48,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
@@ -130,11 +131,12 @@ public final class TestUnitRunner implements TestRunner {
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
+        final ExecutionService execution = new RubyExecution(desc, charsetName);
         TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(), 
-                new TestSession(locator), 
+                locator, 
                 TestUnitHandlerFactory.getHandlers());
         desc.addOutputRecognizer(recognizer);
-        new RubyExecution(desc, charsetName).run();
+        TestExecutionManager.getInstance().start(execution);
     }
 
     public boolean supports(TestType type) {

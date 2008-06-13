@@ -469,6 +469,7 @@ public class DiagramOperator extends TopComponentOperator {
      */
  
       public void createGenericRelationshipOnDiagram(LinkTypes linkElementType, DiagramElementOperator fromElement, DiagramElementOperator toElement) throws NotFoundException{
+          fromElement.select();
           LinkPaletteOperator lpo = new LinkPaletteOperator(fromElement); 
           JComponentOperator linkButton = lpo.getLinkButtonByIndex(linkElementType);
           Point buttonClickPoint = lpo.getClickPoint(linkButton);

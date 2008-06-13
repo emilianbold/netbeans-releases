@@ -45,9 +45,11 @@ import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.diagrams.DefaultWidgetContext;
+import org.netbeans.modules.uml.diagrams.Util;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -83,6 +85,14 @@ public class AttributeWidget extends FeatureWidget implements PropertyChangeList
         String eventName = event.getPropertyName();
         if (eventName.equals(ModelElementChangedKind.ELEMENTMODIFIED.toString()) == false) {
             updateUI();
+        }
+        else
+        {
+            UMLNodeWidget parentNode=(UMLNodeWidget) Util.getParentByClass(this, UMLNodeWidget.class);
+            if(parentNode!=null)
+            {
+                parentNode.updateSizeWithOptions();
+            }
         }
     }
 

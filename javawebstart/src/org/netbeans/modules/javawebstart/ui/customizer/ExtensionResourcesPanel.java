@@ -50,7 +50,7 @@ import org.netbeans.modules.javawebstart.ui.customizer.JWSProjectProperties.Prop
 
 /**
  *
- * @author  milan
+ * @author Milan Kubec
  */
 public class ExtensionResourcesPanel extends javax.swing.JPanel {
 

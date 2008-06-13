@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.uml.diagrams.nodes.state;
 
+import org.netbeans.api.visual.border.BorderFactory;
+import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.modules.uml.diagrams.nodes.UMLLabelNodeWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -94,6 +96,27 @@ public class FinalStateWidget extends UMLLabelNodeWidget
         }
     }
 
+    
+    @Override
+    protected void notifyStateChanged(ObjectState previousState,
+                                       ObjectState state)
+    {
+        boolean select = state.isSelected();
+        boolean wasSelected = previousState.isSelected();
+
+        if (select && !wasSelected)
+        {
+            setBorder(UMLWidget.NON_RESIZABLE_BORDER);
+        }
+        else
+        {
+            if (!select && wasSelected)
+            {
+                setBorder(BorderFactory.createEmptyBorder());
+            }
+        }
+    }
+    
     private String loc(String key)
     {
         return NbBundle.getMessage(FinalStateWidget.class, key);
@@ -107,5 +130,4 @@ public class FinalStateWidget extends UMLLabelNodeWidget
         }
         return UMLWidget.UMLWidgetIDString.FINALSTATEWIDGET.toString();
     }
-
 }

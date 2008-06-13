@@ -40,13 +40,16 @@
  */
 package org.netbeans.modules.uml.drawingarea.actions;
 
+import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Rectangle;
 import javax.swing.JComponent;
 import org.netbeans.api.visual.action.RectangularSelectProvider;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.modules.uml.drawingarea.SQDDiagramTopComponent;
+import org.netbeans.modules.uml.drawingarea.ZoomManager;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
+import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 
 /**
  *
@@ -78,15 +81,15 @@ public class MarqueeZoomSelectProvider implements RectangularSelectProvider
         rect = scene.convertSceneToView(rect);
         
         Rectangle visible = scene.getView().getVisibleRect();
-        double scale = Math.min(visible.width / rect.width, visible.height / rect.height);
+        double scale = Math.min((double)visible.width / (double)rect.width, (double)visible.height / (double)rect.height);
         
         JComponent view = scene.getView();
         if (view != null)
         {
             Point center = new Point(rect.x + rect.width / 2, rect.y + rect.height / 2);
             center = scene.convertViewToScene(center);
-
-            scene.setZoomFactor(scale * scene.getZoomFactor());
+            
+            scene.setZoomFactor(Math.min(scale * scene.getZoomFactor(), (double)ZoomManager.MAX_ZOOM_PERCENT/100));
             scene.validate(); // HINT - forcing to change preferred size of the JComponent view
             center = scene.convertSceneToView(center);
 
@@ -96,7 +99,7 @@ public class MarqueeZoomSelectProvider implements RectangularSelectProvider
                                                    view.getVisibleRect().height));
         } else
         {
-            scene.setZoomFactor(scale * scene.getZoomFactor());
+            scene.setZoomFactor(Math.min(scale * scene.getZoomFactor(), (double)ZoomManager.MAX_ZOOM_PERCENT/100));
         }
         if(scene instanceof DesignerScene)
         {

@@ -60,6 +60,7 @@ import org.codehaus.groovy.control.ErrorCollector;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.netbeans.editor.BaseAction;
+import org.netbeans.modules.groovy.editor.AstUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -120,7 +121,7 @@ public class FixImportsAction extends BaseAction implements Runnable {
 
                     public CharSequence read(ParserFile file)
                             throws IOException {
-                        Document doc = NbUtilities.getBaseDocument(fo, true);
+                        Document doc = AstUtilities.getBaseDocument(fo, true);
 
                         if (doc == null) {
                             return "";

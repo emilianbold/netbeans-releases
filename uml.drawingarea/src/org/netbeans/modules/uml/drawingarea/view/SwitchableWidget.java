@@ -54,6 +54,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.profiles.IStereotype;
+import org.netbeans.modules.uml.drawingarea.NodeWidgetFactory;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -99,6 +100,7 @@ public abstract class SwitchableWidget extends UMLNodeWidget
     public void initializeNode(IPresentationElement element)
     {
         switchTo(DEFAULT, element);
+        setIsInitialized(true);
     }
 
     
@@ -123,32 +125,31 @@ public abstract class SwitchableWidget extends UMLNodeWidget
     {
         if(viewName.equals(view) == false)
         {
-            Widget curView = getCurrentView();
-            if (curView instanceof ContextViewWidget)
-            {
-                ContextViewWidget contextView = (ContextViewWidget) curView;
-                contextView.removingView();
-            }
-            else if(DEFAULT.equals(viewName) == true)
-            {
-                removingView();
-            }
-
-            
-            viewName = view;
-
             Widget newView = null;
-            if(DEFAULT.equals(viewName) == true)
+            if(DEFAULT.equals(view) == true)
             {
                 newView = createDefaultWidget(element);
             }
             else
             {
-                newView = getView(viewName);
+                newView = getView(view);
             }
 
             if(newView != null)
             {
+                Widget curView = getCurrentView();
+                if (curView instanceof ContextViewWidget)
+                {
+                    ContextViewWidget contextView = (ContextViewWidget) curView;
+                    contextView.removingView();
+                }
+                else if(DEFAULT.equals(viewName) == true)
+                {
+                    removingView();
+                }
+
+                viewName = view;
+
                 setCurrentView(newView);
                 
                 if(newView instanceof ContextViewWidget)
@@ -397,15 +398,21 @@ public abstract class SwitchableWidget extends UMLNodeWidget
             {
                 try
                 {
-                    Class cl = cookie.instanceClass();
-                    if(cl != null)
+                    Object instance = cookie.instanceCreate();
+                    if (instance instanceof NodeWidgetFactory)
                     {
-                        Constructor constructor = cl.getConstructor(Scene.class);
-                        if(constructor != null)
-                        {
-                            retVal = (Widget) constructor.newInstance(getScene());
-                        }
+                        NodeWidgetFactory factory = (NodeWidgetFactory) instance;
+                        retVal = factory.createNode(scene);
                     }
+//                    Class cl = cookie.instanceClass();
+//                    if(cl != null)
+//                    {
+//                        Constructor constructor = cl.getConstructor(Scene.class);
+//                        if(constructor != null)
+//                        {
+//                            retVal = (Widget) constructor.newInstance(getScene());
+//                        }
+//                    }
                 }
                 catch (Exception e)
                 {

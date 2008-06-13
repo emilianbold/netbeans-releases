@@ -72,25 +72,38 @@ public final class Workspace {
     static class Variable {
         private String name;
         private String location;
+        private boolean fileVar;
+        private String file;
+        
+        public Variable(String name, String location) {
+            this.name = name;
+            this.location = location;
+            File f = new File(location);
+            fileVar = f.exists() && f.isFile();
+            if (fileVar) {
+                file = f.getName();
+                this.location = f.getParentFile().getAbsolutePath();
+            }
+        }
         
         String getName() {
             return name;
         }
         
-        void setName(String name) {
-            this.name = name;
-        }
-        
         String getLocation() {
             return location;
         }
-        
-        void setLocation(String location) {
-            this.location = location;
+
+        public String getFileName() {
+            return file;
         }
         
         public String toString() {
             return name + " = " + location;
+        }
+        
+        public boolean isFileVariable() {
+            return fileVar;
         }
         
         public boolean equals(Object obj) {

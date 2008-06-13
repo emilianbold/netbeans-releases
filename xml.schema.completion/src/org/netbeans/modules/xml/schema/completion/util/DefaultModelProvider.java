@@ -78,6 +78,8 @@ public class DefaultModelProvider extends CompletionModelProvider {
      * for each schema mentioned in there.
      */    
     public synchronized List<CompletionModel> getModels(CompletionContext context) {
+        if(context.getPrimaryFile() == null)
+            return null;
         this.context = (CompletionContextImpl)context;
         List<URI> uris = this.context.getSchemas();
         if(uris == null || uris.size() == 0)

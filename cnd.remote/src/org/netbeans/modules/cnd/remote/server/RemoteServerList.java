@@ -39,17 +39,71 @@
 
 package org.netbeans.modules.cnd.remote.server;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.remote.explorer.nodes.RemoteServerNode;
 
 /**
  *
  * @author gordonp
  */
-public class RemoteServerList extends ArrayList<ServerRecord> implements ServerList {
+public class RemoteServerList extends ArrayList<RemoteServerRecord> implements ServerList {
+    
+    public static final Object PROP_ACTIVE = "active"; // NOI18N
+    public static final Object PROP_ADD = "add"; // NOI18N
+    public static final Object PROP_REMOVE = "remove"; // NOI18N
+    
+    private static RemoteServerList serverList = null;
+    
+    private PropertyChangeSupport pcs;
+    
+    public static RemoteServerList getInstance() {
+        if (serverList == null) {
+            serverList = new RemoteServerList();
+        }
+        return serverList;
+    }
+    
+    public RemoteServerList() {
+        add(new RemoteServerRecord()); // creates the "localhost" record
+        pcs = new PropertyChangeSupport(this);
+    }
+    
+    public void add(String server, String user, boolean active) {
+        RemoteServerRecord record = new RemoteServerRecord(server, user, active);
+        RemoteServerNode node = new RemoteServerNode(record);
+        add(record);
+    }
+    
+    public void add(String server, String user) {
+        add(server, user, false);
+    }
 
     public ServerRecord getActive() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        for (RemoteServerRecord record : this) {
+            if (record.isActive()) {
+                return record;
+            }
+        }
+        return null;
+    }
+
+    public RemoteServerRecord getLocalhostRecord() {
+        return get(0);
+    }
+    
+    public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+        pcs.firePropertyChange(propertyName, oldValue, newValue);
+    }
+    
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(listener);
+    }
+    
+    public void remotePropertyChangeListener(PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(listener);
     }
 }
