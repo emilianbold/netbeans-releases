@@ -331,6 +331,7 @@ public class TaskProcessor {
                     }
                 }
             }
+            SourceAccessor.getINSTANCE().taskRemoved(source);
         }
     }
     
@@ -452,9 +453,16 @@ public class TaskProcessor {
             SourceAccessor.getINSTANCE().assignListeners(src);
         }
         //Issue #102073 - removed running task which is readded is not performed
-        synchronized (INTERNAL_LOCK) {            
+        synchronized (INTERNAL_LOCK) {
             toRemove.remove(nr.task);
             requests.add (nr);
+            if (src != null) {
+                synchronized (src) {
+                    if (SourceAccessor.getINSTANCE().taskAdded(src) == 0) {
+                        SourceAccessor.getINSTANCE().getFlags(src).add(SourceFlags.INVALID);
+                    }
+                }
+            }
         }
         Request request = currentRequest.getTaskToCancel(nr.task.getPriority());
         try {
@@ -686,7 +694,7 @@ public class TaskProcessor {
                                     } finally {
                                         parserLock.unlock();
                                     }
-
+                                    //Maybe should be in finally to prevent task lost when parser crashes
                                     if (r.reschedule) {                                            
                                         synchronized (INTERNAL_LOCK) {
                                             boolean canceled = currentRequest.setCurrentTask(null);
@@ -706,6 +714,9 @@ public class TaskProcessor {
                                                 }
                                             }
                                         }
+                                   }
+                                   else {
+                                        SourceAccessor.getINSTANCE().taskRemoved(source);
                                    }
                                 }
                             } finally {
