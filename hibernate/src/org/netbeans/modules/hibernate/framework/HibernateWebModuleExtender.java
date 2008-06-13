@@ -176,7 +176,6 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
                 try {
                     HibernateCfgDataObject hibernateDO = (HibernateCfgDataObject) DataObject.find(configFile);
                     SessionFactory sessionFactory = hibernateDO.getHibernateConfiguration().getSessionFactory();
-                    configPanel.setSessionName(sessionFactory.getAttributeValue(sessionName));
                     int index = 0;
                     for (String propValue : sessionFactory.getProperty2()) {
                         String propName = sessionFactory.getAttributeValue(SessionFactory.PROPERTY2, index++, "name");  //NOI18N
@@ -225,7 +224,6 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
                     DEFAULT_CONFIG_FILENAME);
             SessionFactory sFactory = new SessionFactory();
 
-            sFactory.setAttributeValue(sessionName, configPanel.getSessionName());
             int row = 0;
 
             if (configPanel.getSelectedDialect() != null && !"".equals(configPanel.getSelectedDialect())) {

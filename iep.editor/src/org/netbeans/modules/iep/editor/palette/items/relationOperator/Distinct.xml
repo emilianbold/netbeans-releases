@@ -24,8 +24,8 @@
     
     <!--<icon16 urlvalue="images/distinctx16.png" />
     <icon32 urlvalue="images/distinctx32.png" />-->
-    <icon16 urlvalue="images/icons32x32/distinctx32.png" />
-    <icon32 urlvalue="images/icons32x32/distinctx32.png" />
+    <icon16 urlvalue="images/new/icons32x32/distinctx32.png" />
+    <icon32 urlvalue="images/new/icons32x32/distinctx32.png" />
     <description localizing-bundle="org.netbeans.modules.iep.editor.palette.items.relationOperator.Bundle"
                display-name-key="NAME_html-Distinct"
                tooltip-key="HINT_html-Distinct" />
