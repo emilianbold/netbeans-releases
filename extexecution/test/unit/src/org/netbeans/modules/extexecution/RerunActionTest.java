@@ -57,7 +57,7 @@ public class RerunActionTest extends NbTestCase {
     public void testRun() {
         RerunAction action = new RerunAction();
         action.actionPerformed(null); // must pass
-        
+
         // TODO test real run
     }
 
@@ -83,6 +83,9 @@ public class RerunActionTest extends NbTestCase {
         assertFalse(action.isEnabled());
         action.setRerunCondition(null);
         assertTrue(action.isEnabled());
+
+        action.setRerunCondition(condition);
+        assertFalse(action.isEnabled());
     }
 
     private static class TestCondition implements RerunCondition {
