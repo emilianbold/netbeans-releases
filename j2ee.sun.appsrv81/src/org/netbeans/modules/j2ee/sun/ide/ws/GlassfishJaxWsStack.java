@@ -19,7 +19,7 @@
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
- * "Portions Copyrighted [year] [name of co                System.out.println("xnocompile? "+isXnocompile(projectDirectory));pyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]"
  * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
@@ -33,7 +33,7 @@
  * made subject to such option by the copyright holder.
  * 
  * Contributor(s):
- *                 System.out.println("xnocompile? "+isXnocompile(projectDirectory));
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
