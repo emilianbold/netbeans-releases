@@ -74,6 +74,7 @@ import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
+import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.nav.NavUtils;
@@ -702,6 +703,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
         
     public String document(CompilationInfo info, ElementHandle element) {
+        
+        if (element instanceof PHPDOCTagElement) {
+            PHPDOCTagElement pHPDOCTagElement = (PHPDOCTagElement) element;
+            return pHPDOCTagElement.getDoc();
+        } 
+        
         if (element instanceof IndexedElement) {
             final IndexedElement indexedElement = (IndexedElement) element;
             StringBuilder builder = new StringBuilder();
