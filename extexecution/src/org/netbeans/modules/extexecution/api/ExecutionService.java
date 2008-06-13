@@ -209,172 +209,179 @@ public final class ExecutionService {
      */
     public Future<Integer> run() {
         synchronized (this) {
-        if (task != null && !task.isDone()) {
-            throw new IllegalStateException("Task is still running");
-        }
-
-        if (!rerun) {
-            customio = descriptor.getInputOutput();
-            if (customio != null) {
-                io = customio;
-                try {
-                    io.getOut().reset();
-                } catch (IOException exc) {
-                    LOGGER.log(Level.INFO, null, exc);
-                }
-
-                // Note - do this AFTER the reset() call above; if not, weird bugs occur
-                io.setErrSeparated(false);
-
-                // Open I/O window now. This should probably be configurable.
-                if (descriptor.isFrontWindow()) {
-                    io.select();
-                }
+            if (task != null && !task.isDone()) {
+                throw new IllegalStateException("Task is still running");
             }
 
-            // try to find free output windows
-            synchronized (this) {
-                if (io == null) {
-                    InputOutputManager freeIO = InputOutputManager.findFreeIO(originalDisplayName, descriptor.isControllable());
-                    if (freeIO != null) {
-                        io = freeIO.getIO();
-                        displayName = freeIO.getDisplayName();
-                        stopAction = freeIO.getStopAction();
-                        rerunAction = freeIO.getRerunAction();
-                        if (descriptor.isFrontWindow()) {
-                            io.select();
+            if (!rerun) {
+                customio = descriptor.getInputOutput();
+                if (customio != null) {
+                    io = customio;
+                    try {
+                        io.getOut().reset();
+                    } catch (IOException exc) {
+                        LOGGER.log(Level.INFO, null, exc);
+                    }
+
+                    // Note - do this AFTER the reset() call above; if not, weird bugs occur
+                    io.setErrSeparated(false);
+
+                    // Open I/O window now. This should probably be configurable.
+                    if (descriptor.isFrontWindow()) {
+                        io.select();
+                    }
+                }
+
+                // try to find free output windows
+                synchronized (this) {
+                    if (io == null) {
+                        InputOutputManager freeIO = InputOutputManager.findFreeIO(originalDisplayName, descriptor.isControllable());
+                        if (freeIO != null) {
+                            io = freeIO.getIO();
+                            displayName = freeIO.getDisplayName();
+                            stopAction = freeIO.getStopAction();
+                            rerunAction = freeIO.getRerunAction();
+                            if (descriptor.isFrontWindow()) {
+                                io.select();
+                            }
                         }
                     }
                 }
-            }
 
-            if (io == null) { // free IO was not found, create new one
-                displayName = getNonActiveDisplayName(originalDisplayName);
+                if (io == null) { // free IO was not found, create new one
+                    displayName = getNonActiveDisplayName(originalDisplayName);
 
-                // TODO fix this - UI class needed for kill
-                stopAction = new StopAction();
-                if (descriptor.isControllable()) {
-                    rerunAction = new RerunAction(this, descriptor.getRerunCondition());
+                    // TODO fix this - UI class needed for kill
+                    stopAction = new StopAction();
+                    if (descriptor.isControllable()) {
+                        rerunAction = new RerunAction();
 
-                    io = IOProvider.getDefault().getIO(displayName, new Action[]{rerunAction, stopAction});
-                } else {
-                    io = IOProvider.getDefault().getIO(displayName, true);
-                }
-
-                try {
-                    io.getOut().reset();
-                } catch (IOException exc) {
-                    LOGGER.log(Level.INFO, null, exc);
-                }
-
-                // Note - do this AFTER the reset() call above; if not, weird bugs occur
-                io.setErrSeparated(false);
-
-                // Open I/O window now. This should probably be configurable.
-                if (descriptor.isFrontWindow()) {
-                    io.select();
-                }
-            }
-        }
-
-        ACTIVE_DISPLAY_NAMES.add(displayName);
-        io.setInputVisible(descriptor.isInputVisible());
-
-        final InputProcessor outProcessor = descriptor.getOutProcessor();
-        try {
-            if (outProcessor != null) {
-                outProcessor.reset();
-            }
-
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-        }
-
-        final InputProcessor errProcessor = descriptor.getErrProcessor();
-        try {
-            if (errProcessor != null) {
-                errProcessor.reset();
-            }
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-        }
-
-        final ProgressHandle handle;
-
-        if (descriptor.showProgress() || descriptor.showSuspended()) {
-            handle =
-                ProgressHandleFactory.createHandle(displayName,
-                    stopAction != null && descriptor.isControllable()
-                        ? new Cancellable() {
-                            public boolean cancel() {
-                                stopAction.actionPerformed(null);
-                                return true;
-                            }
-                          }
-                        : null,
-                    new AbstractAction() {
-                        public void actionPerformed(ActionEvent e) {
-                            io.select();
-                        }
-                    });
-
-            handle.setInitialDelay(0);
-            handle.start();
-            handle.switchToIndeterminate();
-
-            if (descriptor.showSuspended()) {
-                handle.suspend(NbBundle.getMessage(ExecutionService.class, "Running"));
-            }
-        } else {
-            handle = null;
-        }
-
-        if (descriptor.isControllable()) {
-            stopAction.setEnabled(true);
-            rerunAction.setEnabled(false);
-        }
-
-        Callable<Integer> callable = new Callable<Integer>() {
-                public Integer call() {
-                    boolean interrupted = false;
-                    Process process = null;
-                    Integer ret = null;
+                        io = IOProvider.getDefault().getIO(displayName, new Action[]{rerunAction, stopAction});
+                    } else {
+                        io = IOProvider.getDefault().getIO(displayName, true);
+                    }
 
                     try {
-                        final Runnable pre = descriptor.getPreExecution();
-                        if (pre != null) {
-                            pre.run();
-                        }
-
-                        if (Thread.currentThread().isInterrupted()) {
-                            return null;
-                        }
-
-                        process = processCreator.call();
-
-                        if (stopAction != null) {
-                            stopAction.setProcess(process);
-                        }
-
-                        executionProcessing(process, io, descriptor.isInputVisible());
-                    } catch (InterruptedException ex) {
-                        LOGGER.log(Level.FINE, null, ex);
-                        interrupted = true;
-                    } catch (Exception ex) {
-                        LOGGER.log(Level.WARNING, null, ex);
-                    } finally {
-                        ret = executionCleanup(process, handle);
-                        if (interrupted) {
-                            Thread.currentThread().interrupt();
-                        }
+                        io.getOut().reset();
+                    } catch (IOException exc) {
+                        LOGGER.log(Level.INFO, null, exc);
                     }
 
-                    return ret;
-                }
-            };
+                    // Note - do this AFTER the reset() call above; if not, weird bugs occur
+                    io.setErrSeparated(false);
 
-        task = SERVICE.submit(callable);
-        return task;
+                    // Open I/O window now. This should probably be configurable.
+                    if (descriptor.isFrontWindow()) {
+                        io.select();
+                    }
+                }
+            }
+
+            ACTIVE_DISPLAY_NAMES.add(displayName);
+            io.setInputVisible(descriptor.isInputVisible());
+
+            final InputProcessor outProcessor = descriptor.getOutProcessor();
+            try {
+                if (outProcessor != null) {
+                    outProcessor.reset();
+                }
+
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            }
+
+            final InputProcessor errProcessor = descriptor.getErrProcessor();
+            try {
+                if (errProcessor != null) {
+                    errProcessor.reset();
+                }
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            }
+
+            final ProgressHandle handle;
+
+            if (descriptor.showProgress() || descriptor.showSuspended()) {
+                handle =
+                    ProgressHandleFactory.createHandle(displayName,
+                        stopAction != null && descriptor.isControllable()
+                            ? new Cancellable() {
+                                public boolean cancel() {
+                                    //stopAction.actionPerformed(null);
+                                    task.cancel(true);
+                                    return true;
+                                }
+                              }
+                            : null,
+                        new AbstractAction() {
+                            public void actionPerformed(ActionEvent e) {
+                                io.select();
+                            }
+                        });
+
+                handle.setInitialDelay(0);
+                handle.start();
+                handle.switchToIndeterminate();
+
+                if (descriptor.showSuspended()) {
+                    handle.suspend(NbBundle.getMessage(ExecutionService.class, "Running"));
+                }
+            } else {
+                handle = null;
+            }
+
+            if (stopAction != null) {
+                synchronized (stopAction) {
+                    stopAction.setExecutionService(this);
+                    stopAction.setEnabled(true);
+                }
+            }
+
+            if (rerunAction != null) {
+                synchronized (rerunAction) {
+                    rerunAction.setExecutionService(this);
+                    rerunAction.setRerunCondition(descriptor.getRerunCondition());
+                    rerunAction.setEnabled(false);
+                }
+            }
+
+            Callable<Integer> callable = new Callable<Integer>() {
+                    public Integer call() {
+                        boolean interrupted = false;
+                        Process process = null;
+                        Integer ret = null;
+
+                        try {
+                            final Runnable pre = descriptor.getPreExecution();
+                            if (pre != null) {
+                                pre.run();
+                            }
+
+                            if (Thread.currentThread().isInterrupted()) {
+                                return null;
+                            }
+
+                            process = processCreator.call();
+
+                            executionProcessing(process, io, descriptor.isInputVisible());
+                        } catch (InterruptedException ex) {
+                            LOGGER.log(Level.FINE, null, ex);
+                            interrupted = true;
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.WARNING, null, ex);
+                        } finally {
+                            ret = executionCleanup(process, handle);
+                            if (interrupted) {
+                                Thread.currentThread().interrupt();
+                            }
+                        }
+
+                        return ret;
+                    }
+                };
+
+            task = SERVICE.submit(callable);
+            return task;
         }
     }
 
@@ -434,10 +441,6 @@ public final class ExecutionService {
 
         if (handle != null) {
             handle.finish();
-        }
-
-        if (stopAction != null) {
-            stopAction.setProcess(null);
         }
 
         if (descriptor.isControllable()) {
