@@ -72,13 +72,14 @@ import org.openide.util.Utilities;
 public final class HQLEditorTopComponent extends TopComponent {
 
     /** path to the icon used by the component and its open action */
-    static final String ICON_PATH = "org/netbeans/modules/hibernate/hqleditor/ui/resources/runsql.png"; //NOI18N
+    static final String ICON_PATH = "org/netbeans/modules/hibernate/hqleditor/ui/resources/queryEditor16X16.png"; //NOI18N
     private Logger logger = Logger.getLogger(HQLEditorTopComponent.class.getName());
     private HashMap<String, FileObject> hibernateConfigMap = new HashMap<String, FileObject>();
     private static int count = 0;
     private HQLEditorController controller = null;
     private HibernateEnvironment env = null;
 
+    //TODO fix this method.
     private static String getNextWindowTitle() {
         return NbBundle.getMessage(HQLEditorTopComponent.class, "CTL_HQLEditorTopComponent") + (++count);
     }
@@ -112,14 +113,22 @@ public final class HQLEditorTopComponent extends TopComponent {
             for (FileObject configFileObject : configFileObjects) {
                 try {
                     HibernateCfgDataObject hibernateCfgDataObject = (HibernateCfgDataObject) DataObject.find(configFileObject);
-                    hibernateConfigMap.put(hibernateCfgDataObject.getHibernateConfiguration().getSessionFactory().getAttributeValue("name"), configFileObject);
+                    String configName = hibernateCfgDataObject.getHibernateConfiguration().getSessionFactory().getAttributeValue("name");
+                    if(configName == null || configName.equals("")) {
+                        configName = configFileObject.getName();
+                    }
+                    hibernateConfigMap.put(configName, configFileObject);
                 } catch (DataObjectNotFoundException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
             hibernateConfigurationComboBox.setModel(new DefaultComboBoxModel(hibernateConfigMap.keySet().toArray()));
             HibernateConfiguration config = ((HibernateCfgDataObject) dO).getHibernateConfiguration();
-            hibernateConfigurationComboBox.setSelectedItem(config.getSessionFactory().getAttributeValue("name"));
+            String selectedConfigName = config.getSessionFactory().getAttributeValue("name");
+            if(selectedConfigName == null || selectedConfigName.equals("")) {
+                selectedConfigName = dO.getPrimaryFile().getName();
+            }
+            hibernateConfigurationComboBox.setSelectedItem(selectedConfigName);
 
         } else {
             //TODO Don't know whether this case will actually arise..
@@ -187,8 +196,8 @@ public final class HQLEditorTopComponent extends TopComponent {
 
 
         } else {
-            //TODO process errors.
-            logger.info("HQL Query result is null");
+            logger.info("HQL query execution resulted in following " + result.getExceptions().size() + " errors.");
+            
             switchToErrorView();
             setStatus(NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionError"));
             errorTextArea.setText("");
@@ -198,6 +207,7 @@ public final class HQLEditorTopComponent extends TopComponent {
                 t.printStackTrace(pWriter);
                 errorTextArea.append(sWriter.toString());
             }
+            logger.info(errorTextArea.getText());
         }
         runHQLButton.setEnabled(true);
 
@@ -249,8 +259,9 @@ public final class HQLEditorTopComponent extends TopComponent {
         toolBar.add(hibernateConfigurationComboBox);
         toolBar.add(toolbarSeparator);
 
-        runHQLButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/hibernate/hqleditor/ui/resources/runsql.png"))); // NOI18N
+        runHQLButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/hibernate/hqleditor/ui/resources/runsql16X16.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(runHQLButton, org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "HQLEditorTopComponent.runHQLButton.text")); // NOI18N
+        runHQLButton.setToolTipText(org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "runHQLQueryButtonToolTip")); // NOI18N
         runHQLButton.setFocusable(false);
         runHQLButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         runHQLButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);

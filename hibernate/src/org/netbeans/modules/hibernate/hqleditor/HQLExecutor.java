@@ -80,7 +80,6 @@ public class HQLExecutor {
             }
 
         } catch (Exception e) {
-            // TODO Wrap the Exceptions if any in HQLResult.
             result.getExceptions().add(e);
         }
         return result;
