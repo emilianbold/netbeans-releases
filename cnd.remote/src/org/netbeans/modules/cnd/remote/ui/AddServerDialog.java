@@ -24,7 +24,7 @@ public class AddServerDialog extends JPanel implements DocumentListener {
     
     private boolean valid;
 
-    /** Creates new form AddServerDialog2 */
+    /** Creates new form AddServerDialog */
     public AddServerDialog() {
         initComponents();
         valid = false;

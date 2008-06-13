@@ -99,7 +99,7 @@ public class HQLEditorController {
                     ph.progress(
                     NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionPassControlToHibernate"), 50
                     );
-                HQLResult r = queryExecutor.execute(hql, configFileObject, maxRowCount);
+                HQLResult r = queryExecutor.execute(hql, configFileObject, maxRowCount, ph);
                 ph.progress(
                     NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionProcessResults"), 80
                     );
@@ -111,7 +111,9 @@ public class HQLEditorController {
             }
         };
         t.setContextClassLoader(customClassLoader);
+        try {
         t.start();
+        } catch (Exception e) {}
     }
 
     public void init(Node[] activatedNodes) {

@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.cnd.remote.explorer.nodes;
 
-import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.openide.nodes.Children;
 
@@ -49,9 +48,13 @@ import org.openide.nodes.Children;
  */
 public class LocalhostNode extends RemoteServerNode {
     
+    // The following is a **BAD** choice and only intendes as a temporary icon!!!
+    private static final String LOCALHOST_ICON = "org/netbeans/modules/cnd/remote/resources/servers.png"; // NOI18N
+    
     public LocalhostNode(RemoteServerRecord record) {
         super(Children.LEAF, record);
         setName(record.getServerName());
         setActive(record.isActive());
+        setIconBaseWithExtension(LOCALHOST_ICON);
     }
 }
