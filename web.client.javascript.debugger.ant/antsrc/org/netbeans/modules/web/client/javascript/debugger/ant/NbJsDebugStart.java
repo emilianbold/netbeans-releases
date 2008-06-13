@@ -40,8 +40,9 @@
 package org.netbeans.modules.web.client.javascript.debugger.ant;
 
 import java.net.URI;
-import java.util.Collection;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -50,12 +51,16 @@ import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
+import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
+import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarter;
 import org.netbeans.modules.web.client.tools.projectsupport.BrowserUtilities;
 import org.openide.awt.HtmlBrowser;
-import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -109,10 +114,31 @@ public class NbJsDebugStart extends Task {
             }
 
             String serverPrefix = getWebBaseUrl();
-/* TODO replace with new API
-            IdentityURLMapper mapper = new IdentityURLMapper(serverPrefix, projectDocBase, welcomeFile);
-            Lookup debugLookup = Lookups.fixed(new Object[] { mapper, nbProject });
-*/
+            
+            WebClientToolsSessionStarter debugger = Lookup.getDefault().lookup(WebClientToolsSessionStarter.class);
+            LocationMappersFactory mapperFactory = Lookup.getDefault().lookup(LocationMappersFactory.class);
+            if (debugger == null) {
+                throw new BuildException("A JavaScript debugger is not installed"); // NOI18N
+            }
+            
+            Lookup debuggerLookup = null;
+            if (mapperFactory != null) {
+                URI appContext = new URI(serverPrefix);
+                Map<String, Object> extendedInfo = null;
+                
+                if (welcomeFile != null) {
+                    extendedInfo = new HashMap<String, Object>();
+                    extendedInfo.put("welcome-file", welcomeFile); //NOI18N
+                }
+                
+                JSToNbJSLocationMapper forwardMapper = 
+                        mapperFactory.getJSToNbJSLocationMapper(projectDocBase, appContext, extendedInfo);
+                NbJSToJSLocationMapper reverseMapper = 
+                        mapperFactory.getNbJSToJSLocationMapper(projectDocBase, appContext, extendedInfo);
+                debuggerLookup = Lookups.fixed(forwardMapper, reverseMapper, nbProject);
+            } else {
+                debuggerLookup = Lookups.fixed(nbProject);
+            }
 
             log("Project document base: " + FileUtil.getFileDisplayName(projectDocBase));
             log("Server document base: " + getWebBaseUrl());
@@ -124,10 +150,10 @@ public class NbJsDebugStart extends Task {
             HtmlBrowser.Factory browser = BrowserUtilities.getFirefoxBrowser();
             
             if (browser == null) {
-                throw new BuildException("The configured debugging browser could not be found");
+                throw new BuildException("The configured debugging browser could not be found"); // NOI18N
             }
             
-            //NbJSDebugger.startDebugging(clientUrl, htmlBrowserFactory, debugLookup);
+            debugger.startSession(clientUrl, browser, debuggerLookup);
         }catch (Exception ex) {
             throw new BuildException(ex);
         }

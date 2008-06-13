@@ -43,7 +43,7 @@ package org.netbeans.modules.web.client.tools.api;
  *
  * @author Sandip V. Chitale <sandipchitale@netbeans.org>
  */
-class WebClientToolsSessionException extends Exception {
+public class WebClientToolsSessionException extends Exception {
 
     public WebClientToolsSessionException(Throwable cause) {
         super(cause);
