@@ -53,14 +53,12 @@ made subject to such option by the copyright holder.
         </file>
     </folder>
     <folder name="Toolbars">
-        <file name="Debugging.xml" url="Debugging.xml"/>
         <folder name="QuickSearch">
             <file name="org-netbeans-modules-quicksearch-QuickSearchAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-quicksearch-QuickSearchAction.instance"/>
                 <attr name="position" intvalue="250"/>
             </file>
-            </folder>
-        <file name="Standard.xml" url="Standard.xml"/>
+        </folder>
     </folder>
     <folder name="QuickSearch">
         <folder name="Recent">
