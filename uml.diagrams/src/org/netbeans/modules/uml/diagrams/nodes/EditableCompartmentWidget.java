@@ -204,9 +204,7 @@ public class EditableCompartmentWidget extends UMLLabelWidget {
         /**
          * @param toFit border of toFit widget will be considered as bounds for edit control jm=[]
          * @param presentationWidget will be used to get presentation element
-         * JJJJJJJJU+N
-         * .mmmmK{"?',
-         * H         */
+         */
         public EditControlEditorProvider(Widget toFit,Widget presentationWidget)
         {
             baseFitWidget=toFit;
