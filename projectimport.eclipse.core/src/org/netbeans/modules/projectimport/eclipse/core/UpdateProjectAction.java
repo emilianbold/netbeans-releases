@@ -46,17 +46,21 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Actions;
+import org.openide.awt.DynamicMenuContent;
+import org.openide.awt.Mnemonics;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.Presenter;
 
-/**
- */
-public final class UpdateProjectAction extends AbstractAction implements ContextAwareAction  {
+public final class UpdateProjectAction extends AbstractAction implements ContextAwareAction, Presenter.Popup {
     
     private Lookup context;
     private UpgradableProject upgradable;
@@ -115,6 +119,31 @@ public final class UpdateProjectAction extends AbstractAction implements Context
     
     public Action createContextAwareInstance(Lookup actionContext) {
         return new UpdateProjectAction(actionContext);
+    }
+
+    public JMenuItem getPopupPresenter() {
+        return new Menu();
+    }
+
+    private class Menu extends JMenuItem implements DynamicMenuContent {
+
+        public Menu() {
+            Actions.connect(this, UpdateProjectAction.this);
+            Mnemonics.setLocalizedText(this, (String) getValue(NAME));
+        }
+
+        public JComponent[] getMenuPresenters() {
+            if (UpdateProjectAction.this.isEnabled()) {
+                return new JComponent[] {this};
+            } else {
+                return new JComponent[0];
+            }
+        }
+
+        public JComponent[] synchMenuPresenters(JComponent[] items) {
+            return getMenuPresenters();
+        }
+
     }
 
 }
