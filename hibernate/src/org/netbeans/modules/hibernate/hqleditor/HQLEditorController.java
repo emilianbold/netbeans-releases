@@ -111,7 +111,9 @@ public class HQLEditorController {
             }
         };
         t.setContextClassLoader(customClassLoader);
+        try {
         t.start();
+        } catch (Exception e) {}
     }
 
     public void init(Node[] activatedNodes) {
