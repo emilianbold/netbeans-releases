@@ -51,7 +51,7 @@ package pty;
  */
 public enum OS {
 
-    OTHER, UNIX, WINDOWS;
+    OTHER, LINUX, WINDOWS, SOLARIS;
 
     /**
      * Returns the kind of OS we're running on.
@@ -65,7 +65,9 @@ public enum OS {
         if (osName.startsWith("windows")) {
             return OS.WINDOWS;
         } else if (osName.startsWith("linux")) {
-            return OS.UNIX;
+            return OS.LINUX;
+        } else if (osName.startsWith("sunos")) {
+            return OS.SOLARIS;
         } else {
             return OS.OTHER;
         }
