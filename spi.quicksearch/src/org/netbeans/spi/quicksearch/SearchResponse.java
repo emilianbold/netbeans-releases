@@ -82,8 +82,8 @@ public final class SearchResponse {
      *  
      * @param action Action to invoke when this result item is chosen by user
      * @param displayName Localized display name of this result item
-     * @param shortcut Shortcut of this result item or null if shorcut isn't available
      * @param displayHint Localized display hint of this result item or null if not available
+     * @param shortcut Shortcut of this result item or null if shorcut isn't available
      * 
      * @return true when result was accepted and more results are needed if available.
      * False when no further results are needed.
@@ -91,7 +91,7 @@ public final class SearchResponse {
      * SearchProvider.evaluate(...) immediatelly if false is returned.
      */
     public boolean addResult (Runnable action, String displayName,
-                            KeyStroke shortcut, String displayHint) {
+                            String displayHint, KeyStroke shortcut) {
         return catResult.addItem(
                 new ResultsModel.ItemResult(catResult, action,
                 displayName, shortcut, displayHint));

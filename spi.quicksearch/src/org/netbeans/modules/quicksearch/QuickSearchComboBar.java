@@ -150,7 +150,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 0);
+        gridBagConstraints.insets = new java.awt.Insets(3, 2, 3, 1);
         jPanel1.add(jLabel2, gridBagConstraints);
 
         jScrollPane1.setBorder(null);

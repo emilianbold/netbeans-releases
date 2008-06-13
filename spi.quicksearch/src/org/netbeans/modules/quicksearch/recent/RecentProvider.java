@@ -56,7 +56,7 @@ public class RecentProvider implements SearchProvider {
         for (ItemResult itemR : RecentSearches.getDefault().getSearches()) {
             if (itemR.getDisplayName().toLowerCase().indexOf(request.getText().toLowerCase()) != -1) {
                 if (!response.addResult(itemR.getAction(), itemR.getDisplayName(),
-                        itemR.getShortcut(), itemR.getDisplayHint())) {
+                        itemR.getDisplayHint(), itemR.getShortcut())) {
                     break;
                 }
             }

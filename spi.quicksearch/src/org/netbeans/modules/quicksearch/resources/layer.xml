@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
         </folder>
         </folder>
     <folder name="Shortcuts">
-        <file name="A-Q.shadow">
+        <file name="D-I.shadow">
             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-quicksearch-QuickSearchAction.instance"/>
         </file>
     </folder>

@@ -90,7 +90,7 @@ public class ActionsSearchProvider implements SearchProvider {
                         }
                         if (!response.addResult(
                                 new ActionResult((Action)actAndEvent[0], (ActionEvent)actAndEvent[1]),
-                                sa.getDisplayName(), stroke, null)) {
+                                sa.getDisplayName(), null, stroke)) {
                             // return immediatelly if no further result is needed
                             return;
                         }
