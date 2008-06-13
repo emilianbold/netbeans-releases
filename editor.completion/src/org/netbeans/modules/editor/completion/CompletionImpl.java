@@ -968,8 +968,11 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         if (!completionOnly && hidePerformed && CompletionSettings.getInstance().documentationAutoPopup()) {
             hideDocumentation(true);
         }
-        getActiveComponent().putClientProperty("completion-visible", Boolean.FALSE);
-        getActiveComponent().putClientProperty("completion-active", Boolean.FALSE);
+        JTextComponent jtc = getActiveComponent();
+        if (jtc != null) {
+            jtc.putClientProperty("completion-visible", Boolean.FALSE);
+            jtc.putClientProperty("completion-active", Boolean.FALSE);
+        }
         return hidePerformed;
     }
     
