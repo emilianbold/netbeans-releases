@@ -159,8 +159,12 @@ public class GlassfishJaxWsStack implements WSStackSPI {
     }
     
     private String resolveImplementationVersion() throws IOException {
+        // take webservices-tools.jar file
         File wsToolsJar = new File(root, WEBSERVICES_TOOLS_JAR);
-        if (wsToolsJar.exists()) {
+        // alternatively take appserv-ws.jar file
+        if (!wsToolsJar.exists()) wsToolsJar = new File(root, APPSERV_WS_JAR);
+        
+        if (wsToolsJar.exists()) {            
             JarFile jarFile = new JarFile(wsToolsJar);
             JarEntry entry = jarFile.getJarEntry("com/sun/tools/ws/version.properties"); //NOI18N
             if (entry != null) {
