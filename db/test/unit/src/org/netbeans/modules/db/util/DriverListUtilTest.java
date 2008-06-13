@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.db.util;
 
+import com.sun.j3d.utils.behaviors.interpolators.KBCubicSplineCurve;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,11 +58,15 @@ public class DriverListUtilTest extends TestCase {
     private static final String DB = "mydb";
     private static final String SERVERNAME = "servername";
     private static final String ADDITIONAL = "foo;bar;baz";
+    private static final String SERVICENAME = "servicename";
+    private static final String SID = "mysid";
+    private static final String DSN = "mydsn";
+    private static final String TNSNAME = "mytns";
     
     private static final HashMap<String, String> ALLPROPS = 
             new HashMap<String, String>();
     
-    private static final ArrayList<String> STD_SUPPORTED_TOKENS =
+    private static final ArrayList<String> STD_SUPPORTED_PROPS =
             new ArrayList<String>();
     
     static {
@@ -69,36 +74,56 @@ public class DriverListUtilTest extends TestCase {
         ALLPROPS.put(JdbcUrl.TOKEN_DB, DB);
         ALLPROPS.put(JdbcUrl.TOKEN_PORT, PORT);
         ALLPROPS.put(JdbcUrl.TOKEN_SERVERNAME, SERVERNAME);
-        ALLPROPS.put(JdbcUrl.TOKEN_ADDITIONAL, ADDITIONAL);  
+        ALLPROPS.put(JdbcUrl.TOKEN_ADDITIONAL, ADDITIONAL);
+        ALLPROPS.put(JdbcUrl.TOKEN_DSN, DSN);
+        ALLPROPS.put(JdbcUrl.TOKEN_SERVICENAME, SERVICENAME);
+        ALLPROPS.put(JdbcUrl.TOKEN_SID, SID);
+        ALLPROPS.put(JdbcUrl.TOKEN_TNSNAME, TNSNAME);
         
-        STD_SUPPORTED_TOKENS.add(JdbcUrl.TOKEN_HOST);
-        STD_SUPPORTED_TOKENS.add(JdbcUrl.TOKEN_PORT);
-        STD_SUPPORTED_TOKENS.add(JdbcUrl.TOKEN_DB);
-        STD_SUPPORTED_TOKENS.add(JdbcUrl.TOKEN_ADDITIONAL);
+        STD_SUPPORTED_PROPS.add(JdbcUrl.TOKEN_HOST);
+        STD_SUPPORTED_PROPS.add(JdbcUrl.TOKEN_PORT);
+        STD_SUPPORTED_PROPS.add(JdbcUrl.TOKEN_DB);
+        STD_SUPPORTED_PROPS.add(JdbcUrl.TOKEN_ADDITIONAL);
     }
     
     public DriverListUtilTest(String testName) {
         super(testName);
     }
     
-    public void testJdbcUrls() throws Exception {
+    public void testNonParsedJdbcUrls() throws Exception {
         List<JdbcUrl> urls = DriverListUtil.getJdbcUrls();
         for ( JdbcUrl url : urls ) {
             if (! url.urlIsParsed()) {
                 testNonParsedUrl(url);
-            } else if (url.getName().equals(getDriverName("DRIVERNAME_MySQL"))) {
-                testMySQL(url);
-            } else if (url.getName().equals(getDriverName("DRIVERNAME_JavaDbEmbedded"))) {
-                testJavaDbEmbedded(url);
-            } else if (url.getName().equals(getDriverName("DRIVERNAME_JavaDbNetwork"))) {
-                testJavaDbNetwork(url);
-            } else if (url.getName().equals(getDriverName("DRIVERNAME_PostgreSQL"))) {
-                testPostgreSQL(url);
             }
         }
     }
-
-    private void testJavaDbEmbedded(JdbcUrl url) throws Exception {
+    
+    private JdbcUrl getJdbcUrl(String name, String type) throws Exception {
+        List<JdbcUrl> urls = DriverListUtil.getJdbcUrls();
+        for (JdbcUrl url : urls) {
+            if (url.getName().equals(name) &&
+                    isEqual(url.getType(), type)) {
+                return url;
+            }
+        }
+        
+        throw new Exception("No JdbcUrl found for name " + name + " and type " + type);
+    }
+        
+    private boolean isEqual(Object o1, Object o2) {
+        if (o1 == null && o2 == null) {
+            return true;
+        }
+        
+        if (o1 == null || o2 == null) {
+            return false;
+        }
+        
+        return o1.equals(o2);
+    }
+    
+    public void testJavaDbEmbedded() throws Exception {
         ArrayList<String> requiredProps = new ArrayList<String>();
         requiredProps.add(JdbcUrl.TOKEN_DB);
         
@@ -106,53 +131,45 @@ public class DriverListUtilTest extends TestCase {
         supportedProps.add(JdbcUrl.TOKEN_DB);
         supportedProps.add(JdbcUrl.TOKEN_ADDITIONAL);
         
-        checkUrl(url, getDriverName("DRIVERNAME_JavaDbEmbedded"), null, "org.apache.derby.jdbc.EmbeddedDriver", 
+        JdbcUrl url = checkUrl(getDriverName("DRIVERNAME_JavaDbEmbedded"), null, "org.apache.derby.jdbc.EmbeddedDriver", 
                 "jdbc:derby:<DB>[;<ADDITIONAL>]", supportedProps, requiredProps);
         
-        HashMap<String, String> props = new HashMap<String, String>();
-        props.putAll(ALLPROPS);
-        props.remove(JdbcUrl.TOKEN_SERVERNAME);
-        props.remove(JdbcUrl.TOKEN_HOST);
-        props.remove(JdbcUrl.TOKEN_PORT);
-        
-        testUrlString(url, props, "jdbc:derby:" + DB + ";" + ADDITIONAL);
+        HashMap<String, String> propValues = buildPropValues(supportedProps);        
+        testUrlString(url, propValues, "jdbc:derby:" + DB + ";" + ADDITIONAL);
 
-        props.remove(JdbcUrl.TOKEN_ADDITIONAL);
-        testUrlString(url, props, "jdbc:derby:" + DB);
+        propValues.remove(JdbcUrl.TOKEN_ADDITIONAL);
+        testUrlString(url, propValues, "jdbc:derby:" + DB);
         
-        props.remove(JdbcUrl.TOKEN_DB);
-        testMissingParameter(url, props);
+        propValues.remove(JdbcUrl.TOKEN_DB);
+        testMissingParameter(url, propValues);
         
         testBadUrlString(url, "jdbc:derby:");
         testBadUrlString(url, "jdbc:daryb://db");
         testBadUrlString(url, "jdbc:derby/:db;create=true");
     }
 
-    private void testJavaDbNetwork(JdbcUrl url) throws Exception {
+    public void testJavaDbNetwork() throws Exception {
         ArrayList<String> requiredProps = new ArrayList<String>();
         requiredProps.add(JdbcUrl.TOKEN_HOST);
         requiredProps.add(JdbcUrl.TOKEN_DB);
-        checkUrl(url, getDriverName("DRIVERNAME_JavaDbNetwork"), null, "org.apache.derby.jdbc.ClientDriver", 
-                "jdbc:derby://<HOST>[:<PORT>]/<DB>[;<ADDITIONAL>]", STD_SUPPORTED_TOKENS, requiredProps);
+        JdbcUrl url = checkUrl(getDriverName("DRIVERNAME_JavaDbNetwork"), null, "org.apache.derby.jdbc.ClientDriver", 
+                "jdbc:derby://<HOST>[:<PORT>]/<DB>[;<ADDITIONAL>]", STD_SUPPORTED_PROPS, requiredProps);
         
-        HashMap<String, String> props = new HashMap<String, String>();
-        props.putAll(ALLPROPS);
-        props.remove(JdbcUrl.TOKEN_SERVERNAME);
-        
-        testUrlString(url, props, "jdbc:derby://" + HOST + ":" + PORT + "/" + DB + ";" + ADDITIONAL);
+        HashMap<String, String> propValues = buildPropValues(STD_SUPPORTED_PROPS);        
+        testUrlString(url, propValues, "jdbc:derby://" + HOST + ":" + PORT + "/" + DB + ";" + ADDITIONAL);
 
-        props.remove(JdbcUrl.TOKEN_ADDITIONAL);
-        testUrlString(url, props, "jdbc:derby://" + HOST + ":" + PORT + "/" + DB);
+        propValues.remove(JdbcUrl.TOKEN_ADDITIONAL);
+        testUrlString(url, propValues, "jdbc:derby://" + HOST + ":" + PORT + "/" + DB);
         
-        props.remove(JdbcUrl.TOKEN_PORT);
-        testUrlString(url, props, "jdbc:derby://" + HOST + "/" + DB);  
+        propValues.remove(JdbcUrl.TOKEN_PORT);
+        testUrlString(url, propValues, "jdbc:derby://" + HOST + "/" + DB);  
         
-        props.remove(JdbcUrl.TOKEN_DB);
-        testMissingParameter(url, props);
+        propValues.remove(JdbcUrl.TOKEN_DB);
+        testMissingParameter(url, propValues);
         
-        props.remove(JdbcUrl.TOKEN_HOST);
-        props.put(JdbcUrl.TOKEN_DB, DB);
-        testMissingParameter(url, props);
+        propValues.remove(JdbcUrl.TOKEN_HOST);
+        propValues.put(JdbcUrl.TOKEN_DB, DB);
+        testMissingParameter(url, propValues);
         
         testBadUrlString(url, "jdbc:derby:///db");
         testBadUrlString(url, "jdbc:derby://localhost");
@@ -160,58 +177,247 @@ public class DriverListUtilTest extends TestCase {
         testBadUrlString(url, "jdbc:derby:/localhost:8889/db;create=true");
     }
 
-    private void testMySQL(JdbcUrl url) throws Exception {
-        checkUrl(url, getDriverName("DRIVERNAME_MySQL"), null, "com.mysql.jdbc.Driver", 
+    public void testMySQL() throws Exception {
+        JdbcUrl url = checkUrl(getDriverName("DRIVERNAME_MySQL"), null, "com.mysql.jdbc.Driver", 
                 "jdbc:mysql://[<HOST>[:<PORT>]]/[<DB>][?<ADDITIONAL>]",
-                STD_SUPPORTED_TOKENS, new ArrayList<String>());
+                STD_SUPPORTED_PROPS, new ArrayList<String>());
         
-        HashMap<String, String> props = new HashMap<String, String>();
-        props.putAll(ALLPROPS);
-        props.remove(JdbcUrl.TOKEN_SERVERNAME);
+        HashMap<String, String> propValues = buildPropValues(STD_SUPPORTED_PROPS);
         
-        testUrlString(url, props, "jdbc:mysql://" + HOST + ":" + PORT + "/" + DB + "?" + ADDITIONAL);
+        testUrlString(url, propValues, "jdbc:mysql://" + HOST + ":" + PORT + "/" + DB + "?" + ADDITIONAL);
 
-        props.remove(JdbcUrl.TOKEN_ADDITIONAL);
-        testUrlString(url, props, "jdbc:mysql://" + HOST + ":" + PORT + "/" + DB);
+        propValues.remove(JdbcUrl.TOKEN_ADDITIONAL);
+        testUrlString(url, propValues, "jdbc:mysql://" + HOST + ":" + PORT + "/" + DB);
         
-        props.remove(JdbcUrl.TOKEN_PORT);
-        testUrlString(url, props, "jdbc:mysql://" + HOST + "/" + DB);
+        propValues.remove(JdbcUrl.TOKEN_PORT);
+        testUrlString(url, propValues, "jdbc:mysql://" + HOST + "/" + DB);
         
-        props.remove(JdbcUrl.TOKEN_HOST);
-        testUrlString(url, props, "jdbc:mysql:///" + DB); 
+        propValues.remove(JdbcUrl.TOKEN_HOST);
+        testUrlString(url, propValues, "jdbc:mysql:///" + DB); 
         
-        props.remove(JdbcUrl.TOKEN_DB);
-        testUrlString(url, props, "jdbc:mysql:///");
+        propValues.remove(JdbcUrl.TOKEN_DB);
+        testUrlString(url, propValues, "jdbc:mysql:///");
         
-        props.put(JdbcUrl.TOKEN_HOST, HOST);
-        testUrlString(url, props, "jdbc:mysql://" + HOST + "/");
+        propValues.put(JdbcUrl.TOKEN_HOST, HOST);
+        testUrlString(url, propValues, "jdbc:mysql://" + HOST + "/");
         
-        props.put(JdbcUrl.TOKEN_PORT, PORT);
-        testUrlString(url, props, "jdbc:mysql://" + HOST + ":" + PORT + "/");
+        propValues.put(JdbcUrl.TOKEN_PORT, PORT);
+        testUrlString(url, propValues, "jdbc:mysql://" + HOST + ":" + PORT + "/");
         
-        props.put(JdbcUrl.TOKEN_ADDITIONAL, ADDITIONAL);
-        testUrlString(url, props, "jdbc:mysql://" + HOST + ":" + PORT + "/?" + ADDITIONAL);
+        propValues.put(JdbcUrl.TOKEN_ADDITIONAL, ADDITIONAL);
+        testUrlString(url, propValues, "jdbc:mysql://" + HOST + ":" + PORT + "/?" + ADDITIONAL);
     }
     
+    enum OracleTypes { THIN, OCI, OCI8 };
+    
+    public void testOracleThinSID() throws Exception {
+        testOracleSID(OracleTypes.THIN);
+    }
+    
+    public void testOracleOciSID() throws Exception {
+        testOracleSID(OracleTypes.OCI);
+    }
+    
+    public void testOracleOci8SID() throws Exception {
+        testOracleSID(OracleTypes.OCI8);
+    }
+    
+    public void testOracleThinServiceName() throws Exception {
+        testOracleServiceName(OracleTypes.THIN);
+    }
+    public void testOracleOciServiceName() throws Exception {
+        testOracleServiceName(OracleTypes.OCI);
+    }
+    public void testOracleOci8ServiceName() throws Exception {
+        testOracleServiceName(OracleTypes.OCI8);
+    }
+    
+    public void testOracleThinTnsName() throws Exception {
+        testOracleTnsName(OracleTypes.THIN);
+    }
+    public void testOracleOciTnsName() throws Exception {
+        testOracleTnsName(OracleTypes.OCI);
+    }
+
+    private JdbcUrl checkOracleUrl(OracleTypes otype, String urlSuffix, String type,
+            List<String> supportedProps, List<String> requiredProps) throws Exception {
+        String driverClass;
+        String driverName;
+        
+        switch (otype) {
+            case THIN:
+                driverClass = "oracle.jdbc.OracleDriver";
+                driverName = getDriverName("DRIVERNAME_OracleThin");
+                break;
+            case OCI:
+                driverClass = "oracle.jdbc.driver.OracleDriver";
+                driverName = getDriverName("DRIVERNAME_OracleOCI");
+                break;
+            case OCI8:
+                driverClass = "oracle.jdbc.driver.OracleDriver";
+                driverName = getDriverName("DRIVERNAME_OracleOCI");
+                type = "OCI8 " + type;
+                break;
+            default:
+                throw new Exception("Unknown Oracle Type " + otype);                
+        }
+        
+        String prefix = getOracleUrlPrefix(otype);        
+        
+        return checkUrl(driverName, type, driverClass, 
+                prefix + urlSuffix, supportedProps, requiredProps);
+     
+    }
+    
+    private String getOracleUrlPrefix(OracleTypes otype) {
+        String prefix = "jdbc:oracle:";
+        switch (otype) {
+            case THIN:
+                prefix = prefix + "thin";
+                break;
+            case OCI:
+                prefix = prefix  + "oci";
+                break;
+            case OCI8:
+                prefix = prefix + "oci8";
+                break;
+        }
+        
+        prefix = prefix + ":@";
+        return prefix;
+    }
+    
+    private void testOracleSID(OracleTypes otype) throws Exception {
+        ArrayList<String> requiredProps = new ArrayList<String>();
+        requiredProps.add(JdbcUrl.TOKEN_HOST);
+        requiredProps.add(JdbcUrl.TOKEN_SID);
+        requiredProps.add(JdbcUrl.TOKEN_PORT);
+        
+        ArrayList<String> supportedProps = new ArrayList<String>();
+        supportedProps.addAll(requiredProps);
+        supportedProps.add(JdbcUrl.TOKEN_ADDITIONAL);
+        
+        JdbcUrl url = checkOracleUrl(otype, "<HOST>:<PORT>:<SID>[?<ADDITIONAL>]", getType("TYPE_SID"),
+                supportedProps, requiredProps);
+
+        String prefix = getOracleUrlPrefix(otype);
+        
+        HashMap<String, String> propValues = buildPropValues(supportedProps);
+        
+        testUrlString(url, propValues, prefix + HOST + ":" + PORT + ":" + SID + "?" + ADDITIONAL);
+
+        propValues.remove(JdbcUrl.TOKEN_ADDITIONAL);
+        testUrlString(url, propValues, prefix + HOST + ":" + PORT + ":" + SID);
+                
+        propValues.remove(JdbcUrl.TOKEN_SID);
+        testMissingParameter(url, propValues);
+        
+        propValues.remove(JdbcUrl.TOKEN_HOST);
+        propValues.put(JdbcUrl.TOKEN_SID, SID);
+        testMissingParameter(url, propValues);
+        
+        testBadUrlString(url, prefix + ":db");
+        testBadUrlString(url, prefix);
+    }
+    
+    private void testOracleServiceName(OracleTypes otype) throws Exception {
+        ArrayList<String> requiredProps = new ArrayList<String>();
+        requiredProps.add(JdbcUrl.TOKEN_HOST);
+        requiredProps.add(JdbcUrl.TOKEN_SERVICENAME);
+        requiredProps.add(JdbcUrl.TOKEN_PORT);
+        
+        ArrayList<String> supportedProps = new ArrayList<String>();
+        supportedProps.addAll(requiredProps);
+        supportedProps.add(JdbcUrl.TOKEN_ADDITIONAL);
+        
+        JdbcUrl url = checkOracleUrl(otype, "//<HOST>:<PORT>/<SERVICE>[?<ADDITIONAL>]", getType("TYPE_Service"),
+                supportedProps, requiredProps);
+
+        String prefix = getOracleUrlPrefix(otype);
+        
+        HashMap<String, String> propValues = buildPropValues(supportedProps);
+        
+        testUrlString(url, propValues, prefix + "//" + HOST + ":" + PORT + "/" + SERVICENAME + "?" + ADDITIONAL);
+
+        propValues.remove(JdbcUrl.TOKEN_ADDITIONAL);
+        testUrlString(url, propValues, prefix + "//" + HOST + ":" + PORT + "/" + SERVICENAME);
+                
+        propValues.remove(JdbcUrl.TOKEN_SERVICENAME);
+        testMissingParameter(url, propValues);
+        
+        propValues.remove(JdbcUrl.TOKEN_HOST);
+        propValues.put(JdbcUrl.TOKEN_SERVICENAME, SERVICENAME);
+        testMissingParameter(url, propValues);
+        
+
+        propValues.put(JdbcUrl.TOKEN_HOST, HOST);
+        propValues.remove(JdbcUrl.TOKEN_PORT);
+        testMissingParameter(url, propValues);
+
+        testBadUrlString(url, prefix + ":db");
+        testBadUrlString(url, prefix);
+    }
+    private void testOracleTnsName(OracleTypes otype) throws Exception {
+        ArrayList<String> requiredProps = new ArrayList<String>();
+        requiredProps.add(JdbcUrl.TOKEN_TNSNAME);
+        
+        ArrayList<String> supportedProps = new ArrayList<String>();
+        supportedProps.addAll(requiredProps);
+        supportedProps.add(JdbcUrl.TOKEN_ADDITIONAL);
+        
+        JdbcUrl url = checkOracleUrl(otype, "<TNSNAME>[?<ADDITIONAL>]", getType("TYPE_TNSName"),
+                supportedProps, requiredProps);
+
+        String prefix = getOracleUrlPrefix(otype);
+        
+        HashMap<String, String> propValues = buildPropValues(supportedProps);
+        
+        testUrlString(url, propValues, prefix + TNSNAME + "?" + ADDITIONAL);
+
+        propValues.remove(JdbcUrl.TOKEN_ADDITIONAL);
+        testUrlString(url, propValues, prefix + TNSNAME);
+                
+        propValues.remove(JdbcUrl.TOKEN_TNSNAME);
+        testMissingParameter(url, propValues);
+
+        testBadUrlString(url, prefix);
+    }
+
+    private HashMap<String,String> buildPropValues(List<String> supportedProps) {
+        HashMap<String, String> propValues = new HashMap<String,String>();
+        for (String prop : ALLPROPS.keySet()) {
+            if (supportedProps.contains(prop)) {
+                propValues.put(prop, ALLPROPS.get(prop));
+            }
+        }
+        
+        return propValues;        
+    }
     private static String getDriverName(String key) {
         return NbBundle.getMessage(DriverListUtil.class, key);
     }
-        
+
+    private static String getType(String typeKey) {
+        return NbBundle.getMessage(DriverListUtil.class, typeKey);
+    }
+
+
     private void testNonParsedUrl(JdbcUrl url) throws Exception {
         String urlString = "foo:bar:my.url";
         url.setUrl(urlString);
         assertEquals(url.getUrl(), urlString);
     }
     
-    private void checkUrl(JdbcUrl url, String name, String type, String className,
-            String template, List<String> supportedTokens, List<String> requiredTokens) {
+    private JdbcUrl checkUrl(String name, String type, String className,
+            String template, List<String> supportedTokens, List<String> requiredTokens) throws Exception {
+        JdbcUrl url = getJdbcUrl(name, type);
         assertEquals(name, url.getName());
         assertEquals(type, url.getType());
         
         if (type == null) {
             assertEquals(name, url.getDisplayName());
         } else {
-            assertEquals(name + "(" + type + ")", url.getDisplayName());
+            assertEquals(name + " (" + type + ")", url.getDisplayName());
         }
         
         assertEquals(className, url.getClassName());
@@ -224,33 +430,32 @@ public class DriverListUtilTest extends TestCase {
 
         checkSupportedTokens(url, supportedTokens);
         checkRequiredTokens(url, requiredTokens);
+        
+        return url;
     }
 
-    private void testPostgreSQL(JdbcUrl url) throws Exception {
+    public void testPostgreSQL() throws Exception {
         ArrayList<String> requiredProps = new ArrayList<String>();
         requiredProps.add(JdbcUrl.TOKEN_DB);
         
-        checkUrl(url, getDriverName("DRIVERNAME_PostgreSQL"), null, "org.postgresql.Driver", 
+        JdbcUrl url = checkUrl(getDriverName("DRIVERNAME_PostgreSQL"), null, "org.postgresql.Driver", 
                 "jdbc:postgresql:[//<HOST>[:<PORT>]/]<DB>[?<ADDITIONAL>]",
-                STD_SUPPORTED_TOKENS, requiredProps);
+                STD_SUPPORTED_PROPS, requiredProps);
         
-        HashMap<String, String> props = new HashMap<String, String>();
-        props.putAll(ALLPROPS);
-        props.remove(JdbcUrl.TOKEN_SERVERNAME);
-        
-        testUrlString(url, props, "jdbc:postgresql://" + HOST + ":" + PORT + "/" + DB + "?" + ADDITIONAL);
+        HashMap<String, String> propValues = buildPropValues(STD_SUPPORTED_PROPS);        
+        testUrlString(url, propValues, "jdbc:postgresql://" + HOST + ":" + PORT + "/" + DB + "?" + ADDITIONAL);
 
-        props.remove(JdbcUrl.TOKEN_ADDITIONAL);
-        testUrlString(url, props, "jdbc:postgresql://" + HOST + ":" + PORT + "/" + DB);
+        propValues.remove(JdbcUrl.TOKEN_ADDITIONAL);
+        testUrlString(url, propValues, "jdbc:postgresql://" + HOST + ":" + PORT + "/" + DB);
         
-        props.remove(JdbcUrl.TOKEN_PORT);
-        testUrlString(url, props, "jdbc:postgresql://" + HOST + "/" + DB);
+        propValues.remove(JdbcUrl.TOKEN_PORT);
+        testUrlString(url, propValues, "jdbc:postgresql://" + HOST + "/" + DB);
         
-        props.remove(JdbcUrl.TOKEN_HOST);
-        testUrlString(url, props, "jdbc:postgresql:" + DB);
+        propValues.remove(JdbcUrl.TOKEN_HOST);
+        testUrlString(url, propValues, "jdbc:postgresql:" + DB);
         
-        props.remove(JdbcUrl.TOKEN_DB);
-        testMissingParameter(url, props);
+        propValues.remove(JdbcUrl.TOKEN_DB);
+        testMissingParameter(url, propValues);
         
         testBadUrlString(url, "jdbc:postgresql:");
         testBadUrlString(url, "jdbc:postgresql:///" + DB);

@@ -18,35 +18,65 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                          <Component id="showUrlCheckBox" alignment="0" max="32767" attributes="1"/>
-                          <Component id="urlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="additionalPropsLabel" alignment="0" max="32767" attributes="1"/>
-                          <Component id="serverNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="hostLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="passwordLabel" alignment="0" min="-2" pref="72" max="-2" attributes="0"/>
                           <Component id="userLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="hostLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="databaseLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="portLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="templateLabel" alignment="0" min="-2" pref="54" max="-2" attributes="0"/>
+                          <Component id="serverNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="sidLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="serviceLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="tnsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="dsnLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="hostField" alignment="0" pref="191" max="32767" attributes="1"/>
-                          <Component id="urlField" alignment="0" max="32767" attributes="1"/>
-                          <Component id="serverNameField" alignment="0" pref="348" max="32767" attributes="1"/>
-                          <Component id="additionalPropsField" alignment="0" max="32767" attributes="1"/>
-                          <Component id="userField" alignment="0" min="0" pref="0" max="32767" attributes="1"/>
-                          <Component id="databaseField" alignment="0" max="32767" attributes="1"/>
-                          <Component id="portField" alignment="0" max="32767" attributes="1"/>
-                          <Component id="passwordField" alignment="0" min="0" pref="0" max="32767" attributes="1"/>
+                      <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="databaseField" alignment="0" pref="368" max="32767" attributes="1"/>
+                                  <Component id="portField" alignment="0" pref="368" max="32767" attributes="1"/>
+                                  <Component id="sidField" alignment="0" pref="368" max="32767" attributes="1"/>
+                                  <Component id="serviceField" alignment="0" pref="368" max="32767" attributes="1"/>
+                                  <Component id="tnsField" alignment="0" pref="368" max="32767" attributes="1"/>
+                                  <Component id="dsnField" alignment="0" pref="368" max="32767" attributes="1"/>
+                                  <Component id="templateComboBox" alignment="0" pref="368" max="32767" attributes="1"/>
+                                  <Component id="hostField" alignment="0" pref="368" max="32767" attributes="1"/>
+                                  <Component id="serverNameField" alignment="1" pref="368" max="32767" attributes="1"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                          </Group>
                           <Component id="passwordCheckBox" alignment="0" min="-2" pref="308" max="-2" attributes="1"/>
-                          <Component id="templateComboBox" alignment="0" max="32767" attributes="1"/>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Component id="passwordField" alignment="0" pref="368" max="32767" attributes="1"/>
+                                  <Component id="userField" alignment="1" pref="368" max="32767" attributes="1"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                          </Group>
                       </Group>
                   </Group>
-                  <Component id="errorLabel" alignment="0" pref="498" max="32767" attributes="0"/>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Component id="additionalPropsLabel" max="32767" attributes="1"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="additionalPropsField" pref="348" max="32767" attributes="1"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                          <Component id="showUrlCheckBox" alignment="0" max="32767" attributes="1"/>
+                          <Component id="urlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="urlField" pref="368" max="32767" attributes="1"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="errorLabel" pref="494" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -75,6 +105,31 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="sidField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="sidLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="serviceField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="serviceLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="tnsField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="tnsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="dsnField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="dsnLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="serverNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="serverNameField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="userLabel" linkSize="1" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="userField" linkSize="1" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
@@ -85,26 +140,21 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="passwordCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="serverNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="serverNameField" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="additionalPropsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="additionalPropsField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="additionalPropsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="showUrlCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="urlLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="urlField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="errorLabel" max="32767" attributes="0"/>
-              <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
+              <Component id="errorLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -325,6 +375,40 @@
           <Color blue="0" green="0" red="ff" type="rgb"/>
         </Property>
         <Property name="text" type="java.lang.String" value="Error label"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="sidField">
+    </Component>
+    <Component class="javax.swing.JTextField" name="serviceField">
+    </Component>
+    <Component class="javax.swing.JTextField" name="tnsField">
+    </Component>
+    <Component class="javax.swing.JTextField" name="dsnField">
+    </Component>
+    <Component class="javax.swing.JLabel" name="sidLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="sidField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Service ID (SID):"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="serviceLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="serviceField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Service:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="tnsLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="TNS Name:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="dsnLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="DSN:"/>
       </Properties>
     </Component>
   </SubComponents>

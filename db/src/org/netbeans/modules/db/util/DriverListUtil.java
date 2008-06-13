@@ -56,6 +56,8 @@ public class DriverListUtil {
 
     private static List<JdbcUrl> urls = new LinkedList<JdbcUrl>();
     
+    private static JdbcUrl jdbcurl;
+    
     private static String getMessage(String key, String ... params) {
         return NbBundle.getMessage(DriverListUtil.class, key, params);
     }
@@ -246,17 +248,37 @@ public class DriverListUtil {
         "org.gjt.mm.mysql.Driver",
         "jdbc:mysql://<HOST>[:<PORT>][/<DB>]");
         
-        add("Oracle (Thin)",
-        "oracle.jdbc.OracleDriver",
-        "jdbc:oracle:thin:@<HOST>[:<PORT>]:<SID>");
+        add(getMessage("DRIVERNAME_OracleThin"), 
+                getMessage("TYPE_SID"), "oracle.jdbc.OracleDriver", 
+                "jdbc:oracle:thin:@<HOST>:<PORT>:<SID>[?<ADDITIONAL>]", true); // NOI18N
         
-        add("Oracle", "OCI 8i",
-        "oracle.jdbc.driver.OracleDriver",
-        "jdbc:oracle:oci8:@<SID>");
+        add(getMessage("DRIVERNAME_OracleThin"),
+                getMessage("TYPE_Service"), "oracle.jdbc.OracleDriver", 
+                "jdbc:oracle:thin:@//<HOST>:<PORT>/<SERVICE>[?<ADDITIONAL>]", true); // NOI18N
         
-        add("Oracle", "OCI 9i",
-        "oracle.jdbc.driver.OracleDriver",
-        "jdbc:oracle:oci:@<SID>");
+        add(getMessage("DRIVERNAME_OracleThin"),
+                getMessage("TYPE_TNSName"), "oracle.jdbc.OracleDriver",
+                "jdbc:oracle:thin:@<TNSNAME>[?<ADDITIONAL>]", true); // NOI18N
+                
+        add(getMessage("DRIVERNAME_OracleOCI"), 
+                "OCI8 " + getMessage("TYPE_SID"), "oracle.jdbc.driver.OracleDriver", 
+                "jdbc:oracle:oci8:@<HOST>:<PORT>:<SID>[?<ADDITIONAL>]", true); // NOI18N
+        
+        add(getMessage("DRIVERNAME_OracleOCI"),
+                "OCI8 " + getMessage("TYPE_Service"), "oracle.jdbc.driver.OracleDriver", 
+                "jdbc:oracle:oci8:@//<HOST>:<PORT>/<SERVICE>[?<ADDITIONAL>]", true); // NOI18N
+        
+        add(getMessage("DRIVERNAME_OracleOCI"),
+                getMessage("TYPE_TNSName"), "oracle.jdbc.driver.OracleDriver",
+                "jdbc:oracle:oci:@<TNSNAME>[?<ADDITIONAL>]", true); // NOI18N
+        
+        add(getMessage("DRIVERNAME_OracleOCI"), 
+                getMessage("TYPE_SID"), "oracle.jdbc.driver.OracleDriver", 
+                "jdbc:oracle:oci:@<HOST>:<PORT>:<SID>[?<ADDITIONAL>]", true); // NOI18N
+        
+        add(getMessage("DRIVERNAME_OracleOCI"),
+                getMessage("TYPE_Service"), "oracle.jdbc.driver.OracleDriver", 
+                "jdbc:oracle:oci:@//<HOST>:<PORT>/<SERVICE>[?<ADDITIONAL>]", true); // NOI18N
         
         add("Oracle (DataDirect Connect for JDBC)",
         "com.ddtek.jdbc.oracle.OracleDriver",

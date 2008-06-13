@@ -66,7 +66,6 @@ public class JdbcUrl extends HashMap<String, String> {
     
     private HashSet<String> supportedTokens = new HashSet<String>();
     private HashSet<String> requiredTokens = new HashSet<String>();
-    private String databaseLabel;
     private final boolean parseUrl;
         
     public static final String TOKEN_DB = "<DB>";
@@ -74,19 +73,23 @@ public class JdbcUrl extends HashMap<String, String> {
     public static final String TOKEN_PORT = "<PORT>";
     public static final String TOKEN_SERVERNAME = "<SERVERNAME>";
     public static final String TOKEN_ADDITIONAL = "<ADDITIONAL>";
+    public static final String TOKEN_TNSNAME = "<TNSNAME>";
+    public static final String TOKEN_SID = "<SID>";
+    public static final String TOKEN_SERVICENAME = "<SERVICE>";
+    public static final String TOKEN_DSN = "<DSN>";
     
     private static final String OPTIONAL_START = "[";
     private static final String OPTIONAL_END = "]";
     
     // A very common set of supported tokens for a URL, so let's
     // predefine it
-    public static Set<String> DB_HOST_PORT_TOKEN_SET = new HashSet<String>();
+    private static Set<String> DB_HOST_PORT_TOKEN_SET = new HashSet<String>();
     
     static {
         DB_HOST_PORT_TOKEN_SET.add(TOKEN_DB);
         DB_HOST_PORT_TOKEN_SET.add(TOKEN_HOST);
         DB_HOST_PORT_TOKEN_SET.add(TOKEN_PORT);
-        DB_HOST_PORT_TOKEN_SET.add(TOKEN_ADDITIONAL);
+        DB_HOST_PORT_TOKEN_SET.add(TOKEN_ADDITIONAL);        
     }
         
     private final String name;
@@ -99,7 +102,6 @@ public class JdbcUrl extends HashMap<String, String> {
         this.className = className;
         this.type = type;
         this.urlTemplate = urlTemplate;
-        this.databaseLabel = getMessage("DATABASE_LABEL");
         this.parseUrl = parseUrl;
         
         if (parseUrl) {
@@ -140,16 +142,6 @@ public class JdbcUrl extends HashMap<String, String> {
         return this.parseUrl;
     }
 
-    // Can be "Database" or "DSN" or "SID" depending on the driver
-    // Default is "Database"
-    public String getDatabaseLabel() {
-        return databaseLabel;
-    }
-    
-    public void setDatabaseLabel(String databaseLabel) {
-        this.databaseLabel = databaseLabel;
-    }
-        
     public void setDriver(JDBCDriver driver) {
         this.driver = driver;
     }
