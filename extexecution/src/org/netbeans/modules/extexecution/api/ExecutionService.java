@@ -244,8 +244,9 @@ public final class ExecutionService {
                 if (workingIO == null) { // free IO was not found, create new one
                     displayName = getNonActiveDisplayName(originalDisplayName);
 
-                    stopAction = new StopAction();
+
                     if (descriptor.isControllable()) {
+                        stopAction = new StopAction();
                         rerunAction = new RerunAction();
 
                         workingIO = IOProvider.getDefault().getIO(displayName,
@@ -425,7 +426,7 @@ public final class ExecutionService {
     private Integer executionCleanup(Process process, ProgressHandle handle) {
         if (workingIO != null && workingIO != customIO) {
             ManagedInputOutput.addInputOutput(workingIO, displayName,
-                    descriptor.isControllable() ? stopAction : null, rerunAction);
+                    stopAction, rerunAction);
         }
 
         ACTIVE_DISPLAY_NAMES.remove(displayName);
