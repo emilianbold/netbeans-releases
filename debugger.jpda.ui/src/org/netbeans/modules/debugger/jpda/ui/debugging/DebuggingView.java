@@ -95,6 +95,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -141,6 +142,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private JPanel rightPanel;
     
     private ThreadsListener threadsListener;
+    private transient Reference<TopComponent> lastSelectedTCRef;
+    private transient Reference<TopComponent> componentToActivateAfterClose;
     
     /**
      * instance/singleton of this class
@@ -301,8 +304,12 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 }
                 previousDebugger = this.debugger;
                 this.debugger = deb;
-                this.session = engine.lookupFirst(null, Session.class);
-                deb.addPropertyChangeListener(this);
+                if (deb != null) {
+                    this.session = engine.lookupFirst(null, Session.class);
+                    deb.addPropertyChangeListener(this);
+                } else {
+                    this.session = null;
+                }
             }
             threadsListener.changeDebugger(deb);
         } else {
@@ -407,6 +414,41 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     protected void componentDeactivated() {
         ExplorerUtils.activateActions(manager, false);
     }
+
+    @Override
+    protected void componentOpened() {
+        // Remember which component was active so that we can re-activate it
+        // after Debugging is closed.
+        super.componentOpened();
+        Mode debuggingMode = WindowManager.getDefault().findMode(this);
+        lastSelectedTCRef = new WeakReference(debuggingMode.getSelectedTopComponent());
+        requestActive();
+    }
+
+    @Override
+    public boolean canClose() {
+        // Check whether we're active, if so, we'll re-activate the previously
+        // active component.
+        Mode debuggingMode = WindowManager.getDefault().findMode(this);
+        if (debuggingMode.getSelectedTopComponent() == this) {
+            componentToActivateAfterClose = lastSelectedTCRef;
+        } else {
+            componentToActivateAfterClose = null;
+        }
+        return super.canClose();
+    }
+
+    @Override
+    protected void componentClosed() {
+        // Re-activate the previously active component, if any.
+        TopComponent lastSelectedTC = (componentToActivateAfterClose != null) ? componentToActivateAfterClose.get() : null;
+        if (lastSelectedTC != null) {
+            lastSelectedTC.requestActive();
+        }
+        super.componentClosed();
+    }
+    
+    
     
 //    public org.openide.util.HelpCtx getHelpCtx() {
 //        return new org.openide.util.HelpCtx("NetbeansDebuggerSourcesNode"); // NOI18N

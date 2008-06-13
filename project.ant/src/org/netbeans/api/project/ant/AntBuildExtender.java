@@ -67,7 +67,6 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -75,6 +74,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.Parameters;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -206,11 +206,10 @@ public final class AntBuildExtender {
      * 
      * @param library global library to be copied to shared library folder of the project
      * @throws java.io.IOException exception thrown when properties cannot be loaded or saved
+     * @since org.netbeans.modules.project.ant/1 1.23
      */
     public void addLibrary(Library library) throws IOException {
-        if (library == null) {
-            throw new NullPointerException("null library passed to addLibrary");
-        }
+        Parameters.notNull("library", library);
         setValueOfProperty(ANT_CUSTOMTASKS_LIBS_PROPNAME, library.getName(), true);
         if (refHelper != null && refHelper.getProjectLibraryManager() != null) {
             if (refHelper.getProjectLibraryManager().getLibrary(library.getName()) == null) {
@@ -229,11 +228,10 @@ public final class AntBuildExtender {
      * @param library either global or shared library to be removed from list of 
      *     libraries needed for running Ant script; cannot be null
      * @throws java.io.IOException exception thrown when properties cannot be loaded or saved
+     * @since org.netbeans.modules.project.ant/1 1.23
      */
     public void removeLibrary(Library library) throws IOException {
-        if (library == null) {
-            throw new NullPointerException("null library passed to removeLibrary");
-        }
+        Parameters.notNull("library", library);
         setValueOfProperty(ANT_CUSTOMTASKS_LIBS_PROPNAME, library.getName(), false);
     }
     
@@ -256,7 +254,7 @@ public final class AntBuildExtender {
                     String libIDs[] = new String[0];
                     String savedPropVal = editableProps.getProperty(propName);
                     if (savedPropVal != null) {
-                        libIDs = PropertyUtils.tokenizePath(savedPropVal);
+                        libIDs = savedPropVal.split(",");
                     }
                     Set libIDSet = new TreeSet(Arrays.asList(libIDs));
                     if (add) {
@@ -268,7 +266,7 @@ public final class AntBuildExtender {
                     StringBuilder propValue = new StringBuilder();
                     for (String newLibID : newLibIDs) {
                         propValue.append(newLibID);
-                        propValue.append(";");
+                        propValue.append(",");
                     }
                     propValue.delete(propValue.length() - 1, propValue.length());
                     
