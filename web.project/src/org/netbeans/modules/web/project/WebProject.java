@@ -463,7 +463,6 @@ public final class WebProject implements Project, AntProjectListener {
             new WebJPADataSourceSupport(this), 
             new WebServerStatusProvider(this),
             new WebJPAModuleInfo(this),
-//            new WebProjectJAXWSVersionProvider(helper, this),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),
