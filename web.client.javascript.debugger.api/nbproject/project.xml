@@ -181,7 +181,10 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.web.client.tools.impl</friend>
+                <package>org.netbeans.modules.web.client.javascript.debugger.api</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>
