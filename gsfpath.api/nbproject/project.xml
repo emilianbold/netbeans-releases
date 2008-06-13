@@ -147,6 +147,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.fortress.editing</friend>
                 <friend>org.netbeans.modules.fortress.platform</friend>
                 <friend>org.netbeans.modules.fortress.project</friend>
+                <friend>org.netbeans.modules.groovy.grailsproject</friend>
                 <friend>org.netbeans.modules.groovy.support</friend>
                 <friend>org.netbeans.modules.gsf</friend>
                 <friend>org.netbeans.modules.gsf.tools</friend>

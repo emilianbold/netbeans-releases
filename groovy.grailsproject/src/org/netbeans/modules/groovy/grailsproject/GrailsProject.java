@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.groovy.grailsproject;
 
-import org.netbeans.modules.groovy.grailsproject.GrailsServerState;
 import org.netbeans.modules.groovy.grailsproject.ui.GrailsLogicalViewProvider;
 import org.netbeans.modules.groovy.grailsproject.ui.GrailsProjectCustomizerProvider;
 import java.awt.Image;
@@ -64,11 +63,13 @@ import org.openide.util.lookup.Lookups;
 import org.openidex.search.SearchInfo;
 import org.openidex.search.SearchInfoFactory;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.w3c.dom.Element;
@@ -210,11 +211,25 @@ public final class GrailsProject implements Project {
 
     private class OpenHook extends ProjectOpenedHook {
 
+        private org.netbeans.modules.gsfpath.api.classpath.ClassPath cp;
+        
         @Override
         protected void projectOpened() {
+            ClassPath[] sourceClasspaths = cpProvider.getProjectClassPaths(ClassPath.SOURCE);
+            
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
-            GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+            GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, sourceClasspaths);
+            
+            // GSF classpath
+            List<FileObject> roots = new ArrayList<FileObject>();
+            for (ClassPath classPath : sourceClasspaths) {
+                roots.addAll(Arrays.asList(classPath.getRoots()));
+            }
+            cp = ClassPathSupport.createClassPath(roots.toArray(new FileObject[roots.size()]));
+            org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().register(
+                    org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE, 
+                    new org.netbeans.modules.gsfpath.api.classpath.ClassPath[] { cp });
         }
 
         @Override
@@ -222,6 +237,13 @@ public final class GrailsProject implements Project {
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+            
+            // GSF classpath
+            if (cp != null) {
+                org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().unregister(
+                        org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE, 
+                        new org.netbeans.modules.gsfpath.api.classpath.ClassPath[] { cp });
+            }
         }
         
     }
