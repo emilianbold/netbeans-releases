@@ -47,8 +47,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.modules.xml.retriever.catalog.impl.CatalogFileWrapperDOMImpl;
 import org.netbeans.modules.xml.retriever.catalog.impl.CatalogWriteModelImpl;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
@@ -134,8 +135,7 @@ public class TestCatalogModel extends CatalogWriteModelImpl {
             File file = FileUtil.toFile(fo);
             FileInputStream fis = new FileInputStream(file);
             byte buffer[] = new byte[fis.available()];
-            result = new org.netbeans.editor.BaseDocument(
-                    org.netbeans.modules.xml.text.syntax.XMLKit.class, false);
+            result = new BaseDocument(BaseKit.class, false);
             result.remove(0, result.getLength());
             fis.read(buffer);
             fis.close();

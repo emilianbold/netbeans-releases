@@ -52,9 +52,9 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.spi.glassfish.AppDesc;
-import org.netbeans.spi.glassfish.ResourceDesc;
-import org.netbeans.spi.glassfish.ServerCommand;
+import org.netbeans.modules.glassfish.spi.AppDesc;
+import org.netbeans.modules.glassfish.spi.ResourceDesc;
+import org.netbeans.modules.glassfish.spi.ServerCommand;
 
 
 /**

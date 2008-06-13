@@ -48,20 +48,16 @@
 
 package org.netbeans.modules.xml.schema.model.readwrite;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.Iterator;
 import javax.swing.text.Document;
-import junit.framework.*;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.xml.schema.model.*;
-import org.netbeans.modules.xml.schema.model.impl.SchemaComponentFactoryImpl;
 import org.netbeans.modules.xml.schema.model.impl.SchemaImpl;
 import org.netbeans.modules.xml.schema.model.impl.SchemaModelImpl;
 import org.netbeans.modules.xml.schema.model.visitor.DefaultSchemaVisitor;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.openide.awt.UndoRedo.Empty;
 import org.w3c.dom.Text;
 /**
  *

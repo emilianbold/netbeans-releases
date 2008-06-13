@@ -50,8 +50,8 @@ public class BorderColorElementAction extends DiagramElementAction{
     
     private static final String actionPopup = PopupConstants.BORDER_COLOR;
     
-    public BorderColorElementAction(ElementTypes elementType) {
-        super(null, elementType+"|"+actionPopup);
+    public BorderColorElementAction() {
+        super(null, PopupConstants.COLORS_FONTS +"|"+actionPopup);
     }
 
 }

@@ -39,6 +39,7 @@
 package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.util.List;
+import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 
 /**
@@ -48,17 +49,20 @@ import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 public final class TestRecognizer extends OutputRecognizer {
 
     private final Manager manager;
-    private final TestSession session;
+    private TestSession session;
+    private final FileLocator fileLocator;
+            
     private final List<TestRecognizerHandler> handlers;
 
-    public TestRecognizer(Manager manager, TestSession session, List<TestRecognizerHandler> handlers) {
+    public TestRecognizer(Manager manager, FileLocator fileLocator, List<TestRecognizerHandler> handlers) {
         this.manager = manager;
-        this.session = session;
+        this.fileLocator = fileLocator;
         this.handlers = handlers;
     }
 
     @Override
     public void start() {
+        this.session = new TestSession(fileLocator);
         manager.testStarted(session);
     }
 

@@ -124,7 +124,7 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class JsCodeCompletion implements CodeCompletionHandler {
-    private static final int MAX_COMPLETION_ITEMS = JsIndex.MAX_SEARCH_ITEMS;
+    static int MAX_COMPLETION_ITEMS = JsIndex.MAX_SEARCH_ITEMS;
     private static ImageIcon keywordIcon;
     private boolean caseSensitive;
     private static final String[] REGEXP_WORDS =

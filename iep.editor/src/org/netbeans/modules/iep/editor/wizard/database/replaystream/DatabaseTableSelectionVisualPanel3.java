@@ -17,6 +17,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.iep.editor.share.SharedConstants;
 import org.netbeans.modules.iep.editor.wizard.database.ColumnInfo;
 import org.netbeans.modules.iep.editor.wizard.database.DBArtifactTreeModel;
 import org.netbeans.modules.iep.editor.wizard.database.DatabaseTableWizardConstants;
@@ -42,7 +43,7 @@ public final class DatabaseTableSelectionVisualPanel3 extends JPanel {
     }
 
     private void init() {
-        jndiNameTextField.setText("jdbc/replayStreamTable");
+        jndiNameTextField.setText(SharedConstants.DEFAULT_JNDINAME);
     }
     
     

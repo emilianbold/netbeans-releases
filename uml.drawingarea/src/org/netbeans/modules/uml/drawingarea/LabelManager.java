@@ -90,6 +90,18 @@ public interface LabelManager extends PropertyChangeListener
      */
     public void showLabel(String name, LabelType type);
     
+   /**
+     * select and focus on labvel if it's shown
+     * @param name
+     */
+    public void selectLabel(final String name);
+   /**
+     * select and focus on labvel if it's shown
+     * @param name
+     * @param type
+     */
+    public void selectLabel(final String name, final LabelType type);
+    
     /**
      * Hides the label with the specified name.  The label will have the 
      * type of LabelType.EDGE

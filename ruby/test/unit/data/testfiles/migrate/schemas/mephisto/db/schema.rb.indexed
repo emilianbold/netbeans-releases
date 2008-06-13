@@ -1,15 +1,10 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/schema.rb
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   dbtable : assets
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : content_type;string
   dbcolumn : created_at;datetime
   dbcolumn : filename;string
@@ -25,22 +20,22 @@ Not Indexed:
   dbversion : schema
 
 
-Document 2
-Indexed:
+Document 1
+Searchable Keys:
   dbtable : assigned_sections
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : article_id;integer
   dbcolumn : position;integer
   dbcolumn : section_id;integer
   dbversion : schema
 
 
-Document 3
-Indexed:
+Document 2
+Searchable Keys:
   dbtable : cached_pages
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : cleared_at;datetime
   dbcolumn : references;text
   dbcolumn : site_id;integer
@@ -49,11 +44,11 @@ Not Indexed:
   dbversion : schema
 
 
-Document 4
-Indexed:
+Document 3
+Searchable Keys:
   dbtable : content_versions
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : approved;boolean
   dbcolumn : article_id;integer
   dbcolumn : author;string
@@ -83,11 +78,11 @@ Not Indexed:
   dbversion : schema
 
 
-Document 5
-Indexed:
+Document 4
+Searchable Keys:
   dbtable : contents
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : approved;boolean
   dbcolumn : article_id;integer
   dbcolumn : author;string
@@ -116,11 +111,11 @@ Not Indexed:
   dbversion : schema
 
 
-Document 6
-Indexed:
+Document 5
+Searchable Keys:
   dbtable : events
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : article_id;integer
   dbcolumn : author;string
   dbcolumn : body;text
@@ -133,11 +128,11 @@ Not Indexed:
   dbversion : schema
 
 
-Document 7
-Indexed:
+Document 6
+Searchable Keys:
   dbtable : memberships
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : admin;boolean
   dbcolumn : created_at;datetime
   dbcolumn : site_id;integer
@@ -145,11 +140,11 @@ Not Indexed:
   dbversion : schema
 
 
-Document 8
-Indexed:
+Document 7
+Searchable Keys:
   dbtable : sections
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : archive_path;string
   dbcolumn : archive_template;string
   dbcolumn : articles_count;integer
@@ -164,22 +159,22 @@ Not Indexed:
   dbversion : schema
 
 
-Document 9
-Indexed:
+Document 8
+Searchable Keys:
   dbtable : sessions
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : data;text
   dbcolumn : session_id;string
   dbcolumn : updated_at;datetime
   dbversion : schema
 
 
-Document 10
-Indexed:
+Document 9
+Searchable Keys:
   dbtable : sites
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : akismet_key;string
   dbcolumn : akismet_url;string
   dbcolumn : approve_comments;boolean
@@ -201,31 +196,31 @@ Not Indexed:
   dbversion : schema
 
 
-Document 11
-Indexed:
+Document 10
+Searchable Keys:
   dbtable : taggings
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : tag_id;integer
   dbcolumn : taggable_id;integer
   dbcolumn : taggable_type;string
   dbversion : schema
 
 
-Document 12
-Indexed:
+Document 11
+Searchable Keys:
   dbtable : tags
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : name;string
   dbversion : schema
 
 
-Document 13
-Indexed:
+Document 12
+Searchable Keys:
   dbtable : users
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : activated_at;datetime
   dbcolumn : activation_code;string
   dbcolumn : admin;boolean

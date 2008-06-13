@@ -58,6 +58,7 @@ import org.netbeans.modules.spring.beans.refactoring.ModificationTransaction;
 import org.netbeans.modules.spring.beans.refactoring.SpringRefactoringElement;
 import org.netbeans.modules.spring.beans.refactoring.SpringRefactorings;
 import org.netbeans.modules.spring.beans.refactoring.SpringRefactorings.RenamedClassName;
+import org.netbeans.modules.spring.beans.refactoring.SpringRefactorings.RenamedProperty;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -90,6 +91,15 @@ public class SpringRenamePlugin implements RefactoringPlugin {
 
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         TreePathHandle treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
+
+        if (treePathHandle != null && treePathHandle.getKind() == Kind.METHOD) {
+            return prepareMethodRefactoring(refactoringElements, treePathHandle);
+        }
+
+        return prepareClassRefactoring(refactoringElements, treePathHandle);
+    }
+
+    private Problem prepareClassRefactoring(RefactoringElementsBag refactoringElements, TreePathHandle treePathHandle) {
         FileObject fo = null;
         if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS) {
             fo = treePathHandle.getFileObject();
@@ -112,14 +122,13 @@ public class SpringRenamePlugin implements RefactoringPlugin {
         if (scope == null) {
             return null;
         }
+
         try {
             if (treePathHandle != null) {
                 RenamedClassName clazz = null;
-                if (treePathHandle != null) {
-                    JavaSource js = JavaSource.forFileObject(fo);
-                    if (js != null) {
-                        clazz = SpringRefactorings.getRenamedClassName(treePathHandle, js, refactoring.getNewName());
-                    }
+                JavaSource js = JavaSource.forFileObject(fo);
+                if (js != null) {
+                    clazz = SpringRefactorings.getRenamedClassName(treePathHandle, js, refactoring.getNewName());
                 }
                 if (clazz != null) {
                     String oldBinaryName = clazz.getOldBinaryName();
@@ -147,6 +156,40 @@ public class SpringRenamePlugin implements RefactoringPlugin {
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }
+        return null;
+    }
+
+    private Problem prepareMethodRefactoring(RefactoringElementsBag refactoringElements, final TreePathHandle treePathHandle) {
+        FileObject fo = treePathHandle.getFileObject();
+
+        try {
+            RenamedProperty prop = null;
+            JavaSource js = JavaSource.forFileObject(fo);
+            if (js != null) {
+                prop = SpringRefactorings.getRenamedProperty(treePathHandle, js, refactoring.getNewName());
+            }
+
+            SpringScope scope = SpringScope.getSpringScope(fo);
+            if (scope == null) {
+                return null;
+            }
+
+            if (prop != null) {
+                String newName = prop.getNewName();
+                String oldName = prop.getOldName();
+                if (newName != null && oldName != null) {
+                    Modifications mods = new Modifications();
+                    for (Occurrence occurrence : Occurrences.getPropertyOccurrences(prop, js, scope)) {
+                        refactoringElements.add(refactoring,
+                                SpringRefactoringElement.createPropertyRefModification(occurrence, mods, prop.getOldName(), prop.getNewName()));
+                    }
+                    refactoringElements.registerTransaction(new ModificationTransaction(mods));
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
         return null;
     }
 }

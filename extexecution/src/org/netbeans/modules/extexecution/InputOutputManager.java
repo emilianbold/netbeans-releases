@@ -50,7 +50,7 @@ import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 
 public final class InputOutputManager {
-    
+
     /**
      * All tabs which were used for some process which has now ended.
      * These are closed when you start a fresh process.
@@ -62,12 +62,12 @@ public final class InputOutputManager {
 
     private final InputOutput io;
     private final Data data;
-    
+
     private InputOutputManager(final InputOutput io, final Data data) {
         this.io = io;
         this.data = data;
     }
-    
+
     public InputOutput getIO() {
         return io;
     }
@@ -83,7 +83,7 @@ public final class InputOutputManager {
     public RerunAction getRerunAction() {
         return data.rerunAction;
     }
-    
+
     public static void addFreeIO(InputOutput io, String displayName, StopAction stopAction, RerunAction rerunAction) {
         synchronized (FREE_IOS) {
             FREE_IOS.put(io, new Data(displayName, stopAction, rerunAction));
@@ -92,7 +92,7 @@ public final class InputOutputManager {
 
     /**
      * Tries to find free Output Window tab for the given name.
-     * 
+     *
      * @param name the name of the free tab. Other free tabs are ignored.
      * @return free tab and its current display name or <tt>null</tt>
      */
@@ -137,17 +137,17 @@ public final class InputOutputManager {
         }
         return toMatch.substring(base.length()).matches("^(\\ #[0-9]+)?$"); // NOI18N
     }
-    
+
     private static class Data {
-        
+
         final String displayName;
         final StopAction stopAction;
         final RerunAction rerunAction;
-        
+
         Data(final String displayName, final StopAction stopAction, final RerunAction rerunAction) {
             this.displayName = displayName;
             this.stopAction = stopAction;
             this.rerunAction = rerunAction;
         }
     }
-}    
+}

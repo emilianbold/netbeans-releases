@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/dragdrop.js
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   base : _cacheobservercallbacks;Draggables;_cacheObserverCallbacks;|PRIVATE|FUNCTION|;;0;;;void;
   base : _constructindex;Sortable;_constructIndex;|DOCUMENTED|PRIVATE|FUNCTION|;node;0;6794;;;
   base : _findchildrenelement;Sortable;_findChildrenElement;|DOCUMENTED|PRIVATE|FUNCTION|;element,containerTag;0;63db;;;
@@ -298,4 +293,4 @@ Indexed:
   fqn : sortableobserver;;SortableObserver;|CONSTRUCTOR|;;0;;;;
   fqn : sortableobserver;;SortableObserver;|DOCUMENTED|PROPERTY|;;0;3fa1;;;
 
-Not Indexed:
+Not Searchable Keys:

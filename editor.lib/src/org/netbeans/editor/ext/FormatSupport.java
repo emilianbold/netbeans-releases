@@ -715,7 +715,7 @@ public class FormatSupport {
         int offset = lineStart.getOffset();
 
         int col = 0;
-        int tabSize = formatWriter.getFormatter().getTabSize();
+        int tabSize = getTabSize();
 
         while (token != null) {
             String text = token.getImage();
