@@ -469,8 +469,13 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
     }
 
     private boolean isContainsMethod(FileObject saasServiceFile, 
-            String saasServiceMethodName, String[] parameters, Object[] paramTypes) {
-        return false;
+            String saasServiceMethodName, String[] parameters, Object[] paramTypes) throws IOException {
+        try {
+            return findText(Util.getDocument(saasServiceFile), 
+                    "public static function "+saasServiceMethodName, true) != -1;
+        } catch (BadLocationException ex) {
+            throw new IOException(ex.getMessage());
+        }
     }
 
     protected String getCustomMethodBody() throws IOException {
