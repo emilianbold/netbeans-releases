@@ -292,6 +292,7 @@ public final class ExecutionService {
             }
 
             final ProgressHandle handle = createProgressHandle();
+            final InputOutput io = workingIO;
 
             configureActions(rerunAction, stopAction);
 
@@ -313,7 +314,7 @@ public final class ExecutionService {
 
                         process = processCreator.call();
 
-                        executionProcessing(process, workingIO, descriptor.isInputVisible());
+                        executionProcessing(process, io, descriptor.isInputVisible());
                     } catch (InterruptedException ex) {
                         LOGGER.log(Level.FINE, null, ex);
                         interrupted = true;
@@ -360,11 +361,11 @@ public final class ExecutionService {
 
         Cancellable cancellable = null;
         if (descriptor.isControllable()) {
-            cancellable = new ProgressCancellable();
+            cancellable = new ProgressCancellable(this);
         }
 
         ProgressHandle handle = ProgressHandleFactory.createHandle(displayName,
-                cancellable, new ProgressAction());
+                cancellable, new ProgressAction(workingIO));
 
         handle.setInitialDelay(0);
         handle.start();
@@ -422,28 +423,30 @@ public final class ExecutionService {
     }
 
     private Integer executionCleanup(Process process, ProgressHandle handle) {
-        if (workingIO != null && workingIO != customIO) {
-            ManagedInputOutput.addInputOutput(workingIO, displayName,
-                    stopAction, rerunAction);
-        }
-
-        ACTIVE_DISPLAY_NAMES.remove(displayName);
-
         final Runnable post = descriptor.getPostExecution();
         if (post != null) {
             post.run();
         }
 
-        if (handle != null) {
-            handle.finish();
-        }
+        synchronized (this) {
+            if (workingIO != null && workingIO != customIO) {
+                ManagedInputOutput.addInputOutput(workingIO, displayName,
+                        stopAction, rerunAction);
+            }
 
-        if (stopAction != null) {
-            stopAction.setEnabled(false);
-        }
+            ACTIVE_DISPLAY_NAMES.remove(displayName);
 
-        if (rerunAction != null) {
-            rerunAction.setEnabled(true);
+            if (handle != null) {
+                handle.finish();
+            }
+
+            if (stopAction != null) {
+                stopAction.setEnabled(false);
+            }
+
+            if (rerunAction != null) {
+                rerunAction.setEnabled(true);
+            }
         }
 
         if (process != null) {
@@ -499,10 +502,16 @@ public final class ExecutionService {
         return nonActiveDN;
     }
 
-    private class ProgressCancellable implements Cancellable {
+    private static class ProgressCancellable implements Cancellable {
+
+        private final ExecutionService service;
+
+        public ProgressCancellable(ExecutionService service) {
+            this.service = service;
+        }
 
         public boolean cancel() {
-            Future<Integer> current = getCurrent();
+            Future<Integer> current = service.getCurrent();
             if (current != null) {
                 current.cancel(true);
             }
@@ -510,10 +519,16 @@ public final class ExecutionService {
         }
     }
 
-    private class ProgressAction extends AbstractAction {
+    private static class ProgressAction extends AbstractAction {
+
+        private final InputOutput io;
+
+        public ProgressAction(InputOutput io) {
+            this.io = io;
+        }
 
         public void actionPerformed(ActionEvent e) {
-            workingIO.select();
+            io.select();
         }
     }
 
