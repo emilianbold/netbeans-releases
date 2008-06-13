@@ -39,20 +39,10 @@
  * made subject to such option by the copyright holder.
  */
 
-/*
- * XDMPerfNumbers.java
- *
- * Created on November 10, 2005, 11:17 AM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.xml.xdm.perf;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,9 +50,9 @@ import java.io.InputStreamReader;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenItem;
-import org.netbeans.editor.ext.ExtSyntaxSupport;
-import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xdm.XDMModel;
 import org.openide.util.Lookup;
@@ -79,7 +69,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Samaresh
  */
-public class XDMPerfNumbers extends TestCase {
+public class XDMPerfNumberTest extends TestCase {
     
     /**
      * Performance numbers are run on this giant schema.
@@ -105,76 +95,69 @@ public class XDMPerfNumbers extends TestCase {
      */
     boolean readLine = false;
     
-    public XDMPerfNumbers(String testName) {
+    public XDMPerfNumberTest(String testName) {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
     }
 
+    @Override
     protected void tearDown() throws Exception {
     }
     
     public static Test suite() {
-        TestSuite suite = new TestSuite(XDMPerfNumbers.class);
-        
+        TestSuite suite = new TestSuite();
+        suite.addTest(new XDMPerfNumberTest("testReadUsingDOM"));
+        suite.addTest(new XDMPerfNumberTest("testReadUsingSyntaxParser"));
+        suite.addTest(new XDMPerfNumberTest("testReadUsingXDM"));        
         return suite;
     }
             
-    public void testReadUsingDOM() {
+    public void testReadUsingDOM() throws Exception {
         System.out.println("testReadUsingDOM");
         long start = System.currentTimeMillis();
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        try {
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            InputStream is = getClass().getResourceAsStream(SCHEMA_FILE);
-            org.w3c.dom.Document document = builder.parse(is);
-            this.assertNotNull("DOM model didn't get created!!!", document);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        InputStream is = getClass().getResourceAsStream(SCHEMA_FILE);
+        org.w3c.dom.Document document = builder.parse(is);
+        this.assertNotNull("DOM model didn't get created!!!", document);
         long end = System.currentTimeMillis();
         System.out.println("Time taken to parse using DOM: " + (end-start) + "ms.\n");
     }
         
-    public void testReadUsingSyntaxParser() {
+    public void testReadUsingSyntaxParser() throws Exception {
         System.out.println("testReadUsingSyntaxParser");
-        try {
-            java.net.URL url = getClass().getResource(SCHEMA_FILE);            
-            // prepare document
-            BaseDocument basedoc = new BaseDocument(XMLKit.class, false);
-            insertStringInDocument(new InputStreamReader(url.openStream(),"UTF-8"), basedoc);
-
-            long start = System.currentTimeMillis();
-            //org.w3c.dom.Document doc = new XMLSyntaxParser(basedoc).parse();
-            ExtSyntaxSupport sup = (ExtSyntaxSupport)basedoc.getSyntaxSupport();
-            TokenItem token = sup.getTokenChain(0, basedoc.getLength());
-            long end = System.currentTimeMillis();
-            System.out.println("Time taken to parse using Syntax Parser: " + (end-start) + "ms.\n");
-            this.assertNotNull("Syntax parser model didn't get created!!!", sup);
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        java.net.URL url = getClass().getResource(SCHEMA_FILE);            
+        // prepare document
+        BaseDocument basedoc = new BaseDocument(BaseKit.class, false);
+        insertStringInDocument(new InputStreamReader(url.openStream(),"UTF-8"), basedoc);
+        long start = System.currentTimeMillis();
+        SyntaxSupport sup = basedoc.getSyntaxSupport();
+        TokenItem ti = sup.getTokenChain(0);
+        while(ti != null) {
+            ti = ti.getNext();
         }
+        long end = System.currentTimeMillis();
+        System.out.println("Time taken to parse using Syntax Parser: " + (end-start) + "ms.\n");
+        this.assertNotNull("Syntax parser model didn't get created!!!", sup);
     }    
     
-    public void testReadUsingXDM() {
+    public void testReadUsingXDM() throws Exception {
         long start = System.currentTimeMillis();
-        try {
-            javax.swing.text.Document sd = new BaseDocument(XMLKit.class, false);
-            XDMModel model = null;
+        javax.swing.text.Document sd = new BaseDocument(BaseKit.class, false);
+        XDMModel model = null;
 
-            InputStreamReader reader = new InputStreamReader(getClass().getResourceAsStream(SCHEMA_FILE),"UTF-8");
-            insertStringInDocument(reader, sd);
-            
-            start = System.currentTimeMillis();
-	    Lookup lookup = Lookups.singleton(sd);
-	    ModelSource ms = new ModelSource(lookup, true);
-            model = new XDMModel(ms);
-            model.sync();
-            this.assertNotNull("XDM model didn't get created!!!", model);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+        InputStreamReader reader = new InputStreamReader(getClass().getResourceAsStream(SCHEMA_FILE),"UTF-8");
+        insertStringInDocument(reader, sd);
+
+        start = System.currentTimeMillis();
+        Lookup lookup = Lookups.singleton(sd);
+        ModelSource ms = new ModelSource(lookup, true);
+        model = new XDMModel(ms);
+        model.sync();
+        this.assertNotNull("XDM model didn't get created!!!", model);
         long end = System.currentTimeMillis();
         System.out.println("Time taken to parse using XDM: " + (end-start) + "ms.\n");
     }

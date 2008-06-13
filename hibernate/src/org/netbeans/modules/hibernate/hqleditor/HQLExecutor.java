@@ -38,14 +38,13 @@
  */
 package org.netbeans.modules.hibernate.hqleditor;
 
-import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+import org.netbeans.api.progress.ProgressHandle;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  * Executes HQL query.
@@ -60,21 +59,38 @@ public class HQLExecutor {
      * @param configFileObject hibernate configuration object.
      * @return HQLResult containing the execution result (including any errors).
      */
-    public HQLResult execute(String hql, FileObject configFileObject) {
+    public HQLResult execute(String hql, 
+            FileObject configFileObject,
+            int maxRowCount,
+            ProgressHandle ph) {
+        HQLResult result = new HQLResult();
         try {
 
             Configuration configuration = new Configuration();
             configuration.configure(FileUtil.toFile(configFileObject));
 
+            ph.progress(60);
+            
             SessionFactory sessionFactory = configuration.buildSessionFactory();
             Session session = sessionFactory.openSession();
+
+            ph.progress(70);
+            
             Query query = session.createQuery(hql);
-            HQLResult result = new HQLResult();
-            result.addResults(query.list());
-            return result;
-        } catch (HibernateException he) {
-            Exceptions.printStackTrace(he);
+            query.setMaxResults(maxRowCount);
+
+            hql = hql.trim();
+            hql = hql.toUpperCase();
+
+            if (hql.startsWith("UPDATE") || hql.startsWith("DELETE")) { //NOI18N
+                result.setUpdateOrDeleteResult(query.executeUpdate());
+            } else {
+                result.setQueryResults(query.list());
+            }
+
+        } catch (Exception e) {
+            result.getExceptions().add(e);
         }
-        return new HQLResult();
+        return result;
     }
 }

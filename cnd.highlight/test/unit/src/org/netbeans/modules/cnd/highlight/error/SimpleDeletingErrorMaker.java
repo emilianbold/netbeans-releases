@@ -40,12 +40,12 @@
 package org.netbeans.modules.cnd.highlight.error;
 
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
-import org.openide.filesystems.FileLock;
 
 /**
  * An ErrorMaker that searches for and deletes a string
@@ -55,15 +55,18 @@ import org.openide.filesystems.FileLock;
 public abstract class SimpleDeletingErrorMaker extends BaseErrorMaker {
 
     private String textToDelete;
-    private int searchFrom = 0;
+    private int searchFrom;
 
     public SimpleDeletingErrorMaker(String textToDelete) {
         this.textToDelete = textToDelete;
     }
 
-    public void analyze(Collection<CsmErrorInfo> errors) {
+    @Override
+    public void init(BaseDocument document, CsmFile csmFile) {
+        super.init(document, csmFile);
+        searchFrom = 0;
     }
-
+    
     public boolean change() throws BadLocationException {
         BaseDocument doc = getDocument();
         String text = doc.getText(searchFrom,  doc.getLength() - searchFrom);
@@ -76,5 +79,66 @@ public abstract class SimpleDeletingErrorMaker extends BaseErrorMaker {
             remove(pos, 1);
             return true;
         }
-    }    
+    }
+
+    /**
+     * A simple class for gathering statistics
+     */
+    private static class Stat {
+        
+        private String file;
+        public int triesCount;
+        public int hitCount;
+        public int inducedCount;
+
+        public Stat(String file) {
+            this.file = file;
+        }
+        
+        public void consume(Stat other) {
+            triesCount += other.triesCount;
+            hitCount += other.hitCount;
+            inducedCount += other.inducedCount;
+        }
+        
+        public void print() {
+            System.err.printf("%8d %8d %8d %s\n", triesCount, hitCount, inducedCount, file);
+        }
+        
+        public static void printHeader() {
+            System.err.printf("%8s %8s %8s %s\n", "tries", "hits", "induced", "file");
+        }
+    }
+    
+    private Map<String, Stat> stats = new HashMap<String, Stat>();
+    
+    private Stat getCurrentStat() {
+        String absPath = getCsmFile().getAbsolutePath().toString();
+        Stat stat = stats.get(absPath);
+        if (stat == null) {
+            stat = new Stat(absPath);
+            stats.put(absPath, stat);
+        }
+        return stat;
+    }
+    
+    public void analyze(Collection<CsmErrorInfo> errors) {
+        Stat stat = getCurrentStat();
+        stat.triesCount++;
+        if (!errors.isEmpty()) {
+            stat.hitCount++;
+            stat.inducedCount += errors.size() - 1;
+        }
+    }
+    
+    public void printStatistics() {
+        System.err.printf("\nStatistics:\n");
+        Stat.printHeader();
+        Stat total = new Stat("TOTAL");
+        for (Stat stat : stats.values()) {
+            stat.print();
+            total.consume(stat);
+        }
+        total.print();
+    }
 }

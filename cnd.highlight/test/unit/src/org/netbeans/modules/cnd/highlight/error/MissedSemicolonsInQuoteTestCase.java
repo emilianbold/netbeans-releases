@@ -39,6 +39,11 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
+import java.io.File;
+import org.netbeans.junit.Manager;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+
 /**
  * Deletes all semicolons in Quote project,
  * checks error mesages
@@ -47,18 +52,29 @@ package org.netbeans.modules.cnd.highlight.error;
 public class MissedSemicolonsInQuoteTestCase extends ErrorHighlightingBaseTestCase {
 
     static {
-        System.setProperty("cnd.parser.error.transparent", "true");
+        System.setProperty("cnd.parser.error.transparent", "false");
+        System.setProperty("cnd.modelimpl.trace.error.provider", "true");
+        System.setProperty("parser.report.errors", "true");
     }
 
     public MissedSemicolonsInQuoteTestCase(String testName) {
         super(testName);
     }
     
-    public void testSimple() throws Exception {
-        //performStaticTest("missed_semicolon_simple.cc"); //NOI18N
-        //performStaticTest("missed_semicolon_simple.cc");
-        performDynamicTest("missed_semicolon_simple.cc", new MissedSemicolonsErrorMaker()); //NOI18N
+    @Override
+    protected File getTestCaseDataDir() {
+	String dataPath = getDataDir().getAbsolutePath().replaceAll("highlight", "modelimpl"); //NOI18N
+        String filePath = "common/quote_nosyshdr";
+        return Manager.normalizeFile(new File(dataPath, filePath));
     }
     
-    
+    public void testRun() throws Exception {
+        MissedSemicolonsErrorMaker errorMaker = new MissedSemicolonsErrorMaker();
+        CsmProject project = getProject();
+        assert(project != null);
+        for (CsmFile file : project.getSourceFiles()) {
+            performDynamicTest(file, errorMaker);
+        }
+        errorMaker.printStatistics();
+    }
 }

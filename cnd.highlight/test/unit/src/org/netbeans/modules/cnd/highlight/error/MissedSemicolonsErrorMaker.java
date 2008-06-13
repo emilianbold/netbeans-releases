@@ -39,11 +39,6 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
-import java.util.Collection;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
-
 /**
  *
  * @author Vladimir Kvashin

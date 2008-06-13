@@ -185,7 +185,6 @@ public class StructureAnalyzer implements StructureScanner {
         if (node instanceof ClassNode) {
             AstClassElement co = new AstClassElement(node);
             co.setFqn(((ClassNode)node).getName());
-            co.setIn(in);
             
             if (parent != null) {
                 parent.addChild(co);
