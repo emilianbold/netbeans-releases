@@ -77,6 +77,7 @@ public class JdbcUrl extends HashMap<String, String> {
     public static final String TOKEN_SID = "<SID>";
     public static final String TOKEN_SERVICENAME = "<SERVICE>";
     public static final String TOKEN_DSN = "<DSN>";
+    public static final String TOKEN_INSTANCE = "<INSTANCE>";
     
     private static final String OPTIONAL_START = "[";
     private static final String OPTIONAL_END = "]";

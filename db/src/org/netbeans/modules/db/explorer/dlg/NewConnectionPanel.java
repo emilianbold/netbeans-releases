@@ -104,6 +104,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
         urlFields.put(JdbcUrl.TOKEN_DSN, new UrlField(dsnField, dsnLabel));
         urlFields.put(JdbcUrl.TOKEN_TNSNAME, new UrlField(tnsField, tnsLabel));                
         urlFields.put(JdbcUrl.TOKEN_ADDITIONAL, new UrlField(additionalPropsField, additionalPropsLabel));
+        urlFields.put(JdbcUrl.TOKEN_INSTANCE, new UrlField(instanceField, instanceLabel));
     }
 
     public NewConnectionPanel(ConnectionDialogMediator mediator, String driverClass, DatabaseConnection connection) {
@@ -169,6 +170,14 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
             
         });
         
+        // Set up initial defaults; user may change but that's ok
+        urlField.setVisible(false);
+        urlLabel.setVisible(false);
+        showUrlCheckBox.setSelected(false);
+        
+        
+        setUrlField();
+        updateFieldsFromUrl();
         setUpFields();
     }
 
@@ -196,7 +205,17 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
         additionalPropsLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionAdditionalPropertiesA11yDesc")); //NOI18N
         urlField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionJDBCURLTextFieldA11yName")); //NOI18N
         urlLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionJDBCURLA11yDesc")); //NOI18N
-    }
+        sidField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionSIDTextFieldA11yName")); //NOI18N
+        sidLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionSIDA11yDesc")); //NOI18N
+        serviceField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionServiceNameTextFieldA11yName")); //NOI18N
+        serviceLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionServiceNameA11yDesc")); //NOI18N
+        tnsField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionTNSNameTextFieldA11yName")); //NOI18N
+        tnsLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionTNSNameA11yDesc")); //NOI18N
+        dsnField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionDSNTextFieldA11yName")); //NOI18N
+        dsnLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionDSNA11yDesc")); //NOI18N
+        instanceField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionInstanceNameTextFieldA11yName")); //NOI18N
+        instanceLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionInstanceNameA11yDesc")); //NOI18N
+  }
 
     public void initializeFocus() {
         getInitiallyFocusedComponent().requestFocusInWindow();
@@ -253,6 +272,8 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
         serviceLabel = new javax.swing.JLabel();
         tnsLabel = new javax.swing.JLabel();
         dsnLabel = new javax.swing.JLabel();
+        instanceField = new javax.swing.JTextField();
+        instanceLabel = new javax.swing.JLabel();
 
         FormListener formListener = new FormListener();
 
@@ -328,15 +349,28 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
         errorLabel.setForeground(new java.awt.Color(255, 0, 0));
         org.openide.awt.Mnemonics.setLocalizedText(errorLabel, "Error label");
 
+        sidField.setToolTipText(bundle.getString("ACS_NewConnectionSIDA11yDesc")); // NOI18N
+
+        serviceField.setToolTipText(bundle.getString("ACS_NewConnectionServiceNameA11yDesc")); // NOI18N
+
+        tnsField.setToolTipText(bundle.getString("ACS_NewConnectionTNSNameA11yDesc")); // NOI18N
+
+        dsnField.setToolTipText(bundle.getString("ACS_NewConnectionDSNA11yDesc")); // NOI18N
+
         sidLabel.setLabelFor(sidField);
-        org.openide.awt.Mnemonics.setLocalizedText(sidLabel, "Service ID (SID):");
+        org.openide.awt.Mnemonics.setLocalizedText(sidLabel, bundle.getString("NewConnectionSID")); // NOI18N
 
         serviceLabel.setLabelFor(serviceField);
-        org.openide.awt.Mnemonics.setLocalizedText(serviceLabel, "Service:");
+        org.openide.awt.Mnemonics.setLocalizedText(serviceLabel, bundle.getString("NewConnectionServiceName")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(tnsLabel, "TNS Name:");
+        org.openide.awt.Mnemonics.setLocalizedText(tnsLabel, bundle.getString("NewConnectionTNSName")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(dsnLabel, "DSN:");
+        org.openide.awt.Mnemonics.setLocalizedText(dsnLabel, bundle.getString("NewConnectionDSN")); // NOI18N
+
+        instanceField.setToolTipText(bundle.getString("ACS_NewConnectionInstanceNameA11yDesc")); // NOI18N
+
+        instanceLabel.setLabelFor(instanceField);
+        org.openide.awt.Mnemonics.setLocalizedText(instanceLabel, bundle.getString("NewConnectionInstanceName")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -347,52 +381,45 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(passwordLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 72, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(userLabel)
-                            .add(hostLabel)
-                            .add(databaseLabel)
-                            .add(portLabel)
-                            .add(templateLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(serverNameLabel)
-                            .add(sidLabel)
-                            .add(serviceLabel)
-                            .add(tnsLabel)
-                            .add(dsnLabel))
-                        .add(27, 27, 27)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(additionalPropsLabel)
                             .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(databaseField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
-                                    .add(portField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
-                                    .add(sidField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
-                                    .add(serviceField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
-                                    .add(tnsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
-                                    .add(dsnField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
-                                    .add(templateComboBox, 0, 368, Short.MAX_VALUE)
-                                    .add(hostField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, serverNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE))
-                                .addContainerGap())
-                            .add(passwordCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 308, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, passwordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
-                                    .add(userField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE))
-                                .addContainerGap())))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(additionalPropsLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(additionalPropsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)
+                                    .add(passwordLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 72, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(userLabel)
+                                    .add(hostLabel)
+                                    .add(databaseLabel)
+                                    .add(portLabel)
+                                    .add(templateLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(sidLabel)
+                                    .add(serviceLabel)
+                                    .add(tnsLabel)
+                                    .add(dsnLabel)
+                                    .add(serverNameLabel)
+                                    .add(instanceLabel))
+                                .add(27, 27, 27)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, dsnField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, templateComboBox, 0, 426, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, hostField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, portField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, databaseField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, sidField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, serviceField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, tnsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, instanceField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, passwordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, additionalPropsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, userField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, serverNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)
+                                    .add(passwordCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 308, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, urlField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE))))
                         .addContainerGap())
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, showUrlCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, urlLabel))
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, showUrlCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, urlLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(urlField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)
-                        .addContainerGap())))
+                        .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE)
+                        .add(23, 23, 23))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -415,24 +442,28 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
                     .add(databaseField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(sidField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(sidLabel))
+                    .add(sidLabel)
+                    .add(sidField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(serviceField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(serviceLabel))
+                    .add(serviceLabel)
+                    .add(serviceField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(4, 4, 4)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(tnsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(tnsLabel))
+                    .add(tnsLabel)
+                    .add(tnsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(dsnField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(dsnLabel))
+                    .add(dsnLabel)
+                    .add(dsnField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(serverNameLabel)
                     .add(serverNameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(instanceLabel)
+                    .add(instanceField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(userLabel)
@@ -443,19 +474,19 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
                     .add(passwordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(passwordCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(12, 12, 12)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(additionalPropsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(additionalPropsLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                    .add(additionalPropsLabel)
+                    .add(additionalPropsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(18, 18, 18)
                 .add(showUrlCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(urlLabel)
                     .add(urlField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(18, 18, 18)
                 .add(errorLabel)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(25, Short.MAX_VALUE))
         );
 
         layout.linkSize(new java.awt.Component[] {hostField, passwordField, portField, templateComboBox, userField, userLabel}, org.jdesktop.layout.GroupLayout.VERTICAL);
@@ -541,8 +572,6 @@ private void hostFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 private void showUrlCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showUrlCheckBoxActionPerformed
     urlLabel.setVisible(showUrlCheckBox.isSelected());//GEN-LAST:event_showUrlCheckBoxActionPerformed
     if (showUrlCheckBox.isSelected()) {
-        setUrlField();
-    } else {
         updateUrlFromFields();
     }
     urlField.setVisible(showUrlCheckBox.isSelected());
@@ -590,6 +619,8 @@ private void urlFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event
     private javax.swing.JLabel errorLabel;
     private javax.swing.JTextField hostField;
     private javax.swing.JLabel hostLabel;
+    private javax.swing.JTextField instanceField;
+    private javax.swing.JLabel instanceLabel;
     private javax.swing.JCheckBox passwordCheckBox;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel passwordLabel;
@@ -690,11 +721,13 @@ private void urlFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event
             urlLabel.setVisible(true);         
         } else {
             showUrlCheckBox.setVisible(true);
+            /*
             showUrlCheckBox.setSelected(false);
             urlField.setVisible(false);
             urlLabel.setVisible(false);
+            */
         }
-        
+
         setUrlField();
         checkValid();
         resize();
@@ -720,13 +753,13 @@ private void urlFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event
             urlField.setText("");
             return;
         }
-
-        String url = jdbcurl.getUrl();
-        if (!jdbcurl.urlIsParsed() && (isEmpty(url))) {
-            urlField.setText(jdbcurl.getUrlTemplate());
+        
+        if (jdbcurl.urlIsParsed()) {
+            updateUrlFromFields();
         } else {
-            urlField.setText(url);            
+            urlField.setText(jdbcurl.getUrlTemplate());            
         }
+
     }
 
     private String getPassword() {

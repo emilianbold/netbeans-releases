@@ -17,64 +17,53 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="passwordLabel" alignment="0" min="-2" pref="72" max="-2" attributes="0"/>
-                          <Component id="userLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="hostLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="databaseLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="portLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="templateLabel" alignment="0" min="-2" pref="54" max="-2" attributes="0"/>
-                          <Component id="serverNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="sidLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="serviceLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="tnsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="dsnLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
+                          <Component id="additionalPropsLabel" alignment="0" min="-2" max="-2" attributes="1"/>
+                          <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="databaseField" alignment="0" pref="368" max="32767" attributes="1"/>
-                                  <Component id="portField" alignment="0" pref="368" max="32767" attributes="1"/>
-                                  <Component id="sidField" alignment="0" pref="368" max="32767" attributes="1"/>
-                                  <Component id="serviceField" alignment="0" pref="368" max="32767" attributes="1"/>
-                                  <Component id="tnsField" alignment="0" pref="368" max="32767" attributes="1"/>
-                                  <Component id="dsnField" alignment="0" pref="368" max="32767" attributes="1"/>
-                                  <Component id="templateComboBox" alignment="0" pref="368" max="32767" attributes="1"/>
-                                  <Component id="hostField" alignment="0" pref="368" max="32767" attributes="1"/>
-                                  <Component id="serverNameField" alignment="1" pref="368" max="32767" attributes="1"/>
+                                  <Component id="passwordLabel" alignment="0" min="-2" pref="72" max="-2" attributes="0"/>
+                                  <Component id="userLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="hostLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="databaseLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="portLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="templateLabel" alignment="0" min="-2" pref="54" max="-2" attributes="0"/>
+                                  <Component id="sidLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="serviceLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="tnsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="dsnLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="serverNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="instanceLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="passwordCheckBox" alignment="0" min="-2" pref="308" max="-2" attributes="1"/>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="passwordField" alignment="0" pref="368" max="32767" attributes="1"/>
-                                  <Component id="userField" alignment="1" pref="368" max="32767" attributes="1"/>
+                              <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="dsnField" alignment="1" pref="426" max="32767" attributes="1"/>
+                                  <Component id="templateComboBox" alignment="1" pref="426" max="32767" attributes="1"/>
+                                  <Component id="hostField" alignment="1" pref="426" max="32767" attributes="1"/>
+                                  <Component id="portField" alignment="1" pref="426" max="32767" attributes="1"/>
+                                  <Component id="databaseField" alignment="1" pref="426" max="32767" attributes="1"/>
+                                  <Component id="sidField" alignment="1" pref="426" max="32767" attributes="1"/>
+                                  <Component id="serviceField" alignment="1" pref="426" max="32767" attributes="1"/>
+                                  <Component id="tnsField" alignment="1" pref="426" max="32767" attributes="1"/>
+                                  <Component id="instanceField" alignment="1" pref="426" max="32767" attributes="0"/>
+                                  <Component id="passwordField" alignment="1" pref="426" max="32767" attributes="1"/>
+                                  <Component id="additionalPropsField" alignment="1" pref="426" max="32767" attributes="1"/>
+                                  <Component id="userField" alignment="1" pref="426" max="32767" attributes="1"/>
+                                  <Component id="serverNameField" alignment="1" pref="426" max="32767" attributes="1"/>
+                                  <Component id="passwordCheckBox" alignment="0" min="-2" pref="308" max="-2" attributes="1"/>
+                                  <Component id="urlField" alignment="1" pref="426" max="32767" attributes="1"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                  </Group>
-                  <Group type="102" alignment="1" attributes="0">
-                      <Component id="additionalPropsLabel" max="32767" attributes="1"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="additionalPropsField" pref="348" max="32767" attributes="1"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                          <Component id="showUrlCheckBox" alignment="0" max="32767" attributes="1"/>
-                          <Component id="urlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="urlField" pref="368" max="32767" attributes="1"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                      <Component id="showUrlCheckBox" alignment="0" max="32767" attributes="1"/>
+                      <Component id="urlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="errorLabel" pref="494" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="errorLabel" pref="549" max="32767" attributes="0"/>
+                      <EmptySpace min="-2" pref="23" max="-2" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -105,28 +94,33 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="sidField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="sidLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="sidField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="serviceField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="serviceLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="serviceField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="tnsField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="tnsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="tnsField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="dsnField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="dsnLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="dsnField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="serverNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="serverNameField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="instanceLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="instanceField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -140,21 +134,21 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="passwordCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="additionalPropsField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="additionalPropsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="additionalPropsField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="showUrlCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="urlLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="urlField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="errorLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace pref="25" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -378,19 +372,41 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="sidField">
+      <Properties>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionSIDA11yDesc" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="serviceField">
+      <Properties>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionServiceNameA11yDesc" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="tnsField">
+      <Properties>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionTNSNameA11yDesc" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="dsnField">
+      <Properties>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionDSNA11yDesc" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="sidLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="sidField"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Service ID (SID):"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionSID" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="serviceLabel">
@@ -398,17 +414,40 @@
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="serviceField"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Service:"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionServiceName" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="tnsLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="TNS Name:"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionTNSName" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="dsnLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="DSN:"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionDSN" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="instanceField">
+      <Properties>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionInstanceNameA11yDesc" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="instanceLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="instanceField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionInstanceName" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
       </Properties>
     </Component>
   </SubComponents>

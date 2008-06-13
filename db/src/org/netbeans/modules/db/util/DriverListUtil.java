@@ -136,10 +136,18 @@ public class DriverListUtil {
         "org.apache.derby.jdbc.ClientDriver",
         "jdbc:derby://<HOST>[:<PORT>]/<DB>[;<ADDITIONAL>]", true);
         
-        add("DB2 JDBC",
-        "com.ibm.db2.jcc.DB2Driver",
-        "jdbc:db2://<HOST>[:<PORT>]/<DB>");
+        add(getMessage("DRIVERNAME_DB2JCC"),
+            "com.ibm.db2.jcc.DB2Driver",
+            "jdbc:db2://<HOST>:<PORT>/<DB>[:<ADDITIONAL>]", true);
         
+        add(getMessage("DRIVERNAME_DB2JCC"), getMessage("TYPE_IDS"),
+                "com.ibm.db2.jcc.DB2Driver",
+                "jdbc:ids://<HOST>:<PORT>/<DB>[:<ADDITIONAL>]", true);
+        
+        add(getMessage("DRIVERNAME_DB2JCC"), getMessage("TYPE_Cloudscape"),
+                "com.ibm.db2.jcc.DB2Driver",
+                "jdbc:db2j:net://<HOST>:<PORT>/<DB>[:<ADDITIONAL>]", true);
+
         add("Firebird (JCA/JDBC driver)",
         "org.firebirdsql.jdbc.FBDriver",
         "jdbc:firebirdsql:[//<HOST>[:<PORT>]/]<DB>");
@@ -204,14 +212,14 @@ public class DriverListUtil {
         "org.hsql.jdbcDriver",
         "jdbc:HypersonicSQL:<DB>");
         
-        add("jTDS", "SQL Server",
+        add(getMessage("DRIVERNAME_JTDS"), getMessage("TYPE_ForSQLServer"),
         "net.sourceforge.jtds.jdbc.Driver",
-        "jdbc:jtds:sqlserver://<HOST>[:<PORT>][/<DB>]");
+        "jdbc:jtds:sqlserver://<HOST>[:<PORT>][/<DB>][;<ADDITIONAL>]", true);
         
-        add("jTDS", "Sybase",
+        add(getMessage("DRIVERNAME_JTDS"), getMessage("TYPE_ForSybase"),
         "net.sourceforge.jtds.jdbc.Driver",
-        "jdbc:jtds:sybase://<HOST>[:<PORT>][/<DB>]");
-        
+        "jdbc:jtds:sybase://<HOST>[:<PORT>][/<DB>][;<ADDITIONAL>]", true);
+
         add("Mckoi SQL Database", "Server",
         "com.mckoi.JDBCDriver",
         "jdbc:mckoi://<HOST>[:<PORT>]");
@@ -236,9 +244,9 @@ public class DriverListUtil {
         "com.microsoft.jdbc.sqlserver.SQLServerDriver",
         "jdbc:microsoft:sqlserver://<HOST>[:<PORT>][;DatabaseName=<DB>]");
 
-        add("Microsoft SQL Server 2005",
+        add(getMessage("DRIVERNAME_MSSQL2005"),
         "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-        "jdbc:sqlserver://<HOST>[:<PORT>];databaseName=<DB>");
+        "jdbc:sqlserver://[<HOST>[\\<INSTANCE>][:<PORT>]][;databaseName=<DB>][;<ADDITIONAL>]", true);
         
         add(getMessage("DRIVERNAME_MySQL"),
                 "com.mysql.jdbc.Driver", 

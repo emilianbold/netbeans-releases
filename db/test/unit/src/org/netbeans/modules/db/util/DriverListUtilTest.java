@@ -59,6 +59,7 @@ public class DriverListUtilTest extends TestCase {
     private static final String SERVERNAME = "servername";
     private static final String ADDITIONAL = "foo;bar;baz";
     private static final String SERVICENAME = "servicename";
+    private static final String INSTANCE = "instancename";
     private static final String SID = "mysid";
     private static final String DSN = "mydsn";
     private static final String TNSNAME = "mytns";
@@ -79,6 +80,7 @@ public class DriverListUtilTest extends TestCase {
         ALLPROPS.put(JdbcUrl.TOKEN_SERVICENAME, SERVICENAME);
         ALLPROPS.put(JdbcUrl.TOKEN_SID, SID);
         ALLPROPS.put(JdbcUrl.TOKEN_TNSNAME, TNSNAME);
+        ALLPROPS.put(JdbcUrl.TOKEN_INSTANCE, INSTANCE);
         
         STD_SUPPORTED_PROPS.add(JdbcUrl.TOKEN_HOST);
         STD_SUPPORTED_PROPS.add(JdbcUrl.TOKEN_PORT);
@@ -208,6 +210,166 @@ public class DriverListUtilTest extends TestCase {
         testUrlString(url, propValues, "jdbc:mysql://" + HOST + ":" + PORT + "/?" + ADDITIONAL);
     }
     
+    enum DB2Types { DB2, IDS, CLOUDSCAPE };
+    
+    public void testDB2() throws Exception {
+        testDB2(DB2Types.DB2);
+    }
+    
+    public void testDB2IDS() throws Exception {
+        testDB2(DB2Types.IDS);
+    }
+    
+    public void testDB2Cloudscape() throws Exception {
+        testDB2(DB2Types.CLOUDSCAPE);
+    }
+    private void testDB2(DB2Types type) throws Exception {
+        ArrayList<String> requiredProps = new ArrayList<String>();
+        requiredProps.add(JdbcUrl.TOKEN_HOST);
+        requiredProps.add(JdbcUrl.TOKEN_PORT);
+        requiredProps.add(JdbcUrl.TOKEN_DB);
+        
+        String typeString;
+        String urlType;
+        switch(type) {
+            case DB2:
+                typeString = null;
+                urlType = "db2";
+                break;
+            case IDS:
+                typeString = getType("TYPE_IDS");
+                urlType = "ids";
+                break;
+            case CLOUDSCAPE:
+                typeString = getType("TYPE_Cloudscape");
+                urlType = "db2j:net";
+                break;
+            default:
+                throw new Exception("Unrecognized type " + type);
+        }
+        
+        String prefix = "jdbc:" + urlType + "://";
+        
+        JdbcUrl url = checkUrl(getDriverName("DRIVERNAME_DB2JCC"), typeString, "com.ibm.db2.jcc.DB2Driver",
+                prefix + "<HOST>:<PORT>/<DB>[:<ADDITIONAL>]", 
+                STD_SUPPORTED_PROPS, requiredProps);
+        
+        HashMap<String, String> propValues = buildPropValues(STD_SUPPORTED_PROPS);        
+        testUrlString(url, propValues, prefix + HOST + ":" + PORT + "/" + DB + ":" + ADDITIONAL);
+
+        propValues.remove(JdbcUrl.TOKEN_ADDITIONAL);
+        testUrlString(url, propValues, prefix + HOST + ":" + PORT + "/" + DB);
+        
+        propValues.remove(JdbcUrl.TOKEN_PORT);
+        testMissingParameter(url, propValues);
+        
+        propValues.remove(JdbcUrl.TOKEN_DB);
+        propValues.put(JdbcUrl.TOKEN_PORT, PORT);
+        testMissingParameter(url, propValues);
+        
+        propValues.remove(JdbcUrl.TOKEN_HOST);
+        propValues.put(JdbcUrl.TOKEN_DB, DB);
+        testMissingParameter(url, propValues);
+        
+        testBadUrlString(url, "jdbc:db2:///db");
+        testBadUrlString(url, "jdbc:db2://localhost");
+    }
+    
+    enum JTDSTypes { SYBASE, SQLSERVER } ;
+    
+    public void testJTDSSybase() throws Exception {
+        testJTDS(JTDSTypes.SYBASE);
+    }
+    
+    public void testJTDSSQLServer() throws Exception {
+        testJTDS(JTDSTypes.SQLSERVER);
+    }
+    private void testJTDS(JTDSTypes type) throws Exception {
+        ArrayList<String> requiredProps = new ArrayList<String>();
+        requiredProps.add(JdbcUrl.TOKEN_HOST);
+        
+        String typeString;
+        String urlType;
+        switch(type) {
+            case SYBASE:
+                typeString = getType("TYPE_ForSybase");
+                urlType = "sybase";
+                break;
+            case SQLSERVER:
+                typeString = getType("TYPE_ForSQLServer");
+                urlType = "sqlserver";
+                break;
+            default:
+                throw new Exception("Unrecognized type " + type);
+        }
+        
+        String prefix = "jdbc:jtds:" + urlType + "://";
+        
+        JdbcUrl url = checkUrl(getDriverName("DRIVERNAME_JTDS"), typeString, "net.sourceforge.jtds.jdbc.Driver",
+                prefix + "<HOST>[:<PORT>][/<DB>][;<ADDITIONAL>]", 
+                STD_SUPPORTED_PROPS, requiredProps);
+        
+        HashMap<String, String> propValues = buildPropValues(STD_SUPPORTED_PROPS);        
+        testUrlString(url, propValues, prefix + HOST + ":" + PORT + "/" + DB + ";" + ADDITIONAL);
+
+        propValues.remove(JdbcUrl.TOKEN_ADDITIONAL);
+        testUrlString(url, propValues, prefix + HOST + ":" + PORT + "/" + DB);
+        
+        propValues.remove(JdbcUrl.TOKEN_PORT);
+        testUrlString(url, propValues, prefix + HOST + "/" + DB);
+        
+        propValues.remove(JdbcUrl.TOKEN_DB);
+        propValues.put(JdbcUrl.TOKEN_PORT, PORT);
+        testUrlString(url, propValues, prefix + HOST + ":" + PORT);
+        
+        propValues.remove(JdbcUrl.TOKEN_HOST);
+        propValues.put(JdbcUrl.TOKEN_DB, DB);
+        testMissingParameter(url, propValues);
+        
+        testBadUrlString(url, "jdbc:jtds:///db");
+        testBadUrlString(url, "jdbc:jtds://localhost");
+    }
+    
+    public void testMSSQL2005() throws Exception {
+        /*
+                add(getMessage("DRIVERNAME_MSSQL2005"),
+        "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+        "jdbc:sqlserver://[<HOST>[\\<INSTANCE>][:<PORT>]][;databaseName=<DB>][;<ADDITIONAL>]", true);
+        */
+        ArrayList<String> supportedProps = new ArrayList<String>();
+        supportedProps.addAll(STD_SUPPORTED_PROPS);
+        supportedProps.add(JdbcUrl.TOKEN_INSTANCE);
+        
+        ArrayList<String> requiredProps = new ArrayList<String>();
+        JdbcUrl url = checkUrl(getDriverName("DRIVERNAME_MSSQL2005"), null, 
+                "com.microsoft.sqlserver.jdbc.SQLServerDriver", 
+                "jdbc:sqlserver://[<HOST>[\\<INSTANCE>][:<PORT>]][;databaseName=<DB>][;<ADDITIONAL>]", 
+                supportedProps, requiredProps);
+        
+        HashMap<String, String> propValues = buildPropValues(supportedProps);        
+        testUrlString(url, propValues, "jdbc:sqlserver://" + HOST + "\\" + INSTANCE + ":" + PORT + ";databaseName=" + DB + ";" + ADDITIONAL);
+
+        propValues.remove(JdbcUrl.TOKEN_ADDITIONAL);
+        testUrlString(url, propValues, "jdbc:sqlserver://" + HOST + "\\" + INSTANCE + ":" + PORT + ";databaseName=" + DB);
+        
+        propValues.remove(JdbcUrl.TOKEN_PORT);
+        testUrlString(url, propValues, "jdbc:sqlserver://" + HOST + "\\" + INSTANCE + ";databaseName=" + DB);
+        
+        propValues.remove(JdbcUrl.TOKEN_INSTANCE);
+        testUrlString(url, propValues, "jdbc:sqlserver://" + HOST + ";databaseName=" + DB);
+        
+        propValues.remove(JdbcUrl.TOKEN_DB);
+        testUrlString(url, propValues, "jdbc:sqlserver://" + HOST);
+        
+        propValues.remove(JdbcUrl.TOKEN_HOST);
+        propValues.put(JdbcUrl.TOKEN_DB, DB);
+        testUrlString(url, propValues, "jdbc:sqlserver://;databaseName=" + DB);
+        
+        propValues.clear();
+        testUrlString(url, propValues, "jdbc:sqlserver://");
+        
+    }
+
     enum OracleTypes { THIN, OCI, OCI8 };
     
     public void testOracleThinSID() throws Exception {
