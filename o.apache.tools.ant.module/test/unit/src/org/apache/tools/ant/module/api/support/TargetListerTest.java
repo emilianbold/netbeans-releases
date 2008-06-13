@@ -91,7 +91,7 @@ public class TargetListerTest extends NbTestCase {
         Element e = t.getElement();
         assertEquals("correct element name #1", "target", e.getLocalName());
         assertEquals("correct name attribute #1", "-internal", e.getAttribute("name"));
-        AntProjectCookie apc = TargetLister.getAntProjectCookie(simple);
+        AntProjectCookie apc = AntScriptUtils.antProjectCookieFor(simple);
         assertEquals("correct script #1", apc, t.getScript());
         assertFalse("not described #1", t.isDescribed());
         assertTrue("internal #1", t.isInternal());
@@ -261,7 +261,7 @@ public class TargetListerTest extends NbTestCase {
     }
     
     private static List<TargetLister.Target> getTargets(FileObject fo) throws IOException {
-        AntProjectCookie apc = TargetLister.getAntProjectCookie(fo);
+        AntProjectCookie apc = AntScriptUtils.antProjectCookieFor(fo);
         SortedSet<TargetLister.Target> targets = new TreeSet<TargetLister.Target>(new TargetComparator());
         targets.addAll(TargetLister.getTargets(apc));
         return new ArrayList<TargetLister.Target>(targets);

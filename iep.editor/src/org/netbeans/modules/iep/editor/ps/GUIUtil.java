@@ -40,11 +40,13 @@
 package org.netbeans.modules.iep.editor.ps;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.modules.iep.editor.model.NameGenerator;
+import org.netbeans.modules.iep.editor.share.SharedConstants;
 import org.netbeans.modules.iep.editor.wizard.database.ColumnInfo;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
@@ -57,6 +59,14 @@ import org.netbeans.modules.iep.model.SchemaComponent;
  */
 public class GUIUtil {
 
+    static Set<String> usedupNames = new HashSet<String>();
+    
+    static {
+    
+        for(int i = 0; i < SharedConstants.RESERVED_COLUMN_NAMES.length; i++) {
+            usedupNames.add(SharedConstants.RESERVED_COLUMN_NAMES[i]);
+        }    
+    }
     
     public static List<String> convertCommaSeperatedValuesToList(String commaSeperatedValues) {
         List<String> list = new ArrayList<String>();
@@ -73,9 +83,11 @@ public class GUIUtil {
         String baseName = column.getColumnName();
 
         String newName = baseName;
-
+        
+        
+        
         int counter = 0;
-        while(nameSet.contains(newName)) {
+        while(nameSet.contains(newName) || usedupNames.contains(newName.toLowerCase())) {
             newName = baseName + "_" + counter;
             counter++;
         }
