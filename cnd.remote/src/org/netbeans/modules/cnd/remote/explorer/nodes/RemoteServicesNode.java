@@ -37,57 +37,31 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.server;
+package org.netbeans.modules.cnd.remote.explorer.nodes;
 
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 
 /**
- * The definition of a remote server and login. 
- * 
+ *
  * @author gordonp
  */
-public class RemoteServerRecord implements ServerRecord {
-    
-    private String name;
-    private String user;
-    private boolean editable;
-    private boolean active;
-    
-    protected RemoteServerRecord(String name, String user, boolean active) {
-        this.name = name;
-        this.user = user;
-        this.active = active;
-        editable = true;
+public abstract class RemoteServicesNode extends AbstractNode implements PropertyChangeListener {
+
+    public RemoteServicesNode() {
+        super(Children.create(new RemoteServicesChildFactory(), true));
     }
     
-    protected RemoteServerRecord() {
-        name = "localhost"; // NOI18N
-        user = null;
-        editable = false;
-        active = true;
-    }
-    
-    public boolean isEditable() {
-        return editable;
+    public RemoteServicesNode(Children children) {
+        super(children);
     }
 
-    public boolean isRemote() {
-        return !name.equals("localhost"); // NOI18N
+    @Override
+    public boolean canRename() {
+        return false;
     }
 
-    public boolean isActive() {
-        return active;
-    }
-    
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
-    public String getServerName() {
-        return name;
-    }
-
-    public String getUserName() {
-        return user;
-    }
+    public abstract void propertyChange(PropertyChangeEvent evt);
 }

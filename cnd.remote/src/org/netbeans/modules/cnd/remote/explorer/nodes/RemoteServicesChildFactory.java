@@ -37,57 +37,36 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.server;
+package org.netbeans.modules.cnd.remote.explorer.nodes;
 
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import java.util.List;
+import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
+import org.openide.nodes.ChildFactory;
+import org.openide.nodes.Node;
 
 /**
- * The definition of a remote server and login. 
- * 
+ *
  * @author gordonp
  */
-public class RemoteServerRecord implements ServerRecord {
-    
-    private String name;
-    private String user;
-    private boolean editable;
-    private boolean active;
-    
-    protected RemoteServerRecord(String name, String user, boolean active) {
-        this.name = name;
-        this.user = user;
-        this.active = active;
-        editable = true;
-    }
-    
-    protected RemoteServerRecord() {
-        name = "localhost"; // NOI18N
-        user = null;
-        editable = false;
-        active = true;
-    }
-    
-    public boolean isEditable() {
-        return editable;
+public class RemoteServicesChildFactory extends ChildFactory<RemoteServerRecord> {
+
+    @Override
+    protected boolean createKeys(List<RemoteServerRecord> toPopulate) {
+        try {
+            toPopulate.add(RemoteServerList.getInstance().getLocalhostRecord());
+        } catch (Exception ie) {
+            return false;
+        }
+        return true;
     }
 
-    public boolean isRemote() {
-        return !name.equals("localhost"); // NOI18N
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-    
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
-    public String getServerName() {
-        return name;
-    }
-
-    public String getUserName() {
-        return user;
+    @Override
+    protected Node createNodeForKey(RemoteServerRecord record) {
+        if (record.isRemote()) {
+            return new RemoteServerNode(record);
+        } else {
+            return new LocalhostNode(record);
+        }
     }
 }
