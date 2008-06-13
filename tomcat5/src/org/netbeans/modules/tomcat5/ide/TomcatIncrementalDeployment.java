@@ -150,7 +150,15 @@ public class TomcatIncrementalDeployment extends IncrementalDeployment {
             tm.openLog(module);
         }
     }
-    
+
+    @Override
+    public ProgressObject reloadArtifacts(TargetModuleID module, Iterable<File> artifacts) {
+        TomcatManagerImpl tmi = new TomcatManagerImpl (tm);
+        tmi.reload ((TomcatModule)module);
+        // FIXME
+        return null;
+    }
+
     private static class P implements ProgressObject {
         
         ProgressEventSupport supp = new ProgressEventSupport (this);

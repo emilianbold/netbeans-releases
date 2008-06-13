@@ -54,7 +54,9 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.runner.ProjectRunner;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
@@ -77,6 +79,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -370,6 +373,10 @@ public final class ModuleActions implements ActionProvider {
                 buildScript = findTestBuildXml(project);
             }  else {
                 files = findTestSources(context, false);
+                if (true) {
+                    bypassAntBuildScript(command, files);
+                    return ;
+                }
                 p = new Properties();
                 targetNames = setupTestSingle(p, files);
             }
@@ -455,6 +462,22 @@ public final class ModuleActions implements ActionProvider {
         // Convert foo/FooTest.java -> foo.FooTest
         p.setProperty("test.class", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
         return new String[] {"debug-test-single-nb"}; // NOI18N
+    }
+    
+    private void bypassAntBuildScript(String command, FileObject[] files) throws IllegalArgumentException {
+        FileObject toRun = null;
+
+        if (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command)) {
+            toRun = files[0];
+        }
+        
+        if (toRun != null) {
+            try {
+                ProjectRunner.execute(COMMAND_RUN_SINGLE.equals(command) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG, new Properties(), toRun);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
     
     private static Action createSimpleAction(final NbModuleProject project, final String[] targetNames, String displayName) {

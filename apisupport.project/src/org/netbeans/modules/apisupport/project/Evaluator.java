@@ -799,6 +799,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                      
                 } else {
                     cps.append(module.getJarLocation().getPath());
+                    cps.append(module.getClassPathExtensions()); // #105621
                 }
         }
         return cps.toString();

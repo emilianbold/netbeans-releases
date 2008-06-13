@@ -197,7 +197,11 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
         
         return ((IncrementalDeployment)inner).incrementalDeploy(module, changes);
     }
-    
+
+    @Override
+    public ProgressObject reloadArtifacts(TargetModuleID module, Iterable<File> artifacts) {
+        return incrementalDeploy(module, null);
+    }
     
     
     public File getDirectoryForNewApplication(String deploymentName, Target target, DeploymentConfiguration configuration){

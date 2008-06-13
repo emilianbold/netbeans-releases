@@ -300,6 +300,9 @@ introduced by support for multiple source roots. -jglick
                         <available file="nbproject/jaxws-build.xml"/>
                     </and>
                 </condition>
+                
+                <!-- COS feature -->
+                <property name="ensure.built.source.roots" value="${{src.dir}}"/>                
             </target>
             
             <target name="-post-init">

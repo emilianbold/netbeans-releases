@@ -50,6 +50,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,10 +70,13 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.runner.ProjectRunner;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -318,6 +322,19 @@ class J2SEActionProvider implements ActionProvider {
                 targetNames = getTargetNames(command, context, p);
                 if (targetNames == null) {
                     return;
+                }
+                if (COMMAND_RUN_SINGLE.equals(command) || COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_SINGLE.equals(command)) {
+                    bypassAntBuildScript(command, context, p);
+                    
+                    return ;
+                }
+                if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
+                    FileObject[] files = findSources(context);
+                    try {
+                        ProjectRunner.execute(COMMAND_TEST_SINGLE.equals(command) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG, new Properties(), files[0]);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
                 if (targetNames.length == 0) {
                     targetNames = null;
@@ -871,6 +888,66 @@ class J2SEActionProvider implements ActionProvider {
         return srcDir;
     }
 
+    private void bypassAntBuildScript(String command, Lookup context, Properties p) throws IllegalArgumentException {
+        FileObject toRun;
+        boolean run = true;
+
+        if (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command)) {
+            final String mainClass = project.evaluator().getProperty(J2SEProjectProperties.MAIN_CLASS);
+            final FileObject[] mainClassFile = new FileObject[1];
+            ClassPathProviderImpl cpProvider = project.getClassPathProvider();
+            if (cpProvider != null) {
+                ClassPath bootPath = cpProvider.getProjectSourcesClassPath(ClassPath.BOOT);
+                ClassPath compilePath = cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE);
+                ClassPath sourcePath = cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE);
+                try {
+                    JavaSource.create(ClasspathInfo.create(bootPath, compilePath, sourcePath)).runUserActionTask(new org.netbeans.api.java.source.Task<CompilationController>() {
+                        public void run(CompilationController parameter) throws Exception {
+                            TypeElement main = parameter.getElements().getTypeElement(mainClass);
+
+                            if (main != null) {
+                                mainClassFile[0] = SourceUtils.getFile(main, parameter.getClasspathInfo());
+                            }
+                        }
+                    }, true);
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
+
+            if (mainClassFile[0] == null) {
+                //XXX: notify user
+                return;
+            }
+
+            toRun = mainClassFile[0];
+        } else {
+            //run single:
+            FileObject[] files = findSources(context);
+            
+            if (files == null || files.length != 1) {
+                files = findTestSources(context, false);
+                run = false;
+            }
+
+            if (files == null || files.length != 1) {
+                return ;//warn the user
+            }
+            
+            toRun = files[0];
+        }
+        boolean debug = COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_SINGLE.equals(command);
+        try {
+            if (run) {
+                ProjectRunner.execute(debug ? ProjectRunner.QUICK_DEBUG : ProjectRunner.QUICK_RUN, p, toRun);
+            } else {
+                ProjectRunner.execute(ProjectRunner.QUICK_TEST, new Properties(), toRun);
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+            
     private static enum MainClassStatus {
         SET_AND_VALID,
         SET_BUT_INVALID,

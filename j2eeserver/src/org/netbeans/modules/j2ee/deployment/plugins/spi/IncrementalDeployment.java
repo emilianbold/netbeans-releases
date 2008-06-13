@@ -175,4 +175,16 @@ public abstract class IncrementalDeployment {
     public void notifyDeployment(TargetModuleID module) {
         //do nothing, override if needed
     }
+    
+    /**
+     * Performs reload of the artifacts. Return object tracking the realod
+     * or <code>null</code> if the reload is instant or noop.
+     * 
+     * @param module module owning the artifacts
+     * @param artifacts artifacts to reload
+     * @return object tracking the realod or <code>null</code> if the reload is instant or noop
+     */
+    public ProgressObject reloadArtifacts(TargetModuleID module, Iterable<File> artifacts) {
+        return null;
+    }
 }
