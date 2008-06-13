@@ -166,3 +166,5 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-api-java-classpath" value="${javadoc.web.root}/org-netbeans-api-java-classpath"/>
 <property name="javadoc.docs.org-netbeans-modules-websvc-serverapi" value="${javadoc.web.root}/org-netbeans-modules-websvc-serverapi"/>
 <property name="javadoc.docs.org-netbeans-modules-extexecution" value="${javadoc.web.root}/org-netbeans-modules-extexecution"/>
+<property name="javadoc.docs.org-netbeans-modules-print" value="${javadoc.web.root}/org-netbeans-modules-print"/>
+<property name="javadoc.docs.org-netbeans-modules-xml-core" value="${javadoc.web.root}/org-netbeans-modules-xml-core"/>

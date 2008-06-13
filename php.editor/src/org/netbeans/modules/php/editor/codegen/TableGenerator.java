@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.gsf.api.CancellableTask;
@@ -171,6 +172,7 @@ public class TableGenerator implements CodeGenerator {
     }
 
     private String generateSelect(TableAndColumns tableAndColumns) {
+        Quoter quoter = tableAndColumns.getIdentifierQuoter();
         StringBuilder builder = new StringBuilder("SELECT "); // NOI18N
         List<String> columns = tableAndColumns.getSelectedColumns();
         if (columns.isEmpty()) {
@@ -178,7 +180,7 @@ public class TableGenerator implements CodeGenerator {
         } else {
             int index = 0;
             for (String column : columns) {
-                builder.append(column);
+                builder.append(quoteIdentifier(quoter, column));
                 if (index < columns.size() - 1) {
                     builder.append(','); // NOI18N
                 }
@@ -187,8 +189,12 @@ public class TableGenerator implements CodeGenerator {
             }
         }
         builder.append("FROM "); // NOI18N
-        builder.append(tableAndColumns.getTable());
+        builder.append(quoteIdentifier(quoter, tableAndColumns.getTable()));
         return builder.toString();
+    }
+
+    private String quoteIdentifier(Quoter quoter, String identifier) {
+        return quoter.quoteIfNeeded(identifier).replace("'", "\\'"); // NOI18N
     }
 
     public static final class Factory implements CodeGenerator.Factory {

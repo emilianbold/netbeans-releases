@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.java.ui;
 
+import java.util.prefs.Preferences;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
 import org.netbeans.modules.java.ui.FmtOptions.CategorySupport;
@@ -70,8 +71,9 @@ public class FmtBlankLines extends javax.swing.JPanel {
         
     }
     
-    public static FormatingOptionsPanel.Category getController() {
-        return new CategorySupport("LBL_BlankLines", // NOI18N
+    public static FormatingOptionsPanel.Category getController(Preferences preferences) {
+        return new CategorySupport(preferences,
+                "LBL_BlankLines", // NOI18N
                 new FmtBlankLines(), 
                 NbBundle.getMessage(FmtBlankLines.class, "SAMPLE_BlankLines")); // NOI18N
     }

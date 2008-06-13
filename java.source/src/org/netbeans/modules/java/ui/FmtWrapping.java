@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.java.ui;
 
+import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CodeStyle;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
@@ -83,8 +84,9 @@ public class FmtWrapping extends javax.swing.JPanel {
         assignOpsCombo.putClientProperty(OPTION_ID, wrapAssignOps);
     }
     
-    public static FormatingOptionsPanel.Category getController() {
-        return new CategorySupport("LBL_Wrapping", // NOI18N
+    public static FormatingOptionsPanel.Category getController(Preferences preferences) {
+        return new CategorySupport(preferences,
+                "LBL_Wrapping", // NOI18N
                 new FmtWrapping(),
                 NbBundle.getMessage(FmtWrapping.class, "SAMPLE_Wrapping"),
                 new String[] { FmtOptions.rightMargin, "30" },
@@ -148,7 +150,9 @@ public class FmtWrapping extends javax.swing.JPanel {
         assignOpsCombo = new javax.swing.JComboBox();
         spacerPanel1 = new javax.swing.JPanel();
 
+        setMinimumSize(new java.awt.Dimension(0, 0));
         setOpaque(false);
+        setPreferredSize(new java.awt.Dimension(0, 0));
         setLayout(new java.awt.BorderLayout());
 
         scrollPane.setBackground(java.awt.SystemColor.controlLtHighlight);

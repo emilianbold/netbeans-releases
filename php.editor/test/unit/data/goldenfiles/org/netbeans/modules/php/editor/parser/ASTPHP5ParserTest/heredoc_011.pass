@@ -97,7 +97,17 @@
                     </FucntionName>
                     <Parameters>
                         <InfixExpression start='205' end='216' operator='CONCAT'>
-                            <ASTNode start='205' end='209'/>
+                            <StaticConstantAccess start='205' end='209'>
+                                <ClassName>
+                                    <Identifier start='205' end='206' name='e'/>
+                                </ClassName>
+                                <Constant>
+                                    <Identifier start='208' end='209' name='E'/>
+                                </Constant>
+                                <Member>
+                                    <Identifier start='208' end='209' name='E'/>
+                                </Member>
+                            </StaticConstantAccess>
                             <Scalar start='212' end='216' type='STRING' value='"\n"'/>
                         </InfixExpression>
                     </Parameters>

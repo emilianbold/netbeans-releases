@@ -161,7 +161,8 @@
         <mapID target="nodes_server_registry_node_html" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/files_runtime.html" />
         
         <!-- The Server Manager dialog box -->
-	<mapID target="org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager" url="server/csh_server_manager.html" />	
+	<mapID target="org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager" url="server/csh_server_manager.html" />
+        <mapID target="org.netbeans.api.server.CommonServerUIs" url="server/csh_server_manager.html" />
 
 <!-- End of J2EE Server help -->
 	

@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.projectimport.eclipse.core.Workspace.Variable;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -59,7 +60,7 @@ import org.xml.sax.SAXException;
  */
 final class ProjectParser {
     
-    public static String parse(File dotProject, Set<String> natures, List<Link> links) throws IOException {
+    public static String parse(File dotProject, Set<String> natures, List<Link> links, Set<Variable> variables) throws IOException {
         Document dotProjectXml;
         try {
             dotProjectXml = XMLUtil.parse(new InputSource(dotProject.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
@@ -87,27 +88,35 @@ final class ProjectParser {
             List<Element> linkEls = Util.findSubElements(linksEl);
             if (linkEls != null) {
                 for (Element link : linkEls) {
-                    // TODO: location can start with environment variable:
-                    /*
-                        <link>
-                            <name>classes-webapp5</name>
-                            <type>2</type>
-                            <locationURI>SOME_ROOT/WebApplication5/build/web/WEB-INF/classes</locationURI>
-                        </link>
-                     */
-                    //
-                    // environment variable are stored in 
-                    // .metadata/.plugins/org.eclipse.core.runtime/.settings/org.eclipse.core.resources.prefs
-                    // which in this case would contain property:
-                    // pathvariable.SOME_ROOT=/home/david/projs
+                    String loc = resolveLink(Util.findElement(link, "location", null).getTextContent(), variables);
                     links.add(new Link(Util.findElement(link, "name", null).getTextContent(), 
                             "1".equals(Util.findElement(link, "type", null).getTextContent()),
-                            Util.findElement(link, "location", null).getTextContent()));
+                            loc));
                 }
             }
         }
         return Util.findElement(projectDescriptionEl, "name", null).getTextContent();
     }
-    
+
+    private static String resolveLink(String location, Set<Variable> vars) {
+        /*
+            <link>
+                <name>classes-webapp5</name>
+                <type>2</type>
+                <locationURI>SOME_ROOT/WebApplication5/build/web/WEB-INF/classes</locationURI>
+            </link>
+         */
+        //
+        // environment variable are stored in 
+        // .metadata/.plugins/org.eclipse.core.runtime/.settings/org.eclipse.core.resources.prefs
+        // which in this case would contain property:
+        // pathvariable.SOME_ROOT=/home/david/projs
+        for (Variable v : vars) {
+            if (location.startsWith(v.getName())) {
+                return v.getLocation() + location.substring(v.getName().length());
+            }
+        }
+        return location;
+    }
     
 }

@@ -92,7 +92,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         doc.putProperty(Language.class, JavaTokenId.language());
         JavaSource testSource = JavaSource.forDocument(doc);
         final int[] counter = new int[] {0};
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putInt("rightMargin", 30);
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
@@ -364,7 +364,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         doc.putProperty(Language.class, JavaTokenId.language());
         JavaSource testSource = JavaSource.forDocument(doc);
         final int[] counter = new int[] {0};
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putInt("rightMargin", 20);
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
@@ -559,7 +559,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceBeforeMethodDeclParen", true);
         preferences.putBoolean("spaceWithinMethodDeclParens", true);
         preferences.putBoolean("spaceBeforeMethodDeclLeftBrace", false);
@@ -698,7 +698,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceBeforeStaticInitLeftBrace", false);
         testSource.runModificationTask(task).commit();
         preferences.putBoolean("spaceBeforeStaticInitLeftBrace", true);
@@ -822,7 +822,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceBeforeForParen", false);
         preferences.putBoolean("spaceWithinForParens", true);
         preferences.putBoolean("spaceBeforeForLeftBrace", false);
@@ -1012,7 +1012,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceBeforeForParen", false);
         preferences.putBoolean("spaceWithinForParens", true);
         preferences.putBoolean("spaceBeforeForLeftBrace", false);
@@ -1186,7 +1186,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceBeforeIfParen", false);
         preferences.putBoolean("spaceWithinIfParens", true);
         preferences.putBoolean("spaceBeforeIfLeftBrace", false);
@@ -1496,7 +1496,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceBeforeWhileParen", false);
         preferences.putBoolean("spaceWithinWhileParens", true);
         preferences.putBoolean("spaceBeforeWhileLeftBrace", false);
@@ -1670,7 +1670,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceBeforeSwitchParen", false);
         preferences.putBoolean("spaceWithinSwitchParens", true);
         preferences.putBoolean("spaceBeforeSwitchLeftBrace", false);
@@ -1899,7 +1899,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceBeforeWhileParen", false);
         preferences.putBoolean("spaceWithinWhileParens", true);
         preferences.putBoolean("spaceBeforeDoLeftBrace", false);
@@ -2102,7 +2102,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceBeforeSynchronizedParen", false);
         preferences.putBoolean("spaceWithinSynchronizedParens", true);
         preferences.putBoolean("spaceBeforeSynchronizedLeftBrace", false);
@@ -2259,7 +2259,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceBeforeCatchParen", false);
         preferences.putBoolean("spaceWithinCatchParens", true);
         preferences.putBoolean("spaceBeforeTryLeftBrace", false);
@@ -2524,7 +2524,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceWithinParens", true);
         testSource.runModificationTask(task).commit();
         preferences.putBoolean("spaceWithinParens", false);
@@ -2671,7 +2671,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceWithinTypeCastParens", true);
         preferences.putBoolean("spaceAfterTypeCast", false);
         testSource.runModificationTask(task).commit();
@@ -2762,7 +2762,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putInt("labelIndent", 4);
         testSource.runModificationTask(task).commit();
         preferences.putInt("labelIndent", 0);
@@ -2872,7 +2872,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(clazz, maker.addClassMember(clazz, method));
             }            
         };
-        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences preferences = FmtOptions.getPreferences(null);
         preferences.putBoolean("spaceWithinMethodDeclParens", true);
         preferences.putBoolean("spaceWithinMethodCallParens", true);
         testSource.runModificationTask(task).commit();

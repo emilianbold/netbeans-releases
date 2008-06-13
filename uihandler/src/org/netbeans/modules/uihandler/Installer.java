@@ -158,10 +158,14 @@ public class Installer extends ModuleInstall implements Runnable {
     static {
         // #131128 - suppress repetitive exceptions when config/Preferences/org/netbeans/modules/uihandler.properties
         // is not writable for some reason
-        prefs.putBoolean("uihandler.preferences.writable", true);
+        long checkTime = System.currentTimeMillis();
+        prefs.putLong("uihandler.preferences.writable.check", checkTime);  //NOI18N
         try {
             prefs.flush();
-            preferencesWritable = true;
+            prefs.sync();
+            if(checkTime == prefs.getLong("uihandler.preferences.writable", 0)) {  //NOI18N
+                preferencesWritable = true;
+            }
         } catch (BackingStoreException e) {
             // immediatelly show dialog with exception (usually Access is denied)
             NotifyDescriptor.Exception eDesc = new NotifyDescriptor.Exception(e);

@@ -40,9 +40,8 @@
  */
 package org.netbeans.modules.j2ee.persistence.entitygenerator;
 
+import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.CollectionType;
-import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.FetchType;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -56,24 +55,19 @@ import org.openide.filesystems.FileObject;
 public interface GeneratedTables {
 
     /**
-     * Should fully qualified table names be used
+     * Returns the catalog of the tables
      */
-    public boolean isFullyQualifiedTableNames();
-
+    public String getCatalog();
+    
+    /**
+     * Returns the schema of the tables
+     */
+    public String getSchema();
+    
     /**
      * Returns the names of the tables which should be used to generate classes.
      */
     public Set<String> getTableNames();
-
-    /**
-     * Returns the schema of the table
-     */
-    public String getSchema(String tableName);
-
-    /**
-     * Returns the catalog of the table
-     */
-    public String getCatalog(String tableName);
 
     /**
      * Returns the root folder of the class which will be generated for
@@ -92,23 +86,8 @@ public interface GeneratedTables {
      */
     public String getClassName(String tableName);
 
-    /** 
-     * Returns the fetch type for the associations
-     */
-    public FetchType getFetchType();
-    
-    /**
-     * Should the attributes used for regenenating schema from the entity classes be included
-     */
-    public boolean isRegenSchemaAttrs();
-    
     /**
      * Returns the unique constraints defined on the table
      */
-    public Set<String[]> getUniqueConstraints(String tableName);
-    
-    /**
-     * The collection type should be used for the OneToMany or ManyToMany cmr fields
-     */
-    public CollectionType getCollectionType();
+    public Set<List<String>> getUniqueConstraints(String tableName);
 }

@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java.support;
 
-import org.netbeans.modules.websvc.saas.codegen.java.Constants;
+import org.netbeans.modules.websvc.saas.codegen.Constants;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;

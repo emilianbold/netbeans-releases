@@ -133,7 +133,7 @@ public class ClassNotFoundRule extends GroovyErrorRule {
 
         try {
             // get line number
-            Integer lineno = new Integer(Utilities.getLineOffset(context.doc, error.getStartPosition()));
+            Integer lineno = Integer.valueOf(Utilities.getLineOffset(context.doc, error.getStartPosition()));
 
             if (hasBeenMarkedBefore(missingClassName, lineno)) {
                 return;

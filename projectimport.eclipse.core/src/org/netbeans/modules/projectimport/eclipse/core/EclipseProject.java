@@ -127,7 +127,6 @@ public final class EclipseProject implements Comparable {
     void setClassPath(DotClassPath cp) {
         this.cp = cp;
         calculateAbsolutePaths();
-        evaluateContainers();
     }
     
     public List<DotClassPathEntry> getClassPathEntries() {
@@ -187,7 +186,7 @@ public final class EclipseProject implements Comparable {
         return importSupported.booleanValue();
     }
     
-    ProjectTypeFactory getProjectTypeFactory() {
+    public ProjectTypeFactory getProjectTypeFactory() {
         performRecognitionIfNeeded();
         return projectFactory;
     }
@@ -248,25 +247,28 @@ public final class EclipseProject implements Comparable {
             Collections.EMPTY_SET : projectsWeDependOn;
     }
 
-    private void evaluateContainers() {
+    void evaluateContainers(List<String> importProblems) {
         for (DotClassPathEntry entry : cp.getClassPathEntries()) {
             if (entry.getKind() != DotClassPathEntry.Kind.CONTAINER) {
                 continue;
             }
-            ClassPathContainerResolver.resolve(entry);
+            ClassPathContainerResolver.resolve(workspace, entry, importProblems);
         }
     }
     
-    void setupEvaluatedContainers() throws IOException {
+    void setupEvaluatedContainers(List<String> importProblems) throws IOException {
         for (DotClassPathEntry entry : cp.getClassPathEntries()) {
             if (entry.getKind() != DotClassPathEntry.Kind.CONTAINER) {
                 continue;
             }
-            ClassPathContainerResolver.setup(workspace, entry);
+            ClassPathContainerResolver.setup(workspace, entry, importProblems);
         }
     }
     
-    void setupEnvironmentVariables() throws IOException {
+    void setupEnvironmentVariables(List<String> importProblems) throws IOException {
+        if (workspace == null) {
+            return;
+        }
         EditableProperties ep = PropertyUtils.getGlobalProperties();
         boolean changed = false;
         for (DotClassPathEntry entry : cp.getClassPathEntries()) {
@@ -274,15 +276,28 @@ public final class EclipseProject implements Comparable {
                 continue;
             }
             String s = EclipseUtils.splitVariable(entry.getRawPath())[0];
+            boolean resolved = false;
             for (Variable v : workspace.getVariables()) {
                 if (v.getName().equals(s)) {
+                    resolved = true;
                     s = "var."+PropertyUtils.getUsablePropertyName(s);
                     if (ep.getProperty(s) == null) {
                         ep.setProperty(s, v.getLocation());
                         changed = true;
+                    } else if (!ep.getProperty(s).equals(v.getLocation())) {
+                        importProblems.add("IDE variable '"+s+"' is configured with value '"+ep.getProperty(s)+"' but project expects it to be '"+v.getLocation()+"'");
+                    }
+                    if (v.isFileVariable()) {
+                        // convert eclipse file variable to folder variable
+                        entry.updateVariableValue(v.getName()+'/'+v.getFileName());
                     }
                     continue;
                 }
+            }
+            if (!resolved) {
+                importProblems.add("IDE variable '"+s+"' was not found in workspace. Set the value in NetBeans.");
+                ep.setProperty(s, "");
+                changed = true;
             }
         }
         if (changed) {
@@ -326,20 +341,13 @@ public final class EclipseProject implements Comparable {
         
         // try to resolve entry as a VARIABLE
         if (entry.getKind() == DotClassPathEntry.Kind.VARIABLE) {
-            String rawPath = entry.getRawPath();
-            int slashIndex = rawPath.indexOf('/');
-            if (slashIndex != -1) {
-                Workspace.Variable parent = getVariable(
-                        rawPath.substring(0, slashIndex));
-                if (parent != null) {
-                    entry.setAbsolutePath(parent.getLocation() +
-                            rawPath.substring(slashIndex));
-                }
+            String var[] = EclipseUtils.splitVariable(entry.getRawPath());
+            Workspace.Variable variable = getVariable(var[0]);
+            if (variable != null) {
+                entry.setAbsolutePath(variable.getLocation() +var[1]);
             } else {
-                Workspace.Variable var = getVariable(entry);
-                if (var != null) {
-                    entry.setAbsolutePath(var.getLocation());
-                }
+                logger.warning("cannot resolve variable '"+var[0]+"'. used in project "+
+                        getProjectFile().getPath()+" in entry "+entry);
             }
             return;
         }
@@ -386,17 +394,7 @@ public final class EclipseProject implements Comparable {
                 }
             }
         }
-        logger.info("Cannot resolve variable for raw path: " + rawPath); // NOI18N
         return null;
-    }
-    
-    /**
-     * Recongises if a given entry represents variable. If yes returns variable
-     * it represents otherwise null. Note that this method returns null if
-     * workspace wasn't set for this project.
-     */
-    private Workspace.Variable getVariable(DotClassPathEntry entry) {
-        return getVariable(entry.getRawPath());
     }
     
     public String toString() {

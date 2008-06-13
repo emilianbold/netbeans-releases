@@ -171,6 +171,9 @@ public final class SQLExecuteHelper {
             executionLogger.cancel();
         }
         
+        // Persist SQL executed
+        SQLHistoryManager.getInstance().save();
+        
         SQLExecutionResults results = new SQLExecutionResults(resultList);
         if (!cancelled) {
             return results;

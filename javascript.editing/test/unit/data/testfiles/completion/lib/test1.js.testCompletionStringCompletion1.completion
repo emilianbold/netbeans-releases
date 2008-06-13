@@ -1,4 +1,6 @@
-Results for Hello World with queryType=COMPLETION and nameKind=PREFIX
+Code completion result for source line:
+x = "Hell|o World"
+(QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
 KEYWORD    \                                          \<i>ooo</i>: The latin character in octal <i>ooo</i>
 KEYWORD    \"                                         Double Quote (\u0022)

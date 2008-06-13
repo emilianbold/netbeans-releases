@@ -749,6 +749,26 @@ public class SelectPanel extends JPanel implements SharedConstants {
         return getAttribute(inputAttributeName) != null;
     }
     
+    public SchemaAttribute findSchemaAttribute(String toColumn) {
+        SchemaAttribute sa = null;
+        
+        if(toColumn == null) {
+            return null;
+        }
+        
+        List<SchemaAttribute> list = getAttributes();
+        Iterator<SchemaAttribute> it = list.iterator();
+        while(it.hasNext()) {
+            SchemaAttribute a = it.next();
+            if(toColumn.equals(a.getAttributeName())) {
+                sa = a;
+                break;
+            }
+        }
+        
+        return sa;
+    }
+    
     /**
      * @param inputAttributeName input.attribute or attribute (when one and only one input)
      *

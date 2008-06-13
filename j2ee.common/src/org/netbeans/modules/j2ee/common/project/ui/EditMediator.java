@@ -240,6 +240,8 @@ public final class EditMediator implements ActionListener, ListSelectionListener
             } else {
                 chooser = new FileChooser(FileUtil.toFile(project.getProjectDirectory()), null);
             }
+            chooser.enableVariableBasedSelection(true);
+            chooser.setFileHidingEnabled(false);
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setFileSelectionMode(fileSelectionMode);
             chooser.setMultiSelectionEnabled( true );
@@ -264,7 +266,8 @@ public final class EditMediator implements ActionListener, ListSelectionListener
                 // value of PATH_IN_DEPLOYMENT depends on whether file or folder is being added.
                 // do not override value set by callback.initAdditionalProperties if includeNewFilesInDeployment
                 int[] newSelection = ClassPathUiSupport.addJarFiles( listModel, list.getSelectedIndices(), 
-                        filePaths, FileUtil.toFile(helper.getProjectDirectory()), callback);
+                        filePaths, FileUtil.toFile(helper.getProjectDirectory()), 
+                        chooser.getSelectedPathVariables(), callback);
                 list.setSelectedIndices( newSelection );
                 curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
                 UserProjectSettings.getDefault().setLastUsedClassPathFolder(curDir);

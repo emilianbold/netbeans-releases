@@ -28,6 +28,21 @@ public class AstClassElement extends AstElement implements ClassElement {
         return name;
     }
 
+    @Override
+    public String getIn() {
+        if (in == null) {
+            if (node instanceof ClassNode) {
+                in = ((ClassNode)node).getPackageName();
+            }
+
+            if (in == null) {
+                in = ""; // NOI18N
+            }
+        }
+
+        return in;
+    }
+
     public String getFqn() {
         if (fqn == null) {
             return getName();

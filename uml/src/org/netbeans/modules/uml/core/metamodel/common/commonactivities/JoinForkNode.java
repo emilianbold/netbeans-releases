@@ -54,7 +54,6 @@ import org.dom4j.Node;
 public class JoinForkNode extends JoinNode implements IJoinForkNode
 {
     private IForkNode forkNode = null;
-    private byte orientation = IJoinForkNode.HORIZONTAL;
     
     public JoinForkNode()
     {
@@ -63,15 +62,5 @@ public class JoinForkNode extends JoinNode implements IJoinForkNode
     public void establishNodePresence(Document doc, Node node)
     {
         buildNodePresence("UML:JoinForkNode", doc, node);
-    }
-
-    public void setOrientation(byte orientation)
-    {
-        this.orientation = orientation;
-    }
-
-    public byte getOrientation()
-    {
-        return this.orientation;
     }
 }
