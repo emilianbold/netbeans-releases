@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.hibernate.hqleditor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -47,13 +48,31 @@ import java.util.List;
  * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
 public class HQLResult {
-    private List results;
+    private List results = new ArrayList();
+    private int updateOrDeleteResult;
+    private List<Throwable> exceptions = new ArrayList<Throwable>();
+
+    public List<Throwable> getExceptions() {
+        return exceptions;
+    }
+
+    public void setExceptions(List<Throwable> exceptions) {
+        this.exceptions = exceptions;
+    }
+
+    public int getUpdateOrDeleteResult() {
+        return updateOrDeleteResult;
+    }
+
+    public void setUpdateOrDeleteResult(int updateOrDeleteResult) {
+        this.updateOrDeleteResult = updateOrDeleteResult;
+    }
     
-    public void addResults(List results) {
+    public void setQueryResults(List results) {
         this.results = results;
     }
 
-    public List getResults() {
+    public List getQueryResults() {
         return results;
     }
 }

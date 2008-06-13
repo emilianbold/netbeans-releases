@@ -30,7 +30,6 @@ package org.netbeans.modules.groovy.grailsproject.ui.wizards;
 
 import java.awt.Component;
 import java.io.IOException;
-import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
@@ -41,24 +40,21 @@ import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import org.openide.util.NbBundle;
 import java.io.File;
-import java.nio.charset.Charset;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import java.util.concurrent.Callable;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptorBuilder;
 import org.netbeans.modules.extexecution.api.ExecutionService;
-import org.netbeans.modules.extexecution.api.input.InputProcessor;
 import org.netbeans.modules.extexecution.api.input.InputProcessors;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.GrailsProjectSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.openide.util.Task;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
+import org.openide.util.Exceptions;
 
 
 
@@ -110,8 +106,15 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
             // TODO refresh
             
             ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
-            Task task = service.run();
-            task.waitFinished();
+            Future<Integer> future = service.run();
+            try {
+                // TODO handle return value
+                future.get();
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex.getCause());
+            }
         } finally {
             handle.progress(100);
         }

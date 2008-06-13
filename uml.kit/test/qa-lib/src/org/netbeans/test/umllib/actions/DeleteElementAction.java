@@ -48,7 +48,7 @@ import org.netbeans.test.umllib.util.PopupConstants;
 
 public class DeleteElementAction extends DiagramElementAction{
     
-    private static final String actionPopup = PopupConstants.EDIT+"|"+PopupConstants.DELETE;
+    private static final String actionPopup = PopupConstants.DELETE;
     private static final Shortcut deleteShortcut = new Shortcut(KeyEvent.VK_DELETE);
     
     public DeleteElementAction() {

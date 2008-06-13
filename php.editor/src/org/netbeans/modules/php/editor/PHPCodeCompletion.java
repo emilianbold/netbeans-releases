@@ -95,6 +95,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
@@ -354,7 +355,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
             String varName = tokenSequence.token().text().toString();
             String typeName = null;
-            boolean completeDollarPrefix = true;
 
             if (varName.equals("self")) { //NOI18N
                 ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
@@ -380,7 +380,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     typeName = classDecl.getName().getName();
                     staticContext = false;
                     instanceContext = true;
-                    completeDollarPrefix = false;
                     attrMask |= (Modifier.PROTECTED | Modifier.PRIVATE);
                 }
             } else {
@@ -399,7 +398,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     }
                 }
             }
-
+            
             if (typeName != null){
                 Collection<IndexedFunction> methods = includeInherited ?
                     request.index.getAllMethods(request.result, typeName, request.prefix, nameKind, attrMask) :
@@ -419,7 +418,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     if (staticContext && prop.isStatic() || instanceContext && !prop.isStatic()) {
                         PHPCompletionItem.VariableItem item = new PHPCompletionItem.VariableItem(prop, request);
 
-                        if (!completeDollarPrefix) {
+                        if (!staticContext) {
                             item.doNotInsertDollarPrefix();
                         }
 
@@ -561,6 +560,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 Expression expr = ((ExpressionStatement)statement).getExpression();
                 getLocalVariables_indexVariableInAssignment(expr, localVars, namePrefix, localFileURL);
                 
+            } else if (statement instanceof GlobalStatement) {
+                GlobalStatement globalStatement = (GlobalStatement) statement;
+                
+                for (Variable var : globalStatement.getVariables()){
+                    getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, null);
+                }
             } else if (!offsetWithinStatement(position, statement)){
                 continue;
             }
@@ -623,6 +628,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 getLocalVariables_MergeResults(localVars,
                         getLocalVariables(Collections.singleton(forEachStatement.getStatement()), namePrefix, position, localFileURL));
             } else if (statement instanceof FunctionDeclaration) {
+                localVars.clear();
                 FunctionDeclaration functionDeclaration = (FunctionDeclaration) statement;
 
                 for (FormalParameter param : functionDeclaration.getFormalParameters()) {
