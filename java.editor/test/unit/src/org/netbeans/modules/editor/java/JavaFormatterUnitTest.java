@@ -43,8 +43,9 @@ package org.netbeans.modules.editor.java;
 
 import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CodeStyle;
-import org.netbeans.modules.editor.java.JavaFormatterUnitTestCase;
 import org.netbeans.modules.java.ui.FmtOptions;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 
 
 /**
@@ -56,6 +57,12 @@ public class JavaFormatterUnitTest extends JavaFormatterUnitTestCase {
 
     public JavaFormatterUnitTest(String testMethodName) {
         super(testMethodName);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        Lookup.getDefault().lookup(ModuleInfo.class);
     }
 
     // indent new line tests
@@ -365,7 +372,7 @@ public class JavaFormatterUnitTest extends JavaFormatterUnitTestCase {
      */
     public void testReformatArrayInitializerWithNewline() {
 //        Settings.setValue(JavaKit.class, JavaSettingsNames.JAVA_FORMAT_NEWLINE_BEFORE_BRACE, Boolean.TRUE);
-        Preferences prefs = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        Preferences prefs = FmtOptions.getPreferences(null);
         String originalPlacement = prefs.get(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.SAME_LINE.toString());
         assertTrue(!originalPlacement.equals(CodeStyle.BracePlacement.NEW_LINE.toString()));
         prefs.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE.toString());
