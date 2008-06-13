@@ -257,6 +257,11 @@ public class CodeCompleter implements CodeCompletionHandler {
         return closest;
     }
 
+    /**
+     * returns the next enclosing MethodNode for the given request
+     * @param request completion request which includes position information
+     * @return the next surrouning MethodNode
+     */
        private MethodNode getSurroundingMethodNode (CompletionRequest request) {
            AstPath path = getPathFromRequest(request);
 
@@ -273,7 +278,29 @@ public class CodeCompleter implements CodeCompletionHandler {
                     return mn;
                 }
             }
+           return null;
+       }
+    /**
+     * returns the next enclosing ClassNode for the given request
+     * @param request completion request which includes position information
+     * @return the next surrouning MethodNode
+     */
+       private ClassNode getSurroundingClassdNode (CompletionRequest request) {
+           AstPath path = getPathFromRequest(request);
+
+           if (path == null) {
+               LOG.log(Level.FINEST, "path == null"); // NOI18N
+               return null;
+           }
            
+           for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
+            ASTNode current = it.next();
+                if(current instanceof ClassNode){
+                    ClassNode classNode = (ClassNode)current;
+                    LOG.log(Level.FINEST, "Found surrounding Class: {0}", classNode.getName()); // NOI18N
+                    return classNode;
+                }
+            }
            return null;
        }
     
@@ -337,22 +364,33 @@ public class CodeCompleter implements CodeCompletionHandler {
     private boolean completeFields(List<CompletionProposal> proposals, CompletionRequest request) {
         LOG.log(Level.FINEST, "-> completeFields"); // NOI18N
 
-        ASTNode closest = getClosestNode(request);
-        ClassNode declClass = getDeclaringClass(closest);
+        ClassNode surroundingClass = getSurroundingClassdNode(request);
 
-        if (declClass == null) {
-            LOG.log(Level.FINEST, "No declaring class found, bail out ..."); // NOI18N
+        if (surroundingClass == null) {
+            LOG.log(Level.FINEST, "No surrounding class found, bail out ..."); // NOI18N
             return false;
         }
 
-        LOG.log(Level.FINEST, "Declaring class is : {0}", declClass); // NOI18N
+        LOG.log(Level.FINEST, "Surrounding class is : {0}", surroundingClass); // NOI18N
 
-        List<FieldNode> fields = declClass.getFields();
+        List<FieldNode> fields = surroundingClass.getFields();
 
         for (FieldNode field : fields) {
-            proposals.add(new FieldItem(field.getName(), anchor, request, javax.lang.model.element.ElementKind.FIELD, field.getType()));
+            LOG.log(Level.FINEST, "Field found: {0}", field.getName()); // NOI18N
+            // TODO: I take the freedom to filter this: __timeStamp*
+            if(field.getName().startsWith("__timeStamp")) { // NOI18N
+                continue;
+            }
+            
+            if (request.prefix.length() < 1) {
+                proposals.add(new FieldItem(field.getName(), anchor, request, javax.lang.model.element.ElementKind.FIELD, field.getType()));
+            } else {
+                String fieldName = field.getName();
+                if (fieldName.compareTo(request.prefix) != 0 && fieldName.startsWith(request.prefix)) {
+                    proposals.add(new FieldItem(field.getName(), anchor, request, javax.lang.model.element.ElementKind.FIELD, field.getType()));
+                }
+            }
         }
-
         return false;
     }
 
@@ -371,8 +409,17 @@ public class CodeCompleter implements CodeCompletionHandler {
         
         if(!result.isEmpty()){
             for (ASTNode node : result) {
-                LOG.log(Level.FINEST, "Node found: {0}", ((Variable)node).getName()); // NOI18N
-                proposals.add(new LocalVarItem((Variable )node, anchor, request));
+                String varName = ((Variable)node).getName();
+                LOG.log(Level.FINEST, "Node found: {0}", varName); // NOI18N
+                
+                if(request.prefix.length() < 1) {
+                    proposals.add(new LocalVarItem((Variable )node, anchor, request));
+                } else {
+                    if(varName.compareTo(request.prefix) != 0 && varName.startsWith(request.prefix)){
+                        proposals.add(new LocalVarItem((Variable )node, anchor, request));
+                    }
+                }
+                
             }
         }
         

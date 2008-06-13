@@ -46,6 +46,9 @@ import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import javax.swing.JSplitPane;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakSet;
@@ -86,12 +89,49 @@ public final class Manager {
      * @return  singleton of this class
      */
     public static Manager getInstance() {
-        Manager instance = (instanceRef != null) ? instanceRef.get() : null;
-        if (instance == null) {
-            instance = new Manager();
-            instanceRef = new WeakReference<Manager>(instance);
+        if (instanceRef != null && instanceRef.get() != null) {
+            return instanceRef.get();
         }
+
+        final Manager instance = new Manager();
+        
+        ResultWindow.getInstance().addAncestorListener(new AncestorListener() {
+
+            public void ancestorAdded(AncestorEvent event) {
+                instance.updateDisplayHandlerLayouts();
+            }
+
+            public void ancestorRemoved(AncestorEvent event) {
+                instance.updateDisplayHandlerLayouts();
+            }
+
+            public void ancestorMoved(AncestorEvent event) {
+                instance.updateDisplayHandlerLayouts();
+            }
+        });
+        instanceRef = new WeakReference<Manager>(instance);
         return instance;
+    }
+    
+    /**
+     * Updates the layout orientation of the test result window based on the 
+     * dimensions of the ResultWindow in its position.
+     */
+    private void updateDisplayHandlerLayouts() {
+        int x = ResultWindow.getInstance().getWidth();
+        int y = ResultWindow.getInstance().getHeight();
+        
+        int orientation = x > y
+                ? JSplitPane.HORIZONTAL_SPLIT 
+                : JSplitPane.VERTICAL_SPLIT;
+        
+        if (displayHandlers != null) {
+            for (ResultDisplayHandler handler : displayHandlers.values()) {
+                JSplitPane pane = handler.getDisplayComponent();
+                pane.setOrientation(orientation);
+                ResultWindow.getInstance().addDisplayComponent(pane);
+            }
+        }
     }
     
     private Manager() {

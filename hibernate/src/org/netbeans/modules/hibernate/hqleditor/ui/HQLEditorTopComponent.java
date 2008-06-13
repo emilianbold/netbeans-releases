@@ -42,6 +42,7 @@ import java.awt.CardLayout;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
@@ -72,15 +73,21 @@ import org.openide.util.Utilities;
 public final class HQLEditorTopComponent extends TopComponent {
 
     /** path to the icon used by the component and its open action */
-    static final String ICON_PATH = "org/netbeans/modules/hibernate/hqleditor/ui/resources/runsql.png"; //NOI18N
+    static final String ICON_PATH = "org/netbeans/modules/hibernate/hqleditor/ui/resources/queryEditor16X16.png"; //NOI18N
     private Logger logger = Logger.getLogger(HQLEditorTopComponent.class.getName());
     private HashMap<String, FileObject> hibernateConfigMap = new HashMap<String, FileObject>();
-    private static int count = 0;
+    private static List<Integer> windowCounts = new ArrayList<Integer>();
+    private Integer thisWindowCount = new Integer(0);
     private HQLEditorController controller = null;
     private HibernateEnvironment env = null;
 
-    private static String getNextWindowTitle() {
-        return NbBundle.getMessage(HQLEditorTopComponent.class, "CTL_HQLEditorTopComponent") + (++count);
+    private static int getNextWindowCount() {
+        int count = 0;
+        while (windowCounts.contains(count)) {
+            count++;
+        }
+        windowCounts.add(count);
+        return count;
     }
 
     public static HQLEditorTopComponent getInstance() {
@@ -90,7 +97,8 @@ public final class HQLEditorTopComponent extends TopComponent {
     public HQLEditorTopComponent(HQLEditorController controller) {
         this.controller = controller;
         initComponents();
-        setName(getNextWindowTitle());
+        this.thisWindowCount = getNextWindowCount();
+        setName(NbBundle.getMessage(HQLEditorTopComponent.class, "CTL_HQLEditorTopComponent") + thisWindowCount);
         setToolTipText(NbBundle.getMessage(HQLEditorTopComponent.class, "HINT_HQLEditorTopComponent"));
         setIcon(Utilities.loadImage(ICON_PATH, true));
 
@@ -112,14 +120,22 @@ public final class HQLEditorTopComponent extends TopComponent {
             for (FileObject configFileObject : configFileObjects) {
                 try {
                     HibernateCfgDataObject hibernateCfgDataObject = (HibernateCfgDataObject) DataObject.find(configFileObject);
-                    hibernateConfigMap.put(hibernateCfgDataObject.getHibernateConfiguration().getSessionFactory().getAttributeValue("name"), configFileObject);
+                    String configName = hibernateCfgDataObject.getHibernateConfiguration().getSessionFactory().getAttributeValue("name");
+                    if (configName == null || configName.equals("")) {
+                        configName = configFileObject.getName();
+                    }
+                    hibernateConfigMap.put(configName, configFileObject);
                 } catch (DataObjectNotFoundException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
             hibernateConfigurationComboBox.setModel(new DefaultComboBoxModel(hibernateConfigMap.keySet().toArray()));
             HibernateConfiguration config = ((HibernateCfgDataObject) dO).getHibernateConfiguration();
-            hibernateConfigurationComboBox.setSelectedItem(config.getSessionFactory().getAttributeValue("name"));
+            String selectedConfigName = config.getSessionFactory().getAttributeValue("name");
+            if (selectedConfigName == null || selectedConfigName.equals("")) {
+                selectedConfigName = dO.getPrimaryFile().getName();
+            }
+            hibernateConfigurationComboBox.setSelectedItem(selectedConfigName);
 
         } else {
             //TODO Don't know whether this case will actually arise..
@@ -187,17 +203,18 @@ public final class HQLEditorTopComponent extends TopComponent {
 
 
         } else {
-            //TODO process errors.
-            logger.info("HQL Query result is null");
+            logger.info("HQL query execution resulted in following " + result.getExceptions().size() + " errors.");
+
             switchToErrorView();
             setStatus(NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionError"));
             errorTextArea.setText("");
-            for(Throwable t : result.getExceptions()) {
+            for (Throwable t : result.getExceptions()) {
                 StringWriter sWriter = new StringWriter();
                 PrintWriter pWriter = new PrintWriter(sWriter);
                 t.printStackTrace(pWriter);
                 errorTextArea.append(sWriter.toString());
             }
+            logger.info(errorTextArea.getText());
         }
         runHQLButton.setEnabled(true);
 
@@ -249,8 +266,9 @@ public final class HQLEditorTopComponent extends TopComponent {
         toolBar.add(hibernateConfigurationComboBox);
         toolBar.add(toolbarSeparator);
 
-        runHQLButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/hibernate/hqleditor/ui/resources/runsql.png"))); // NOI18N
+        runHQLButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/hibernate/hqleditor/ui/resources/runsql16X16.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(runHQLButton, org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "HQLEditorTopComponent.runHQLButton.text")); // NOI18N
+        runHQLButton.setToolTipText(org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "runHQLQueryButtonToolTip")); // NOI18N
         runHQLButton.setFocusable(false);
         runHQLButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         runHQLButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -450,7 +468,7 @@ private void runHQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
     @Override
     protected void componentClosed() {
-        --count;
+        windowCounts.remove(thisWindowCount);
     }
 
     private void switchToResultView() {
