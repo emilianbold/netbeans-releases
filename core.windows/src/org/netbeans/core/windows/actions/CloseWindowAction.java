@@ -50,6 +50,8 @@ import org.openide.windows.TopComponent;
 import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import org.netbeans.core.windows.Switches;
+import org.netbeans.core.windows.WindowManagerImpl;
 
 
 /**
@@ -73,7 +75,11 @@ implements PropertyChangeListener {
         //a component that is not selected
         putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class,
         "LBL_CloseWindowAction")); //NOI18N
-        setEnabled(true);
+        if( WindowManagerImpl.getInstance().isEditorTopComponent(tc) ) {
+            setEnabled(Switches.isEditorTopComponentClosingEnabled());
+        } else {
+            setEnabled(Switches.isViewTopComponentClosingEnabled());
+        }
     }
     
     
@@ -96,7 +102,14 @@ implements PropertyChangeListener {
     }
     
     private void updateEnabled() {
-        setEnabled(TopComponent.getRegistry().getActivated() != null);
+        TopComponent activeTc = TopComponent.getRegistry().getActivated();
+        if( null == activeTc ) 
+            setEnabled(false);
+        if( WindowManagerImpl.getInstance().isEditorTopComponent(activeTc) ) {
+            setEnabled( Switches.isEditorTopComponentClosingEnabled() );
+        } else {
+            setEnabled( Switches.isViewTopComponentClosingEnabled() );
+        }
     }
     
     /** Overriden to share accelerator with 

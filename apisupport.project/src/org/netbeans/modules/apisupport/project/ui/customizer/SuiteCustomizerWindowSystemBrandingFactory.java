@@ -39,34 +39,34 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.swing.tabcontrol;
+package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import java.awt.Component;
+import javax.swing.JComponent;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
- * Interface that provides external information (provided by window system)
- * that TabbedContainers need to know in order to work fully.<p>
  *
- * Tab control uses info to provide for example tab buttons reacting on 
- * the position of the container or on maximization state.
- *
- * @see TabbedContainer#TabbedContainer
- *
- * @author Dafe Simonek
+ * @author mkleint
  */
-public interface WinsysInfoForTabbed {
-
-    /** Returns global orientation of given component.
-     *
-     * @return Orientation of component, as defined in
-     * TabDisplayer.ORIENTATION_XXX constants
-     */
-    public Object getOrientation (Component comp);
+public class SuiteCustomizerWindowSystemBrandingFactory implements ProjectCustomizer.CompositeCategoryProvider {
     
-    /** Finds out in what state is window system mode containing given component.
-     * 
-     * @return true if given component is inside mode which is in maximized state,
-     * false otherwise 
-     */
-    public boolean inMaximizedMode (Component comp);
+    /** Creates a new instance of CustomizerCompilingFactory */
+    public SuiteCustomizerWindowSystemBrandingFactory() {
+    }
+    
+    public ProjectCustomizer.Category createCategory(Lookup context) {
+        return ProjectCustomizer.Category.create(
+                SuiteCustomizer.WINDOW_SYSTEM, 
+                NbBundle.getMessage(SuiteCustomizerWindowSystemBrandingFactory.class, "LBL_WinSysBranding"),
+                null);
+    }
+
+    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
+        SuiteProperties props = context.lookup(SuiteProperties.class);
+        assert props != null;
+        return new SuiteCustomizerWindowSystemBranding(props, category);
+    }
+
 }

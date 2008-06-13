@@ -139,7 +139,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     
     /** Indicates whether the window drag and drop is enabled. */
     public static boolean isDnDEnabled() {
-        return !Constants.SWITCH_DND_DISABLE;
+        return !Constants.SWITCH_DND_DISABLE && Switches.isTopComponentDragAndDropEnabled();
     }
 
     /** Gets the only current instance of <code>DragSource</code> used in 
