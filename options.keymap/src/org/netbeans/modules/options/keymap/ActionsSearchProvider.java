@@ -44,6 +44,8 @@ import java.awt.event.ActionEvent;
 import java.lang.reflect.Field;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.KeyStroke;
@@ -106,6 +108,8 @@ public class ActionsSearchProvider implements SearchProvider {
             f.setAccessible(true);
             Action action = (Action) f.get(sa);
             
+            
+            
             if (!action.isEnabled()) {
                 return null;
             }
@@ -133,15 +137,14 @@ public class ActionsSearchProvider implements SearchProvider {
             
             return new Object[] {action, new ActionEvent(evSource, evId, null)};
             
-        } catch (NoSuchFieldException ex) {
-            System.out.println("no field action for: " + sa.getDisplayName());
-            //Exceptions.printStackTrace(ex);
-        } catch (SecurityException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalAccessException ex) {
-            Exceptions.printStackTrace(ex);
+        } catch (Throwable thr) {
+            if (thr instanceof ThreadDeath) {
+                throw (ThreadDeath)thr;
+            }
+            // just log problems, it is common that some actions may
+            // complain
+            Logger.getLogger(getClass().getName()).log(Level.FINE,
+                    "Some problem getting action " + sa.getDisplayName(), thr);
         }
         // fallback
         return null;

@@ -228,7 +228,6 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
         SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     if (command.isFocusOwner() && caller != null) {
-                        System.out.println("reactivating old TC...");
                         TopComponent tc = caller.get();
                         if (tc != null) {
                             tc.requestActive();

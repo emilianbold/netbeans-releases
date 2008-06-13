@@ -51,14 +51,32 @@ import javax.swing.KeyStroke;
  */
 public final class ResultsModel extends AbstractListModel {
 
-    private Iterable<? extends CategoryResult> results;
+    private static ResultsModel instance;
     
-    public ResultsModel(String text) {
-        super();
-        results = CommandEvaluator.evaluate(text);
+    private List<? extends CategoryResult> results;
+
+    /** Singleton */
+    private ResultsModel () {
+    }
+    
+    public static ResultsModel getInstance () {
+        if (instance == null) {
+            instance = new ResultsModel();
+        }
+        return instance;
+    }
+    
+    public void setContent (List<? extends CategoryResult> categories) {
+        this.results = categories;
+        fireContentsChanged(this, 0, getSize());
     }
 
+    /******* AbstractListModel impl ********/
+    
     public int getSize() {
+        if (results == null) {
+            return 0;
+        }
         int size = 0;
         for (CategoryResult cr : results) {
             size += cr.getItems().size();
@@ -67,6 +85,9 @@ public final class ResultsModel extends AbstractListModel {
     }
 
     public Object getElementAt (int index) {
+        if (results == null) {
+            return null;
+        }
         // TBD - should probably throw AIOOBE if invalid index is on input
         int catIndex = index;
         int catSize = 0;
@@ -122,6 +143,14 @@ public final class ResultsModel extends AbstractListModel {
             return category;
         }
     
+    }
+
+    void categoryChanged (CategoryResult cr) {
+        // fire change only if category is contained in model
+        if (results != null && results.contains(cr)) {
+            // TBD - fine tune to use fireIntervalAdded
+            fireContentsChanged(this, 0, getSize());
+        }
     }
     
 }

@@ -44,6 +44,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -96,14 +98,13 @@ final class ProviderRegistry {
         List<ProviderModel.Category> categories = new ArrayList<ProviderModel.Category>(sortedCats.size());
         
         for (FileObject curFO : sortedCats) {
-            System.out.println("category is " + curFO);            
-            
             String displayName = null;
             try {
                 displayName = curFO.getFileSystem().getStatus().annotateName(
                         curFO.getNameExt(), Collections.singleton(curFO));
             } catch (FileStateInvalidException ex) {
-                // TBD - log it
+                Logger.getLogger(getClass().getName()).log(Level.WARNING,
+                        "Obtaining display name for " + curFO + " failed.", ex);
             }
             
             String commandPrefix = null;

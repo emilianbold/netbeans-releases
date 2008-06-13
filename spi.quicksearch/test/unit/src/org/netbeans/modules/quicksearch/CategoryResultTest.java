@@ -102,7 +102,7 @@ public class CategoryResultTest extends NbTestCase {
         RequestProcessor.Task writer = RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 for (int i = 0; i < 7; i++) {
-                    cr.addItem(new ResultsModel.ItemResult(this, String.valueOf(i)));
+                    cr.addItem(new ResultsModel.ItemResult(null, this, String.valueOf(i)));
                     try {
                         Thread.sleep(6);
                     } catch (InterruptedException ex) {

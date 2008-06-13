@@ -46,10 +46,13 @@ import java.util.regex.Pattern;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
- * Command Evaluator. It evaluates commands from toolbar and creates results
- * @author Jan Becicka
+ * Command Evaluator. It evaluates commands from toolbar and creates results.
+ * 
+ * @author Jan Becicka, Dafe Simonek
  */
 public class CommandEvaluator {
     
@@ -67,7 +70,7 @@ public class CommandEvaluator {
      * @param command
      * @return 
      */
-    public static Iterable<? extends CategoryResult> evaluate (String command) {
+    public static void evaluate (String command, ResultsModel model) {
         
         List<CategoryResult> l = new ArrayList<CategoryResult>();
         Matcher m = COMMAND_PATTERN.matcher(command);
@@ -101,16 +104,31 @@ public class CommandEvaluator {
                 if (commandString != null) {
                     String commandPrefix = cat.getCommandPrefix();
                     if (commandPrefix != null && commandPrefix.equalsIgnoreCase(commandString)) {
-                        provider.evaluate(sRequest, sResponse);
+                        runEvaluation(provider, sRequest, sResponse, cat);
                     }
                 } else {
-                    provider.evaluate(sRequest, sResponse);
+                    runEvaluation(provider, sRequest, sResponse, cat);
                 }
             }
             l.add(catResult);
         }
 
-        return l;
+        model.setContent(l);
+    }
+    
+    private static Task runEvaluation (final SearchProvider provider, final SearchRequest request,
+                                final SearchResponse response, ProviderModel.Category cat) {
+        // actions are not happy outside EQ at all
+        if ("Actions".equals(cat.getName())) {
+            provider.evaluate(request, response);
+            return null;
+        }
+        
+        return RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                provider.evaluate(request, response);
+            }
+        });
     }
 
 }

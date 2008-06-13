@@ -43,6 +43,9 @@ package org.netbeans.modules.quicksearch;
 import java.awt.Dimension;
 import javax.swing.JList;
 import javax.swing.JWindow;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import org.netbeans.modules.quicksearch.recent.RecentSearches;
 import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
 
@@ -50,15 +53,20 @@ import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
  * Component representing drop down for quick search
  * @author  Jan Becicka
  */
-public class QuickSearchPopup extends javax.swing.JPanel {
+public class QuickSearchPopup extends javax.swing.JPanel implements ListDataListener {
     
     private QuickSearchComboBar comboBar;
+    
+    private ResultsModel rModel;
 
     /** Creates new form SilverPopup */
     public QuickSearchPopup (QuickSearchComboBar comboBar) {
         this.comboBar = comboBar;
         initComponents();
+        rModel = ResultsModel.getInstance();
+        jList1.setModel(rModel);
         jList1.setCellRenderer(new SearchResultRender());
+        rModel.addListDataListener(this);
     }
 
     void invoke() {
@@ -80,22 +88,8 @@ public class QuickSearchPopup extends javax.swing.JPanel {
     }
     
     void update(String text) {
-        JWindow popup = comboBar.getPopup();
-        if (popup != null) {
-            //should update existing, not create new
-            ResultsModel model = new ResultsModel(text);
-            if (model.getSize() > 0) {
-                jList1.setModel(model);
-                jList1.setSelectedIndex(0);
-                jList1.setVisibleRowCount(jList1.getModel().getSize());
-                final Dimension preferredSize = jList1.getPreferredSize();
-                popup.setSize(preferredSize.width + 3, preferredSize.height + 3);
-                popup.setVisible(true);
-                comboBar.getCommand().requestFocus();
-            } else {
-                popup.setVisible(false);
-            }
-        }
+        // TBD - fast coming evaluation requests coalescing
+        CommandEvaluator.evaluate(text, rModel);
     }
     
 
@@ -125,5 +119,52 @@ public class QuickSearchPopup extends javax.swing.JPanel {
     private javax.swing.JList jList1;
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
+
+    
+    /*** impl of reactions to results data change */
+    
+    public void intervalAdded(ListDataEvent e) {
+        updatePopup();
+    }
+
+    public void intervalRemoved(ListDataEvent e) {
+        updatePopup();
+    }
+
+    public void contentsChanged(ListDataEvent e) {
+        updatePopup();
+    }
+
+    /**
+     * Runnable implementation, updates popup.
+     * This "updatePopup" is invoked using SwingUtilities.invokeLater to let
+     * JList compute its preferred size well. 
+     */
+    private void updatePopup() {
+        JWindow popup = comboBar.getPopup();
+        if (popup == null) {
+            return;
+        }
+        
+        int modelSize = rModel.getSize();
+        if (modelSize > 0) {
+            // hack to make jList.getpreferredSize work correctly
+            // JList is listening on ResultsModel same as us and order of listeners
+            // is undefined, so we have to force update of JList's layout data            
+            jList1.setFixedCellHeight(15);
+            jList1.setFixedCellHeight(-1);
+            // end of hack
+            jList1.setVisibleRowCount(modelSize);
+            Dimension preferredSize = jList1.getPreferredSize();
+            popup.setSize(preferredSize.width + 3, preferredSize.height + 3);
+            if (!popup.isVisible()) {
+                jList1.setSelectedIndex(0);
+                popup.setVisible(true);
+                comboBar.getCommand().requestFocus();
+            }
+        } else {
+            popup.setVisible(false);
+        }
+    }
 
 }

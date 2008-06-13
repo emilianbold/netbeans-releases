@@ -39,8 +39,10 @@
 
 package org.netbeans.modules.quicksearch;
 
+import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
 
 /**
@@ -48,7 +50,7 @@ import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
  * 
  * @author  Jan Becicka, Dafe Simonek
  */
-public final class CategoryResult {
+public final class CategoryResult implements Runnable {
     
     private static final int MAX_RESULTS = 7;
     
@@ -58,9 +60,9 @@ public final class CategoryResult {
     
     private List<ItemResult> items;
     
-    private int counter;
-    
     private boolean obsolete;
+    
+    private int previousSize;
 
     CategoryResult (ProviderModel.Category category) {
         this.category = category;
@@ -73,8 +75,14 @@ public final class CategoryResult {
                 return false;
             }
             items.add(item);
-            counter++;
         }
+        
+        if (EventQueue.isDispatchThread()) {
+            run();
+        } else {
+            SwingUtilities.invokeLater(this);
+        }
+        
         return true;
     }
     
@@ -113,6 +121,33 @@ public final class CategoryResult {
         synchronized (LOCK) {
             this.obsolete = obsolete;
         }
+    }
+
+    /** Sends notification about category change, always runs in EQ thread */
+    public void run() {
+        int curSize = 0;
+        boolean shouldNotify = false;
+        synchronized (LOCK) {
+            curSize = items.size();
+            shouldNotify = !obsolete && items.size() <= MAX_RESULTS;
+        }
+        
+        if (!shouldNotify) {
+            return;
+        }
+
+        // as this method is called later then data change occurred (invocation through SwingUtilities.invokeLater),
+        // it happens that all data are already added when this code is executed,
+        // especially when provider is fast calling addItem. In such situation,
+        // notification changes are redundant. We can get rid of them by controlling
+        // category size. Data are only added through addItem, never removed,
+        // and so the same size also means the same content and change
+        // notification may be dismissed.
+        if (curSize > previousSize) {
+            previousSize = curSize;
+            ResultsModel.getInstance().categoryChanged(this);
+        }
+        
     }
 
 }

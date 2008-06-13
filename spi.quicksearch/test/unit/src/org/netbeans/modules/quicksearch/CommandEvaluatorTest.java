@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.quicksearch;
 
+import java.util.List;
 import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
@@ -76,9 +77,11 @@ public class CommandEvaluatorTest extends NbTestCase {
     public void testResponsiveness () throws Exception {
         UnitTestUtils.prepareTest(new String [] { "/org/netbeans/modules/quicksearch/resources/testSlowProvider.xml" });
 
+        System.out.println("Testing resposiveness against slow providers...");
+        
         long startTime = System.currentTimeMillis();
         
-        Iterable<? extends CategoryResult> results = CommandEvaluator.evaluate("sample text");
+        CommandEvaluator.evaluate("sample text", ResultsModel.getInstance());
         
         long endTime = System.currentTimeMillis();
         
