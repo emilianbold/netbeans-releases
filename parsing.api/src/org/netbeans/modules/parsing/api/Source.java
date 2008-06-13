@@ -49,6 +49,7 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -243,6 +244,7 @@ public final class Source {
     
     private final Set<SourceFlags> 
                             flags = EnumSet.of(SourceFlags.INVALID);
+    private int taskCount;
     private volatile Parser cachedParser;
     private SchedulerEvent  schedulerEvent;
     
@@ -300,6 +302,24 @@ public final class Source {
         @Override
         public SchedulerEvent getEvent(Source source) {
             return source.schedulerEvent;
+        }
+
+        @Override
+        public int taskAdded(final Source source) {
+            assert source != null;
+            int ret;
+            synchronized (source) {
+                ret = source.taskCount++;
+            }
+            return ret;
+        }
+
+        @Override
+        public int taskRemoved(final Source source) {
+            assert source != null;
+            synchronized (source) {
+                return --source.taskCount;
+            }
         }
     }
     

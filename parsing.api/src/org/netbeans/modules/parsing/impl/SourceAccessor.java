@@ -100,8 +100,25 @@ public abstract class SourceAccessor {
      */
     public abstract void setParser (Source source, Parser parser) throws IllegalStateException;
     
+    
     public abstract void assignListeners(Source source);
     
     public abstract EventSupport getEventSupport (Source source);
+    
+    /**
+     * SPI method - don't call it directly.
+     * Called by the TaskProcessor when a new ParserResultTask is registered
+     * @param source for which the task was registered
+     * @return number of already registered tasks
+     */
+    public abstract int taskAdded (Source source);
+    
+    /**
+     * SPI method - don't call it directly.
+     * Called by the TaskProcessor when a ParserResultTask is unregistered
+     * @param source for which the task was unregistered
+     * @return number of still registered tasks
+     */
+    public abstract int taskRemoved (Source source);
     
 }
