@@ -79,6 +79,15 @@ public class ImportProjectAction extends CallableSystemAction {
             return;
         }
         
+        for (EclipseProject p : eclProjects) {
+            if (p.isImportSupported()) {
+                if (!p.getProjectTypeFactory().prepare()) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Import aborted"));
+                    return;
+                }
+            }
+        }
+        
         final Importer importer = new Importer(eclProjects, destination);
         
         // prepare progress dialog

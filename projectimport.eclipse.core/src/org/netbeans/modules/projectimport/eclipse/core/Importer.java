@@ -116,7 +116,10 @@ final class Importer {
                             int pos = 0;
                             for (Iterator it = eclProjects.iterator(); it.hasNext(); ) {
                                 EclipseProject eclPrj = (EclipseProject) it.next();
-                                nbProjects.add(importProject(eclPrj, warnings));
+                                Project p = importProject(eclPrj, warnings);
+                                if (p != null) {
+                                    nbProjects.add(p);
+                                }
                             }
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
@@ -166,6 +169,9 @@ final class Importer {
 
         List<String> projectImportProblems = new ArrayList<String>();
         
+        // evaluate classpath containers
+        eclProject.evaluateContainers(projectImportProblems);
+        
         // create global libraries, etc.
         eclProject.setupEvaluatedContainers(projectImportProblems);
         
@@ -194,9 +200,13 @@ final class Importer {
             p = alreadyImported;
             projectImportProblems.add("Existing NetBeans project was found and will be used intead.");
         } else {
+            if (!eclProject.isImportSupported()) {
+                importProblems.add("Unkown project type - it cannot be imported.");
+                return null;
+            }
             p = eclProject.getProjectTypeFactory().createProject(model, projectImportProblems);
         
-            if (eclProject.getProjectTypeFactory() instanceof ProjectTypeUpdater) {
+            if (p != null && eclProject.getProjectTypeFactory() instanceof ProjectTypeUpdater) {
                 ProjectTypeUpdater updater = (ProjectTypeUpdater)eclProject.getProjectTypeFactory();
                 String key = updater.calculateKey(model);
                 EclipseProjectReference ref = new EclipseProjectReference(p, 
@@ -204,7 +214,6 @@ final class Importer {
                         eclProject.getWorkspace() != null ? eclProject.getWorkspace().getDirectory().getAbsolutePath() : null, "0", key);
                 EclipseProjectReference.write(p, ref);
             }
-            assert p != null;
         }
         if (projectImportProblems.size() > 0) {
             importProblems.add("Project "+eclProject.getName()+" import problems:");
