@@ -92,7 +92,7 @@ public final class StorageImpl <K extends Object, V extends Object> {
         } else {
             assert profile == null : "The '" + storageDescription.getId() + "' settings type does not use profiles."; //NOI18N
         }
-        
+
         synchronized (lock) {
             Map<K, V> data;
             Map<CacheKey, Map<K, V>> profilesData = profilesCache.get(mimePath);
@@ -430,7 +430,9 @@ public final class StorageImpl <K extends Object, V extends Object> {
         }
 
         public @Override int hashCode() {
-            return this.profile != null ? this.profile.hashCode() : 7;
+            int hash = this.profile != null ? this.profile.hashCode() : 7;
+            hash = 37 * hash + Boolean.valueOf(this.defaults).hashCode();
+            return hash;
         }
         
     } // End of CacheKey class
