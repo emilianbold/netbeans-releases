@@ -1,8 +1,8 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
- * Contributor(s):
- * 
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,39 +31,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package pty;
+package org.netbeans.modules.projectimport.eclipse.core.spi;
 
-/**
- * Describes the kind of operating system we're running on.
- * <br>
- * Pty's are notoriously un-standardized. Their use varies subtly between
- * Linux, BSD and Solaris, not to mention MacOS.
- * This enum helps with customization of behaviour.
- * @author ivan
- */
-public enum OS {
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
+import org.netbeans.modules.projectimport.eclipse.core.ProjectFactory;
+import org.netbeans.modules.projectimport.eclipse.core.ProjectImporterTestCase;
 
-    OTHER, LINUX, WINDOWS, SOLARIS;
+public class ProjectImportModelTest extends ProjectImporterTestCase {
 
-    /**
-     * Returns the kind of OS we're running on.
-     * @return The kind of OS we're running on.
-     */
-    public static OS get() {
-        String osName = System.getProperty("os.name");
-        osName = osName.toLowerCase();
-        System.out.printf("os.name: \'%s\'\n", osName);
-
-        if (osName.startsWith("windows")) {
-            return OS.WINDOWS;
-        } else if (osName.startsWith("linux")) {
-            return OS.LINUX;
-        } else if (osName.startsWith("sunos")) {
-            return OS.SOLARIS;
-        } else {
-            return OS.OTHER;
-        }
+    public ProjectImportModelTest(String name) {
+        super(name);
     }
+
+    public void testTestRootDetection() throws Exception {
+        File welltested = extractToWorkDir("welltested.zip");
+        assertTrue(welltested.isDirectory());
+        EclipseProject prj = ProjectFactory.getInstance().load(welltested);
+        ProjectImportModel model = new ProjectImportModel(prj, null, null, null);
+        assertEquals(Collections.singletonList(new File(welltested, "src")), Arrays.asList(model.getEclipseSourceRootsAsFileArray()));
+        assertEquals(Collections.singletonList(new File(welltested, "test")), Arrays.asList(model.getEclipseTestSourceRootsAsFileArray()));
+    }
+
 }

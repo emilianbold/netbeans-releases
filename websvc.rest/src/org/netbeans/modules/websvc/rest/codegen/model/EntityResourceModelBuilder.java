@@ -167,7 +167,7 @@ public class EntityResourceModelBuilder {
     private EntityResourceBean createItemResourceBean(EntityClassInfo info) {
         EntityResourceBean itemBean = new EntityResourceBean(Type.ITEM);
         
-        itemBean.setName(Util.singularize(info.getName()));
+        itemBean.setName(info.getName());
         itemBean.setEntityClassInfo(info);
         FieldInfo idField = info.getIdFieldInfo();
         String uriTemplate = "";

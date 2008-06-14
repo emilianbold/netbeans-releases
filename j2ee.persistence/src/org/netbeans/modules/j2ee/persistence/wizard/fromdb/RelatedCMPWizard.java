@@ -133,11 +133,11 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
     @SuppressWarnings("unchecked")
     @Override
     protected WizardDescriptor.Panel<WizardDescriptor>[] initializePanels() {
-        panels = (WizardDescriptor.Panel<WizardDescriptor>[])new WizardDescriptor.Panel<?>[] {
-            new DatabaseTablesPanel.WizardPanel(),
-            new EntityClassesPanel.WizardPanel(),
-            new MappingOptionsPanel.WizardPanel(),
-        };
+        panels = (WizardDescriptor.Panel<WizardDescriptor>[]) new WizardDescriptor.Panel<?>[]{
+                    new DatabaseTablesPanel.WizardPanel(),
+                    new EntityClassesPanel.WizardPanel(),
+                    new MappingOptionsPanel.WizardPanel(),
+                };
         return panels;
     }
     
@@ -151,11 +151,20 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
         WizardDescriptor.Panel<WizardDescriptor> panel = super.current();
         
         if (steps == null) {
-            mergeSteps(new String[] {
-                NbBundle.getMessage(RelatedCMPWizard.class, "LBL_DatabaseTables"),
-                NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ? "LBL_EntityBeansLocation" : "LBL_EntityClasses"),
-                NbBundle.getMessage(RelatedCMPWizard.class, "LBL_MappingOptions"),
-            });
+            // The MappingOptionsPanel is only for JPA, not for EJB CMP
+            if (isCMP()) {
+                mergeSteps(new String[]{
+                            NbBundle.getMessage(RelatedCMPWizard.class, "LBL_DatabaseTables"),
+                            NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ? "LBL_EntityBeansLocation" : "LBL_EntityClasses")
+                        });
+            } else {
+                mergeSteps(new String[]{
+                            NbBundle.getMessage(RelatedCMPWizard.class, "LBL_DatabaseTables"),
+                            NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ? "LBL_EntityBeansLocation" : "LBL_EntityClasses"),
+                            NbBundle.getMessage(RelatedCMPWizard.class, "LBL_MappingOptions"),
+                        });
+
+            }
         }
         
         JComponent component = (JComponent)panel.getComponent();
@@ -170,18 +179,33 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
                 component.setName(steps[steps.length - 3]);
             } else if (panel == panels[1]) {
                 component.putClientProperty(WIZARD_PANEL_CONTENT_SELECTED_INDEX, new Integer(1));
-                // don't use an absolute step value like 1,
+                // don't use an absolute step value like 2,
                 // since we dont' know how may steps there are before us
                 component.setName(steps[steps.length - 2]);
             } else {
                 component.putClientProperty(WIZARD_PANEL_CONTENT_SELECTED_INDEX, new Integer(2));
-                // don't use an absolute step value like 2,
+                // don't use an absolute step value like 3,
                 // since we dont' know how may steps there are before us
                 component.setName(steps[steps.length - 1]);
             }
         }
         
         return panel;
+    }
+    
+    @Override
+    public boolean hasNext() {
+        WizardDescriptor.Panel<WizardDescriptor> panel = super.current();
+        // The last step/panels[2] - MappingOptionsPanel - is only for JPA, not for EJB CMP
+        if(isCMP() && panel == panels[1]) {
+            return false;
+        }
+        else if (panel == panels[2]) {
+            return false;
+        }
+        else {
+            return true;
+        }
     }
     
     static RelatedCMPHelper getHelper(WizardDescriptor wizardDescriptor) {

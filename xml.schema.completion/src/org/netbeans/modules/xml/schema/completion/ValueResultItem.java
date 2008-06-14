@@ -38,68 +38,54 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.schema.completion.spi;
+package org.netbeans.modules.xml.schema.completion;
 
-import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
-import javax.xml.namespace.QName;
-import org.netbeans.editor.BaseDocument;
-import org.openide.filesystems.FileObject;
+import javax.swing.ImageIcon;
+import org.netbeans.modules.xml.axi.AXIComponent;
+import org.netbeans.modules.xml.schema.completion.CompletionPaintComponent.ValuePaintComponent;
+import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
 
 /**
- * Represents code completion context at the current cursor location.
  *
- * @author Samaresh (Samaresh@Netbeans.Org)
+ * @author Samaresh (Samaresh.Panda@Sun.Com)
  */
-public abstract class CompletionContext {
-    
-    /**
-     * Returns the default namespace for the document.
-     */
-    public abstract String getDefaultNamespace();
-    
-    /**
-     * Returns the type of completion.
-     */
-    public abstract CompletionType getCompletionType();
+public class ValueResultItem extends CompletionResultItem {
         
     /**
-     * Returns the path from root element to the cursor location.
+     * Creates a new instance of ValueResultItem
      */
-    public abstract List<QName> getPathFromRoot();
+    public ValueResultItem(AXIComponent forComponent, String value, CompletionContext context) {
+        super(forComponent, context);
+        this.itemText = value;
+        this.icon = new ImageIcon(CompletionResultItem.class.
+                getResource(ICON_LOCATION + ICON_VALUE));
+    }
     
     /**
-     * Returns the FileObject for the document.
+     * Overwrites getReplacementText of base class.
      */
-    public abstract FileObject getPrimaryFile();
+    @Override
+    public String getReplacementText(){
+        return itemText;
+    }
+        
+    @Override
+    public String getDisplayText() {
+        return getItemText();
+    }
     
+    public CompletionPaintComponent getPaintComponent() {
+        if(component == null) {
+            component = new ValuePaintComponent(this);
+        }
+        return component;
+    }
+
     /**
-     * Returns the BaseDocument for the document.
+     * For atributes, the caret should go inside the double quotes.
      */
-    public abstract BaseDocument getBaseDocument();
-    
-    /**
-     * Returns all the namespaces declared in the document as a HashMap.
-     */
-    public abstract HashMap<String, String> getDeclaredNamespaces();
-    
-    /**
-     * Returns the typed characters during completion.
-     */
-    public abstract String getTypedChars();
-            
-    /**
-     * CompletionType.
-     */
-    public static enum CompletionType {
-        COMPLETION_TYPE_UNKNOWN,
-        COMPLETION_TYPE_ATTRIBUTE,
-        COMPLETION_TYPE_ATTRIBUTE_VALUE,
-        COMPLETION_TYPE_ELEMENT,
-        COMPLETION_TYPE_ELEMENT_VALUE,
-        COMPLETION_TYPE_ENTITY,
-        COMPLETION_TYPE_NOTATION,
-        COMPLETION_TYPE_DTD
+    @Override
+    public int getCaretPosition() {
+        return getReplacementText().length();
     }
 }
