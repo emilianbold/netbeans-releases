@@ -42,6 +42,7 @@
 package org.openide.util;
 
 import java.awt.Component;
+import java.awt.Graphics;
 import java.awt.HeadlessException;
 import java.awt.Image;
 import java.awt.MediaTracker;
@@ -50,10 +51,13 @@ import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.ImageObserver;
+import java.awt.image.IndexColorModel;
+import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -63,18 +67,26 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 
-/** Registers all loaded images into the AbstractNode, so nothing is loaded twice.
-*
-* @author Jaroslav Tulach
-*/
-final class IconManager extends Object {
+/** 
+ * Useful static methods for manipulation with images/icons, results are cached.
+ * 
+ * @author Jaroslav Tulach, Tomas Holy
+ * @since 7.14
+ */
+public final class ImageUtilities {
+    /** separator for individual parts of tool tip text */
+    static final String TOOLTIP_SEPAR = "<br>"; // NOI18N
     /** a value that indicates that the icon does not exists */
     private static final ActiveRef<String> NO_ICON = new ActiveRef<String>(null, null, null);
 
     private static final Map<String,ActiveRef<String>> cache = new HashMap<String,ActiveRef<String>>(128);
     private static final Map<String,ActiveRef<String>> localizedCache = new HashMap<String,ActiveRef<String>>(128);
     private static final Map<CompositeImageKey,ActiveRef<CompositeImageKey>> compositeCache = new HashMap<CompositeImageKey,ActiveRef<CompositeImageKey>>(128);
+    private static final Map<ToolTipImageKey, ActiveRef<ToolTipImageKey>> imageToolTipCache = new HashMap<ToolTipImageKey, ActiveRef<ToolTipImageKey>>(128);
 
     /** Resource paths for which we have had to strip initial slash.
      * @see "#20072"
@@ -84,7 +96,7 @@ final class IconManager extends Object {
     private static Lookup.Result<ClassLoader> loaderQuery = null;
     private static boolean noLoaderWarned = false;
     private static final Component component = new Component() {
-        };
+    };
 
     private static final MediaTracker tracker = new MediaTracker(component);
     private static int mediaTrackerID;
@@ -92,13 +104,161 @@ final class IconManager extends Object {
     private static ImageReader PNG_READER;
 //    private static ImageReader GIF_READER;
     
-    private static final Logger ERR = Logger.getLogger(IconManager.class.getName());
+    private static final Logger ERR = Logger.getLogger(ImageUtilities.class.getName());
+    
+    private ImageUtilities() {
+    }
 
     static {
         ImageIO.setUseCache(false);
         PNG_READER = ImageIO.getImageReadersByMIMEType("image/png").next();
 //        GIF_READER = ImageIO.getImageReadersByMIMEType("image/gif").next();
     }
+
+    /**
+     * Loads an image from the specified resource ID. The image is loaded using the "system" classloader registered in
+     * Lookup.
+     * @param resourceID resource path of the icon (no initial slash)
+     * @return icon's Image, or null, if the icon cannot be loaded.     
+     */
+    public static final Image loadImage(String resourceID) {
+        return getIcon(resourceID, false);
+    }
+    
+    /**
+     * Loads an image based on resource path.
+     * Exactly like {@link #loadImage(String)} but may do a localized search.
+     * For example, requesting <samp>org/netbeans/modules/foo/resources/foo.gif</samp>
+     * might actually find <samp>org/netbeans/modules/foo/resources/foo_ja.gif</samp>
+     * or <samp>org/netbeans/modules/foo/resources/foo_mybranding.gif</samp>.
+     * 
+     * <p>Caching of loaded images can be used internally to improve performance.
+     * 
+     */
+    public static final Image loadImage(String resource, boolean localized) {
+        return getIcon(resource, localized);
+    }    
+
+    /** This method merges two images into the new one. The second image is drawn
+     * over the first one with its top-left corner at x, y. Images need not be of the same size.
+     * New image will have a size of max(second image size + top-left corner, first image size).
+     * Method is used mostly when second image contains transparent pixels (e.g. for badging).
+     * Method that attempts to find the merged image in the cache first, then
+     * creates the image if it was not found.
+     * @param image1 underlying image
+     * @param image2 second image
+     * @param x x position of top-left corner
+     * @param y y position of top-left corner
+     * @return new merged image
+     */    
+    public static final Image mergeImages(Image image1, Image image2, int x, int y) {
+        if (image1 == null || image2 == null) {
+            throw new NullPointerException();
+        }
+        
+        CompositeImageKey k = new CompositeImageKey(image1, image2, x, y);
+        Image cached;
+
+        synchronized (compositeCache) {
+            ActiveRef<CompositeImageKey> r = compositeCache.get(k);
+            if (r != null) {
+                cached = r.get();
+                if (cached != null) {
+                    return cached;
+                }
+            }
+            cached = doMergeImages(image1, image2, x, y);
+            compositeCache.put(k, new ActiveRef<CompositeImageKey>(cached, compositeCache, k));
+            return cached;
+        }
+    }    
+    
+    /**
+     * Converts given image to a {@link javax.swing.Icon}.
+     * @param image {@link java.awt.Image} to be converted.
+     * @return icon corresponding {@link javax.swing.Icon}
+     */    
+    public static final Icon image2Icon(Image image) {
+        if (image instanceof ToolTipImage) {
+            return (Icon) image;
+        } else {
+            return new ImageIcon(image);
+        }
+    }
+    
+    /**
+     * Converts given icon to a {@link java.awt.Image}.
+     *
+     * @param icon {@link javax.swing.Icon} to be converted.
+     */
+    public static final Image icon2Image(Icon icon) {
+        if (icon instanceof ToolTipImage) {
+            return (Image) icon;
+        } else {
+            ToolTipImage image = new ToolTipImage("", icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
+            Graphics g = image.getGraphics();
+            icon.paintIcon(new JLabel(), g, 0, 0);
+            g.dispose();
+            return image;
+        }
+    }
+    
+    /**
+     * Assign tool tip text to given image (creates new or returns cached, original remains unmodified)
+     * Text can contain HTML tags e.g. "&#60;b&#62;my&#60;/b&#62; text"
+     * @param image image to which tool tip should be set
+     * @param text tool tip text
+     * @return Image with attached tool tip 
+     */    
+    public static final Image assignToolTipToImage(Image image, String text) {
+        ToolTipImageKey key = new ToolTipImageKey(image, text);
+        Image cached;
+        synchronized (imageToolTipCache) {
+            ActiveRef<ToolTipImageKey> r = imageToolTipCache.get(key);
+            if (r != null) {
+                cached = r.get();
+                if (cached != null) {
+                    return cached;
+                }
+            }
+            cached = ToolTipImage.createNew(text, image);
+            imageToolTipCache.put(key, new ActiveRef<ToolTipImageKey>(cached, imageToolTipCache, key));
+            return cached;
+        }
+    }
+
+    /**
+     * Get tool tip text for given image
+     * @param image image which is asked for tool tip text
+     * @return String containing attached tool tip text
+     */
+    public static final String getImageToolTip(Image image) {
+        if (image instanceof ToolTipImage) {
+            return ((ToolTipImage) image).toolTipText;
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * Add text to tool tip for given image (creates new or returns cached, original remains unmodified)
+     * Text can contain HTML tags e.g. "&#60;b&#62;my&#60;/b&#62; text"
+     * @param text text to add to tool tip
+     * @return Image with attached tool tip
+     */
+    public static final Image addToolTipToImage(Image image, String text) {
+        if (image instanceof ToolTipImage) {
+            ToolTipImage tti = (ToolTipImage) image;
+            StringBuilder str = new StringBuilder(tti.toolTipText);
+            if (str.length() > 0 && text.length() > 0) {
+                str.append(TOOLTIP_SEPAR);
+            }
+            str.append(text);
+            return assignToolTipToImage(image, str.toString());
+        } else {
+            return assignToolTipToImage(image, text);
+        }
+    }    
     
     /**
      * Get the class loader from lookup.
@@ -184,7 +344,7 @@ final class IconManager extends Object {
 
                 // #31008. [PENDING] remove in case package cache is precomputed
                 java.net.URL baseurl = (loader != null) ? loader.getResource(resource) // NOPMD
-                        : IconManager.class.getClassLoader().getResource(resource);
+                        : ImageUtilities.class.getClassLoader().getResource(resource);
                 Iterator<String> it = NbBundle.getLocalizingSuffixes();
                 
                 while (it.hasNext()) {
@@ -199,13 +359,10 @@ final class IconManager extends Object {
 
                     if (i != null) {
                         localizedCache.put(resource, new ActiveRef<String>(i, localizedCache, resource));
-
                         return i;
                     }
                 }
-
                 localizedCache.put(resource, NO_ICON);
-
                 return null;
             }
         } else {
@@ -270,7 +427,7 @@ final class IconManager extends Object {
 
             // we have to load it
             java.net.URL url = (loader != null) ? loader.getResource(n)
-                                                : IconManager.class.getClassLoader().getResource(n);
+                                                : ImageUtilities.class.getClassLoader().getResource(n);
 
 //            img = (url == null) ? null : Toolkit.getDefaultToolkit().createImage(url);
             Image result = null;
@@ -321,47 +478,17 @@ final class IconManager extends Object {
 
 //                Image img2 = toBufferedImage(result);
 
-                ERR.log(Level.FINE, 
-                        "loading icon {0} = {1}", new Object[] {n, result});
+                ERR.log(Level.FINE, "loading icon {0} = {1}", new Object[] {n, result});
                 name = new String(name).intern(); // NOPMD
-
+                result = ToolTipImage.createNew("", result);
                 cache.put(name, new ActiveRef<String>(result, cache, name));
-
                 return result;
             } else { // no icon found
-
                 if (!localizedQuery) {
                     cache.put(name, NO_ICON);
                 }
-
                 return null;
             }
-        }
-    }
-
-    /**
-     * Method that attempts to find the merged image in the cache first, then
-     * creates the image if it was not found.
-     */
-    static final Image mergeImages(Image im1, Image im2, int x, int y) {
-        CompositeImageKey k = new CompositeImageKey(im1, im2, x, y);
-        Image cached;
-
-        synchronized (compositeCache) {
-            ActiveRef<CompositeImageKey> r = compositeCache.get(k);
-
-            if (r != null) {
-                cached = r.get();
-
-                if (cached != null) {
-                    return cached;
-                }
-            }
-
-            cached = doMergeImages(im1, im2, x, y);
-            compositeCache.put(k, new ActiveRef<CompositeImageKey>(cached, compositeCache, k));
-
-            return cached;
         }
     }
 
@@ -394,7 +521,6 @@ final class IconManager extends Object {
 
         synchronized (tracker) {
             int id = ++mediaTrackerID;
-
             tracker.addImage(image, id);
 
             try {
@@ -407,7 +533,7 @@ final class IconManager extends Object {
             tracker.removeImage(image, id);
         }
     }
-
+    
     private static final Image doMergeImages(Image image1, Image image2, int x, int y) {
         ensureLoaded(image1);
         ensureLoaded(image2);
@@ -417,8 +543,17 @@ final class IconManager extends Object {
         boolean bitmask = (image1 instanceof Transparency) && ((Transparency)image1).getTransparency() != Transparency.TRANSLUCENT
                 && (image2 instanceof Transparency) && ((Transparency)image2).getTransparency() != Transparency.TRANSLUCENT;
 
+        StringBuilder str = new StringBuilder(image1 instanceof ToolTipImage ? ((ToolTipImage)image1).toolTipText : "");
+        if (image2 instanceof ToolTipImage) {
+            String toolTip = ((ToolTipImage)image2).toolTipText;
+            if (str.length() > 0 && toolTip.length() > 0) {
+                str.append(TOOLTIP_SEPAR);
+            }
+            str.append(toolTip);
+        }
+        
         ColorModel model = colorModel(bitmask? Transparency.BITMASK: Transparency.TRANSLUCENT);
-        java.awt.image.BufferedImage buffImage = new java.awt.image.BufferedImage(
+        ToolTipImage buffImage = new ToolTipImage(str.toString(), 
                 model, model.createCompatibleWritableRaster(w, h), model.isAlphaPremultiplied(), null
             );
 
@@ -454,7 +589,6 @@ final class IconManager extends Object {
         catch(HeadlessException he) {
             model = ColorModel.getRGBdefault();
         }
-
         return model;
     }
 
@@ -474,6 +608,7 @@ final class IconManager extends Object {
             this.overlayImage = overlay;
         }
 
+        @Override
         public boolean equals(Object other) {
             if (!(other instanceof CompositeImageKey)) {
                 return false;
@@ -484,6 +619,7 @@ final class IconManager extends Object {
             return (x == k.x) && (y == k.y) && (baseImage == k.baseImage) && (overlayImage == k.overlayImage);
         }
 
+        @Override
         public int hashCode() {
             int hash = ((x << 3) ^ y) << 4;
             hash = hash ^ baseImage.hashCode() ^ overlayImage.hashCode();
@@ -491,8 +627,42 @@ final class IconManager extends Object {
             return hash;
         }
 
+        @Override
         public String toString() {
             return "Composite key for " + baseImage + " + " + overlayImage + " at [" + x + ", " + y + "]"; // NOI18N
+        }
+    }
+    
+    /**
+     * Key used for ToolTippedImage
+     */
+    private static class ToolTipImageKey {
+        Image image;
+        String str;
+
+        ToolTipImageKey(Image image, String str) {
+            this.image = image;
+            this.str = str;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof ToolTipImageKey)) {
+                return false;
+            }
+            ToolTipImageKey k = (ToolTipImageKey) other;
+            return (str.equals(k.str)) && (image == k.image);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = image.hashCode() ^ str.hashCode();
+            return hash;
+        }
+
+        @Override
+        public String toString() {
+            return "ImageStringKey for " + image + " + " + str; // NOI18N
         }
     }
 
@@ -514,4 +684,58 @@ final class IconManager extends Object {
         }
     }
      // end of ActiveRef
+
+    /**
+     * Image with tool tip text (for icons with badges)
+     */
+    private static class ToolTipImage extends BufferedImage implements Icon {
+        final String toolTipText;
+
+        public static ToolTipImage createNew(String toolTipText, Image image) {
+            ImageUtilities.ensureLoaded(image);
+            boolean bitmask = (image instanceof Transparency) && ((Transparency) image).getTransparency() != Transparency.TRANSLUCENT;
+            ColorModel model = colorModel(bitmask ? Transparency.BITMASK : Transparency.TRANSLUCENT);
+            int w = image.getWidth(null);
+            int h = image.getHeight(null);
+            ToolTipImage newImage = new ToolTipImage(toolTipText, model, model.createCompatibleWritableRaster(w, h), model.isAlphaPremultiplied(), null);
+
+            java.awt.Graphics g = newImage.createGraphics();
+            g.drawImage(image, 0, 0, null);
+            g.dispose();
+            return newImage;
+        }
+        
+        public ToolTipImage(String toolTipText, ColorModel cm, WritableRaster raster, boolean isRasterPremultiplied, Hashtable<?, ?> properties) {
+            super(cm, raster, isRasterPremultiplied, properties);
+            this.toolTipText = toolTipText;
+        }
+
+        public ToolTipImage(String toolTipText, int width, int height, int imageType, IndexColorModel cm) {
+            super(width, height, imageType, cm);
+            this.toolTipText = toolTipText;
+        }
+
+        public ToolTipImage(String toolTipText, int width, int height, int imageType) {
+            super(width, height, imageType);
+            this.toolTipText = toolTipText;
+        }
+        
+        public ToolTipImage(String toolTipText, BufferedImage image) {
+            super(image.getWidth(), image.getHeight(), image.getType());
+            this.toolTipText = toolTipText;
+        }
+        
+
+        public int getIconHeight() {
+            return super.getHeight();
+        }
+
+        public int getIconWidth() {
+            return super.getWidth();
+        }
+
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            g.drawImage(this, x, y, null);
+        }
+    }
 }
