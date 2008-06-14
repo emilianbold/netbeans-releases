@@ -228,11 +228,6 @@ public final class CompletorRegistry {
     }
     
     private Completor getAttributeValueCompletor(CompletionContext context) {
-        Completor completor = locateCompletor(context);
-        return completor;
-    }
-    
-    private Completor locateCompletor(CompletionContext context) {
         String tagName = context.getTag().getNodeName();
         TokenItem attrib = ContextUtilities.getAttributeToken(context.getCurrentToken());
         String attribName = attrib != null ? attrib.getImage() : null;
@@ -244,7 +239,7 @@ public final class CompletorRegistry {
         
         return null;
     }
-
+    
     private Completor getAttributeCompletor(final CompletionContext context) {
         String tagName = context.getTag().getNodeName();
         if(tagName.equals(BeansElements.BEAN) && ContextUtilities.isPNamespaceAdded(context.getDocumentContext())) {
