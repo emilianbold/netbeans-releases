@@ -591,7 +591,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             private boolean isDecimalType(String type) {
                 if ("java.lang.Double".equals(type) || // NOI18N
                     "java.lang.Float".equals(type) || // NOI18N
-                    "java.math.BigDecimal;".equals(type)) { // NOI18N
+                    "java.math.BigDecimal".equals(type)) { // NOI18N
                     return true;
                 }
                 return false;

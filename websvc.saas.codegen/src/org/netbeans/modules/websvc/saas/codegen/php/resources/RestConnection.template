@@ -3,6 +3,13 @@
     require_once "HTTP/Request.php";
     require_once "RestResponse.php";
 
+    /*
+     * This Class depends on pear package HTTP/Request. Please see 
+     * http://php.netbeans.org/ on how to setup PHP environment and install 
+     * required pear package 'HTTP_Request' from http://pear.php.net/.");
+     * If you have pear installed already. Then run 'pear install HTTP_Request'.
+     * Also install 'Net_Socket' and 'Net_URL' required by HTTP_Request package.
+     */
     class RestConnection {
 
         private $url = "";
