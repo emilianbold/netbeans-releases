@@ -224,9 +224,9 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.settings.storage</code-name-base>
+                        <recursive/>
                         <compile-dependency/>
                         <test/>
-                        <recursive/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.projectui</code-name-base>
@@ -234,8 +234,8 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.core.startup</code-name-base>
-                        <compile-dependency/>
                         <recursive/>
+                        <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.settings</code-name-base>
