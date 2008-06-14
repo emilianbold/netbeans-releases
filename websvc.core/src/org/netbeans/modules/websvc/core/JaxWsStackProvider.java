@@ -62,8 +62,7 @@ public class JaxWsStackProvider {
                 return wsStack;
             }
         }
-        WSStack wsStack = getJdkJaxWsStack();
-        return wsStack == null || !"2.1".equals(wsStack.getVersion()) ? getIdeJaxWsStack() : wsStack;
+        return null;
     }
     
     public static WSStack getJaxWsStackForTool(J2eePlatform j2eePlatform, String toolName) {
@@ -73,8 +72,7 @@ public class JaxWsStackProvider {
                 return wsStack;
             }
         }
-        WSStack wsStack = getJdkJaxWsStack();
-        return wsStack == null || !"2.1".equals(wsStack.getVersion()) ? getIdeJaxWsStack() : wsStack;
+        return getIdeJaxWsStack();
     }
     
     public static synchronized WSStack getJdkJaxWsStack() {

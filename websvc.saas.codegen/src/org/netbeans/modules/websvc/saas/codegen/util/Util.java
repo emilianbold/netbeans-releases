@@ -1072,7 +1072,7 @@ public class Util {
     }
 
     public static String getHeaderOrParameterDefinition(List<ParameterInfo> params, String varName, boolean evaluate, HttpMethodType httpMethod) {
-        String part = getHeaderOrParameterDefinitionPart(params, varName, evaluate);
+        String part = getHeaderOrParameterDefinitionPart(params, evaluate);
         if (httpMethod == HttpMethodType.PUT ||
                 httpMethod == HttpMethodType.POST) {
             if (!Util.isContains(params, new ParameterInfo(Constants.CONTENT_TYPE, String.class))) {
@@ -1089,12 +1089,12 @@ public class Util {
     public static String getHeaderOrParameterDefinition(List<ParameterInfo> params, String varName, boolean evaluate) {
         String paramCode = "";
         paramCode += "             String[][] " + varName + " = new String[][]{\n";
-        paramCode += "                 " + getHeaderOrParameterDefinitionPart(params, varName, evaluate) + "\n";
+        paramCode += "                 " + getHeaderOrParameterDefinitionPart(params, evaluate) + "\n";
         paramCode += "             };\n";
         return paramCode;
     }
 
-    public static String getHeaderOrParameterDefinitionPart(List<ParameterInfo> params, String varName, boolean evaluate) {
+    public static String getHeaderOrParameterDefinitionPart(List<ParameterInfo> params, boolean evaluate) {
         String paramsStr = null;
         StringBuffer sb = new StringBuffer();
         for (ParameterInfo param : params) {

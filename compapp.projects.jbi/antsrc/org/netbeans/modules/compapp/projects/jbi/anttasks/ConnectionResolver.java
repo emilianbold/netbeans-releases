@@ -74,7 +74,8 @@ public class ConnectionResolver implements CasaConstants {
     private Map<String, String> namespaceMap = new HashMap<String, String>();
     
     private List<Connection> connectionList = new ArrayList<Connection>();
-        
+    private List<Connection> casaConnectionList = new ArrayList<Connection>();
+
     // mapping binding component name to a list of two lists
     Map<String, List<Connection>[]> bcConnections =
             new HashMap<String, List<Connection>[]>();
@@ -135,7 +136,9 @@ public class ConnectionResolver implements CasaConstants {
         
         // mapping portType QName to ptConnection
         Map<String, PtConnection> ptConnectionMap = repo.getConnections(); 
-               
+
+        setCasaConnections(oldCasaDocument);
+
         // loop thru the Pt connections
         for (String pt : ptConnectionMap.keySet()) {
             PtConnection ptConnection = ptConnectionMap.get(pt);
@@ -185,13 +188,18 @@ public class ConnectionResolver implements CasaConstants {
                         // create a connection consumer -> port
                         // todo: 03/23/06.. replace with consumer -> provider
                         // instead
-                        if ((provide != null) && saInternalRouting) {
-                            // create a direct connection consumer -> provide
-                            Connection con = new Connection(consume, provide);
-                            addConnection(con);
+
+                        if (isConnected(true, consume)) {
+                            // IZ#136868, skip connected consumers
                         } else {
-                            Connection con = new Connection(consume, port);
-                            addConnection(con, false, bcName);
+                            if ((provide != null) && saInternalRouting) {
+                                // create a direct connection consumer -> provide
+                                Connection con = new Connection(consume, provide);
+                                addConnection(con);
+                            } else {
+                                Connection con = new Connection(consume, port);
+                                addConnection(con, false, bcName);
+                            }
                         }
                     }
                 }
@@ -276,6 +284,61 @@ public class ConnectionResolver implements CasaConstants {
         }
         
         mergeCasaConnections(oldCasaDocument);
+    }
+
+    private void setCasaConnections(final Document oldCasaDocument) {
+
+        if (oldCasaDocument == null) {
+            return;
+        }
+
+        try {
+            NodeList oldConnectionList = oldCasaDocument.getElementsByTagName(
+                    CASA_CONNECTION_ELEM_NAME);
+
+            for (int i = oldConnectionList.getLength() - 1; i >= 0; i--) {
+                Element oldConnection = (Element) oldConnectionList.item(i);
+                String cID = oldConnection.getAttribute(CASA_CONSUMER_ATTR_NAME);
+                String pID = oldConnection.getAttribute(CASA_PROVIDER_ATTR_NAME);
+                Endpoint c = CasaBuilder.getEndpoint(oldCasaDocument, cID);
+                Endpoint p = CasaBuilder.getEndpoint(oldCasaDocument, pID);
+                Connection con = new Connection(c, p);
+                casaConnectionList.add(con);
+            }
+
+        } catch (Exception e) {
+            log("ERROR: Problem merging new/deleted connections from old casa: " + e);
+        }
+
+    }
+
+    private boolean isConnected(boolean isConsumeAPort, Endpoint endpt) {
+        for (Connection con : connectionList) {
+            if (isConsumeAPort) {
+                if (con.getConsume().equals(endpt)) {
+                    return true;
+                }
+            } else {
+                if (con.getProvide().equals(endpt)) {
+                    return true;
+                }
+            }
+        }
+
+        // IZ#136868, skip connected consumers, check oldConnections
+        for (Connection con : casaConnectionList) {
+            if (isConsumeAPort) {
+                if (con.getConsume().equals(endpt)) {
+                    return true;
+                }
+            } else {
+                if (con.getProvide().equals(endpt)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
     
     private boolean isInConnectionList(List<Connection> connectionList, Connection connection) {

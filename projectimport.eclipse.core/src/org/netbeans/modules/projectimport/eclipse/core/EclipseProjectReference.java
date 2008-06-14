@@ -46,19 +46,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
-import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
-import org.openide.xml.XMLUtil;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 /**
  * Represents reference to Eclipse project which consist of eclipse project location,
@@ -135,61 +130,32 @@ class EclipseProjectReference {
     }
 
     public static EclipseProjectReference read(Project project) {
-        AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
-        Element el = aux.getConfigurationFragment("eclipse", NS, true);
-        if (el == null) {
+        // XXX using shared prefs is incorrect if an absolute path was stored!
+        Preferences prefs = ProjectUtils.getPreferences(project, EclipseProjectReference.class, true);
+        String projectLoc = prefs.get("project", null);
+        if (projectLoc == null) {
             return null;
         }
-        String workspace = null;
-        Element e = Util.findElement(el, "workspace", NS);
-        if (e != null) {
-            workspace = Util.findText(e);
-        }
-        return new EclipseProjectReference(project,
-                Util.findText(Util.findElement(el, "project", NS)),
-                workspace,
-                Util.findText(Util.findElement(el, "timestamp", NS)),
-                Util.findText(Util.findElement(el, "key", NS))
-                );
-        
+        return new EclipseProjectReference(project, projectLoc, prefs.get("workspace", null), prefs.get("timestamp", null), prefs.get("key", null));
     }
     
-    public static void write(Project project, EclipseProjectReference ref) throws IOException {
-        AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
-        Document doc = XMLUtil.createDocument("ignore", null, null, null);
-        Element reference = doc.createElementNS(NS, "eclipse"); // NOI18N
-
-        Element el = doc.createElementNS(NS, "project"); // NOI18N
+    public static void write(Project project, EclipseProjectReference ref) {
+        Preferences prefs = ProjectUtils.getPreferences(project, EclipseProjectReference.class, true);
         File baseDir = FileUtil.toFile(project.getProjectDirectory());
         if (CollocationQuery.areCollocated(baseDir, ref.eclipseProjectLocation)) {
-            el.appendChild(doc.createTextNode(PropertyUtils.relativizeFile(baseDir, ref.eclipseProjectLocation)));
+            prefs.put("project", PropertyUtils.relativizeFile(baseDir, ref.eclipseProjectLocation));
         } else {
-            el.appendChild(doc.createTextNode(ref.eclipseProjectLocation.getPath()));
+            prefs.put("project", ref.eclipseProjectLocation.getPath());
         }
-        reference.appendChild(el);
-        
         if (ref.eclipseWorkspaceLocation != null) {
-            el = doc.createElementNS(NS, "workspace"); // NOI18N
             if (CollocationQuery.areCollocated(baseDir, ref.eclipseWorkspaceLocation)) {
-                el.appendChild(doc.createTextNode(PropertyUtils.relativizeFile(baseDir, ref.eclipseWorkspaceLocation)));
+                prefs.put("workspace", PropertyUtils.relativizeFile(baseDir, ref.eclipseWorkspaceLocation));
             } else {
-                el.appendChild(doc.createTextNode(ref.eclipseWorkspaceLocation.getPath()));
+                prefs.put("workspace", ref.eclipseWorkspaceLocation.getPath());
             }
-            reference.appendChild(el);
         }
-        
-        el = doc.createElementNS(NS, "timestamp"); // NOI18N
-        el.appendChild(doc.createTextNode(""+ref.getCurrentTimestamp()));
-        reference.appendChild(el);
-        
-        // TODO: key need to be normalzied or CDATA-ed
-        el = doc.createElementNS(NS, "key"); // NOI18N
-        el.appendChild(doc.createTextNode(ref.key));
-        reference.appendChild(el);
-        
-        aux.putConfigurationFragment(reference, true);
-        
-        ProjectManager.getDefault().saveProject(project);
+        prefs.put("timestamp", Long.toString(ref.getCurrentTimestamp()));
+        prefs.put("key", ref.key);
     }
 
     public boolean isUpToDate(boolean deepTest) {

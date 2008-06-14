@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,37 +31,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.explorer.nodes;
+package org.netbeans.modules.projectimport.eclipse.core.spi;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
+import org.netbeans.modules.projectimport.eclipse.core.ProjectFactory;
+import org.netbeans.modules.projectimport.eclipse.core.ProjectImporterTestCase;
 
-/**
- *
- * @author gordonp
- */
-public abstract class RemoteServicesNode extends AbstractNode implements PropertyChangeListener {
+public class ProjectImportModelTest extends ProjectImporterTestCase {
 
-    public RemoteServicesNode() {
-        super(Children.create(new RemoteServicesChildFactory(), true));
-    }
-    
-    public RemoteServicesNode(Children children) {
-        super(children);
+    public ProjectImportModelTest(String name) {
+        super(name);
     }
 
-    @Override
-    public boolean canRename() {
-        return false;
+    public void testTestRootDetection() throws Exception {
+        File welltested = extractToWorkDir("welltested.zip");
+        assertTrue(welltested.isDirectory());
+        EclipseProject prj = ProjectFactory.getInstance().load(welltested);
+        ProjectImportModel model = new ProjectImportModel(prj, null, null, null);
+        assertEquals(Collections.singletonList(new File(welltested, "src")), Arrays.asList(model.getEclipseSourceRootsAsFileArray()));
+        assertEquals(Collections.singletonList(new File(welltested, "test")), Arrays.asList(model.getEclipseTestSourceRootsAsFileArray()));
     }
 
-    public abstract void propertyChange(PropertyChangeEvent evt);
 }

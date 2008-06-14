@@ -41,7 +41,6 @@ package org.netbeans.modules.projectimport.eclipse.j2se;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Icon;
@@ -122,8 +121,7 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         helper.putPrimaryConfigurationData(pcd, true);
         EditableProperties prop = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String ver = model.getJavaPlatform().getSpecification().getVersion().toString();
-        String normalizedName = (String) model.getJavaPlatform().getProperties().get(
-                    "platform.ant.name"); // NOI18N
+        String normalizedName = model.getJavaPlatform().getProperties().get("platform.ant.name"); // NOI18N
         prop.setProperty(J2SEProjectProperties.JAVAC_SOURCE, ver);
         prop.setProperty(J2SEProjectProperties.JAVAC_TARGET, ver);
         prop.setProperty(J2SEProjectProperties.JAVA_PLATFORM, normalizedName);

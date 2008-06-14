@@ -60,44 +60,74 @@ import org.openide.util.WeakListeners;
  * The RerunAction is placed into the I/O window, allowing the user to restart
  * a particular execution context.
  *
- * Based on the equivalent RerunAction in the ant support.
- *
- * @author Tor Norbye, Petr Hejl
+ * @author Petr Hejl
  */
 public final class RerunAction extends AbstractAction implements ChangeListener {
 
-    private transient ExecutionService prototype;
+    private ExecutionService service;
 
-    private final RerunCondition rerunCondition;
+    private RerunCondition condition;
 
-    public RerunAction(ExecutionService prototype, RerunCondition rerunCondition) {
-        this.prototype = prototype;
+    private ChangeListener listener;
+
+    public RerunAction() {
         setEnabled(false); // initially, until ready
         putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage(
-                "org/netbeans/modules/extexecution/resources/rerun.png")));
+                "org/netbeans/modules/extexecution/resources/rerun.png"))); // NOI18N
         putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(RerunAction.class, "Rerun"));
+    }
 
-        this.rerunCondition = rerunCondition;
-        if (rerunCondition != null) {
-            rerunCondition.addChangeListener(WeakListeners.change(this, rerunCondition));
+    public void setExecutionService(ExecutionService service) {
+        synchronized (this) {
+            this.service = service;
         }
     }
 
-    public void actionPerformed(ActionEvent e) {
-        setEnabled(false);
+    public void setRerunCondition(RerunCondition condition) {
+        synchronized (this) {
+            if (this.condition != null) {
+                this.condition.removeChangeListener(listener);
+            }
+            this.condition = condition;
+            if (this.condition != null) {
+                listener = WeakListeners.change(this, this.condition);
+                this.condition.addChangeListener(listener);
+            }
+        }
+        stateChanged(null);
+    }
 
-        if (prototype != null) {
-            Accessor.getDefault().rerun(prototype);
+    public void actionPerformed(ActionEvent e) {
+        setEnabled(false); // discourage repeated clicking
+
+        ExecutionService actionService;
+        synchronized (this) {
+            actionService = service;
+        }
+
+        if (actionService != null) {
+            Accessor.getDefault().rerun(actionService);
         }
     }
 
     public void stateChanged(ChangeEvent e) {
-        firePropertyChange("enabled", null, rerunCondition.isRerunPossible()); // NOI18N
+        Boolean value = null;
+        synchronized (this) {
+            if (condition != null) {
+                value = condition.isRerunPossible();
+            }
+        }
+
+        if (value != null) {
+            firePropertyChange("enabled", null, value); // NOI18N
+        }
     }
 
     @Override
     public boolean isEnabled() {
-        return super.isEnabled() && (rerunCondition == null || rerunCondition.isRerunPossible());
+        synchronized (this) {
+            return super.isEnabled() && (condition == null || condition.isRerunPossible());
+        }
     }
 
     /**

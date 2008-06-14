@@ -1,3 +1,4 @@
+// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
@@ -36,6 +37,7 @@
  * 
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
+// </editor-fold>
 
 package org.netbeans.modules.glassfish.common;
 
@@ -95,6 +97,7 @@ public class GlassfishInstance implements ServerInstanceImplementation {
     public static final int DEFAULT_HTTP_PORT = 8080;
     public static final int DEFAULT_HTTPS_PORT = 8181;
     public static final int DEFAULT_ADMIN_PORT = 4848;
+    public static final String DEFAULT_DOMAIN_NAME = "domain1"; // NOI18N
 
     
     // Server properties

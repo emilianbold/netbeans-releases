@@ -37,36 +37,33 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.explorer.nodes;
+package org.netbeans.modules.php.editor.index;
 
-import java.util.List;
-import org.netbeans.modules.cnd.remote.server.RemoteServerList;
-import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
-import org.openide.nodes.ChildFactory;
-import org.openide.nodes.Node;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.php.editor.PHPDOCCodeCompletion;
 
 /**
  *
- * @author gordonp
+ * @author tomslot
  */
-public class RemoteServicesChildFactory extends ChildFactory<RemoteServerRecord> {
+public class PHPDOCTagElement extends PHPElement{
+    private String tagName;
 
+    public PHPDOCTagElement(String tagName) {
+        this.tagName = tagName;
+    }
+    
     @Override
-    protected boolean createKeys(List<RemoteServerRecord> toPopulate) {
-        try {
-            toPopulate.add(RemoteServerList.getInstance().getLocalhostRecord());
-        } catch (Exception ie) {
-            return false;
-        }
-        return true;
+    public String getName() {
+        return tagName;
     }
 
     @Override
-    protected Node createNodeForKey(RemoteServerRecord record) {
-        if (record.isRemote()) {
-            return new RemoteServerNode(record);
-        } else {
-            return new LocalhostNode(record);
-        }
+    public ElementKind getKind() {
+        return ElementKind.KEYWORD;
+    }
+
+    public String getDoc(){
+        return PHPDOCCodeCompletion.getDoc(tagName);
     }
 }
