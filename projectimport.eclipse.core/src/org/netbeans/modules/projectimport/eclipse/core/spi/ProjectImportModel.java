@@ -42,7 +42,9 @@ package org.netbeans.modules.projectimport.eclipse.core.spi;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
@@ -94,8 +96,7 @@ public final class ProjectImportModel {
     }
     
     public List<DotClassPathEntry> getEclipseSourceRoots() {
-        // TODO: see getEclipseTestSourceRoots()
-        return project.getSourceRoots();
+        return filterSourceRootsForTests(false);
     }
     
     public File[] getEclipseSourceRootsAsFileArray() {
@@ -103,13 +104,66 @@ public final class ProjectImportModel {
     }
     
     public List<DotClassPathEntry> getEclipseTestSourceRoots() {
-        // TODO: either ask user in wizard or preferably just
-        // grep sources for "junit" or something else.
-        return Collections.<DotClassPathEntry>emptyList();
+        return filterSourceRootsForTests(true);
     }
     
     public File[] getEclipseTestSourceRootsAsFileArray() {
         return convertToFileArray(getEclipseTestSourceRoots());
+    }
+
+    private final Map<File,Boolean> looksLikeTests = new HashMap<File,Boolean>();
+    private List<DotClassPathEntry> filterSourceRootsForTests(boolean test) {
+        List<DotClassPathEntry> all = project.getSourceRoots();
+        if (!hasJUnitOnClassPath()) {
+            if (test) {
+                return Collections.emptyList();
+            } else {
+                return all;
+            }
+        }
+        List<DotClassPathEntry> result = new ArrayList<DotClassPathEntry>(all.size());
+        for (DotClassPathEntry entry : all) {
+            File r = new File(entry.getAbsolutePath());
+            Boolean isTest;
+            synchronized (looksLikeTests) {
+                isTest = looksLikeTests.get(r);
+                if (isTest == null) {
+                    isTest = hasTests(r);
+                    looksLikeTests.put(r, isTest);
+                }
+            }
+            if (!test ^ isTest) {
+                result.add(entry);
+            }
+        }
+        return result;
+    }
+
+    private boolean hasJUnitOnClassPath() {
+        for (DotClassPathEntry entry : getEclipseClassPathEntries()) {
+            if (entry.getKind() == DotClassPathEntry.Kind.CONTAINER && entry.getRawPath().startsWith("org.eclipse.jdt.junit.JUNIT_CONTAINER/")) {
+                return true;
+            }
+            // XXX could be a little laxer, e.g. JSPWiki uses: <classpathentry kind="lib" path="tests/lib/junit.jar"/>
+        }
+        return false;
+    }
+
+    /** Crude heuristic to see if a source root contains some sort of JUnit tests. */
+    private boolean hasTests(File fileOrDir) {
+        if (fileOrDir.isDirectory()) {
+            File[] kids = fileOrDir.listFiles();
+            if (kids != null) {
+                for (File kid : kids) {
+                    if (hasTests(kid)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } else {
+            return fileOrDir.getName().endsWith("Test.java");
+        }
     }
 
     public JavaPlatform getJavaPlatform() {
