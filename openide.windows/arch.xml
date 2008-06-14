@@ -578,6 +578,73 @@ Yes. Component can control its persistence and way how they are displayed in con
                 will receive the keystroke.
             </p>
         </api>
+    
+    <api type="export" group="property" name="org.netbeans.core.windows.TopComponent.DragAndDrop.Enabled" category="stable">
+         Name of resource bundle property which disables the drag and drop of window
+         TopComponents when its value is set to <code>false</code>, the default value is <code>true</code>.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+    
+    <api type="export" group="property" name="org.netbeans.core.windows.TopComponent.Undocking.Enabled" category="stable">
+         Name of resource bundle property which disables undocking of window
+         TopComponents when its value is set to <code>false</code>, the default value is <code>true</code>.
+         When this feature is disabled then there is no 'Undock' item in TopComponent popup menu
+         and 'Undock Window' action the main menu is disabled.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+    
+    <api type="export" group="property" name="org.netbeans.core.windows.TopComponent.Sliding.Enabled" category="stable">
+         Name of resource bundle property which disables sliding of window
+         TopComponents when its value is set to <code>false</code>, the default value is <code>true</code>.
+         When this feature is disabled then there is no 'Minimize Window' item in TopComponent popup menu
+         and also the Minimize button in TopComponent's header is hidden.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+    
+    <api type="export" group="property" name="org.netbeans.core.windows.TopComponent.Resizing.Enabled" category="stable">
+         Name of resource bundle property which disables resizing of window
+         TopComponents when its value is set to <code>false</code>, the default value is <code>true</code>.
+         When this feature is disabled then it is not possible to drag splitter bars
+         to change the size of TopComponents.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+
+    <api type="export" group="property" name="org.netbeans.core.windows.View.TopComponent.Closing.Enabled" category="stable">
+         Name of resource bundle property which disables closing of view TopComponents (non-editor windows)
+         when its value is set to <code>false</code>, the default value is <code>true</code>.
+         When this feature is disabled then there is no 'Close Window' item in view's popup menu,
+         there is no close button in TopComponent's header and also 'Close Window' action in 
+         the main menu is disabled when a view TopComponent is activated.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+
+    <api type="export" group="property" name="org.netbeans.core.windows.Editor.TopComponent.Closing.Enabled" category="stable">
+         Name of resource bundle property which disables closing of editor TopComponents (document windows)
+         when its value is set to <code>false</code>, the default value is <code>true</code>.
+         When this feature is disabled then there are no 'Close Window', 'Close All Documents' and 
+         'Close Other Documents' items in editor's popup menu,
+         there is no close button in editor's header and also Close actions in 
+         the main menu are disabled when an editor TopComponent is activated.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+
+    <api type="export" group="property" name="org.netbeans.core.windows.TopComponent.Maximization.Enabled" category="stable">
+         Name of resource bundle property which disables maximization of TopComponents 
+         when its value is set to <code>false</code>, the default value is <code>true</code>.
+         When this feature is disabled then there is no 'Maximize Window' item 
+         in TopComponent's popup menu and also 'Maximize Window' action in 
+         the main menu is disabled.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+
+    <api type="export" group="property" name="org.netbeans.core.windows.Splitter.Respect.MinimumSize.Enabled" category="stable">
+         Name of resource bundle property which forces splitter to ingore TopComponent 
+         minimum size when resizing when its value is set to <code>false</code>, 
+         the default value is <code>true</code>.
+         When this feature is enabled then the splitter bars will not move beyond
+         the minimum size of its TopComponents.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
 </answer>
 
 
