@@ -44,24 +44,31 @@ package org.netbeans.editor.ext;
 import java.io.CharArrayWriter;
 import java.io.Writer;
 import java.io.IOException;
-import java.util.Map;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsUtil;
-import org.netbeans.editor.SettingsChangeEvent;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.GuardedException;
 import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.AcceptorFactory;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Syntax;
+import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
+import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.openide.util.Lookup;
+import org.openide.util.WeakListeners;
 
 /**
 * Unlike the formatter class, the ExtFormatter concentrates
@@ -99,19 +106,33 @@ public class ExtFormatter extends Formatter implements FormatLayer {
     /** Map that contains the requested [setting-name, setting-value] pairs */
     private final HashMap settingsMap = new HashMap();
 
-    /** Contains the names of the keys that were turned
-     * into custom settings and are no longer read from
-     * the Settings.
-     */
-    private HashMap customSettingsNamesMap = new HashMap();
-
     private Acceptor indentHotCharsAcceptor;
     private boolean reindentWithTextBefore;
 
+    private final String mimeType;
+    private final Preferences prefs;
+    private final PreferenceChangeListener prefsListener = new PreferenceChangeListener() {
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            String key = evt == null ? null : evt.getKey();
+            if (key == null || EditorPreferencesKeys.INDENT_HOT_CHARS_ACCEPTOR.equals(key)) {
+                indentHotCharsAcceptor = (Acceptor) SettingsConversions.callFactory(
+                    prefs, MimePath.parse(mimeType), EditorPreferencesKeys.INDENT_HOT_CHARS_ACCEPTOR, AcceptorFactory.FALSE);
+            }
+
+            if (key == null || EditorPreferencesKeys.REINDENT_WITH_TEXT_BEFORE.equals(key)) {
+                reindentWithTextBefore = prefs.getBoolean(EditorPreferencesKeys.REINDENT_WITH_TEXT_BEFORE, false);
+            }
+        }
+    };
+    
     public ExtFormatter(Class kitClass) {
         super(kitClass);
 
         initFormatLayers();
+
+        this.mimeType = BaseKit.getKit(kitClass).getContentType();
+        prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+        prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs));
     }
 
     /** Add the desired format-layers to the formatter */
@@ -124,52 +145,27 @@ public class ExtFormatter extends Formatter implements FormatLayer {
      */
     public String getName() {
         return getKitClass().getName().substring(
-                getKitClass().getName().lastIndexOf('.') + 1);
-    }
-
-    public @Override void settingsChange(SettingsChangeEvent evt) {
-        super.settingsChange(evt);
-        String settingName = (evt != null) ? evt.getSettingName() : null;
-
-        // #130965, race condition, this class is regitered for listening from
-        // its super, which means that an event may arrive even before an instance
-        // of this is fully initialized.
-        if (settingsMap == null) return;
-        
-        Class kitClass = getKitClass();
-        Iterator eit = settingsMap.entrySet().iterator();
-        while (eit.hasNext()) {
-            Map.Entry e = (Map.Entry)eit.next();
-            if (settingName == null || e.getKey().equals(e.getKey())) {
-                if (!customSettingsNamesMap.containsKey(e.getKey())) { // not custom
-                    e.setValue(Settings.getValue(kitClass, (String)e.getKey()));
-                }
-            }
-        }
-        
-        indentHotCharsAcceptor = SettingsUtil.getAcceptor(kitClass,
-            ExtSettingsNames.INDENT_HOT_CHARS_ACCEPTOR,
-            AcceptorFactory.FALSE);
-
-        reindentWithTextBefore = SettingsUtil.getBoolean(kitClass, 
-            ExtSettingsNames.REINDENT_WITH_TEXT_BEFORE,
-            false);
+                getKitClass().getName().lastIndexOf('.') + 1); //NOI18N
     }
 
     /** Get the value of the given setting.
     * @param settingName name of the setting to get.
     */
     public Object getSettingValue(String settingName) {
-        synchronized (Settings.class) {
+        synchronized (settingsMap) {
             Object value = settingsMap.get(settingName);
-            if (value == null && !customSettingsNamesMap.containsKey(settingName)) {
-                value = Settings.getValue(getKitClass(), settingName);
-                if (value == null) {
-                    value = NULL_VALUE;
-                }
-                settingsMap.put(settingName, value);
+            if (value != null) {
+                return (value != NULL_VALUE) ? value : null;
             }
-            return (value != NULL_VALUE) ? value : null;
+        }
+        
+        try {
+            ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+            Class settingsClass = loader.loadClass("org.netbeans.editor.Settings"); //NOI18N
+            Method m = settingsClass.getMethod("getValue", Class.class, String.class); //NOI18N
+            return m.invoke(null, getKitClass(), settingName);
+        } catch (Exception e) {
+            return null;
         }
     }
 
@@ -181,9 +177,8 @@ public class ExtFormatter extends Formatter implements FormatLayer {
      * settings.
      */
     public void setSettingValue(String settingName, Object settingValue) {
-        synchronized (Settings.class) {
-            customSettingsNamesMap.put(settingName, settingName);
-            settingsMap.put(settingName, settingValue);
+        synchronized (settingsMap) {
+            settingsMap.put(settingName, settingValue == null ? NULL_VALUE : settingValue);
         }
     }
 
@@ -323,7 +318,7 @@ public class ExtFormatter extends Formatter implements FormatLayer {
      */
     public int[] getReformatBlock(JTextComponent target, String typedText) {
         if (indentHotCharsAcceptor == null) { // init if necessary
-            settingsChange(null);
+            prefsListener.preferenceChange(null);
         }
 
         if (indentHotCharsAcceptor.accept(typedText.charAt(0))) {
@@ -360,8 +355,7 @@ public class ExtFormatter extends Formatter implements FormatLayer {
 
     /** Create the indentation writer.
     */
-    @Override
-    public Writer createWriter(Document doc, int offset, Writer writer) {
+    public @Override Writer createWriter(Document doc, int offset, Writer writer) {
         return new FormatWriter(this, doc, offset, writer, false);
     }
 
@@ -371,8 +365,7 @@ public class ExtFormatter extends Formatter implements FormatLayer {
     * @param offset the offset of a character on the line
     * @return new offset of the original character
     */
-    @Override
-    public int indentLine(Document doc, int offset) {
+    public @Override int indentLine(Document doc, int offset) {
         if (doc instanceof BaseDocument) {
             try {
                 BaseDocument bdoc = (BaseDocument)doc;
@@ -411,8 +404,7 @@ public class ExtFormatter extends Formatter implements FormatLayer {
     * @param offset the offset of a character on the line
     * @return new offset to place cursor to
     */
-    @Override
-    public int indentNewLine(Document doc, int offset) {
+    public @Override int indentNewLine(Document doc, int offset) {
         if (doc instanceof BaseDocument) {
             BaseDocument bdoc = (BaseDocument)doc;
             boolean newLineInserted = false;
@@ -487,14 +479,12 @@ public class ExtFormatter extends Formatter implements FormatLayer {
             super(kitClass);
         }
 
-        @Override
-        public boolean isSimple() {
+        public @Override boolean isSimple() {
             return true;
         }
         
         /** Returns offset of EOL for the white line */
-        @Override
-        protected int getEOLOffset(BaseDocument bdoc, int offset) throws BadLocationException{
+        protected @Override int getEOLOffset(BaseDocument bdoc, int offset) throws BadLocationException{
             return offset;
         }
         

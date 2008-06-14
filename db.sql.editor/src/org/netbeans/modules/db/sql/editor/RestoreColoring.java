@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.db.sql.editor;
 import org.netbeans.editor.LocaleSupport;
-import org.netbeans.editor.Settings;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.NbBundle;
 

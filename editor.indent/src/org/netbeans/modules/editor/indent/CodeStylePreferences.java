@@ -86,6 +86,7 @@ public final class CodeStylePreferences implements PreferenceChangeListener {
         if (evt.getKey() == null || PROP_USED_PROFILE.equals(evt.getKey())) {
             synchronized (this) {
                 useProject = PROJECT_PROFILE.equals(evt.getNewValue());
+                LOG.fine("file '" + filePath + "' (" + mimeType + ") is using " + (useProject ? "project" : "global") + " Preferences"); //NOI18N
             }
         }
     }
@@ -105,10 +106,12 @@ public final class CodeStylePreferences implements PreferenceChangeListener {
     private final Preferences projectPrefs;
     private final Preferences globalPrefs;
     private boolean useProject;
-    private final String filePath; // just for logging
+    // just for logging
+    private final String filePath;
+    private final String mimeType;
     
     private CodeStylePreferences(Document doc) {
-        String mimeType = (String) doc.getProperty("mimeType"); //NOI18N
+        this.mimeType = (String) doc.getProperty("mimeType"); //NOI18N
     
         this.projectRoot = findProjectPreferences(doc);
         if (projectRoot != null) {
@@ -130,7 +133,7 @@ public final class CodeStylePreferences implements PreferenceChangeListener {
         // just logging
         FileObject f = findFileObject(doc);
         this.filePath = f == null ? "no file" : f.getPath(); //NOI18N
-        LOG.fine("file '" + filePath + "' is using " + (useProject ? "project" : "global") + " Preferences"); //NOI18N
+        LOG.fine("file '" + filePath + "' (" + mimeType + ") is using " + (useProject ? "project" : "global") + " Preferences"); //NOI18N
     }
     
     private static final Preferences findProjectPreferences(Document doc) {

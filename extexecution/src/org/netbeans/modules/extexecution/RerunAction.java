@@ -106,7 +106,7 @@ public final class RerunAction extends AbstractAction implements ChangeListener 
         }
 
         if (actionService != null) {
-            Accessor.getDefault().rerun(actionService);
+            Accessor.getDefault().run(actionService);
         }
     }
 
@@ -161,7 +161,7 @@ public final class RerunAction extends AbstractAction implements ChangeListener 
             return accessor;
         }
 
-        public abstract Future<Integer> rerun(ExecutionService service);
+        public abstract Future<Integer> run(ExecutionService service);
 
     }
 }
