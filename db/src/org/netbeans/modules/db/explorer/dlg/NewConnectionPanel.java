@@ -709,6 +709,9 @@ private void urlFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event
             urlLabel.setVisible(true);         
         } else {
             showUrlCheckBox.setVisible(true);
+            
+            urlField.setVisible(showUrlCheckBox.isVisible());
+            urlLabel.setVisible(showUrlCheckBox.isVisible());
         }
 
         setFocus();
