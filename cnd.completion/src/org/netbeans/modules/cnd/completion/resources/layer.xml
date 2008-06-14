@@ -75,7 +75,6 @@ made subject to such option by the copyright holder.
                 
                 <folder name="Popup">
                     <folder name="goto">
-                        <attr name="position" intvalue="900"/>
                         <file name="goto-declaration">
                             <attr name="position" intvalue="100"/>
                         </file>
@@ -113,7 +112,6 @@ made subject to such option by the copyright holder.
                 
                 <folder name="Popup">
                     <folder name="goto">
-                        <attr name="position" intvalue="900"/>
                         <file name="goto-declaration">
                             <attr name="position" intvalue="100"/>
                         </file>

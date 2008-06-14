@@ -51,7 +51,7 @@ import org.netbeans.jellytools.Bundle;
 public class DeleteAction extends ActionNoBlock {
 
     private static final String deletePopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Delete");
-    private static final String deleteMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Edit")
+    private static final String deleteMenu = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Edit")
                                             + "|" + deletePopup;
 
     /** creates new DeleteAction instance */    

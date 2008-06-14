@@ -51,7 +51,6 @@ import org.openide.util.RequestProcessor;
 import java.util.logging.Level;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Collection;
 import java.util.Calendar;
@@ -84,6 +83,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
 
     public boolean beforeDelete(File file) {
+        Mercurial.LOG.fine("beforeDelete " + file);
         if (file == null) return true;
         if (HgUtils.isPartOfMercurialMetadata(file)) return false;
         
@@ -102,10 +102,12 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
 
     public void doDelete(File file) throws IOException {
+        Mercurial.LOG.fine("doDelete " + file);
         return;
     }
 
     public void afterDelete(final File file) {
+        Mercurial.LOG.fine("afterDelete " + file);
         Utils.post(new Runnable() {
             public void run() {
                 fileDeletedImpl(file);
@@ -189,6 +191,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
 
     public boolean beforeMove(File from, File to) {
+        Mercurial.LOG.fine("beforeMove " + from + "->" + to);
         if (from == null || to == null || to.exists()) return true;
         
         Mercurial hg = Mercurial.getInstance();
@@ -199,6 +202,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
 
     public void doMove(final File from, final File to) throws IOException {
+        Mercurial.LOG.fine("doMove " + from + "->" + to);
         if (from == null || to == null || to.exists()) return;
         
         if (SwingUtilities.isEventDispatchThread()) {
@@ -265,6 +269,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
 
     public void afterMove(final File from, final File to) {
+        Mercurial.LOG.fine("afterMove " + from + "->" + to);
         Utils.post(new Runnable() {
             public void run() {
                 fileMovedImpl(from, to);
@@ -280,6 +285,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
     
     public boolean beforeCreate(final File file, boolean isDirectory) {
+        Mercurial.LOG.fine("beforeCreate " + file + " " + isDirectory);
         if (HgUtils.isPartOfMercurialMetadata(file)) return false;
         if (!isDirectory && !file.exists()) {
             FileInformation info = cache.getCachedStatus(file, false);
@@ -315,10 +321,12 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
 
     public void doCreate(File file, boolean isDirectory) throws IOException {
+        Mercurial.LOG.fine("doCreate " + file + " " + isDirectory);
         super.doCreate(file, isDirectory);
     }
 
     public void afterCreate(final File file) {
+        Mercurial.LOG.fine("afterCreate " + file);
         Utils.post(new Runnable() {
             public void run() {
                 fileCreatedImpl(file);

@@ -44,10 +44,9 @@ package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.dbschema.ForeignKeyElement;
-import org.netbeans.modules.dbschema.TableElement;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.Table.DisabledReason;
 
 /**
@@ -59,11 +58,11 @@ public class TableProviderImpl implements TableProvider {
     private final Set<Table> tables;
     private final Map<String, Table> name2Table = new HashMap<String, Table>();
 
-    public TableProviderImpl(Map<String, Set<String>> tablesAndRefs) {
-        this(tablesAndRefs, emptyDisabledReasonMap());
+    public TableProviderImpl(String schema, String catalog, Map<String, Set<String>> tablesAndRefs) {
+        this(schema, catalog, tablesAndRefs, emptyDisabledReasonMap());
     }
 
-    public TableProviderImpl(Map<String, Set<String>> tablesAndRefs, Map<String, DisabledReason> disabledReasons) {
+    public TableProviderImpl(String catalog, String schema, Map<String, Set<String>> tablesAndRefs, Map<String, DisabledReason> disabledReasons) {
         Map<String, TableImpl> name2Table = new HashMap<String, TableImpl>();
         Map<String, Set<Table>> name2Referenced = new HashMap<String, Set<Table>>();
         Map<String, Set<Table>> name2ReferencedBy = new HashMap<String, Set<Table>>();
@@ -73,7 +72,7 @@ public class TableProviderImpl implements TableProvider {
         for (String tableName : tablesAndRefs.keySet()) {
             DisabledReason disabledReason = disabledReasons.get(tableName);
             boolean join = tableName.contains("_");
-            TableImpl table = new TableImpl(tableName, join, disabledReason);
+            TableImpl table = new TableImpl(catalog, schema, tableName, join, disabledReason);
 
             name2Table.put(tableName, table);
             name2Referenced.put(tableName, new HashSet<Table>());
@@ -129,8 +128,8 @@ public class TableProviderImpl implements TableProvider {
         private Set<Table> referencedByTables;
         private Set<Table> joinTables;
 
-        public TableImpl(String name, boolean join, DisabledReason disabledReason) {
-            super(name, join, disabledReason);
+        public TableImpl(String catalog, String schema, String name, boolean join, DisabledReason disabledReason) {
+            super(catalog, schema, name, join, disabledReason);
         }
 
         private void setReferencedTables(Set<Table> referencedTables) {
@@ -155,6 +154,11 @@ public class TableProviderImpl implements TableProvider {
 
         public Set<Table> getJoinTables() {
             return joinTables;
+        }
+
+        @Override
+        public Set<List<String>> getUniqueConstraints() {
+            return null;
         }
     }
 }

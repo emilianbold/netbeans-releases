@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -80,16 +81,32 @@ final class GemRunner {
         this.platform = platform;
     }
 
+    /**
+     * Compound options based on passed <em>custom</em> ones, defaults, and
+     * those stored in preferences.
+     */
+    private String[] getOptions(final String... custom) {
+        List<String> options = new ArrayList<String>();
+        options.addAll(Arrays.asList(custom));
+        if (Util.shallFetchGemDescriptions()) {
+            options.add("--details"); // NOI18N
+        }
+        if (Util.shallFetchAllVersions()) {
+            options.add("--all"); // NOI18N
+        }
+        return options.toArray(new String[options.size()]);
+    }
+
     boolean fetchBoth() {
-        return gemRunner("list", null, null, "--both", "--details"); // NOI18N
+        return gemRunner("list", null, null, getOptions("--both")); // NOI18N
     }
 
     boolean fetchRemote() {
-        return gemRunner("list", null, null, "--remote", "--details"); // NOI18N
+        return gemRunner("list", null, null, getOptions("--remote")); // NOI18N
     }
 
     boolean fetchLocal() {
-        return gemRunner("list", null, null, "--local", "--details"); // NOI18N
+        return gemRunner("list", null, null, getOptions("--local")); // NOI18N
     }
     
     boolean install(final List<String> gemNames, boolean rdoc, boolean ri, boolean includeDeps,

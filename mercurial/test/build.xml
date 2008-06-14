@@ -42,6 +42,10 @@ made subject to such option by the copyright holder.
 -->
 
 <project name="mercurial/test" basedir="." default="all">
+    <target name="test-preinit" depends="init">
+        <property name="test.timeout" value="9999999"/>
+    </target>
+    
     <!-- Name of tested module -->
     <property name="xtest.module" value="mercurial"/>
 
@@ -50,5 +54,6 @@ made subject to such option by the copyright holder.
 
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="qa-functional"/>
-    <property name="xtest.attribs" value="validation"/>
+    <property name="xtest.attribs" value="validation"/>    
+    
 </project>

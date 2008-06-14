@@ -13,7 +13,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
@@ -310,8 +309,8 @@ final class IrbTopComponent extends TopComponent {
         final PipedInputStream pipeIn = new PipedInputStream();
         final RubyInstanceConfig config = new RubyInstanceConfig() {{
             setInput(pipeIn);
-            setOutput(new PrintStream(tar));
-            setError(new PrintStream(tar));
+            setOutput(new PrintStream(tar.getOutputStream()));
+            setError(new PrintStream(tar.getOutputStream()));
             setObjectSpaceEnabled(false);
             //setArgv(args);
         }};

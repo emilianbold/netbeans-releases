@@ -89,14 +89,19 @@ public class Util {
             buff.append("\n");
             String nodes[] = node.getChildren();
             for (int i=0; i<nodes.length; i++) {
-                //XXX System.out.println("Parent:: " + node.getText() + " - subPath:: " + nodes[i]);
-                Node child = new Node(node, nodes[i]);
+//                System.out.println("Parent:: " + node.getText() + " - subPath:: " + nodes[i]);
+                Node child  = new Node(node, nodes[i]);
                 // prevents infinite loop in case the nodes[i].equals("");
                 if (child.getPath().equals(node.getPath())) {
-                    //XXX System.out.println("===Continue===");
+//                    System.out.println("===Continue===");
                     continue;
                 }
-                dumpNode(child, buff,  level+1);
+                if(!(child.getText().equals(nodes[i])))
+                {
+                    child = new Node(node, i);
+
+                }
+                dumpNode(child, buff, level+1);
             }
             if (wasCollapsed) node.collapse();
         } else {

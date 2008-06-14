@@ -56,6 +56,7 @@ import org.openide.util.NbPreferences;
 public final class GroovySettings extends AdvancedOption {
 
     private static final String GROOVY_HOME = "groovyHome"; // NOI18N
+    private static final String GROOVY_DOC  = "groovyDoc"; // NOI18N
 
     public String getGroovyHome() { 
         return prefs().get(GROOVY_HOME, ""); // NOI18N
@@ -63,6 +64,14 @@ public final class GroovySettings extends AdvancedOption {
     
     public void setGroovyHome(String groovyHome) {
         prefs().put(GROOVY_HOME, groovyHome);
+    }
+
+    public String getGroovyDoc() { 
+        return prefs().get(GROOVY_DOC, ""); // NOI18N
+    }
+    
+    public void setGroovyDoc(String groovyDoc) {
+        prefs().put(GROOVY_DOC, groovyDoc);
     }
 
     public String getDisplayName() {

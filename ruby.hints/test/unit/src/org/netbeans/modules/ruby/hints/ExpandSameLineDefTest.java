@@ -45,12 +45,12 @@ public class ExpandSameLineDefTest extends HintTestBase {
     
     public void testWrongLine() throws Exception {
         String caretLine = "cl^ass FooControllerTest < Test::Unit::TestCase";
-        findHints(this, new ExpandSameLineDef(), "testfiles/sameline.rb", caretLine);
+        checkHints(this, new ExpandSameLineDef(), "testfiles/sameline.rb", caretLine);
     }
 
     public void testExpandableLine() throws Exception {
         String caretLine = "cla^ss FooController; def rescue_action(e) raise e end; end";
-        findHints(this, new ExpandSameLineDef(), "testfiles/sameline.rb", caretLine);
+        checkHints(this, new ExpandSameLineDef(), "testfiles/sameline.rb", caretLine);
     }
     
     public void testApplyFix() throws Exception {

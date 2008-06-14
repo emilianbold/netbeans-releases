@@ -43,6 +43,7 @@ package org.netbeans.modules.groovy.gsp.editor;
 
 import org.netbeans.modules.html.editor.options.HTMLOptions;
 import java.util.MissingResourceException;
+import org.netbeans.modules.groovy.gsp.lexer.api.GspTokenId;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,12 +66,18 @@ public class GspOptions extends HTMLOptions {
     /**
      * Get localized string
      */
+    @Override
     protected String getString(String key) {
         try {
             return NbBundle.getMessage(GspOptions.class, key);
         } catch (MissingResourceException e) {
             return super.getString(key);
         }
+    }
+
+    @Override
+    protected String getContentType() {
+        return GspTokenId.MIME_TYPE;
     }
 
 }

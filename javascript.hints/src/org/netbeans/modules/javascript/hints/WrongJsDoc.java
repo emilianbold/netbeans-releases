@@ -41,17 +41,18 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.HintFix;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.javascript.editing.AstElement;
 import org.netbeans.modules.javascript.editing.AstUtilities;
 import org.netbeans.modules.javascript.editing.FunctionAstElement;
 import org.netbeans.modules.javascript.editing.JsParseResult;
 import org.netbeans.modules.javascript.editing.JsUtils;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
-import org.netbeans.modules.javascript.hints.spi.AstRule;
-import org.netbeans.modules.javascript.hints.spi.Description;
-import org.netbeans.modules.javascript.hints.spi.Fix;
-import org.netbeans.modules.javascript.hints.spi.HintSeverity;
-import org.netbeans.modules.javascript.hints.spi.RuleContext;
+import org.netbeans.modules.javascript.hints.infrastructure.JsAstRule;
+import org.netbeans.modules.javascript.hints.infrastructure.JsRuleContext;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -60,19 +61,19 @@ import org.openide.util.NbBundle;
  * 
  * @author Tor Norbye
  */
-public class WrongJsDoc implements AstRule {
+public class WrongJsDoc extends JsAstRule {
     public WrongJsDoc() {
     }
     
-    public boolean appliesTo(CompilationInfo info) {
-        return JsUtils.isJsFile(info.getFileObject());
+    public boolean appliesTo(RuleContext context) {
+        return JsUtils.isJsFile(context.compilationInfo.getFileObject());
     }
 
     public Set<Integer> getKinds() {
         return Collections.singleton(Token.FUNCTION);
     }
     
-    public void run(RuleContext context, List<Description> result) {
+    public void run(JsRuleContext context, List<Hint> result) {
         CompilationInfo info = context.compilationInfo;
         Node node = context.node;
         
@@ -171,8 +172,8 @@ public class WrongJsDoc implements AstRule {
                 }
             }
 
-            List<Fix> fixList = Collections.<Fix>singletonList(new MoreInfoFix("wrongjsdoc")); // NOI18N
-            Description desc = new Description(this, label, info.getFileObject(), lexRange, fixList, 1450);
+            List<HintFix> fixList = Collections.<HintFix>singletonList(new MoreInfoFix("wrongjsdoc")); // NOI18N
+            Hint desc = new Hint(this, label, info.getFileObject(), lexRange, fixList, 1450);
             result.add(desc);
         }
     }

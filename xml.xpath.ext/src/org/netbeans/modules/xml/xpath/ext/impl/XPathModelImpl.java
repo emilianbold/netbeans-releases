@@ -18,7 +18,9 @@
  */
 package org.netbeans.modules.xml.xpath.ext.impl;
 
-import org.netbeans.modules.xml.xpath.ext.spi.SimpleSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.WildcardSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.MultiCompSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.SimpleSchemaContext;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,8 +51,8 @@ import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.XPathModelFactory;
 import org.netbeans.modules.xml.xpath.ext.XPathOperationOrFuntion;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext.SchemaCompPair;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext.SchemaCompPair;
 import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
 import org.netbeans.modules.xml.xpath.ext.metadata.AbstractArgument;
 import org.netbeans.modules.xml.xpath.ext.metadata.ArgumentDescriptor;
@@ -68,12 +70,9 @@ import org.netbeans.modules.xml.xpath.ext.spi.VariableResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathProblem;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathCastResolver;
-import org.netbeans.modules.xml.xpath.ext.schema.FindChildrenSchemaVisitor;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathModelTracerVisitor;
 import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.Element;
-import org.netbeans.modules.xml.schema.model.ElementReference;
-import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.LocalElement;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
@@ -83,8 +82,11 @@ import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 import org.netbeans.modules.xml.xpath.ext.schema.CachingSchemaSearchVisitor;
-import org.netbeans.modules.xml.xpath.ext.spi.CastSchemaContext;
-import org.netbeans.modules.xml.xpath.ext.spi.VariableSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.CastSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder.AttributeHolder;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder.ElementHolder;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.VariableSchemaContext;
 
 /**
  * Implementation of the XPathModel interface using Apache's JXPath.
@@ -259,6 +261,14 @@ public class XPathModelImpl implements XPathModel {
         mCachingSchemaSearchVisitor = visitor;
     }
     
+    public XPathCastResolver getXPathCastResolver() {
+        return myXPathCastResolver;
+    }
+
+    public void setXPathCastResolver(XPathCastResolver xpathCastResolver) {
+        myXPathCastResolver = xpathCastResolver;
+    }
+    
     //==========================================================================
     
     /**
@@ -357,9 +367,9 @@ public class XPathModelImpl implements XPathModel {
                 //
                 // Only one parent component is implied here
                 SchemaCompPair parentCompPair = parentCompPairs.iterator().next();
-                SchemaComponent parentComponent = parentCompPair.getComp();
+                SchemaCompHolder parentCompHolder = parentCompPair.getCompHolder();
 
-                if (parentComponent != null) {
+                if (parentCompHolder != null) {
 //                    // vlv
 //                    SchemaComponent castType = getCastType(parentContext);
 //                    // XPathCast cast = getCast(parentContext);
@@ -370,18 +380,16 @@ public class XPathModelImpl implements XPathModel {
 //                        parentComponent = castType;
 //                    }
                     //
-                    List<SchemaComponent> found = getChildren(parentContext, 
-                                parentComponent, nodeName, nsUri, isAttribute);
+                    List<SchemaCompHolder> found = XPathUtils.getChildren(
+                            this, parentContext, 
+                            parentCompHolder.getSchemaComponent(), 
+                            nodeName, nsUri, isAttribute, 
+                            mCachingSchemaSearchVisitor);
                     //
                     if (found != null) {
-                        for (SchemaComponent comp : found) {
-                            assert comp instanceof GlobalElement ||
-                                    comp instanceof LocalElement ||
-                                    comp instanceof ElementReference ||
-                                    comp instanceof Attribute;
-                            //
+                        for (SchemaCompHolder compH : found) {
                             SchemaCompPair newPair = 
-                                    new SchemaCompPair(comp, parentComponent);
+                                    new SchemaCompPair(compH, parentCompHolder);
                             addPair(foundCompPairSet, newPair);
                         }
                     }
@@ -391,11 +399,15 @@ public class XPathModelImpl implements XPathModel {
                 //
                 // Multiple parent components is implied here
                 for (SchemaCompPair parentCPair : parentCompPairs) {
-                    SchemaComponent parentComp = parentCPair.getComp();
-                    List<SchemaComponent> found = getChildren(parentContext, 
-                            parentComp, nodeName, nsUri, isAttribute);
-                    for (SchemaComponent sComp : found) {
-                        SchemaCompPair newPair = new SchemaCompPair(sComp, parentComp);
+                    SchemaCompHolder parentCH = parentCPair.getCompHolder();
+                    List<SchemaCompHolder> found = XPathUtils.getChildren(
+                            this, parentContext, 
+                            parentCH.getSchemaComponent(), 
+                            nodeName, nsUri, isAttribute, 
+                            mCachingSchemaSearchVisitor);
+                    for (SchemaCompHolder sCompHolder : found) {
+                        SchemaCompPair newPair = 
+                                new SchemaCompPair(sCompHolder, parentCH);
                         addPair(foundCompPairSet, newPair);
                     }
                 }
@@ -420,13 +432,15 @@ public class XPathModelImpl implements XPathModel {
                 //
                 for (SchemaModel model : models) {
                     Schema schema = model.getSchema();
-                    List<SchemaComponent> foundComps = getChildren(parentContext, 
-                            schema, nodeName, nsUri, isAttribute);
-                    for (SchemaComponent foundComp : foundComps) {
-                        assert foundComp instanceof GlobalElement ||
-                                foundComp instanceof LocalElement ||
-                                foundComp instanceof Attribute;
-                        SchemaCompPair newPair = new SchemaCompPair(foundComp, null);
+                    List<SchemaCompHolder> found = XPathUtils.getChildren(
+                            this, parentContext, schema, 
+                            nodeName, nsUri, isAttribute, 
+                            mCachingSchemaSearchVisitor);
+                    for (SchemaCompHolder foundCompHolder : found) {
+                        assert foundCompHolder instanceof ElementHolder ||
+                                foundCompHolder instanceof AttributeHolder;
+                        SchemaCompPair newPair = 
+                                new SchemaCompPair(foundCompHolder, null);
                         addPair(foundCompPairSet, newPair);
                     }
                 }
@@ -464,57 +478,10 @@ public class XPathModelImpl implements XPathModel {
         return foundCompPairSet;
     }
     
-    private List<SchemaComponent> getChildren(
-            XPathSchemaContext parentContext,
-            SchemaComponent parent, String soughtName, 
-            String soughtNamespace, boolean isAttribute) {
-        List<SchemaComponent> found = null;
-
-        if (mCachingSchemaSearchVisitor != null) {
-            mCachingSchemaSearchVisitor.lookForSubcomponent(parentContext,
-                    parent, soughtName, soughtNamespace, isAttribute);
-            found = mCachingSchemaSearchVisitor.getFound();
-        } else {
-            FindChildrenSchemaVisitor visitor = 
-                    new FindChildrenSchemaVisitor(parentContext, 
-                    soughtName, soughtNamespace, isAttribute);
-            visitor.lookForSubcomponent(parent);
-            found = visitor.getFound();
-        }
-        return found;
-    }
- 
     // vlv
     private void addPair(HashSet<SchemaCompPair> set, SchemaCompPair pair) {
-      set.add(pair);
-      myLastSchemaComponent = pair.getComp();
-    }
-
-    private XPathCast getCast(XPathSchemaContext context) {
-        if (myXPathCastResolver == null) {
-            return null;
-        }
-        //
-        return myXPathCastResolver.getCast(context);
-        
-//        List<XPathCast> casts = myXPathCastResolver.getXPathCasts();
-//        if (casts == null) {
-//            return null;
-//        }
-//        //
-//        for (XPathCast cast : casts) {
-//            XPathExpression castPath = cast.getPathExpression();
-//            if (castPath instanceof XPathSchemaContextHolder) {
-//                XPathSchemaContext castPathSContext = 
-//                        ((XPathSchemaContextHolder)castPath).getSchemaContext();
-//                if (castPathSContext != null && 
-//                        castPathSContext.equalsChain(context)) {
-//                    return cast;
-//                }
-//            }
-//        }
-//        //
-//        return null;
+        set.add(pair);
+        myLastSchemaComponent = pair.getCompHolder().getSchemaComponent();
     }
 
 //    // vlv
@@ -647,7 +614,9 @@ public class XPathModelImpl implements XPathModel {
         if (stepQName != null) {
             if (compPairSet.size() == 1) {
                 SchemaCompPair compPair = compPairSet.iterator().next();
-                checkNsPrefixes(compPair.getComp(), stepQName.getPrefix(), 
+                SchemaComponent sComp = compPair.getCompHolder().getSchemaComponent();
+                //
+                checkNsPrefixes(sComp, stepQName.getPrefix(), 
                         resourceCollector, schemaContext);
             } else {
                 // more then one schema components are found
@@ -815,7 +784,7 @@ public class XPathModelImpl implements XPathModel {
         HashSet<QName> usedNamespaces = new HashSet<QName>();
         //
         for (SchemaCompPair compPair : compPairSet) {
-            SchemaComponent sComp = compPair.getComp();
+            SchemaComponent sComp = compPair.getCompHolder().getSchemaComponent();
             //
             Form form = null;
             boolean isGlobal = false;
@@ -924,14 +893,14 @@ public class XPathModelImpl implements XPathModel {
             return;
         }
         //
-        Set<SchemaComponent> usedByChildComp = new HashSet<SchemaComponent>();
+        Set<SchemaCompHolder> usedByChildComp = new HashSet<SchemaCompHolder>();
         for (SchemaCompPair childPair : childCompPairs) {
-            SchemaComponent childComp = childPair.getParetnComp();
-            usedByChildComp.add(childComp);
+            SchemaCompHolder childCompHolder = childPair.getParetnCompHolder();
+            usedByChildComp.add(childCompHolder);
         }
         //
         if (!usedByChildComp.isEmpty()) {
-            parentContext.setUsedSchemaComp(usedByChildComp);
+            parentContext.setUsedSchemaCompH(usedByChildComp);
         }
         // 
         // Go to the next context in the chain
@@ -1246,11 +1215,13 @@ public class XPathModelImpl implements XPathModel {
                         vReference); // NOI18N
             } else {
                 XPathSchemaContext schemaContext = new VariableSchemaContext(vReference);
-                XPathCast cast = getCast(schemaContext);
-                if (cast != null) {
-                    CastSchemaContext castContext = 
-                            new CastSchemaContext(schemaContext, cast);
-                    schemaContext = castContext;
+                if (myXPathCastResolver != null) {
+                    XPathCast cast = myXPathCastResolver.getCast(schemaContext);
+                    if (cast != null) {
+                        CastSchemaContext castContext = 
+                                new CastSchemaContext(schemaContext, cast);
+                        schemaContext = castContext;
+                    }
                 }
                 vReference.setSchemaContext(schemaContext);
                 //
@@ -1435,11 +1406,13 @@ public class XPathModelImpl implements XPathModel {
                 //
                 // If there is a type cast for the current step, then replace 
                 // the context to a CastSchemaContext
-                XPathCast cast = getCast(schemaContext);
-                if (cast != null) {
-                    CastSchemaContext castContext = 
-                            new CastSchemaContext(schemaContext, cast);
-                    schemaContext = castContext;
+                if (myXPathCastResolver != null) {
+                    XPathCast cast = myXPathCastResolver.getCast(schemaContext);
+                    if (cast != null) {
+                        CastSchemaContext castContext = 
+                                new CastSchemaContext(schemaContext, cast);
+                        schemaContext = castContext;
+                    }
                 }
                 //
                 locationStep.setSchemaContext(schemaContext);
@@ -1680,10 +1653,6 @@ public class XPathModelImpl implements XPathModel {
                 }
             }
         }
-    }
-
-    public void setXPathCastResolver(XPathCastResolver xpathCastResolver) {
-      myXPathCastResolver = xpathCastResolver;
     }
 
     private boolean ENABLE;

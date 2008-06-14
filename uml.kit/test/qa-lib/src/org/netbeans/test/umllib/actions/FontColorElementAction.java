@@ -43,15 +43,14 @@
 
 package org.netbeans.test.umllib.actions;
 
-import org.netbeans.test.umllib.ElementTypes;
 import org.netbeans.test.umllib.util.PopupConstants;
 
 public class FontColorElementAction extends DiagramElementAction{
     
     private static final String actionPopup = PopupConstants.FONT_COLOR;
     
-    public FontColorElementAction(ElementTypes elementType) {
-        super(null, elementType+"|"+actionPopup);
+    public FontColorElementAction() {
+        super(null, PopupConstants.COLORS_FONTS +"|"+actionPopup);
     }
 
 }

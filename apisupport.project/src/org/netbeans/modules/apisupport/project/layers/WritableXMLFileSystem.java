@@ -46,7 +46,6 @@ import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.NotSerializableException;
@@ -83,7 +82,6 @@ import org.openide.filesystems.AbstractFileSystem;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
@@ -342,19 +340,13 @@ final class WritableXMLFileSystem extends AbstractFileSystem
             if (external == null) {
                 throw new FileNotFoundException(name);
             }
-            final FileLock lock = external.lock();
-            return new FilterOutputStream(external.getOutputStream(lock)) {
-                public void close() throws IOException {
-                    super.close();
-                    lock.releaseLock();
-                }
-            };
+            return external.getOutputStream();
         }
         // We will change the layer file.
         return new ByteArrayOutputStream() {
             public void close() throws IOException {
                 super.close();
-                byte[] contents = toByteArray();
+                final byte[] contents = toByteArray();
                 /* If desired to kill any existing inline content:
                 Iterator it = el.getChildNodes().iterator();
                 ArrayList/ *<TreeCDATASection>* / allCdata = new ArrayList();
@@ -372,22 +364,21 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                     el.removeChild((CDATASection) it.next());
                 }
                  */
-                FileObject parent = findLayerParent();
-                String externalName = LayerUtils.findGeneratedName(parent, name);
+                final FileObject parent = findLayerParent();
+                final String externalName = LayerUtils.findGeneratedName(parent, name);
                 assert externalName.indexOf('/') == -1 : externalName;
-                FileObject externalFile = parent.createData(externalName);
-                FileLock lock = externalFile.lock();
-                try {
-                    OutputStream os = externalFile.getOutputStream(lock);
-                    try {
-                        os.write(contents);
-                    } finally {
-                        os.close();
+                parent.getFileSystem().runAtomicAction(new AtomicAction() {
+                    public void run() throws IOException {
+                        FileObject externalFile = parent.createData(externalName);
+                        OutputStream os = externalFile.getOutputStream();
+                        try {
+                            os.write(contents);
+                        } finally {
+                            os.close();
+                        }
+                        externalFile.addFileChangeListener(fileChangeListener);
                     }
-                } finally {
-                    lock.releaseLock();
-                }
-                externalFile.addFileChangeListener(fileChangeListener);
+                });
                 try {
                     el.addAttribute("url", externalName); // NOI18N
                 } catch (ReadOnlyException e) {

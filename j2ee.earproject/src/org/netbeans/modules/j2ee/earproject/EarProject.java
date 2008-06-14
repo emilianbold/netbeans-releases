@@ -604,14 +604,8 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
         FileObject metaInfFO = null;
         try {
             File prjDirF = FileUtil.toFile(getProjectDirectory());
-            File rootF = prjDirF;
-            while (rootF.getParentFile() != null) {
-                rootF = rootF.getParentFile();
-            }
             File metaInfF = PropertyUtils.resolveFile(prjDirF, metaInfProp);
-            String metaInfPropRel = PropertyUtils.relativizeFile(rootF, metaInfF);
-            assert metaInfPropRel != null;
-            metaInfFO = FileUtil.createFolder(FileUtil.toFileObject(rootF), metaInfPropRel);
+            metaInfFO = FileUtil.createFolder(metaInfF);
         } catch (IOException ex) {
             assert false : ex;
         }

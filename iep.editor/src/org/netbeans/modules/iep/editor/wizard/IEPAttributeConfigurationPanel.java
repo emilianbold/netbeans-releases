@@ -23,7 +23,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumnModel;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.module.iep.editor.xsd.nodes.SchemaComponentIEPTypeFinderVisitor;
+import org.netbeans.modules.iep.editor.xsd.nodes.SchemaComponentIEPTypeFinderVisitor;
 import org.netbeans.modules.iep.editor.designer.JTextFieldFilter;
 import org.netbeans.modules.iep.editor.ps.SelectPanelTableCellRenderer;
 import org.netbeans.modules.iep.editor.share.SharedConstants;

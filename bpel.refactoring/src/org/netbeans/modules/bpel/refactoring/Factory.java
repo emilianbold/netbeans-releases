@@ -56,8 +56,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 public final class Factory implements RefactoringPluginFactory {
    
   public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-    Referenceable referenceable =
-      refactoring.getRefactoringSource().lookup(Referenceable.class);
+    Referenceable referenceable = refactoring.getRefactoringSource().lookup(Referenceable.class);
   
     if (referenceable == null) {
       return null;

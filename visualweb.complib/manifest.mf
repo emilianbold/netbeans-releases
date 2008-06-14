@@ -5,6 +5,3 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/visualweb/complib/Bundle.
 OpenIDE-Module-Specification-Version: 2.3
 OpenIDE-Module-Install: org/netbeans/modules/visualweb/complib/ComplibModuleInstall.class
 AutoUpdate-Show-In-Client: false
-
-Name: org/netbeans/modules/visualweb/complib/ComplibPaletteItemDataObject$PaletteItemDataLoader.class
-OpenIDE-Module-Class: Loader

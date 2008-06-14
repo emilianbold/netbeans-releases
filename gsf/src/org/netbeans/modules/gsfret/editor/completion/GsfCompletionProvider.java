@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JToolTip;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
@@ -104,18 +105,11 @@ public class GsfCompletionProvider implements CompletionProvider {
     
     //private static final String COMMENT_CATEGORY_NAME = "comment";
     
-    /** 
-     * Flag which is set when we're in a query that was initiated 
-     * automatically rather than through an explicit gesture 
-     */
-    private static boolean isAutoQuery;
-    private static boolean expectingCreateTask;
-        
     public static CodeCompletionHandler getCompletable(CompilationInfo info, int offset) {
-        try {
-            return getCompletable(info.getDocument(), offset);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+        Document document = info.getDocument();
+        if (document != null) {
+            return getCompletable(document,offset);
+        } else {
             return null;
         }
     }
@@ -131,12 +125,8 @@ public class GsfCompletionProvider implements CompletionProvider {
 
         return null;
     }
-    private static boolean isInCompletion(JTextComponent component) {
-        Object o = component.getClientProperty("completion-active"); // NOI18N
-        return o == Boolean.TRUE;
-    }
     
-    public static int autoQueryTypes(JTextComponent component, String typedText) {
+    public int getAutoQueryTypes(JTextComponent component, String typedText) {
         if (typedText.length() > 0) {
             CodeCompletionHandler provider = getCompletable(component.getDocument(), component.getCaretPosition());
             if (provider != null) {
@@ -144,7 +134,6 @@ public class GsfCompletionProvider implements CompletionProvider {
                 switch (autoQuery) {
                 case NONE: return 0;
                 case STOP: {
-                    isAutoQuery = false;
                     Completion.get().hideAll();
                     return 0;
                 }
@@ -159,17 +148,6 @@ public class GsfCompletionProvider implements CompletionProvider {
         return 0;
     }
 
-    public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        boolean isCompleting = isInCompletion(component);
-        int type = autoQueryTypes(component, typedText);
-        if (!isCompleting) {
-            isAutoQuery = (type != 0);
-            expectingCreateTask = (type != 0); // I get createTask even during editing (or just when matches==0?)
-        }
-        
-        return type;
-    }
-    
     // From Utilities
     public static boolean isJavaContext(final JTextComponent component, final int offset) {
         Document doc = component.getDocument();
@@ -219,10 +197,6 @@ public class GsfCompletionProvider implements CompletionProvider {
     }
 
     public CompletionTask createTask(int type, JTextComponent component) {
-        if (!expectingCreateTask) {
-            isAutoQuery = false;
-        }
-        
         if (((type & COMPLETION_QUERY_TYPE) != 0) || (type == TOOLTIP_QUERY_TYPE) ||
                 (type == DOCUMENTATION_QUERY_TYPE)) {
             return new AsyncCompletionTask(new JavaCompletionQuery(type,
@@ -250,6 +224,7 @@ public class GsfCompletionProvider implements CompletionProvider {
         private int caretOffset;
         private String filterPrefix;
         private ElementHandle element;
+        private boolean isTruncated;
         //private Source source;
         /** The compilation info that the Element was generated for */
 
@@ -287,6 +262,7 @@ public class GsfCompletionProvider implements CompletionProvider {
                 this.caretOffset = caretOffset;
                 if (queryType == TOOLTIP_QUERY_TYPE || queryType == DOCUMENTATION_QUERY_TYPE || isJavaContext(component, caretOffset)) {
                     results = null;
+                    isTruncated = false;
                     documentation = null;
                     toolTip = null;
                     anchorOffset = -1;
@@ -337,6 +313,10 @@ public class GsfCompletionProvider implements CompletionProvider {
             int newOffset = component.getSelectionStart();
 
             if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
+                if (isTruncated) {
+                    return false;
+                }
+                
                 if (newOffset >= caretOffset) {
                     if (anchorOffset > -1) {
                         try {
@@ -530,6 +510,7 @@ public class GsfCompletionProvider implements CompletionProvider {
                 int offset = env.getOffset();
                 String prefix = env.getPrefix();
                 results = new ArrayList<CompletionItem>();
+                isTruncated = false;
                 anchorOffset = env.getOffset() - ((prefix != null) ? prefix.length() : 0);
 
                 CodeCompletionHandler completer = env.getCompletable();
@@ -562,31 +543,54 @@ public class GsfCompletionProvider implements CompletionProvider {
             int offset = env.getOffset();
             String prefix = env.getPrefix();
             results = new ArrayList<CompletionItem>();
+            isTruncated = false;
             anchorOffset = env.getOffset() - ((prefix != null) ? prefix.length() : 0);
 
             CodeCompletionHandler completer = env.getCompletable();
 
             if (completer != null) {
-                CodeCompletionContext context = new CodeCompletionContextImpl(offset, controller, prefix, 
-                        isCaseSensitive() ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX,
-                        QueryType.COMPLETION, new CompletionFormatter());
-                CodeCompletionResult result = completer.complete(context);
-                assert result != null : completer.getClass().getName() + " should return CodeCompletionResult.NONE rather than null";
+                addCodeCompletionItems(controller, completer, offset, prefix);
+                
+                if (isTruncated) {
+                    // Add truncation item
+                    GsfCompletionItem item = GsfCompletionItem.createTruncationItem();
+                    results.add(item);
+                }
+            }
+        }
+        
+        private void addCodeCompletionItems(CompilationController controller, CodeCompletionHandler completer, int offset, String prefix) {
+            CodeCompletionContext context = new CodeCompletionContextImpl(offset, controller, prefix, 
+                    isCaseSensitive() ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX,
+                    QueryType.COMPLETION, new CompletionFormatter());
+            CodeCompletionResult result = completer.complete(context);
+            assert result != null : completer.getClass().getName() + " should return CodeCompletionResult.NONE rather than null";
 
-                if (result != CodeCompletionResult.NONE) {
-                    for (CompletionProposal proposal : result.getItems()) {
-                        GsfCompletionItem item = GsfCompletionItem.createItem(proposal, result, controller);
+            if (result != CodeCompletionResult.NONE) {
+                if (result.isTruncated()) {
+                    isTruncated = true;
+                }
 
-                        if (item != null) {
-                            results.add(item);
-                        }
+                for (CompletionProposal proposal : result.getItems()) {
+                    GsfCompletionItem item = GsfCompletionItem.createItem(proposal, result, controller);
+
+                    if (item != null) {
+                        results.add(item);
                     }
                 }
 
-                // If we automatically queried, and there were no hits, take it down
-                if (isAutoQuery && (result == CodeCompletionResult.NONE || result.getItems().size() == 0)) {
-                    Completion.get().hideCompletion();
-                    expectingCreateTask = false;
+                // Go into embedded results. NOT allowed to recurse!!
+                Set<String> embeddedTypes = result.embeddedTypes();
+                if (embeddedTypes != null) {
+                    for (String mimeType : embeddedTypes) {
+                        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+                        if (language != null) {
+                            CodeCompletionHandler handler = language.getCompletionProvider();
+                            if (handler != null) {
+                                addCodeCompletionItems(controller, handler, offset, prefix);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -656,7 +660,7 @@ public class GsfCompletionProvider implements CompletionProvider {
                 }
                 if (prefix == null) {
                     int[] blk =
-                        org.netbeans.editor.Utilities.getIdentifierBlock((BaseDocument)controller.getDocument(),
+                        org.netbeans.editor.Utilities.getIdentifierBlock((BaseDocument)doc,
                             offset);
 
                     if (blk != null) {
@@ -664,16 +668,14 @@ public class GsfCompletionProvider implements CompletionProvider {
 
                         if (start < offset ) {
                             if (upToOffset) {
-                                prefix = controller.getDocument().getText(start, offset - start);
+                                prefix = doc.getText(start, offset - start);
                             } else {
-                                prefix = controller.getDocument().getText(start, blk[1]-start);
+                                prefix = doc.getText(start, blk[1]-start);
                             }
                         }
                     }
                 }
             } catch (BadLocationException ex) {
-                ErrorManager.getDefault().notify(ex);
-            } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
             

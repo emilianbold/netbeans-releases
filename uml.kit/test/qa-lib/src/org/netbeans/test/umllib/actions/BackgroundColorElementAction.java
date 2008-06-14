@@ -48,10 +48,10 @@ import org.netbeans.test.umllib.util.PopupConstants;
 
 public class BackgroundColorElementAction extends DiagramElementAction{
     
-    private static final String actionPopup = PopupConstants.BACKGROUND_COLOR;
+    private static final String actionPopup = PopupConstants.BACKGROUND;
     
-    public BackgroundColorElementAction(ElementTypes elementType) {
-        super(null, elementType+"|"+actionPopup);
+    public BackgroundColorElementAction() {
+        super(null, PopupConstants.COLORS_FONTS +"|"+actionPopup);
     }
 
 }

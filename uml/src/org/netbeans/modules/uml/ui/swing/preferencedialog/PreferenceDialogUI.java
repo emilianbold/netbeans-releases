@@ -39,8 +39,6 @@
  * made subject to such option by the copyright holder.
  */
 
-
-
 package org.netbeans.modules.uml.ui.swing.preferencedialog;
 
 import javax.swing.Box;
@@ -1170,8 +1168,6 @@ public class PreferenceDialogUI extends JCenterDialog
 	{
 		return DefaultPreferenceDialogResource.getString(key);
 	}
-        
-	
 }
 
 

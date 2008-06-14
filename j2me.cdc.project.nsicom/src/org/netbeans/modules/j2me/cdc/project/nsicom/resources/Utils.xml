@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/modules/j2me/cdc/project/nsicom/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/org-netbeans-modules-j2me-cdc-project-nsicom.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.j2me.cdc.project.nsicom/ant/nblib/org-netbeans-modules-j2me-cdc-project-nsicom.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>        

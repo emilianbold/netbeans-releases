@@ -64,4 +64,9 @@ public class StaticFieldAccess extends StaticDispatch {
     public ASTNode getMember() {
         return getField();
     }
+    
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }            
 }

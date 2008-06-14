@@ -41,8 +41,7 @@
 
 package org.netbeans.modules.websvc.wsitconf.ui.service.profiles;
 
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
+import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.AlgoSuiteModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
@@ -57,62 +56,26 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
  *
  * @author  Martin Grebac
  */
-public class SAMLAuthorizationOverSSL extends javax.swing.JPanel implements ComboConstants {
+public class SAMLAuthorizationOverSSL extends ProfileBaseForm {
 
-    private boolean inSync = false;
-
-    private WSDLComponent comp;
-    
     /**
      * Creates new form MessageAuthentication
      */
-    public SAMLAuthorizationOverSSL(WSDLComponent comp) {
-        super();
+    public SAMLAuthorizationOverSSL(WSDLComponent comp, SecurityProfile secProfile) {
+        super(comp, secProfile);
         initComponents();
-        this.comp = comp;
 
         inSync = true;
-        samlVersionCombo.removeAllItems();
-        samlVersionCombo.addItem(ComboConstants.SAML_V1010);
-        samlVersionCombo.addItem(ComboConstants.SAML_V1011);
-        samlVersionCombo.addItem(ComboConstants.SAML_V1110);
-        samlVersionCombo.addItem(ComboConstants.SAML_V1111);
-        samlVersionCombo.addItem(ComboConstants.SAML_V2011);
-
-        wssVersionCombo.removeAllItems();
-        wssVersionCombo.addItem(ComboConstants.WSS10);
-        wssVersionCombo.addItem(ComboConstants.WSS11);
-
-        layoutCombo.removeAllItems();
-        layoutCombo.addItem(ComboConstants.STRICT);
-        layoutCombo.addItem(ComboConstants.LAX);
-        layoutCombo.addItem(ComboConstants.LAXTSFIRST);
-        layoutCombo.addItem(ComboConstants.LAXTSLAST);
-        
-        algoSuiteCombo.removeAllItems();
-        algoSuiteCombo.addItem(ComboConstants.BASIC256);
-        algoSuiteCombo.addItem(ComboConstants.BASIC192);
-        algoSuiteCombo.addItem(ComboConstants.BASIC128);
-        algoSuiteCombo.addItem(ComboConstants.TRIPLEDES);
-        algoSuiteCombo.addItem(ComboConstants.BASIC256RSA15);
-        algoSuiteCombo.addItem(ComboConstants.BASIC192RSA15);
-        algoSuiteCombo.addItem(ComboConstants.BASIC128RSA15);
-        algoSuiteCombo.addItem(ComboConstants.TRIPLEDESRSA15);
-        algoSuiteCombo.addItem(ComboConstants.BASIC256SHA256);
-        algoSuiteCombo.addItem(ComboConstants.BASIC192SHA256);
-        algoSuiteCombo.addItem(ComboConstants.BASIC128SHA256);
-        algoSuiteCombo.addItem(ComboConstants.TRIPLEDESSHA256);
-        algoSuiteCombo.addItem(ComboConstants.BASIC256SHA256RSA15);
-        algoSuiteCombo.addItem(ComboConstants.BASIC192SHA256RSA15);
-        algoSuiteCombo.addItem(ComboConstants.BASIC128SHA256RSA15);
-        algoSuiteCombo.addItem(ComboConstants.TRIPLEDESSHA256RSA15);
-        
+        fillSamlCombo(samlVersionCombo);
+        fillWssCombo(layoutCombo);
+        fillLayoutCombo(layoutCombo);
+        fillAlgoSuiteCombo(algoSuiteCombo);
         inSync = false;
         
         sync();
     }
     
-    private void sync() {
+    protected void sync() {
         inSync = true;
 
         WSDLComponent secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(comp);        
@@ -134,7 +97,7 @@ public class SAMLAuthorizationOverSSL extends javax.swing.JPanel implements Comb
         inSync = false;
     }
 
-    private void enableDisable() {
+    protected void enableDisable() {
         boolean wss11 = ComboConstants.WSS11.equals(wssVersionCombo.getSelectedItem());
         reqSigConfChBox.setEnabled(wss11);
     }
@@ -145,59 +108,42 @@ public class SAMLAuthorizationOverSSL extends javax.swing.JPanel implements Comb
             
         WSDLComponent secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(comp);        
 
+        SecurityPolicyModelHelper spmh = SecurityPolicyModelHelper.getInstance(cfgVersion);
+        SecurityTokensModelHelper stmh = SecurityTokensModelHelper.getInstance(cfgVersion);
+        AlgoSuiteModelHelper asmh = AlgoSuiteModelHelper.getInstance(cfgVersion);
         if (source.equals(reqClientCertChBox)) {
             WSDLComponent tokenKind = SecurityTokensModelHelper.getTokenElement(secBinding, TransportToken.class);
             HttpsToken token = (HttpsToken) SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
             SecurityTokensModelHelper.setRequireClientCertificate(token, reqClientCertChBox.isSelected());
         }
         if (source.equals(reqSigConfChBox)) {
-            SecurityPolicyModelHelper.enableRequireSignatureConfirmation(SecurityPolicyModelHelper.getWss11(comp), reqSigConfChBox.isSelected());
+            spmh.enableRequireSignatureConfirmation(SecurityPolicyModelHelper.getWss11(comp), reqSigConfChBox.isSelected());
         }
         if (source.equals(layoutCombo)) {
-            SecurityPolicyModelHelper.setLayout(secBinding, (String) layoutCombo.getSelectedItem());
+            spmh.setLayout(secBinding, (String) layoutCombo.getSelectedItem());
         }
         if (source.equals(algoSuiteCombo)) {
-            AlgoSuiteModelHelper.setAlgorithmSuite(secBinding, (String) algoSuiteCombo.getSelectedItem());
+            asmh.setAlgorithmSuite(secBinding, (String) algoSuiteCombo.getSelectedItem());
         }
         if (source.equals(wssVersionCombo)) {
             boolean wss11 = ComboConstants.WSS11.equals(wssVersionCombo.getSelectedItem());
-            WssElement wss = SecurityPolicyModelHelper.enableWss(comp, wss11);
+            WssElement wss = spmh.enableWss(comp, wss11);
             if (wss11) {
-                SecurityPolicyModelHelper.enableRequireSignatureConfirmation(SecurityPolicyModelHelper.getWss11(comp), reqSigConfChBox.isSelected());
+                spmh.enableRequireSignatureConfirmation(SecurityPolicyModelHelper.getWss11(comp), reqSigConfChBox.isSelected());
             }
-            SecurityPolicyModelHelper.enableMustSupportRefKeyIdentifier(wss, true);
+//            spmh.enableMustSupportRefKeyIdentifier(wss, true);
         }
         if (source.equals(samlVersionCombo)) {            
             if (comp instanceof Binding) {
                 WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, 
                                             SecurityTokensModelHelper.SIGNED_SUPPORTING);
                 WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
-                SecurityTokensModelHelper.setTokenProfileVersion(token, (String) samlVersionCombo.getSelectedItem());
+                stmh.setTokenProfileVersion(token, (String) samlVersionCombo.getSelectedItem());
             }
         }
         enableDisable();
     }
 
-    private void setCombo(JComboBox combo, String item) {
-        if (item == null) {
-            combo.setSelectedIndex(0);
-        } else {
-            combo.setSelectedItem(item);
-        }
-    }
-
-    private void setCombo(JComboBox combo, boolean second) {
-        combo.setSelectedIndex(second ? 1 : 0);
-    }
-        
-    private void setChBox(JCheckBox chBox, Boolean enable) {
-        if (enable == null) {
-            chBox.setSelected(false);
-        } else {
-            chBox.setSelected(enable);
-        }
-    }
-    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

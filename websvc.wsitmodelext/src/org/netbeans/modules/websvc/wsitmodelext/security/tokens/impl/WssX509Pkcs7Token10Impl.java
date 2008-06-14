@@ -41,17 +41,16 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.tokens.impl;
 
-import org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokensQName;
+import org.netbeans.modules.websvc.wsitmodelext.security.impl.SecurityPolicyComponentImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.WssX509Pkcs7Token10;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author Martin Grebac
  */
-public class WssX509Pkcs7Token10Impl extends TokensComponentImpl implements WssX509Pkcs7Token10 {
+public class WssX509Pkcs7Token10Impl extends SecurityPolicyComponentImpl implements WssX509Pkcs7Token10 {
     
     /**
      * Creates a new instance of WssX509Pkcs7Token10Impl
@@ -60,13 +59,4 @@ public class WssX509Pkcs7Token10Impl extends TokensComponentImpl implements WssX
         super(model, e);
     }
     
-    public WssX509Pkcs7Token10Impl(WSDLModel model){
-        this(model, createPrefixedElement(TokensQName.WSSX509PKCS7TOKEN10.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
 }

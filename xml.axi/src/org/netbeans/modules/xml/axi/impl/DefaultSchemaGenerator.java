@@ -43,6 +43,7 @@ package org.netbeans.modules.xml.axi.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -939,8 +940,11 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
 
                 ((AXIModelImpl)am).disableAutoSync();
                 sm.startTransaction();
-                for(Element element : lrges)
-                    transformChildren(element, schema);
+                for(Element element : lrges) {
+                    java.util.List<AXIComponent> pathFromRoot = new ArrayList<AXIComponent>();
+                    pathFromRoot.add(element);
+                    transformChildren(element, schema, pathFromRoot);
+                }
                 
                 postTransform(schema, allGlobals);
             } finally {
@@ -961,7 +965,7 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
         }
         
         protected void transformChildren(AXIComponent component,
-                SchemaComponent parent) {
+                SchemaComponent parent, java.util.List<AXIComponent> pathFromRoot) {
             //skip transforming components from other model
             if(!SchemaGeneratorUtil.fromSameSchemaModel(component.getPeer(), sm))
                 return;
@@ -1000,7 +1004,10 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
                 }
                 for(AXIComponent child: component.getChildren()) {
                     if(!(child instanceof AbstractAttribute)) {
-                        transformChildren(child, parent);
+                        if(pathFromRoot.contains(child.getOriginal()))
+                            continue;
+                        pathFromRoot.add(child.getOriginal());
+                        transformChildren(child, parent, pathFromRoot);
                     }
                 }
             } finally {

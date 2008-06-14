@@ -53,11 +53,11 @@ public class RetryOutsideRescueTest extends HintTestBase  {
     }            
 
     public void testNoHint1() throws Exception {
-        findHints(this, new RetryOutsideRescue(), "testfiles/reverseif.rb", null);
+        checkHints(this, new RetryOutsideRescue(), "testfiles/reverseif.rb", null);
     }
 
     public void testHints1() throws Exception {
-        findHints(this, new RetryOutsideRescue(), "testfiles/retry.rb", null);
+        checkHints(this, new RetryOutsideRescue(), "testfiles/retry.rb", null);
     }
 
     public void testNoPositives() throws Exception {

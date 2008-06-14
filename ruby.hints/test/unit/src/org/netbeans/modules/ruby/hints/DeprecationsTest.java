@@ -53,11 +53,11 @@ public class DeprecationsTest extends HintTestBase {
     }            
 
     public void testHint1() throws Exception {
-        findHints(this, new Deprecations(), "testfiles/require_gem.rb", null);
+        checkHints(this, new Deprecations(), "testfiles/require_gem.rb", null);
     }
 
     public void testHint2() throws Exception {
-        findHints(this, new Deprecations(), "testfiles/deprecations.rb", null);
+        checkHints(this, new Deprecations(), "testfiles/deprecations.rb", null);
     }
 
     public void testFix1() throws Exception {
@@ -160,6 +160,15 @@ public class DeprecationsTest extends HintTestBase {
             exceptions.add("mail_render_test.rb");
             exceptions.add("mime_responds_test.rb");
             exceptions.add("request_test.rb");
+            
+            // New in Rails 2.1.0
+            exceptions.add("transactions_test.rb");
+            exceptions.add("dirty_test.rb");
+            exceptions.add("has_and_belongs_to_many_associations_test.rb");
+            exceptions.add("has_one_associations_test.rb");
+            exceptions.add("connection_test.rb");
+            exceptions.add("has_many_associations_test.rb");
+            exceptions.add("template_finder_test.rb");
             
             assertNoJRubyMatches(new Deprecations(), exceptions);
             

@@ -45,15 +45,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Element;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
@@ -65,7 +61,6 @@ import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.css.parser.CSSParserTreeConstants;
-import org.netbeans.modules.css.parser.CssParserAccess;
 import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.openide.util.Exceptions;
@@ -115,7 +110,7 @@ public class CSSStructureScanner implements StructureScanner {
                         int documentEO = AstUtils.documentPosition(node.endOffset(), source);
                         String nodeName = info.getText().substring(documentSO, documentEO);
 
-                        items.add(new CssRuleStructureItem(nodeName, new CssElementHandle(ruleNode, node, info), source));
+                        items.add(new CssRuleStructureItem(nodeName, CssAstElement.getElement(info, ruleNode)));
                     }
                 }
             }
@@ -125,61 +120,57 @@ public class CSSStructureScanner implements StructureScanner {
     }
 
     public Map<String, List<OffsetRange>> folds(CompilationInfo info) {
-        try {
-            //so far the css parser always parses the whole css content
-            ParserResult presult = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator().next();
-            final TranslatedSource source = presult.getTranslatedSource();
-            final BaseDocument doc = (BaseDocument) info.getDocument();
-            SimpleNode root = ((CSSParserResult) presult).root();
+        final BaseDocument doc = (BaseDocument) info.getDocument();
+        if (doc == null) {
+            return Collections.emptyMap();
+        }
 
-            if (root == null) {
-                //serious error in the source, no results
-                return Collections.emptyMap();
-            }
+        //so far the css parser always parses the whole css content
+        ParserResult presult = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator().next();
+        final TranslatedSource source = presult.getTranslatedSource();
+        SimpleNode root = ((CSSParserResult) presult).root();
 
-            final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
-            final List<OffsetRange> foldRange = new ArrayList<OffsetRange>();
+        if (root == null) {
+            //serious error in the source, no results
+            return Collections.emptyMap();
+        }
 
-            NodeVisitor foldsSearch = new NodeVisitor() {
+        final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
+        final List<OffsetRange> foldRange = new ArrayList<OffsetRange>();
 
-                public void visit(SimpleNode node) {
-                    if (node.kind() == CSSParserTreeConstants.JJTSTYLERULE) {
-                        int so = AstUtils.documentPosition(node.startOffset(), source);
-                        int eo = AstUtils.documentPosition(node.endOffset(), source);
-                        try {
-                            if (Utilities.getLineOffset(doc, so) < Utilities.getLineOffset(doc, eo)) {
-                                //do not creare one line folds
-                                //XXX this logic could possibly seat in the GSF folding impl.
-                                foldRange.add(new OffsetRange(so, eo));
-                            }
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
+        NodeVisitor foldsSearch = new NodeVisitor() {
+
+            public void visit(SimpleNode node) {
+                if (node.kind() == CSSParserTreeConstants.JJTSTYLERULE) {
+                    int so = AstUtils.documentPosition(node.startOffset(), source);
+                    int eo = AstUtils.documentPosition(node.endOffset(), source);
+                    try {
+                        if (Utilities.getLineOffset(doc, so) < Utilities.getLineOffset(doc, eo)) {
+                            //do not creare one line folds
+                            //XXX this logic could possibly seat in the GSF folding impl.
+                            foldRange.add(new OffsetRange(so, eo));
                         }
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 }
-            };
-            root.visitChildren(foldsSearch);
-            folds.put("codeblocks", foldRange);
+            }
+        };
+        root.visitChildren(foldsSearch);
+        folds.put("codeblocks", foldRange);
 
-            return folds;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        
-        return Collections.emptyMap();
+        return folds;
         
     }
     
     private static class CssRuleStructureItem implements StructureItem {
 
-        private TranslatedSource source;
-        private CssElementHandle handle;
         private String name;
+        private CssAstElement element;
 
-        private CssRuleStructureItem(String name, CssElementHandle handle, TranslatedSource source) {
-            this.handle = handle;
-            this.source = source;
+        private CssRuleStructureItem(String name, CssAstElement element) {
             this.name = name;
+            this.element = element;
         }
 
         public String getName() {
@@ -195,11 +186,11 @@ public class CSSStructureScanner implements StructureScanner {
         }
 
         public ElementHandle getElementHandle() {
-            return handle;
+            return element;
         }
 
         public ElementKind getKind() {
-            return ElementKind.FIELD;
+            return ElementKind.RULE;
         }
 
         public Set<Modifier> getModifiers() {
@@ -216,11 +207,11 @@ public class CSSStructureScanner implements StructureScanner {
         }
 
         public long getPosition() {
-            return AstUtils.documentPosition(handle.elementAstStartOffset(), source);
+            return AstUtils.documentPosition(element.node().startOffset(), element.translatedSource());
         }
 
         public long getEndPosition() {
-            return AstUtils.documentPosition(handle.elementAstEndOffset(), source);
+            return AstUtils.documentPosition(element.node().endOffset(), element.translatedSource());
         }
 
         public ImageIcon getCustomIcon() {

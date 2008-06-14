@@ -96,7 +96,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
   }
 
   @Override
-  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+  protected SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
 
   @Override
   public void visit(Copy copy) {
@@ -125,17 +125,37 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
       return;
     }
     // # 135489
-    if (isPositive(fromName) && isNegative(toName)) {
-out("   from name: " + fromName);
-out("     to name: " + toName);
-//todo a      addError("FIX_Positive_Negative_Copy", copy);
+    if (fromName.startsWith("nonNegative") && toName.startsWith("negative")) { // NOI18N
+      addError("FIX_NonNegative_Negative_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("positive") && toName.startsWith("negative")) { // NOI18N
+      addError("FIX_Positive_Negative_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("positive") && toName.startsWith("nonPositive")) { // NOI18N
+      addError("FIX_Positive_NonPositive_Copy", copy); // NOI18N
       return;
     }
     // # 135489
-    if (isNegative(fromName) && isPositive(toName)) {
-out("   from name: " + fromName);
-out("     to name: " + toName);
-//todo a      addError("FIX_Negative_Positive_Copy", copy);
+    if (fromName.startsWith("negative") && toName.startsWith("nonNegative")) { // NOI18N
+      addError("FIX_Negative_NonNegative_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("negative") && toName.startsWith("positive")) { // NOI18N
+      addError("FIX_Negative_Positive_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("nonPositive") && toName.startsWith("positive")) { // NOI18N
+      addError("FIX_NonPositive_Positive_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("nonPositive") && toName.startsWith("nonNegative")) { // NOI18N
+      addWarning("FIX_NonPositive_NonNegative_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("nonNegative") && toName.startsWith("nonPositive")) { // NOI18N
+      addWarning("FIX_NonNegative_NonPositive_Copy", copy); // NOI18N
       return;
     }
     // # 135489
@@ -160,14 +180,6 @@ out("     to name: " + toName);
     else {
       addWarning("FIX_TYPE_IN_COPY", copy, fTypeName, tTypeName); // NOI18N
     }
-  }
-
-  private boolean isPositive(String value) {
-    return value.startsWith("positive") || value.startsWith("nonNegative"); // NOI18N
-  }
-
-  private boolean isNegative(String value) {
-    return value.startsWith("negative") || value.startsWith("nonPositive"); // NOI18N
   }
 
   private boolean isNumeric(String value) {
@@ -212,7 +224,7 @@ out("     to name: " + toName);
     WSDLReference<Role> ref1 = partnerLink.getPartnerRole();
 
     if (ref1 == null || ref1.get() == null) {
-      addError("FIX_To_PartnerLink", to);
+      addError("FIX_To_PartnerLink", to); // NOI18N
     }
   }
 
@@ -230,7 +242,7 @@ out("     to name: " + toName);
       return;
     }
     if ( !value.startsWith("$")) { // NOI18N
-      addError("FIX_To_Value", to, value); // NOI18N
+      addError("FIX_SA00033", to, value); // NOI18N
     }
   }
 
@@ -240,7 +252,7 @@ out("     to name: " + toName);
     if (from == null) {
       return null;
     }
-    Component variableType = getVariableType(from);
+    Component variableType = getVariableReferenceType(from);
 //out("  var: " + variableType);
 
     if (variableType != null) {
@@ -261,7 +273,7 @@ out("     to name: " + toName);
     if (to == null) {
       return null;
     }
-    Component variableType = getVariableType(to);
+    Component variableType = getVariableReferenceType(to);
 
     if (variableType != null) {
       Component partType = getPartType(to);
@@ -276,49 +288,13 @@ out("     to name: " + toName);
     return checkXPath(to);
   }
 
-  private Component getVariableType(VariableReference reference) {
+  private Component getVariableReferenceType(VariableReference reference) {
     BpelReference<VariableDeclaration> ref = reference.getVariable();
 
     if (ref == null) {
       return null;
     }
-    VariableDeclaration declaration = ref.get();
-
-    if (declaration == null) {
-      return null;
-    }
-    // message type
-    WSDLReference<Message> wsdlRef = declaration.getMessageType();
-
-    if (wsdlRef != null) {
-      Message message = wsdlRef.get();
-
-      // # 130764
-      if (message != null) {
-        return message;
-      }
-    }
-    // element
-    SchemaReference<GlobalElement> elementRef = declaration.getElement();
-
-    if (elementRef != null) {
-      GlobalElement element = elementRef.get();
-
-      if (element != null) {
-        return element;
-      }
-    }
-    // type
-    SchemaReference<GlobalType> typeRef = declaration.getType();
-
-    if (typeRef != null) {
-      GlobalType type = typeRef.get();
-
-      if (type != null) {
-        return type;
-      }
-    }
-    return null;
+    return getVariableDeclarationType(ref.get());
   }
 
   private SchemaComponent getPartType(PartReference reference) {
@@ -410,7 +386,9 @@ out("     to name: " + toName);
         addError("FIX_Negative_RepeatEvery", repeatEvery); // NOI18N
       }
     }
-    catch (IllegalArgumentException e) {}
+    catch (IllegalArgumentException e) {
+      return;
+    }
   }
 
   private boolean isZero(Duration duration) {

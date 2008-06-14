@@ -44,6 +44,7 @@ package org.netbeans.modules.websvc.core.dev.wizard;
 import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
+import org.netbeans.modules.websvc.core.ServerType;
 import org.netbeans.modules.websvc.core.ServiceCreator;
 import org.netbeans.modules.websvc.core.ServiceCreatorProvider;
 import org.openide.WizardDescriptor;
@@ -63,21 +64,20 @@ public class JaxWsServiceCreatorProvider implements ServiceCreatorProvider {
         int projectType = projectInfo.getProjectType();
         if ((projectType == ProjectInfo.JSE_PROJECT_TYPE && Util.isSourceLevel16orHigher(project)) ||
                 ((Util.isJavaEE5orHigher(project) &&
-                (projectType == ProjectInfo.WEB_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE))) ||
-                (projectInfo.isJwsdpSupported())
+                (projectType == ProjectInfo.WEB_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE)))
                 ) {
             return new JaxWsServiceCreator(projectInfo, wiz, false);
         } else if (JaxWsUtils.isEjbJavaEE5orHigher(projectInfo)) {
             return new JaxWsServiceCreator(projectInfo, wiz, false);
-        }
-        else if (!Util.isJavaEE5orHigher(project) &&
+        } else if (!Util.isJavaEE5orHigher(project) &&
                    (projectType == ProjectInfo.WEB_PROJECT_TYPE)) {
-               if ((!projectInfo.isJsr109Supported() && !projectInfo.isJsr109oldSupported())) {
-                   return new JaxWsServiceCreator(projectInfo, wiz, true);
-               } 
-               if (projectInfo.isJaxWsInJ2ee14Supported()) {
-                   return new JaxWsServiceCreator(projectInfo, wiz, false);
-               }
+                   if (!(projectInfo.isJsr109Supported()/* || projectInfo.isJsr109oldSupported()*/)) {                   
+                       boolean addLibraries = !projectInfo.isWsgenSupported() || !projectInfo.isWsimportSupported();
+                       return new JaxWsServiceCreator(projectInfo, wiz, addLibraries);
+                   } 
+                   if (ServerType.JBOSS == projectInfo.getServerType()) {
+                       return new JaxWsServiceCreator(projectInfo, wiz, false);
+                   }
         }
         return null;
     }

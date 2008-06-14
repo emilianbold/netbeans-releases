@@ -50,8 +50,16 @@ class NbRspecMediator < Spec::Runner::ExampleGroupRunner
   def run
     prepare
     success = true
+    if @options.line_number != nil
+      @spec_parser = NbSpecParser.new
+      @spec_parser.spec_name_for(@options.files[0], @options.line_number)
+    end
+
     overall_start_time = Time.now
     example_groups.each do |example_group|
+      if (@spec_parser != nil && example_group.description != @spec_parser.example_group_description)
+        next
+      end
       example_group_start_time = Time.now
       puts "%SUITE_STARTING% #{example_group.description}"
       success = success & example_group.run
@@ -91,7 +99,7 @@ class Reporter < Spec::Runner::Reporter
       
   def failure(example, error)
     backtrace_tweaker.tweak_backtrace(error)
-    puts "%TEST_FAILED% #{example.description} time=#{elapsed_time} #{error.message} #{error.backtrace[0]}"
+    puts "%TEST_FAILED% #{example.description} time=#{elapsed_time} message=#{error.message} location=#{error.backtrace[0]}"
     super
   end
   alias_method :example_failed, :failure
@@ -102,11 +110,25 @@ class Reporter < Spec::Runner::Reporter
     super
   end
       
-  def example_pending(example_group, example, message="Not Yet Implemented")
-    puts "%TEST_PENDING% #{example.description} time=#{elapsed_time} #{message}"
-    super
+  # need to use varargs since rspec 1.1.3 and 1.1.4 have different number of params
+  def example_pending(*args)
+    msg = "Not Yet Implemented"
+    if args.size == 3 && args[2] == nil
+        args[2] = msg
+    elsif args.size == 2 && args[1] == nil
+      args[1] = msg
+    end
+    
+    case args[1]
+    when String
+      # 1.1.4
+      puts "%TEST_PENDING% #{args[0].description} time=#{elapsed_time} message=#{args[1]}"
+    else
+      # 1.1.3 or older
+      puts "%TEST_PENDING% #{args[1].description} time=#{elapsed_time} message=#{args[2]}"
+    end
   end
-  
+
   def start_timer
     @start_time = Time.now
   end
@@ -115,4 +137,32 @@ class Reporter < Spec::Runner::Reporter
     Time.now - @start_time
   end
 
+end
+
+class NbSpecParser < Spec::Runner::SpecParser
+  
+  attr_reader :example_group_description, :example_description
+  
+  def spec_name_for(file, line_number)
+    best_match.clear
+    file = File.expand_path(file)
+    rspec_options.example_groups.each do |example_group|
+      consider_example_groups_for_best_match example_group, file, line_number
+      example_group.examples.each do |example|
+        consider_example_for_best_match example, example_group, file, line_number
+      end
+    end
+    if best_match[:example_group]
+      @example_group_description = best_match[:example_group].description
+      if best_match[:example]
+        @example_description = best_match[:example].description
+        "#{best_match[:example_group].description}  #{best_match[:example].description}"
+      else
+        best_match[:example_group].description
+      end
+    else
+      nil
+    end
+  end
+  
 end

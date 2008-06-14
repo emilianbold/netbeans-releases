@@ -47,11 +47,10 @@ import java.util.Arrays;
 import java.util.Map;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.AntProjectCookie;
+import org.apache.tools.ant.module.api.support.AntScriptUtils;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -84,11 +83,7 @@ public class LastTargetExecuted {
         if (buildScript != null && buildScript.isFile()) {
             FileObject fo = FileUtil.toFileObject(buildScript);
             assert fo != null;
-            try {
-                return DataObject.find(fo).getCookie(AntProjectCookie.class);
-            } catch (DataObjectNotFoundException e) {
-                assert false : e;
-            }
+            return AntScriptUtils.antProjectCookieFor(fo);
         }
         return null;
     }

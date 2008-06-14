@@ -41,6 +41,8 @@
 package org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation;
 
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.schema.model.ComplexType;
 import org.netbeans.modules.xml.schema.model.SimpleType;
@@ -50,20 +52,19 @@ import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
+import org.netbeans.modules.xml.schema.model.SimpleContent;
 import org.netbeans.modules.xml.schema.model.TypeContainer;
 import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 
 public final class ValidationUtil {
-    private static final String 
-        SCHEMA_COMPONENT_ATTRIBUTE_BASE = "base", // NOI18N
-        SCHEMA_COMPONENT_ATTRIBUTE_NAME = "name", // NOI18N
-        SCHEMA_COMPONENT_ATTRIBUTE_TYPE = "type"; // NOI18N
+    private static final String SCHEMA_COMPONENT_ATTRIBUTE_BASE = "base"; // NOI18N
+    private static final String SCHEMA_COMPONENT_ATTRIBUTE_NAME = "name"; // NOI18N
+    private static final String SCHEMA_COMPONENT_ATTRIBUTE_TYPE = "type"; // NOI18N
 
-    public static Collection<GlobalSimpleType> BUILT_IN_SIMPLE_TYPES = 
-        SchemaModelFactory.getDefault().getPrimitiveTypesModel().getSchema().getSimpleTypes();
-    
+    public static Collection<GlobalSimpleType> BUILT_IN_SIMPLE_TYPES = SchemaModelFactory.getDefault().getPrimitiveTypesModel().getSchema().getSimpleTypes();
+
     private ValidationUtil() {}
     
     // vlv 
@@ -90,48 +91,111 @@ public final class ValidationUtil {
     }
 
     public static Attribute attributeName() {
-        return (new GenericExtensibilityElement.StringAttribute(SCHEMA_COMPONENT_ATTRIBUTE_NAME));
+        return new GenericExtensibilityElement.StringAttribute(SCHEMA_COMPONENT_ATTRIBUTE_NAME);
     }
     
     public static Attribute attributeType() {
-        return (new GenericExtensibilityElement.StringAttribute(SCHEMA_COMPONENT_ATTRIBUTE_TYPE));
+        return new GenericExtensibilityElement.StringAttribute(SCHEMA_COMPONENT_ATTRIBUTE_TYPE);
     }
     
     public static GlobalSimpleType getBuiltInSimpleType(SchemaComponent schemaComponent) {
-        if (schemaComponent == null) return null;
-        
-        String baseTypeName = schemaComponent.getAnyAttribute(new QName(
-            SCHEMA_COMPONENT_ATTRIBUTE_BASE));
+//System.out.println();
+//System.out.println();
+//System.out.println("--------------------");
+//System.out.println("BUILT IN SIMPLE TYPE: " + getTypeName(schemaComponent));
+        if (schemaComponent == null) {
+            return null;
+        }
+        if (isBuiltInSimpleType(schemaComponent)) {
+//System.out.println("  !!!!! SIMPLE !!!!!!!!");
+            return (GlobalSimpleType) schemaComponent;
+        }
+        String baseTypeName = schemaComponent.getAnyAttribute(new QName(SCHEMA_COMPONENT_ATTRIBUTE_BASE));
         GlobalSimpleType globalSimpleType = null;
+
+//System.out.println("baseTypeName: " + baseTypeName);
+        // # 130281
+        Collection<GlobalSimpleType> schemaSimpleTypes = schemaComponent.getModel().getSchema().getSimpleTypes();
+        List<GlobalSimpleType> simpleTypes = new LinkedList<GlobalSimpleType>();
+
+        simpleTypes.addAll(schemaSimpleTypes);
+        simpleTypes.addAll(BUILT_IN_SIMPLE_TYPES);
+
+//System.out.println("Simple Types:");
+//System.out.println("" + simpleTypes);
+//System.out.println();
+
         if (baseTypeName != null) {
             baseTypeName = ignoreNamespace(baseTypeName);
-            globalSimpleType = findGlobalSimpleType(baseTypeName, 
-                BUILT_IN_SIMPLE_TYPES);
-            if (globalSimpleType != null) return globalSimpleType;
+            globalSimpleType = findGlobalSimpleType(baseTypeName, simpleTypes);
+
+            if (globalSimpleType != null) {
+                // # 130281
+                return getBuiltInSimpleType(globalSimpleType);
+            }
         }
-        Collection<GlobalSimpleType> 
-            schemaSimpleTypes = schemaComponent.getModel().getSchema().getSimpleTypes();
-        globalSimpleType = findGlobalSimpleType(getSchemaComponentTypeName(schemaComponent), 
-            schemaSimpleTypes);
+//System.out.println("getSchemaComponentTypeName: " + getSchemaComponentTypeName(schemaComponent));
+        // # 130281
+        globalSimpleType = findGlobalSimpleType(getSchemaComponentTypeName(schemaComponent), simpleTypes);
+//System.out.println("globalSimpleType: " + globalSimpleType);
+
         if (globalSimpleType != null) {
             for (SchemaComponent childComponent : globalSimpleType.getChildren()) {
                 globalSimpleType = getBuiltInSimpleType(childComponent);
-                if (globalSimpleType != null) return globalSimpleType;
+               
+                if (globalSimpleType != null) {
+                    return globalSimpleType;
+                }
             }
             return null;
+        }
+//System.out.println();
+        // # 130281
+        for (SchemaComponent child : schemaComponent.getChildren()) {
+//System.out.println("  child: " + child.getClass().getName());
+          if (child instanceof SimpleContent) {
+//System.out.println("        getLocalDefinition: " + ((SimpleContent) child).getLocalDefinition());
+              globalSimpleType = getBuiltInSimpleType(((SimpleContent) child).getLocalDefinition());
+
+              if (globalSimpleType != null) {
+                  return globalSimpleType;
+              }
+          }
+        }
+        return null;
+    }
+
+    public static boolean isBuiltInSimpleType(SchemaComponent component) {
+        if ( !(component instanceof GlobalSimpleType)) {
+            return false;
+        }
+        return findGlobalSimpleType(getSchemaComponentTypeName(component), BUILT_IN_SIMPLE_TYPES) != null;
+    }
+
+    public static GlobalSimpleType findGlobalSimpleType(String typeName, Collection<GlobalSimpleType> globalSimpleTypes) {
+        if (typeName != null && globalSimpleTypes != null) {
+            for (GlobalSimpleType globalSimpleType : globalSimpleTypes) {
+                if (ignoreNamespace(globalSimpleType.toString()).equals(ignoreNamespace(typeName))) {
+                    return globalSimpleType;
+                }
+            }
         }
         return null;
     }
 
     private static String getSchemaComponentTypeName(SchemaComponent schemaComponent) {
         String typeName = null;
+
         if ((schemaComponent instanceof SimpleType) || (schemaComponent instanceof ComplexType)) {
             typeName = schemaComponent.getAttribute(attributeName());
-        } else {
+        }
+        else {
             NamedComponentReference<? extends GlobalType> typeRef = getSchemaComponentTypeRef(schemaComponent);
+        
             if (typeRef != null) {
                 typeName = typeRef.get().getName();
-            } else {
+            }
+            else {
                 typeName = ((SchemaComponent) schemaComponent).getAttribute(attributeType());
             }
         }
@@ -142,26 +206,18 @@ public final class ValidationUtil {
         NamedComponentReference<? extends GlobalType> typeRef = null;
         try {
             typeRef = ((TypeContainer) schemaComponent).getType();
-        } catch (Exception e) {}
+        } 
+        catch (Exception e) {
+        }
         return typeRef;
     }
     
-    public static GlobalSimpleType findGlobalSimpleType(String typeName,
-        Collection<GlobalSimpleType> globalSimpleTypes) {
-        if ((typeName != null) && (globalSimpleTypes != null)) {
-            for (GlobalSimpleType globalSimpleType : globalSimpleTypes) {
-                if (ignoreNamespace(globalSimpleType.toString()).equals(
-                    ignoreNamespace(typeName))) {
-                    return globalSimpleType;
-                }
-            }
-        }
-        return null;
-    }
-
     public static String ignoreNamespace(String dataWithNamespace) {
-        if (dataWithNamespace == null) return null;
+        if (dataWithNamespace == null) {
+          return null;
+        }
         int index = dataWithNamespace.indexOf(":");
+
         if ((index > -1) && (index < dataWithNamespace.length() - 1)) {
             return dataWithNamespace.substring(index + 1);
         }

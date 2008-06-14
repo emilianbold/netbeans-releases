@@ -42,6 +42,14 @@ public final class BracesMatchAction extends TextAction {
 
     private final boolean select;
     
+    public static BracesMatchAction createNavigateAction() {
+        return new BracesMatchAction(false);
+    }
+    
+    public static BracesMatchAction createSelectAction() {
+        return new BracesMatchAction(true);
+    }
+    
     public BracesMatchAction() {
         this(false);
     }

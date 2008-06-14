@@ -64,7 +64,7 @@ class WEBrick implements RubyServer, ServerInstanceImplementation {
     /**
      * The pattern for recognizing when an instance of WEBrick has started.
      */
-    private static final Pattern PATTERN = Pattern.compile("\\bRails application started on.+", Pattern.DOTALL);
+    private static final Pattern PATTERN = Pattern.compile("\\bRails.*application started on.+", Pattern.DOTALL);
     
     private final RubyPlatform platform;
     private final List<RailsApplication> applications = new ArrayList<RailsApplication>();

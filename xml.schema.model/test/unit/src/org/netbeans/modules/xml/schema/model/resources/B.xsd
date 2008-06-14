@@ -6,4 +6,7 @@
             elementFormDefault="qualified">
     <xsd:include schemaLocation="C.xsd"/>
     <xsd:include schemaLocation="D.xsd"/>
+    
+    <xsd:element name="B2" type="tns:C2"/>
+    
 </xsd:schema>

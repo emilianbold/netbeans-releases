@@ -44,7 +44,6 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.openide.filesystems.FileObject;
 import java.util.List;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import java.util.ArrayList;
 import org.netbeans.api.java.source.ClassIndex;
@@ -58,10 +57,11 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.groovy.editor.AstUtilities;
-import org.netbeans.modules.groovy.editor.hints.spi.EditList;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.api.java.source.ui.ElementIcons;
+import org.netbeans.modules.groovy.editor.NbUtilities;
+import org.netbeans.modules.gsf.api.EditList;
 
 /**
  *
@@ -73,24 +73,24 @@ public class FixImportsHelper {
 
     public class ImportCandidate {
 
-        String Name;
+        String name;
         String fqnName;
         Icon icon;
         int importantsLevel;
 
-        public ImportCandidate(String Name, String fqnName, Icon icon, int importantsLevel) {
-            this.Name = Name;
+        public ImportCandidate(String name, String fqnName, Icon icon, int importantsLevel) {
+            this.name = name;
             this.fqnName = fqnName;
             this.icon = icon;
             this.importantsLevel = importantsLevel;
         }
 
         public String getName() {
-            return Name;
+            return name;
         }
 
         public void setName(String Name) {
-            this.Name = Name;
+            this.name = Name;
         }
 
         public String getFqnName() {
@@ -122,19 +122,13 @@ public class FixImportsHelper {
         LOG.log(Level.FINEST, "Looking for class: " + missingClass);
 
         List<ImportCandidate> result = new ArrayList<ImportCandidate>();
-
-        ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
-        ClassPath compilePath = ClassPath.getClassPath(fo, ClassPath.COMPILE);
-        ClassPath srcPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-
-        if (bootPath == null || compilePath == null || srcPath == null) {
-            LOG.log(Level.FINEST, "bootPath    : " + bootPath);
-            LOG.log(Level.FINEST, "compilePath : " + compilePath);
-            LOG.log(Level.FINEST, "srcPath     : " + srcPath);
+        
+        ClasspathInfo pathInfo = NbUtilities.getClasspathInfoForFileObject(fo);
+        
+        if(pathInfo == null){
+            LOG.log(Level.FINEST, "Problem getting ClasspathInfo");
             return result;
         }
-
-        ClasspathInfo pathInfo = ClasspathInfo.create(bootPath, compilePath, srcPath);
 
         Set<org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement>> typeNames;
 
@@ -255,7 +249,8 @@ public class FixImportsHelper {
         try {
             lineOffset = Utilities.getLineOffset(doc, useOffset);
         } catch (BadLocationException ex) {
-            LOG.log(Level.FINEST, "BadLocationException for : " + useOffset);
+            LOG.log(Level.FINEST, "BadLocationException for offset : {0}", useOffset);
+            LOG.log(Level.FINEST, "BadLocationException : {0}", ex.getMessage());
             return -1;
         }
 

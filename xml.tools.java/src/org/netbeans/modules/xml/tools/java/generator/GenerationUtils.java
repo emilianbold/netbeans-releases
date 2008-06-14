@@ -41,14 +41,11 @@
 
 package org.netbeans.modules.xml.tools.java.generator;
 
-import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import java.io.IOException;
 import java.util.Collections;
@@ -62,6 +59,8 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.openide.filesystems.FileObject;
@@ -228,7 +227,7 @@ public final class GenerationUtils {
         if (primitiveTypeKind != null) {
             return getTreeMaker().PrimitiveType(primitiveTypeKind);
         }
-        Tree typeTree = tryCreateQualIdent(typeName);
+        Tree typeTree = makeQualIdent(typeName);
         if (typeTree == null) {
             // XXX does not handle imports; temporary until issue 102149 is fixed
             TypeMirror typeMirror = copy.getTreeUtilities().parseType(typeName, scope);
@@ -461,17 +460,8 @@ public final class GenerationUtils {
         return getTreeMaker().Modifiers(Collections.emptySet(), Collections.emptyList());
     }
 
-    private ExpressionTree tryCreateQualIdent(String typeName) {
-        TypeElement typeElement = copy.getElements().getTypeElement(typeName);
-        if (typeElement != null) {
-            return getTreeMaker().QualIdent(typeElement);
-        }
-        return null;
-
-    }
-
     public ExpressionTree createQualIdent(String typeName) {
-        ExpressionTree qualIdent = tryCreateQualIdent(typeName);
+        ExpressionTree qualIdent = makeQualIdent(typeName);
         if (qualIdent == null) {
             throw new IllegalArgumentException("Cannot create a QualIdent for " + typeName); // NOI18N
         }
@@ -480,11 +470,26 @@ public final class GenerationUtils {
     
     public ExpressionTree makeQualIdent(String typeClass) {
         TypeElement type =  copy.getElements().getTypeElement(typeClass);// NOI18N
-        ExpressionTree tree = getTreeMaker().QualIdent(type);
+        if(type != null) {
+            return getTreeMaker().QualIdent(type);
+        }
         
-        return tree;
+        return null;
     }
-
     
+    /**
+     * Finds Java package name for the given folder.
+     * @return package name separated by dots or null if package name
+     *     could not be find for the given file
+     */
+    public static String findJavaPackage(FileObject fo) {
+        assert fo.isFolder() : fo;
+        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        if (cp == null) {
+            return null;
+        }
+        return cp.getResourceName(fo, '.', false);
+    }
+        
     // </editor-fold>
 }

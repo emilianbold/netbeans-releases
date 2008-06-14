@@ -45,6 +45,7 @@ import groovy.lang.GroovyClassLoader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -87,7 +88,6 @@ import org.netbeans.modules.groovy.editor.elements.CommentElement;
 import org.netbeans.modules.groovy.editor.elements.GroovyElement;
 import org.netbeans.modules.groovy.editor.elements.IndexedElement;
 import org.netbeans.modules.groovy.editor.elements.KeywordElement;
-import org.netbeans.modules.gsf.spi.DefaultError;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -128,7 +128,7 @@ public class GroovyParser implements Parser {
                 CharSequence buffer = reader.read(file);
                 String source = asString(buffer);
                 int caretOffset = reader.getCaretOffset(file);
-                Context context = new Context(file, listener, source, caretOffset);
+                Context context = new Context(file, listener, source, caretOffset, AstUtilities.getBaseDocument(file.getFileObject(), true));
                 result = parseBuffer(context, Sanitize.NONE);
             } catch (IOException ioe) {
                 listener.exception(ioe);
@@ -535,9 +535,9 @@ public class GroovyParser implements Parser {
         }
         
         FileObject fo = context.file.getFileObject();
-        ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
-        ClassPath compilePath = ClassPath.getClassPath(fo, ClassPath.COMPILE);
-        ClassPath sourcePath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        ClassPath bootPath = fo == null ? ClassPathSupport.createClassPath(new URL[0]) : ClassPath.getClassPath(fo, ClassPath.BOOT);
+        ClassPath compilePath = fo == null ? ClassPathSupport.createClassPath(new URL[0]) : ClassPath.getClassPath(fo, ClassPath.COMPILE);
+        ClassPath sourcePath = fo == null ? ClassPathSupport.createClassPath(new URL[0]) : ClassPath.getClassPath(fo, ClassPath.SOURCE);
         ClassPath cp = ClassPathSupport.createProxyClassPath(bootPath, compilePath, sourcePath);
         
         ClassLoader parentLoader = cp.getClassLoader(true);
@@ -561,7 +561,7 @@ public class GroovyParser implements Parser {
 
 //        long start = System.currentTimeMillis();
         try {
-            compilationUnit.compile(Phases.SEMANTIC_ANALYSIS); // which phase should be used?
+            compilationUnit.compile(Phases.CLASS_GENERATION);
 //            System.out.println("### compilation success in " + (System.currentTimeMillis() - start));
         } catch (Throwable e) {
 //            System.out.println("### compilation failure in " + (System.currentTimeMillis() - start));
@@ -622,17 +622,28 @@ public class GroovyParser implements Parser {
                 }
             }
 
-            // TODO: This seems to be a duplicate call into notifyError(), since it's done
-            // indirectly from handleErrorCollector() below. Have to doublecheck.
+            /*
+             
+            This used to be a direct call to notifyError(). Now all calls to 
+            notifyError() should be done via handleErrorCollector() below
+            to make sure to eliminate duplicates and the like.
             
-            // if (!ignoreErrors) {
-            //      notifyError(context, null, Severity.ERROR, errorMessage, localizedMessage, offset, sanitizing);
-            // }
+            I've added the two logging calls only for debugging purposes
+            
+             */
+            
+             // if (!ignoreErrors) {
+             //      notifyError(context, null, Severity.ERROR, errorMessage, localizedMessage, offset, sanitizing);
+             // }
+            
+            LOG.log(Level.FINEST, "Comp-Ex, errorMessage    : {0}", errorMessage);
+            LOG.log(Level.FINEST, "Comp-Ex, localizedMessage: {0}", localizedMessage);
+            
         }
 
         CompileUnit compileUnit = compilationUnit.getAST();
         List<ModuleNode> modules = compileUnit.getModules();
-
+        
         // there are more modules if class references another class,
         // there is one module per class
         ModuleNode module = null;
@@ -727,15 +738,19 @@ public class GroovyParser implements Parser {
     
     
     
-    private static void handleErrorCollector(ErrorCollector errorCollector, Context context, ModuleNode moduleNode, boolean ignoreErrors, Sanitize sanitizing) {
+    private void handleErrorCollector(ErrorCollector errorCollector, Context context, ModuleNode moduleNode, boolean ignoreErrors, Sanitize sanitizing) {
+        LOG.log(Level.FINEST, "handleErrorCollector()");
         if (!ignoreErrors && errorCollector != null) {
             List errors = errorCollector.getErrors();
             if (errors != null) {
                 for (Object object : errors) {
+                    LOG.log(Level.FINEST, "Error found in collector: {0}", object);
                     if (object instanceof SyntaxErrorMessage) {
                         SyntaxException ex = ((SyntaxErrorMessage)object).getCause();
+                        
                         String sourceLocator = ex.getSourceLocator();
-                        String name = moduleNode != null ? moduleNode.getContext().getName() : null;
+                        String name = moduleNode != null ? moduleNode.getContext().getName() : context.file.getNameExt();
+                        
                         if (sourceLocator != null && name != null && sourceLocator.equals(name)) {
                             int startOffset = AstUtilities.getOffset(context.document, ex.getStartLine(), ex.getStartColumn());
                             int endOffset = AstUtilities.getOffset(context.document, ex.getLine(), ex.getEndColumn());
@@ -870,12 +885,12 @@ public class GroovyParser implements Parser {
         private Sanitize sanitized = Sanitize.NONE;
         private BaseDocument document;
         
-        public Context(ParserFile parserFile, ParseListener listener, String source, int caretOffset) {
+        public Context(ParserFile parserFile, ParseListener listener, String source, int caretOffset, BaseDocument doc) {
             this.file = parserFile;
             this.listener = listener;
             this.source = source;
             this.caretOffset = caretOffset;
-            this.document = AstUtilities.getBaseDocument(file.getFileObject(), true);
+            this.document = doc;//AstUtilities.getBaseDocument(file.getFileObject(), true);
         }
         
         @Override

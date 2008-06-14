@@ -49,7 +49,6 @@ import java.util.HashMap;
 import java.text.AttributedCharacterIterator;
 import javax.swing.text.AttributeSet;
 import javax.swing.JEditorPane;
-import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.PrintContainer;
@@ -72,6 +71,7 @@ import org.netbeans.editor.BaseDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.AnnotationDesc;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -112,6 +112,14 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
         
         annoMap = new HashMap(20);
         annoBlackList = new WeakHashMap();
+    }
+
+    public @Override int getShiftWidth() {
+        return IndentUtils.indentLevelSize(this);
+    }
+
+    public @Override int getTabSize() {
+        return IndentUtils.tabSize(this);
     }
 
     public void settingsChange(SettingsChangeEvent evt) {

@@ -43,9 +43,7 @@ package org.netbeans.modules.websvc.wsitmodelext.security.impl;
 
 import org.netbeans.modules.websvc.wsitmodelext.security.Header;
 import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyAttribute;
-import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -61,15 +59,6 @@ public class HeaderImpl extends SecurityPolicyComponentImpl implements Header {
         super(model, e);
     }
     
-    public HeaderImpl(WSDLModel model){
-        this(model, createPrefixedElement(SecurityPolicyQName.HEADER.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
     public void setName(String name) {
         setAttribute(NAME_PROPERTY, SecurityPolicyAttribute.NAME, name);        
     }

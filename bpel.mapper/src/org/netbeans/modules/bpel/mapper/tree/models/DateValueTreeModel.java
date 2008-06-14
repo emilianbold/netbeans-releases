@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemInfoProvider;
 import org.netbeans.modules.bpel.model.api.DeadlineExpression;
 import org.netbeans.modules.bpel.model.api.For;
@@ -64,8 +63,8 @@ public class DateValueTreeModel implements MapperTreeModel<Object> {
     }
 
     // TODO load names from resoureces
-    public List getChildren(RestartableIterator<Object> dataObjectPathItr) {
-        Object parent = dataObjectPathItr.next();
+    public List getChildren(Iterable<Object> dataObjectPathItrb) {
+        Object parent = dataObjectPathItrb.iterator().next();
         if (parent == TREE_ROOT) {
             return Collections.singletonList(mContextEntity);
         }

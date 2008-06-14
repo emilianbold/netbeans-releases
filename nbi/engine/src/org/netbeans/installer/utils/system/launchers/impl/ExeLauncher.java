@@ -52,6 +52,7 @@ import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.JavaCompatibleProperties;
+import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.system.launchers.LauncherProperties;
 import org.netbeans.installer.utils.system.launchers.LauncherResource;
 import org.netbeans.installer.utils.progress.Progress;
@@ -197,19 +198,24 @@ public class ExeLauncher extends CommonLauncher {
         return new String [] {outputFile.getAbsolutePath()};
     }
     
-    public List <JavaCompatibleProperties> getDefaultCompatibleJava() {
-        List <JavaCompatibleProperties> list = new ArrayList <JavaCompatibleProperties>();
-        list.add(new JavaCompatibleProperties(
-                MIN_JAVA_VERSION_WINDOWS_VISTA, null, null,  OSNAME_WINDOWS_VISTA, null));
-        list.add(new JavaCompatibleProperties(
-                MIN_JAVA_VERSION_WINDOWS, null, null, OSNAME_WINDOWS_XP, null));
-        list.add(new JavaCompatibleProperties(
-                MIN_JAVA_VERSION_WINDOWS, null, null, OSNAME_WINDOWS_2K, null));
-        list.add(new JavaCompatibleProperties(
-                MIN_JAVA_VERSION_WINDOWS, null, null, OSNAME_WINDOWS_2K3, null));
-        list.add(new JavaCompatibleProperties(
-                MIN_JAVA_VERSION_WINDOWS_2K8, null, null, OSNAME_WINDOWS_2K8, null));
-        return list;
+    @Override
+    public List<JavaCompatibleProperties> getDefaultCompatibleJava(Version version) {
+        if (version.equals(Version.getVersion("1.5"))) {
+            List<JavaCompatibleProperties> list = new ArrayList<JavaCompatibleProperties>();
+            list.add(new JavaCompatibleProperties(
+                    MIN_JAVA_VERSION_WINDOWS_VISTA, null, null, OSNAME_WINDOWS_VISTA, null));
+            list.add(new JavaCompatibleProperties(
+                    MIN_JAVA_VERSION_WINDOWS, null, null, OSNAME_WINDOWS_XP, null));
+            list.add(new JavaCompatibleProperties(
+                    MIN_JAVA_VERSION_WINDOWS, null, null, OSNAME_WINDOWS_2K, null));
+            list.add(new JavaCompatibleProperties(
+                    MIN_JAVA_VERSION_WINDOWS, null, null, OSNAME_WINDOWS_2K3, null));
+            list.add(new JavaCompatibleProperties(
+                    MIN_JAVA_VERSION_WINDOWS_2K8, null, null, OSNAME_WINDOWS_2K8, null));
+            return list;
+        } else {
+            return super.getDefaultCompatibleJava(version);            
+        }        
     }
     
     private String changeJavaPropertyCounter(final String string) {
@@ -381,6 +387,9 @@ public class ExeLauncher extends CommonLauncher {
             addData(fos, str, true); // localized string as UNICODE
             
         }
+    }
+    private void addData(FileOutputStream fos, Version version, boolean isUnicode) throws IOException {
+        addData(fos,(version==null) ? null : version.toJdkStyle(),isUnicode);
     }
     
     private void addData(FileOutputStream fos, String str, boolean isUnicode) throws IOException {

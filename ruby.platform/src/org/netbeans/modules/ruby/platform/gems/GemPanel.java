@@ -105,7 +105,7 @@ public final class GemPanel extends JPanel implements Runnable {
     
     private GemManager gemManager;
     
-    private final ExecutorService updateTasksQueue;
+    private ExecutorService updateTasksQueue;
     private boolean closed;
     
     private List<Gem> installedGems;
@@ -131,6 +131,8 @@ public final class GemPanel extends JPanel implements Runnable {
     public GemPanel(String availableFilter, RubyPlatform preselected) {
         updateTasksQueue = Executors.newSingleThreadExecutor();
         initComponents();
+        allVersionsCheckbox.setSelected(Util.shallFetchAllVersions());
+        descriptionCheckbox.setSelected(Util.shallFetchGemDescriptions());
         if (preselected == null) {
             Util.preselectPlatform(platforms, LAST_PLATFORM_ID);
         } else {
@@ -178,13 +180,18 @@ public final class GemPanel extends JPanel implements Runnable {
     }
     
     private void cancelRunningTasks() {
+        LOGGER.finest("Cancelling all running GemPanel tasks");
         updateTasksQueue.shutdown();
+        updateTasksQueue = Executors.newSingleThreadExecutor();
     }
     
     public void run() {
         // This will also update the New and Installed lists because Update depends on these
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                // cancel current update, the platform was changed
+                cancelRunningTasks();
+                
                 boolean loading = PlatformComponentFactory.isLoadingPlatforms(platforms);
                 if (loading || !getSelectedPlatform().hasRubyGemsInstalled()) {
                     if (!loading) {
@@ -281,6 +288,8 @@ public final class GemPanel extends JPanel implements Runnable {
                 newPanel.setEnabled(enabled);
                 newList.setEnabled(enabled);
                 newSP.setEnabled(enabled);
+                searchNewLbl.setEnabled(enabled);
+                searchNewText.setEnabled(enabled);
                 break;
             case UPDATED:
                 updateButton.setEnabled(enabled);
@@ -289,6 +298,8 @@ public final class GemPanel extends JPanel implements Runnable {
                 updatedPanel.setEnabled(enabled);
                 updatedList.setEnabled(enabled);
                 updatedSP.setEnabled(enabled);
+                searchUpdatedLbl.setEnabled(enabled);
+                searchUpdatedText.setEnabled(enabled);
                 break;
             case INSTALLED:
                 reloadInstalledButton.setEnabled(enabled);
@@ -296,13 +307,14 @@ public final class GemPanel extends JPanel implements Runnable {
                 installedPanel.setEnabled(enabled);
                 installedList.setEnabled(enabled);
                 installedSP.setEnabled(enabled);
+                searchInstLbl.setEnabled(enabled);
+                searchInstText.setEnabled(enabled);
                 break;
             default:
                 throw new IllegalArgumentException();
         }
         boolean everythingDone = newPanel.isEnabled() && updatedPanel.isEnabled() && installedPanel.isEnabled();
-        // allow to change platform when all tabs are updated
-        platforms.setEnabled(everythingDone);
+        // allow certain actions only when all tabs are updated
         manageButton.setEnabled(everythingDone);
         browseGemHome.setEnabled(everythingDone);
         gemsTab.setEnabledAt(3, everythingDone);
@@ -340,20 +352,13 @@ public final class GemPanel extends JPanel implements Runnable {
             newGems = new ArrayList<Gem>();
             for (Gem gem : availableGems) {
                 if (installedNames.contains(gem.getName())) {
-                    // We have this gem; let's see if we have the latest version
-                    String available = gem.getAvailableVersions();
+                    String latestAvailable = gem.getLatestAvailable();
                     Gem installedGem = nameMap.get(gem.getName());
-                    String installed = installedGem.getInstalledVersions();
-                    // Gem always lists the most recent version first...
-                    int firstVer = available.indexOf(',');
-                    if (firstVer == -1) {
-                        firstVer = available.indexOf(')');
-                        if (firstVer == -1) {
-                            firstVer = available.length();
-                        }
-                    }
-                    if (!installed.regionMatches(0, available, 0, firstVer)) {
-                        Gem update = new Gem(gem.getName(), installed, available.substring(0, firstVer));
+                    String latestInstalled = installedGem.getLatestInstalled();
+                    if (Util.compareVersions(latestAvailable, latestInstalled) > 0) {
+                        Gem update = new Gem(gem.getName(),
+                                installedGem.getInstalledVersions(),
+                                latestAvailable);
                         update.setDescription(installedGem.getDescription());
                         updatedGems.add(update);
                     }
@@ -515,8 +520,8 @@ public final class GemPanel extends JPanel implements Runnable {
         updatedProgress = new javax.swing.JProgressBar();
         updatedProgressLabel = new javax.swing.JLabel();
         installedPanel = new javax.swing.JPanel();
-        instSearchText = new javax.swing.JTextField();
-        instSearchLbl = new javax.swing.JLabel();
+        searchInstText = new javax.swing.JTextField();
+        searchInstLbl = new javax.swing.JLabel();
         reloadInstalledButton = new javax.swing.JButton();
         uninstallButton = new javax.swing.JButton();
         installedSP = new javax.swing.JScrollPane();
@@ -539,6 +544,8 @@ public final class GemPanel extends JPanel implements Runnable {
         installLocalButton = new javax.swing.JButton();
         settingsPanel = new javax.swing.JPanel();
         proxyButton = new javax.swing.JButton();
+        allVersionsCheckbox = new javax.swing.JCheckBox();
+        descriptionCheckbox = new javax.swing.JCheckBox();
         rubyPlatformLabel = new javax.swing.JLabel();
         platforms = org.netbeans.modules.ruby.platform.PlatformComponentFactory.getRubyPlatformsComboxBox();
         manageButton = new javax.swing.JButton();
@@ -638,11 +645,11 @@ public final class GemPanel extends JPanel implements Runnable {
 
         gemsTab.addTab(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.updatedPanel.TabConstraints.tabTitle"), updatedPanel); // NOI18N
 
-        instSearchText.setColumns(14);
-        instSearchText.addActionListener(formListener);
+        searchInstText.setColumns(14);
+        searchInstText.addActionListener(formListener);
 
-        instSearchLbl.setLabelFor(instSearchText);
-        org.openide.awt.Mnemonics.setLocalizedText(instSearchLbl, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.instSearchLbl.text")); // NOI18N
+        searchInstLbl.setLabelFor(searchInstText);
+        org.openide.awt.Mnemonics.setLocalizedText(searchInstLbl, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.searchInstLbl.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(reloadInstalledButton, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.reloadInstalledButton.text")); // NOI18N
         reloadInstalledButton.addActionListener(formListener);
@@ -674,9 +681,9 @@ public final class GemPanel extends JPanel implements Runnable {
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, installedPanelLayout.createSequentialGroup()
                         .add(reloadInstalledButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 432, Short.MAX_VALUE)
-                        .add(instSearchLbl)
+                        .add(searchInstLbl)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(instSearchText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 156, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(searchInstText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 156, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(installedPanelLayout.createSequentialGroup()
                         .add(uninstallButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 451, Short.MAX_VALUE)
@@ -694,9 +701,9 @@ public final class GemPanel extends JPanel implements Runnable {
             .add(installedPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(instSearchLbl)
+                    .add(searchInstLbl)
                     .add(reloadInstalledButton)
-                    .add(instSearchText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(searchInstText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(installedSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 279, Short.MAX_VALUE)
@@ -709,8 +716,8 @@ public final class GemPanel extends JPanel implements Runnable {
                 .addContainerGap())
         );
 
-        instSearchText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.instSearchText.AccessibleContext.accessibleDescription")); // NOI18N
-        instSearchLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.instSearchLbl.AccessibleContext.accessibleDescription")); // NOI18N
+        searchInstText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.instSearchText.AccessibleContext.accessibleDescription")); // NOI18N
+        searchInstLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.instSearchLbl.AccessibleContext.accessibleDescription")); // NOI18N
         reloadInstalledButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.reloadInstalledButton.AccessibleContext.accessibleDescription")); // NOI18N
         uninstallButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.uninstallButton.AccessibleContext.accessibleDescription")); // NOI18N
         installedSP.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.jScrollPane1.AccessibleContext.accessibleDescription")); // NOI18N
@@ -812,21 +819,34 @@ public final class GemPanel extends JPanel implements Runnable {
         org.openide.awt.Mnemonics.setLocalizedText(proxyButton, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.proxyButton.text")); // NOI18N
         proxyButton.addActionListener(formListener);
 
+        org.openide.awt.Mnemonics.setLocalizedText(allVersionsCheckbox, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.allVersionsCheckbox.text")); // NOI18N
+        allVersionsCheckbox.addActionListener(formListener);
+
+        org.openide.awt.Mnemonics.setLocalizedText(descriptionCheckbox, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.descriptionCheckbox.text")); // NOI18N
+        descriptionCheckbox.addActionListener(formListener);
+
         org.jdesktop.layout.GroupLayout settingsPanelLayout = new org.jdesktop.layout.GroupLayout(settingsPanel);
         settingsPanel.setLayout(settingsPanelLayout);
         settingsPanelLayout.setHorizontalGroup(
             settingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(settingsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(proxyButton)
-                .addContainerGap(616, Short.MAX_VALUE))
+                .add(settingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(descriptionCheckbox)
+                    .add(proxyButton)
+                    .add(allVersionsCheckbox))
+                .addContainerGap(459, Short.MAX_VALUE))
         );
         settingsPanelLayout.setVerticalGroup(
             settingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(settingsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(proxyButton)
-                .addContainerGap(328, Short.MAX_VALUE))
+                .add(18, 18, 18)
+                .add(allVersionsCheckbox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(descriptionCheckbox)
+                .addContainerGap(260, Short.MAX_VALUE))
         );
 
         proxyButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.proxyButton.AccessibleContext.accessibleDescription")); // NOI18N
@@ -923,8 +943,8 @@ public final class GemPanel extends JPanel implements Runnable {
             else if (evt.getSource() == updateAllButton) {
                 GemPanel.this.updateAllButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == instSearchText) {
-                GemPanel.this.instSearchTextActionPerformed(evt);
+            else if (evt.getSource() == searchInstText) {
+                GemPanel.this.searchInstTextActionPerformed(evt);
             }
             else if (evt.getSource() == reloadInstalledButton) {
                 GemPanel.this.reloadInstalledButtonActionPerformed(evt);
@@ -946,6 +966,12 @@ public final class GemPanel extends JPanel implements Runnable {
             }
             else if (evt.getSource() == proxyButton) {
                 GemPanel.this.proxyButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == allVersionsCheckbox) {
+                GemPanel.this.allVersionsCheckboxActionPerformed(evt);
+            }
+            else if (evt.getSource() == descriptionCheckbox) {
+                GemPanel.this.descriptionCheckboxActionPerformed(evt);
             }
             else if (evt.getSource() == manageButton) {
                 GemPanel.this.manageButtonActionPerformed(evt);
@@ -1016,9 +1042,9 @@ public final class GemPanel extends JPanel implements Runnable {
 
     }//GEN-LAST:event_installButtonActionPerformed
 
-    private void instSearchTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_instSearchTextActionPerformed
+    private void searchInstTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchInstTextActionPerformed
         updateList(TabIndex.INSTALLED, true);
-    }//GEN-LAST:event_instSearchTextActionPerformed
+}//GEN-LAST:event_searchInstTextActionPerformed
 
     private void updateAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateAllButtonActionPerformed
         Runnable completionTask = new GemListRefresher(installedList, TabIndex.INSTALLED);
@@ -1104,6 +1130,14 @@ public final class GemPanel extends JPanel implements Runnable {
         }
     }//GEN-LAST:event_installLocalButtonActionPerformed
 
+    private void allVersionsCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_allVersionsCheckboxActionPerformed
+        Util.setFetchAllVersions(allVersionsCheckbox.isSelected());
+    }//GEN-LAST:event_allVersionsCheckboxActionPerformed
+
+    private void descriptionCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_descriptionCheckboxActionPerformed
+        Util.setFetchGemDescriptions(descriptionCheckbox.isSelected());
+    }//GEN-LAST:event_descriptionCheckboxActionPerformed
+
     public static File chooseGemRepository(final Component parent) {
         JFileChooser chooser = new JFileChooser();
         //        chooser.setAcceptAllFileFilterUsed(false);
@@ -1183,6 +1217,7 @@ public final class GemPanel extends JPanel implements Runnable {
                 });
             }
         };
+        LOGGER.finest("Submitting update of " + tab);
         updateTasksQueue.submit(updateTask);
     }
 
@@ -1224,6 +1259,7 @@ public final class GemPanel extends JPanel implements Runnable {
                 });
             }
         };
+        LOGGER.finest("Submitting refreshing of gems");
         updateTasksQueue.submit(updateTask);
     }
 
@@ -1233,7 +1269,7 @@ public final class GemPanel extends JPanel implements Runnable {
         String filter = null;
         JTextField tf;
         if (tab == TabIndex.INSTALLED) {
-            tf = instSearchText;
+            tf = searchInstText;
         } else if (tab == TabIndex.UPDATED) {
             tf = searchUpdatedText;
         } else {
@@ -1307,12 +1343,12 @@ public final class GemPanel extends JPanel implements Runnable {
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox allVersionsCheckbox;
     private javax.swing.JButton browseGemHome;
+    private javax.swing.JCheckBox descriptionCheckbox;
     private javax.swing.JLabel gemHome;
     private javax.swing.JTextField gemHomeValue;
     private javax.swing.JTabbedPane gemsTab;
-    private javax.swing.JLabel instSearchLbl;
-    private javax.swing.JTextField instSearchText;
     private javax.swing.JButton installButton;
     private javax.swing.JButton installLocalButton;
     private javax.swing.JTextPane installedDesc;
@@ -1337,6 +1373,8 @@ public final class GemPanel extends JPanel implements Runnable {
     private javax.swing.JButton reloadNewButton;
     private javax.swing.JButton reloadReposButton;
     private javax.swing.JLabel rubyPlatformLabel;
+    private javax.swing.JLabel searchInstLbl;
+    private javax.swing.JTextField searchInstText;
     private javax.swing.JLabel searchNewLbl;
     private javax.swing.JTextField searchNewText;
     private javax.swing.JLabel searchUpdatedLbl;

@@ -41,12 +41,10 @@
 package org.netbeans.modules.bpel.validation.action;
 
 import java.awt.event.ActionEvent;
-import java.util.List;
 import org.openide.nodes.Node;
 
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.soa.validation.core.Controller;
 
 import org.netbeans.modules.bpel.model.api.BpelModel;

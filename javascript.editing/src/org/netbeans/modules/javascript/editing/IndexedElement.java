@@ -219,7 +219,7 @@ public abstract class IndexedElement extends JsElement {
         return fileUrl;
     }
 
-    public Document getDocument() throws IOException {
+    public Document getDocument() {
         if (document == null) {
             FileObject fo = getFileObject();
 
@@ -334,9 +334,6 @@ public abstract class IndexedElement extends JsElement {
                 }
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-                return null;
             }
         }
             

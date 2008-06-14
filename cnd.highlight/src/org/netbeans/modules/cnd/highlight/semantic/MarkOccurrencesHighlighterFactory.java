@@ -58,7 +58,7 @@ public class MarkOccurrencesHighlighterFactory extends CaretAwareCsmFileTaskFact
     @Override
     protected PhaseRunner createTask(final FileObject fo) {
         MarkOccurrencesHighlighter ph = null;
-        if (SemanticHighlightingOptions.instance().getEnableMarkOccurrences()) {
+        if (enabled()) {
             try {
                 DataObject dobj = DataObject.find(fo);
                 EditorCookie ec = dobj.getCookie(EditorCookie.class);
@@ -77,8 +77,13 @@ public class MarkOccurrencesHighlighterFactory extends CaretAwareCsmFileTaskFact
             }
 
             public boolean isValid() {
-                return !SemanticHighlightingOptions.instance().getEnableMarkOccurrences();
+                return !enabled();
             }
         };
+    }
+    
+    private static boolean enabled() {
+        return SemanticHighlightingOptions.instance().getEnableMarkOccurrences()
+                &&!HighlighterBase.MINIMAL;
     }
 }

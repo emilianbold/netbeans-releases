@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
-import org.netbeans.modules.xml.retriever.catalog.impl.CatalogModelImpl;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.CompletionModel;
@@ -79,6 +78,8 @@ public class DefaultModelProvider extends CompletionModelProvider {
      * for each schema mentioned in there.
      */    
     public synchronized List<CompletionModel> getModels(CompletionContext context) {
+        if(context.getPrimaryFile() == null)
+            return null;
         this.context = (CompletionContextImpl)context;
         List<URI> uris = this.context.getSchemas();
         if(uris == null || uris.size() == 0)
@@ -108,10 +109,9 @@ public class DefaultModelProvider extends CompletionModelProvider {
                 modelSource = catalogModelProvider.getModelSource(context.getPrimaryFile(), true);
                 catalogModel = catalogModelProvider.getCatalogModel();
             }
-            ModelSource schemaModelSource = null;
-            if(catalogModel instanceof CatalogModelImpl) {
-                schemaModelSource = ((CatalogModelImpl)catalogModel).getModelSourceSynchronous(schemaURI, modelSource, fetch);
-            }
+            //add special query params in the URI to be consumed by the CatalogModel.
+            URI uri = new URI(schemaURI.toString()+"?fetch="+fetch+"&&sync="+true);
+            ModelSource schemaModelSource = catalogModel.getModelSource(uri, modelSource);
             SchemaModel sm = null;
             if(schemaModelSource.getLookup().lookup(FileObject.class) == null) {
                 sm = SchemaModelFactory.getDefault().createFreshModel(schemaModelSource);

@@ -41,10 +41,8 @@ package org.netbeans.modules.groovy.editor.actions;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import javax.swing.AbstractAction;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.gsf.api.EditorAction;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.modules.groovy.editor.NbUtilities;
@@ -61,17 +59,17 @@ import java.util.Map;
 import org.codehaus.groovy.control.ErrorCollector;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
+import org.netbeans.editor.BaseAction;
+import org.netbeans.modules.groovy.editor.AstUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.groovy.editor.actions.FixImportsHelper.ImportCandidate;
-import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.parser.GroovyParser;
 import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.SourceFileReader;
-import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.gsf.spi.DefaultParseListener;
 import org.netbeans.modules.gsf.spi.DefaultParserFile;
 
@@ -79,17 +77,19 @@ import org.netbeans.modules.gsf.spi.DefaultParserFile;
  *
  * @author schmidtm
  */
-public class FixImportsAction extends AbstractAction implements EditorAction, Runnable {
+public class FixImportsAction extends BaseAction implements Runnable {
 
     private final Logger LOG = Logger.getLogger(FixImportsAction.class.getName());
-    String MENU_NAME = NbBundle.getMessage(FixImportsAction.class, "FixImportsActionMenuString");
     Document doc = null;
     private FixImportsHelper helper = new FixImportsHelper();
 
     public FixImportsAction() {
-        super(NbBundle.getMessage(FixImportsAction.class, "FixImportsActionMenuString"));
-        putValue("PopupMenuText", MENU_NAME);
-    // LOG.setLevel(Level.FINEST);
+        super("fix-groovy-imports", 0); // NOI18N
+    }
+
+    @Override
+    public Class getShortDescriptionBundleClass() {
+        return FixImportsAction.class;
     }
 
     @Override
@@ -99,7 +99,7 @@ public class FixImportsAction extends AbstractAction implements EditorAction, Ru
         return true;
     }
 
-    void actionPerformed(final JTextComponent comp) {
+    public void actionPerformed(ActionEvent evt, JTextComponent comp) {
         LOG.log(Level.FINEST, "actionPerformed(final JTextComponent comp)");
 
         assert comp != null;
@@ -113,7 +113,6 @@ public class FixImportsAction extends AbstractAction implements EditorAction, Ru
     GroovyParserResult getParserResult(final FileObject fo) {
 
         DefaultParseListener listener = new DefaultParseListener();
-        TranslatedSource translatedSource = null;
         ParserFile parserFile = new DefaultParserFile(fo, null, false);
         List<ParserFile> files = Collections.singletonList(parserFile);
 
@@ -122,7 +121,7 @@ public class FixImportsAction extends AbstractAction implements EditorAction, Ru
 
                     public CharSequence read(ParserFile file)
                             throws IOException {
-                        Document doc = NbUtilities.getBaseDocument(fo, true);
+                        Document doc = AstUtilities.getBaseDocument(fo, true);
 
                         if (doc == null) {
                             return "";
@@ -143,7 +142,7 @@ public class FixImportsAction extends AbstractAction implements EditorAction, Ru
                 };
 
 
-        Parser.Job job = new Parser.Job(files, listener, reader, translatedSource);
+        Parser.Job job = new Parser.Job(files, listener, reader, null);
         new GroovyParser().parseFiles(job);
 
         return (GroovyParserResult) listener.getParserResult();
@@ -256,38 +255,5 @@ public class FixImportsAction extends AbstractAction implements EditorAction, Ru
         }
 
         return result;
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        LOG.log(Level.FINEST, "actionPerformed(ActionEvent e)");
-
-        JTextComponent pane = NbUtilities.getOpenPane();
-
-        LOG.log(Level.FINEST, "NAME               : " + NAME + " : " + getValue(NAME));
-        LOG.log(Level.FINEST, "ACCELERATOR_KEY    : " + ACCELERATOR_KEY + " : " + getValue(ACCELERATOR_KEY));
-        LOG.log(Level.FINEST, "ACTION_COMMAND_KEY : " + ACTION_COMMAND_KEY + " : " + getValue(ACTION_COMMAND_KEY));
-
-        if (pane != null) {
-            actionPerformed(pane);
-        }
-
-        return;
-    }
-
-    public void actionPerformed(ActionEvent evt, JTextComponent target) {
-        LOG.log(Level.FINEST, "actionPerformed(ActionEvent evt, JTextComponent target)");
-        return;
-    }
-
-    public String getActionName() {
-        return NbBundle.getMessage(FixImportsAction.class, "FixImportsActionName");
-    }
-
-    public Class getShortDescriptionBundleClass() {
-        return FixImportsAction.class;
-    }
-    
-    public boolean appliesTo(String mimeType) {
-        return GroovyTokenId.GROOVY_MIME_TYPE.equals(mimeType);
     }
 }

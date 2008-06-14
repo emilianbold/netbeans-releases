@@ -77,4 +77,8 @@ public class ClassContentTestCase extends CompletionBaseTestCase {
     public void testStaticUnnamedUnions() throws Exception {
         super.performTest("file2.cc", 15, 4);
     }
+    
+    public void testCompletionAfterNew() throws Exception {
+        super.performTest("file.cc", 6, 5, "d = new ");
+    }
 }

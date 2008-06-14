@@ -47,6 +47,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.event.ChangeListener;
 
 import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.FinishablePanel;
 import org.openide.WizardValidationException;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.WizardDescriptor.ValidatingPanel;
@@ -58,12 +59,16 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-class DescriptorsWizardPanel implements Panel, ValidatingPanel {
+class DescriptorsWizardPanel implements Panel, ValidatingPanel, FinishablePanel {
         
     DescriptorsWizardPanel() {
         myListeners = new CopyOnWriteArrayList<ChangeListener>();
     }
 
+    public boolean isFinishPanel() {
+        return true;
+    }
+    
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#addChangeListener(javax.swing.event.ChangeListener)
      */
@@ -95,16 +100,16 @@ class DescriptorsWizardPanel implements Panel, ValidatingPanel {
      * @see org.openide.WizardDescriptor.Panel#isValid()
      */
     public boolean isValid() {
-        // TODO Auto-generated method stub
+        // nothing to validate here
         return true;
     }
 
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#readSettings(java.lang.Object)
      */
-    public void readSettings( Object arg0 ) {
-        // TODO Auto-generated method stub
-
+    public void readSettings( Object settings ) {
+        myWizardDescriptor = (WizardDescriptor)settings;
+        myComponent.readData( myWizardDescriptor );
     }
 
     /* (non-Javadoc)
@@ -117,9 +122,8 @@ class DescriptorsWizardPanel implements Panel, ValidatingPanel {
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#storeSettings(java.lang.Object)
      */
-    public void storeSettings( Object arg0 ) {
-        // TODO Auto-generated method stub
-
+    public void storeSettings( Object settings ) {
+        myComponent.storeData( myWizardDescriptor );
     }
 
     /* (non-Javadoc)

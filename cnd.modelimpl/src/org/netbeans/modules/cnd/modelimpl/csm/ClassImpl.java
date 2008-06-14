@@ -91,6 +91,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 		MutableDeclarationsContainer container1, MutableDeclarationsContainer container2,CsmScope scope) {
 	    type = TemplateUtils.checkTemplateType(type, ClassImpl.this);
             FieldImpl field = new FieldImpl(offsetAst, file, type, name, ClassImpl.this, curentVisibility);
+            field.setStatic(_static);
             ClassImpl.this.addMember(field);
             return field;
         }
@@ -106,7 +107,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                     case CPPTokenTypes.LITERAL_template:
                         template = true;
                         templateSuffix = '<' + TemplateUtils.getClassSpecializationSuffix(token) + '>';
-                        templateParams = TemplateUtils.getTemplateParameters(token, ClassImpl.this);
+                        templateParams = TemplateUtils.getTemplateParameters(token, ClassImpl.this.getContainingFile(), ClassImpl.this);
                         break;
                     case CPPTokenTypes.CSM_BASE_SPECIFIER:
                         inheritances.add(new InheritanceImpl(token, getContainingFile()));

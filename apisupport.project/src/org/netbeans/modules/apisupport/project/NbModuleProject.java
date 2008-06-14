@@ -232,6 +232,7 @@ public final class NbModuleProject implements Project {
             new Info(),
             aux,
             helper.createCacheDirectoryProvider(),
+            helper.createAuxiliaryProperties(),
             new SavedHook(),
             UILookupMergerSupport.createProjectOpenHookMerger(new OpenedHook()),
             new ModuleActions(this),
@@ -394,12 +395,12 @@ public final class NbModuleProject implements Project {
     
     public File getClassesDirectory() {
         String classesDir = evaluator().getProperty("build.classes.dir"); // NOI18N
-        return helper.resolveFile(classesDir);
+        return classesDir != null ? helper.resolveFile(classesDir) : null;
     }
     
     public File getTestClassesDirectory() {
         String testClassesDir = evaluator().getProperty("build.test.unit.classes.dir"); // NOI18N
-        return helper.resolveFile(testClassesDir);
+        return testClassesDir != null ? helper.resolveFile(testClassesDir) : null;
     }
     
     public FileObject getJavaHelpDirectory() {

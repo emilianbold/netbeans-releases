@@ -17,8 +17,9 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
-import org.netbeans.module.iep.editor.xsd.SchemaArtifactTreeCellEditor;
-import org.netbeans.module.iep.editor.xsd.SchemaArtifactTreeCellRenderer;
+import org.netbeans.modules.iep.editor.share.SharedConstants;
+import org.netbeans.modules.iep.editor.xsd.SchemaArtifactTreeCellEditor;
+import org.netbeans.modules.iep.editor.xsd.SchemaArtifactTreeCellRenderer;
 import org.openide.util.NbBundle;
 
 public final class DatabaseTableSelectionVisualPanel3 extends JPanel {
@@ -42,7 +43,7 @@ public final class DatabaseTableSelectionVisualPanel3 extends JPanel {
         pollingTimeUnitComboBox.setSelectedItem(DatabaseTableWizardConstants.TIMEUNIT_SECOND);
         pollingIntervalTextField.setText("1");
         recordsToPollTextField.setText("1");
-        jndiNameTextField.setText("jdbc/iepExternalTable");
+        jndiNameTextField.setText(SharedConstants.DEFAULT_JNDINAME);
     }
     
     

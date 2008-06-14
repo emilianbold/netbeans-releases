@@ -136,7 +136,7 @@ public class SelectPanel extends JPanel implements SharedConstants {
         mComponent = component;
         try {
             boolean isSchemaOwner = component.isSchemaOwner();
-            String inputType = component.getProperty(INPUT_TYPE_KEY).getValue();
+            String inputType = component.getInputType().getType();
             mReadOnly = !isSchemaOwner;
             mHasExpressionColumn = isSchemaOwner && !inputType.equals(IO_TYPE_NONE);
             mNameCol = mHasExpressionColumn? 1 : 0;
@@ -747,6 +747,26 @@ public class SelectPanel extends JPanel implements SharedConstants {
     
     public boolean hasInputAttribute(String inputAttributeName) {
         return getAttribute(inputAttributeName) != null;
+    }
+    
+    public SchemaAttribute findSchemaAttribute(String toColumn) {
+        SchemaAttribute sa = null;
+        
+        if(toColumn == null) {
+            return null;
+        }
+        
+        List<SchemaAttribute> list = getAttributes();
+        Iterator<SchemaAttribute> it = list.iterator();
+        while(it.hasNext()) {
+            SchemaAttribute a = it.next();
+            if(toColumn.equals(a.getAttributeName())) {
+                sa = a;
+                break;
+            }
+        }
+        
+        return sa;
     }
     
     /**

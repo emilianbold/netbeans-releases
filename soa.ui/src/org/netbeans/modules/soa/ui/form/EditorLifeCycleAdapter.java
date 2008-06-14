@@ -21,7 +21,7 @@ package org.netbeans.modules.soa.ui.form;
 import javax.swing.JPanel;
 
 /**
- * The default implementation of the IEditorLifeCycle.
+ * The default implementation of the EditorLifeCycle.
  *
  * @author nk160297
  */

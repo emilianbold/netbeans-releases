@@ -37,7 +37,14 @@ public interface IEPComponentFactory extends ComponentFactory<IEPComponent> {
         
         OutputOperatorComponent createOutputOperator(IEPModel model);
         
+        TableInputOperatorComponent createTableInputOperator(IEPModel model);
+        
         InvokeStreamOperatorComponent createInvokeStreamOperator(IEPModel model);
+        
+        ExternalTablePollingStreamOperatorComponent createExternalTablePollingStreamOperator(IEPModel model);
+        
+        ReplayStreamOperatorComponent createReplayStreamOperatorComponent(IEPModel model);
+            
         
         LinkComponent createLink(IEPModel model);
         

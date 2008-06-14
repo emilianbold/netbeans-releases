@@ -54,6 +54,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import org.netbeans.core.windows.Switches;
 import org.openide.util.Mutex;
 
 
@@ -163,7 +164,7 @@ public class MaximizeWindowAction extends AbstractAction {
         TopComponent active = getTCToWorkWith();
         boolean maximize;
         ModeImpl activeMode = (ModeImpl)wm.findMode(active);
-        if (activeMode == null) {
+        if (activeMode == null || !Switches.isTopComponentMaximizationEnabled() ) {
             String label = NbBundle.getMessage(MaximizeWindowAction.class, "CTL_MaximizeWindowAction"); //NOI18N
             putValue(Action.NAME, (isPopup ? Actions.cutAmpersand(label) : label));
             setEnabled(false);

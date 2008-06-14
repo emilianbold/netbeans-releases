@@ -42,6 +42,7 @@ package org.netbeans.modules.subversion.client;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.modules.subversion.Subversion;
 import org.openide.filesystems.FileUtil;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
@@ -75,6 +76,9 @@ public class SvnClientRefreshHandler implements ISVNNotifyListener {
         file = FileUtil.normalizeFile(file); // I saw "./"            
         
         synchronized(filesToRefresh) {
+            if(Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.fine("scheduling for refresh: [" + file + "]"); // NOI18N
+            }            
             filesToRefresh.add(file);                                        
         }
     }
@@ -84,7 +88,7 @@ public class SvnClientRefreshHandler implements ISVNNotifyListener {
      * @param files files to be refreshed
      */
     public void refreshImediately(File... files) {
-        for (int i = 0; i < files.length; i++) {
+        for (int i = 0; i < files.length; i++) {            
             files[i] = FileUtil.normalizeFile(files[i]); // I saw "./"                        
         }
         refresh(files);
@@ -108,6 +112,11 @@ public class SvnClientRefreshHandler implements ISVNNotifyListener {
      * @param files files to be refreshed
      */
     private void refresh(File... files) {
+        if(Subversion.LOG.isLoggable(Level.FINE)) {
+            for (File file : files) {
+                Subversion.LOG.fine("refreshing: [" + file + "]"); // NOI18N
+            }
+        }
         // refresh the filesystems first as the following cache refesh might fire events 
         // which are intercepted by the nb filesystem - it has to be aware about possible changes made
         refreshFS(files); 
@@ -127,7 +136,7 @@ public class SvnClientRefreshHandler implements ISVNNotifyListener {
             File parent = f.getParentFile();
             if (parent != null) {
                 parents.add(parent);
-                Subversion.LOG.fine("scheduling for fs refresh" + parent); // NOI18N
+                Subversion.LOG.fine("scheduling for fs refresh: [" + parent + "]"); // NOI18N
             }
         }
         if (parents.size() > 0) {

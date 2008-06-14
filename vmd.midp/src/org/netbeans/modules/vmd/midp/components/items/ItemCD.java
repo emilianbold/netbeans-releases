@@ -77,6 +77,9 @@ import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresent
 import org.netbeans.modules.vmd.midp.screen.display.ItemDisplayPresenter;
 
 import java.util.*;
+import org.netbeans.modules.vmd.midp.codegen.MIDPDatabindingCodeSupport;
+import org.netbeans.modules.vmd.midp.components.databinding.DataSetCD;
+import org.netbeans.modules.vmd.midp.components.databinding.DataSetConnectorCD;
 import org.openide.util.NbBundle;
 
 
@@ -153,7 +156,7 @@ public class ItemCD extends ComponentDescriptor {
                 new PropertyDescriptor(PROP_PREFERRED_WIDTH, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue (-1), false, true, MidpVersionable.MIDP_2),
                 new PropertyDescriptor(PROP_COMMANDS, ItemCommandEventSourceCD.TYPEID.getArrayType(), PropertyValue.createEmptyArray(ItemCommandEventSourceCD.TYPEID), false, true, MidpVersionable.MIDP_2),
                 new PropertyDescriptor(PROP_DEFAULT_COMMAND, ItemCommandEventSourceCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
-                new PropertyDescriptor(PROP_ITEM_COMMAND_LISTENER, ItemCommandListenerCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2)
+                new PropertyDescriptor(PROP_ITEM_COMMAND_LISTENER, ItemCommandListenerCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2)  
         );
     }
 
@@ -226,6 +229,8 @@ public class ItemCD extends ComponentDescriptor {
                             RootCode.collectRequiredComponents (component, requiredComponents);
                     }
                 },
+                //MIDPDatabindingCodeSupport.createDataBinderRegisterCodePresenter(DataSetConnectorCD.PROP_COMPONENT_ID),
+                //MIDPDatabindingCodeSupport.createDataBinderBindCodePresenter(DataSetConnectorCD.PROP_COMPONENT_ID, DataSetConnectorCD.PROP_EXPRESSION, MIDPDatabindingCodeSupport.ProviderType.Item, MIDPDatabindingCodeSupport.FeatureType.Item_FEATURE_LABEL),
                 // delete
                 DeleteDependencyPresenter.createDependentOnParentComponentPresenter (),
                 DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_ITEM_COMMAND_LISTENER),

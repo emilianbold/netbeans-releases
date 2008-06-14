@@ -31,7 +31,6 @@ import java.awt.Dialog;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,6 +50,10 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.HintFix;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.javascript.editing.AstUtilities;
 import org.netbeans.modules.javascript.editing.BrowserVersion;
 import org.netbeans.modules.javascript.editing.ElementUtilities;
@@ -59,13 +62,9 @@ import org.netbeans.modules.javascript.editing.JsIndex;
 import org.netbeans.modules.javascript.editing.JsTypeAnalyzer;
 import org.netbeans.modules.javascript.editing.SupportedBrowsers;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
-import org.netbeans.modules.javascript.hints.spi.AstRule;
-import org.netbeans.modules.javascript.hints.spi.Description;
-import org.netbeans.modules.javascript.hints.spi.Fix;
-import org.netbeans.modules.javascript.hints.spi.HintSeverity;
-import org.netbeans.modules.javascript.hints.spi.RuleContext;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
-import org.netbeans.modules.javascript.hints.infrastructure.DisableHintFix;
+import org.netbeans.modules.javascript.hints.infrastructure.JsAstRule;
+import org.netbeans.modules.javascript.hints.infrastructure.JsRuleContext;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
@@ -78,13 +77,13 @@ import org.openide.util.NbPreferences;
  * 
  * @author Tor Norbye
  */
-public class UnsupportedCalls implements AstRule {
+public class UnsupportedCalls extends JsAstRule {
     public UnsupportedCalls() {
     }
     
     //private Map<String,Integer> STATISTICS = new HashMap<String,Integer>();
 
-    public boolean appliesTo(CompilationInfo info) {
+    public boolean appliesTo(RuleContext context) {
         return true;
     }
 
@@ -95,7 +94,7 @@ public class UnsupportedCalls implements AstRule {
         return kinds;
     }
     
-    public void run(RuleContext context, List<Description> result) {
+    public void run(JsRuleContext context, List<Hint> result) {
         Node node = context.node;
         
         if (node.getType() == Token.NEW) {
@@ -126,7 +125,7 @@ public class UnsupportedCalls implements AstRule {
         }
     }
     
-    private void processCall(RuleContext context, List<Description> result, Node callNode, String name, Node node) {
+    private void processCall(JsRuleContext context, List<Hint> result, Node callNode, String name, Node node) {
         //if (STATISTICS != null) {
         //    Integer count = STATISTICS.get(name);
         //    if (count == null) {
@@ -205,12 +204,12 @@ public class UnsupportedCalls implements AstRule {
                 return;
             }
 
-            List<Fix> fixList = new ArrayList<Fix>(3);
+            List<HintFix> fixList = new ArrayList<HintFix>(3);
             fixList.add(new ShowDetails(info, fqn, compat));
-            fixList.add(new SkipFunction(info, fqn));
+            fixList.add(new SkipFunction(context, fqn));
             fixList.add(new ChangeTargetFix());
             String displayName = NbBundle.getMessage(UnsupportedCalls.class, "UnsupportedCallFqn", fqn);
-            Description desc = new Description(this, displayName, info.getFileObject(), lexRange, fixList, 1450);
+            Hint desc = new Hint(this, displayName, info.getFileObject(), lexRange, fixList, 1450);
             result.add(desc);
         }
     }
@@ -275,12 +274,12 @@ public class UnsupportedCalls implements AstRule {
         return null;
     }
     
-    private class SkipFunction implements Fix {
+    private class SkipFunction implements HintFix {
         private String fqn;
-        private CompilationInfo info;
+        private JsRuleContext context;
         
-        SkipFunction(CompilationInfo info, String fqn) {
-            this.info = info;
+        SkipFunction(JsRuleContext context, String fqn) {
+            this.context = context;
             this.fqn = fqn;
         }
         
@@ -291,8 +290,8 @@ public class UnsupportedCalls implements AstRule {
         public void implement() throws Exception {
             skip(fqn);
 
-            //// Trigger rescan
-            DisableHintFix.refreshHints(info, -1);
+            // Trigger rescan
+            context.manager.refreshHints(context);
         }
 
         public boolean isSafe() {
@@ -304,7 +303,7 @@ public class UnsupportedCalls implements AstRule {
         }
     }
 
-    private static class ChangeTargetFix implements Fix {
+    private static class ChangeTargetFix implements HintFix {
         ChangeTargetFix() {
         }
         
@@ -326,7 +325,7 @@ public class UnsupportedCalls implements AstRule {
         }
     }
 
-    private static class ShowDetails implements Fix {
+    private static class ShowDetails implements HintFix {
         private EnumSet<BrowserVersion> compat;
         private CompilationInfo info;
         private String fqn;

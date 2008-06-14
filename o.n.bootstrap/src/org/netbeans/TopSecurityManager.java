@@ -58,6 +58,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.Lookup;
 
 /** NetBeans security manager implementation.
@@ -404,7 +406,12 @@ public class TopSecurityManager extends SecurityManager {
     }
     
     public static void install() {
-        System.setSecurityManager(new TopSecurityManager());
+        try {
+            System.setSecurityManager(new TopSecurityManager());
+        } catch (SecurityException ex) {
+            Logger.getLogger("global").log(Level.WARNING, "Cannot associated own security manager"); // NOI18N
+            Logger.getLogger("global").log(Level.INFO, "Cannot associated own security manager", ex); // NOI18N
+        }
     }
     static void uninstall() {
         System.setSecurityManager(null);
@@ -597,7 +604,9 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
         } catch (Throwable t) {
             t.printStackTrace();
         } finally {
-            CLIPBOARD_FORBIDDEN.set (null);
+            if (CLIPBOARD_FORBIDDEN != null) {
+                CLIPBOARD_FORBIDDEN.set (null);
+            }
         }
     }
     

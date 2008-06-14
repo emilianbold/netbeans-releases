@@ -207,7 +207,7 @@ public class StrutsConfigurationPanelVisual extends javax.swing.JPanel implement
         }
         ExtenderController controller = panel.getController();
         String urlPattern = (String)jComboBoxURLPattern.getEditor().getItem();
-        if (urlPattern == null || urlPattern.trim().equals("")){
+        if (urlPattern == null || urlPattern.trim().length() == 0){
             controller.setErrorMessage(NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "MSG_URLPatternIsEmpty"));
             return false;
         }
@@ -215,7 +215,13 @@ public class StrutsConfigurationPanelVisual extends javax.swing.JPanel implement
             controller.setErrorMessage(NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "MSG_URLPatternIsNotValid"));
             return false;
         }
-        if (getAppResource() == null || getAppResource().trim().length() == 0) {
+        
+        String appResource = getAppResource();
+        if (appResource == null || appResource.trim().length() == 0) {
+            controller.setErrorMessage(NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "MSG_ApplicationResourceIsEmpty"));
+            return false;
+        }
+        if (!isResourceValid(appResource)){
             controller.setErrorMessage(NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "MSG_ApplicationResourceNotValid"));
             return false;
         }
@@ -223,18 +229,39 @@ public class StrutsConfigurationPanelVisual extends javax.swing.JPanel implement
         return true;
     }
 
+    private static final char[] INVALID_PATTERN_CHARS = {'<', '\\', '\"', '%', '&', '+', '?', ';'}; // NOI18N
+
     private boolean isPatternValid(String pattern){
+        for (char c : INVALID_PATTERN_CHARS) {
+            if (pattern.indexOf(c) != -1) {
+                return false;
+            }
+        }
+        
         if (pattern.startsWith("*.")){
             String p = pattern.substring(2);
             if (p.indexOf('.') == -1 && p.indexOf('*') == -1 
                     && p.indexOf('/') == -1 && !p.trim().equals(""))
                 return true;
         }
-        if (pattern.endsWith("/*") && pattern.startsWith("/"))
+        // pattern = "/.../*", where ... can't be empty.
+        if ((pattern.length() > 3) && pattern.endsWith("/*") && pattern.startsWith("/"))
             return true;
         return false;
     }
     
+    private static final char[] INVALID_RESOURCE_CHARS = {'<', '>', '*', '\\', ':', '\"', '/', '%', '|', '?'}; // NOI18N
+    
+    private boolean isResourceValid(String resource){
+        for (char c : INVALID_RESOURCE_CHARS) {
+            if (resource.indexOf(c) != -1) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
     void enableComponents(boolean enable) {
         jComboBoxURLPattern.setEnabled(enable);
         jTextFieldAppResource.setEnabled(enable);

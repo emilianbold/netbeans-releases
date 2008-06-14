@@ -158,6 +158,7 @@ import javax.lang.model.type.TypeVariable;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext.VariableInfo;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
@@ -1350,7 +1351,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 } catch (AbsentInformationException aiex) {
                     try {
                         org.netbeans.api.debugger.jpda.LocalVariable[] lvs;
-                        lvs = new CallStackFrameImpl(frame, 0, evaluationContext.getDebugger()).getMethodArguments();
+                        lvs = new CallStackFrameImpl((JPDAThreadImpl) ((JPDADebuggerImpl) evaluationContext.getDebugger()).getThread(frame.thread()),
+                                                     frame, 0, evaluationContext.getDebugger()).getMethodArguments();
                         if (lvs != null) {
                             for (org.netbeans.api.debugger.jpda.LocalVariable lv : lvs) {
                                 if (paramName.equals(lv.getName())) {

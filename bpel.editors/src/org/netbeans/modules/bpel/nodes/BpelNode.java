@@ -1415,7 +1415,7 @@ public abstract class BpelNode<T>
         return true;
     }
     
-    
+   
     public Transferable clipboardCopy() throws IOException {
         try {
             return new BpelNodeTransferable(this);
