@@ -59,7 +59,6 @@ import org.netbeans.modules.spring.beans.completion.completors.BeanIdCompletor;
 import org.netbeans.modules.spring.beans.completion.completors.PNamespaceCompletor;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -74,30 +73,11 @@ public final class CompletorRegistry {
     }
 
     private void setupCompletors() {
-
-        String[] defaultAutoWireItems = new String[]{
-            "no", NbBundle.getMessage(CompletorRegistry.class, "DESC_autowire_no"), // NOI18N
-            "byName", NbBundle.getMessage(CompletorRegistry.class, "DESC_autowire_byName"), // NOI18N
-            "byType", NbBundle.getMessage(CompletorRegistry.class, "DESC_autowire_byType"), // NOI18N
-            "constructor", NbBundle.getMessage(CompletorRegistry.class, "DESC_autowire_constructor"), // NOI18N
-            "autodetect", NbBundle.getMessage(CompletorRegistry.class, "DESC_autowire_autodetect") // NOI18N
-         // NOI18N
-        };
-        AttributeValueCompletorFactory completorFactory = new AttributeValueCompletorFactory(defaultAutoWireItems);
-        registerCompletorFactory(BeansElements.BEANS, BeansAttributes.DEFAULT_AUTOWIRE, completorFactory);
-        
-        String[] autoWireItems = new String[defaultAutoWireItems.length + 2];
-        System.arraycopy(defaultAutoWireItems, 0, autoWireItems, 0, defaultAutoWireItems.length);
-        autoWireItems[defaultAutoWireItems.length] = "default"; // NOI18N
-        autoWireItems[defaultAutoWireItems.length + 1] = null; // XXX: Documentation
-        completorFactory = new AttributeValueCompletorFactory(autoWireItems);
-        registerCompletorFactory(BeansElements.BEAN, BeansAttributes.AUTOWIRE, completorFactory);
-        
         String[] primaryItems = new String[] {
             "true", null, //XXX: Documentation // NOI18N
             "false", null, //XXX: Documentation // NOI18N
         };
-        completorFactory = new AttributeValueCompletorFactory(primaryItems);
+        CompletorFactory completorFactory = new AttributeValueCompletorFactory(primaryItems);
         registerCompletorFactory(BeansElements.BEAN, BeansAttributes.PRIMARY, completorFactory);
         
         String[] defaultLazyInitItems = new String[]{
@@ -107,14 +87,6 @@ public final class CompletorRegistry {
         completorFactory = new AttributeValueCompletorFactory(defaultLazyInitItems);
         registerCompletorFactory(BeansElements.BEANS, BeansAttributes.DEFAULT_LAZY_INIT, completorFactory);
         
-        String[] lazyInitItems = new String[] {
-            defaultLazyInitItems[0], defaultLazyInitItems[1],
-            defaultLazyInitItems[2], defaultLazyInitItems[3],
-            "default", null // XXX: Documentation // NOI18N
-        };
-        completorFactory = new AttributeValueCompletorFactory(lazyInitItems);
-        registerCompletorFactory(BeansElements.BEAN, BeansAttributes.LAZY_INIT, completorFactory);
-        
         String[] defaultMergeItems = new String[] {
             "true", null, //XXX: Documentation // NOI18N
             "false", null, //XXX: Documentation // NOI18N
@@ -122,47 +94,12 @@ public final class CompletorRegistry {
         completorFactory = new AttributeValueCompletorFactory(defaultMergeItems);
         registerCompletorFactory(BeansElements.BEANS, BeansAttributes.DEFAULT_MERGE, completorFactory);
         
-        String[] defaultDepCheckItems = new String[] {
-            "none", NbBundle.getMessage(CompletorRegistry.class, "DESC_def_dep_check_none"), // NOI18N
-            "simple", NbBundle.getMessage(CompletorRegistry.class, "DESC_def_dep_check_simple"), // NOI18N
-            "objects", NbBundle.getMessage(CompletorRegistry.class, "DESC_def_dep_check_objects"), // NOI18N
-            "all", NbBundle.getMessage(CompletorRegistry.class, "DESC_def_dep_check_all"), // NOI18N
-        };
-        completorFactory = new AttributeValueCompletorFactory(defaultDepCheckItems);
-        registerCompletorFactory(BeansElements.BEANS, BeansAttributes.DEFAULT_DEPENDENCY_CHECK, completorFactory);
-
-        String[] depCheckItems = new String[defaultDepCheckItems.length + 2];
-        System.arraycopy(defaultDepCheckItems, 0, depCheckItems, 0, defaultDepCheckItems.length);
-        depCheckItems[defaultDepCheckItems.length] = "default"; // NOI18N
-        depCheckItems[defaultDepCheckItems.length + 1] = null; // XXX Documentation
-        completorFactory = new AttributeValueCompletorFactory(depCheckItems);
-        registerCompletorFactory(BeansElements.BEAN, BeansAttributes.DEPENDENCY_CHECK, completorFactory);
-        
         String[] abstractItems = new String[] {
             "true", null, // XXX: documentation? // NOI18N
             "false", null, // XXX: documentation? // NOI18N
         };
         completorFactory = new AttributeValueCompletorFactory(abstractItems);
         registerCompletorFactory(BeansElements.BEAN, BeansAttributes.ABSTRACT, completorFactory);
-        
-        String[] autowireCandidateItems = new String[] {
-            "true", null, // XXX: documentation? // NOI18N
-            "false", null, // XXX: documentation? // NOI18N
-            "default", null, // XXX: documentation? // NOI18N
-        };
-        completorFactory = new AttributeValueCompletorFactory(autowireCandidateItems);
-        registerCompletorFactory(BeansElements.BEAN, BeansAttributes.AUTOWIRE_CANDIDATE, completorFactory);
-        
-        String[] mergeItems = new String[] {
-            "true", null, // XXX: documentation? // NOI18N
-            "false", null, // XXX: documentation? // NOI18N
-            "default", null, // XXX: documentation? // NOI18N
-        };
-        completorFactory = new AttributeValueCompletorFactory(mergeItems);
-        registerCompletorFactory(BeansElements.LIST, BeansAttributes.MERGE, completorFactory);
-        registerCompletorFactory(BeansElements.SET, BeansAttributes.MERGE, completorFactory);
-        registerCompletorFactory(BeansElements.MAP, BeansAttributes.MERGE, completorFactory);
-        registerCompletorFactory(BeansElements.PROPS, BeansAttributes.MERGE, completorFactory);
         
         registerCompletorFactory(BeansElements.IMPORT, BeansAttributes.RESOURCE, new GenericCompletorFactory(ResourceCompletor.class));
 
