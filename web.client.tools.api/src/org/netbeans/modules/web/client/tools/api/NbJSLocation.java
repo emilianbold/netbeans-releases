@@ -45,5 +45,4 @@ package org.netbeans.modules.web.client.tools.api;
  */
 public interface NbJSLocation extends JSAbstractLocation {
 
-    JSLocation getJSLocation();
 }

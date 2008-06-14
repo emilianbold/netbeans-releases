@@ -66,7 +66,6 @@ import org.netbeans.modules.web.client.javascript.debugger.filesystem.URLContent
 //import org.netbeans.modules.web.client.javascript.debugger.filesystem.URLContentProviderImpl;
 import org.netbeans.modules.web.client.javascript.debugger.filesystem.URLFileObject;
 import org.netbeans.modules.web.client.javascript.debugger.filesystem.URLFileObjectFactory;
-import org.netbeans.modules.web.client.javascript.debugger.js.api.JSAbstractLocation;
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSBreakpoint;
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSCallStackFrame;
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSDebugger;
@@ -75,7 +74,6 @@ import org.netbeans.modules.web.client.javascript.debugger.js.api.JSDebuggerCons
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSDebuggerEvent;
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSDebuggerEventListener;
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSDebuggerState;
-import org.netbeans.modules.web.client.javascript.debugger.js.api.JSLocation;
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSSource;
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSURILocation;
 import org.netbeans.modules.web.client.javascript.debugger.js.api.JSWindow;
@@ -86,6 +84,11 @@ import org.netbeans.modules.web.client.javascript.debugger.models.NbJSPreference
 import org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints.NbJSBreakpoint;
 import org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints.NbJSFileObjectBreakpoint;
 import org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints.NbJSURIBreakpoint;
+import org.netbeans.modules.web.client.tools.api.JSAbstractLocation;
+import org.netbeans.modules.web.client.tools.api.JSLocation;
+import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
+import org.netbeans.modules.web.client.tools.api.NbJSLocation;
+import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
@@ -262,11 +265,11 @@ public final class NbJSDebugger {
             List<? super Object> services = new ArrayList<Object>();
             services.add(nbJSdebugger);
 
-            NbJSToJSLocation nbJSToJSLocation = lookup.lookup(NbJSToJSLocation.class);
+            NbJSToJSLocationMapper nbJSToJSLocation = lookup.lookup(NbJSToJSLocationMapper.class);
             if (nbJSToJSLocation != null) {
                 services.add(nbJSToJSLocation);
             }
-            JSToNbJSLocation jSToNbJSLocation = lookup.lookup(JSToNbJSLocation.class);
+            JSToNbJSLocationMapper jSToNbJSLocation = lookup.lookup(JSToNbJSLocationMapper.class);
             if (jSToNbJSLocation != null) {
                 services.add(jSToNbJSLocation);
             }
@@ -457,7 +460,7 @@ public final class NbJSDebugger {
     private JSLocation getJSLocation(JSAbstractLocation nbJSLocation) {
         Session session = DebuggerManager.getDebuggerManager().getCurrentSession();
         if(session != null) {
-            NbJSToJSLocation nbJSToJSLocationMapper = session.lookupFirst(null, NbJSToJSLocation.class);
+            NbJSToJSLocationMapper nbJSToJSLocationMapper = session.lookupFirst(null, NbJSToJSLocationMapper.class);
             if (nbJSToJSLocationMapper != null) {
                 JSLocation jsLocation = null;
                 if (nbJSLocation instanceof NbJSLocation) {
@@ -486,9 +489,9 @@ public final class NbJSDebugger {
     }
 
     public FileObject getFileObjectForSource(JSSource source) {
-        JSToNbJSLocation mapper = null;
+        JSToNbJSLocationMapper mapper = null;
 
-        if (lookup != null) mapper = lookup.lookup(JSToNbJSLocation.class);
+        if (lookup != null) mapper = lookup.lookup(JSToNbJSLocationMapper.class);
         JSLocation location = source.getLocation();
 
         if (mapper != null) {
@@ -551,16 +554,16 @@ public final class NbJSDebugger {
                 this.selectedFrame);
     }
 
-    public NbJSToJSLocation getNbJSToJSLocation() {
+    public NbJSToJSLocationMapper getNbJSToJSLocation() {
         if (lookup != null) {
-            return lookup.lookup(NbJSToJSLocation.class);
+            return lookup.lookup(NbJSToJSLocationMapper.class);
         }
         return null;
     }
 
-    public JSToNbJSLocation getJSToNbJSLocation() {
+    public JSToNbJSLocationMapper getJSToNbJSLocation() {
         if (lookup != null) {
-            return lookup.lookup(JSToNbJSLocation.class);
+            return lookup.lookup(JSToNbJSLocationMapper.class);
         }
         return null;
     }

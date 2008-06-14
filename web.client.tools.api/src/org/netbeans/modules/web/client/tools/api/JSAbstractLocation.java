@@ -45,5 +45,6 @@ package org.netbeans.modules.web.client.tools.api;
  */
 public interface JSAbstractLocation {
 
+    JSLocation getJSLocation();
     String getDisplayName();
 }

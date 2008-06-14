@@ -41,7 +41,7 @@
 package org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints;
 
 import org.netbeans.modules.web.client.javascript.debugger.api.NbJSFileObjectLocation;
-import org.netbeans.modules.web.client.javascript.debugger.js.api.JSAbstractLocation;
+import org.netbeans.modules.web.client.tools.api.JSAbstractLocation;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
