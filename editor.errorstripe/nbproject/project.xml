@@ -126,6 +126,7 @@ made subject to such option by the copyright holder.
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor</code-name-base>
                         <compile-dependency/>
+                        <recursive/>
                         <test/>
                     </test-dependency>
                     <test-dependency>
