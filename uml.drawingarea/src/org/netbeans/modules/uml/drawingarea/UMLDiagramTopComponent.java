@@ -108,6 +108,7 @@ import org.netbeans.modules.uml.drawingarea.dataobject.PaletteItem;
 import org.netbeans.modules.uml.drawingarea.dataobject.UMLDiagramDataNode;
 import org.netbeans.modules.uml.drawingarea.dataobject.UMLDiagramDataObject;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
+import org.netbeans.modules.uml.drawingarea.keymap.DiagramInputkeyMapper;
 import org.netbeans.modules.uml.drawingarea.palette.PaletteSupport;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
@@ -263,18 +264,14 @@ public class UMLDiagramTopComponent extends TopComponent
             uiDiagram.setDataObject(diagramDO);
         }
         initUI();
-        initLookup();
         setName();
         setIcon();
 
         editorToolbar = new Toolbar("Diagram Toolbar", false);
         add(editorToolbar, BorderLayout.NORTH);
-
-        zoomManager = new ZoomManager(scene);
-        lookupContent.add(zoomManager);
         
+        zoomManager = new ZoomManager(scene);
         zoomManager.addZoomListener(new ZoomManager.ZoomListener() {
-
             public void zoomChanged(ZoomEvent event)
             {
                 ContextPaletteManager manager = scene.getContextPaletteManager();
@@ -288,8 +285,9 @@ public class UMLDiagramTopComponent extends TopComponent
             }
         });
         
+        initRootNode();   
+        initLookup();
         initializeToolBar();
-        initRootNode();      
     }
 
     public UMLDiagramTopComponent(INamespace owner, String name, int kind)
@@ -299,7 +297,6 @@ public class UMLDiagramTopComponent extends TopComponent
         IDiagram diagram = initNewDiagram(owner, name, kind);
 
         initUI();
-        initLookup();
         setName();
         setIcon();      
         
@@ -307,9 +304,7 @@ public class UMLDiagramTopComponent extends TopComponent
         add(editorToolbar, BorderLayout.NORTH);
         
         zoomManager = new ZoomManager(scene);
-        lookupContent.add(zoomManager);
         zoomManager.addZoomListener(new ZoomManager.ZoomListener() {
-
             public void zoomChanged(ZoomEvent event)
             {
                 ContextPaletteManager manager = scene.getContextPaletteManager();
@@ -323,8 +318,9 @@ public class UMLDiagramTopComponent extends TopComponent
             }
         });
         
-        initializeToolBar();
         initRootNode();
+        initLookup();
+        initializeToolBar();
     }
 
     protected boolean isEdgesGrouped()
@@ -457,6 +453,10 @@ public class UMLDiagramTopComponent extends TopComponent
             pProd.removeDiagram(getAssociatedDiagram());
         }
         unregisterListeners();
+        // remove key-action mapping
+        DiagramInputkeyMapper keyActionMapper = DiagramInputkeyMapper.getInstance();
+        keyActionMapper.setComponent(this);
+        keyActionMapper.unRegisterKeyMap();
     }
 
     @Override
@@ -477,6 +477,10 @@ public class UMLDiagramTopComponent extends TopComponent
             getDrawingAreaDispatcher().fireDrawingAreaPostCreated(getDiagramDO(), payload);
         }
         registerListeners();
+        //set key-action mapping
+        DiagramInputkeyMapper keyActionMapper = DiagramInputkeyMapper.getInstance();
+        keyActionMapper.setComponent(this);
+        keyActionMapper.registerKeyMap();
         
         if(getDiagram()!=null && getDiagram().getView()!=null)getDiagram().getView().requestFocusInWindow();
     }
@@ -861,10 +865,11 @@ public class UMLDiagramTopComponent extends TopComponent
     {
         paletteController = getAssociatedPalette();
         lookupContent.add(paletteController);
-
         lookupContent.add(scene);
         lookupContent.add(getDiagramDO());
         lookupContent.add(getNavigatorCookie());
+        lookupContent.add(editorToolbar);
+        lookupContent.add(zoomManager);
     }
 
     private UMLDiagramDataObject getDiagramDO(String name, INamespace space)
@@ -1804,6 +1809,8 @@ public class UMLDiagramTopComponent extends TopComponent
         }
     }
     
+
+     
     private class EngineDrawingAreaSink extends DrawingAreaEventsAdapter
     {
 
