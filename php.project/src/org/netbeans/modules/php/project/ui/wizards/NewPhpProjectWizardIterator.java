@@ -52,6 +52,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectType;
 import org.netbeans.modules.php.project.connections.RemoteConfiguration;
@@ -266,6 +267,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     private void configureEncoding(EditableProperties properties) {
         Charset charset = (Charset) descriptor.getProperty(ConfigureProjectPanel.ENCODING);
         properties.setProperty(PhpProjectProperties.SOURCE_ENCODING, charset.name());
+        // #136917
+        FileEncodingQuery.setDefaultEncoding(charset);
     }
 
     private void configureIncludePath(EditableProperties properties) {
