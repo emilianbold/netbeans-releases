@@ -196,28 +196,12 @@ public final class ExecutionService {
 
                     assert freeIO.getInputOutput() == workingIO;
                 }
-                try {
-                    workingIO.getOut().reset();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                configureInputOutput(workingIO, rerun);
             } else {
                 customIO = descriptor.getInputOutput();
                 if (customIO != null) {
                     workingIO = customIO;
-                    try {
-                        workingIO.getOut().reset();
-                    } catch (IOException exc) {
-                        LOGGER.log(Level.INFO, null, exc);
-                    }
-
-                    // Note - do this AFTER the reset() call above; if not, weird bugs occur
-                    workingIO.setErrSeparated(false);
-
-                    // Open I/O window now. This should probably be configurable.
-                    if (descriptor.isFrontWindow()) {
-                        workingIO.select();
-                    }
+                    configureInputOutput(workingIO, rerun);
                 }
 
                 // try to find free output windows
@@ -231,15 +215,7 @@ public final class ExecutionService {
                         stopAction = freeIO.getStopAction();
                         rerunAction = freeIO.getRerunAction();
 
-                        try {
-                            workingIO.getOut().reset();
-                        } catch (IOException ioe) {
-                            Exceptions.printStackTrace(ioe);
-                        }
-
-                        if (descriptor.isFrontWindow()) {
-                            workingIO.select();
-                        }
+                        configureInputOutput(workingIO, rerun);
                     }
                 }
 
@@ -257,46 +233,17 @@ public final class ExecutionService {
                         workingIO = IOProvider.getDefault().getIO(displayName, true);
                     }
 
-                    try {
-                        workingIO.getOut().reset();
-                    } catch (IOException exc) {
-                        LOGGER.log(Level.INFO, null, exc);
-                    }
-
-                    // Note - do this AFTER the reset() call above; if not, weird bugs occur
-                    workingIO.setErrSeparated(false);
-
-                    // Open I/O window now. This should probably be configurable.
-                    if (descriptor.isFrontWindow()) {
-                        workingIO.select();
-                    }
+                    configureInputOutput(workingIO, rerun);
                 }
             }
 
-            rerun = true;
+            
             synchronized (ExecutionService.class) {
                 ACTIVE_DISPLAY_NAMES.add(displayName);
             }
-            workingIO.setInputVisible(descriptor.isInputVisible());
 
-            final InputProcessor outProcessor = descriptor.getOutProcessor();
-            try {
-                if (outProcessor != null) {
-                    outProcessor.reset();
-                }
-
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
-            }
-
-            final InputProcessor errProcessor = descriptor.getErrProcessor();
-            try {
-                if (errProcessor != null) {
-                    errProcessor.reset();
-                }
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
-            }
+            rerun = true;
+            resetProcessors();
 
             final ProgressHandle handle = createProgressHandle();
             final InputOutput io = workingIO;
@@ -344,6 +291,24 @@ public final class ExecutionService {
         }
     }
 
+    private void configureInputOutput(InputOutput inputOutput, boolean rerun) {
+        try {
+            inputOutput.getOut().reset();
+        } catch (IOException exc) {
+            LOGGER.log(Level.INFO, null, exc);
+        }
+
+        // Note - do this AFTER the reset() call above; if not, weird bugs occur
+        inputOutput.setErrSeparated(false);
+
+        // Open I/O window now. This should probably be configurable.
+        if (!rerun && descriptor.isFrontWindow()) {
+            inputOutput.select();
+        }
+        
+        workingIO.setInputVisible(descriptor.isInputVisible());
+    }
+
     private void configureActions(RerunAction rerunAction, StopAction stopAction) {
         if (stopAction != null) {
             synchronized (stopAction) {
@@ -358,6 +323,27 @@ public final class ExecutionService {
                 rerunAction.setRerunCondition(descriptor.getRerunCondition());
                 rerunAction.setEnabled(false);
             }
+        }
+    }
+
+    private void resetProcessors() {
+        InputProcessor outProcessor = descriptor.getOutProcessor();
+        try {
+            if (outProcessor != null) {
+                outProcessor.reset();
+            }
+
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
+
+        InputProcessor errProcessor = descriptor.getErrProcessor();
+        try {
+            if (errProcessor != null) {
+                errProcessor.reset();
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
         }
     }
 
