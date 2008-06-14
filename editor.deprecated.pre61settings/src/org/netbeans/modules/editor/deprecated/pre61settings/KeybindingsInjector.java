@@ -56,6 +56,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.MultiKeyBinding;
 import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.Settings;
 import org.netbeans.editor.Settings.Initializer;
 import org.netbeans.editor.SettingsChangeEvent;
 import org.netbeans.editor.SettingsChangeListener;
@@ -185,7 +186,7 @@ public final class KeybindingsInjector extends StorageFilter<Collection<KeyStrok
         if (evt == null || "initializers".equals(evt.getPropertyName())) { //NOI18N
             if (!ignoreInitializerChanges.get()) {
                 LOG.fine("Settings.Initializers changed"); //NOI18N
-                notifyChanges();
+                safeNotifyChanges();
             }
         }
     }
@@ -200,7 +201,7 @@ public final class KeybindingsInjector extends StorageFilter<Collection<KeyStrok
             SettingsNames.CUSTOM_ACTION_LIST.equals(evt.getSettingName())
         ) {
             LOG.fine("settingsChange(" + evt.getSettingName() + ")"); //NOI18N
-            notifyChanges();
+            safeNotifyChanges();
         }
     }
     
@@ -211,6 +212,7 @@ public final class KeybindingsInjector extends StorageFilter<Collection<KeyStrok
     private static final Logger LOG = Logger.getLogger(EditorPreferencesInjector.class.getName());
 
     private final ThreadLocal<Map> currentSettingsMap = new ThreadLocal<Map>();
+    private volatile int ourOwnChangeNotification = 0;
     
     // to prevent deadlocks caused by EditorKits that hook up settings initializers
     // from their constructor
@@ -220,4 +222,22 @@ public final class KeybindingsInjector extends StorageFilter<Collection<KeyStrok
         }
     };
 
+    private void safeNotifyChanges() {
+        if (ourOwnChangeNotification == 0) {
+            ourOwnChangeNotification++;
+            try {
+                Settings.update(new Runnable() {
+                    public void run() {
+                        notifyChanges();
+                    }
+                    public boolean asynchronous() {
+                        return true;
+                    }
+                });
+            } finally {
+                ourOwnChangeNotification--;
+            }
+        }
+    }
+    
 } // End of EditorPreferencesInjector class
