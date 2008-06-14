@@ -349,11 +349,7 @@ public class DriverListUtil {
         ArrayList<JdbcUrl> driverUrls = new ArrayList<JdbcUrl>();
         for (JdbcUrl url : urls) {
             if (url.getClassName().equals(driver.getClassName())) {
-                // Lazily set the driver for this url now that we know it's
-                // registered...
-                if (url.getDriver() == null) {
-                    url.setDriver(driver);
-                }
+                url.setDriver(driver);
                 
                 // Clear out any properties that may be set
                 url.clear();
