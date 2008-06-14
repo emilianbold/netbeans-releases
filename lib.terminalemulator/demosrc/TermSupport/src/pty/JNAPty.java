@@ -120,9 +120,18 @@ public class JNAPty extends Pty {
 	int sfd = -1;
 
 	try {
-	    mfd = PtyLibrary.INSTANCE.getpt();
-	    if (mfd == -1) {
-		throw new PtyException("getpt() failed -- " + strerror(Native.getLastError()));
+	    // The most common sequence of creating pty's 
+	    //	getpt()/grantpt()/unlockpt()/pts_name(),
+	    // is supported on Solaris and linux, except that Solaris doesn't
+	    // define getpt(). So we do our own:
+	    if (OS.get() == OS.SOLARIS) {
+		mfd = PtyLibrary.INSTANCE.open("/dev/ptmx", PtyLibrary.O_RDWR);
+		if (mfd == -1)
+		    throw new PtyException("open(\"/dev/ptmx\") failed -- " + strerror(Native.getLastError()));
+	    } else {
+		mfd = PtyLibrary.INSTANCE.getpt();
+		if (mfd == -1)
+		    throw new PtyException("getpt() failed -- " + strerror(Native.getLastError()));
 	    }
 	    System.out.printf("Pty.setup(): getpt() returns %d\n", mfd);
 
@@ -145,8 +154,8 @@ public class JNAPty extends Pty {
 		throw new PtyException("open(\"" + slave_name + "\") failed -- " + strerror(Native.getLastError()));
 	    }
 
-            /* LATER ... this stuff is only needed on solaris
-            if (mode() != Mode.RAW) {
+            // LATER if (mode() != Mode.RAW) {
+	    if (OS.get() == OS.SOLARIS) {
                 
                 // pseudo-terminal hardware emulation module
                 if (PtyLibrary.INSTANCE.ioctl(sfd, PtyLibrary.I_PUSH, "ptem") == -1) {
@@ -159,11 +168,10 @@ public class JNAPty extends Pty {
                 }
                 
                 // not sure but both xterm and DtTerm do it
-                if (PtyLibrary.INSTANCE.ioctl(sfd, PtyLibrary.I_PUSH, "ttcompact") == -1) {
+                if (PtyLibrary.INSTANCE.ioctl(sfd, PtyLibrary.I_PUSH, "ttcompat") == -1) {
                     throw new PtyException("ioctl(\"" + slave_name + "\", I_PUSH, \"ttcompact\") failed -- " + strerror(Native.getLastError()));
                 }
             }
-            */
 
 	    // Success ... assign fd's to FileObjects
 	    assignFd(mfd, master_fd);

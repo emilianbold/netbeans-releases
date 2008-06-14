@@ -103,8 +103,8 @@ public final class ExecutionService {
         RerunAction.Accessor.setDefault(new RerunAction.Accessor() {
 
             @Override
-            public Future<Integer> rerun(ExecutionService service) {
-                return service.rerun();
+            public Future<Integer> run(ExecutionService service) {
+                return service.run();
             }
 
         });
@@ -174,23 +174,6 @@ public final class ExecutionService {
         }
     }
 
-    // package level for tests
-    Future<Integer> rerun() {
-        synchronized (this) {
-            if (current != null && !current.isDone()) {
-                throw new IllegalStateException("Task is still running");
-            }
-
-            try {
-                workingIO.getOut().reset();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            rerun = true;
-            return run();
-        }
-    }
-
     /**
      * Runs the process described by this service.
      * <p>
@@ -204,7 +187,13 @@ public final class ExecutionService {
                 throw new IllegalStateException("Task is still running");
             }
 
-            if (!rerun) {
+            if (rerun) {
+                try {
+                    workingIO.getOut().reset();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            } else {
                 customIO = descriptor.getInputOutput();
                 if (customIO != null) {
                     workingIO = customIO;
@@ -233,6 +222,13 @@ public final class ExecutionService {
                         displayName = freeIO.getDisplayName();
                         stopAction = freeIO.getStopAction();
                         rerunAction = freeIO.getRerunAction();
+
+                        try {
+                            workingIO.getOut().reset();
+                        } catch (IOException ioe) {
+                            Exceptions.printStackTrace(ioe);
+                        }
+
                         if (descriptor.isFrontWindow()) {
                             workingIO.select();
                         }
@@ -269,6 +265,7 @@ public final class ExecutionService {
                 }
             }
 
+            rerun = true;
             ACTIVE_DISPLAY_NAMES.add(displayName);
             workingIO.setInputVisible(descriptor.isInputVisible());
 

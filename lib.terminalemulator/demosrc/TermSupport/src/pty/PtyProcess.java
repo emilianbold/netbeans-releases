@@ -290,6 +290,30 @@ public class PtyProcess {
         return null;
     }
 
+    private static String setpgrpCmd = null;
+
+    /**
+     * Find and cache one of /usr/bin/setpgrp or /usr/bin/setsid.
+     * We usually get setsid on linux and setpgrp on solaris.
+     */
+    private static String setpgrpCmd() {
+	if (setpgrpCmd == null) {
+	    File file;
+	    file = new File("/usr/bin/setpgrp");
+	    if (file.exists()) {
+		setpgrpCmd = file.getPath();
+		return setpgrpCmd;
+	    }
+	    file = new File("/usr/bin/setsid");
+	    if (file.exists()) {
+		setpgrpCmd = file.getPath();
+		return setpgrpCmd;
+	    }
+            throw new MissingResourceException("Can't find setpgrp or setsid", null, null);
+	}
+	return setpgrpCmd;
+    }
+
     private static List<String> wrapperCmd(List<String> cmd, JNAPty pty) {
 
         if (pty == null) {
@@ -297,16 +321,27 @@ public class PtyProcess {
         }
         List<String> wrapperCmd = new ArrayList<String>();
         String wrapper;
+
         if ((wrapper = findBin("tools_exec")) != null) {
             wrapperCmd.add(wrapper);
             wrapperCmd.add("-pty");
             wrapperCmd.add(pty.slaveName());
             wrapperCmd.add(cmd.get(0));
             wrapperCmd.addAll(cmd);
+
         } else if ((wrapper = findBin("pty_bind")) != null) {
+	    // We used to do this 
+	    //	    exec $SETSID $* 0<> $SLAVE 1<> $SLAVE 2<> $SLAVE
+	    // in pty_bind.
+	    // That would redirect io to pty which implicitly sets the
+	    // controlling terminal and _then_ issue a setpgrp/setsid, which
+	    // releases the controlling terminal!
+	    // so we wrap the wrapper in the setpgrp/setsid utility.
+	    wrapperCmd.add(setpgrpCmd());
             wrapperCmd.add(wrapper);
             wrapperCmd.add(pty.slaveName());
             wrapperCmd.addAll(cmd);
+
         } else {
             System.out.printf("Can\'t find a wrapper\n");
             throw new MissingResourceException("Can't find a wrapper", null, null);

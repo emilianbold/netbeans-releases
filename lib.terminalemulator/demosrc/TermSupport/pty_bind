@@ -48,13 +48,13 @@ echo ARGS $*
 SLAVE=$1
 shift
 
-# setsid on linux, setpgrp on solaris
-SETSID=
-if	[ -e /usr/bin/setsid ]
-then	SETSID=/usr/bin/setsid
-elif	[ -e /usr/bin/setpgrp ]
-then	SETSID=/usr/bin/setpgrp
-fi
+# OLD # setsid on linux, setpgrp on solaris
+# OLD SETSID=
+# OLD if	[ -x /usr/bin/setsid ]
+# OLD then	SETSID=/usr/bin/setsid
+# OLD elif	[ -x /usr/bin/setpgrp ]
+# OLD then	SETSID=/usr/bin/setpgrp
+# OLD fi
 
 # Attempt to restore sigint from being ignored
 # won't work See bottom of p204 in ksh book
@@ -63,4 +63,5 @@ fi
 # note how child can read and write from all fd's.
 # 'more' for example reads from fd 2.
 
-exec $SETSID $* 0<> $SLAVE 1<> $SLAVE 2<> $SLAVE
+# OLD exec $SETSID $* 0<> $SLAVE 1<> $SLAVE 2<> $SLAVE
+exec $* 0<> $SLAVE 1<> $SLAVE 2<> $SLAVE

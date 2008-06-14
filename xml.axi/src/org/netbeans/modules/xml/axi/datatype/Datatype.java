@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.xml.axi.datatype;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.xml.axi.AXIType;
@@ -55,96 +57,8 @@ import org.netbeans.modules.xml.schema.model.*;
  */
 public abstract class Datatype implements AXIType {
     
-    public enum Kind {
-        STRING("string"),
-        NORMALIZED_STRING("normalizedString"),
-        TOKEN("token"),
-        LANGUAGE("language"),
-        NAME("Name"),
-        NMTOKEN("NMTOKEN"),
-        NCNAME("NCName"),
-        NMTOKENS("NMTOKENS"),
-        ID("ID"),
-        IDREF("IDREF"),
-        ENTITY("ENTITY"),
-        IDREFS("IDREFS"),
-        ENTITIES("ENTITIES"),
-        DECIMAL("decimal"),
-        INTEGER("integer"),
-        NON_POSITIVE_INTEGER("nonPositiveInteger"),
-        LONG("long"),
-        NON_NEGATIVE_INTEGER("nonNegativeInteger"),
-        NEGATIVE_INTEGER("negativeInteger"),
-        INT("int"),
-        SHORT("short"),
-        BYTE("byte"),
-        UNSIGNED_LONG("unsignedLong"),
-        UNSIGNED_INT("unsignedInt"),
-        UNSIGNED_SHORT("unsignedShort"),
-        UNSIGNED_BYTE("unsignedByte"),
-        POSITIVE_INTEGER("positiveInteger"),
-        DURATION("duration"),
-        DATE_TIME("dateTime"),
-        TIME("time"),
-        DATE("date"),
-        G_YEAR_MONTH("gYearMonth"),
-        G_YEAR("gYear"),
-        G_MONTH_DAY("gMonthDay"),
-        G_DAY("gDay"),
-        G_MONTH("gMonth"),
-        BOOLEAN("boolean"),
-        BASE64_BINARY("base64Binary"),
-        HEX_BINARY("hexBinary"),
-        FLOAT("float"),
-        DOUBLE("double"),
-        ANYURI("anyURI"),
-        ANYTYPE("anyType"),
-        QNAME("QName"),
-        NOTATION("NOTATION"),
-        UNION("UNION");
+    List<String> enumerations = new ArrayList<String>();
         
-        String name;
-        
-        Kind(String name) {
-            this.name = name;
-        }
-        
-        public String getName() {
-            return name;
-        }
-    }
-    
-    public enum Facet {
-        LENGTH("length", Length.class),
-        MINLENGTH("minLength", MinLength.class),
-        MAXLENGTH("maxLength", MaxLength.class),
-        PATTERN("pattern", Pattern.class),
-        ENUMERATION("enumeration", Enumeration.class),
-        WHITESPACE("whiteSpace", Whitespace.class),
-        TOTATDIGITS("totalDigits", TotalDigits.class),
-        FRACTIONDIGITS("fractionDigits", FractionDigits.class),
-        MAXINCLUSIVE("maxInclusive", MaxInclusive.class),
-        MAXEXCLUSIVE("maxExclusive", MaxExclusive.class),
-        MININCLUSIVE("minInclusive", MinInclusive.class),
-        MINEXCLUSIVE("minExclusive", MinExclusive.class);
-        
-        String name;
-        Class<? extends SchemaComponent> type;
-        
-        Facet(String name, Class<? extends SchemaComponent> type) {
-            this.name = name;
-            this.type = type;
-        }
-        
-        public String getName() {
-            return name;
-        }
-        
-        public Class<? extends SchemaComponent> getComponentType() {
-            return type;
-        }
-    }
-    
     /*
      * returns the kind of this datatype
      *
@@ -195,7 +109,9 @@ public abstract class Datatype implements AXIType {
      * @return enumeration
      */
     public List<? extends Object> getEnumerations() {
-        return Collections.emptyList();
+        if(enumerations == null)
+            return Collections.emptyList();
+        return enumerations;
     }
     
     /*
@@ -302,6 +218,11 @@ public abstract class Datatype implements AXIType {
      * @param enumeration
      */
     public void addEnumeration(Object enumeration) {
+        if(!(enumeration instanceof String))
+            return;
+        if(enumerations == null)
+            enumerations = new ArrayList<String>();
+        enumerations.add((String)enumeration);
     }
     
     /*
@@ -483,4 +404,95 @@ public abstract class Datatype implements AXIType {
     public String toString() {
         return getName();
     }
+    
+    public enum Kind {
+        STRING("string"),
+        NORMALIZED_STRING("normalizedString"),
+        TOKEN("token"),
+        LANGUAGE("language"),
+        NAME("Name"),
+        NMTOKEN("NMTOKEN"),
+        NCNAME("NCName"),
+        NMTOKENS("NMTOKENS"),
+        ID("ID"),
+        IDREF("IDREF"),
+        ENTITY("ENTITY"),
+        IDREFS("IDREFS"),
+        ENTITIES("ENTITIES"),
+        DECIMAL("decimal"),
+        INTEGER("integer"),
+        NON_POSITIVE_INTEGER("nonPositiveInteger"),
+        LONG("long"),
+        NON_NEGATIVE_INTEGER("nonNegativeInteger"),
+        NEGATIVE_INTEGER("negativeInteger"),
+        INT("int"),
+        SHORT("short"),
+        BYTE("byte"),
+        UNSIGNED_LONG("unsignedLong"),
+        UNSIGNED_INT("unsignedInt"),
+        UNSIGNED_SHORT("unsignedShort"),
+        UNSIGNED_BYTE("unsignedByte"),
+        POSITIVE_INTEGER("positiveInteger"),
+        DURATION("duration"),
+        DATE_TIME("dateTime"),
+        TIME("time"),
+        DATE("date"),
+        G_YEAR_MONTH("gYearMonth"),
+        G_YEAR("gYear"),
+        G_MONTH_DAY("gMonthDay"),
+        G_DAY("gDay"),
+        G_MONTH("gMonth"),
+        BOOLEAN("boolean"),
+        BASE64_BINARY("base64Binary"),
+        HEX_BINARY("hexBinary"),
+        FLOAT("float"),
+        DOUBLE("double"),
+        ANYURI("anyURI"),
+        ANYTYPE("anyType"),
+        QNAME("QName"),
+        NOTATION("NOTATION"),
+        UNION("UNION");
+        
+        String name;
+        
+        Kind(String name) {
+            this.name = name;
+        }
+        
+        public String getName() {
+            return name;
+        }        
+    }
+    
+    public enum Facet {
+        LENGTH("length", Length.class),
+        MINLENGTH("minLength", MinLength.class),
+        MAXLENGTH("maxLength", MaxLength.class),
+        PATTERN("pattern", Pattern.class),
+        ENUMERATION("enumeration", Enumeration.class),
+        WHITESPACE("whiteSpace", Whitespace.class),
+        TOTATDIGITS("totalDigits", TotalDigits.class),
+        FRACTIONDIGITS("fractionDigits", FractionDigits.class),
+        MAXINCLUSIVE("maxInclusive", MaxInclusive.class),
+        MAXEXCLUSIVE("maxExclusive", MaxExclusive.class),
+        MININCLUSIVE("minInclusive", MinInclusive.class),
+        MINEXCLUSIVE("minExclusive", MinExclusive.class);
+        
+        String name;
+        Class<? extends SchemaComponent> type;
+        
+        Facet(String name, Class<? extends SchemaComponent> type) {
+            this.name = name;
+            this.type = type;
+        }
+        
+        public String getName() {
+            return name;
+        }
+        
+        public Class<? extends SchemaComponent> getComponentType() {
+            return type;
+        }
+    }
+    
 }

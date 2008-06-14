@@ -119,11 +119,6 @@ public final class ManagedInputOutput {
                             || !actions && data.rerunAction == null && data.stopAction == null) {
                         // Reuse it.
                         result = new ManagedInputOutput(free, data);
-                        try {
-                            free.getOut().reset();
-                        } catch (IOException ioe) {
-                            Exceptions.printStackTrace(ioe);
-                        }
                         it.remove();
                     } // continue to remove all closed tabs
                 }
