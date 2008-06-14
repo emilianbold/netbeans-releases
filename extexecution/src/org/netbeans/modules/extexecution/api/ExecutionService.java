@@ -188,6 +188,14 @@ public final class ExecutionService {
             }
 
             if (rerun) {
+                assert !workingIO.isClosed();
+
+                if (workingIO != customIO) {
+                    ManagedInputOutput freeIO = ManagedInputOutput.getInputOutput(
+                        displayName, descriptor.isControllable());
+
+                    assert freeIO.getInputOutput() == workingIO;
+                }
                 try {
                     workingIO.getOut().reset();
                 } catch (IOException ex) {
@@ -266,7 +274,9 @@ public final class ExecutionService {
             }
 
             rerun = true;
-            ACTIVE_DISPLAY_NAMES.add(displayName);
+            synchronized (ExecutionService.class) {
+                ACTIVE_DISPLAY_NAMES.add(displayName);
+            }
             workingIO.setInputVisible(descriptor.isInputVisible());
 
             final InputProcessor outProcessor = descriptor.getOutProcessor();
@@ -431,7 +441,9 @@ public final class ExecutionService {
                         stopAction, rerunAction);
             }
 
-            ACTIVE_DISPLAY_NAMES.remove(displayName);
+            synchronized (ExecutionService.class) {
+                ACTIVE_DISPLAY_NAMES.remove(displayName);
+            }
 
             if (handle != null) {
                 handle.finish();
@@ -482,7 +494,7 @@ public final class ExecutionService {
         return InputProcessors.copying(new OutputStreamWriter(os));
     }
 
-    private static String getNonActiveDisplayName(final String displayNameBase) {
+    private static synchronized String getNonActiveDisplayName(final String displayNameBase) {
         String nonActiveDN = displayNameBase;
         if (ACTIVE_DISPLAY_NAMES.contains(nonActiveDN)) {
             // Uniquify: "prj (targ) #2", "prj (targ) #3", etc.
