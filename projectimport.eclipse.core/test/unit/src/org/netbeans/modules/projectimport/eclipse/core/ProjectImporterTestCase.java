@@ -56,7 +56,7 @@ import org.netbeans.junit.NbTestCase;
  *
  * @author mkrauskopf
  */
-abstract class ProjectImporterTestCase extends NbTestCase {
+public abstract class ProjectImporterTestCase extends NbTestCase {
     
     private static final int BUFFER = 2048;
     
