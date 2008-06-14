@@ -91,7 +91,6 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel implem
         initComponents();
         setDefaults();
         fillPanel();
-        txtSessionName.getDocument().addDocumentListener(this);
         cmbDbConnection.addItemListener(this);
     }
 
@@ -127,8 +126,6 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel implem
         jLabel3 = new javax.swing.JLabel();
         cmbDbConnection = new javax.swing.JComboBox();
         txtDialect = new javax.swing.JTextField();
-        jLabel7 = new javax.swing.JLabel();
-        txtSessionName = new javax.swing.JTextField();
 
         setName(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "LBL_HibernateConfigurationPanel_Name")); // NOI18N
 
@@ -150,12 +147,6 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel implem
         txtDialect.setEditable(false);
         txtDialect.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.txtDialect.text")); // NOI18N
 
-        jLabel7.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("SessionName_mnemonic").charAt(0));
-        jLabel7.setLabelFor(txtSessionName);
-        jLabel7.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.jLabel7.text")); // NOI18N
-
-        txtSessionName.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.txtSessionName.text")); // NOI18N
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -163,14 +154,10 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel implem
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel7, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 100, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(txtSessionName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(jLabel4)
                         .add(26, 26, 26)
-                        .add(txtDialect, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE))
+                        .add(txtDialect, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -181,16 +168,13 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel implem
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(txtSessionName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel7))
-                .add(5, 5, 5)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel3)
                     .add(cmbDbConnection, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel4)
-                    .add(txtDialect, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(txtDialect, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(24, Short.MAX_VALUE))
         );
 
         jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.jLabel4.AccessibleContext.accessibleDescription")); // NOI18N
@@ -204,9 +188,7 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel implem
     private javax.swing.JComboBox cmbDbConnection;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel7;
     private javax.swing.JTextField txtDialect;
-    private javax.swing.JTextField txtSessionName;
     // End of variables declaration//GEN-END:variables
     public void actionPerformed(ActionEvent e) {
     }
@@ -233,17 +215,6 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel implem
 
     public void itemStateChanged(ItemEvent e) {
         webModuleExtender.fireChangeEvent();
-    }
-
-    public String getSessionName() {
-        if (txtSessionName.getText() != null) {
-            return txtSessionName.getText().trim();
-        }
-        return null;
-    }
-
-    public void setSessionName(String newSessionName) {
-        txtSessionName.setText(newSessionName);
     }
 
     public String getSelectedDialect() {

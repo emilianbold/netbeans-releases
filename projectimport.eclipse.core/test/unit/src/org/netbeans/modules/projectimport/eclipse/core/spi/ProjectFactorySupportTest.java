@@ -69,11 +69,6 @@ public class ProjectFactorySupportTest extends NbTestCase {
         clearWorkDir();
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
     private EclipseProject getTestableProject(int version, File proj) {
         List<DotClassPathEntry> classpath = null;
         if (version == 1) {
@@ -183,6 +178,7 @@ public class ProjectFactorySupportTest extends NbTestCase {
         assertEquals(
             "${file.reference.commons-cli-1.0.jar}:" +
             "${file.reference.ejb3-persistence.jar}:" +
+            // XXX if test roots are detected, ought to move JUnit libs to test CP only
             "${libs.junit.classpath}:" +
             "${reference.JavaLibrary1.jar}", 
             ep.getProperty("javac.classpath").replace(';', ':'));

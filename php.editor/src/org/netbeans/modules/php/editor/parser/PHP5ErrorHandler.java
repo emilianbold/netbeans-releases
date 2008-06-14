@@ -129,17 +129,20 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
 
     public void displaySyntaxErrors(Program program) {
         for (SyntaxError syntaxError : syntaxErrors) {
-            ASTNode astError = org.netbeans.modules.php.editor.parser.api.Utils.getNodeAtOffset(program, syntaxError.currentToken.left);
-            if (!(astError instanceof ASTError)) {
-                astError = org.netbeans.modules.php.editor.parser.api.Utils.getNodeAtOffset(program, syntaxError.previousToken.right);
+            ASTNode astError = null;
+            if (program != null) {
+                astError = org.netbeans.modules.php.editor.parser.api.Utils.getNodeAtOffset(program, syntaxError.currentToken.left);
                 if (!(astError instanceof ASTError)) {
-                    astError = null;
+                    astError = org.netbeans.modules.php.editor.parser.api.Utils.getNodeAtOffset(program, syntaxError.previousToken.right);
+                    if (!(astError instanceof ASTError)) {
+                        astError = null;
+                    }
                 }
-            }
-            if (astError != null) {
-                LOGGER.finest("ASTError [" + astError.getStartOffset() + ", " + astError.getEndOffset() + "]"); //NOI18N
-            } else {
-                LOGGER.finest("ASTError was not found");  //NOI18N
+                if (astError != null) {
+                    LOGGER.finest("ASTError [" + astError.getStartOffset() + ", " + astError.getEndOffset() + "]"); //NOI18N
+                } else {
+                    LOGGER.finest("ASTError was not found");  //NOI18N
+                }
             }
             Error error = defaultSyntaxErrorHandling(syntaxError, astError);
             context.getListener().error(error);
@@ -211,7 +214,12 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
             end = astError.getEndOffset();
             // if the asterror is trough two lines, the problem is ussually at the end
             String text = context.getSource().substring(start, end);
-            int lastNewLine = text.lastIndexOf('\n');
+            int lastNewLine = text.length()-1;
+            while (text.charAt(lastNewLine) == '\n' || text.charAt(lastNewLine) == '\r'
+                    || text.charAt(lastNewLine) == '\t' || text.charAt(lastNewLine) == ' ') {
+                lastNewLine--;
+            }
+            lastNewLine = text.lastIndexOf('\n', lastNewLine);   //NOI18N
             if (lastNewLine > 0) {
                 start = start + lastNewLine + 1;
             }

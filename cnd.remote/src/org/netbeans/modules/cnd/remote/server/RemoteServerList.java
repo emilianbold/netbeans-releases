@@ -39,12 +39,11 @@
 
 package org.netbeans.modules.cnd.remote.server;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.remote.explorer.nodes.RemoteServerNode;
+import org.openide.util.ChangeSupport;
 
 /**
  *
@@ -52,34 +51,34 @@ import org.netbeans.modules.cnd.remote.explorer.nodes.RemoteServerNode;
  */
 public class RemoteServerList extends ArrayList<RemoteServerRecord> implements ServerList {
     
-    public static final Object PROP_ACTIVE = "active"; // NOI18N
-    public static final Object PROP_ADD = "add"; // NOI18N
-    public static final Object PROP_REMOVE = "remove"; // NOI18N
+    private static RemoteServerList instance = null;
     
-    private static RemoteServerList serverList = null;
-    
-    private PropertyChangeSupport pcs;
+    private ChangeSupport cs;
     
     public static RemoteServerList getInstance() {
-        if (serverList == null) {
-            serverList = new RemoteServerList();
+        if (instance == null) {
+            instance = new RemoteServerList();
         }
-        return serverList;
+        return instance;
     }
     
     public RemoteServerList() {
+        cs = new ChangeSupport(this);
         add(new RemoteServerRecord()); // creates the "localhost" record
-        pcs = new PropertyChangeSupport(this);
+//        add(new RemoteServerRecord("snocat", "gordonp", false)); // DEBUG
+//        add(new RemoteServerRecord("pucci", "gordonp", false)); // DEBUG
+        cs.fireChange();
     }
     
     public void add(String server, String user, boolean active) {
         RemoteServerRecord record = new RemoteServerRecord(server, user, active);
-        RemoteServerNode node = new RemoteServerNode(record);
         add(record);
+        cs.fireChange();
     }
     
     public void add(String server, String user) {
         add(server, user, false);
+        cs.fireChange();
     }
 
     public ServerRecord getActive() {
@@ -95,15 +94,15 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         return get(0);
     }
     
-    public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-        pcs.firePropertyChange(propertyName, oldValue, newValue);
+    public void addChangeListener(ChangeListener listener) {
+        cs.addChangeListener(listener);
     }
     
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        pcs.addPropertyChangeListener(listener);
+    public void remoteChangeListener(ChangeListener listener) {
+        cs.removeChangeListener(listener);
     }
     
-    public void remotePropertyChangeListener(PropertyChangeListener listener) {
-        pcs.removePropertyChangeListener(listener);
+    public void fireChange() {
+        cs.fireChange();
     }
 }

@@ -1,16 +1,12 @@
 <?php
 
-    //namespace org::netbeans::saas;
+    require_once "__SAAS_FOLDER__/RestConnection.php";
+    require_once "__NAME__Authenticator.php";
 
-    class SaasService {
-    
-        public function SaasService() {
-            $this->__construct();
-        }
+    class __NAME__ {
 
-        public function __construct() {
+        public function __NAME__() {
         }
-    
     }
 
 ?>
