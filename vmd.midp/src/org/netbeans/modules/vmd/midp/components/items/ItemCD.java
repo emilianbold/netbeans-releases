@@ -200,10 +200,10 @@ public class ItemCD extends ComponentDescriptor {
         MidpActionsSupport.addUnusedCommandsAddActionForItem(presenters);
         MidpActionsSupport.addMoveActionPresenter(presenters, FormCD.PROP_ITEMS);
         
-        //presenters.addAll(MIDPDatabindingCodeSupport.createDatabindingPresenters(PROP_LABEL, 
-        //                                                                         "getLabel()",
-        //                                                                         MIDPDatabindingCodeSupport.ProviderType.Item,
-        //                                                                         MIDPDatabindingCodeSupport.FeatureType.Item_FEATURE_LABEL));
+        presenters.addAll(MIDPDatabindingCodeSupport.createDatabindingPresenters(PROP_LABEL, 
+                                                                                 "getLabel()",
+                                                                                 MIDPDatabindingCodeSupport.ProviderType.Item,
+                                                                                 MIDPDatabindingCodeSupport.FeatureType.Item_FEATURE_LABEL));
         
         super.gatherPresenters (presenters);
     }

@@ -213,7 +213,7 @@ public final class MIDPDatabindingCodeSupport {
                     return;
                 }
                 section.getWriter().write("DataBinder.writeValue(\"" + getExpression(connector) + "\"," //NOI18N
-                        + CodeReferencePresenter.generateAccessCode(getComponent()) + "." + getterMethodName + ");"); //NOI18N
+                        + CodeReferencePresenter.generateAccessCode(getComponent()) + "." + getterMethodName + ");\n"); //NOI18N
             }
 
             @Override
