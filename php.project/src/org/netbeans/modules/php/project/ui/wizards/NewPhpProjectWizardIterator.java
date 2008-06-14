@@ -257,6 +257,17 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             srcPath = srcDir.getAbsolutePath();
         }
         properties.setProperty(PhpProjectProperties.SRC_DIR, srcPath);
+        properties.put(PhpProjectProperties.COPY_SRC_FILES, String.valueOf(isCopyFiles()));
+        properties.put(PhpProjectProperties.COPY_SRC_TARGET, getCopySrcTarget());
+    }
+
+    private String getCopySrcTarget() {
+        String copyTargetString = ""; // NOI18N
+        LocalServer localServer = (LocalServer) descriptor.getProperty(RunConfigurationPanel.COPY_SRC_TARGET);
+        if (localServer.getSrcRoot().length() > 0) {
+            copyTargetString = FileUtil.normalizeFile(new File(localServer.getSrcRoot())).getAbsolutePath();
+        }
+        return copyTargetString;
     }
 
     private void configureIndexFile(EditableProperties properties) {
@@ -302,17 +313,6 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         String url = (String) descriptor.getProperty(RunConfigurationPanel.URL);
 
         properties.put(PhpProjectProperties.URL, url);
-        properties.put(PhpProjectProperties.COPY_SRC_FILES, String.valueOf(isCopyFiles()));
-        properties.put(PhpProjectProperties.COPY_SRC_TARGET, getCopySrcTarget());
-    }
-
-    private String getCopySrcTarget() {
-        String copyTargetString = ""; // NOI18N
-        LocalServer localServer = (LocalServer) descriptor.getProperty(RunConfigurationPanel.COPY_SRC_TARGET);
-        if (localServer.getSrcRoot().length() > 0) {
-            copyTargetString = FileUtil.normalizeFile(new File(localServer.getSrcRoot())).getAbsolutePath();
-        }
-        return copyTargetString;
     }
 
     private void configureRunAsRemoteWeb(EditableProperties properties) {

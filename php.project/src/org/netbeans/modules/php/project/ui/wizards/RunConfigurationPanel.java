@@ -87,8 +87,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     static final String[] CFG_PROPS = new String[] {
         RUN_AS,
         URL,
-        COPY_SRC_FILES,
-        COPY_SRC_TARGET,
         REMOTE_CONNECTION,
         REMOTE_DIRECTORY,
         REMOTE_UPLOAD,
@@ -174,6 +172,10 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         // and put only the valid ones
         RunAsType runAs = getRunAsType();
         settings.putProperty(RUN_AS, runAs);
+        settings.putProperty(COPY_SRC_FILES, runAsLocalWeb.isCopyFiles());
+        settings.putProperty(COPY_SRC_TARGET, runAsLocalWeb.getLocalServer());
+        settings.putProperty(COPY_SRC_TARGETS, runAsLocalWeb.getLocalServerModel());
+
         switch (runAs) {
             case LOCAL:
                 storeRunAsLocalWeb(settings);
@@ -208,9 +210,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
 
     private void storeRunAsLocalWeb(WizardDescriptor settings) {
         settings.putProperty(URL, runAsLocalWeb.getUrl());
-        settings.putProperty(COPY_SRC_FILES, runAsLocalWeb.isCopyFiles());
-        settings.putProperty(COPY_SRC_TARGET, runAsLocalWeb.getLocalServer());
-        settings.putProperty(COPY_SRC_TARGETS, runAsLocalWeb.getLocalServerModel());
     }
 
     private void storeRunAsRemoteWeb(WizardDescriptor settings) {
