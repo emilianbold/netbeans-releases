@@ -54,9 +54,9 @@ import java.util.*;
  *
  * @author Jaroslav Tulach
  */
-public class IconManagerGetLoaderTest extends TestCase {
+public class ImageUtilitiesGetLoaderTest extends TestCase {
     static {
-        System.setProperty("org.openide.util.Lookup", "org.openide.util.IconManagerGetLoaderTest$Lkp");
+        System.setProperty("org.openide.util.Lookup", "org.openide.util.ImageUtilitiesGetLoaderTest$Lkp");
 
 
         Logger l = Logger.getLogger("");
@@ -69,28 +69,30 @@ public class IconManagerGetLoaderTest extends TestCase {
     }
     
     
-    public IconManagerGetLoaderTest (String testName) {
+    public ImageUtilitiesGetLoaderTest (String testName) {
         super (testName);
     }
 
+    @Override
     protected void setUp () throws Exception {
     }
 
+    @Override
     protected void tearDown () throws Exception {
     }
 
     public static Test suite () {
-        TestSuite suite = new TestSuite(IconManagerGetLoaderTest.class);
+        TestSuite suite = new TestSuite(ImageUtilitiesGetLoaderTest.class);
         return suite;
     }
     
     
     public void testWrongImplOfGetLoaderIssue62194() throws Exception {
-        ClassLoader l = IconManager.getLoader ();
+        ClassLoader l = ImageUtilities.getLoader ();
         assertTrue("Error manager race condition activated", ErrMgr.switchDone);
         assertEquals("c1 the original one", Lkp.c1, l);
         
-        ClassLoader n = IconManager.getLoader ();
+        ClassLoader n = ImageUtilities.getLoader ();
         assertEquals("c2 the new one", Lkp.c2, n);
     }
     

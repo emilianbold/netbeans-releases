@@ -44,17 +44,16 @@ import java.awt.Color;
 import java.awt.Image;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
+import javax.swing.Icon;
 import junit.framework.*;
-import java.lang.ref.*;
-import java.util.*;
 
 /**
  *
  * @author Radim Kubacki
  */
-public class IconManagerTest extends TestCase {
+public class ImageUtilitiesTest extends TestCase {
     
-    public IconManagerTest (String testName) {
+    public ImageUtilitiesTest (String testName) {
         super (testName);
     }
 
@@ -76,7 +75,7 @@ public class IconManagerTest extends TestCase {
         g.fillRect(0, 0, 2, 2);
         g.dispose();
         
-        Image mergedImg = IconManager.mergeImages(img1, img2, 0, 0);
+        Image mergedImg = ImageUtilities.mergeImages(img1, img2, 0, 0);
         if (!(mergedImg instanceof BufferedImage)) {
             fail("It is assumed that mergeImages returns BufferedImage. Need to update test");
         }
@@ -102,7 +101,7 @@ public class IconManagerTest extends TestCase {
         g.fillRect(0, 0, 2, 2);
         g.dispose();
         
-        Image mergedImg = IconManager.mergeImages(img1, img2, 0, 0);
+        Image mergedImg = ImageUtilities.mergeImages(img1, img2, 0, 0);
         if (!(mergedImg instanceof BufferedImage)) {
             fail("It is assumed that mergeImages returns BufferedImage. Need to update test");
         }
@@ -112,5 +111,68 @@ public class IconManagerTest extends TestCase {
         assertEquals(Color.RED, new Color(merged.getRGB(1, 1)));
         assertEquals(Color.BLUE, new Color(merged.getRGB(10, 10)));
     }
-    
+
+    public void testImageToolTip() {
+        BufferedImage img1 = new BufferedImage(16, 16, BufferedImage.TYPE_INT_RGB);
+        java.awt.Graphics2D g = img1.createGraphics();
+        g.setColor(Color.BLUE);
+        g.fillRect(0, 0, 16, 16);
+        g.dispose();
+        
+        assertEquals("Tool tip text should be empty", "", ImageUtilities.getImageToolTip(img1));
+
+        String text = "test";
+        Image imgTT1 = ImageUtilities.assignToolTipToImage(img1, text);
+        assertEquals("Should remain empty", "", ImageUtilities.getImageToolTip(img1));
+        String str = ImageUtilities.getImageToolTip(imgTT1);
+        assertEquals("We should get what we set", text, str);
+
+        Image imgTT2 = ImageUtilities.assignToolTipToImage(img1, "test");
+        assertSame("Instances should be same", imgTT1, imgTT2);
+
+        imgTT2 = ImageUtilities.addToolTipToImage(img1, "");
+        imgTT2 = ImageUtilities.addToolTipToImage(imgTT2, "test");
+        str = ImageUtilities.getImageToolTip(imgTT2);
+        String expected = "test";
+        assertEquals("Tool tip text should be: " + expected + ", but it is " + str, expected, str);
+
+        imgTT2 = ImageUtilities.addToolTipToImage(imgTT1, "test2");
+        str = ImageUtilities.getImageToolTip(imgTT2);
+        expected = "test" + ImageUtilities.TOOLTIP_SEPAR + "test2";
+        assertEquals("Tool tip text should be: " + expected + ", but it is " + str, expected, str);
+
+        BufferedImage img2 = new BufferedImage(2, 2, BufferedImage.TYPE_INT_RGB);
+        g = img2.createGraphics();
+        g.setColor(Color.RED);
+        g.fillRect(0, 0, 2, 2);
+        g.dispose();
+
+        imgTT1 = ImageUtilities.assignToolTipToImage(img1, "Tool tip image1");
+        imgTT2 = ImageUtilities.assignToolTipToImage(img2, "Tool tip image2");
+        Image result = ImageUtilities.mergeImages(imgTT1, imgTT2, 0, 0);
+        expected = "Tool tip image1" + ImageUtilities.TOOLTIP_SEPAR + "Tool tip image2";
+        str = ImageUtilities.getImageToolTip(result);
+        assertEquals("Tool tip text should be: " + expected + ", but it is " + str, expected, str);
+        
+        result = ImageUtilities.mergeImages(imgTT1, img2, 0, 0);
+        str = ImageUtilities.getImageToolTip(result);
+        expected = "Tool tip image1";
+        assertEquals("Tool tip text should be: " + expected + ", but it is " + str, expected, str);
+
+        result = ImageUtilities.mergeImages(img1, imgTT2, 0, 0);
+        str = ImageUtilities.getImageToolTip(result);
+        expected = "Tool tip image2";
+        assertEquals("Tool tip text should be: " + expected + ", but it is " + str, expected, str);
+        
+        result = ImageUtilities.mergeImages(img1, img2, 0, 0);
+        str = ImageUtilities.getImageToolTip(result);
+        expected = "";
+        assertEquals("Tool tip text should be empty, but it is " + str, expected, str);
+        
+        Icon icon = ImageUtilities.image2Icon(result);
+        assertSame("Should be same instance", icon, result);
+
+        Image img = ImageUtilities.icon2Image(icon);
+        assertSame("Should be same instance", icon, img);
+    }
 }
