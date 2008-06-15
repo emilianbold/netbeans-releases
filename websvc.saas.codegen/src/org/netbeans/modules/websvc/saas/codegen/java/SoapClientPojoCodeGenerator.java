@@ -45,9 +45,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.modules.websvc.saas.codegen.model.SoapClientOperationInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.SoapClientSaasBean;
+import org.netbeans.modules.websvc.saas.codegen.util.Util;
+import org.netbeans.modules.websvc.saas.model.SaasMethod;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -59,6 +63,13 @@ public class SoapClientPojoCodeGenerator extends SoapClientRestResourceCodeGener
         
     public SoapClientPojoCodeGenerator() {
         super();
+    }
+    
+    public boolean canAccept(SaasMethod method, Document doc) {
+        if (method instanceof WsdlSaasMethod && Util.isJava(doc)) {
+            return true;
+        }
+        return false;
     }
 
     @Override

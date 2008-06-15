@@ -295,7 +295,7 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
             if (hasRequestRep) {
                 methodBody += "             " + returnStatement + ".post(" + headerUsage + ", " + Constants.QUERY_PARAMS + ");\n";
             } else {
-                methodBody += "             " + returnStatement + ".post(" + headerUsage + ", (java.io.InputStream) null);\n";
+                methodBody += "             " + returnStatement + ".post(" + headerUsage + ", " + Constants.PUT_POST_CONTENT + ");\n";
             }
         } else if (httpMethod == HttpMethodType.DELETE) {
             methodBody += "             " + returnStatement + ".delete(" + headerUsage + ");\n";

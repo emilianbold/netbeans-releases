@@ -89,7 +89,7 @@ public class ExecutionServiceTest extends NbTestCase {
         process = new TestProcess(1);
         callable.setProcess(process);
 
-        task = service.rerun();
+        task = service.run();
         assertNotNull(task);
         assertFalse(process.isFinished());
 

@@ -42,6 +42,10 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 
 import java.io.IOException;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.modules.websvc.saas.codegen.util.Util;
+import org.netbeans.modules.websvc.saas.model.SaasMethod;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 
 /**
  * Code generator for Accessing Saas services.
@@ -52,6 +56,14 @@ public class SoapClientJspCodeGenerator extends SoapClientServletCodeGenerator {
 
     public SoapClientJspCodeGenerator() {
         super();
+    }
+    
+    @Override
+    public boolean canAccept(SaasMethod method, Document doc) {
+        if (method instanceof WsdlSaasMethod && Util.isJsp(doc)) {
+            return true;
+        }
+        return false;
     }
 
     /**

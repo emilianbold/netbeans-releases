@@ -40,10 +40,12 @@ package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.event.DocumentEvent;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentListener;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -69,12 +71,34 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         this.displayName = displayName;
 
         initComponents();
-        interpreterTextField.setText(PhpOptions.getInstance().getPhpInterpreter());
+
+        addListeners();
+    }
+
+    private void addListeners() {
+        interpreterTextField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                processUpdate();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                processUpdate();
+            }
+            public void changedUpdate(DocumentEvent e) {
+                processUpdate();
+            }
+            private void processUpdate() {
+                changeSupport.fireChange();
+            }
+        });
         runAsCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 changeSupport.fireChange();
             }
         });
+    }
+
+    public void loadPhpInterpreter() {
+        interpreterTextField.setText(PhpOptions.getInstance().getPhpInterpreter());
     }
 
     @Override
@@ -98,6 +122,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
     }
 
     protected void loadFields() {
+        loadPhpInterpreter();
     }
 
     protected void validateFields() {
@@ -111,7 +136,6 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
     public void removeRunAsScriptListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
     }
-
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -186,4 +210,8 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
     private javax.swing.JComboBox runAsCombo;
     private javax.swing.JLabel runAsLabel;
     // End of variables declaration//GEN-END:variables
+
+    public String getPhpInterpreter() {
+        return interpreterTextField.getText().trim();
+    }
 }

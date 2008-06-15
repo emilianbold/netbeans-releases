@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.db.sql.execute;
 
+import org.netbeans.modules.db.sql.history.SQLHistory;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;

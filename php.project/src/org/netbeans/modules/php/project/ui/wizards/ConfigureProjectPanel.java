@@ -45,12 +45,13 @@ import org.netbeans.modules.php.project.ui.SourcesFolderNameProvider;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import java.awt.Component;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
-import javax.swing.ComboBoxModel;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -79,11 +80,18 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     static final String ENCODING = "encoding"; // NOI18N
     static final String ROOTS = "roots"; // NOI18N
 
+    private static final FilenameFilter NB_FILENAME_FILTER = new FilenameFilter() {
+        public boolean accept(File dir, String name) {
+            return "nbproject".equals(name); // NOI18N
+        }
+    };
+
     private final String[] steps;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private ConfigureProjectPanelVisual configureProjectPanelVisual = null;
     private WizardDescriptor descriptor = null;
     private String originalProjectName = null;
+    private boolean originalCreateIndexFile = true;
 
     static {
         String msg = NbBundle.getMessage(ConfigureProjectPanel.class, "LBL_UseProjectFolder",
@@ -135,10 +143,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         }
 
         // encoding
-        Charset encoding = getEncoding();
-        if (encoding != null) {
-            configureProjectPanelVisual.setEncoding(encoding);
-        }
+        configureProjectPanelVisual.setEncoding(getEncoding());
 
         // set as main project
         Boolean setAsMain = isSetAsMain();
@@ -261,7 +266,12 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private Charset getEncoding() {
-        return (Charset) descriptor.getProperty(ENCODING);
+        Charset enc = (Charset) descriptor.getProperty(ENCODING);
+        if (enc == null) {
+            // #136917
+            enc = FileEncodingQuery.getDefaultEncoding();
+        }
+        return enc;
     }
 
     private LocalServer getLocalServer() {
@@ -324,8 +334,20 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         if (err != null) {
             return err;
         }
+        if (isProjectAlready(projectFolder)) {
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_AlreadyProject");
+        }
         warnIfNotEmpty(projectFolder.getAbsolutePath(), "Project"); // NOI18N
         return null;
+    }
+
+    // #137230
+    private boolean isProjectAlready(File projectFolder) {
+        if (!projectFolder.exists()) {
+            return false;
+        }
+        File[] kids = projectFolder.listFiles(NB_FILENAME_FILTER);
+        return kids != null && kids.length > 0;
     }
 
     private String validateSources() {
@@ -439,8 +461,42 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         configureProjectPanelVisual.addConfigureProjectListener(this);
     }
 
+    // #137085
+    private void adjustCreateIndexFileState() {
+        if (originalCreateIndexFile != configureProjectPanelVisual.isCreateIndex()) {
+            // user clicked on the checkbox himself, do not adjust anything automatically, just remember the change
+            originalCreateIndexFile = configureProjectPanelVisual.isCreateIndex();
+            return;
+        }
+        // change somewhere else than in the 'create index file' checkbox
+        if (!configureProjectPanelVisual.isCreateIndex()) {
+            return;
+        }
+        LocalServer sourcesLocation = configureProjectPanelVisual.getSourcesLocation();
+        String srcRoot = sourcesLocation.getSrcRoot();
+        if (isProjectFolder(sourcesLocation)
+                || srcRoot.trim().length() == 0) {
+            return;
+        }
+        File sources = new File(srcRoot);
+        if (!sources.exists()) {
+            return;
+        }
+        String indexName = configureProjectPanelVisual.getIndexName();
+        if (indexName.length() == 0) {
+            return;
+        }
+        if (new File(sources, indexName).exists()) {
+            configureProjectPanelVisual.removeConfigureProjectListener(this);
+            configureProjectPanelVisual.setCreateIndex(false);
+            originalCreateIndexFile = false;
+            configureProjectPanelVisual.addConfigureProjectListener(this);
+        }
+    }
+
     public void stateChanged(ChangeEvent e) {
         adjustProjectNameAndLocation();
+        adjustCreateIndexFileState();
         fireChangeEvent();
     }
 }

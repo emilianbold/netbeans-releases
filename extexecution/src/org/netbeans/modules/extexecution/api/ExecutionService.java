@@ -103,8 +103,8 @@ public final class ExecutionService {
         RerunAction.Accessor.setDefault(new RerunAction.Accessor() {
 
             @Override
-            public Future<Integer> rerun(ExecutionService service) {
-                return service.rerun();
+            public Future<Integer> run(ExecutionService service) {
+                return service.run();
             }
 
         });
@@ -174,23 +174,6 @@ public final class ExecutionService {
         }
     }
 
-    // package level for tests
-    Future<Integer> rerun() {
-        synchronized (this) {
-            if (current != null && !current.isDone()) {
-                throw new IllegalStateException("Task is still running");
-            }
-
-            try {
-                workingIO.getOut().reset();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            rerun = true;
-            return run();
-        }
-    }
-
     /**
      * Runs the process described by this service.
      * <p>
@@ -204,23 +187,21 @@ public final class ExecutionService {
                 throw new IllegalStateException("Task is still running");
             }
 
-            if (!rerun) {
+            if (rerun) {
+                assert !workingIO.isClosed();
+
+                if (workingIO != customIO) {
+                    ManagedInputOutput freeIO = ManagedInputOutput.getInputOutput(
+                        displayName, descriptor.isControllable());
+
+                    assert freeIO.getInputOutput() == workingIO;
+                }
+                configureInputOutput(workingIO, rerun);
+            } else {
                 customIO = descriptor.getInputOutput();
                 if (customIO != null) {
                     workingIO = customIO;
-                    try {
-                        workingIO.getOut().reset();
-                    } catch (IOException exc) {
-                        LOGGER.log(Level.INFO, null, exc);
-                    }
-
-                    // Note - do this AFTER the reset() call above; if not, weird bugs occur
-                    workingIO.setErrSeparated(false);
-
-                    // Open I/O window now. This should probably be configurable.
-                    if (descriptor.isFrontWindow()) {
-                        workingIO.select();
-                    }
+                    configureInputOutput(workingIO, rerun);
                 }
 
                 // try to find free output windows
@@ -233,9 +214,8 @@ public final class ExecutionService {
                         displayName = freeIO.getDisplayName();
                         stopAction = freeIO.getStopAction();
                         rerunAction = freeIO.getRerunAction();
-                        if (descriptor.isFrontWindow()) {
-                            workingIO.select();
-                        }
+
+                        configureInputOutput(workingIO, rerun);
                     }
                 }
 
@@ -253,43 +233,17 @@ public final class ExecutionService {
                         workingIO = IOProvider.getDefault().getIO(displayName, true);
                     }
 
-                    try {
-                        workingIO.getOut().reset();
-                    } catch (IOException exc) {
-                        LOGGER.log(Level.INFO, null, exc);
-                    }
-
-                    // Note - do this AFTER the reset() call above; if not, weird bugs occur
-                    workingIO.setErrSeparated(false);
-
-                    // Open I/O window now. This should probably be configurable.
-                    if (descriptor.isFrontWindow()) {
-                        workingIO.select();
-                    }
+                    configureInputOutput(workingIO, rerun);
                 }
             }
 
-            ACTIVE_DISPLAY_NAMES.add(displayName);
-            workingIO.setInputVisible(descriptor.isInputVisible());
-
-            final InputProcessor outProcessor = descriptor.getOutProcessor();
-            try {
-                if (outProcessor != null) {
-                    outProcessor.reset();
-                }
-
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
+            
+            synchronized (ExecutionService.class) {
+                ACTIVE_DISPLAY_NAMES.add(displayName);
             }
 
-            final InputProcessor errProcessor = descriptor.getErrProcessor();
-            try {
-                if (errProcessor != null) {
-                    errProcessor.reset();
-                }
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
-            }
+            rerun = true;
+            resetProcessors();
 
             final ProgressHandle handle = createProgressHandle();
             final InputOutput io = workingIO;
@@ -337,6 +291,24 @@ public final class ExecutionService {
         }
     }
 
+    private void configureInputOutput(InputOutput inputOutput, boolean rerun) {
+        try {
+            inputOutput.getOut().reset();
+        } catch (IOException exc) {
+            LOGGER.log(Level.INFO, null, exc);
+        }
+
+        // Note - do this AFTER the reset() call above; if not, weird bugs occur
+        inputOutput.setErrSeparated(false);
+
+        // Open I/O window now. This should probably be configurable.
+        if (!rerun && descriptor.isFrontWindow()) {
+            inputOutput.select();
+        }
+        
+        workingIO.setInputVisible(descriptor.isInputVisible());
+    }
+
     private void configureActions(RerunAction rerunAction, StopAction stopAction) {
         if (stopAction != null) {
             synchronized (stopAction) {
@@ -351,6 +323,27 @@ public final class ExecutionService {
                 rerunAction.setRerunCondition(descriptor.getRerunCondition());
                 rerunAction.setEnabled(false);
             }
+        }
+    }
+
+    private void resetProcessors() {
+        InputProcessor outProcessor = descriptor.getOutProcessor();
+        try {
+            if (outProcessor != null) {
+                outProcessor.reset();
+            }
+
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
+
+        InputProcessor errProcessor = descriptor.getErrProcessor();
+        try {
+            if (errProcessor != null) {
+                errProcessor.reset();
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
         }
     }
 
@@ -434,7 +427,9 @@ public final class ExecutionService {
                         stopAction, rerunAction);
             }
 
-            ACTIVE_DISPLAY_NAMES.remove(displayName);
+            synchronized (ExecutionService.class) {
+                ACTIVE_DISPLAY_NAMES.remove(displayName);
+            }
 
             if (handle != null) {
                 handle.finish();
@@ -485,7 +480,7 @@ public final class ExecutionService {
         return InputProcessors.copying(new OutputStreamWriter(os));
     }
 
-    private static String getNonActiveDisplayName(final String displayNameBase) {
+    private static synchronized String getNonActiveDisplayName(final String displayNameBase) {
         String nonActiveDN = displayNameBase;
         if (ACTIVE_DISPLAY_NAMES.contains(nonActiveDN)) {
             // Uniquify: "prj (targ) #2", "prj (targ) #3", etc.
