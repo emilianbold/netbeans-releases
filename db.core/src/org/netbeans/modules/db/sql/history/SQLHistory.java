@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.sql.execute;
+package org.netbeans.modules.db.sql.history;
 
 import java.io.Serializable;
 import java.util.Date;
