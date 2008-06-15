@@ -41,10 +41,14 @@
 package org.netbeans.modules.websvc.saas.codegen.java;
 
 import java.util.List;
+import javax.swing.text.Document;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
 import org.netbeans.modules.websvc.saas.codegen.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
+import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
+import org.netbeans.modules.websvc.saas.model.SaasMethod;
 
 /**
  * Code generator for Accessing Saas services.
@@ -55,6 +59,15 @@ public class CustomClientServletCodeGenerator extends CustomClientPojoCodeGenera
 
     public CustomClientServletCodeGenerator() {
         setDropFileType(Constants.DropFileType.SERVLET);
+    }
+    
+    @Override
+    public boolean canAccept(SaasMethod method, Document doc) {
+        if (method instanceof CustomSaasMethod && 
+                Util.isServlet(NbEditorUtilities.getDataObject(doc))) {
+            return true;
+        }
+        return false;
     }
     
     @Override

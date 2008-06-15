@@ -40,6 +40,12 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
+import javax.swing.text.Document;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.websvc.saas.codegen.util.Util;
+import org.netbeans.modules.websvc.saas.model.SaasMethod;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
+
 /**
  * Code generator for REST services wrapping WSDL-based web service.
  *
@@ -50,5 +56,13 @@ public class SoapClientServletCodeGenerator extends SoapClientPojoCodeGenerator 
     public SoapClientServletCodeGenerator() {
         super();
     }
-
+    
+    @Override
+    public boolean canAccept(SaasMethod method, Document doc) {
+        if (method instanceof WsdlSaasMethod && 
+                Util.isServlet(NbEditorUtilities.getDataObject(doc))) {
+            return true;
+        }
+        return false;
+    }
 }
