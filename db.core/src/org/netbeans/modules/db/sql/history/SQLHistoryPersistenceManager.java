@@ -47,25 +47,36 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import org.xml.sax.Attributes;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.netbeans.modules.db.sql.history.SQLHistory;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.XMLDataObject;
 import org.openide.util.Exceptions;
+import org.openide.xml.EntityCatalog;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Manage creation and updates to persisted SQL statements
@@ -79,8 +90,10 @@ public class SQLHistoryPersistenceManager {
     private static SQLHistoryPersistenceManager _instance = null;
     private static Document document;
     private List<SQLHistory> sqlHistoryList;
-
+    
     private SQLHistoryPersistenceManager() {
+        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER);
+        String fn = FileUtil.getFileDisplayName(root) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N
     }
 
     public static SQLHistoryPersistenceManager getInstance() {
@@ -95,6 +108,31 @@ public class SQLHistoryPersistenceManager {
         DataFolder df = DataFolder.findFolder(fo);
         AtomicWriter writer = new AtomicWriter(sqlHistoryList, df, SQL_HISTORY_FILE_NAME);
         df.getPrimaryFile().getFileSystem().runAtomicAction(writer);
+    }
+    
+    public List<SQLHistory> retrieve(String historyFilePath, FileObject historyFo) throws java.io.IOException, ClassNotFoundException {
+        Handler handler = new Handler(historyFilePath);
+       
+        try {
+            XMLReader reader = XMLUtil.createXMLReader();            
+            XMLDataObject obj = (XMLDataObject) XMLDataObject.find(historyFo);
+            InputSource is = new InputSource(obj.getPrimaryFile().getInputStream());
+            is.setSystemId(historyFo.getURL().toExternalForm());
+            reader.setContentHandler(handler);
+            reader.setErrorHandler(handler);
+            reader.setEntityResolver(EntityCatalog.getDefault());
+            reader.parse(is);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SAXException ex) {
+            Exception x = ex.getException();
+            if (x instanceof java.io.IOException) {
+                throw (IOException) x;
+            } else {
+                throw new java.io.IOException(ex.getMessage());
+            }
+        }
+        return handler.getSqlHistory();
     }
 
     /**
@@ -130,8 +168,9 @@ public class SQLHistoryPersistenceManager {
                         lck = data.lock();
                         ostm = data.getOutputStream(lck);
                         writer = new PrintWriter(new OutputStreamWriter(ostm, "UTF8")); //NOI18N                    
-
                         document = builder.newDocument();
+                        xmlWriter = new XmlWriter(data, sqlHistoryList, writer);
+                        xmlWriter.write();
                     } else {                                        
                         data = FileUtil.toFileObject(FileUtil.normalizeFile(new File(fn)));
                         InputStream is = data.getInputStream();
@@ -203,6 +242,10 @@ public class SQLHistoryPersistenceManager {
                 }
             }
             return newNode;
+        }
+        
+        private void write() {
+            pw.println("<?xml version='1.0' encoding='UTF-8' ?>");
         }
 
         /**
@@ -284,4 +327,71 @@ public class SQLHistoryPersistenceManager {
             return sb.toString();
         }
     }
+    
+    /**
+     * SAX handler for reading the XML file.
+     */
+    private static final class Handler extends DefaultHandler implements ContentHandler {
+
+        private static final String ELEMENT_SQL = "sql"; // NOI18N
+        private static final String ATTR_URL_PROPERTY_VALUE = "url"; // NOI18N
+        private static final String ATTR_DATE_PROPERTY_VALUE = "date"; // NOI18N
+        private final String sqlHistoryFileName;
+        private static String url;
+        private static String sql;
+        private static Date date;
+        boolean matchingUrl = false;
+        private  List<SQLHistory> sqlHistoryList = new ArrayList<SQLHistory>();
+        static boolean isSql = false;
+
+        public Handler(String sqlHistoryFileName) {
+            this.sqlHistoryFileName = sqlHistoryFileName;
+        }
+
+        public void startElement(String uri, String localName, String qName, Attributes attrs) throws SAXException {                                              
+            if (ELEMENT_SQL.equals(qName)) {
+                isSql = true;
+                
+                try {
+                    url = attrs.getValue(ATTR_URL_PROPERTY_VALUE);
+                    date = DateFormat.getInstance().parse(attrs.getValue(ATTR_DATE_PROPERTY_VALUE));
+                } catch (ParseException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+                if (url != null && sql != null && date != null) {
+                    addHistory(url, sql, date);
+                    reset();
+                }
+            } else {
+                isSql = false;
+            }
+        }
+
+        private static void reset() {
+            // reset data
+            url = sql = null;
+            date = null;
+        }
+        
+        private void addHistory(String url, String sql, Date date) {
+            sqlHistoryList.add(new SQLHistory(url, sql, date));
+        }
+ 
+        public void characters(char buf[], int offset, int length) {    
+            if (isSql) {
+                String parsedValue = new String(buf, offset, length);
+                if (!parsedValue.trim().equals("") && sql == null) {
+                    sql = parsedValue;
+                }
+                isSql = false;
+            }
+        }
+
+        public List<SQLHistory> getSqlHistory() {
+            return sqlHistoryList;
+        }
+    }
+    
+    
 }
