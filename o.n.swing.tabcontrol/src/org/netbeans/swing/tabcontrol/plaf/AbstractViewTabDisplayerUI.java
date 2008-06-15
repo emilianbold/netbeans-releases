@@ -167,7 +167,8 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             tabComponent = tab.getComponent();
         }
         btnAutoHidePin.setVisible( tabComponent != null 
-                && !TabDisplayer.ORIENTATION_INVISIBLE.equals( displayer.getWinsysInfo().getOrientation( tabComponent ) ) );
+                && !TabDisplayer.ORIENTATION_INVISIBLE.equals( displayer.getContainerWinsysInfo().getOrientation( tabComponent ) )
+                && displayer.getContainerWinsysInfo().isTopComponentSlidingEnabled() );
     }
     
     protected void installControlButtons() {
@@ -199,7 +200,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
 //            }
 
             //create autohide/pin button
-            if( null != displayer.getWinsysInfo() ) {
+            if( null != displayer.getContainerWinsysInfo() ) {
                 btnAutoHidePin = TabControlButtonFactory.createSlidePinButton( displayer );
                 buttonsPanel.add( btnAutoHidePin );
 
@@ -210,16 +211,19 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
                 width += icon.getIconWidth();
             }
 
-            //create close button
-            btnClose = TabControlButtonFactory.createCloseButton( displayer );
-            buttonsPanel.add( btnClose );
+            if( null == displayer.getContainerWinsysInfo() 
+                    || displayer.getContainerWinsysInfo().isTopComponentClosingEnabled() ) {
+                //create close button
+                btnClose = TabControlButtonFactory.createCloseButton( displayer );
+                buttonsPanel.add( btnClose );
 
-            Icon icon = btnClose.getIcon();
-            if( 0 != width )
-                width += ICON_X_PAD;
-            btnClose.setBounds( width, 0, icon.getIconWidth(), icon.getIconHeight() );
-            width += icon.getIconWidth();
-            height = icon.getIconHeight();
+                Icon icon = btnClose.getIcon();
+                if( 0 != width )
+                    width += ICON_X_PAD;
+                btnClose.setBounds( width, 0, icon.getIconWidth(), icon.getIconHeight() );
+                width += icon.getIconWidth();
+                height = icon.getIconHeight();
+            }
             
             Dimension size = new Dimension( width, height );
             buttonsPanel.setMinimumSize( size );
@@ -520,6 +524,22 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         }
         
         return -1;
+    }
+
+    @Override
+    public Dimension getMinimumSize(JComponent c) {
+        int index = displayer.getSelectionModel().getSelectedIndex();
+        TabDataModel model = displayer.getModel();
+        if( index < 0 || index >= model.size() )
+            index = 0;
+        Dimension minSize = null;
+        if( index >= model.size() )
+            minSize = new Dimension( 100, 10 );
+        else
+            minSize = model.getTab(index).getComponent().getMinimumSize();
+        minSize.width = Math.max(minSize.width, 100);
+        minSize.height = Math.max(minSize.height, 10);
+        return minSize;
     }
     
     protected int createRepaintPolicy () {

@@ -3,8 +3,8 @@
     A list of WWW bookmarks.
 -->
 <web-bookmarks>
-    <bookmark id="0x0001">
-        <title>The Cloud Appreciation Society</title>
-        <link url="http://www.cloudappreciationsociety.org/" />
-    </bookmark>
+<bookmark id="0x0001">
+<title>The Cloud Appreciation Society</title>
+<link url="http://www.cloudappreciationsociety.org/" />
+</bookmark>
 </web-bookmarks>

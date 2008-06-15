@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.db.util;
 
-import com.sun.j3d.utils.behaviors.interpolators.KBCubicSplineCurve;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -38,7 +38,8 @@
  */
 package org.netbeans.modules.vmd.midp.codegen;
 
-import java.awt.image.BufferStrategy;
+import java.util.Arrays;
+import java.util.Collection;
 import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
@@ -124,7 +125,7 @@ public final class MIDPDatabindingCodeSupport {
                 return "DateFieldBindingProvider.FEATURE_INPUTMODE"; //NOI18N
 
             case DataField_FeatureInputDateTime:
-                return "FeatureText(false)"; //NIOI18N
+                return "new DateFieldBindingProvider.FeatureInputDateTime(false)"; //NIOI18N
 
             case ImageItem_FEATURE_IMAGE:
                 return "ImageItemBindingProvider.FEATURE_IMAGE"; //NOI18N
@@ -159,7 +160,7 @@ public final class MIDPDatabindingCodeSupport {
                 if (connector != null) {
                     String codeAccess = CodeReferencePresenter.generateAccessCode(connector.getParentComponent());
                     String directAccess = CodeReferencePresenter.generateDirectAccessCode(connector.getParentComponent());
-                    section.getWriter().write("    DataBinder.registerDataSet(" + codeAccess + ", \"" + directAccess + "\");"); //NOI18N
+                    section.getWriter().write("DataBinder.registerDataSet(" + codeAccess + ", \"" + directAccess + "\");"); //NOI18N
 
                 }
 
@@ -183,13 +184,14 @@ public final class MIDPDatabindingCodeSupport {
             @Override
             public void generateClassInitializationFooter(MultiGuardedSection section) {
                 DesignComponent connecter = MidpDatabindingSupport.getConnector(getComponent(), bindedProperty);
-                if (connecter == null)
+                if (connecter == null) {
                     return;
+                }
                 if (connecter != null) {
                     StringBuffer code = new StringBuffer();
                     code.append("\n"); //NOI18N
                     code.append("DataBinder.bind(").append("\""); //NOI18N
-                    code.append(getExpression(connecter, bindedProperty)).append("\", "); //NOI!8N
+                    code.append(getExpression(connecter)).append("\", "); //NOI!8N
                     code.append(MIDPDatabindingCodeSupport.getCodeProviderNama(providerType)).append(", "); //NOI18N
                     code.append(CodeReferencePresenter.generateAccessCode(getComponent())).append(", "); //NOI!8N
                     code.append(MIDPDatabindingCodeSupport.getCodeFeatureName(featureType)).append(");"); //NOI18N
@@ -207,10 +209,11 @@ public final class MIDPDatabindingCodeSupport {
 
             public void generateMultiGuardedSectionCode(MultiGuardedSection section) {
                 DesignComponent connector = MidpDatabindingSupport.getConnector(getComponent(), bindedProperty);
-                if (connector == null)
+                if (connector == null) {
                     return;
-                section.getWriter().write("DataBinder.writeValue(\"" + getExpression(connector, bindedProperty) + "\"," //NOI18N
-                        + CodeReferencePresenter.generateAccessCode(getComponent()) + "." + getterMethodName + ");"); //NOI18N
+                }
+                section.getWriter().write("DataBinder.writeValue(\"" + getExpression(connector) + "\"," //NOI18N
+                        + CodeReferencePresenter.generateAccessCode(getComponent()) + "." + getterMethodName + ");\n"); //NOI18N
             }
 
             @Override
@@ -233,7 +236,46 @@ public final class MIDPDatabindingCodeSupport {
 
     }
 
-    private static String getExpression(DesignComponent connector, String bindedProperty) {
+    public static Collection<Presenter> createDatabindingPresenters(String bindedProperty,
+            String methodString,
+            MIDPDatabindingCodeSupport.ProviderType providedType,
+            MIDPDatabindingCodeSupport.FeatureType featureType) {
+        assert bindedProperty != null;
+        assert methodString != null;
+        assert providedType != null;
+        assert featureType != null;
+
+        String fqnName = null;
+
+        switch (providedType) {
+            case DataField:
+                fqnName = "org.netbeans.microedition.databinding.lcdui.DateFieldBindingProvider"; //NOI18N
+                break;
+            case ImageItem:
+                fqnName = "org.netbeans.microedition.databinding.lcdui.ImageItemBindingProvider"; //NOI18N
+                break;
+            case Item:
+                fqnName = "org.netbeans.microedition.databinding.lcdui.ItemBindingProvider"; //NOI18N
+                break;
+            //  case List:
+            //  return "ListBindingProvider()"; //NOI18N
+            case StringItem:
+                fqnName = "org.netbeans.microedition.databinding.lcdui.StringItemBindingProvider"; //NOI18N
+                break;
+            case TextField:
+                fqnName = "org.netbeans.microedition.databinding.lcdui.TextFieldBindingProvider"; //NOI18N  
+
+        }
+        String[] fqnNames = new String[]{fqnName};
+        return Arrays.asList(
+                MIDPDatabindingCodeSupport.createDataBinderRegisterCodePresenter(bindedProperty),
+                MIDPDatabindingCodeSupport.createDataBinderBindCodePresenter(bindedProperty, providedType, featureType),
+                MIDPDatabindingCodeSupport.createEventSourceCodeGenPresenter(bindedProperty, methodString),
+                MidpCodePresenterSupport.createAddImportDatabindingPresenter(bindedProperty, fqnNames)
+        );
+    }
+
+    private static String getExpression(DesignComponent connector) {
         StringBuffer buffer = new StringBuffer();
         buffer.append((String) connector.getParentComponent().readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue());
         buffer.append(".");//NOI28N
