@@ -46,11 +46,6 @@ made subject to such option by the copyright holder.
     <folder name="Templates">
         <folder name="Project">
             <folder name="J2EE">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.clientproject.ui.wizards.Bundle"/>
-                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/clientproject/ui/resources/desktop.html"/>
-
-                
-                
                 <attr name="position" intvalue="400"/>
                 <file name="emptyCar.xml">
                     <attr name="position" intvalue="600"/>

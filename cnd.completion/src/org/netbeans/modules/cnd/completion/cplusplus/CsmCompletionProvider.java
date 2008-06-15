@@ -109,7 +109,7 @@ public class CsmCompletionProvider implements CompletionProvider {
         final int dot = component.getCaret().getDot();
         // disable code templates for smart mode of completion
         //CsmCodeTemplateFilter.enableAbbreviations(((queryType & COMPLETION_ALL_QUERY_TYPE) == COMPLETION_ALL_QUERY_TYPE));
-        CsmResultItem.setEnableInstantSubstitution(true);
+        CsmResultItem.setEnableInstantSubstitution(false);
         if (TRACE) System.err.println("createTask called on " + dot); // NOI18N
 
         // do not work together with include completion
@@ -215,7 +215,7 @@ public class CsmCompletionProvider implements CompletionProvider {
 //                             || (items.size() > MAX_ITEMS_TO_DISPLAY);
             resultSet.setHasAdditionalItems(queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY);
             if (!limit) {
-                CsmResultItem.setEnableInstantSubstitution(queryScope == CsmCompletionQuery.QueryScope.GLOBAL_QUERY);
+                //CsmResultItem.setEnableInstantSubstitution(queryScope == CsmCompletionQuery.QueryScope.GLOBAL_QUERY);
                 resultSet.estimateItems(items.size(), -1);
                 resultSet.addAllItems(items);
             } else {

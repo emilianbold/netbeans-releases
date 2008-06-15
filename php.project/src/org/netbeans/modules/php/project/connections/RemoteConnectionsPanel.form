@@ -65,6 +65,9 @@
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
         <Component class="javax.swing.JList" name="configList">
+          <Properties>
+            <Property name="selectionMode" type="int" value="0"/>
+          </Properties>
         </Component>
       </SubComponents>
     </Container>
@@ -87,10 +90,10 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="0" attributes="0">
+              <Group type="102" attributes="0">
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="separator" alignment="0" pref="427" max="32767" attributes="0"/>
+                      <Component id="separator" alignment="0" pref="428" max="32767" attributes="0"/>
                       <Group type="102" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="connectionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -102,43 +105,33 @@
                           </Group>
                           <EmptySpace min="-2" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="typeComboBox" pref="302" max="32767" attributes="0"/>
-                              <Component id="connectionTextField" alignment="0" pref="302" max="32767" attributes="0"/>
+                              <Component id="typeComboBox" pref="303" max="32767" attributes="0"/>
+                              <Component id="connectionTextField" alignment="0" pref="303" max="32767" attributes="0"/>
                               <Group type="102" alignment="1" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="initialDirectoryTextField" alignment="0" pref="135" max="32767" attributes="2"/>
-                                      <Component id="userTextField" alignment="0" pref="135" max="32767" attributes="2"/>
-                                      <Component id="hostTextField" pref="135" max="32767" attributes="2"/>
-                                      <Component id="passwordTextField" alignment="0" pref="135" max="32767" attributes="0"/>
+                                      <Component id="userTextField" alignment="0" pref="152" max="32767" attributes="2"/>
+                                      <Component id="hostTextField" alignment="0" pref="152" max="32767" attributes="2"/>
+                                      <Component id="passwordTextField" alignment="0" pref="152" max="32767" attributes="0"/>
+                                      <Component id="initialDirectoryTextField" alignment="0" pref="152" max="32767" attributes="2"/>
                                   </Group>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                          <Group type="102" alignment="0" attributes="1">
-                                              <Component id="portLabel" min="-2" pref="28" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="portTextField" max="32767" attributes="0"/>
-                                          </Group>
-                                          <Group type="102" alignment="1" attributes="0">
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                                  <Component id="rememberPasswordCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                                  <Group type="102" alignment="0" attributes="1">
-                                                      <Component id="timeoutLabel" min="-2" max="-2" attributes="0"/>
-                                                      <EmptySpace max="-2" attributes="0"/>
-                                                      <Component id="timeoutTextField" max="32767" attributes="0"/>
-                                                  </Group>
-                                              </Group>
-                                          </Group>
-                                      </Group>
+                                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                       <Group type="102" alignment="0" attributes="0">
+                                          <Component id="portLabel" min="-2" pref="28" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="anonymousCheckBox" min="-2" max="-2" attributes="0"/>
+                                          <Component id="portTextField" min="-2" pref="99" max="-2" attributes="0"/>
                                       </Group>
+                                      <Group type="102" alignment="0" attributes="1">
+                                          <Component id="timeoutLabel" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="timeoutTextField" max="32767" attributes="0"/>
+                                      </Group>
+                                      <Component id="anonymousCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
                       </Group>
+                      <Component id="warningLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
               </Group>
@@ -166,16 +159,15 @@
                       <Component id="portTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="hostTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="userLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="anonymousCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="userTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="passwordLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="rememberPasswordCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="passwordTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
@@ -185,7 +177,9 @@
                       <Component id="initialDirectoryTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="timeoutTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="36" max="32767" attributes="0"/>
+                  <EmptySpace pref="9" max="32767" attributes="0"/>
+                  <Component id="warningLabel" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -202,6 +196,9 @@
           </Properties>
         </Component>
         <Component class="javax.swing.JTextField" name="connectionTextField">
+          <Properties>
+            <Property name="enabled" type="boolean" value="false"/>
+          </Properties>
         </Component>
         <Component class="javax.swing.JLabel" name="typeLabel">
           <Properties>
@@ -267,13 +264,6 @@
         </Component>
         <Component class="javax.swing.JPasswordField" name="passwordTextField">
         </Component>
-        <Component class="javax.swing.JCheckBox" name="rememberPasswordCheckBox">
-          <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/php/project/connections/Bundle.properties" key="LBL_RememberPassword" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </Properties>
-        </Component>
         <Component class="javax.swing.JLabel" name="initialDirectoryLabel">
           <Properties>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
@@ -300,12 +290,16 @@
         </Component>
         <Component class="javax.swing.JSeparator" name="separator">
         </Component>
+        <Component class="javax.swing.JLabel" name="warningLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="warning" noResource="true"/>
+          </Properties>
+        </Component>
       </SubComponents>
     </Container>
     <Component class="javax.swing.JLabel" name="errorLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="dummy" noResource="true"/>
-        <Property name="enabled" type="boolean" value="false"/>
+        <Property name="text" type="java.lang.String" value="error" noResource="true"/>
       </Properties>
     </Component>
   </SubComponents>

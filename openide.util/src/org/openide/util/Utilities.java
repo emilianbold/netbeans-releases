@@ -105,6 +105,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.netbeans.modules.openide.util.AWTBridge;
 import org.openide.util.actions.Presenter;
+import org.openide.util.lookup.Lookups;
 
 /** Otherwise uncategorized useful static methods.
 *
@@ -2737,6 +2738,29 @@ widthcheck:  {
         }
 
         return actionsToPopup(actions, lookup);
+    }
+
+    /**
+     * Load a menu sequence from a lookup path.
+     * Any {@link Action} instances are returned as is;
+     * any {@link JSeparator} instances are translated to nulls.
+     * Warnings are logged for any other instances.
+     * @param path a path as given to {@link Lookups#forPath}, generally a layer folder name
+     * @return a list of actions interspersed with null separators
+     * @since org.openide.util 7.14
+     */
+    public static List<? extends Action> actionsForPath(String path) {
+        List<Action> actions = new ArrayList<Action>();
+        for (Object item : Lookups.forPath(path).lookupAll(Object.class)) {
+            if (item instanceof Action) {
+                actions.add((Action) item);
+            } else if (item instanceof JSeparator) {
+                actions.add(null);
+            } else {
+                Logger.getLogger(Utilities.class.getName()).warning("Unrecognized object of " + item.getClass() + " found in actions path " + path);
+            }
+        }
+        return actions;
     }
 
     /**

@@ -263,6 +263,13 @@ public class Dragger extends Interaction implements KeyListener {
                 updateSnapState(e);
 
                 Point p = e.getPoint();
+                // XXX #136373 Do not drop to negative canvas position.
+                if (p.x < 0) {
+                    p.x = 0;
+                }
+                if (p.y < 0) {
+                    p.y = 0;
+                }
 
                 cleanup(pane, oldAction);
 
@@ -406,6 +413,13 @@ public class Dragger extends Interaction implements KeyListener {
      */
     public void mouseDragged(MouseEvent e) {
         Point p = e.getPoint();
+        // XXX #136373 Do not drop to negative canvas position.
+        if (p.x < 0) {
+            p.x = 0;
+        }
+        if (p.y < 0) {
+            p.y = 0;
+        }
         prevMouseX = p.x;
         prevMouseY = p.y;
         update(e, p.x, p.y);

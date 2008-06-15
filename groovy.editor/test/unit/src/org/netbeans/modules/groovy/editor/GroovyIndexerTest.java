@@ -42,7 +42,6 @@
 package org.netbeans.modules.groovy.editor;
 
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import org.netbeans.modules.gsf.api.Indexer;
 
 /**
  *
@@ -54,11 +53,6 @@ public class GroovyIndexerTest extends GroovyTestBase {
         super(testName);
     }
 
-    @Override
-    public Indexer getIndexer() {
-        return new GroovyIndexer();
-    }
-    
     @Override
     public String prettyPrintValue(String key, String value) {
         return value;

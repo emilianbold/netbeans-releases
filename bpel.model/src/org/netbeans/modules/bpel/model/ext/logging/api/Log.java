@@ -28,12 +28,13 @@
 package org.netbeans.modules.bpel.model.ext.logging.api;
 
 import org.netbeans.modules.bpel.model.api.BpelContainer;
+import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 import org.netbeans.modules.bpel.model.api.ExtensionEntity;
 import org.netbeans.modules.bpel.model.api.FromHolder;
 
 /**
  */
 public interface Log extends ExtensionEntity, FromHolder, 
-        LevelLocationHandler<LogLevel>, BpelContainer 
+        LevelLocationHandler<LogLevel>, BpelContainer, ExtensibleElements 
 {
 }

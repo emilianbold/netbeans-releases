@@ -9,7 +9,6 @@ import java.util.Hashtable;
 import java.util.Enumeration;
 import java.io.IOException;
 
-import antlr.collections.impl.BitSet;
 import antlr.collections.impl.Vector;
 
 /**A Grammar holds a set of rules (which are stored
@@ -24,6 +23,7 @@ public abstract class Grammar {
     protected boolean buildAST = false;
     protected boolean analyzerDebug = false;
     protected boolean interactive = false;
+    protected boolean genASTClassMap = true;
     protected String superClass = null;
 
     /** The token manager associated with the grammar, if any.
@@ -242,6 +242,18 @@ public abstract class Grammar {
             }
             else {
                 antlrTool.error("option 'codeGenDebug' must be true or false", getFilename(), value.getLine(), value.getColumn());
+            }
+            return true;
+        }
+        if (key.equals("genASTClassMap")) {
+            if (s.equals("true")) {
+                genASTClassMap = true;
+            }
+            else if (s.equals("false")) {
+                genASTClassMap = false;
+            }
+            else {
+                antlrTool.error("option 'genASTClassMap' must be true or false", getFilename(), value.getLine(), value.getColumn());
             }
             return true;
         }

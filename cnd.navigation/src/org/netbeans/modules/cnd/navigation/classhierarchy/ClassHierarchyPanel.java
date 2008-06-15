@@ -41,7 +41,11 @@
 
 package org.netbeans.modules.cnd.navigation.classhierarchy;
 
+import java.awt.Component;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyVetoException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -63,6 +67,7 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -116,12 +121,18 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         getExplorerManager().setRootContext(root);
     }
 
-    public void setClose(Action close) {
-        this.close = close;
+    public void setClose() {
+        close = new DialogClose();
+        getTreeView().addCloseAction(close);
     }
-    
-    public BeanTreeView getTreeView(){
-        return (BeanTreeView)hierarchyPane;
+
+    public void clearClose() {
+        close = null;
+        getTreeView().addCloseAction(close);
+    }
+
+    private MyBeanTreeView getTreeView(){
+        return (MyBeanTreeView)hierarchyPane;
     }
     
     /** This method is called from within the constructor to
@@ -143,7 +154,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         directOnlyButton = new javax.swing.JToggleButton();
         treeButton = new javax.swing.JToggleButton();
         jPanel2 = new javax.swing.JPanel();
-        hierarchyPane = new BeanTreeView();
+        hierarchyPane = new MyBeanTreeView();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -244,7 +255,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 0);
         add(toolBar, gridBagConstraints);
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("SplitPane.shadow"))); // NOI18N
+        jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("SplitPane.shadow")));
         jPanel2.setMinimumSize(new java.awt.Dimension(1, 1));
         jPanel2.setPreferredSize(new java.awt.Dimension(1, 1));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -489,6 +500,43 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         public final JMenuItem getPopupPresenter() {
             menuItem.setSelected(!plain);
             return menuItem;
+        }
+    }
+
+    private class DialogClose extends AbstractAction {
+        public DialogClose() {
+        }
+        public void actionPerformed(ActionEvent e) {
+            Component p = ClassHierarchyPanel.this;
+            while (p != null){
+                if (p instanceof TopComponent) {
+                    ((TopComponent)p).close();
+                    return;
+                } else if (p instanceof Window) {
+                    ((Window)p).setVisible(false);
+                    return;
+                }
+                p = p.getParent();
+           }
+        }
+    }
+    
+    private class MyBeanTreeView extends BeanTreeView {
+        public MyBeanTreeView(){
+        }
+        public void addCloseAction(final Action action){
+            tree.addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyReleased(KeyEvent e) {
+                    if (e.getKeyCode()==KeyEvent.VK_ESCAPE) {
+                        if (action != null) {
+                            action.actionPerformed(null);
+                            e.consume();
+                        }
+                    }
+                    super.keyReleased(e);
+                }
+            });
         }
     }
 

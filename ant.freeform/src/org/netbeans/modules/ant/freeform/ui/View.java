@@ -62,6 +62,7 @@ import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -135,6 +136,11 @@ public final class View implements LogicalViewProvider {
         
         public String getDisplayName() {
             return ProjectUtils.getInformation(p).getDisplayName();
+        }
+
+        @Override
+        public String getShortDescription() {
+            return NbBundle.getMessage(View.class, "View.RootNode.shortDescription", FileUtil.getFileDisplayName(p.getProjectDirectory()));
         }
         
         public Image getIcon(int type) {

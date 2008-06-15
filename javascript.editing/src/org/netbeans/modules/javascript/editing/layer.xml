@@ -43,13 +43,6 @@
                         </folder>
                     </folder>
                 </folder>
-
-                <folder name="Popup">
-                    <file name="org-netbeans-modules-javascript-editing-RunScriptAction.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.RunScriptAction"/>
-                        <attr name="position" intvalue="801"/>
-                    </file>
-                </folder>
             </folder>
         </folder>
     </folder>
@@ -96,63 +89,12 @@
     <folder name="GsfPlugins">
         <folder name="text">
             <folder name="javascript">
-                <!-- Used by index scanner to identify relevant files -->
-                <folder name="extensions">
-                    <file name="js"/>
-                    <file name="js3"/>
-                </folder>
-                
                 <file name="language.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.GsfLanguage"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.JsLanguage"/>
                 </file>
-                
-                <file name="bracket.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.KeystrokeHandler"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.JsBracketCompleter"/>
-                </file>
-                
-                <file name="formatter.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Formatter"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.JsFormatter"/>
-                </file>
-                
-                <file name="parser.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Parser"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.JsParser"/>
-                </file>
-                
-                <file name="completion.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.CodeCmpletionHandler"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.JsCodeCompletion"/>
-                </file>
-                
                 <file name="structure.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.StructureScanner"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.JsAnalyzer"/>
-                </file>
-
-                <file name="indexer.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Indexer"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.JsIndexer"/>
-                </file>
-
-                <file name="declarationfinder.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.DeclarationFinder"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.JsDeclarationFinder"/>
-                </file>
-                <file name="semantic.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.SemanticAnalyzer"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.JsSemanticAnalyzer"/>
-                </file>
-                <file name="occurrences.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.OccurrencesFinder"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.JsOccurrenceFinder"/>
-                </file>
-                <file name="renamer.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.InstantRenamer"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.JsRenameHandler"/>
-                </file>
+                </file> 
             </folder>
         </folder>
     </folder>

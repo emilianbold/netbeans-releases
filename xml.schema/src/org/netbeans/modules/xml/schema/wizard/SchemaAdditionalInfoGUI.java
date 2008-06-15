@@ -176,6 +176,9 @@ final class SchemaAdditionalInfoGUI extends javax.swing.JPanel {
 		}
 	    }
 	    );
+            //See http://www.netbeans.org/issues/show_bug.cgi?id=131982
+            //trigger it for the first time.
+            fileField.setText(fileField.getText());            
 	}
     }
     

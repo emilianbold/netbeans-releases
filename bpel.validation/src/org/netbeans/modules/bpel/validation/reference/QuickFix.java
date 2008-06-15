@@ -63,7 +63,9 @@ import static org.netbeans.modules.xml.ui.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2007.12.06
  */
-class QuickFix {
+final class QuickFix {
+
+  private QuickFix() {}
 
   static Adapter get(BpelEntity entity, Reference<Referenceable> reference) {
 //out();
@@ -72,17 +74,17 @@ class QuickFix {
     if (reference.getType().isAssignableFrom(VariableDeclaration.class)) {
       if (entity instanceof VariableReference) {
 //out("  VAR");
-        return new SET_VARIABLE((VariableReference) entity, reference.getRefString());
+        return new SetVariable((VariableReference) entity, reference.getRefString());
       }
     }
 //out("  null");
     return null;
   }
 
-  // ----------------------------------------
-  static class SET_VARIABLE extends Adapter {
+  // -----------------------------------------------
+  private static class SetVariable extends Adapter {
   
-    SET_VARIABLE(VariableReference reference, String name) {
+    SetVariable(VariableReference reference, String name) {
       myReference = reference;
       myName = name;
     }

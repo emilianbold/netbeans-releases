@@ -394,6 +394,16 @@ public class FolderLookup extends FolderInstance {
                         fl.err().log(Level.WARNING, null, ex);
                     }
                 }
+            } else {
+                // there is a special need to wait for loaders commint from
+                // layers
+                if (
+                    fl.folder != null &&
+                    fl.folder.getName().equals("Factories") &&
+                    template.getType().isAssignableFrom(DataObject.Factory.class)
+                ) {
+                    fl.waitFinished();
+                }
             }
         }
         

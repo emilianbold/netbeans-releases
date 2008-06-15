@@ -54,7 +54,7 @@ import org.dom4j.Node;
 public class JoinForkNode extends JoinNode implements IJoinForkNode
 {
     private IForkNode forkNode = null;
-
+    
     public JoinForkNode()
     {
         forkNode = new ForkNode();
@@ -62,5 +62,5 @@ public class JoinForkNode extends JoinNode implements IJoinForkNode
     public void establishNodePresence(Document doc, Node node)
     {
         buildNodePresence("UML:JoinForkNode", doc, node);
-    }   
+    }
 }

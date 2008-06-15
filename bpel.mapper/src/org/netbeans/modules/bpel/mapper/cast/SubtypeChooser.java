@@ -19,20 +19,14 @@
 
 package org.netbeans.modules.bpel.mapper.cast;
 
-import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.EventQueue;
-import java.awt.Image;
 import java.util.Collections;
-import javax.swing.ImageIcon;
 import javax.swing.JPanel;
-import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
-import org.openide.util.Utilities;
 import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
 import org.netbeans.modules.bpel.mapper.tree.spi.ExtTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
@@ -45,8 +39,9 @@ import org.netbeans.modules.soa.ui.form.valid.DefaultValidator;
 import org.netbeans.modules.soa.ui.form.valid.SoaDialogDisplayer;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
-import org.netbeans.modules.xml.schema.model.GlobalComplexType;
-import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
+import org.netbeans.modules.soa.ui.tree.DataObjectHolder;
+import org.netbeans.modules.soa.ui.tree.impl.SoaTreeCellRenderer;
+import org.netbeans.modules.soa.ui.tree.impl.SoaTreeModelImpl;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.openide.util.NbBundle;
 
@@ -58,13 +53,8 @@ public class SubtypeChooser extends JPanel
         implements ChooserLifeCycle<GlobalType>, 
         Validator.Provider, ValidStateManager.Provider  {
 
-    private static String IMG_FOLDER_NAME = 
-            SubtypeChooser.class.getPackage().getName().
-            replace('.', '/') + '/';
-    
     private GlobalType mRootGType;
     private BpelModel mBpelModel;
-    private String mDlgTitle;
     
     private DefaultValidator mValidator;
     private ValidStateManager mVSM;
@@ -81,30 +71,13 @@ public class SubtypeChooser extends JPanel
         assert EventQueue.isDispatchThread();
         initComponents();
         //
-        TreeModel tModel = new SubtypeTreeModel(mRootGType, mBpelModel);
+        SoaTreeModelImpl tModel = 
+                new SoaTreeModelImpl(new TypeCastTreeModel(mRootGType, mBpelModel));
         subtypesTree.setModel(tModel);
-        subtypesTree.setCellRenderer(new DefaultTreeCellRenderer() {
-            @Override
-            public Component getTreeCellRendererComponent(
-                    JTree tree, Object value, boolean selected, 
-                    boolean expanded, boolean leaf, int row, boolean hasFocus) {
-                //
-                super.getTreeCellRendererComponent(
-                        tree, value, selected, expanded, leaf, row, hasFocus);
-                //
-                Image image = null;
-                if (value instanceof GlobalSimpleType) {
-                    image = Utilities.loadImage(IMG_FOLDER_NAME + "simpletype.png"); // NOI18N
-                } else  if (value instanceof GlobalComplexType) {
-                    image = Utilities.loadImage(IMG_FOLDER_NAME + "complextype.png"); // NOI18N
-                }
-                if (image != null) {
-                    this.setIcon(new ImageIcon(image));
-                }
-                //
-                return this;
-            }
-        });
+        subtypesTree.setRootVisible(true);
+        subtypesTree.setShowsRootHandles(false);
+        //
+        subtypesTree.setCellRenderer(new SoaTreeCellRenderer(tModel));
         //
         subtypesTree.getSelectionModel().addTreeSelectionListener(
                 new TreeSelectionListener() {
@@ -122,9 +95,6 @@ public class SubtypeChooser extends JPanel
 //            }
 //        });
         //
-        mDlgTitle = NbBundle.getMessage(SubtypeChooser.class,
-            "SUBTYPE_CHOOSER_TITLE"); // NOI18N
-        //
         SoaUtil.activateInlineMnemonics(this);
     }
 
@@ -133,14 +103,10 @@ public class SubtypeChooser extends JPanel
         return true;
     }
     
-    public String getDlgTitle() {
-        return mDlgTitle;
-    }
-    
     public void setSelectedValue(GlobalType newValue) {
         TreeModel tModel = subtypesTree.getModel();
         assert tModel instanceof ExtTreeModel;
-        GTypeFinder finder = new GTypeFinder(newValue);
+        GlobalSchemaComponentFinder finder = new GlobalSchemaComponentFinder(newValue);
         TreeFinderProcessor findProc = new TreeFinderProcessor((ExtTreeModel)tModel);
         TreePath gTypePath = findProc.findFirstNode(
                 Collections.singletonList((TreeItemFinder)finder));
@@ -155,8 +121,11 @@ public class SubtypeChooser extends JPanel
         TreePath selection = subtypesTree.getSelectionPath();
         if (selection != null) {
             Object selectedItem = selection.getLastPathComponent();
-            if (selectedItem != null && selectedItem instanceof GlobalType) {
-                return (GlobalType)selectedItem;
+            if (selectedItem != null && selectedItem instanceof DataObjectHolder) {
+                Object dataObj = ((DataObjectHolder)selectedItem).getDataObject();
+                if (dataObj != null && dataObj instanceof GlobalType) {
+                    return (GlobalType)dataObj;
+                }
             }
         }
         return null;
@@ -180,8 +149,10 @@ public class SubtypeChooser extends JPanel
      * @return
      */
     public static boolean showDlg(SubtypeChooser editor) {
+        String dlgTitle = NbBundle.getMessage(SubtypeChooser.class,
+            "SUBTYPE_CHOOSER_TITLE"); // NOI18N
         DefaultDialogDescriptor descriptor = 
-                new DefaultDialogDescriptor(editor, editor.getDlgTitle());
+                new DefaultDialogDescriptor(editor, dlgTitle);
         Dialog dialog = SoaDialogDisplayer.getDefault().createDialog(descriptor);
         SoaUtil.setInitialFocusComponentFor(editor);
         dialog.setVisible(true);

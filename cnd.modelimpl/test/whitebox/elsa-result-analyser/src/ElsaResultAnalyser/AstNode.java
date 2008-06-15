@@ -59,6 +59,8 @@ public class AstNode {
     String value;
     List<AstNode> children = new ArrayList<AstNode>();
     int line;
+    
+    boolean logErrors = false;
 
     public void print(int level) {
         for (int i = 0; i < level; i++) {
@@ -102,7 +104,7 @@ public class AstNode {
                 }
             }
         }
-        if (reportError) {
+        if (reportError && logErrors) {
             System.out.println(name + " " + value + " was not found in " + this.name + " " + this.line);
             System.out.println("variants:");
             for (AstNode astNode : children) {
@@ -209,7 +211,9 @@ public class AstNode {
                             continue;
                         }
 
-                        addVariableByDName(table, decllistItem, var1, firstDecl.findChild("loc"));
+                        if(firstDecl != null) {
+                            addVariableByDName(table, decllistItem, var1, firstDecl.findChild("loc"), "static-member-definition");
+                        }
                     }
                     return;
                 }
@@ -239,7 +243,7 @@ public class AstNode {
                                 AstNode nameLoc = name1.findChild("loc");
                                 AstNode loc = firstDecl.findChild("loc");
                                 if (loc != null && nameLoc != null && name2 != null) {
-                                    Declaration var = new Declaration(name2.value, nameLoc.value, loc.value, TYPE.VARIABLE, name2.line);
+                                    Declaration var = new Declaration(name2.value, nameLoc.value, loc.value, TYPE.VARIABLE, name2.line, "bitfield-definition");
 
                                     if (var1 != null) {
                                         var.fullName = var1.value;
@@ -251,7 +255,9 @@ public class AstNode {
                             continue;
                         }
 
-                        addVariableByDName(table, decllistItem, var1, firstDecl.findChild("loc"));
+                        if(firstDecl != null) {
+                            addVariableByDName(table, decllistItem, var1, firstDecl.findChild("loc"), "member-definition");
+                        }
                     }
                 }
             }
@@ -266,7 +272,9 @@ public class AstNode {
 
                     decl = skipDDeclsToDNameorDFunc(decl);
 
-                    addVariableByDName(table, decl, var1, firstDecl.findChild("loc"));
+                    if(firstDecl != null) {
+                        addVariableByDName(table, decl, var1, firstDecl.findChild("loc"), "variable-definition");
+                    }
                 }
             }
         }
@@ -385,14 +393,14 @@ public class AstNode {
                                                 if (name1 == null) {
                                                     name1 = decl3.findChild("rest", "PQ_name");
                                                 }
-                                                if (name1 != null) {
+                                                if (name1 != null && firstDecl != null) {
                                                     AstNode name2 = name1.findChild("name");
                                                     AstNode nameLoc = name1.findChild("loc");
                                                     AstNode loc2 = firstDecl.findChild("loc");
                                                     AstNode var = decllistItem.findChild("var");
                                                     if (loc2 != null && nameLoc != null && name2 != null && var != null && loc != null && loc.value != null) {
 
-                                                        Declaration nvar = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.VARIABLE, name2.line);
+                                                        Declaration nvar = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.VARIABLE, name2.line, "static-field-declaration");
 
                                                         Declaration def = table.findVariableDefinition(new Offset(loc.value, loc.line), var.value);
                                                         if (def != null) {
@@ -467,7 +475,7 @@ public class AstNode {
                         if (name1 == null) {
                             name1 = decl3.findChild("rest", "PQ_name");
                         }
-                        if (name1 != null) {
+                        if (name1 != null && firstDecl != null) {
                             AstNode name2 = name1.findChild("name");
                             AstNode nameLoc = name1.findChild("loc");
                             AstNode loc2 = firstDecl.findChild("loc");
@@ -480,7 +488,7 @@ public class AstNode {
                                 
                                 continue;
                                 }*/
-                                Declaration nvar = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.VARIABLE, name2.line);
+                                Declaration nvar = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.VARIABLE, name2.line, "extern-variable-declaration");
 
                                 Declaration def = table.findVariableDefinition(var.value);
                                 if (def != null) {
@@ -848,7 +856,9 @@ public class AstNode {
                 nameAndParams =
                         skipDDeclsToDNameorDFunc(nameAndParams);
 
-                addFunctionByDName(table, nameAndParams, var, firstDecl.findChild("loc"));
+                if(firstDecl != null) {
+                    addFunctionByDName(table, nameAndParams, var, firstDecl.findChild("loc"));
+                }
             }
 
         }
@@ -953,7 +963,7 @@ public class AstNode {
                                                             name1 = base.findChild("rest", "PQ_name", false);
                                                         }
 
-                                                        if (name1 != null) {
+                                                        if (name1 != null && firstDecl != null) {
                                                             AstNode name2 = name1.findChild("name");
                                                             AstNode nameLoc = name1.findChild("loc");
                                                             AstNode loc2 = firstDecl.findChild("loc");
@@ -963,7 +973,7 @@ public class AstNode {
 //                                                                        Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
 //                                                                        decl.declarations.add(fun);
 //                                                                    }
-                                                                Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
+                                                                Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line, "class-method-declaration");
                                                                 Declaration def = table.findFunctionDefinition(new Offset(loc.value, loc.line), var.value);
                                                                 if (def != null) {
                                                                     table.addFunctionDeclaration(def, fun);
@@ -983,7 +993,7 @@ public class AstNode {
                                                             name1 = base.findChild("rest", "PQ_template", false);
                                                         }
 
-                                                        if (name1 != null) {
+                                                        if (name1 != null && firstDecl != null) {
                                                             AstNode name2 = name1.findChild("name");
                                                             AstNode nameLoc = name1.findChild("loc");
                                                             AstNode loc2 = firstDecl.findChild("loc");
@@ -993,7 +1003,7 @@ public class AstNode {
 //                                                                Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
 //                                                                decl.declarations.add(fun);
 //                                                            }
-                                                                Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
+                                                                Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line, "class-template-method-declaration");
                                                                 Declaration def = table.findFunctionDefinition(new Offset(loc.value, loc.line), var.value);
                                                                 if (def != null) {
                                                                     table.addFunctionDeclaration(def, fun);
@@ -1013,7 +1023,7 @@ public class AstNode {
                                                             name1 = base.findChild("rest", "PQ_operator");
                                                         }
 
-                                                        if (name1 != null) {
+                                                        if (name1 != null && firstDecl != null) {
                                                             AstNode name2 = name1.findChild("fakeName");
                                                             AstNode nameLoc = name1.findChild("loc");
                                                             AstNode loc2 = firstDecl.findChild("loc");
@@ -1023,7 +1033,7 @@ public class AstNode {
 //                                                                Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
 //                                                                decl.declarations.add(fun);
 //                                                            }
-                                                                Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
+                                                                Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line, "class-operator-declaration");
                                                                 Declaration def = table.findFunctionDefinition(new Offset(loc.value, loc.line), var.value);
                                                                 if (def != null) {
                                                                     table.addFunctionDeclaration(def, fun);
@@ -1074,7 +1084,7 @@ public class AstNode {
                                                                 name1 = base.findChild("rest", "PQ_name", false);
                                                             }
 
-                                                            if (name1 != null) {
+                                                            if (name1 != null && firstDecl != null) {
                                                                 AstNode name2 = name1.findChild("name");
                                                                 AstNode nameLoc = name1.findChild("loc");
                                                                 AstNode loc2 = firstDecl.findChild("loc");
@@ -1084,7 +1094,7 @@ public class AstNode {
 //                                                                    Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
 //                                                                    decl.declarations.add(fun);
 //                                                                }
-                                                                    Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
+                                                                    Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line, "template-method-declaration");
                                                                     Declaration def = table.findFunctionDefinition(new Offset(loc.value, loc.line), var.value);
                                                                     if (def != null) {
                                                                         table.addFunctionDeclaration(def, fun);
@@ -1104,7 +1114,7 @@ public class AstNode {
                                                                 name1 = base.findChild("rest", "PQ_template", false);
                                                             }
 
-                                                            if (name1 != null) {
+                                                            if (name1 != null && firstDecl != null) {
                                                                 AstNode name2 = name1.findChild("name");
                                                                 AstNode nameLoc = name1.findChild("loc");
                                                                 AstNode loc2 = firstDecl.findChild("loc");
@@ -1115,7 +1125,7 @@ public class AstNode {
 //                                                                    decl.declarations.add(fun);
 //                                                                }
 
-                                                                    Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
+                                                                    Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line, "template-template-method-declaration");
                                                                     Declaration def = table.findFunctionDefinition(new Offset(loc.value, loc.line), var.value);
                                                                     if (def != null) {
                                                                         table.addFunctionDeclaration(def, fun);
@@ -1134,7 +1144,7 @@ public class AstNode {
                                                                 name1 = base.findChild("rest", "PQ_operator", false);
                                                             }
 
-                                                            if (name1 != null) {
+                                                            if (name1 != null && firstDecl != null) {
                                                                 AstNode name2 = name1.findChild("fakeName");
                                                                 AstNode nameLoc = name1.findChild("loc");
                                                                 AstNode loc2 = firstDecl.findChild("loc");
@@ -1144,7 +1154,7 @@ public class AstNode {
 //                                                                    Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
 //                                                                    decl.declarations.add(fun);
 //                                                                }
-                                                                    Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
+                                                                    Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line, "template-operator-declaration");
                                                                     Declaration def = table.findFunctionDefinition(new Offset(loc.value, loc.line), var.value);
                                                                     if (def != null) {
                                                                         table.addFunctionDeclaration(def, fun);
@@ -1221,7 +1231,7 @@ public class AstNode {
                                     name1 = base.findChild("rest", "PQ_name", false);
                                 }
 
-                                if (name1 != null) {
+                                if (name1 != null && firstDecl != null) {
                                     AstNode name2 = name1.findChild("name");
                                     AstNode nameLoc = name1.findChild("loc");
                                     AstNode loc2 = firstDecl.findChild("loc");
@@ -1231,7 +1241,7 @@ public class AstNode {
 //                                        Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
 //                                        decl.declarations.add(fun);
 //                                    }
-                                        Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
+                                        Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line, "function-declaration");
                                         Declaration def = table.findFunctionDefinition(var.value);
                                         if (def != null) {
                                             table.addFunctionDeclaration(def, fun);
@@ -1251,7 +1261,7 @@ public class AstNode {
                                     name1 = base.findChild("rest", "PQ_template", false);
                                 }
 
-                                if (name1 != null) {
+                                if (name1 != null && firstDecl != null) {
                                     AstNode name2 = name1.findChild("name");
                                     AstNode nameLoc = name1.findChild("loc");
                                     AstNode loc2 = firstDecl.findChild("loc");
@@ -1261,7 +1271,7 @@ public class AstNode {
 //                                            Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
 //                                            decl.declarations.add(fun);
 //                                        }
-                                        Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
+                                        Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line, "template-function-declaration");
                                         Declaration def = table.findFunctionDefinition(var.value);
                                         if (def != null) {
                                             table.addFunctionDeclaration(def, fun);
@@ -1280,7 +1290,7 @@ public class AstNode {
                                     name1 = base.findChild("rest", "PQ_operator", false);
                                 }
 
-                                if (name1 != null) {
+                                if (name1 != null && firstDecl != null) {
                                     AstNode name2 = name1.findChild("fakeName");
                                     AstNode nameLoc = name1.findChild("loc");
                                     AstNode loc2 = firstDecl.findChild("loc");
@@ -1290,7 +1300,7 @@ public class AstNode {
 //                                            Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
 //                                            decl.declarations.add(fun);
 //                                        }
-                                        Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
+                                        Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line, "operator-declaration");
                                         Declaration def = table.findFunctionDefinition(var.value);
                                         if (def != null) {
                                             table.addFunctionDeclaration(def, fun);
@@ -1489,7 +1499,7 @@ public class AstNode {
         return parentPos;
     }
 
-    public void addVariableByDName(TokenTable table, AstNode node, AstNode var1, AstNode loc) {
+    public void addVariableByDName(TokenTable table, AstNode node, AstNode var1, AstNode loc, String description) {
         AstNode decl = node.findChild("decl", "D_name", false);
         if (decl == null) {
             decl = node.findChild("base", "D_name");
@@ -1509,7 +1519,10 @@ public class AstNode {
                 AstNode nameLoc = name1.findChild("loc");
                 AstNode name2 = name1.findChild("name");
                 if (loc != null && nameLoc != null && name2 != null) {
-                    Declaration var = new Declaration(name2.value, nameLoc.value, loc.value, TYPE.VARIABLE, name2.line);
+                    if (qualifierVar != null) {
+                        description = "classifier-" + description;
+                    }
+                    Declaration var = new Declaration(name2.value, nameLoc.value, loc.value, TYPE.VARIABLE, name2.line, description);
                     if (qualifierVar != null) {
                         var.qualifierPos = new Offset(qualifierVar.value, qualifierVar.line);
                     }
@@ -1545,12 +1558,19 @@ public class AstNode {
                     rest = base.findChild("name", "PQ_name", false);
                 }
 
+                String description;
+                
                 if (rest != null) {
                     //AstNode loc = decl.findChild("loc");
                     AstNode nameLoc = rest.findChild("loc");
                     AstNode name2 = rest.findChild("name");
                     if (loc != null && nameLoc != null && name2 != null) {
-                        Declaration fun = new Declaration(name2.value, nameLoc.value, loc.value, TYPE.FUNCTION, name2.line);
+                        if (qualifierVar != null) {
+                            description = "method-definition";
+                        } else {
+                            description = "function-definition";
+                        }
+                        Declaration fun = new Declaration(name2.value, nameLoc.value, loc.value, TYPE.FUNCTION, name2.line, description);
                         if (qualifierVar != null) {
                             fun.qualifierPos = new Offset(qualifierVar.value, qualifierVar.line);
                         }
@@ -1575,7 +1595,12 @@ public class AstNode {
                     AstNode nameLoc = rest.findChild("loc");
                     AstNode name2 = rest.findChild("name");
                     if (loc != null && nameLoc != null && name2 != null) {
-                        Declaration fun = new Declaration(name2.value, nameLoc.value, loc.value, TYPE.FUNCTION, name2.line);
+                        if (qualifierVar != null) {
+                            description = "template-method-definition";
+                        } else {
+                            description = "template-function-definition";
+                        }
+                        Declaration fun = new Declaration(name2.value, nameLoc.value, loc.value, TYPE.FUNCTION, name2.line, description);
                         if (qualifierVar != null) {
                             fun.qualifierPos = new Offset(qualifierVar.value, qualifierVar.line);
                         }
@@ -1600,7 +1625,12 @@ public class AstNode {
                     AstNode nameLoc = rest.findChild("loc");
                     AstNode name2 = rest.findChild("fakeName");
                     if (loc != null && nameLoc != null && name2 != null) {
-                        Declaration fun = new Declaration(name2.value, nameLoc.value, loc.value, TYPE.FUNCTION, name2.line);
+                        if (qualifierVar != null) {
+                            description = "operator-definition";
+                        } else {
+                            description = "operator-definition";
+                        }
+                        Declaration fun = new Declaration(name2.value, nameLoc.value, loc.value, TYPE.FUNCTION, name2.line, description);
                         if (qualifierVar != null) {
                             fun.qualifierPos = new Offset(qualifierVar.value, qualifierVar.line);
                         }

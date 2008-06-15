@@ -43,26 +43,22 @@
 
 package org.netbeans.test.umllib.customelements;
 
-import java.util.ArrayList;
 
+import java.util.List;
+import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
+import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.test.umllib.DiagramElementChooser;
 import org.netbeans.test.umllib.DiagramElementOperator;
 import org.netbeans.test.umllib.DiagramOperator;
 import org.netbeans.test.umllib.LinkOperator;
+import org.netbeans.test.umllib.Utils;
 import org.netbeans.test.umllib.exceptions.NotFoundException;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.support.applicationmanager.IEdgePresentation;
-import org.netbeans.modules.uml.ui.support.applicationmanager.MessageEdgePresentation;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETLabel;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETEdge;
-
-
+ 
 
 /**
  *
- * @author sunflower
+ * @author sunflower, Sherry Zhou
  */
 
 
@@ -75,18 +71,18 @@ public class MessageOperator extends LinkOperator{
     
     
     public MessageOperator(DiagramOperator diagramOperator, String operationSignature, int index) throws NotFoundException {
-        super(diagramOperator, (IETEdge)( new DiagramElementOperator(diagramOperator, new MesssageByLabelChooser(operationSignature), index, true).getGraphObject()));
+        super(diagramOperator, (Widget)( new DiagramElementOperator(diagramOperator, new MesssageByLabelChooser(operationSignature), index, true).getGraphObject()));
     }
     
     
 
     public LifelineOperator getFromLifeline(){
-        return new LifelineOperator(getDiagramOperator(), getFrom());
+        return new LifelineOperator(getDiagramOperator(), getFromNode());
     }
     
     
     public LifelineOperator getToLifeline(){
-        return new LifelineOperator(getDiagramOperator(), getTo());
+        return new LifelineOperator(getDiagramOperator(), getToNode());
     }
     
     
@@ -98,29 +94,26 @@ public class MessageOperator extends LinkOperator{
             this.name = name;
         }
         
-        public boolean checkElement(IETGraphObject graphObject) {
-            
-            
-            if(graphObject instanceof IETEdge){
-                
-                IETEdge edgeGraphObject = (IETEdge) graphObject;
-                ETList<IETLabel> labelList = edgeGraphObject.getLabels();
-                
-                if(labelList != null){
-                    
-                    for(IETLabel label : labelList){
-                        if(name.equals(label.getText())){
-                            return true;
+        public boolean checkElement(Widget widget) {
+            if (widget instanceof UMLEdgeWidget) {
+                UMLEdgeWidget edgeWidget = (UMLEdgeWidget) widget;
+
+                List<Widget> list = edgeWidget.getChildren();
+                if (list != null) {
+                    for (Widget child : list) {
+                        Utils.log("MessageOperator(): child=" + child.toString());
+                        if (child instanceof UMLLabelWidget) {
+                            String label = ((UMLLabelWidget) child).getLabel();
+                            if (name.equals(label)) {
+                                return true;
+                            }
                         }
-                        
                     }
                 }
-                
             }
-            
             return false;
-            
         }
+        
         
         public String getDescription() {
             return "Chooser for Message Element: " + name ;

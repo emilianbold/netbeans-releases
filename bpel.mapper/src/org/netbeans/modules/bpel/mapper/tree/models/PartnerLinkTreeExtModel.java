@@ -30,7 +30,6 @@ import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeExtensionModel;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemInfoProvider;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
@@ -60,8 +59,8 @@ public class PartnerLinkTreeExtModel
         mShowEndpointRef = showEndpointRef;
     }
     
-    public List getChildren(RestartableIterator<Object> dataObjectPathItr) {
-        Object parent = dataObjectPathItr.next();
+    public List getChildren(Iterable<Object> dataObjectPathItrb) {
+        Object parent = dataObjectPathItrb.iterator().next();
         if (parent == MapperTreeModel.TREE_ROOT) {
             Process process = mContextEntity.getBpelModel().getProcess();
             PartnerLinkContainer plContainer = process.getPartnerLinkContainer();
@@ -153,12 +152,12 @@ public class PartnerLinkTreeExtModel
 
     public List<Action> getMenuActions(MapperTcContext mapperTcContext, 
             boolean inLeftTree, TreePath treePath, 
-            RestartableIterator<Object> dataObjectPathItr) {
+            Iterable<Object> dataObjectPathItr) {
         return null;
     }
 
-    public String getToolTipText(RestartableIterator<Object> dataObjectPathItr) {
-        Object treeItem = dataObjectPathItr.next();
+    public String getToolTipText(Iterable<Object> dataObjectPathItrb) {
+        Object treeItem = dataObjectPathItrb.iterator().next();
         if (treeItem instanceof Roles) {
             return ((Roles)treeItem).toString();
         }

@@ -125,8 +125,10 @@ public abstract class CompletionResultItem implements CompletionItem {
         BaseDocument doc = (BaseDocument)component.getDocument();
         doc.atomicLock();
         try {
-            doc.remove( offset, len );
-            doc.insertString( offset, text, null);
+            if(context.canReplace(text)) {
+                doc.remove( offset, len );
+                doc.insertString( offset, text, null);
+            }
             //position the caret
             component.setCaretPosition(offset+getCaretPosition());            
             String prefix = CompletionUtil.getPrefixFromTag(text);
@@ -215,7 +217,8 @@ public abstract class CompletionResultItem implements CompletionItem {
     protected AXIComponent axiComponent;
     private CompletionContextImpl context;
         
-    public static final String ICON_ELEMENT    = "element.png"; //NOI18N
-    public static final String ICON_ATTRIBUTE  = "attribute.png"; //NOI18N
+    public static final String ICON_ELEMENT    = "element.png";     //NOI18N
+    public static final String ICON_ATTRIBUTE  = "attribute.png";   //NOI18N
+    public static final String ICON_VALUE      = "value.png";       //NOI18N
     public static final String ICON_LOCATION   = "/org/netbeans/modules/xml/schema/completion/resources/"; //NOI18N
 }

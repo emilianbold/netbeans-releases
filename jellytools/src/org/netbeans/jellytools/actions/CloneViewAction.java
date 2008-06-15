@@ -54,7 +54,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 public class CloneViewAction extends Action {
 
     /** Window main menu item. */
-    private static final String windowItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", 
+    private static final String windowItem = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", 
                                                                     "Menu/Window");
     /** "Window|Clone Document" main menu item. */
     private static final String menuPath = windowItem

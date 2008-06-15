@@ -273,10 +273,6 @@ final class MercurialPanel extends javax.swing.JPanel {
         HgModuleConfig.getDefault().setExportFilename(exportFilenameTextField.getText());
         HgModuleConfig.getDefault().setAnnotationFormat(annotationTextField.getText());
         HgModuleConfig.getDefault().setBackupOnRevertModifications(backupOnRevertModifications.isSelected());
-        if (MercurialAnnotator.isRevisionInAnnotationFormat(annotationTextField.getText())){
-            HgUtils.warningDialog(MercurialPanel.class, 
-                    "MSG_STATUS_LABEL_WITH_REVSION_TITLE", "MSG_STATUS_LABEL_WITH_REVSION_MSG");// NOI18N
-        }
     }
     
     boolean valid() {

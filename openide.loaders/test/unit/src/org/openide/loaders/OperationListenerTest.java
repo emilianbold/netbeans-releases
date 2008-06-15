@@ -54,6 +54,7 @@ import java.util.*;
 import junit.textui.TestRunner;
 import org.netbeans.junit.*;
 import org.openide.util.Enumerations;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /*
@@ -244,40 +245,44 @@ implements OperationListener {
     //
     
     public void operationCopy(org.openide.loaders.OperationEvent.Copy ev) {
-        events.add (ev);
-        err.info("  operationCopy: " + ev);
+        record("  operationCopy: ", ev);
     }
     
     public void operationCreateFromTemplate(org.openide.loaders.OperationEvent.Copy ev) {
-        events.add (ev);
-        err.info("  operationCreateFromTemplate: " + ev);
+        record("  operationCreateFromTemplate: ", ev);
     }
     
     public void operationCreateShadow(org.openide.loaders.OperationEvent.Copy ev) {
-        events.add (ev);
-        err.info("  operationCreateShadow: " + ev);
+        record("  operationCreateShadow: ", ev);
     }
     
     public void operationDelete(OperationEvent ev) {
-        events.add (ev);
-        err.info("  operationDelete: " + ev);
+        record("  operationDelete: ", ev);
     }
     
     public void operationMove(org.openide.loaders.OperationEvent.Move ev) {
-        events.add (ev);
-        err.info("  operationMove: " + ev);
+        record("  operationMove: ", ev);
     }
     
     public void operationPostCreate(OperationEvent ev) {
-        events.add (ev);
-        err.info("  operationPostCreate: " + ev);
+        record("  operationPostCreate: ", ev);
     }
     
     public void operationRename(org.openide.loaders.OperationEvent.Rename ev) {
-        events.add (ev);
-        err.info("  operationRename: " + ev);
+        record("  operationRename: ", ev);
     }
 
+    private void record(String msg, OperationEvent ev) {
+        try {
+            if (!ev.getObject().getPrimaryFile().getFileSystem().isDefault()) {
+                events.add(ev);
+                err.info(msg + ev);
+            }
+        } catch (FileStateInvalidException ex) {
+            fail(ex.getMessage());
+        }
+    }
+            
     
     //
     // Own loader

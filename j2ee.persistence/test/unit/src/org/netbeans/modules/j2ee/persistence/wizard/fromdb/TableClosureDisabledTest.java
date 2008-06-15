@@ -64,6 +64,8 @@ public class TableClosureDisabledTest extends TestCase {
     }
 
     public void setUp() {
+        String schema = "Test_Schema";
+        String catalog = null;
         Map<String, Set<String>> tablesAndRefs = new HashMap<String, Set<String>>();
         Map<String, DisabledReason> disabledReasons = new HashMap<String, DisabledReason>();
         Set<String> empty = Collections.emptySet();
@@ -80,7 +82,7 @@ public class TableClosureDisabledTest extends TestCase {
         disabledReasons.put("STUDENT", new DisabledReason("Disabled", "Description"));
         disabledReasons.put("ZOO1_ZOO2", new DisabledReason("Disabled", "Description"));
 
-        provider = new TableProviderImpl(tablesAndRefs, disabledReasons);
+        provider = new TableProviderImpl(catalog, schema, tablesAndRefs, disabledReasons);
         closure = new TableClosure(provider);
     }
 

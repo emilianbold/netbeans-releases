@@ -41,14 +41,21 @@
 
 package org.netbeans.modules.websvc.core;
 
+import java.util.Collection;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
+import org.netbeans.modules.websvc.serverapi.api.WSStack;
+import org.netbeans.modules.websvc.serverapi.api.WSStackFeature;
 
 /**
  *
@@ -64,27 +71,33 @@ public class ProjectInfo {
     public static final int EJB_PROJECT_TYPE = 2;
     public static final int CAR_PROJECT_TYPE = 3;
     
-    
-    private boolean jwsdpSupported = false;
     private boolean jsr109Supported = false;
-    private boolean jsr109oldSupported = false;
-    private boolean jaxWsInJ2ee14Supported = false;
+//    private boolean jsr109oldSupported = false;
+    private boolean wsgenSupported = false;
+    private boolean wsimportSupported = false;
+    private ServerType serverType;
     
     /** Creates a new instance of ProjectInfo */
     
     public ProjectInfo(Project project) {
         this.project=project;
-        JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-        if (wss != null) {
-            Map properties = wss.getAntProjectHelper().getStandardPropertyEvaluator().getProperties();
-            String serverInstance = (String)properties.get("j2ee.server.instance"); //NOI18N
-            if (serverInstance != null) {
-                J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
-                if (j2eePlatform != null) {
-                    jwsdpSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_JWSDP);
-                    jsr109Supported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
-                    jsr109oldSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE);
-                    jaxWsInJ2ee14Supported = j2eePlatform.isToolSupported("JaxWs-in-j2ee14-supported");
+        J2eeModuleProvider javaeeModule = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (javaeeModule != null) {
+            String serverInstanceId = javaeeModule.getServerInstanceID();
+            if (serverInstanceId != null) {
+                try {
+                    J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstanceId).getJ2eePlatform();               
+                    WSStack wsStack = JaxWsStackProvider.getJaxWsStackForTool(j2eePlatform, WSStack.TOOL_WSIMPORT);
+                    if (wsStack != null) {
+                        jsr109Supported = wsStack.getServiceFeatures().contains(WSStackFeature.JSR_109);
+                        //jsr109oldSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE);
+                        //wsgenSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSGEN);
+                        wsgenSupported = wsStack.getServiceFeatures().contains(WSStack.TOOL_WSGEN);
+                        wsimportSupported = true;
+                        serverType = getServerType(project);
+                    }
+                } catch (InstanceRemovedException ex) {
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, "Failed to find J2eePlatform", ex);
                 }
             }
         }
@@ -110,17 +123,41 @@ public class ProjectInfo {
         return project;
     }
     
-    public boolean isJwsdpSupported() {
-        return jwsdpSupported;
-    }
     public boolean isJsr109Supported() {
         return jsr109Supported;
     }
-    public boolean isJsr109oldSupported() {
-        return jsr109oldSupported;
+    
+//    public boolean isJsr109oldSupported() {
+//        return jsr109oldSupported;
+//    }
+    
+    public boolean isWsgenSupported() {
+        return wsgenSupported;
     }
-    public boolean isJaxWsInJ2ee14Supported() {
-        return jaxWsInJ2ee14Supported;
+    
+    public boolean isWsimportSupported() {
+        return wsimportSupported;
+    }
+    
+    public ServerType getServerType() {
+        return serverType;
+    }
+    
+    private ServerType getServerType(Project project) {
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider.getServerInstanceID() == null) {
+            return ServerType.NOT_SPECIFIED;
+        }
+        String serverId = j2eeModuleProvider.getServerID();
+        if (serverId.startsWith("Tomcat")) return ServerType.TOMCAT; //NOI18N
+        else if (serverId.equals("J2EE")) return ServerType.GLASSFISH; //NOI18N
+        else if (serverId.equals("GlassFish")) return ServerType.GLASSFISH; //NOI18N
+        else if (serverId.equals("APPSERVER")) return ServerType.GLASSFISH; //NOI18N
+        else if (serverId.equals("JavaEE")) return ServerType.GLASSFISH; //NOI18N
+        else if (serverId.startsWith("JBoss")) return ServerType.JBOSS; //NOI18N
+        else if (serverId.startsWith("WebLogic")) return ServerType.WEBLOGIC; //NOI18N
+        else if (serverId.startsWith("WebSphere")) return ServerType.WEBSPHERE; //NOI18N
+        else return ServerType.UNKNOWN;
     }
 }
 

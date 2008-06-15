@@ -43,10 +43,11 @@
 package org.netbeans.modules.uml.core.metamodel.common.commonactivities;
 
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IRedefinableElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IRelationship;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IValueSpecification;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 
-public interface IActivityEdge extends IRedefinableElement
+public interface IActivityEdge extends IRedefinableElement, IRelationship
 {
 	/**
 	 * property Activity

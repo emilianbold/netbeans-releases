@@ -25,15 +25,14 @@ import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PredicateUpdater;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
-import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author nk160297
  */
-public class DeletePredicateAction extends MapperAction<RestartableIterator<Object>> {
+public class DeletePredicateAction extends MapperAction<Iterable<Object>> {
     
     private static final long serialVersionUID = 1L;
     private boolean mInLeftTree;
@@ -41,8 +40,8 @@ public class DeletePredicateAction extends MapperAction<RestartableIterator<Obje
     
     public DeletePredicateAction(MapperTcContext mapperTcContext, 
             boolean inLeftTree, TreePath treePath, 
-            RestartableIterator<Object> doItr) {
-        super(mapperTcContext, doItr);
+            Iterable<Object> doItrb) {
+        super(mapperTcContext, doItrb);
         mTreePath = treePath;
         mInLeftTree = inLeftTree;
         postInit();
@@ -55,15 +54,14 @@ public class DeletePredicateAction extends MapperAction<RestartableIterator<Obje
     }
     
     public void actionPerformed(ActionEvent e) {
-        RestartableIterator<Object> itr = getActionSubject();
-        itr.restart();
-        Object nextObj = itr.next();
+        Iterable<Object> itrb = getActionSubject();
+        Object nextObj = itrb.iterator().next();
         assert nextObj instanceof AbstractPredicate;
         AbstractPredicate pred = (AbstractPredicate)nextObj;
         //
         XPathSchemaContext sContext = pred.getSchemaContext();
         if (sContext == null) {
-            sContext = PathConverter.constructContext(itr);
+            sContext = PathConverter.constructContext(itrb, false);
         }
         //
         PredicateUpdater updater = new PredicateUpdater(mMapperTcContext, 

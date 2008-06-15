@@ -40,13 +40,6 @@
  */
 package org.netbeans.modules.bpel.validation.core;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
@@ -57,8 +50,6 @@ import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 
 import org.netbeans.modules.soa.validation.core.Validator;
-import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.Process;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**

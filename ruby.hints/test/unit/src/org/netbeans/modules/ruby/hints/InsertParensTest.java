@@ -39,7 +39,7 @@ public class InsertParensTest extends HintTestBase {
     }
 
     public void testHint1() throws Exception {
-        findHints(this, new InsertParens(), "testfiles/insertparens.rb", null);
+        checkHints(this, new InsertParens(), "testfiles/insertparens.rb", null);
     }
 
     public void testApplyFix() throws Exception {

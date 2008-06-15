@@ -89,7 +89,7 @@ public final class RubyDebuggerTest extends TestBase {
         doContinue(); // 2 -> 4
         doAction(ActionsManager.ACTION_STEP_OVER); // 4 -> 5
         doContinue(); // finish
-        p.waitFor();
+        waitFor(p);
     }
     
     public void testStepInto() throws Exception {
@@ -107,7 +107,7 @@ public final class RubyDebuggerTest extends TestBase {
         doAction(ActionsManager.ACTION_STEP_INTO); // 4 -> 2
         doAction(ActionsManager.ACTION_STEP_OVER); // 2 -> 5
         doAction(ActionsManager.ACTION_STEP_OVER); // 5 -> finish
-        p.waitFor();
+        waitFor(p);
     }
     
     public void testStepOut() throws Exception {
@@ -129,10 +129,10 @@ public final class RubyDebuggerTest extends TestBase {
             doAction(ActionsManager.ACTION_STEP_OVER); // 2 -> 3
             doAction(ActionsManager.ACTION_STEP_OUT); // 3 -> 8
             doAction(ActionsManager.ACTION_STEP_OVER); // 8 -> finish
-            p.waitFor();
+            waitFor(p);
         }
     }
-
+    
     public void testSimpleLoop() throws Exception {
         String[] testContent = {
             "1.upto(3) {",
@@ -151,7 +151,7 @@ public final class RubyDebuggerTest extends TestBase {
         RubyBreakpointManager.removeBreakpoint(bp4);
         doContinue(); // 2 -> 2
         doContinue(); // 2 -> finish
-        p.waitFor();
+        waitFor(p);
     }
     
     public void testSpaceAndSemicolonsInPath() throws Exception {
@@ -172,7 +172,7 @@ public final class RubyDebuggerTest extends TestBase {
         RubyBreakpointManager.removeBreakpoint(bp4);
         doContinue(); // 2 -> 2
         doContinue(); // 2 -> finish
-        p.waitFor();
+        waitFor(p);
     }
     
     //    public void testScriptArgumentsNoticed() throws Exception {
@@ -187,7 +187,7 @@ public final class RubyDebuggerTest extends TestBase {
     //        Process p = startDebugging(testF);
     //        Thread.sleep(3000); // TODO: do not depend on timing (use e.g. RubyDebugEventListener)
     //        doContinue(); // 2 -> finish
-    //        p.waitFor();
+    //        waitFor(p);
     //    }
     
     public void testBreakpointsRemovingFirst() throws Exception {
@@ -208,7 +208,7 @@ public final class RubyDebuggerTest extends TestBase {
         doContinue(); // 2 -> 3
         doContinue(); // 3 -> 3
         doContinue(); // 3 -> finish
-        p.waitFor();
+        waitFor(p);
     }
     
     public void testBreakpointsUpdating() throws Exception {
@@ -232,7 +232,7 @@ public final class RubyDebuggerTest extends TestBase {
         doContinue(); // 3 -> 2
         doContinue(); // 2 -> 3
         doContinue(); // 3 -> finish
-        p.waitFor();
+        waitFor(p);
     }
     
     public void testFinish() throws Exception {
@@ -246,7 +246,7 @@ public final class RubyDebuggerTest extends TestBase {
         Process p = startDebugging(testF);
         Thread.sleep(3000); // TODO: rather wait for appropriate event
         doAction(ActionsManager.ACTION_KILL);
-        p.waitFor();
+        waitFor(p);
     }
 
     public void testFinish2() throws Exception {
@@ -262,7 +262,7 @@ public final class RubyDebuggerTest extends TestBase {
             Process p = startDebugging(testF);
             doAction(ActionsManager.ACTION_STEP_OVER);
             doAction(ActionsManager.ACTION_KILL);
-            p.waitFor();
+            waitFor(p);
         }
     }
 
@@ -279,7 +279,7 @@ public final class RubyDebuggerTest extends TestBase {
             Process p = startDebugging(testF);
             Thread.sleep(3000); // TODO: rather wait for appropriate event
             doAction(ActionsManager.ACTION_KILL);
-            p.waitFor();
+            waitFor(p);
         }
     }
     
@@ -306,7 +306,7 @@ public final class RubyDebuggerTest extends TestBase {
                 }
             });
         }
-        p.waitFor();
+        waitFor(p);
     }
 
     public void testDoNotStepIntoTheEval() throws Exception { // issue #106115
@@ -326,7 +326,7 @@ public final class RubyDebuggerTest extends TestBase {
             doAction(ActionsManager.ACTION_STEP_INTO);
             doAction(ActionsManager.ACTION_STEP_INTO);
             doAction(ActionsManager.ACTION_STEP_INTO);
-            p.waitFor();
+            waitFor(p);
         }
     }
     
@@ -346,7 +346,7 @@ public final class RubyDebuggerTest extends TestBase {
 //        doAction(ActionsManager.ACTION_STEP_INTO);
 //        doAction(ActionsManager.ACTION_STEP_INTO);
 //        doAction(ActionsManager.ACTION_STEP_INTO);
-//        p.waitFor();
+//        waitFor(p);
 //    }
     
     public void testCheckAndTuneSettings() throws IOException {
@@ -394,7 +394,7 @@ public final class RubyDebuggerTest extends TestBase {
         doContinue(); // 2 -> 4
         doAction(ActionsManager.ACTION_STEP_OVER); // 4 -> 5
         doContinue(); // finish
-        p.waitFor();
+        waitFor(p);
     }
 
     public void testRubiniusDebugging() throws IOException {
@@ -410,6 +410,6 @@ public final class RubyDebuggerTest extends TestBase {
     private DebuggerEngine getEngineManager() {
         return DebuggerManager.getDebuggerManager().getCurrentEngine();
     }
-    
+
 }
 

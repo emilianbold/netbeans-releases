@@ -104,24 +104,24 @@ public class GoToMarkOccurrencesAction extends BaseAction {
 
                 if (hs.getStartOffset() > curPos) {
                     // we found next occurrence
-                    return hs.getStartOffset();
+                    return hs.getEndOffset();
                 } else if (!(firstEnd >= curPos && firstStart <= curPos)) {
                     // cyclic jump to first occurrence unless we already there
-                    return firstStart;
+                    return firstEnd;
                 }
             } else {
-                int current = hs.getStartOffset(), last;
+                int current = hs.getEndOffset(), last;
                 boolean stuck = false;
                 do {
                     last = current;
-                    current = hs.getStartOffset();
+                    current = hs.getEndOffset();
                 } while (hs.getEndOffset() < curPos && (stuck = hs.moveNext()));
 
                 if (last == current) {
                     // we got no options to jump, cyclic jump to last in file unless we already there
                     while (hs.moveNext());
                     if (!(hs.getEndOffset() >= curPos && hs.getStartOffset() <= curPos)) {
-                        return hs.getStartOffset();
+                        return hs.getEndOffset();
                     }
                 } else if (stuck) {
                     // just move to previous occurence

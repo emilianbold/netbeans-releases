@@ -72,15 +72,44 @@ made subject to such option by the copyright holder.
                         <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.12</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.websvc.wsitmodelext</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.xml.xdm</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.xml.retriever</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
+            </test-dependencies>            
             <friend-packages>
-                <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <friend>org.netbeans.modules.compapp.casaeditor</friend>
+                <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <package>org.netbeans.modules.websvc.wsitmodelext.addressing</package>
                 <package>org.netbeans.modules.websvc.wsitmodelext.mex</package>
                 <package>org.netbeans.modules.websvc.wsitmodelext.mtom</package>
                 <package>org.netbeans.modules.websvc.wsitmodelext.policy</package>
                 <package>org.netbeans.modules.websvc.wsitmodelext.rm</package>
+                <package>org.netbeans.modules.websvc.wsitmodelext.rm.v12</package>
                 <package>org.netbeans.modules.websvc.wsitmodelext.security</package>
                 <package>org.netbeans.modules.websvc.wsitmodelext.security.algosuite</package>
                 <package>org.netbeans.modules.websvc.wsitmodelext.security.parameters</package>
@@ -90,6 +119,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.websvc.wsitmodelext.transport</package>
                 <package>org.netbeans.modules.websvc.wsitmodelext.trust</package>
                 <package>org.netbeans.modules.websvc.wsitmodelext.tx</package>
+                <package>org.netbeans.modules.websvc.wsitmodelext.versioning</package>
             </friend-packages>
         </data>
     </configuration>

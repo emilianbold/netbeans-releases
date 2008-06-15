@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import org.xml.sax.Attributes;
 import javax.xml.XMLConstants;
@@ -63,12 +64,14 @@ import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIDocument;
 import org.netbeans.modules.xml.axi.AXIModel;
 import org.netbeans.modules.xml.axi.AXIModelFactory;
+import org.netbeans.modules.xml.axi.AXIType;
 import org.netbeans.modules.xml.axi.AbstractAttribute;
 import org.netbeans.modules.xml.axi.AbstractElement;
 import org.netbeans.modules.xml.axi.AnyAttribute;
 import org.netbeans.modules.xml.axi.AnyElement;
 import org.netbeans.modules.xml.axi.Attribute;
 import org.netbeans.modules.xml.axi.Element;
+import org.netbeans.modules.xml.axi.datatype.Datatype;
 import org.netbeans.modules.xml.schema.completion.*;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.CompletionModel;
 import org.netbeans.modules.xml.schema.model.Form;
@@ -245,7 +248,7 @@ public class CompletionUtil {
      */
     public static List<CompletionResultItem> getElements(
             CompletionContextImpl context) {
-        Element element = findAXIElementAtContext(context);        
+        Element element = findAXIElementAtContext(context);
         if(element == null)
             return null;
         
@@ -269,7 +272,47 @@ public class CompletionUtil {
     
     public static List<CompletionResultItem> getElementValues(
             CompletionContextImpl context) {
-        return null;
+        Element element = findAXIElementAtContext(context);
+        List<CompletionResultItem> result = new ArrayList<CompletionResultItem>();
+        if(element == null)
+            return null;
+        AXIType type = element.getType();
+        if(type == null || !(type instanceof Datatype))
+            return null;        
+        Datatype dataType = (Datatype)type;
+        for(Object value: dataType.getEnumerations()) {
+            ValueResultItem item = new ValueResultItem(element, (String)value, context);
+            result.add(item);
+        }
+        return result;
+    }    
+    
+    public static List<CompletionResultItem> getAttributeValues(
+            CompletionContextImpl context) {
+        Element element = findAXIElementAtContext(context);
+        if(element == null)
+            return null;        
+        List<CompletionResultItem> result = new ArrayList<CompletionResultItem>();
+        Attribute attr = null;
+        for(AbstractAttribute a: element.getAttributes()) {
+            if(a instanceof AnyAttribute)
+                continue;
+            if(a.getName().equals(context.getAttribute())) {
+                attr = (Attribute)a;
+                break;
+            }
+        }
+        if(attr == null)
+            return null;
+        AXIType type = attr.getType();
+        if(type == null || !(type instanceof Datatype))
+            return null;                
+        Datatype dataType = (Datatype)type;
+        for(Object value: dataType.getEnumerations()) {
+            ValueResultItem item = new ValueResultItem(attr, (String)value, context);
+            result.add(item);
+        }
+        return result;
     }    
     
     private static void addNSAwareCompletionItems(AXIComponent axi, CompletionContextImpl context,
@@ -377,7 +420,7 @@ public class CompletionUtil {
     /**
      * Returns the appropriate AXIOM element for a given context.
      */
-    private static Element findAXIElementAtContext(
+    public static Element findAXIElementAtContext(
             CompletionContextImpl context) {
         List<QName> path = context.getPathFromRoot();
         if(path == null || path.size() == 0)
@@ -557,13 +600,18 @@ public class CompletionUtil {
     }
     
     public static boolean isDTDBasedDocument(Document document) {
-        TokenHierarchy th = TokenHierarchy.get(document);
-        TokenSequence ts = th.tokenSequence();
-        while(ts.moveNext()) {
-            Token token = ts.token();
-            if(token.id() == XMLTokenId.DECLARATION) {                
-                return true;
+        ((AbstractDocument)document).readLock();
+        try {
+            TokenHierarchy th = TokenHierarchy.get(document);
+            TokenSequence ts = th.tokenSequence();
+            while(ts.moveNext()) {
+                Token token = ts.token();
+                if(token.id() == XMLTokenId.DECLARATION) {
+                    return true;
+                }
             }
+        } finally {
+            ((AbstractDocument)document).readUnlock();
         }
         return false;
     }
@@ -573,13 +621,18 @@ public class CompletionUtil {
      */
     public static int getNamespaceInsertionOffset(Document document) {
         int offset = 0;
-        TokenHierarchy th = TokenHierarchy.get(document);
-        TokenSequence ts = th.tokenSequence();
-        while(ts.moveNext()) {
-            Token nextToken = ts.token();
-            if(nextToken.id() == XMLTokenId.TAG && nextToken.text().toString().equals(">")) {
-               offset = nextToken.offset(th);
+        ((AbstractDocument)document).readLock();
+        try {
+            TokenHierarchy th = TokenHierarchy.get(document);
+            TokenSequence ts = th.tokenSequence();
+            while(ts.moveNext()) {
+                Token nextToken = ts.token();
+                if(nextToken.id() == XMLTokenId.TAG && nextToken.text().toString().equals(">")) {
+                   offset = nextToken.offset(th);
+                }
             }
+        } finally {
+            ((AbstractDocument)document).readUnlock();
         }
         
         return offset;
@@ -591,35 +644,45 @@ public class CompletionUtil {
      * attributes for the root element.
      */
     public static DocRoot getDocRoot(Document document) {
-        TokenHierarchy th = TokenHierarchy.get(document);
-        TokenSequence ts = th.tokenSequence();
-        List<DocRootAttribute> attributes = new ArrayList<DocRootAttribute>();
-        String name = null;
-        while(ts.moveNext()) {
-            Token nextToken = ts.token();
-            if(nextToken.id() == XMLTokenId.TAG) {
-                String tagName = nextToken.text().toString();
-                if(name == null && tagName.startsWith("<"))
-                    name = tagName.substring(1, tagName.length());
-                String lastAttrName = null;
-                while(ts.moveNext() ) {
-                    Token t = ts.token();
-                    if(t.id() == XMLTokenId.TAG && t.text().toString().equals(">"))
+        ((AbstractDocument)document).readLock();
+        try {
+            TokenHierarchy th = TokenHierarchy.get(document);
+            TokenSequence ts = th.tokenSequence();
+            List<DocRootAttribute> attributes = new ArrayList<DocRootAttribute>();
+            String name = null;
+            while(ts.moveNext()) {
+                Token nextToken = ts.token();
+                if(nextToken.id() == XMLTokenId.TAG) {
+                    String tagName = nextToken.text().toString();
+                    if(name == null && tagName.startsWith("<"))
+                        name = tagName.substring(1, tagName.length());
+                    String lastAttrName = null;
+                    while(ts.moveNext() ) {
+                        Token t = ts.token();
+                        if(t.id() == XMLTokenId.TAG && t.text().toString().equals(">"))
+                            break;
+                        if(t.id() == XMLTokenId.ARGUMENT) {
+                            lastAttrName = t.text().toString();
+                        }
+                        if(t.id() == XMLTokenId.VALUE && lastAttrName != null) {
+                            String value = t.text().toString();
+                            if(value.startsWith("'") || value.startsWith("\""))
+                                value = value.substring(1, value.length()-1);                        
+                            attributes.add(new DocRootAttribute(lastAttrName, value));
+                            lastAttrName = null;
+                        }
+                    } //while loop
+                    
+                    //first start tag with a valid name is the root
+                    if(name != null)
                         break;
-                    if(t.id() == XMLTokenId.ARGUMENT) {
-                        lastAttrName = t.text().toString();
-                    }
-                    if(t.id() == XMLTokenId.VALUE && lastAttrName != null) {
-                        String value = t.text().toString();
-                        if(value.startsWith("'") || value.startsWith("\""))
-                            value = value.substring(1, value.length()-1);                        
-                        attributes.add(new DocRootAttribute(lastAttrName, value));
-                        lastAttrName = null;
-                    }
                 }
-            }
-        }
-        return new DocRoot(name, attributes);
+            } //while loop
+            
+            return new DocRoot(name, attributes);
+        } finally {
+            ((AbstractDocument)document).readUnlock();
+        }        
     }
     
     public static class DocRoot {

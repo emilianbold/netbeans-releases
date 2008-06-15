@@ -355,14 +355,14 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         }
         final DummyNode[] dummyNodes = new DummyNode[1];
         dummyNodes[0] = new DummyNode(sheet, "Sheet"); // NOI18N
-	// It seems the IDE tem cannot fix IZ#129743
-	// So do work around...
-        //holder.setNodes(dummyNodes);
-	SwingUtilities.invokeLater(new Runnable() {
-	    public void run() {
-	        holder.setNodes(dummyNodes);
-	    }
-	});
+        holder.setNodes(dummyNodes);
+	// It seems the IDE team fixed IZ#129743
+	// So remove work around...
+	//SwingUtilities.invokeLater(new Runnable() {
+	//    public void run() {
+	//        holder.setNodes(dummyNodes);
+	//    }
+	//});
     
         preferences.addPreferenceChangeListener(this);
         lastSheetPreferences = preferences;
@@ -612,8 +612,9 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(jLabel2, gridBagConstraints);
 
-        languagesComboBox.setMinimumSize(new java.awt.Dimension(100, 18));
-        languagesComboBox.setPreferredSize(new java.awt.Dimension(100, 22));
+        languagesComboBox.setMaximumSize(new java.awt.Dimension(100, 25));
+        languagesComboBox.setMinimumSize(new java.awt.Dimension(100, 25));
+        languagesComboBox.setPreferredSize(new java.awt.Dimension(100, 25));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;

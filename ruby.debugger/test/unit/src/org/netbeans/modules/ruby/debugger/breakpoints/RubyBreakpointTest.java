@@ -96,7 +96,7 @@ public final class RubyBreakpointTest extends TestBase {
             doContinue(); // i == 8
             doContinue(); // i == 9
             doContinue(); // i == 10
-            p.waitFor();
+            waitFor(p);
         }
     }
 
@@ -115,7 +115,7 @@ public final class RubyBreakpointTest extends TestBase {
             doAction(ActionsManager.ACTION_STEP_OVER);
             doAction(ActionsManager.ACTION_STEP_OVER);
             doContinue();
-            p.waitFor();
+            waitFor(p);
         }
     }
 }

@@ -41,17 +41,16 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.algosuite.impl;
 
-import org.netbeans.modules.websvc.wsitmodelext.security.algosuite.AlgorithmSuiteQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.algosuite.Basic256Rsa15;
+import org.netbeans.modules.websvc.wsitmodelext.security.impl.SecurityPolicyComponentImpl;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author Martin Grebac
  */
-public class Basic256Rsa15Impl extends AlgorithmSuiteComponentImpl implements Basic256Rsa15 {
+public class Basic256Rsa15Impl extends SecurityPolicyComponentImpl implements Basic256Rsa15 {
     
     /**
      * Creates a new instance of Basic256Rsa15Impl
@@ -60,13 +59,4 @@ public class Basic256Rsa15Impl extends AlgorithmSuiteComponentImpl implements Ba
         super(model, e);
     }
     
-    public Basic256Rsa15Impl(WSDLModel model){
-        this(model, createPrefixedElement(AlgorithmSuiteQName.BASIC256RSA15.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
 }

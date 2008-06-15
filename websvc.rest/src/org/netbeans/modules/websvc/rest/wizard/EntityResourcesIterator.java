@@ -52,6 +52,7 @@ import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
+import org.netbeans.modules.websvc.rest.support.WebXmlHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -79,15 +80,10 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
         String resourcePackage = (String) wizard.getProperty(WizardProperties.RESOURCE_PACKAGE);
         String converterPackage = (String) wizard.getProperty(WizardProperties.CONVERTER_PACKAGE);
         EntityResourceBeanModel model = (EntityResourceBeanModel) wizard.getProperty(WizardProperties.ENTITY_RESOURCE_MODEL);
-        String puName = (String) wizard.getProperty(WizardProperties.PERSISTENCE_UNIT_NAME);
-        
-        // Add the entity classes to persistence.xml,
-        // Note: this is a work-around for TopLink PM implementation not compliant to persistence.xml schema.
-        //PersistenceHelper.addEntityClasses(project, model.getBuilder().getAllEntityNames());
-        PersistenceHelper.unsetExcludeEnlistedClasses(project);
-        
+        final String puName = (String) wizard.getProperty(WizardProperties.PERSISTENCE_UNIT_NAME);
+    
         final EntityResourcesGenerator generator = new EntityResourcesGenerator(
-                model, targetFolder, targetPackage, resourcePackage, converterPackage, puName);
+                model, project, targetFolder, targetPackage, resourcePackage, converterPackage, puName);
         final ProgressDialog progressDialog = new ProgressDialog(NbBundle.getMessage(
                 EntityResourcesIterator.class,
                 "LBL_RestSevicicesFromEntitiesProgress"));
@@ -97,7 +93,6 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
                 try {
                     RestUtils.disableRestServicesChangeListner(project);
                     generator.generate(progressDialog.getProgressHandle());
-                    
                 } catch(Exception iox) {
                     Exceptions.printStackTrace(iox);
                 } finally {

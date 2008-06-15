@@ -73,6 +73,8 @@ import org.netbeans.modules.ruby.rubyproject.ScriptDescProvider;
 import org.netbeans.modules.ruby.rubyproject.TestNotifier;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.rubyproject.RubyFileLocator;
+import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
@@ -113,6 +115,12 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
      * Standard command for running the Rails console for a project
      */
     public static final String COMMAND_RAILS_CONSOLE = "rails-console"; // NOI18N
+
+    /**
+     * Command for running RSpec tests on this project (if installed)
+     */
+    public static final String COMMAND_RSPEC = "rspec"; //NOI18N
+
     
     // Commands available from Ruby project
     private static final String[] supportedActions = {
@@ -127,6 +135,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         COMMAND_DEBUG, 
         COMMAND_DEBUG_SINGLE,
         COMMAND_TEST, 
+        COMMAND_RSPEC,
         COMMAND_TEST_SINGLE, 
         COMMAND_DEBUG_TEST_SINGLE, 
         COMMAND_DELETE,
@@ -237,7 +246,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         } else if (COMMAND_TEST.equals(command)) {
             TestRunner testRunner = getTestRunner(TestRunner.TestType.TEST_UNIT);
             if (testRunner != null) {
-                testRunner.getInstance().runAllTests(project);
+                testRunner.getInstance().runAllTests(project, false);
             } else {
                 File pwd = FileUtil.toFile(project.getProjectDirectory());
                 RakeRunner runner = new RakeRunner(project);
@@ -280,7 +289,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             if (rspec.isRSpecInstalled() && RSpecSupport.isSpecFile(file)) {
                 TestRunner rspecRunner = getTestRunner(TestRunner.TestType.RSPEC);
                 if (rspecRunner != null) {
-                    rspecRunner.runTest(file);
+                    rspecRunner.runTest(file, isDebug);
                 } else {
                     rspec.runRSpec(null, file, file.getName(), new RailsFileLocator(context, project), true, isDebug);
                 }
@@ -289,7 +298,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
 
             TestRunner testRunner = getTestRunner(TestRunner.TestType.TEST_UNIT);
             if (testRunner != null) {
-                testRunner.getInstance().runTest(file);
+                testRunner.getInstance().runTest(file, isDebug);
             } else {
                 runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(),
                         file.getNameExt(), context, isDebug, new OutputRecognizer[]{new TestNotifier(true, true)});
@@ -321,9 +330,15 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             
             RSpecSupport rspec = new RSpecSupport(project);
             if (rspec.isRSpecInstalled() && RSpecSupport.isSpecFile(file)) {
-                // Save all files first - this rake file could be accessing other files
-                LifecycleManager.getDefault().saveAll();
-                rspec.runRSpec(null, file, file.getName(), new RailsFileLocator(context, project), true, debugSingleCommand);
+                TestRunner rspecRunner = getTestRunner(TestRunner.TestType.RSPEC);
+                boolean debug = COMMAND_DEBUG_SINGLE.equals(command);
+                if (rspecRunner != null) {
+                    rspecRunner.runTest(file, debug);
+                } else {
+                    // Save all files first - this rake file could be accessing other files
+                    LifecycleManager.getDefault().saveAll();
+                    rspec.runRSpec(null, file, file.getName(), new RailsFileLocator(context, project), true, debugSingleCommand);
+                }
                 return;
             }
             
@@ -424,8 +439,13 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             //    // XXX What do we do here?
             } else if (fileName.endsWith("_test")) { // NOI18N
                 // Run test normally - don't pop up browser
-                runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, debugSingleCommand,
-                        new OutputRecognizer[] { new TestNotifier(true, true) });
+                TestRunner testRunner = getTestRunner(TestRunner.TestType.TEST_UNIT);
+                if (testRunner != null) {
+                    testRunner.getInstance().runTest(file, COMMAND_DEBUG_SINGLE.equals(command));
+                } else {
+                    runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, debugSingleCommand,
+                            new OutputRecognizer[]{new TestNotifier(true, true)});
+                }
                 return;
             }
             
@@ -518,6 +538,23 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
                     run();
             
             return;
+        }
+
+        if (COMMAND_RSPEC.equals(command)) {
+            TestRunner testRunner = getTestRunner(TestRunner.TestType.RSPEC);
+            if (testRunner != null) {
+                testRunner.getInstance().runAllTests(project, false);
+            } else {
+                File pwd = FileUtil.toFile(project.getProjectDirectory());
+                RakeRunner runner = new RakeRunner(project);
+                runner.setPWD(pwd);
+                runner.setFileLocator(new RubyFileLocator(context, project));
+                runner.showWarnings(true);
+                runner.run("spec"); // NOI18N
+
+            }
+            return;
+
         }
 
         if (COMMAND_AUTOTEST.equals(command)) {
@@ -621,39 +658,15 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             options = null;
         }
 
-        // Set the load path from the source and test folders.
-        // Load paths are additive so users can add their own in the
-        // options field as well.
-        FileObject[] srcPath = project.getSourceRoots().getRoots();
-        FileObject[] testPath = project.getTestSourceRoots().getRoots();
-        StringBuilder sb = new StringBuilder();
-        if (srcPath != null && srcPath.length > 0) {
-            for (FileObject root : srcPath) {
-                if (sb.length() > 0) {
-                    sb.append(' ');
-                }
-                sb.append("-I\""); // NOI18N
-                sb.append(FileUtil.toFile(root).getAbsoluteFile());
-                sb.append("\""); // NOI18N
-            }
-        }
-        if (testPath != null && testPath.length > 0) {
-            for (FileObject root : testPath) {
-                if (sb.length() > 0) {
-                    sb.append(' ');
-                }
-                sb.append("-I\""); // NOI18N
-                sb.append(FileUtil.toFile(root).getAbsoluteFile());
-                sb.append("\""); // NOI18N
-            }
-        }
-        String includePath = sb.toString();
+        String includePath = RubyProjectUtil.getLoadPath(project);
         if (options != null) {
             options = includePath + " " + options; // NOI18N
         } else {
             options = includePath;
         }
 
+        FileObject[] srcPath = project.getSourceRoots().getRoots();
+        FileObject[] testPath = project.getTestSourceRoots().getRoots();
         // Locate the target and specify it by full path.
         // This is necessary because JRuby and Ruby don't locate the script from the load
         // path it seems.

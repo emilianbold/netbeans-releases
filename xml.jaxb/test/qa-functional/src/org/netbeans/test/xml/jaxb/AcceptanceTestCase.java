@@ -145,7 +145,21 @@ public class AcceptanceTestCase extends JellyTestCase {
         opNewFileWizard.finish( );
 
         // Wait till JAXB really created
-        stt.waitText( "Finished building " + sApplicationName + " (jaxb-code-generation)." );
+        int iWait = 2;
+        while( true )
+        {
+          try
+          {
+            stt.waitText( "Finished building " + sApplicationName + " (jaxb-code-generation)." );
+            break;
+          }
+          catch( JemmyException ex )
+          {
+            System.out.println( "--- ex" );
+            if( 0 == --iWait )
+              throw ex;
+          }
+        }
         stt.stop( );
 
         return;

@@ -1066,7 +1066,6 @@ they are automatically generated during the build:
     Class-Path
     OpenIDE-Module-Build-Version
     OpenIDE-Module-Friends
-    OpenIDE-Module-IDE-Dependencies
     OpenIDE-Module-Implementation-Version (unless you are exporting an impl API)
     OpenIDE-Module-Module-Dependencies
     OpenIDE-Module-Public-Packages
@@ -1175,7 +1174,7 @@ harness automatically.
 
 5d. Class-Path - delete and use <class-path-extension>s in project.xml instead.
 
-5e. OpenIDE-Module-IDE-Dependencies, OpenIDE-Module-Module-Dependencies,
+5e. OpenIDE-Module-Module-Dependencies,
 OpenIDE-Module-Public-Packages - you should not have been using these to begin
 with, but if you were, delete them now: the harness generates them for you as
 appropriate.

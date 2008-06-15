@@ -82,6 +82,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.SpecificationVersion;
@@ -320,8 +321,7 @@ public final class CreatedModifiedFilesFactory {
         Map<String,Object> bindings = engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
         String basename = target.getName();
         for (CreateFromTemplateAttributesProvider provider : Lookup.getDefault().lookupAll(CreateFromTemplateAttributesProvider.class)) {
-            DataObject d = DataObject.find(content);
-            Map<String,?> map = provider.attributesFor(d, d.getFolder(), basename);
+            Map<String,?> map = provider.attributesFor(DataObject.find(content), DataFolder.findFolder(target.getParent()), basename);
             if (map != null) {
                 bindings.putAll(map);
             }

@@ -91,7 +91,7 @@ public class PHPTypeSearcher implements TypeSearcher {
             String rest = textForQuery.substring(doubleColon + 2);
             
             for (IndexedClass clazz : index.getClasses(null, className, kind)) {
-                for (IndexedFunction func : index.getMethods(null, clazz.getName(), rest, kind)) {
+                for (IndexedFunction func : index.getMethods(null, clazz.getName(), rest, kind, PHPIndex.ANY_ATTR)) {
                     result.add(new PHPTypeDescriptor(func, clazz, helper));
                 }
             }

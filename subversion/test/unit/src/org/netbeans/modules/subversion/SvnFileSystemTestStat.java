@@ -79,7 +79,7 @@ public class SvnFileSystemTestStat extends SvnFileSystemTest {
         suite.addTestSuite(FileObjectTestHid.class);
         suite.addTestSuite(URLMapperTestHidden.class);
         suite.addTestSuite(FileUtilTestHidden.class);                
-        suite.addTestSuite(BaseFileObjectTestHid.class);            
+        suite.addTestSuite(BaseFileObjectTestHid.class); //new BaseFileObjectTestHid("testSimulatesRefactoringRename"));            
         return new SvnFileSystemTestStat(suite);
     }
 }

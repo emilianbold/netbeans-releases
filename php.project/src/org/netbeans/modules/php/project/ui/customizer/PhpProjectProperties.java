@@ -40,13 +40,15 @@
  */
 package org.netbeans.modules.php.project.ui.customizer;
 
+import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.ui.IncludePathUiSupport;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -71,10 +73,9 @@ import org.openide.util.Utilities;
 /**
  * @author Tomas Mysik, Radek Matous
  */
-public class PhpProjectProperties {
+public class PhpProjectProperties implements ConfigManager.ConfigProvider {
 
     public static final String SRC_DIR = "src.dir"; // NOI18N
-    public static final String COMMAND_PATH = "command.path"; // NOI18N
     public static final String SOURCE_ENCODING = "source.encoding"; // NOI18N
     public static final String COPY_SRC_FILES = "copy.src.files"; // NOI18N
     public static final String COPY_SRC_TARGET = "copy.src.target"; // NOI18N
@@ -156,6 +157,22 @@ public class PhpProjectProperties {
         this.includePathSupport = includePathSupport;
         runConfigs = readRunConfigs();
         activeConfig = project.getEvaluator().getProperty("config"); // NOI18N
+    }
+
+    public String[] getConfigProperties() {
+        return CFG_PROPS;
+    }
+
+    public Map<String, Map<String, String>> getConfigs() {
+        return runConfigs;
+    }
+
+    public String getActiveConfig() {
+        return activeConfig;
+    }
+
+    public void setActiveConfig(String configName) {
+        activeConfig = configName;
     }
 
     public String getCopySrcFiles() {
@@ -327,17 +344,38 @@ public class PhpProjectProperties {
         if (srcDirectory == null) {
             srcDirectory = FileUtil.toFileObject(srcFolder);
         }
-        logUI(helper.getProjectDirectory(), srcDirectory, Boolean.valueOf(getCopySrcFiles()));
+        logUI(helper.getProjectDirectory(), srcDirectory, getRunAsTypes(), Boolean.valueOf(getCopySrcFiles()));
+    }
+
+    private List<RunAsType> getRunAsTypes() {
+        List<RunAsType> runAsTypes = new ArrayList<RunAsType>(runConfigs.size());
+        for (Map.Entry<String, Map<String, String>> entry : runConfigs.entrySet()) {
+            Map<String, String> c = entry.getValue();
+            if (c == null) {
+                // removed config
+                continue;
+            }
+            runAsTypes.add(RunAsType.valueOf(c.get(RUN_AS)));
+        }
+        return runAsTypes;
     }
 
     // http://wiki.netbeans.org/UILoggingInPHP
-    private void logUI(FileObject projectDir, FileObject sourceDir, Boolean copyFiles) {
+    private void logUI(FileObject projectDir, FileObject sourceDir, List<RunAsType> configs, boolean copyFiles) {
+        StringBuilder sb = new StringBuilder(200);
+        for (RunAsType runAs : configs) {
+            if (sb.toString().length() != 0) {
+                sb.append(";");
+            }
+            sb.append(runAs.name());
+        }
         LogRecord logRecord = new LogRecord(Level.INFO, "UI_PHP_PROJECT_CUSTOMIZED"); //NOI18N
         logRecord.setLoggerName(PhpProject.UI_LOGGER_NAME);
         logRecord.setResourceBundle(NbBundle.getBundle(PhpProjectProperties.class));
         logRecord.setParameters(new Object[] {
             FileUtil.isParentOf(projectDir, sourceDir),
-            copyFiles != null && copyFiles
+            sb.toString(),
+            copyFiles
         });
         Logger.getLogger(PhpProject.UI_LOGGER_NAME).log(logRecord);
     }
@@ -346,20 +384,11 @@ public class PhpProjectProperties {
         return project;
     }
 
-    public Map<String, Map<String, String>> getRunConfigs() {
-        return runConfigs;
-    }
-
     /**
      * A mess.
      */
     Map<String/*|null*/, Map<String, String>> readRunConfigs() {
-        Map<String, Map<String, String>> m = new TreeMap<String, Map<String, String>>(new Comparator<String>() {
-
-            public int compare(String s1, String s2) {
-                return s1 != null ? (s2 != null ? s1.compareTo(s2) : 1) : (s2 != null ? -1 : 0);
-            }
-        });
+        Map<String, Map<String, String>> m = ConfigManager.createEmptyConfigs();
         Map<String, String> def = new TreeMap<String, String>();
         EditableProperties privateProperties = getProject().getHelper().getProperties(
                 AntProjectHelper.PRIVATE_PROPERTIES_PATH);

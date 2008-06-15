@@ -74,7 +74,7 @@ public class TableClosureTest extends TestCase {
         tablesAndRefs.put("F", empty);
         tablesAndRefs.put("G", Collections.singleton("G"));
 
-        provider = new TableProviderImpl(tablesAndRefs);
+        provider = new TableProviderImpl(null, null, tablesAndRefs);
         closure = new TableClosure(provider);
     }
 

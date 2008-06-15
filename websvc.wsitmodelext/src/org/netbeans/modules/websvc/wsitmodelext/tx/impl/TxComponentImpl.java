@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.tx.impl;
 
+import org.netbeans.modules.websvc.wsitmodelext.GenericComponentImpl;
 import org.netbeans.modules.websvc.wsitmodelext.tx.TxQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement;
@@ -51,7 +52,7 @@ import org.w3c.dom.Element;
  *
  * @author MartinGrebac
  */
-public abstract class TxComponentImpl extends GenericExtensibilityElement {
+public abstract class TxComponentImpl extends GenericComponentImpl {
     
     /**
      * Creates a new instance of TxComponentImpl
@@ -61,20 +62,13 @@ public abstract class TxComponentImpl extends GenericExtensibilityElement {
     }
 
     @Override
-    public abstract void accept(WSDLVisitor visitor);
-    
-     @Override
-     protected String getNamespaceURI() {
-        return TxQName.TX_NS_URI;
+    public void accept(WSDLVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override
-    public String getAttribute(String attribute) {
-        throw new UnsupportedOperationException();
+    protected String getNamespaceURI() {
+        return TxQName.TX_NS_URI;
     }
-    
-    @Override
-    public void setAttribute(String attribute, String value) {
-        throw new UnsupportedOperationException();
-    }    
+
 }

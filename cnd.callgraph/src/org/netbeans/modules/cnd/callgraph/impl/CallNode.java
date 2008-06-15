@@ -44,6 +44,7 @@ import java.awt.Image;
 import java.util.ArrayList;
 import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -65,15 +66,22 @@ public class CallNode extends AbstractNode {
         } else {
             setName(element.getCaller().getName());
         }
+        ((CallChildren)getChildren()).setParent(this);
         model.addCallToScene(element);
     }
 
     @Override
     public String getHtmlDisplayName() {
+        String displayName;
         if (isCalls) {
-            return object.getCallee().getHtmlDisplayName();
+            displayName = object.getCallee().getHtmlDisplayName();
         } else {
-            return object.getCaller().getHtmlDisplayName();
+            displayName = object.getCaller().getHtmlDisplayName();
+        }
+        if (((CallChildren)getChildren()).isRecusion()) {
+            return displayName+NbBundle.getMessage(CallNode.class, "CTL_Recuesion"); // NOI18N
+        } else {
+            return displayName;
         }
     }
     
@@ -98,6 +106,10 @@ public class CallNode extends AbstractNode {
             Image res = Utilities.mergeImages(emptyBadge, original, 4, 0);
             return Utilities.mergeImages(res, upBadge, 0, 0);
         }
+    }
+
+    /*package-local*/ Call getCall(){
+        return object;
     }
 
     @Override

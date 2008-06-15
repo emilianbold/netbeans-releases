@@ -25,7 +25,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
-import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.xpath.ext.StepNodeTestType;
 import org.netbeans.modules.xml.xpath.ext.StepNodeTypeTest;
@@ -50,12 +49,12 @@ public class SpecialStepManager {
         mSteps = new LinkedList<CachedStep>();
     }
     
-    public List<LocationStep> getSteps(RestartableIterator<Object> parentPath) {
+    public List<LocationStep> getSteps(Iterable<Object> parentPathb) {
         //    
         ArrayList<LocationStep> result = new ArrayList<LocationStep>();
         
         for (CachedStep cStep : mSteps) {
-            if (cStep.hasSameLocation(parentPath)) {
+            if (cStep.hasSameLocation(parentPathb)) {
                 result.add(cStep.getStep());
             }
         }
@@ -77,11 +76,12 @@ public class SpecialStepManager {
         return true;
     }
 
-    public boolean addStep(RestartableIterator<Object> parentItr, 
+    public boolean addStep(Iterable<Object> parentItrb, 
             LocationStep step) {
         //
         List<Object> parentPath = 
-                PathConverter.constructObjectLocationtList(parentItr, true);
+                PathConverter.constructObjectLocationtList(
+                parentItrb, true, false);
         //
         if (parentPath != null) {
             return addStep(parentPath, step);
@@ -90,10 +90,11 @@ public class SpecialStepManager {
         return false;
     }
     
-    public void removeStep(RestartableIterator<Object> parentItr, 
+    public void removeStep(Iterable<Object> parentItrb, 
             LocationStep stepToDelete) {
         List<Object> parentPath = 
-                PathConverter.constructObjectLocationtList(parentItr, true);
+                PathConverter.constructObjectLocationtList(
+                parentItrb, true, false);
         //
         if (parentPath != null) {
             for (CachedStep cStep : mSteps) {
@@ -162,14 +163,8 @@ public class SpecialStepManager {
             return mParentPath;
         }
         
-        public boolean hasSameLocation(RestartableIterator parentPathItr) {
-            parentPathItr.restart();
-            return hasSameLocationImpl(parentPathItr);
-        }
-        
-        public boolean hasSameLocation(List<Object> parentPath) {
-            Iterator externalItr = parentPath.iterator();
-            return hasSameLocationImpl(externalItr);
+        public boolean hasSameLocation(Iterable parentPathItrb) {
+            return hasSameLocationImpl(parentPathItrb.iterator());
         }
         
         private boolean hasSameLocationImpl(Iterator externalItr) {

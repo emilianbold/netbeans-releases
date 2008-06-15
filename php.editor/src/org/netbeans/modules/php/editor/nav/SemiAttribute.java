@@ -41,7 +41,7 @@ package org.netbeans.modules.php.editor.nav;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -83,18 +83,15 @@ import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Union2;
 
@@ -412,7 +409,7 @@ public class SemiAttribute extends DefaultVisitor {
         super.visit(node);
     }
 
-    public AttributedElement lookup(String name, Kind k) {
+    private AttributedElement lookup(String name, Kind k) {
         DefinitionScope ds = scopes.peek();
         AttributedElement e;
         
@@ -437,6 +434,10 @@ public class SemiAttribute extends DefaultVisitor {
             default:
                 return ds.enterWrite(name, k, (ASTNode) null);
         }
+    }
+    
+    public Collection<AttributedElement> getGlobalElements(Kind k) {
+        return global.getElements(k);
     }
     
     public AttributedElement getElement(ASTNode n) {
@@ -497,10 +498,10 @@ public class SemiAttribute extends DefaultVisitor {
 
                     if (!ce.isInitialized()) {
                         //HACK: should create correct hierarchy, not use All* methods:
-                        for (IndexedFunction m : index.getAllMethods(null, f.getName(), "", NameKind.PREFIX)) {
+                        for (IndexedFunction m : index.getAllMethods(null, f.getName(), "", NameKind.PREFIX, PHPIndex.ANY_ATTR)) {
                             ce.enclosedElements.enterWrite(m.getName(), Kind.FUNC, m);
                         }
-                        for (IndexedConstant m : index.getAllProperties(null, f.getName(), "", NameKind.PREFIX)) {
+                        for (IndexedConstant m : index.getAllProperties(null, f.getName(), "", NameKind.PREFIX, PHPIndex.ANY_ATTR)) {
                             ce.enclosedElements.enterWrite(m.getName(), Kind.CONST, m);
                         }
                         
@@ -582,7 +583,7 @@ public class SemiAttribute extends DefaultVisitor {
         return null;
     }
     
-    private static String extractVariableName(Variable var) {
+    public static String extractVariableName(Variable var) {
         if (var.getName() instanceof Identifier) {
             Identifier id = (Identifier) var.getName();
             return id.getName();
@@ -671,6 +672,22 @@ public class SemiAttribute extends DefaultVisitor {
             
             return null;
         }
+        
+        public Collection<AttributedElement> getElements(Kind k) {
+            List<AttributedElement> elements = new ArrayList<AttributedElement>();
+            
+            getElements0(elements, k);
+            
+            return Collections.unmodifiableList(elements);
+        }
+        
+        private void getElements0(List<AttributedElement> elements, Kind k) {
+            elements.addAll(enclosedElements.getElements(k));
+            
+            if (superClass != null) {
+                superClass.getElements0(elements, k);
+            }
+        }
 
         boolean isInitialized() {
             return initialized;
@@ -756,6 +773,14 @@ public class SemiAttribute extends DefaultVisitor {
             }
 
             return name2El.get(name);
+        }
+        
+        public Collection<AttributedElement> getElements(Kind k) {
+            Map<String, AttributedElement> name2El = name2Writes.get(k);
+            if (name2El != null) {
+                return Collections.unmodifiableCollection(name2El.values());
+            }
+            return Collections.emptyList();
         }
     }
     

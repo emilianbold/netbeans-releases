@@ -47,6 +47,8 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.HintsProvider;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.napi.gsfret.source.support.CaretAwareSourceTaskFactory;
 import org.netbeans.modules.gsfret.editor.semantic.ScanningCancellableTask;
@@ -63,12 +65,12 @@ public class SuggestionsTask extends ScanningCancellableTask<CompilationInfo> {
     public SuggestionsTask() {
     }
     
-    static HintsProvider getHintsProvider(Document doc, int offset) {
+    static Language getHintsProviderLanguage(Document doc, int offset) {
         BaseDocument baseDoc = (BaseDocument)doc;
         List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
         for (Language l : list) {
             if (l.getHintsProvider() != null) {
-                return l.getHintsProvider();
+                return l;
             }
         }
         
@@ -89,15 +91,27 @@ public class SuggestionsTask extends ScanningCancellableTask<CompilationInfo> {
             return;
         }
 
-        HintsProvider provider = getHintsProvider(doc, pos);
-
-        if (provider == null) {
+        Language language = SuggestionsTask.getHintsProviderLanguage(doc, pos);
+        if (language == null) {
             return;
         }
-        
+
+        HintsProvider provider = language.getHintsProvider();
+        assert provider != null; // getHintsProviderLanguage will return null if there's no provider
+        GsfHintsManager manager = language.getHintsManager();
+        RuleContext ruleContext = manager.createRuleContext(info, language, pos, -1, -1);
+        if (ruleContext == null) {
+            return;
+        }
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
+        List<Hint> hints = new ArrayList<Hint>();
         
-        provider.computeSuggestions(info, result, pos);
+        provider.computeSuggestions(manager, ruleContext, hints, pos);
+
+        for (Hint hint : hints) {
+            ErrorDescription desc = manager.createDescription(hint, ruleContext, false);
+            result.add(desc);
+        }
         
         if (isCancelled()) {
             return;

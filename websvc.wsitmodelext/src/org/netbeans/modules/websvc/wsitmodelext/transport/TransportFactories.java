@@ -60,9 +60,6 @@ public class TransportFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(FIQName.OPTIMIZEDFASTINFOSETSERIALIZATION.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new OptimizedFastInfosetSerializationImpl(context.getModel()));
-        }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new OptimizedFastInfosetSerializationImpl(context.getModel(), element);
@@ -73,9 +70,6 @@ public class TransportFactories {
         @Override
         public Set<QName> getElementQNames() {
             return Collections.singleton(FIQName.AUTOMATICALLYSELECTFASTINFOSET.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new AutomaticallySelectFastInfosetImpl(context.getModel()));
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
@@ -88,9 +82,6 @@ public class TransportFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(TCPQName.OPTIMIZEDTCPTRANSPORT.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new OptimizedTCPTransportImpl(context.getModel()));
-        }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new OptimizedTCPTransportImpl(context.getModel(), element);
@@ -101,9 +92,6 @@ public class TransportFactories {
         @Override
         public Set<QName> getElementQNames() {
             return Collections.singleton(TCPQName.AUTOMATICALLYSELECTOPTIMALTRANSPORT.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new AutomaticallySelectOptimalTransportImpl(context.getModel()));
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {

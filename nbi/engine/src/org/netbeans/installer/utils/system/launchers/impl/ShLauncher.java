@@ -52,6 +52,7 @@ import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.JavaCompatibleProperties;
+import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.system.launchers.LauncherProperties;
 import org.netbeans.installer.utils.system.launchers.LauncherResource;
 import org.netbeans.installer.utils.progress.Progress;
@@ -234,11 +235,16 @@ public class ShLauncher extends CommonLauncher {
         return new String [] {outputFile.getAbsolutePath()};
     }
     
-    public List <JavaCompatibleProperties> getDefaultCompatibleJava() {
-        List <JavaCompatibleProperties> list = new ArrayList <JavaCompatibleProperties>();
-        list.add(new JavaCompatibleProperties(
+    @Override
+    public List <JavaCompatibleProperties> getDefaultCompatibleJava(Version version) {
+        if (version.equals(Version.getVersion("1.5"))) {
+            List <JavaCompatibleProperties> list = new ArrayList <JavaCompatibleProperties>();
+            list.add(new JavaCompatibleProperties(
                 MIN_JAVA_VERSION_UNIX, null, null, null, null));
-        return list;
+            return list;
+        } else {
+            return super.getDefaultCompatibleJava(version);            
+        }
     }
     
     protected void addOtherResources(StringBuilder sb) throws IOException {
@@ -379,7 +385,11 @@ public class ShLauncher extends CommonLauncher {
         while (true);
         return str;
     }
-    
+    private void addVersionVariable(StringBuilder sb, String name, Version version)  {
+        String str = (version != null) ? version.toJdkStyle() : StringUtils.EMPTY_STRING;
+        sb.append(name + StringUtils.EQUAL + StringUtils.QUOTE +
+                str + StringUtils.QUOTE + SH_LINE_SEPARATOR);
+    }
     private void addStringVariable(StringBuilder sb, String name, String value)  {
         String str = (value != null) ? value : StringUtils.EMPTY_STRING;
         sb.append(name + StringUtils.EQUAL + StringUtils.QUOTE +
@@ -405,8 +415,8 @@ public class ShLauncher extends CommonLauncher {
             
             JavaCompatibleProperties prop = compatibleJava.get(i);
             LogManager.log("... adding compatible jvm [" + i + "] : " + prop.toString()); //NOI18N
-            addStringVariable(sb, "JAVA_COMP_VERSION_MIN", prop.getMinVersion());
-            addStringVariable(sb, "JAVA_COMP_VERSION_MAX", prop.getMaxVersion());
+            addVersionVariable(sb, "JAVA_COMP_VERSION_MIN", prop.getMinVersion());
+            addVersionVariable(sb, "JAVA_COMP_VERSION_MAX", prop.getMaxVersion());
             addStringVariable(sb, "JAVA_COMP_VENDOR", prop.getVendor());
             addStringVariable(sb, "JAVA_COMP_OSNAME", prop.getOsName());
             addStringVariable(sb, "JAVA_COMP_OSARCH", prop.getOsArch());

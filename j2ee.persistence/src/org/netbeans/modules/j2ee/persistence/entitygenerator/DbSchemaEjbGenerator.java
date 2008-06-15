@@ -150,10 +150,14 @@ public class DbSchemaEjbGenerator {
             return bean;
         }
         
-        bean = new EntityClass(tableName,
+        bean = new EntityClass(
+                genTables.getCatalog(),
+                genTables.getSchema(),
+                tableName,
                 genTables.getRootFolder(tableName),
                 genTables.getPackageName(tableName),
-                genTables.getClassName(tableName));
+                genTables.getClassName(tableName),
+                genTables.getUniqueConstraints(tableName) );
         beans.put(tableName, bean);
         
         return bean;
@@ -420,7 +424,8 @@ public class DbSchemaEjbGenerator {
                 roleACmr,
                 !oneToOne,
                 false,
-                false);
+                false,
+                isNullable(key));
         roleAHelper.addRole(roleA);
         
         EntityRelation relation = new EntityRelation(roleA, roleB);

@@ -63,6 +63,8 @@ import org.netbeans.modules.uml.core.preferenceframework.IPreferenceAccessor;
 import org.netbeans.modules.uml.core.preferenceframework.PreferenceAccessor;
 import org.netbeans.modules.uml.core.support.umlmessagingcore.UMLMessagingHelper;
 import org.netbeans.modules.uml.core.support.umlsupport.PathManip;
+//import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
+import org.netbeans.modules.uml.core.support.umlsupport.FileSysManip;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.core.support.umlsupport.URILocator;
@@ -1383,12 +1385,11 @@ public class ExternalFileManager
 	 * @return HRESULT
 	 *
 	 */
-	private void saveExternalDoc(Document doc, String docLoc,
-                org.dom4j.Element element)
+	private void saveExternalDoc(Document doc, String docLoc, 
+								 org.dom4j.Element element)
 	{
 		UMLXMLManip.convertAbsoluteHrefs(element, m_rootFileName);
 		XMLManip.save(doc, docLoc);
-		
 	}
 
 	/**

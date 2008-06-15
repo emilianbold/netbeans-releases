@@ -22,5 +22,7 @@ public interface OperatorComponentContainer extends Component {
      */
     List<OperatorComponent> findOutputOperator(OperatorComponent operator);
         
-        List<InvokeStreamOperatorComponent> getInvokeStreamOperatorComponent();
+    List<InvokeStreamOperatorComponent> getInvokeStreamOperatorComponent();
+    
+    List<TableInputOperatorComponent> getTableInputOperatorComponent();
 }

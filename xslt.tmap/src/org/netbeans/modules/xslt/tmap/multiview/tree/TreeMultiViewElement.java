@@ -544,11 +544,11 @@ public class TreeMultiViewElement extends TopComponent
         myNodesMediator = new ActivatedNodesMediator(delegate);
         myNodesMediator.setExplorerManager(this);
         
-        Lookup proxyLookup = new ProxyLookup(new Lookup[] {
+        myCookieProxyLookup = new CookieProxyLookup(new Lookup[] {
                 Lookups.fixed(new Object[] {
                         TMapNavigatorLookupHint.getInstance(),
                         // Need ActionMap in lookup so our actions are used.
-//                        actionMap,
+                        actionMap,
                         // Need the data object registered in the lookup so that the
                         // projectui code will close our open editor windows when the
                         // project is closed.
@@ -557,16 +557,15 @@ public class TreeMultiViewElement extends TopComponent
                 Lookups.singleton(myDataObject),
                 myDataObject.getLookup(),// this lookup contain objects that are used in OM clients
                 Lookups.singleton(this),
-
                 myNodesMediator.getLookup(),
                 // The Node delegate Lookup must be the last one in the list
                 // for the CookieProxyLookup to work properly.
                 delegate.getLookup(),
-        });
+        }, delegate);
         
-        proxyLookup = Lookups.exclude(proxyLookup, ActionMap.class);
+//        proxyLookup = Lookups.exclude(proxyLookup, ActionMap.class);
         
-        myCookieProxyLookup = new CookieProxyLookup(new Lookup[] {proxyLookup}, delegate);
+//        myCookieProxyLookup = new CookieProxyLookup(new Lookup[] {proxyLookup}, delegate);
         
         associateLookup(myCookieProxyLookup);
         addPropertyChangeListener(ACTIVATED_NODES, myNodesMediator);

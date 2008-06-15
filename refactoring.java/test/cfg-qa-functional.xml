@@ -41,13 +41,30 @@ made subject to such option by the copyright holder.
 
 <mconfig name="qa-functional tests config">
                                 
-    <testbag testattribs="validation" name="validation Suite">
+    <testbag testattribs="validation" name="Validation Suite">
         <testset dir="qa-functional/src">            
             <patternset>             
-                <include name="org/netbeans/modules/test/refactoring/FindUsagesClassTest.class"/>                                            
+                <include name="org/netbeans/modules/test/refactoring/*Test.class"/>
             </patternset>
         </testset>
     </testbag>
+    
+    <testbag testattribs="class" name="Class Find Usages">
+        <testset dir="qa-functional/src">            
+            <patternset>             
+                <include name="org/netbeans/modules/test/refactoring/FindUsagesClassTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="method" name="Method Find Usages">
+        <testset dir="qa-functional/src">            
+            <patternset>             
+                <include name="org/netbeans/modules/test/refactoring/FindUsagesMethodTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
     
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
     

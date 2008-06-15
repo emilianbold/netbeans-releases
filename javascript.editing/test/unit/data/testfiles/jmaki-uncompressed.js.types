@@ -1,6 +1,6 @@
 var _globalScope = this;
 
-<Function>function Jmaki() {
+<Function>function <Jmaki>Jmaki</Jmaki>() {
     this.<String>version</String> = <String>'.9.2'</String>;
     this.<String>debugGlue</String> = <Boolean>false</Boolean>;
     this.<String>debug</String> = <Boolean>false</Boolean>;
@@ -79,8 +79,8 @@ var _globalScope = this;
             <topics.put>topics.<topics.put>put</topics.put>(name, <Array>topic</Array>)</topics.put>;
         }
         // make sure that a listener is only added once
-        for (var i in <Array>topic</Array>) {
-            if (<Boolean>i == _l</Boolean>) {
+        for (var <MyObj><MyObj>i</MyObj></MyObj> in <Array>topic</Array>) {
+            if (<Boolean><MyObj>i</MyObj> == _l</Boolean>) {
                 return;
             }
         }
@@ -221,10 +221,10 @@ var _globalScope = this;
     /**
      * Load a set of libraries in order
      */
-    this.<String>addLibraries</String> = <Function>function(_libs, _cb, _inprocess) {
+    this.<String>addLibraries</String> = <Function>function(_libs, <void>_cb</void>, _inprocess) {
         if (<Boolean><_libs.length>_libs.length</_libs.length> &lt;= <Number>0</Number></Boolean>) {
             if (<Boolean>typeof _cb == <String>'function'</String></Boolean>) {
-                <_cb>_cb()</_cb>;
+                <_cb><void>_cb</void>()</_cb>;
                 return;
             }
         }
@@ -252,10 +252,10 @@ var _globalScope = this;
             // remove the script node
             if (_s) <_s.parentNode.removeChild>_s.<_s.parentNode>parentNode</_s.parentNode>.<_s.parentNode.removeChild>removeChild</_s.parentNode.removeChild>(_s)</_s.parentNode.removeChild>;
             <_inprocess.remove>_inprocess.<_inprocess.remove>remove</_inprocess.remove>(_id)</_inprocess.remove>;
-            var _cbk = _cb;
+            var <void>_cbk = <void>_cb</void></void>;
             if (<Boolean><_libs.length>_libs.length</_libs.length>-<Number>1</Number> &gt; <Number>0</Number></Boolean>) {
                 <_libs.pop>_libs.<_libs.pop>pop</_libs.pop>()</_libs.pop>;
-                <_jmaki.addLibraries>_jmaki.<_jmaki.addLibraries>addLibraries</_jmaki.addLibraries>(_libs, _cb,_inprocess)</_jmaki.addLibraries>;
+                <_jmaki.addLibraries>_jmaki.<_jmaki.addLibraries>addLibraries</_jmaki.addLibraries>(_libs, <void>_cb</void>,_inprocess)</_jmaki.addLibraries>;
              /**  rather than check length check for inprocess **/
             } 
             if (<Boolean>_inprocess.<_inprocess.keys><_inprocess.keys>keys</_inprocess.keys></_inprocess.keys>().length == <Number>0</Number></Boolean>) {
@@ -376,7 +376,7 @@ var _globalScope = this;
                     }
                 }
                 // call the post load
-                var _cb;
+                var <void>_cb</void>;
                 if (<_type.postload>_type.postload</_type.postload>) {
                     <Function>_cb</Function> = <Function>function() {
                         var <_type.postload>postLoad = <_type.postload>_type.postload</_type.postload></_type.postload>;
@@ -392,10 +392,10 @@ var _globalScope = this;
      *  Library name is added as a script element which will be loaded when the page is rendered
      *  @param lib library to add 
      */
-    this.<String>addLibrary</String> = <Function>function(lib, cb) {
+    this.<String>addLibrary</String> = <Function>function(lib, <void>cb</void>) {
       var <Array>libs = <Array>[]</Array></Array>;
       <Array.push><Array>libs</Array>.<Array.push>push</Array.push>(lib)</Array.push>;
-      return <_jmaki.addLibraries>_jmaki.<_jmaki.addLibraries>addLibraries</_jmaki.addLibraries>(<Array>libs</Array>, cb)</_jmaki.addLibraries>;
+      return <_jmaki.addLibraries>_jmaki.<_jmaki.addLibraries>addLibraries</_jmaki.addLibraries>(<Array>libs</Array>, <void>cb</void>)</_jmaki.addLibraries>;
     }</Function>
     
     /**
@@ -535,7 +535,7 @@ var _globalScope = this;
         var targetName =<String>"jmaki.widgets."</String> + <_jmw.name>_jmw.name</_jmw.name> + <String>".Widget"</String>;
         var con = this.findObject(targetName);
         if (<Boolean>typeof con != <String>"function"</String></Boolean>) {
-            <logError>logError(<String>"Could not find widget constructor for: "</String> + targetName + <String>". Please make sure the widget constructor is properly defined."</String>, <HTMLDocument.getElementById><HTMLDocument>document</HTMLDocument>.<HTMLDocument.getElementById>getElementById</HTMLDocument.getElementById>(<_jmw.uuid>_jmw.uuid</_jmw.uuid>)</HTMLDocument.getElementById>)</logError>;
+            <logError><void>logError</void>(<String>"Could not find widget constructor for: "</String> + targetName + <String>". Please make sure the widget constructor is properly defined."</String>, <HTMLDocument.getElementById><HTMLDocument>document</HTMLDocument>.<HTMLDocument.getElementById>getElementById</HTMLDocument.getElementById>(<_jmw.uuid>_jmw.uuid</_jmw.uuid>)</HTMLDocument.getElementById>)</logError>;
         }
         var wimpl;
         // bind the value using a @{foo.obj} notation       
@@ -554,7 +554,7 @@ var _globalScope = this;
             }
             var <Function>eh = <Function>function(message, url, line) {
                 var _puuid = _uuid;
-                <logWidgetError>logWidgetError(targetName, _puuid,url, line, message, <HTMLDocument.getElementById><HTMLDocument>document</HTMLDocument>.<HTMLDocument.getElementById>getElementById</HTMLDocument.getElementById>(_puuid)</HTMLDocument.getElementById>)</logWidgetError>;
+                <logWidgetError><void>logWidgetError</void>(targetName, _puuid,url, line, message, <HTMLDocument.getElementById><HTMLDocument>document</HTMLDocument>.<HTMLDocument.getElementById>getElementById</HTMLDocument.getElementById>(_puuid)</HTMLDocument.getElementById>)</logWidgetError>;
             }</Function></Function>
             <Window>window</Window>.<String>onerror</String> = <Function>eh</Function>;
             <con>wimpl</con> = <con>new con(_jmw)</con>;          
@@ -572,12 +572,12 @@ var _globalScope = this;
                 if (<e.message>e.message</e.message>) <e.message>description</e.message> = <e.message>e.message</e.message>;
  
                 if (<_jmaki.debug>_jmaki.debug</_jmaki.debug>) {
-                    <logWidgetError>logWidgetError(targetName, <_jmw.uuid>_jmw.uuid</_jmw.uuid>,<_jmw.script>_jmw.script</_jmw.script>, <e.lineNumber>line</e.lineNumber>, <e.message>description</e.message> , <HTMLDocument.getElementById><HTMLDocument>document</HTMLDocument>.<HTMLDocument.getElementById>getElementById</HTMLDocument.getElementById>(<_jmw.uuid>_jmw.uuid</_jmw.uuid>)</HTMLDocument.getElementById>)</logWidgetError>;
+                    <logWidgetError><void>logWidgetError</void>(targetName, <_jmw.uuid>_jmw.uuid</_jmw.uuid>,<_jmw.script>_jmw.script</_jmw.script>, <e.lineNumber>line</e.lineNumber>, <e.message>description</e.message> , <HTMLDocument.getElementById><HTMLDocument>document</HTMLDocument>.<HTMLDocument.getElementById>getElementById</HTMLDocument.getElementById>(<_jmw.uuid>_jmw.uuid</_jmw.uuid>)</HTMLDocument.getElementById>)</logWidgetError>;
                     return;
                 }
             }
         } else if (<Boolean>typeof con == <String>'undefined'</String></Boolean>) {          
-            <logError>logError(<String>"Unable to find widget constructor "</String> + targetName + <String>" check log and make sure constructor is defined."</String>, <HTMLDocument.getElementById><HTMLDocument>document</HTMLDocument>.<HTMLDocument.getElementById>getElementById</HTMLDocument.getElementById>(<_jmw.uuid>_jmw.uuid</_jmw.uuid>)</HTMLDocument.getElementById>)</logError>;
+            <logError><void>logError</void>(<String>"Unable to find widget constructor "</String> + targetName + <String>" check log and make sure constructor is defined."</String>, <HTMLDocument.getElementById><HTMLDocument>document</HTMLDocument>.<HTMLDocument.getElementById>getElementById</HTMLDocument.getElementById>(<_jmw.uuid>_jmw.uuid</_jmw.uuid>)</HTMLDocument.getElementById>)</logError>;
             return;
         }
         if (<Boolean>typeof wimpl == <String>'object'</String></Boolean>) {
@@ -587,18 +587,18 @@ var _globalScope = this;
              }
              <_jmaki.publish>_jmaki.<_jmaki.publish>publish</_jmaki.publish>(<String>"/jmaki/runtime/widget/loaded"</String>, _jmw)</_jmaki.publish>;
         } else {          
-            <logError>logError(<String>"Unable to create an instance of "</String> + targetName + <String>". See the error log for more detials."</String>, <HTMLDocument.getElementById><HTMLDocument>document</HTMLDocument>.<HTMLDocument.getElementById>getElementById</HTMLDocument.getElementById>(<_jmw.uuid>_jmw.uuid</_jmw.uuid> )</HTMLDocument.getElementById>)</logError>;
+            <logError><void>logError</void>(<String>"Unable to create an instance of "</String> + targetName + <String>". See the error log for more detials."</String>, <HTMLDocument.getElementById><HTMLDocument>document</HTMLDocument>.<HTMLDocument.getElementById>getElementById</HTMLDocument.getElementById>(<_jmw.uuid>_jmw.uuid</_jmw.uuid> )</HTMLDocument.getElementById>)</logError>;
         }
     }</Function>
     
-    <Function>function logWidgetError(name,uuid, url, line, _m, div) {
+    <Function>function <void>logWidgetError</void>(name,uuid, url, line, _m, div) {
         var message= <String>"&lt;span&gt;Error loading "</String> + name + <String>" : id="</String> + uuid + <String>"&lt;br&gt;"</String> +
         <String>"Script: "</String>  + url + <String>" (line:"</String> + line + <String>")."</String> +
         <String>"&lt;br&gt;Message: "</String> + _m + <String>"&lt;/span&gt;"</String>;
-        <logError>logError(message, div)</logError>;
+        <logError><void>logError</void>(message, div)</logError>;
     }</Function>
  
-    <Function>function logError(message, div) {
+    <Function>function <void>logError</void>(message, div) {
         if (<Boolean>div == null</Boolean> || typeof <Boolean><div.className>div.className</div.className> == <String>'undefined'</String></Boolean>) {
             div = <HTMLDocument.createElement><HTMLDocument>document</HTMLDocument>.<HTMLDocument.createElement>createElement</HTMLDocument.createElement>(<String>"div"</String>)</HTMLDocument.createElement>;
             <HTMLDocument.body.appendChild><HTMLDocument>document</HTMLDocument>.<HTMLDocument.body>body</HTMLDocument.body>.<HTMLDocument.body.appendChild>appendChild</HTMLDocument.body.appendChild>(div)</HTMLDocument.body.appendChild>;
@@ -695,8 +695,8 @@ var _globalScope = this;
         _src.<String>prototype</String> = <_par>new _par()</_par>;
         _src.<_src.prototype>prototype</_src.prototype>.<String>constructor</String> = _src;
         _src.<String>superclass</String> = <_par.prototype>_par.prototype</_par.prototype>;
-        for (i in _par) {
-            _src.<_src.prototype>prototype</_src.prototype>[i] = _par[i];
+        for (<MyObj>i</MyObj> in _par) {
+            _src.<_src.prototype>prototype</_src.prototype>[<MyObj>i</MyObj>] = _par[<MyObj>i</MyObj>];
         }
     }</Function>
     
@@ -756,7 +756,7 @@ var _globalScope = this;
                 }
             }
         }
-        <postInitialize>postInitialize()</postInitialize>;
+        <postInitialize><void>postInitialize</void>()</postInitialize>;
     }</Function>
     
     var <Array>timers = <Array>[]</Array></Array>;
@@ -819,8 +819,8 @@ var _globalScope = this;
         var _target;
         
         this.<String>processTopic</String> = <Function>function() {
-            for (var <Number>ti = <Number>0</Number></Number>; <Boolean><Number>ti</Number> &lt; <args.topics.length>args.<args.topics>topics</args.topics>.length</args.topics.length></Boolean>; <Number>ti</Number>++){
-                <_jmaki.publish>_jmaki.<_jmaki.publish>publish</_jmaki.publish>(args.<args.topics>topics</args.topics>[<Number>ti</Number>], {topic: args.<args.topics>topics</args.topics>[<Number>ti</Number>],
+            for (var <Number>ti = <Number>0</Number></Number>; <Boolean><Number>ti</Number> &lt; <topics.length>args.<topics>topics</topics>.length</topics.length></Boolean>; <Number>ti</Number>++){
+                <_jmaki.publish>_jmaki.<_jmaki.publish>publish</_jmaki.publish>(args.<topics>topics</topics>[<Number>ti</Number>], {topic: args.<topics>topics</topics>[<Number>ti</Number>],
                 type:<String>'timer'</String>,
                 src:_src,
                 timeout: <args.to>args.to</args.to>})</_jmaki.publish>;
@@ -890,7 +890,7 @@ var _globalScope = this;
         }
     }</Function>
     
-    <Function>function postInitialize() {
+    <Function>function <void>postInitialize</void>() {
 
         if (<_jmaki.initialized>_jmaki.initialized</_jmaki.initialized>) return;
         else _jmaki.<String>initialized</String> = <Boolean>true</Boolean>;
@@ -1048,11 +1048,11 @@ var _globalScope = this;
             <HTMLDocument.body.clientWidth>oldWidth</HTMLDocument.body.clientWidth> = <HTMLDocument.body.clientWidth><HTMLDocument>document</HTMLDocument>.<HTMLDocument.body>body</HTMLDocument.body>.clientWidth</HTMLDocument.body.clientWidth>;
         }</Function>
         
-        <Function>function init() {
+        <Function>function <void>init</void>() {
             if (<Window.attachEvent><Window>window</Window>.attachEvent</Window.attachEvent>) {
-                <Window.attachEvent><Window>window</Window>.<Window.attachEvent>attachEvent</Window.attachEvent>(<String>'onresize'</String>, layout)</Window.attachEvent>;
+                <Window.attachEvent><Window>window</Window>.<Window.attachEvent>attachEvent</Window.attachEvent>(<String>'onresize'</String>, <void>layout</void>)</Window.attachEvent>;
             } else if (<Window.addEventListener><Window>window</Window>.addEventListener</Window.addEventListener>) {
-                <Window.addEventListener><Window>window</Window>.<Window.addEventListener>addEventListener</Window.addEventListener>(<String>'resize'</String>, layout, <Boolean>true</Boolean>)</Window.addEventListener>;
+                <Window.addEventListener><Window>window</Window>.<Window.addEventListener>addEventListener</Window.addEventListener>(<String>'resize'</String>, <void>layout</void>, <Boolean>true</Boolean>)</Window.addEventListener>;
             }     
             if (<args.startWidth>args.startWidth</args.startWidth>) {
                 VIEWPORT_WIDTH = <Number>Number(<args.startWidth>args.startWidth</args.startWidth>)</Number>;
@@ -1086,7 +1086,7 @@ var _globalScope = this;
         var <Boolean>resizing = <Boolean>false</Boolean></Boolean>;
         var <Number>lastSize = <Number>0</Number></Number>;
         
-        <Function>function layout() {
+        <Function>function <void>layout</void>() {
             if (!ie) {
                 <_self.resize>_self.<_self.resize>resize</_self.resize>()</_self.resize>;
                 return;
@@ -1096,14 +1096,14 @@ var _globalScope = this;
             if (<Boolean>oldWidth != <HTMLDocument.body.clientWidth><HTMLDocument>document</HTMLDocument>.<HTMLDocument.body>body</HTMLDocument.body>.clientWidth</HTMLDocument.body.clientWidth></Boolean> &amp;&amp; !resizing) {
                 if (!resizing) {
                     <Boolean>resizing</Boolean> = <Boolean>true</Boolean>;
-                    <setTimeout>setTimeout(layout,<Number>500</Number>)</setTimeout>;
+                    <setTimeout>setTimeout(<void>layout</void>,<Number>500</Number>)</setTimeout>;
                 }
             } else if (<Boolean>resizing</Boolean> &amp;&amp; <Boolean><HTMLDocument.body.clientWidth><HTMLDocument>document</HTMLDocument>.<HTMLDocument.body>body</HTMLDocument.body>.clientWidth</HTMLDocument.body.clientWidth> == lastSize</Boolean>) {
                 <Boolean>resizing</Boolean> = <Boolean>false</Boolean>;
                 <_self.resize>_self.<_self.resize>resize</_self.resize>()</_self.resize>;
             } else if (<Boolean>resizing</Boolean>) {
                 <HTMLDocument.body.clientWidth>lastSize</HTMLDocument.body.clientWidth> = <HTMLDocument.body.clientWidth><HTMLDocument>document</HTMLDocument>.<HTMLDocument.body>body</HTMLDocument.body>.clientWidth</HTMLDocument.body.clientWidth>;
-                <setTimeout>setTimeout(layout, <Number>500</Number>)</setTimeout>;
+                <setTimeout>setTimeout(<void>layout</void>, <Number>500</Number>)</setTimeout>;
             }
         }</Function>
         
@@ -1118,17 +1118,17 @@ var _globalScope = this;
                 if (<HTMLDocument.getElementById><HTMLDocument>document</HTMLDocument>.<HTMLDocument.getElementById>getElementById</HTMLDocument.getElementById>(uuid + <String>"_iframe"</String>)</HTMLDocument.getElementById>) {
                     <clearInterval>clearInterval(_t)</clearInterval>;               
                     _self.<String>iframe</String> = <HTMLDocument.getElementById><HTMLDocument>document</HTMLDocument>.<HTMLDocument.getElementById>getElementById</HTMLDocument.getElementById>(uuid + <String>"_iframe"</String>)</HTMLDocument.getElementById>;
-                    <setTimeout>setTimeout(<Function>function(){<init>init()</init>;}</Function>,<Number>0</Number>)</setTimeout>;
+                    <setTimeout>setTimeout(<Function>function(){<init><void>init</void>()</init>;}</Function>,<Number>0</Number>)</setTimeout>;
                 }
             }</Function>, <Number>5</Number>)</setInterval>;
-        } else <init>init()</init>;
+        } else <init><void>init</void>()</init>;
     }</Function>
     
     this.<String>destroy</String> = <Function>function() {
         if (<Window.attachEvent><Window>window</Window>.attachEvent</Window.attachEvent>) {
-            <Window.dettachEvent><Window>window</Window>.<Window.dettachEvent>dettachEvent</Window.dettachEvent>(<String>'onresize'</String>, layout)</Window.dettachEvent>;
+            <Window.dettachEvent><Window>window</Window>.<Window.dettachEvent>dettachEvent</Window.dettachEvent>(<String>'onresize'</String>, <void>layout</void>)</Window.dettachEvent>;
         } else if (<Window.addEventListener><Window>window</Window>.addEventListener</Window.addEventListener>) {
-            <Window.removeEventListener><Window>window</Window>.<Window.removeEventListener>removeEventListener</Window.removeEventListener>(<String>'resize'</String>, layout, <Boolean>true</Boolean>)</Window.removeEventListener>;
+            <Window.removeEventListener><Window>window</Window>.<Window.removeEventListener>removeEventListener</Window.removeEventListener>(<String>'resize'</String>, <void>layout</void>, <Boolean>true</Boolean>)</Window.removeEventListener>;
         } 
     }</Function>    
     
@@ -1146,7 +1146,7 @@ this.<String>Injector</String> = <Function>function() {
    // make sure jmaki creates a list of libraries it can not load
    
     if (<Boolean><tasks.length>tasks.length</tasks.length> == <Number>0</Number></Boolean> &amp;&amp; !_processing) {
-        <inject>inject(task)</inject>;
+        <inject><void>inject</void>(task)</inject>;
     } else {
         <tasks.push>tasks.<tasks.push>push</tasks.push>(task)</tasks.push>;
     }
@@ -1168,7 +1168,7 @@ this.<String>Injector</String> = <Function>function() {
    *                    Content is injected by setting the innerHTML property
    *                    of an element to the template text.
    */
-  <Function>function inject(task) {
+  <Function>function <void>inject</void>(task) {
       <Boolean>_processing</Boolean> = <Boolean>true</Boolean>;
       <_jmaki.doAjax>_jmaki.<_jmaki.doAjax>doAjax</_jmaki.doAjax>({
             method:<String>"GET"</String>,
@@ -1176,7 +1176,7 @@ this.<String>Injector</String> = <Function>function() {
             asynchronous: <Boolean>false</Boolean>,
             callback: <Function>function(req){
                if (<Boolean><req.readyState>req.readyState</req.readyState> == <Number>4</Number></Boolean>) {
-                   <getContent>getContent(<req.responseText>req.responseText</req.responseText>, task)</getContent>;               
+                   <getContent><void>getContent</void>(<req.responseText>req.responseText</req.responseText>, task)</getContent>;               
                //if no parent is given append to the document root   
                var injectionPoint;
                if (<Boolean>typeof <task.injectionPoint>task.injectionPoint</task.injectionPoint> == <String>'string'</String></Boolean>) {
@@ -1187,21 +1187,21 @@ this.<String>Injector</String> = <Function>function() {
                            if (<HTMLDocument.getElementById><HTMLDocument>document</HTMLDocument>.<HTMLDocument.getElementById>getElementById</HTMLDocument.getElementById>(<task.injectionPoint>task.injectionPoint</task.injectionPoint>)</HTMLDocument.getElementById>) {
                                <clearInterval>clearInterval(_t)</clearInterval>;
                                injectionPoint = <HTMLDocument.getElementById><HTMLDocument>document</HTMLDocument>.<HTMLDocument.getElementById>getElementById</HTMLDocument.getElementById>(<task.injectionPoint>task.injectionPoint</task.injectionPoint>)</HTMLDocument.getElementById>;
-                               <setTimeout>setTimeout(<Function>function(){<processTask>processTask(injectionPoint,task)</processTask>;}</Function>,<Number>0</Number>)</setTimeout>;                      
+                               <setTimeout>setTimeout(<Function>function(){<processTask><void>processTask</void>(injectionPoint,task)</processTask>;}</Function>,<Number>0</Number>)</setTimeout>;                      
                            }
                        }</Function>, <Number>25</Number>)</setInterval>;
                    } else {
-                       <processTask>processTask(injectionPoint, task)</processTask>;             
+                       <processTask><void>processTask</void>(injectionPoint, task)</processTask>;             
                    }
                 } else {
-                    <processTask>processTask(<task.injectionPoint>task.injectionPoint</task.injectionPoint>, task)</processTask>;
+                    <processTask><void>processTask</void>(<task.injectionPoint>task.injectionPoint</task.injectionPoint>, task)</processTask>;
                 }
             }
          }</Function>
        })</_jmaki.doAjax>;
   }</Function>
   
-  <Function>function processTask(injectionPoint, task) {
+  <Function>function <void>processTask</void>(injectionPoint, task) {
       <_jmaki.clearWidgets>_jmaki.<_jmaki.clearWidgets>clearWidgets</_jmaki.clearWidgets>(injectionPoint)</_jmaki.clearWidgets>;
       var _id = <String>"injector_"</String> + _uuid;
       var data = <task.content>task.content</task.content> + <String>"&lt;div id='"</String> + _id + <String>"'&gt;&lt;/div&gt;"</String>;
@@ -1211,7 +1211,7 @@ this.<String>Injector</String> = <Function>function() {
           if (<HTMLDocument.getElementById><HTMLDocument>document</HTMLDocument>.<HTMLDocument.getElementById>getElementById</HTMLDocument.getElementById>(_id)</HTMLDocument.getElementById>) {
               <clearInterval>clearInterval(_t)</clearInterval>;
               try {
-                  <_injector.loadScripts>_injector.<_injector.loadScripts>loadScripts</_injector.loadScripts>(task,processNextTask)</_injector.loadScripts>;
+                  <_injector.loadScripts>_injector.<_injector.loadScripts>loadScripts</_injector.loadScripts>(task,<void>processNextTask</void>)</_injector.loadScripts>;
               } catch (e) {
                   injectionPoint.<String>innerHTML</String> = <String>"&lt;span style='color:red'&gt;"</String> + <e.message>e.message</e.message> + <String>"&lt;/span&gt;"</String>;
               }
@@ -1221,10 +1221,10 @@ this.<String>Injector</String> = <Function>function() {
   
   // pass in a reference to the task
   // start the next task
-  <Function>function processNextTask() {
+  <Function>function <void>processNextTask</void>() {
       if (<Boolean><tasks.length>tasks.length</tasks.length> &gt;<Number>0</Number></Boolean>) {
           var _t = <tasks.shift>tasks.<tasks.shift>shift</tasks.shift>()</tasks.shift>;
-          <inject>inject(_t)</inject>;
+          <inject><void>inject</void>(_t)</inject>;
       };
       <Boolean>_processing</Boolean> = <Boolean>false</Boolean>;
   }</Function>
@@ -1247,18 +1247,18 @@ this.<String>Injector</String> = <Function>function() {
             url: <p.url>p.url</p.url>,
             asynchronous: <Boolean>false</Boolean>,
             callback: <Function>function(req){
-                _data = <getContent>getContent(<req.responseText>req.responseText</req.responseText>)</getContent>;
+                <void>_data</void> = <getContent><void>getContent</void>(<req.responseText>req.responseText</req.responseText>)</getContent>;
             }</Function>
            }
            )</_jmaki.doAjax>;
-           return _data;
+           return <void>_data</void>;
   }</Function>
 
   /**
    * If were returning an text document remove any script in the
    * the document and add it to the global scope using a time out.
    */
-  <Function>function getContent(rawContent, _task) {
+  <Function>function <void>getContent</void>(rawContent, _task) {
    
    _task.<String>embeddedScripts</String> = <Array>[]</Array>;
    _task.<String>embeddedStyles</String> = <Array>[]</Array>;
@@ -1407,8 +1407,8 @@ this.<String>Injector</String> = <Function>function() {
   this.<String>injector</String> = new this.Injector(); 
 }</Function>
 
-if (!jmaki) {
-    var <Jmaki>jmaki = <Jmaki>new Jmaki()</Jmaki></Jmaki>;  
+if (!<Jmaki>jmaki</Jmaki>) {
+    var <Jmaki>jmaki = <Jmaki>new <Jmaki>Jmaki</Jmaki>()</Jmaki></Jmaki>;  
     <Jmaki>jmaki</Jmaki>.<String>widgets</String> = {};
 
     var <Window.onload>oldLoad  = <Window.onload><Window>window</Window>.onload</Window.onload></Window.onload>;
@@ -1418,10 +1418,10 @@ if (!jmaki) {
      * override initial onload.
      */
     <Window>window</Window>.<String>onload</String> = <Function>function() {
-        if (!<jmaki.initialized>jmaki.initialized</jmaki.initialized>) {
-            <jmaki.initialize>jmaki.<jmaki.initialize>initialize</jmaki.initialize>()</jmaki.initialize>;
+        if (!<Boolean><Jmaki>jmaki</Jmaki>.initialized</Boolean>) {
+            <Jmaki.initialize><Jmaki>jmaki</Jmaki>.<void>initialize</void>()</Jmaki.initialize>;
         } else {
-            <jmaki.bootstrapWidgets>jmaki.<jmaki.bootstrapWidgets>bootstrapWidgets</jmaki.bootstrapWidgets>()</jmaki.bootstrapWidgets>;
+            <Jmaki.bootstrapWidgets><Jmaki>jmaki</Jmaki>.<void>bootstrapWidgets</void>()</Jmaki.bootstrapWidgets>;
             return;
         }
         if (<Boolean>typeof oldLoad  == <String>'function'</String></Boolean>) {

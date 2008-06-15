@@ -85,16 +85,16 @@
 
     <target name="test-1">
         <!-- assign -->
-        <antcall target="do-test-jbi"><param name="dir" value="assign/ActivateBilling_Simple"/></antcall>
+        <!-- antcall target="do-test-jbi"><param name="dir" value="assign/ActivateBilling_Simple"/></antcall -->
         <antcall target="do-test-jbi"><param name="dir" value="assign/AssignBpel"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="assign/AssignNamespaces"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="assign/AtomicAssign"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="assign/CopyByValue/CopyByValueBpel"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="assign/DataTypes"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="assign/MessageWithNoParts"/></antcall>
+        <!-- antcall target="do-test-jbi"><param name="dir" value="assign/MessageWithNoParts"/></antcall -->
         <antcall target="do-test-jbi"><param name="dir" value="assign/predicates"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="assign/VariableAssignments"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="assign/virtualassignBpel"/></antcall>
+        <!-- antcall target="do-test-jbi"><param name="dir" value="assign/virtualassignBpel"/></antcall -->
     </target>
         
     <target name="test-2">
@@ -177,7 +177,7 @@
         <antcall target="do-test-jbi"><param name="dir" value="foreach-bpel20/ForEachBpel"/></antcall>
 
         <!-- i18n -->
-        <antcall target="do-test-jbi"><param name="dir" value="i18n/assign/AssignBpel"/></antcall>
+        <!-- antcall target="do-test-jbi"><param name="dir" value="i18n/assign/AssignBpel"/></antcall -->
 
         <!-- if -->
         <antcall target="do-test-jbi"><param name="dir" value="if/ifBpel"/></antcall>
@@ -217,7 +217,7 @@
         <antcall target="do-test-jbi"><param name="dir" value="pick/PickBpel"/></antcall>
 
         <!-- repeatuntil -->
-        <antcall target="do-test-jbi"><param name="dir" value="repeatuntil/RepeatUntilBpel"/></antcall>
+        <!-- antcall target="do-test-jbi"><param name="dir" value="repeatuntil/RepeatUntilBpel"/></antcall -->
 
         <!-- rethrow -->
         <antcall target="do-test-jbi"><param name="dir" value="rethrow/Rethrow"/></antcall>

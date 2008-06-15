@@ -41,11 +41,10 @@
 
 package org.netbeans.modules.groovy.editor;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -68,7 +67,6 @@ import org.netbeans.modules.gsf.api.TypeSearcher;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -80,14 +78,11 @@ public class GroovyTypeSearcher implements TypeSearcher {
 
     public Set<? extends GsfTypeDescriptor> getDeclaredTypes(Index gsfIndex, String textForQuery, NameKind kind, EnumSet<SearchScope> scope, Helper helper) {
         GroovyIndex index = new GroovyIndex(gsfIndex);
-        if (index == null) {
-            return Collections.emptySet();
-        }
 
         kind = adjustKind(kind, textForQuery);
         
         if (kind == NameKind.CASE_INSENSITIVE_PREFIX /*|| kind == NameKind.CASE_INSENSITIVE_REGEXP*/) {
-            textForQuery = textForQuery.toLowerCase();
+            textForQuery = textForQuery.toLowerCase(Locale.ENGLISH);
         }
         
         Set<IndexedClass> classes = null;
@@ -180,21 +175,14 @@ public class GroovyTypeSearcher implements TypeSearcher {
         private void initProjectInfo() {
             FileObject fo = element.getFileObject();
             if (fo != null) {
-                File f = FileUtil.toFile(fo);
+                // Findbugs-Removed: File f = FileUtil.toFile(fo);
                 Project p = FileOwnerQuery.getOwner(fo);
                 if (p != null) {
-//                    JsPlatform platform = JsPlatform.platformFor(p);
-//                    if (platform != null) {
-//                        String lib = platform.getLib();
-//                        if (lib != null && f.getPath().startsWith(lib)) {
-//                            projectName = "Js Library";
-//                            isLibrary = true;
-//                        }
-//                    } else {
-                        ProjectInformation pi = ProjectUtils.getInformation(p);
-                        projectName = pi.getDisplayName();
-                        projectIcon = pi.getIcon();
-//                    }
+
+                    ProjectInformation pi = ProjectUtils.getInformation(p);
+                    projectName = pi.getDisplayName();
+                    projectIcon = pi.getIcon();
+
                 }
             } else {
                 isLibrary = true;

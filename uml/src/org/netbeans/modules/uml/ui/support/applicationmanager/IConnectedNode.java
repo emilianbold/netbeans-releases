@@ -49,20 +49,21 @@ package org.netbeans.modules.uml.ui.support.applicationmanager;
  *
  */
 public interface IConnectedNode {
+    // TODO: meteora
 //	 The edge connecting to the other node
 //	HRESULT IntermediateEdge([out, retval] IEdgePresentation* *pVal);
-	IEdgePresentation getIntermediateEdge();
+//	IEdgePresentation getIntermediateEdge();
 
 //	 The edge connecting to the other node
 //	HRESULT IntermediateEdge([in] IEdgePresentation* newVal);
-	void setIntermediateEdge(IEdgePresentation intermediateEdge);
+//	void setIntermediateEdge(IEdgePresentation intermediateEdge);
 
 //	 The node at the other end
 //	HRESULT NodeAtOtherEnd([out, retval] INodePresentation* *pVal);
-	INodePresentation getNodeAtOtherEnd();
+//	INodePresentation getNodeAtOtherEnd();
 
 //	 The node at the other end
 //	HRESULT NodeAtOtherEnd([in] INodePresentation* newVal);
-	void setNodeAtOtherEnd(INodePresentation nodePE); 
+//	void setNodeAtOtherEnd(INodePresentation nodePE); 
 }
 

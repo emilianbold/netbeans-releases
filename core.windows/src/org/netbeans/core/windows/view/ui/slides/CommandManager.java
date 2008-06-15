@@ -281,7 +281,7 @@ final class CommandManager implements ActionListener {
     private TabbedContainer getSlidedTabContainer () {
         if (slidedTabContainer == null) {
             TabDataModel slidedCompModel = new DefaultTabDataModel();
-            slidedTabContainer = new TabbedContainer(slidedCompModel, TabbedContainer.TYPE_VIEW, slideBar);
+            slidedTabContainer = new TabbedContainer(slidedCompModel, TabbedContainer.TYPE_VIEW, slideBar.createWinsysInfo());
             slidedTabContainer.addActionListener(this);
             Border b = (Border) UIManager.get ("floatingBorder"); //NOI18N
             if (b != null) {

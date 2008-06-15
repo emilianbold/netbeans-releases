@@ -125,7 +125,7 @@ public class JavaEEWSSupportLookupProvider implements LookupProvider {
         };
 
         ProjectWebServiceNotifier servicesNotifier = new ProjectWebServiceNotifier(prj);
-        return Lookups.fixed(new Object[]{openhook, servicesNotifier, new JaxWsArtifactsClassPathProvider(prj)});
+        return Lookups.fixed(new Object[]{openhook, servicesNotifier, new JaxWsArtifactsClassPathProvider(prj), new JavaEEJAXWSVersionProvider(prj)});
     }
 
     private class WebservicesChangeListener implements PropertyChangeListener {
@@ -160,7 +160,7 @@ public class JavaEEWSSupportLookupProvider implements LookupProvider {
                             PortComponent[] ports = wsDesc.getPortComponent();
                             for (PortComponent port : ports) {
                                 if (JaxWsUtils.isInSourceGroup(prj, port.getServiceEndpointInterface())) {
-                                    result.put(port.getDisplayName(), wsDesc.getDisplayName());
+                                    result.put(port.getDisplayName(), port.getPortComponentName());
                                 }
                             }
 
