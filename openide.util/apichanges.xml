@@ -49,20 +49,40 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
-    <change id="Utilities.actionsForPath">
+    <change id="Utilities.toolTips">
         <api name="util"/>
-        <summary>Added <code>Utilities.actionsForPath</code></summary>
+        <summary>Image methods were made deprecated in Utilities, replacement is 
+        ImageUtilities class (with additional methods). </summary>
         <version major="7" minor="14"/>
-        <date day="11" month="6" year="2008"/>
-        <author login="jglick"/>
+        <date day="6" month="6" year="2008"/>
+        <author login="t_h"/>
         <compatibility addition="yes"/>
         <description>
             <p>
-                Added utility method to construct a menu from a layer path.
+                Image methods were made deprecated in Utilities. Replacement is
+                <a href="@TOP@/org/openide/util/ImageUtilities.html">ImageUtilities</a>
+                (renamed IconManager). It contains also new 
+                methods for image tool tips manipulation:
+                New methods for tool tips manipulation:
+                <code>Image assignToolTipToImage(Image image, String text)</code>;
+                <code>String getImageToolTip(Image image)</code>;
+                <code>Image addToolTipToImage(Image image, String text)</code>;
             </p>
-        </description>
+            <p>
+                New method for conversion from Image to Icon:
+                <code>Icon image2Icon(Image image)</code>;
+            </p>
+            <p>
+                Deprecated methods in <a href="@TOP@/org/openide/util/Utilities.html">Utilities</a>:
+                <code>Image icon2Image(Icon icon)</code>;
+                <code>Image loadImage(String resourceID)</code>;
+                <code>Image loadImage(String resource, boolean localized)</code>;
+                <code>Image mergeImages(Image image1, Image image2, int x, int y)</code>;
+            </p>
+        </description> 
         <class package="org.openide.util" name="Utilities"/>
-        <issue number="136334"/>
+        <class package="org.openide.util" name="ImageUtilities"/>
+        <issue number="123469"/>
     </change>
     <change id="Mutex.Wrapper">
         <api name="util"/>

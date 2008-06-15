@@ -114,7 +114,8 @@ public final class OrthogonalSearchRouter implements Router {
             connectionWidgetCollector.collectCollisions(widget, verticalCollisions, horizontalCollisions);
         }
 
-        if (sourceAnchor.getRelatedWidget() == targetAnchor.getRelatedWidget())
+        if (sourceAnchor.getRelatedWidget() != null &&
+                (sourceAnchor.getRelatedWidget() == targetAnchor.getRelatedWidget()))
         {
             // try to avoid routing path inside node widget
             Rectangle rec = sourceAnchor.getRelatedWidget().convertLocalToScene(sourceAnchor.getRelatedWidget().getBounds());

@@ -454,11 +454,11 @@ public class ProjectsRootNode extends AbstractNode {
                     entry.getKey().removePropertyChangeListener(entry.getValue());
                 }
             }
-            groupsListeners = new HashMap<SourceGroup, PropertyChangeListener>();
+            Map<SourceGroup,PropertyChangeListener> _groupsListeners = new HashMap<SourceGroup, PropertyChangeListener>();
             Set<FileObject> roots = new HashSet<FileObject>();
             for (SourceGroup group : groups) {
                 PropertyChangeListener pcl = WeakListeners.propertyChange(this, group);
-                groupsListeners.put(group, pcl);
+                _groupsListeners.put(group, pcl);
                 group.addPropertyChangeListener(pcl);
                 FileObject fo = group.getRootFolder();
                 if (fo.equals(projectDirectory)) {
@@ -487,6 +487,7 @@ public class ProjectsRootNode extends AbstractNode {
                     roots.add(fo);
                 }
             }
+            groupsListeners = _groupsListeners;
             setFiles(roots);
         }
 
