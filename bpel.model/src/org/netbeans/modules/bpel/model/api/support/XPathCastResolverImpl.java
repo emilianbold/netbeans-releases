@@ -43,25 +43,31 @@ package org.netbeans.modules.bpel.model.api.support;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathCastResolver;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
+import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComp;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
 import org.openide.ErrorManager;
 
 /**
+ * @author nk160297
  * @author Vladimir Yaroslavskiy
  * @version 2008.03.27
  */
 public class XPathCastResolverImpl implements XPathCastResolver {
 
-    public XPathCastResolverImpl(List<Cast> casts) {
-        myXPathCasts = new ArrayList<XPathCast>();
+    private List<XPathCast> mXPathCasts;
+    private List<XPathPseudoComp> mXPathPseudoCompList;
 
+    public XPathCastResolverImpl(List<Cast> casts, List<PseudoComp> pseudoComps) {
+        mXPathCasts = new ArrayList<XPathCast>();
+        //
         for (Cast cast : casts) {
             XPathCastImpl xPathCast = XPathCastImpl.convert(cast);
             if (xPathCast != null) {
-                myXPathCasts.add(xPathCast);
+                mXPathCasts.add(xPathCast);
             } else {
                 String msg = "An error while processing the cast: path=\"" + 
                         cast.getPath() + "\" castTo=\"" + 
@@ -69,19 +75,32 @@ public class XPathCastResolverImpl implements XPathCastResolver {
                 ErrorManager.getDefault().log(ErrorManager.WARNING, msg );
             }
         }
+        //
+        mXPathPseudoCompList = new ArrayList<XPathPseudoComp>();
+        //
+        for (PseudoComp pseudoComp : pseudoComps) {
+            XPathPseudoCompImpl xPathPseudoComp = XPathPseudoCompImpl.convert(pseudoComp);
+            if (xPathPseudoComp != null) {
+                mXPathPseudoCompList.add(xPathPseudoComp);
+            } else {
+                String msg = "An error while processing the pseudo schema component: " +
+                        "parentPath=\"" + pseudoComp.getParentPath() + "\" " +
+                        "name=\"" + pseudoComp.getName() + "\"";
+                ErrorManager.getDefault().log(ErrorManager.WARNING, msg );
+            }
+        }
     }
 
     public List<XPathCast> getXPathCasts() {
-        return myXPathCasts;
+        return mXPathCasts;
     }
-    private List<XPathCast> myXPathCasts;
 
     public XPathCast getCast(XPathSchemaContext soughtContext) {
-        if (myXPathCasts == null || myXPathCasts.size() == 0) {
+        if (mXPathCasts == null || mXPathCasts.size() == 0) {
             return null;
         }
         //
-        for (XPathCast xPathCast : myXPathCasts) {
+        for (XPathCast xPathCast : mXPathCasts) {
             XPathSchemaContext sContext = xPathCast.getSchemaContext();
             if (sContext != null && sContext.equalsChain(soughtContext)) {
                 return xPathCast;
@@ -89,5 +108,25 @@ public class XPathCastResolverImpl implements XPathCastResolver {
         }
         //
         return null;
+    }
+
+    public List<XPathPseudoComp> getPseudoCompList(XPathSchemaContext parentSContext) {
+        //
+        if (mXPathPseudoCompList == null || mXPathPseudoCompList.size() == 0) {
+            return null;
+        }
+        //
+        ArrayList<XPathPseudoComp> result = new ArrayList<XPathPseudoComp>();
+        // 
+        for (XPathPseudoComp xPseudoComp : mXPathPseudoCompList) {
+            //
+            // Filter by location
+            XPathSchemaContext sContext = xPseudoComp.getSchemaContext();
+            if (sContext != null && sContext.equalsChain(parentSContext)) {
+                result.add(xPseudoComp);
+            }
+        }
+        //
+        return result;
     }
 }

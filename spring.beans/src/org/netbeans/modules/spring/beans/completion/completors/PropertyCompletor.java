@@ -54,6 +54,7 @@ import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionIte
 import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.spring.java.JavaUtils;
+import org.netbeans.modules.spring.java.MatchType;
 import org.netbeans.modules.spring.java.Property;
 import org.netbeans.modules.spring.java.PropertyFinder;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
@@ -102,7 +103,7 @@ public class PropertyCompletor extends Completor {
 
                     while (tokenizer.hasMoreTokens() && startType != null) {
                         String propertyName = tokenizer.nextToken();
-                        Property[] props = new PropertyFinder(startType, propertyName, eu).findProperties();
+                        Property[] props = new PropertyFinder(startType, propertyName, eu, MatchType.PREFIX).findProperties();
 
                         // no matching element found
                         if (props.length == 0 || props[0].getGetter() == null) {
@@ -128,7 +129,7 @@ public class PropertyCompletor extends Completor {
                     setterPrefix = propertyPrefix.substring(dotIndex + 1);
                 }
 
-                Property[] props = new PropertyFinder(startType, setterPrefix, eu).findProperties();
+                Property[] props = new PropertyFinder(startType, setterPrefix, eu, MatchType.PREFIX).findProperties();
                 int substitutionOffset = context.getCurrentToken().getOffset() + 1;
                 if (dotIndex != -1) {
                     substitutionOffset += dotIndex + 1;

@@ -14,6 +14,8 @@ public class NoViableAltException extends RecognitionException {
     private BitSet expected = null;
     private String[] tokenNames;
     
+    private static final boolean hideExpected = Boolean.getBoolean("antlr.exceptions.hideExpectedTokens");
+    
     public NoViableAltException(AST t) {
         super("NoViableAlt", "<AST>", t.getLine(), t.getColumn());
         node = t;
@@ -30,12 +32,20 @@ public class NoViableAltException extends RecognitionException {
         this.tokenNames = tokenNames;
     }
 
+    public BitSet getExpected() {
+        return expected;
+    }
+    
     /**
      * Returns a clean error message (no line number/column information)
      */
+    @Override
     public String getMessage() {
         if (token != null) {
             String res = "unexpected token: " + token.getText();
+            if (hideExpected) {
+                return res;
+            }
             if (tokenNames != null) {
                 res += "(" + MismatchedTokenException.tokenName(tokenNames, token.getType()) + ")";
             }

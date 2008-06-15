@@ -50,6 +50,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -151,27 +152,27 @@ public abstract class AbstractHgTest extends NbTestCase {
     }
 
     protected File createFolder(String name) throws IOException {
-        File file = new File(getWorkDir(), name);
-        file.mkdirs();
-        return file;
+        FileObject wd = FileUtil.toFileObject(getWorkDir());
+        FileObject folder = wd.createFolder(name);        
+        return FileUtil.toFile(folder);
     }
     
-    protected File createFolder(File folder, String name) throws IOException {
-        File file = new File(folder, name);
-        file.mkdirs();
-        return file;
+    protected File createFolder(File parent, String name) throws IOException {
+        FileObject parentFO = FileUtil.toFileObject(parent);
+        FileObject folder = parentFO.createFolder(name);                
+        return FileUtil.toFile(folder);
     }
     
-    protected File createFile(File folder, String name) throws IOException {
-        File file = new File(folder, name);
-        file.createNewFile();
-        return file;
+    protected File createFile(File parent, String name) throws IOException {
+        FileObject parentFO = FileUtil.toFileObject(parent);
+        FileObject fo = parentFO.createData(name);
+        return FileUtil.toFile(fo);
     }
     
     protected File createFile(String name) throws IOException {
-        File file = new File(getWorkDir(), name);
-        file.createNewFile();
-        return file;
+        FileObject wd = FileUtil.toFileObject(getWorkDir());
+        FileObject fo = wd.createData(name);
+        return FileUtil.toFile(fo);
     }    
     
     private static class VersionCheckBlocker extends Handler {

@@ -39,15 +39,29 @@
 
 package org.netbeans.modules.db.sql.history;
 
-import javax.sound.midi.MetaEventListener;
-import javax.sound.midi.MetaMessage;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author John Baker
  */
-public class SQLHistoryModelImpl implements SQLHistoryModel {
+public class SQLHistoryModelImpl implements SQLHistoryModel {    
+    public static final String SQL_HISTORY_FOLDER = "Databases/SQLHISTORY"; // NOI18N
+    public static final String SQL_HISTORY_FILE_NAME = "sql_history";  // NOI18N
+    public static final Logger LOGGER = Logger.getLogger(SQLHistoryModelImpl.class.getName());
 
+    List<SQLHistory> sqlHistoryList = new ArrayList<SQLHistory>();
+    
     public void initialize() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -60,27 +74,27 @@ public class SQLHistoryModelImpl implements SQLHistoryModel {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void setUrl(String url) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public List<SQLHistory> getSQLHistoryList() {
+        List<SQLHistory> retrievedSQL = new ArrayList<SQLHistory>();
+        try {
+            FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER);
+            String historyFilePath = FileUtil.getFileDisplayName(root) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N
+             retrievedSQL = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, FileUtil.toFileObject(new File(historyFilePath)));
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        if (null == retrievedSQL) {
+            LOGGER.log(Level.WARNING, NbBundle.getMessage(SQLHistoryModelImpl.class, "MSG_SQLHistoryFileError"));
+            return new ArrayList<SQLHistory>();
+        } else {
+            return retrievedSQL;
+        }
     }
 
-    public String getUrl() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void registerObserver(SQLHistoryFilterObserver filterObserver) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void removeObserver(SQLHistoryFilterObserver filterObserver) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void registerObserver(SQLHistoryUrlObserver urlObserver) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void removeObserver(SQLHistoryUrlObserver urlObserver) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void setSQLHistoryList(List<SQLHistory> sqlHistoryList) {
+        this.sqlHistoryList = sqlHistoryList;
     }
 }

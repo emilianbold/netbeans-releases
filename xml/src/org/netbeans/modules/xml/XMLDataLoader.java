@@ -69,12 +69,9 @@ public class XMLDataLoader extends UniFileLoader {
         super ("org.netbeans.modules.xml.XMLDataObject"); // NOI18N
     }
 
-//     protected XMLDataLoader (Class cls) {
-//         super (cls);
-//     }
-
     /** Initialize XMLDataLoader: name, actions, ...
      */
+    @Override
     protected void initialize () {
         super.initialize();
         
@@ -86,6 +83,7 @@ public class XMLDataLoader extends UniFileLoader {
         setExtensions (ext);
     }    
      
+    @Override
     protected String actionsContext() {
         return "Loaders/text/xml-mime/Actions/";
     }
@@ -93,6 +91,7 @@ public class XMLDataLoader extends UniFileLoader {
     /**
      * Lazy init name.
      */
+    @Override
     protected String defaultDisplayName () {
         return Util.THIS.getString ("PROP_XmlLoader_Name");        
     }
@@ -103,6 +102,7 @@ public class XMLDataLoader extends UniFileLoader {
      * @return the primary file for the file or null if the file is not
      *   recognized by this loader
      */
+    @Override
     protected FileObject findPrimaryFile (FileObject fo) {
         if (fo.isFolder()) {
             return null;
@@ -173,6 +173,7 @@ public class XMLDataLoader extends UniFileLoader {
      * @param primaryFile primary file recognized by this loader
      * @return primary entry for that file
      */
+    @Override
     protected MultiDataObject.Entry createPrimaryEntry (MultiDataObject obj, FileObject primaryFile) {            
         return new XMLFileEntry (obj, primaryFile);
     }
@@ -183,6 +184,7 @@ public class XMLDataLoader extends UniFileLoader {
      * @param secondaryFile secondary file for which we want to create entry
      * @return the entry
      */
+    @Override
     protected MultiDataObject.Entry createSecondaryEntry (MultiDataObject obj, FileObject secondaryFile) {
         return new FileEntry (obj, secondaryFile);
     }
@@ -326,6 +328,7 @@ public class XMLDataLoader extends UniFileLoader {
             activeReaders.remove(r);
         }
 
+        @Override
         public void delete() throws IOException {
             synchronized (this) {
                 if (activeReaders != null && activeReaders.size() > 0) {
@@ -359,6 +362,7 @@ public class XMLDataLoader extends UniFileLoader {
                 super(is);
             }
 
+            @Override
             public void close() throws IOException {
                 super.close();
                 removeReader(this);
@@ -366,6 +370,7 @@ public class XMLDataLoader extends UniFileLoader {
         }
 
         // debug taking locks
+        @Override
         public FileLock takeLock() throws IOException {
             FileLock lock = super.takeLock();
             

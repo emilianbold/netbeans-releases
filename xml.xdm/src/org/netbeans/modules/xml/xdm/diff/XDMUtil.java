@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.ElementIdentity;
 import org.netbeans.modules.xml.xdm.XDMModel;
@@ -61,6 +60,7 @@ import org.netbeans.modules.xml.xdm.visitor.PositionFinderVisitor;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import javax.swing.text.Document;
+import org.netbeans.editor.BaseKit;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 
@@ -86,11 +86,11 @@ public class XDMUtil {
      */
     public String prettyPrintXML(String doc, String indentation) 
     throws UnsupportedEncodingException, IOException, BadLocationException {
-        Document sd1 = new BaseDocument(XMLKit.class, false);
+        Document sd1 = new BaseDocument(BaseKit.class, false);
         XDMModel m1 = createXDMModel(sd1, doc);
         Node root1 = m1.getDocument();
         
-        Document sd2 = new BaseDocument(XMLKit.class, false);
+        Document sd2 = new BaseDocument(BaseKit.class, false);
         XDMModel m2 = createXDMModel(sd2);
         m2.setPretty(true);
         m2.setIndentation(indentation);
@@ -99,9 +99,7 @@ public class XDMUtil {
         
         root2 = doPrettyPrint(m2, root2, root1);
         m2.flush();
-        
-        String prettyXMLStr = sd2.getText(0, sd2.getLength());
-        
+                
         int firstChildPos1 = -1;
         Node firstChild1 = (Node) root1.getChildNodes().item(0);
         if(firstChild1 != null)
@@ -162,14 +160,14 @@ public class XDMUtil {
     public List<Difference> compareXML(String firstDoc,  
             String secondDoc, ComparisonCriteria type, boolean filterWhiteSpace) 
     throws BadLocationException, IOException {
-        Document sd1 = new BaseDocument(XMLKit.class, false);
+        Document sd1 = new BaseDocument(BaseKit.class, false);
         XDMModel m1 = createXDMModel(sd1);
         sd1.remove(0, XML_PROLOG.length());
         sd1.insertString(0, firstDoc, null);
         m1.sync();
         fDoc = m1.getDocument();        
         
-        Document sd2 = new BaseDocument(XMLKit.class, false);
+        Document sd2 = new BaseDocument(BaseKit.class, false);
         sd2.getText(0, sd2.getLength());
         XDMModel m2 = createXDMModel(sd2);        
         sd2.remove(0, XML_PROLOG.length());

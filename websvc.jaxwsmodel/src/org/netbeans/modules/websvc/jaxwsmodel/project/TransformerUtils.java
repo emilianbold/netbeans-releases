@@ -133,7 +133,10 @@ public class TransformerUtils {
             if (setJaxWsVersion) {
                 if(!isJAXWS21(projectDirectory)) {
                     t.setParameter(JAXWS_VERSION, JAXWS_20_LIB );
-                }                
+                }
+                if (!isXnocompile(projectDirectory)) {
+                    t.setParameter("xnocompile", "false"); //NOI18N
+                }
             }
             File jaxws_xml_F = FileUtil.toFile(jaxws_xml);
             assert jaxws_xml_F != null;
@@ -185,12 +188,25 @@ public class TransformerUtils {
         if(project != null){
             JAXWSVersionProvider jvp = project.getLookup().lookup(JAXWSVersionProvider.class);
             if(jvp != null &&
-                    jvp.getJAXWSVersion().equals(JAXWSVersionProvider.JAXWS20)){
+                    !isVersionOK(jvp.getJAXWSVersion(), "2.1")) { //NOI18N
                 return false;
             }
         }
-        // Defaultly return true
+        // By default return true
         return true;
+    }
+    
+    private static boolean isXnocompile(FileObject projectDirectory){
+        Project project = FileOwnerQuery.getOwner(projectDirectory);
+        if(project != null){
+            JAXWSVersionProvider jvp = project.getLookup().lookup(JAXWSVersionProvider.class);
+            if(jvp != null &&
+                    isVersionOK(jvp.getJAXWSVersion(), "2.1.3")) { //NOI18N
+                return true;
+            }
+        }
+        // Defaultly return true
+        return false;
     }
     
     /** Find (maybe cached) CRC for a URL, using a preexisting input stream (not closed by this method). */
@@ -224,6 +240,21 @@ public class TransformerUtils {
             hex = "0" + hex; // NOI18N
         }
         return hex;
+    }
+    
+    private static boolean isVersionOK(String version, String requiredVersion) {
+        int len1 = version.length();
+        int len2 = requiredVersion.length();
+        for (int i=0;i<Math.min(len1, len2);i++) {
+            if (version.charAt(i) < requiredVersion.charAt(i)) {
+                return false;
+            } else if (version.charAt(i) > requiredVersion.charAt(i)) {
+                return true;
+            }
+        }
+        if (len1 > len2) return true;
+        else if (len1 < len2) return false;
+        return true;
     }
 
 }

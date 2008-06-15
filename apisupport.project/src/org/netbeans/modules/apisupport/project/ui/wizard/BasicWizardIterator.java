@@ -190,7 +190,21 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
         }
         
         public String getDefaultPackagePath(String fileName, boolean resource) {
-            return (resource ? getModuleInfo().getResourceDirectoryPath(false) : getModuleInfo().getSourceDirectoryPath()) + '/' +
+            return getDefaultPackagePath(fileName, resource, false);
+        }
+
+        public String getDefaultPackagePath(String fileName, boolean resource, boolean inTests) {
+            if (inTests) {
+                // TBD: mkleint needs to adopt this to Maven, I am afraid
+                // but for our ant scripts the test dir and resource test dir
+                // is the same, so I can temporarily use 
+                // just the following workaround:
+                String path = getModuleInfo().getResourceDirectoryPath(true);
+                return path + '/' +
+                    getPackageName().replace('.','/') + '/' + fileName;
+            }
+            
+            return (resource ? getModuleInfo().getResourceDirectoryPath(inTests) : getModuleInfo().getSourceDirectoryPath()) + '/' +
                     getPackageName().replace('.','/') + '/' + fileName;
         }
         

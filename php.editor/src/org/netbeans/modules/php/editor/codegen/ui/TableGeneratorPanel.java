@@ -61,6 +61,8 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
+import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.editor.codegen.DatabaseURL;
@@ -93,7 +95,8 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
         dialog.setVisible(true);
         dialog.dispose();
         if (desc.getValue() == DialogDescriptor.OK_OPTION) {
-            return new TableAndColumns(panel.table, panel.getAllColumns(), panel.getSelectedColumns(), panel.getConnVariable()); // NOI18N
+            Quoter quoter = SQLIdentifiers.createQuoter(panel.dmd);
+            return new TableAndColumns(quoter, panel.table, panel.getAllColumns(), panel.getSelectedColumns(), panel.getConnVariable()); // NOI18N
         }
         return null;
     }
@@ -380,13 +383,15 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
 
         columnList.setEnabled(false);
         columnScrollPane.setViewportView(columnList);
+        columnList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.columnList.AccessibleContext.accessibleName")); // NOI18N
+        columnList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.columnList.AccessibleContext.accessibleDescription")); // NOI18N
 
+        connVariableLabel.setLabelFor(connVariableLabel);
         org.openide.awt.Mnemonics.setLocalizedText(connVariableLabel, org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.connVariableLabel.text")); // NOI18N
 
         connVariableTextField.setColumns(16);
-        connVariableTextField.setText(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.connVariableTextField.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "ConnectionGeneratorPanel.errorLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.errorLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -429,6 +434,13 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
                 .add(errorLabel)
                 .addContainerGap())
         );
+
+        dbconnComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.dbconnComboBox.AccessibleContext.accessibleName")); // NOI18N
+        dbconnComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.dbconnComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+        tableComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.tableComboBox.AccessibleContext.accessibleName")); // NOI18N
+        tableComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.tableComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+        connVariableTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.connVariableTextField.AccessibleContext.accessibleName")); // NOI18N
+        connVariableTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.connVariableTextField.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void dbconnComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dbconnComboBoxActionPerformed
@@ -495,16 +507,22 @@ private void tableComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
     public static final class TableAndColumns {
 
+        private final Quoter identifierQuoter;
         private final String table;
         private final List<String> allColumns;
         private final List<String> selectedColumns;
         private final String connVariable;
 
-        private TableAndColumns(String table, List<String> allColumns, List<String> selectedColumns, String connVariable) {
+        private TableAndColumns(Quoter identifierQuoter, String table, List<String> allColumns, List<String> selectedColumns, String connVariable) {
+            this.identifierQuoter = identifierQuoter;
             this.table = table;
             this.allColumns = allColumns;
             this.selectedColumns = selectedColumns;
             this.connVariable = connVariable;
+        }
+
+        public Quoter getIdentifierQuoter() {
+            return identifierQuoter;
         }
 
         public String getTable() {

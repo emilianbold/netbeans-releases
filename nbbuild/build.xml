@@ -2124,4 +2124,5 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       </makeupdatedesc>
       <gzip src="${catalog.file}" destfile="${catalog.file}.gz"/>
   </target>
+
 </project>

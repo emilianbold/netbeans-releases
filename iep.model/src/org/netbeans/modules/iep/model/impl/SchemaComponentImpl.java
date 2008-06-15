@@ -84,7 +84,7 @@ public class SchemaComponentImpl extends ComponentImpl implements SchemaComponen
         while(it.hasNext()) {
             SchemaAttribute sa = it.next();
             
-            if(attributeName.equals(sa.getName())) {
+            if(attributeName.equals(sa.getAttributeName())) {
                 attr = sa;
                 break;
             }

@@ -43,13 +43,15 @@ package org.netbeans.modules.print.spi;
 import java.awt.Graphics;
 
 /**
+ * Print page represents the area to be printed.
+ *
  * @author Vladimir Yaroslavskiy
  * @version 2005.12.13
  */
 public interface PrintPage {
 
   /**
-   * Prints content of page in graphics.
+   * Prints content of the page to the graphics.
    * @param g graphics for printing
    */
   void print(Graphics g);

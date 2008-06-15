@@ -145,7 +145,6 @@
                     operation="reserveHotel"
                     inputVariable="reserveHotelVar"></invoke>
         </flow>
-
         <flow name="Flow">
             <pick name="receiveHotelStatus">
                 <onMessage partnerLink="hotelReservationStatusPLink"
@@ -175,7 +174,6 @@
                     </assign>
                 </onAlarm>
             </pick>
-        
             <pick name="receiveCarStatus">
                 <onMessage partnerLink="carReservationStatusPLink"
                            portType="ns2:CarStatusPortType"

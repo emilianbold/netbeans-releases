@@ -45,23 +45,10 @@ import org.apache.tools.ant.module.api.support.TargetLister;
 import org.netbeans.api.project.Project;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.NbBundle;
-import org.openide.xml.XMLUtil;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import java.io.File;
 import java.io.IOException;
-import java.text.Collator;
-import java.text.MessageFormat;
 import java.util.*;
-import javax.swing.event.ChangeListener;
+import org.apache.tools.ant.module.api.support.AntScriptUtils;
 
 
 /**
@@ -71,83 +58,6 @@ import javax.swing.event.ChangeListener;
  * @author Jesse Glick
  */
 public final class Util {
-    //~ Inner Classes ------------------------------------------------------------------------------------------------------------
-
-    private static final class ErrH implements ErrorHandler {
-        //~ Constructors ---------------------------------------------------------------------------------------------------------
-
-        public ErrH() {
-        }
-
-        //~ Methods --------------------------------------------------------------------------------------------------------------
-
-        public void error(final SAXParseException exception)
-                   throws SAXException {
-            throw exception;
-        }
-
-        public void fatalError(final SAXParseException exception)
-                        throws SAXException {
-            throw exception;
-        }
-
-        public void warning(final SAXParseException exception)
-                     throws SAXException {
-            // ignore that
-        }
-    }
-
-    private static final class TrivialAntProjectCookie implements AntProjectCookie.ParseStatus {
-        //~ Instance fields ------------------------------------------------------------------------------------------------------
-
-        private final Document doc;
-        private final FileObject fo;
-
-        //~ Constructors ---------------------------------------------------------------------------------------------------------
-
-        public TrivialAntProjectCookie(final FileObject fo, final Document doc) {
-            this.fo = fo;
-            this.doc = doc;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------------------------------------
-
-        public Document getDocument() {
-            return doc;
-        }
-
-        public File getFile() {
-            return FileUtil.toFile(fo);
-        }
-
-        public FileObject getFileObject() {
-            return fo;
-        }
-
-        public Throwable getParseException() {
-            return null;
-        }
-
-        public boolean isParsed() {
-            return true;
-        }
-
-        public Element getProjectElement() {
-            return doc.getDocumentElement();
-        }
-
-        public void addChangeListener(final ChangeListener l) {
-        }
-
-        public void removeChangeListener(final ChangeListener l) {
-        }
-    }
-
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String PARSE_ERROR_MSG = NbBundle.getMessage(Util.class, "Util_ParseErrorMsg"); // NOI18N
                                                                                                          // -----
     public static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.profiler.freeform"); // NOI18N
 
@@ -157,33 +67,6 @@ public final class Util {
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
-
-    /**
-     * Returns name of the Ant script represented by the given file object.
-     *
-     * @param fo Ant script which name should be returned
-     * @return name of the Ant script as specified in name attribute of
-     *         project element or null if fo does not represent valid Ant script
-     *         or the script is anonymous
-     */
-    public static String getAntScriptName(final FileObject fo) {
-        final AntProjectCookie apc = getAntProjectCookie(fo);
-
-        if (apc == null) {
-            return null;
-        }
-
-        final Element projEl = apc.getProjectElement();
-
-        if (projEl == null) {
-            return null;
-        }
-
-        final String name = projEl.getAttribute("name"); // NOI18N
-                                                         // returns "" if no such attribute
-
-        return (name.length() > 0) ? name : null;
-    }
 
     /**
      * Returns XML element representing the requested target or null if the target does not exist.
@@ -197,11 +80,7 @@ public final class Util {
             throw new IllegalArgumentException("Cannot call Util.getAntScriptTargetNames with null"); // NOI18N
         }
 
-        final AntProjectCookie apc = getAntProjectCookie(fo);
-
-        if (apc == null) {
-            return null;
-        }
+        final AntProjectCookie apc = AntScriptUtils.antProjectCookieFor(fo);
 
         final Set /*TargetLister.Target*/ allTargets;
 
@@ -236,36 +115,12 @@ public final class Util {
         return null;
     }
 
-    /**
-     * Returns sorted list of targets name of the Ant script represented by the
-     * given file object.
-     *
-     * @param fo Ant script which target names should be returned
-     * @return sorted list of target names or null if fo does not represent
-     *         valid Ant script
-     */
-    public static List /*<String>*/ getAntScriptTargetNames(final FileObject fo) {
-        final List targets = getAntScriptTargets(fo);
-        final SortedSet targetNames = new TreeSet(Collator.getInstance());
-        final Iterator it = targets.iterator();
-
-        while (it.hasNext()) {
-            targetNames.add(((TargetLister.Target) it.next()).getName());
-        }
-
-        return new ArrayList(targetNames);
-    }
-
     public static List /*TargetLister.Target*/ getAntScriptTargets(final FileObject buildScript) {
         if (buildScript == null) {
             throw new IllegalArgumentException("Cannot call Util.getAntScriptTargetNames with null"); // NOI18N
         }
 
-        final AntProjectCookie apc = getAntProjectCookie(buildScript);
-
-        if (apc == null) {
-            return null;
-        }
+        final AntProjectCookie apc = AntScriptUtils.antProjectCookieFor(buildScript);
 
         final Set /*TargetLister.Target*/ allTargets;
 
@@ -303,44 +158,4 @@ public final class Util {
         return org.netbeans.modules.ant.freeform.spi.support.Util.getDefaultAntScript(project);
     }
 
-    private static AntProjectCookie getAntProjectCookie(final FileObject fo) {
-        final DataObject dob;
-
-        try {
-            dob = DataObject.find(fo);
-        } catch (DataObjectNotFoundException ex) {
-            Util.err.notify(ErrorManager.INFORMATIONAL, ex);
-
-            return null;
-        }
-
-        AntProjectCookie apc = (AntProjectCookie) dob.getCookie(AntProjectCookie.class);
-
-        if ((apc == null) && fo.getMIMEType().equals("text/xml")) { // NOI18N
-                                                                    // Some file that *could* be an Ant script and just wasn't recognized
-                                                                    // as such? Cf. also TargetLister.getAntProjectCookie, which has the
-                                                                    // advantage of being inside the Ant module and therefore able to
-                                                                    // directly instantiate AntProjectSupport.
-
-            try {
-                apc = forceParse(fo);
-            } catch (IOException e) {
-                err.notify(ErrorManager.INFORMATIONAL, e);
-            } catch (SAXException e) {
-                err.log(MessageFormat.format(PARSE_ERROR_MSG, new Object[] { fo, e }));
-            }
-        }
-
-        return apc;
-    }
-
-    /**
-     * Try to parse a (presumably XML) file even though it is not known to be an Ant script.
-     */
-    private static AntProjectCookie forceParse(final FileObject fo)
-                                        throws IOException, SAXException {
-        final Document doc = XMLUtil.parse(new InputSource(fo.getURL().toExternalForm()), false, true, new ErrH(), null);
-
-        return new TrivialAntProjectCookie(fo, doc);
-    }
 }

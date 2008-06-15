@@ -43,7 +43,7 @@ package org.netbeans.modules.j2ee.persistence.entitygenerator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.FetchType;
+import java.util.Set;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -53,15 +53,13 @@ import org.openide.filesystems.FileObject;
  * @author Chris Webster, Martin Adamek, Andrei Badea
  */
 public class EntityClass {
-    private final boolean fullyQualifiedTblNames;
-    private final String schemaName;
     private final String catalogName;
+    private final String schemaName;
     private final String tableName;
     private final FileObject rootFolder;
     private final String className;
     private final String packageName;
-    private final FetchType fetchType;
-    private final boolean regenSchemaAttrs;
+    private final Set<List<String>> uniqueConstraints;
     
     private List<RelationshipRole> roles;
     private List<EntityMember> fields;
@@ -71,18 +69,15 @@ public class EntityClass {
     
     private boolean forTable = true;  // false means forView
     
-    public EntityClass(boolean fullyQualifiedTblNames, String schemaName, String catalogName, String tableName, 
-            FileObject rootFolder, String packageName, String className,
-            FetchType fetchType, boolean regenSchemaAttrs) {
-        this.fullyQualifiedTblNames = fullyQualifiedTblNames;
-        this.schemaName = schemaName;
+    public EntityClass( String catalogName, String schemaName, String tableName, 
+            FileObject rootFolder, String packageName, String className, Set<List<String>> uniqueConstraints) {
         this.catalogName = catalogName;
+        this.schemaName = schemaName;
         this.tableName = tableName;
         this.rootFolder = rootFolder;
         this.packageName = packageName;
         this.className = className;
-        this.fetchType = fetchType;
-        this.regenSchemaAttrs = regenSchemaAttrs;
+        this.uniqueConstraints = uniqueConstraints;
         
         roles = Collections.<RelationshipRole>emptyList();
         fields = new ArrayList<EntityMember>();
@@ -97,12 +92,8 @@ public class EntityClass {
         this.forTable = forTable;
     }
     
-    public boolean isFullyQualifiedTblNames() {
-        return this.fullyQualifiedTblNames;
-    }
-
-    public boolean isRegenSchemaAttrs() {
-        return regenSchemaAttrs;
+    public Set<List<String>> getUniqueConstraints() {
+        return this.uniqueConstraints;
     }
     
     public void addRole(RelationshipRole role) {
@@ -158,10 +149,6 @@ public class EntityClass {
         return className;
     }
 
-    public FetchType getFetchType() {
-        return fetchType;
-    }
-    
     public FileObject getPackageFileObject() {
         String relative = packageName.replace('.', '/');
         return rootFolder.getFileObject(relative);

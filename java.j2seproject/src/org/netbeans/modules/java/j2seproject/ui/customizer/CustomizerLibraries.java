@@ -53,6 +53,7 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
+import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport;
@@ -813,6 +814,14 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
             collectLibs(uiProperties.JAVAC_TEST_CLASSPATH_MODEL, libs, jars);
             collectLibs(uiProperties.RUN_CLASSPATH_MODEL, libs, jars);
             collectLibs(uiProperties.RUN_TEST_CLASSPATH_MODEL, libs, jars);
+            libs.add("CopyLibs"); // #132201 - copylibs is integral part of j2seproject
+            String customTasksLibs = uiProperties.getProject().evaluator().getProperty(AntBuildExtender.ANT_CUSTOMTASKS_LIBS_PROPNAME);
+            if (customTasksLibs != null) {
+                String libIDs[] = customTasksLibs.split(",");
+                for (String libID : libIDs) {
+                    libs.add(libID.trim());
+                }
+            }
             boolean result = SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);
             if (result) {
                 isSharable = true;
@@ -849,7 +858,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
                 }
             }
             if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
-                if (item.getReference() != null) {
+                if (item.getReference() != null && item.getVariableBasedProperty() == null) {
                     //TODO reference is null for not yet persisted items.
                     // there seems to be no way to generate a reference string without actually
                     // creating and writing the property..
@@ -865,7 +874,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
             ClassPathSupport.Item item = (ClassPathSupport.Item) model.get(i);
             if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
                 if (item.getReference() != null) {
-                    uiProperties.cs.updateJarReference(item);
+                    item.updateJarReference(uiProperties.getProject().getAntProjectHelper());
                 }
             }
         }

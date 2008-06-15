@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import javax.swing.KeyStroke;
 import org.netbeans.api.editor.settings.MultiKeyBinding;
 import org.netbeans.lib.editor.util.CharacterConversions;
+import org.netbeans.modules.editor.macros.MacroDialogSupport;
 import org.netbeans.modules.editor.settings.storage.spi.StorageDescription;
 import org.netbeans.modules.editor.settings.storage.spi.StorageReader;
 import org.netbeans.modules.editor.settings.storage.spi.StorageWriter;
@@ -235,7 +236,7 @@ public final class MacrosStorage implements StorageDescription<String, MacroDesc
                 }
 
                 KeyStroke[] arr = StorageSupport.stringToKeyStrokes(keystrokes, true);
-                shortcuts.add(new MultiKeyBinding(arr, "macro-" + name)); //NOI18N
+                shortcuts.add(new MultiKeyBinding(arr, MacroDialogSupport.RunMacroAction.runMacroAction)); //NOI18N
             }
         }
 

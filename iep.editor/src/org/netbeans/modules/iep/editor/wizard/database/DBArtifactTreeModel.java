@@ -63,7 +63,7 @@ public class DBArtifactTreeModel extends DefaultTreeModel {
     
     private List<ColumnInfo> mExistingColumnNames = new ArrayList<ColumnInfo>();
     
-    DBArtifactTreeModel(DefaultMutableTreeNode root, 
+    public DBArtifactTreeModel(DefaultMutableTreeNode root, 
     					List<TableInfo> tables, List<ColumnInfo> existingColumnNames) {
         super(root, true);
         this.mRoot = root;

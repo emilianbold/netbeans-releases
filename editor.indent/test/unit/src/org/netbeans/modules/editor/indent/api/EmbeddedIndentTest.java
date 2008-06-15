@@ -41,8 +41,10 @@
 
 package org.netbeans.modules.editor.indent.api;
 
-import org.netbeans.modules.editor.indent.api.Reformat;
+import java.util.prefs.BackingStoreException;
 import java.util.List;
+import java.util.prefs.AbstractPreferences;
+import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
@@ -78,11 +80,36 @@ public class EmbeddedIndentTest extends NbTestCase {
     protected @Override void setUp() throws Exception {
         super.setUp();
         MockServices.setServices(MockMimeLookup.class);
+
+        Preferences prefs = new AbstractPreferences(null, "") {
+            protected @Override void putSpi(String key, String value) {
+            }
+            protected @Override String getSpi(String key) {
+                return null;
+            }
+            protected @Override void removeSpi(String key) {
+            }
+            protected @Override void removeNodeSpi() throws BackingStoreException {
+            }
+            protected @Override String[] keysSpi() throws BackingStoreException {
+                return new String[0];
+            }
+            protected @Override String[] childrenNamesSpi() throws BackingStoreException {
+                return new String[0];
+            }
+            protected @Override AbstractPreferences childSpi(String name) {
+                return null;
+            }
+            protected @Override void syncSpi() throws BackingStoreException {
+            }
+            protected @Override void flushSpi() throws BackingStoreException {
+            }
+        };
         
         // Text will be lexed as TestLineTokenId.LINE
         TestLanguageProvider.register(TestLineTokenId.language());
         lineReformatTaskFactory = new LineReformatTask.TestFactory();
-        MockMimeLookup.setInstances(MimePath.parse(TestLineTokenId.MIME_TYPE), lineReformatTaskFactory);
+        MockMimeLookup.setInstances(MimePath.parse(TestLineTokenId.MIME_TYPE), lineReformatTaskFactory, prefs);
         
         // Each TestLineTokenId.LINE will be branched into TestPlainTokenId.WORD and WHITESPACE
         TestLanguageProvider.registerEmbedding(TestLineTokenId.language().mimeType(), TestLineTokenId.LINE,
@@ -90,7 +117,8 @@ public class EmbeddedIndentTest extends NbTestCase {
         plainReformatTaskFactory = new PlainReformatTask.TestFactory();
         MockMimeLookup.setInstances(
                 MimePath.parse(LanguagePath.get(TestLineTokenId.language()).embedded(TestPlainTokenId.language()).mimePath()), 
-                plainReformatTaskFactory
+                plainReformatTaskFactory,
+                prefs
         );
     }
 

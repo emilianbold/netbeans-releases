@@ -82,7 +82,7 @@ public class TableClosureDisabledTest extends TestCase {
         disabledReasons.put("STUDENT", new DisabledReason("Disabled", "Description"));
         disabledReasons.put("ZOO1_ZOO2", new DisabledReason("Disabled", "Description"));
 
-        provider = new TableProviderImpl(schema, catalog, tablesAndRefs, disabledReasons);
+        provider = new TableProviderImpl(catalog, schema, tablesAndRefs, disabledReasons);
         closure = new TableClosure(provider);
     }
 

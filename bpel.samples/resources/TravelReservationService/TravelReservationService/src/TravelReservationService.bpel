@@ -266,6 +266,10 @@
                                     <from>$ReserveAirlineIn.itinerary/ota:ItineraryRef</from>
                                     <to variable="CancelAirlineIn" part="itinerary"/>
                                 </copy>
+                                <copy>
+                                    <from variable="CancelAirlineOut"/>
+                                    <to variable="CancelAirlineOut"/>
+                                </copy>
                             </assign>
 
                             <invoke
@@ -280,7 +284,6 @@
                 </pick>
             </sequence>
         </if>
-
         <if name="HasVehicle">
             <documentation>
                 This If activity allows to reserve a vehicle in case the client hasn't one reserved. Vehicle reservation works quite similar to the airline reservation.
@@ -326,7 +329,6 @@
                             </copy>
                         </assign>
                     </onMessage>
-
                     <onAlarm>
                         <for>'P0Y0M0DT0H0M20S'</for>
 
@@ -335,6 +337,10 @@
                                 <copy>
                                     <from>$ReserveVehicleIn.itinerary/ota:ItineraryRef</from>
                                     <to variable="CancelVehicleIn" part="itinerary"/>
+                                </copy>
+                                <copy>
+                                    <from variable="CancelVehicleOut"/>
+                                    <to variable="CancelVehicleOut"/>
                                 </copy>
                             </assign>
 
@@ -372,7 +378,6 @@
                         <correlation set="ItineraryCorrelator"/>
                     </correlations>
                 </invoke>
-
                 <pick name="Timeout" createInstance="no">
                     <onMessage
                         partnerLink="Hotel" 
@@ -393,18 +398,19 @@
                             </assign>
                         </sequence>
                     </onMessage>
-
                     <onAlarm>
                         <for>'P0Y0M0DT0H0M20S'</for>
-
                         <sequence name="Timer">
                             <assign name="CopyHotelCancellation">
                                 <copy>
                                     <from>$ReserveHotelIn.itinerary/ota:ItineraryRef</from>
                                     <to variable="CancelHotelIn" part="itinerary"/>
                                 </copy>
+                                <copy>
+                                    <from variable="CancelHotelOut"/>
+                                    <to variable="CancelHotelOut"/>
+                                </copy>
                             </assign>
-
                             <invoke
                                 name="CancelHotel" 
                                 partnerLink="Hotel" 
@@ -417,7 +423,6 @@
                 </pick>
             </sequence>
         </if>
-
         <reply
             name="ReturnItinerary" 
             partnerLink="Travel" 

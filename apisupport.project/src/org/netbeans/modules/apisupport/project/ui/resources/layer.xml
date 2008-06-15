@@ -200,6 +200,8 @@ made subject to such option by the copyright holder.
             <file name="templateDataNode.java" url="../wizard/loader/templateDataNode.javx"/>
             <file name="templateDataObject.java" url="../wizard/loader/templateDataObject.javx"/>
             <file name="templateDataObjectWithLookup.java" url="../wizard/loader/templateDataObjectWithLookup.javx"/>
+            <file name="templateDataObjectInLayer.java" url="../wizard/loader/templateDataObjectInLayer.javx"/>
+            <file name="templateDataObjectInLayerTest.java" url="../wizard/loader/templateDataObjectInLayerTest.javx"/>
             <file name="templateNew1" url="../wizard/loader/templateNew1"/>
             <file name="templateNew2" url="../wizard/loader/templateNew2"/>
             <file name="templateresolver.xml" url="../wizard/loader/templateresolver.xml"/>
@@ -337,6 +339,7 @@ made subject to such option by the copyright holder.
                         <attr name="instanceCreate" newvalue="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerBasicBrandingFactory"/>
                     </file>
                     <file name="org-netbeans-modules-apisupport-project-ui-customizer-SuiteCustomizerSplashBrandingFactory.instance"/>
+                    <file name="org-netbeans-modules-apisupport-project-ui-customizer-SuiteCustomizerWindowSystemBrandingFactory.instance"/>
                 </folder>
             </folder>
         </folder>

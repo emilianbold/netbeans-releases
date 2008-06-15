@@ -49,6 +49,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
@@ -80,25 +81,26 @@ public class RspecRunner implements TestRunner {
         return TestType.RSPEC == type;
     }
 
-    public void runTest(FileObject testFile) {
+    public void runTest(FileObject testFile, boolean debug) {
         List<String> specFile = new ArrayList<String>();
         specFile.add(FileUtil.toFile(testFile).getAbsolutePath());
         run(FileOwnerQuery.getOwner(testFile), 
                 Collections.<String>singletonList(FileUtil.toFile(testFile).getAbsolutePath()),
-                testFile.getName());
+                testFile.getName(), 
+                debug);
     }
 
-    public void runSingleTest(FileObject testFile, String testMethod) {
+    public void runSingleTest(FileObject testFile, String testMethod, boolean debug) {
         // the testMethod param here actually presents the line number 
         // of the rspec specification in the test file. 
         List<String> additionalArgs = new ArrayList<String>();
         additionalArgs.add("--line");
         additionalArgs.add(testMethod);
         additionalArgs.add(FileUtil.toFile(testFile).getAbsolutePath());
-        run(FileOwnerQuery.getOwner(testFile), additionalArgs, testFile.getName());
+        run(FileOwnerQuery.getOwner(testFile), additionalArgs, testFile.getName(), debug);
     }
 
-    public void runAllTests(Project project) {
+    public void runAllTests(Project project, boolean debug) {
         // collect all tests from the spec/ dir - would be better to use the rake
         // spec task but couldn't make it work with all the params - need to revisit
         // that.
@@ -113,10 +115,10 @@ public class RspecRunner implements TestRunner {
                 specs.add(FileUtil.toFile(each).getAbsolutePath());
             }
         }
-        run(project, specs, ProjectUtils.getInformation(project).getDisplayName());
+        run(project, specs, ProjectUtils.getInformation(project).getDisplayName(), debug);
     }
 
-    private void run(Project project, List<String> additionalArgs, String name) {
+    private void run(Project project, List<String> additionalArgs, String name, boolean debug) {
         FileLocator locator = project.getLookup().lookup(FileLocator.class);
         RubyPlatform platform = RubyPlatform.platformFor(project);
 
@@ -129,20 +131,23 @@ public class RspecRunner implements TestRunner {
         
         ExecutionDescriptor desc = null;
         String charsetName = null;
-        desc = new ExecutionDescriptor(platform, name, FileUtil.toFile(project.getProjectDirectory()));
+        desc = new ExecutionDescriptor(platform, 
+                name, 
+                FileUtil.toFile(project.getProjectDirectory()), 
+                getSpec(project).getAbsolutePath());
         desc.additionalArgs(arguments.toArray(new String[arguments.size()]));
 
-        desc.debug(false);
+        desc.debug(debug);
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
         
-        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(), 
-                new TestSession(locator), 
+        final ExecutionService execution = new RubyExecution(desc, charsetName);
+        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
+                locator,
                 RspecHandlerFactory.getHandlers());
         desc.addOutputRecognizer(recognizer);
-        desc.cmd(getSpec(project));
-        new RubyExecution(desc, charsetName).run();
+        TestExecutionManager.getInstance().start(execution);
     }
 
     private File getSpec(Project project) {

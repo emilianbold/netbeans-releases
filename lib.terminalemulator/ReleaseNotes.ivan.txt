@@ -1,3 +1,12 @@
+nobugid (TermSupport works on solaris now)
+	- OS.UNIX -> OS.LINUX + OS.SOLARIS
+	- JNAPty needs to do some ioctl(I_PUSH's) only on solaris.
+
+nobugid (TermSupport handles csh correctly)
+	The call to setpgrp/setsid inside pty_bind pulled up into PtyProcess.
+	See comment is wrappedCmd().
+
+================================================================================
 nobugid (StreamTerm to handle IOExceptions better)
 	See comments in StreamTerm.OutputMonitor.run().
 

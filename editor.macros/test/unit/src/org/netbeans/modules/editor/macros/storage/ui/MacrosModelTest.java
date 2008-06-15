@@ -46,6 +46,7 @@ import java.lang.ref.WeakReference;
 import javax.swing.KeyStroke;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.editor.macros.MacroDialogSupport;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 
@@ -108,7 +109,7 @@ public class MacrosModelTest extends NbTestCase {
             assertNotNull("Cant find macro 'testName'", macro);
             assertEquals("Wrong macro.code value", "testValue", macro.getCode());
             assertEquals("Wrong number of shortcuts", 1, macro.getShortcuts().size());
-            assertEquals("Wrong macro action name", "macro-testName", macro.getShortcuts().get(0).getActionName());
+            assertEquals("Wrong macro action name", MacroDialogSupport.RunMacroAction.runMacroAction, macro.getShortcuts().get(0).getActionName());
             assertEquals("Wrong number of keystrokes", 1, macro.getShortcuts().get(0).getKeyStrokeCount());
             assertEquals("Wrong shortcut", KeyStroke.getKeyStroke(KeyEvent.VK_H, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.ALT_DOWN_MASK), macro.getShortcuts().get(0).getKeyStrokeList().get(0));
         }
@@ -117,7 +118,7 @@ public class MacrosModelTest extends NbTestCase {
             assertNotNull("Cant find macro 'testName2'", macro);
             assertEquals("Wrong macro.code value", "testValue2", macro.getCode());
             assertEquals("Wrong number of shortcuts", 1, macro.getShortcuts().size());
-            assertEquals("Wrong macro action name", "macro-testName2", macro.getShortcuts().get(0).getActionName());
+            assertEquals("Wrong macro action name", MacroDialogSupport.RunMacroAction.runMacroAction, macro.getShortcuts().get(0).getActionName());
             assertEquals("Wrong number of keystrokes", 1, macro.getShortcuts().get(0).getKeyStrokeCount());
             assertEquals("Wrong shortcut", KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.ALT_DOWN_MASK), macro.getShortcuts().get(0).getKeyStrokeList().get(0));
         }
@@ -139,7 +140,7 @@ public class MacrosModelTest extends NbTestCase {
             assertNotNull("Cant find macro 'testName'", macro);
             assertEquals("Wrong macro.code value", "testValue", macro.getCode());
             assertEquals("Wrong number of shortcuts", 1, macro.getShortcuts().size());
-            assertEquals("Wrong macro action name", "macro-testName", macro.getShortcuts().get(0).getActionName());
+            assertEquals("Wrong macro action name", MacroDialogSupport.RunMacroAction.runMacroAction, macro.getShortcuts().get(0).getActionName());
             assertEquals("Wrong number of keystrokes", 1, macro.getShortcuts().get(0).getKeyStrokeCount());
             assertEquals("Wrong shortcut", KeyStroke.getKeyStroke(KeyEvent.VK_H, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.ALT_DOWN_MASK), macro.getShortcuts().get(0).getKeyStrokeList().get(0));
         }
@@ -148,7 +149,7 @@ public class MacrosModelTest extends NbTestCase {
             assertNotNull("Cant find macro 'testName2'", macro);
             assertEquals("Wrong macro.code value", "testValue2", macro.getCode());
             assertEquals("Wrong number of shortcuts", 1, macro.getShortcuts().size());
-            assertEquals("Wrong macro action name", "macro-testName2", macro.getShortcuts().get(0).getActionName());
+            assertEquals("Wrong macro action name", MacroDialogSupport.RunMacroAction.runMacroAction, macro.getShortcuts().get(0).getActionName());
             assertEquals("Wrong number of keystrokes", 1, macro.getShortcuts().get(0).getKeyStrokeCount());
             assertEquals("Wrong shortcut", KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.ALT_DOWN_MASK), macro.getShortcuts().get(0).getKeyStrokeList().get(0));
         }

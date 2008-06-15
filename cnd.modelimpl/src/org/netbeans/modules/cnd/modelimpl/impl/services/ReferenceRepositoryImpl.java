@@ -63,6 +63,8 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -175,6 +177,12 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         CharSequence name = "";
         if (CsmKindUtilities.isNamedElement(targetDecl)) {
             name = ((CsmNamedElement)targetDecl).getName();
+        } else if (CsmKindUtilities.isStatement(targetDecl)) {
+            if (targetDecl instanceof CsmLabel) {
+                name = ((CsmLabel)targetDecl).getLabel();
+            } else if (targetDecl instanceof CsmGotoStatement){
+                name = ((CsmGotoStatement)targetDecl).getLabel();
+            }
         }
         if (name.length() == 0) {
             if (TraceFlags.TRACE_XREF_REPOSITORY) {

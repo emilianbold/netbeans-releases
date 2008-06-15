@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
+import org.netbeans.modules.bpel.model.ext.editor.api.PseudoComp;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.XPathModelHelper;
 
@@ -56,16 +57,19 @@ public final class BpelXPathModelFactory {
      * @return the new XPath model.
      */
     public static XPathModel create(final BpelEntity contextEntity) {
-        return create(contextEntity, null);
+        return create(contextEntity, null, null);
     }
     
     /**
-     * Create a model which knows about type casts.
+     * Create a model which knows about type casts and pseudo components.
      * @param contextEntity
      * @param casts
+     * @param pseudoComps
      * @return
      */
-    public static XPathModel create(final BpelEntity contextEntity, List<Cast> casts) {
+    public static XPathModel create(final BpelEntity contextEntity, 
+            List<Cast> casts, List<PseudoComp> pseudoComps) {
+        //
         assert contextEntity != null : 
             "Trying to create a new BPEL XPath model without a context entity"; // NOI18N
         XPathModelHelper helper= XPathModelHelper.getInstance();
@@ -80,8 +84,10 @@ public final class BpelXPathModelFactory {
         model.setExternalModelResolver(
                 new BpelExternalModelResolver(contextEntity.getBpelModel()));
         //
-        if (casts != null && !casts.isEmpty()) {
-            XPathCastResolverImpl castResolver = new XPathCastResolverImpl(casts);
+        if ((casts != null && !casts.isEmpty()) ||
+                (pseudoComps != null && !pseudoComps.isEmpty())) {
+            XPathCastResolverImpl castResolver = 
+                    new XPathCastResolverImpl(casts, pseudoComps);
             model.setXPathCastResolver(castResolver);
         }
         //

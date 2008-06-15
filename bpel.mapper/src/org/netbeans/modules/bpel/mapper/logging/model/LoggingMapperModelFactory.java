@@ -27,7 +27,7 @@ import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModelFactory;
 import org.netbeans.modules.bpel.mapper.model.FromProcessor;
 import org.netbeans.modules.bpel.mapper.model.EditorExtensionProcessor;
-import org.netbeans.modules.bpel.mapper.model.EditorExtensionProcessor.BpelEntityCasts;
+import org.netbeans.modules.bpel.mapper.model.EditorExtensionProcessor.BpelEditorExtensions;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.EmptyTreeModel;
@@ -111,12 +111,12 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
             Log[] logs = trace.getLogs();
             if (logs != null && logs.length > 0) {
                 for (Log log : logs) {
-                    BpelEntityCasts castList = editorExtProcessor.getCastList(log);
+                    BpelEditorExtensions extList = editorExtProcessor.getExtList(log);
                     From from = log.getFrom();
                     if (from != null) {
                         addFromGraph(log, newMapperModel, 
                                 LogAlertType.LOG, log.getLocation(), 
-                                log.getLevel(), entity, castList);
+                                log.getLevel(), entity, extList);
                     }
                 }
             }
@@ -124,12 +124,12 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
             Alert[] alerts = trace.getAlerts();
             if (alerts != null && alerts.length > 0) {
                 for (Alert alert : alerts) {
-                    BpelEntityCasts castList = editorExtProcessor.getCastList(alert);
+                    BpelEditorExtensions extList = editorExtProcessor.getExtList(alert);
                     From from = alert.getFrom();
                     if (from != null) {
                         addFromGraph(alert, newMapperModel, 
                                 LogAlertType.ALERT, alert.getLocation(), 
-                                alert.getLevel(), entity, castList);
+                                alert.getLevel(), entity, extList);
                     }
                 }
             }
@@ -142,7 +142,7 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
             Location location,
             Object level,
             BpelEntity contextEntity, 
-            BpelEntityCasts castList) {
+            BpelEditorExtensions extList) {
         assert fromHolder != null && newMapperModel != null && type != null && location != null && level != null;
         if (fromHolder.getFrom() == null) {
             return;
@@ -152,7 +152,7 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
         //
         FromProcessor fromProcessor = new FromProcessor(this, fromHolder);
         MapperSwingTreeModel leftTreeModel = newMapperModel.getLeftTreeModel();
-        newGraph = fromProcessor.populateGraph(newGraph, leftTreeModel, castList);
+        newGraph = fromProcessor.populateGraph(newGraph, leftTreeModel, extList);
         if (newGraph == null) {
             return;
         }

@@ -417,8 +417,24 @@ public class UMLDiagramManager
             {
                 try 
                 {
+                    IProxyDiagramManager proxyDiaMgr = ProxyDiagramManager.instance();
+                    IProxyDiagram pDia = proxyDiaMgr.getDiagram(diagramFile);
+                    
                     if (diagramFile.endsWith(FileExtensions.DIAGRAM_TS_LAYOUT_EXT))
                     {
+                        if (pDia == null)
+                        {
+                            return;
+                        }
+                        // ignore those unsupported diagram types for 6.5 M1
+                        int kind = pDia.getDiagramKind();
+                        if (kind == IDiagramKind.DK_COLLABORATION_DIAGRAM ||
+                            kind == IDiagramKind.DK_COMPONENT_DIAGRAM ||
+                            kind == IDiagramKind.DK_DEPLOYMENT_DIAGRAM )
+                        {
+                            return;
+                        }
+        
                         //is TS diagram; must convert to Meteora first
                         Preferences prefs = NbPreferences.forModule (DummyCorePreference.class) ;
                         String str = prefs.get ("UML_Convert_61_Diagram_To_65_Format", "PSK_ASK") ;
@@ -447,7 +463,9 @@ public class UMLDiagramManager
                         //
                         if(result.getResult()==MessageResultKindEnum.SQDRK_RESULT_ALWAYS || result.getResult()==MessageResultKindEnum.SQDRK_RESULT_YES)
                         {
-                            topComponent = convertTSDiagram(diagramFile);
+                            //topComponent = convertTSDiagram(diagramFile);
+                            TSDiagramConverter tsConverter = new TSDiagramConverter(pDia);
+                            topComponent = tsConverter.convertDiagram();
                             if(result.getResult()==MessageResultKindEnum.SQDRK_RESULT_ALWAYS)
                             {
                                 //need to persist in some preference
@@ -461,46 +479,15 @@ public class UMLDiagramManager
                     }
                     else // is Meteora diagram
                     {   
-//                        if (this.getCurrentDiagram().getDiagramKind() == IDiagramKind.DK_SEQUENCE_DIAGRAM)
-//                        {
-//                            topComponent = new SQDDiagramTopComponent(diagramFile);
-//                        }
-//                        else
-//                        {
-//                            topComponent = new UMLDiagramTopComponent(diagramFile);
-//                        }
-                        if (this.getCurrentDiagram() == null)
+                        int kind = pDia.getDiagramKind();
+                        if (kind == IDiagramKind.DK_SEQUENCE_DIAGRAM)
                         {
-                            //parse the file and get diagramkind, namespace, 
-                            DiagramDetails diagramDetails = null;
-                            FileObject fo = FileUtil.toFileObject(new File(diagramFile));
-                            if (fo != null)
-                            {
-                                if (diagramDetails == null ||
-                                        !fo.lastModified().equals(diagramDetails.getDateModified()))
-                                {
-                                    IDiagramParser parser = DiagramParserFactory.createDiagramParser(diagramFile);                                            
-                                    diagramDetails = parser.getDiagramInfo();
-                                    
-                                    if (diagramDetails.getDiagramType() == IDiagramKind.DK_SEQUENCE_DIAGRAM)
-                                    {
-//                                        topComponent = new SQDDiagramTopComponent(diagramDetails.getNamespace(),
-//                                                diagramDetails.getDiagramName(), diagramDetails.getDiagramType());
-                                        topComponent = new SQDDiagramTopComponent(diagramFile);
-                                    }
-                                    else
-                                    {
-                                        topComponent = new UMLDiagramTopComponent(diagramFile);
-                                    }
-                                }
-                            }
-                            
+                            topComponent = new SQDDiagramTopComponent(diagramFile);
                         }
-                        else 
+                        else
                         {
-                            //not sure what should be done here..
+                            topComponent = new UMLDiagramTopComponent(diagramFile);
                         }
-                        
                     }
                     showDiagram(topComponent);
                 }
@@ -549,18 +536,8 @@ public class UMLDiagramManager
             
             String preferredID = topComponent.preferredID();
             m_OpenDiagrams.put(preferredID, topComponent);
-            
         }
     }
-    
-    private UMLDiagramTopComponent convertTSDiagram(String diagramFile)
-    {
-        IProxyDiagramManager proxyDiaMgr = ProxyDiagramManager.instance();
-        IProxyDiagram pDia = proxyDiaMgr.getDiagram(diagramFile);
-        TSDiagramConverter tsConverter = new TSDiagramConverter(pDia);
-        return tsConverter.convertDiagram();
-    }
-    
     
     public void refresh(IProxyDiagram proxy)
     {

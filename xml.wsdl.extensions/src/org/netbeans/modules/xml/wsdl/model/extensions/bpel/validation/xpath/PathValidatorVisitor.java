@@ -18,11 +18,9 @@
  */
 package org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.xpath;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import javax.xml.namespace.QName;
 
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.schema.model.GlobalAttribute;
@@ -33,8 +31,6 @@ import org.netbeans.modules.xml.schema.model.LocalAttribute;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.TypeContainer;
 import org.netbeans.modules.xml.schema.model.ElementReference;
-import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
-import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
@@ -43,10 +39,11 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 import org.netbeans.modules.xml.xpath.ext.XPathExpressionPath;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext.SchemaCompPair;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathModelTracerVisitor;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext.SchemaCompPair;
 
 /**
  * This visitor is intended to validate semantics of single XPath.
@@ -104,8 +101,6 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
             // Take the schema component which corresponds to the last step.
             Set<GlobalType> lastStepTypes = getLastStepSchemaTypeSet(locationPath);
             if (lastStepTypes == null || lastStepTypes.isEmpty()) {
-                // Error. Can not resolve type of the last location path element.
-//vlv                myContext.addResultItem(ResultType.ERROR, "UNRESOLVED_XPATH_TAIL"); // NOI18N
                 return;
             } 
             if (lastStepTypes.size() == 1) {
@@ -184,7 +179,8 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
         if (scPairSet.size() == 1) {
             SchemaCompPair scPair = scPairSet.iterator().next();
             if (scPair != null) {
-                SchemaComponent firstStepComp = scPair.getComp();
+                SchemaComponent firstStepComp = 
+                        scPair.getCompHolder().getSchemaComponent();
                 if (firstStepComp.equals(requiredElement)) {
                     return true;
                 }
@@ -236,12 +232,12 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
         //
         if (scPairSet.size() == 1) {
             SchemaCompPair scPair = scPairSet.iterator().next();
-            SchemaComponent sComp = scPair.getComp();
-            GlobalType type = getComponentType(sComp);
+            SchemaCompHolder sCompHolder = scPair.getCompHolder();
+            GlobalType type = getComponentType(sCompHolder.getSchemaComponent());
             if (type == null) {
                 // Error. A global type has to be specified for the last element (attribute)
                 // of the Location path.
-                String lastElementName = ((Named)sComp).getName();
+                String lastElementName = sCompHolder.getName();
 //vlv                myContext.addResultItem(ResultType.ERROR, "QUERY_TAIL_NOT_GLOBAL_TYPE", lastElementName); // NOI18N
                 return null;
             } else {
@@ -253,7 +249,7 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
             SchemaComponent sComp = null;
             HashSet<GlobalType> result = new HashSet<GlobalType>();
             for (SchemaCompPair scPair : scPairSet) {
-                sComp = scPair.getComp();
+                sComp = scPair.getCompHolder().getSchemaComponent();
                 GlobalType type = getComponentType(sComp);
                 if (type != null) {
                     result.add(type);
@@ -337,8 +333,10 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
             CorrelationProperty cProp = cPropRef.get();
             if (cProp == null) {
                 // Error. Can not resolve the Correlation Property
-                myContext.addResultItem(ResultType.ERROR, "UNRESOLVED_CPROP",
-                        cProp.getName()); // NOI18N
+                if (myContext != null) {
+                    myContext.addResultItem(ResultType.ERROR, "UNRESOLVED_CPROP",
+                          cProp.getName()); // NOI18N
+                }
                 return null;
             }
             //

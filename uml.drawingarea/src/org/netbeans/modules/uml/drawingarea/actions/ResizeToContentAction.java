@@ -86,9 +86,10 @@ public class ResizeToContentAction extends NodeAction
                 Widget w=scene.findWidget(selectedPE);
                 if(w instanceof UMLNodeWidget)
                 {
-                    UMLNodeWidget nW=(UMLNodeWidget) w;
+                    final UMLNodeWidget nW=(UMLNodeWidget) w;
                     //check mode first
                     nW.setResizeMode(UMLNodeWidget.RESIZEMODE.MINIMUMSIZE);
+                    nW.setIsManuallyResized(false);//drop manually resized status
                     //
                     nW.setPreferredBounds(null);
                     nW.setPreferredSize(null);
@@ -105,6 +106,12 @@ public class ResizeToContentAction extends NodeAction
                             nW.setPreferredSize(nW.getPreferredSize());
                             break;
                     }
+                    //as in 6.1 if mode is set to never resize we need to change min size if necessary to poref bounds after validation
+                    new AfterValidationExecutor(new ActionProvider() {
+                       public void perfomeAction() {
+                            nW.updateSizeWithOptions();
+                        }
+                    }, scene);
                 }
             }
         }

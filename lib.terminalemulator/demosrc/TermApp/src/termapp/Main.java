@@ -44,12 +44,14 @@ package termapp;
 import java.awt.Color;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
 import org.netbeans.lib.terminalemulator.StreamTerm;
 import org.netbeans.lib.terminalemulator.Term;
 
-import pty.AbstractPty.Mode;
-import termsupport.TermProcess;
+import pty.Pty.Mode;
+import termsupport.TermShell;
 
 /**
  *
@@ -141,10 +143,10 @@ public class Main extends JFrame {
         term.setBackground(Color.white);
         term.setHistorySize(4000);
 
-        final TermProcess termProcess = new TermProcess(term);
-        termProcess.setMode(mode);
-        termProcess.setLineDiscipline(optLineDiscipline);
-        termProcess.setDebug(debug);
+        final TermShell termShell = new TermShell(term);
+        termShell.setMode(mode);
+        termShell.setLineDiscipline(optLineDiscipline);
+        termShell.setDebug(debug);
 
         //
         // Make main window visible
@@ -153,7 +155,10 @@ public class Main extends JFrame {
         main.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                termProcess.hangup();
+		try {
+		    termShell.hangup();
+		} catch (IllegalStateException x) {
+		}
             }
         } );
         main.setVisible(true);
@@ -161,8 +166,8 @@ public class Main extends JFrame {
         //
         // Start and wait for process to exit
         //
-        termProcess.run();
-	termProcess.waitFor();
+        termShell.run();
+	termShell.waitFor();
 
         main.dispose();
     }

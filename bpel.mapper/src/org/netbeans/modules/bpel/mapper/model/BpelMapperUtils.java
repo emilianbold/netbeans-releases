@@ -2,11 +2,15 @@ package org.netbeans.modules.bpel.mapper.model;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.editors.api.EditorUtil;
+import org.netbeans.modules.bpel.mapper.cast.PseudoCompManager;
+import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
+import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableDeclarationScope;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.GraphSubset;
@@ -24,13 +28,20 @@ import org.netbeans.modules.xml.xpath.ext.metadata.ExtFunctionMetadata;
 import org.netbeans.modules.xml.xpath.ext.metadata.XPathMetadataUtils;
 import org.netbeans.modules.xml.xpath.ext.metadata.XPathType;
 import org.netbeans.modules.xml.schema.model.ElementReference;
-import org.netbeans.modules.xml.schema.model.Form;
 import org.netbeans.modules.xml.schema.model.GlobalAttribute;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
+import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.LocalAttribute;
 import org.netbeans.modules.xml.schema.model.LocalElement;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.schema.model.TypeContainer;
 import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContextHolder;
+import org.netbeans.modules.xml.xpath.ext.schema.FindChildrenSchemaVisitor;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
 
 /**
  *
@@ -254,4 +265,155 @@ public final class BpelMapperUtils {
         return result;
     }
 
+    /**
+     * Obtains a schema global type of the tree item if possible.
+     * @param treeItem
+     * @return
+     */
+    public static GlobalType getGlobalType(Object treeItem) {
+        SchemaComponent targetSComp = getAssociatedSchemaComp(treeItem);
+        // 
+        if (targetSComp == null) {
+            return null;
+        }
+        //
+        GlobalType gType = getGlobalType(targetSComp);
+        return gType;
+    }
+    
+    /**
+     * Takes the type of the schema component if the type is global. 
+     * @param sComp
+     * @return
+     */
+    public static GlobalType getGlobalType(SchemaComponent sComp) {
+        if (sComp == null) {
+            return null;
+        }
+        //
+        GlobalType gType = null;
+        //
+        if (sComp instanceof GlobalType) {
+            gType = (GlobalType)sComp;
+        } else if (sComp instanceof TypeContainer) {
+            TypeContainer typeContainer = (TypeContainer)sComp;
+            NamedComponentReference<? extends GlobalType> typeRef = 
+                    typeContainer.getType();
+            if (typeRef != null) {
+                gType = typeRef.get();
+            }
+        } else {
+            if (sComp instanceof LocalAttribute) {
+                NamedComponentReference<GlobalSimpleType> gTypeRef = 
+                        ((LocalAttribute)sComp).getType();
+                if (gTypeRef != null) {
+                    gType = gTypeRef.get();
+                }
+            } else if (sComp instanceof GlobalAttribute) {
+                NamedComponentReference<GlobalSimpleType> gTypeRef = 
+                        ((GlobalAttribute)sComp).getType();
+                if (gTypeRef != null) {
+                    gType = gTypeRef.get();
+                }
+            }
+        }
+        //
+        return gType;
+    }
+    
+    /**
+     * Returns a schema component for the tree item if the item has associated one.
+     * @param treeItem
+     * @return
+     */
+    public static SchemaComponent getAssociatedSchemaComp(Object treeItem) {
+        SchemaComponent result = null;
+        //
+        if (treeItem == null) {
+            return null;
+        } else if (treeItem instanceof SchemaComponent) {
+            result = (SchemaComponent)treeItem;
+        } else if (treeItem instanceof VariableDeclarationScope) {
+            return null;
+        } else if (treeItem instanceof VariableDeclaration) {
+            result = EditorUtil.getVariableSchemaType((VariableDeclaration)treeItem);
+        } else if (treeItem instanceof Part) {
+            result = EditorUtil.getPartType((Part)treeItem);
+        } else if (treeItem instanceof XPathSchemaContextHolder) {
+            XPathSchemaContext sContext = 
+                    ((XPathSchemaContextHolder)treeItem).getSchemaContext();
+            if (sContext != null) {
+                result = XPathSchemaContext.Utilities.getSchemaComp(sContext);
+            }
+        }
+        // 
+        return result;
+    }
+
+    /**
+     * Determines if the tree component has a sibling schema component with 
+     * the specified characteristics. It is used to calculate uniqueness of 
+     * the new pseudo component. 
+     * 
+     * @param bpelMapper
+     * @param leftTree
+     * @param compLocationPath 
+     * @param soughtName required name
+     * @param soughtNamespace required namespace
+     * @param isAttribute indicates if an attribute or element is required
+     * @return
+     */
+    public static boolean hasSibling(BpelMapperModel bpelMapperModel, 
+            boolean leftTree, Iterable<Object> compLocationPath, 
+            String soughtName, String soughtNamespace, boolean isAttribute) {
+        //
+        XPathSchemaContext parentSContext = PathConverter.
+                constructContext(compLocationPath, true);
+        //
+        FindChildrenSchemaVisitor visitor = 
+                new FindChildrenSchemaVisitor(parentSContext, 
+                soughtName, soughtNamespace, isAttribute);
+        SchemaComponent parentSComp = XPathSchemaContext.Utilities.
+                getSchemaCompHolder(parentSContext).getSchemaComponent();
+        visitor.lookForSubcomponent(parentSComp);
+        List<SchemaComponent> found = visitor.getFound();
+        if (found != null && !found.isEmpty()) {
+            return true;
+        }
+        //
+        // try looking for Pseudo Components here
+        if (found == null || found.isEmpty()) {
+            PseudoCompManager pseudoManager = PseudoCompManager.
+                    getPseudoCompManager(bpelMapperModel, leftTree);
+            if (pseudoManager != null) {
+                XPathPseudoComp pseudo = pseudoManager.getPseudoComp(
+                        compLocationPath, true, 
+                        soughtName, soughtNamespace, isAttribute);
+                return pseudo != null;
+            }
+        }
+        //
+        return false;
+    }
+    
+    /**
+     * Returns a variable, which is the first in the location path
+     * @param itrb
+     * @return
+     */
+    public static VariableDeclaration getBaseVariable(Iterable<Object> location) {
+        Iterator itr = location.iterator();
+        while (itr.hasNext()) {
+            Object obj = itr.next();
+            if (obj instanceof VariableDeclaration) {
+                return (VariableDeclaration)obj;
+            }
+        }
+        //
+        return null;
+    }
+    
+
+            
+    
 }

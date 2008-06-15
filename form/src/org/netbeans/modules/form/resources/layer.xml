@@ -59,20 +59,34 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
         </folder>
-    </folder>
-    <folder name="content">
-        <folder name="unknown">
+        <folder name="x-form">
             <folder name="Factories">
                 <file name="org-netbeans-modules-form-FormDataLoader.instance">
-                    <attr name="position" intvalue="137"/>
+                    <attr name="position" intvalue="100"/>
                 </file>
+            </folder>
+        </folder>
+        <folder name="x-palette-item">
+            <folder name="Factories">
                 <file name="org-netbeans-modules-form-palette-PaletteItemDataObject$PaletteItemDataLoader.instance">
-                    <attr name="position" intvalue="50037"/>
+                    <attr name="position" intvalue="100"/>
                 </file>
             </folder>
         </folder>
     </folder>
    </folder>
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="SwingPaletteItemResolver.xml" url="PaletteItemResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
+                <attr name="position" intvalue="50037"/>
+            </file>
+            <file name="FormResolver.xml" url="FormResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
+                <attr name="position" intvalue="137"/>
+            </file>
+        </folder>
+    </folder>
     <folder name="Actions">
         <folder name="Form">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>

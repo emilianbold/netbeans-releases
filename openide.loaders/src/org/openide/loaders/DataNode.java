@@ -246,6 +246,11 @@ public class DataNode extends AbstractNode {
          }
          return super.getHtmlDisplayName();
      }    
+     
+     private java.awt.Image getImageFromFactory(int type) {
+         MimeFactory<?> fact = getLookup().lookup(MimeFactory.class);
+         return fact != null ? fact.getImage(type) : null;
+     }
 
     /** Get the displayed icon for this node.
      * A filesystem may {@link org.openide.filesystems.FileSystem#getStatus specially alter} this.
@@ -254,8 +259,12 @@ public class DataNode extends AbstractNode {
      * @param type the icon type from {@link java.beans.BeanInfo}
      * @return the desired icon
     */
+    @Override
     public java.awt.Image getIcon (int type) {
-        java.awt.Image img = super.getIcon (type);
+        java.awt.Image img = getImageFromFactory(type);
+        if (img == null) {
+            img = super.getIcon (type);
+        }
 
         try {
             img = obj.getPrimaryFile ().getFileSystem ().getStatus ().annotateIcon (img, type, new LazyFilesSet());
@@ -273,8 +282,12 @@ public class DataNode extends AbstractNode {
     * @param type the icon type from {@link java.beans.BeanInfo}
     * @return the desired icon
     */
+    @Override
     public java.awt.Image getOpenedIcon (int type) {
-        java.awt.Image img = super.getOpenedIcon(type);
+        java.awt.Image img = getImageFromFactory(type);
+        if (img == null) {
+            img = super.getOpenedIcon(type);
+        }
 
         try {
             img = obj.getPrimaryFile ().getFileSystem ().getStatus ().annotateIcon (img, type, new LazyFilesSet());
@@ -351,6 +364,11 @@ public class DataNode extends AbstractNode {
 
         if (systemActions != null) {
             return systemActions;
+        }
+
+        MimeFactory<?> mime = getLookup().lookup(MimeFactory.class);
+        if (mime != null) {
+            return mime.getActions();
         }
 
         return obj.getLoader ().getSwingActions ();

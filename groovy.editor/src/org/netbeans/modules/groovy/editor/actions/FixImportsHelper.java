@@ -44,7 +44,6 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.openide.filesystems.FileObject;
 import java.util.List;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import java.util.ArrayList;
 import org.netbeans.api.java.source.ClassIndex;
@@ -74,24 +73,24 @@ public class FixImportsHelper {
 
     public class ImportCandidate {
 
-        String Name;
+        String name;
         String fqnName;
         Icon icon;
         int importantsLevel;
 
-        public ImportCandidate(String Name, String fqnName, Icon icon, int importantsLevel) {
-            this.Name = Name;
+        public ImportCandidate(String name, String fqnName, Icon icon, int importantsLevel) {
+            this.name = name;
             this.fqnName = fqnName;
             this.icon = icon;
             this.importantsLevel = importantsLevel;
         }
 
         public String getName() {
-            return Name;
+            return name;
         }
 
         public void setName(String Name) {
-            this.Name = Name;
+            this.name = Name;
         }
 
         public String getFqnName() {
@@ -250,7 +249,8 @@ public class FixImportsHelper {
         try {
             lineOffset = Utilities.getLineOffset(doc, useOffset);
         } catch (BadLocationException ex) {
-            LOG.log(Level.FINEST, "BadLocationException for : " + useOffset);
+            LOG.log(Level.FINEST, "BadLocationException for offset : {0}", useOffset);
+            LOG.log(Level.FINEST, "BadLocationException : {0}", ex.getMessage());
             return -1;
         }
 

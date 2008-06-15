@@ -44,6 +44,7 @@ package org.netbeans.modules.autoupdate.services;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.Util;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.Dependency;
 import org.openide.modules.SpecificationVersion;
@@ -93,6 +94,13 @@ class DependencyChecker extends Object {
                     if (! matchDependencyJava (dep)) {
                         err.log(Level.FINE, "The Java platform version " + dep +
                                 " or higher was requested but only " + Dependency.JAVA_SPEC + " is running.");
+                        res.add (dep);
+                    }
+                    break;
+                case (Dependency.TYPE_PACKAGE) :
+                    if (! matchPackageDependency (dep)) {
+                        err.log(Level.FINE, "The package " + dep +
+                                " was requested but it is not in current ClassPath.");
                         res.add (dep);
                     }
                     break;
@@ -157,6 +165,13 @@ class DependencyChecker extends Object {
                         res.add (dep);
                     }
                     break;
+                case (Dependency.TYPE_PACKAGE) :
+                    if (! matchPackageDependency (dep)) {
+                        err.log(Level.FINE, "The package " + dep +
+                                " was requested but it is not in current ClassPath.");
+                        res.add (dep);
+                    }
+                    break;
                 default:
                     //assert false : "Unknown type of Dependency, was " + dep.getType ();
                     err.log(Level.FINE, "Uncovered Dependency " + dep);                    
@@ -200,6 +215,10 @@ class DependencyChecker extends Object {
         }
         // All other usages unlikely
         return true;
+    }
+    
+    private static boolean matchPackageDependency (Dependency dep) {
+        return Util.checkPackageDependency (dep, ClassLoader.getSystemClassLoader ());
     }
     
     static boolean checkDependencyModuleAllowEqual (Dependency dep, ModuleInfo module) {
