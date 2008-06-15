@@ -743,7 +743,7 @@ public class AuxiliaryConfigBasedPreferencesProvider {
         @Override
         protected AbstractPreferences getChild(final String nodeName) throws BackingStoreException {
             try {
-                return ProjectManager.mutex().writeAccess(new ExceptionAction<AbstractPreferences>() {
+                return ProjectManager.mutex().readAccess(new ExceptionAction<AbstractPreferences>() {
                     public AbstractPreferences run() throws BackingStoreException {
                         return AuxiliaryConfigBasedPreferences.super.getChild(nodeName);
                     }
