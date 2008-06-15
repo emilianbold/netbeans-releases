@@ -50,6 +50,7 @@ import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.components.databinding.AbstractDataSetCD;
 import org.netbeans.modules.vmd.midp.components.databinding.DataSetCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.CategoryPC;
 import org.openide.util.NbBundle;
@@ -79,11 +80,11 @@ public final class DatabindingCategoryCD extends ComponentDescriptor {
             // general
             InfoPresenter.createStatic (NbBundle.getMessage(DatabindingCategoryCD.class, "DISP_Databinding"), null, ICON_PATH_CATEGORY_DATABINDING), // NOI18N
             // accept
-            new AcceptTypePresenter (DataSetCD.TYPEID),
+            new AcceptTypePresenter (AbstractDataSetCD.TYPEID),
             // inspector
             InspectorPositionPresenter.create(new CategoryPC()),
             // actions
-            AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, DataSetCD.TYPEID)
+            AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, AbstractDataSetCD.TYPEID)
         );
     }
 
