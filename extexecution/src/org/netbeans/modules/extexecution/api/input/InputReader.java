@@ -45,6 +45,9 @@ import java.io.IOException;
 /**
  * This interface represents abstraction for reading characters. It allows
  * custom processing of such characters through the given processor.
+ * <p>
+ * For safe usage in {@link InputReaderTask} implementation of this
+ * interface has to be responsive to interruption.
  *
  * @author Petr Hejl
  */
@@ -52,6 +55,9 @@ public interface InputReader extends Closeable {
 
     /**
      * Reads some input and process it through the processor (if any).
+     * <p>
+     * Implementation of this method has to be responsive to interrruption
+     * for safe usage in {@link InputReaderTask}.
      *
      * @param processor consumer of read characters, mey be <code>null</code>
      * @return number of characters read

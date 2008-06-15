@@ -136,8 +136,6 @@ public final class EventSourceCD extends ComponentDescriptor {
                     section.switchToEditable (getComponent ().getComponentID () + "-preAction"); // NOI18N
                     section.getWriter ().write (" // write pre-action user code here\n").commit (); // NOI18N
                     section.switchToGuarded ();
-
-                    CodeMultiGuardedLevelPresenter.generateMultiGuardedSectionCode (section, EventSourceCD.getEventHandler (getComponent ()));
                     //This code gives possibility to inject some code to the commandAction method 
                     Collection<? extends MidpEventSourceCodeGenPresenter> presenters = DocumentSupport.gatherAllPresentersOfClass(getComponent().getDocument(), MidpEventSourceCodeGenPresenter.class);
                     for (MidpEventSourceCodeGenPresenter presenter : presenters) {
@@ -146,6 +144,8 @@ public final class EventSourceCD extends ComponentDescriptor {
                         }
                     }
                     //end
+                    CodeMultiGuardedLevelPresenter.generateMultiGuardedSectionCode (section, EventSourceCD.getEventHandler (getComponent ()));
+                    
                     section.getWriter ().commit ();
                     section.switchToEditable (getComponent ().getComponentID () + "-postAction"); // NOI18N
                     section.getWriter ().write (" // write post-action user code here\n").commit (); // NOI18N

@@ -41,6 +41,7 @@ package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.nio.charset.Charset;
 import javax.swing.JPanel;
 import javax.swing.MutableComboBoxModel;
@@ -243,7 +244,7 @@ class ConfigureProjectPanelVisual extends JPanel implements DocumentListener, Ch
         String newLocation = Utils.browseLocationAction(this, getProjectFolder(),
                 NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_SelectProjectFolder"));
         if (newLocation != null) {
-            setProjectFolder(newLocation);
+            setProjectFolder(new File(newLocation, getProjectName()).getAbsolutePath());
         }
     }//GEN-LAST:event_browseButtonActionPerformed
 

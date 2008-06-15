@@ -106,7 +106,7 @@ public class SoapClientRestResourceCodeGenerator extends SaasClientCodeGenerator
     }
     
     public boolean canAccept(SaasMethod method, Document doc) {
-        if (method instanceof WadlSaasMethod && Util.isJsp(doc)) {
+        if (method instanceof WsdlSaasMethod && Util.isJsp(doc)) {
             return true;
         }
         return false;

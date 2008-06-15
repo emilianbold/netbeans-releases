@@ -244,7 +244,7 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
             }
         } else if (httpMethod == HttpMethodType.POST) {
             if (hasRequestRep) {
-                methodBody += "             " + returnStatement + "->post(" + Constants.QUERY_PARAMS + ");\n";
+                methodBody += "             " + returnStatement + "->post($" + Constants.QUERY_PARAMS + ");\n";
             } else {
                 methodBody += "             " + returnStatement + "->post($" + Constants.PUT_POST_CONTENT + ");\n";
             }

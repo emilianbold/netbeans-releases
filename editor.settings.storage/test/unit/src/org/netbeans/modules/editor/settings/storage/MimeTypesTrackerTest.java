@@ -168,21 +168,21 @@ public class MimeTypesTrackerTest extends NbTestCase {
         }
         
         {
-        TestUtilities.createFolder(BASE);
+        TestUtilities.createFolder(BASE, 120);
         Collection<String> recognized = mtt.getMimeTypes();
         assertNotNull("MimeTypes should not be null", recognized);
         assertEquals("Wrong # of recognized mime types", 0, recognized.size());
         }
         
         {
-        TestUtilities.createFolder(BASE + "/text");
+        TestUtilities.createFolder(BASE + "/text", 120);
         Collection<String> recognized = mtt.getMimeTypes();
         assertNotNull("MimeTypes should not be null", recognized);
         assertEquals("Wrong # of recognized mime types", 0, recognized.size());
         }
         
         {
-        TestUtilities.createFolder(BASE + "/text/x-java");
+        TestUtilities.createFolder(BASE + "/text/x-java", 120);
         Collection<String> recognized = mtt.getMimeTypes();
         assertNotNull("MimeTypes should not be null", recognized);
         assertEquals("Wrong # of recognized mime types", 1, recognized.size());
@@ -190,19 +190,19 @@ public class MimeTypesTrackerTest extends NbTestCase {
         }
 
         {
-        TestUtilities.delete(BASE + "/text/x-java");
+        TestUtilities.delete(BASE + "/text/x-java", 120);
         Collection<String> recognized = mtt.getMimeTypes();
         assertNotNull("MimeTypes should not be null", recognized);
         assertEquals("Wrong # of recognized mime types", 0, recognized.size());
         }
         {
-        TestUtilities.delete(BASE + "/text");
+        TestUtilities.delete(BASE + "/text", 120);
         Collection<String> recognized = mtt.getMimeTypes();
         assertNotNull("MimeTypes should not be null", recognized);
         assertEquals("Wrong # of recognized mime types", 0, recognized.size());
         }
         {
-        TestUtilities.delete(BASE);
+        TestUtilities.delete(BASE, 120);
         Collection<String> recognized = mtt.getMimeTypes();
         assertNotNull("MimeTypes should not be null", recognized);
         assertEquals("Wrong # of recognized mime types", 0, recognized.size());
@@ -222,7 +222,7 @@ public class MimeTypesTrackerTest extends NbTestCase {
         }
         
         {
-        TestUtilities.createFolder(BASE + "/text/x-java");
+        TestUtilities.createFolder(BASE + "/text/x-java", 120);
         Collection<String> recognized = mtt.getMimeTypes();
         assertNotNull("MimeTypes should not be null", recognized);
         assertEquals("Wrong # of recognized mime types", 1, recognized.size());
@@ -238,7 +238,7 @@ public class MimeTypesTrackerTest extends NbTestCase {
 
         {
         listener.reset();
-        TestUtilities.delete(BASE);
+        TestUtilities.delete(BASE, 120);
         Collection<String> recognized = mtt.getMimeTypes();
         assertNotNull("MimeTypes should not be null", recognized);
         assertEquals("Wrong # of recognized mime types", 0, recognized.size());
@@ -265,7 +265,7 @@ public class MimeTypesTrackerTest extends NbTestCase {
         }
         
         {
-        TestUtilities.createFolder(BASE + "/text/plain");
+        TestUtilities.createFolder(BASE + "/text/plain", 120);
         Collection<String> recognized = mtt.getMimeTypes();
         assertNotNull("MimeTypes should not be null", recognized);
         assertEquals("Wrong # of recognized mime types", 1, recognized.size());
@@ -275,7 +275,7 @@ public class MimeTypesTrackerTest extends NbTestCase {
 
         {
         listener.reset();
-        TestUtilities.createFolder(BASE + "/NetBeans");
+        TestUtilities.createFolder(BASE + "/NetBeans", 120);
         Collection<String> recognized = mtt.getMimeTypes();
         assertNotNull("MimeTypes should not be null", recognized);
         assertEquals("Wrong # of recognized mime types", 1, recognized.size());
@@ -285,7 +285,7 @@ public class MimeTypesTrackerTest extends NbTestCase {
         
         {
         listener.reset();
-        TestUtilities.createFolder(BASE + "/text/plain/NetBeans");
+        TestUtilities.createFolder(BASE + "/text/plain/NetBeans", 120);
         Collection<String> recognized = mtt.getMimeTypes();
         assertNotNull("MimeTypes should not be null", recognized);
         assertEquals("Wrong # of recognized mime types", 1, recognized.size());

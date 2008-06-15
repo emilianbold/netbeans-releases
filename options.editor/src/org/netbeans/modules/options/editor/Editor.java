@@ -41,8 +41,11 @@
 
 package org.netbeans.modules.options.editor;
 
+import java.util.prefs.Preferences;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -65,7 +68,7 @@ public final class Editor extends OptionsCategory {
 
     private static Icon icon;
     
-    public Icon getIcon () {
+    public @Override Icon getIcon () {
         if (icon == null)
             icon = new ImageIcon (
                 Utilities.loadImage 
@@ -87,6 +90,13 @@ public final class Editor extends OptionsCategory {
     }
 
     public OptionsPanelController create () {
+        // XXX: warm-up MimeLookup, this should not be neccessary, but there is
+        // probably some initialization problem in MimeLookup, which leads to Preferences
+        // not being found the very first time Tools-Options is opened
+        for(String mimeType : EditorSettings.getDefault().getAllMimeTypes()) {
+            Preferences p = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+        }
+        
         return new FolderBasedController(
             "org-netbeans-modules-options-editor/OptionsDialogCategories/Editor", //NOI18N
             new HelpCtx ("netbeans.optionsDialog.editor") //NOI18N
