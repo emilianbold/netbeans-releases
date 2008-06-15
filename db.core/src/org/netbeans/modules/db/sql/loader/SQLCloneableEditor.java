@@ -60,7 +60,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
-import org.netbeans.modules.db.sql.execute.SQLHistory;
+import org.netbeans.modules.db.sql.history.SQLHistory;
 import org.netbeans.modules.db.sql.execute.ui.SQLResultPanel;
 import org.netbeans.modules.db.sql.history.SQLHistoryManager;
 import org.openide.text.CloneableEditor;

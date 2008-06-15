@@ -76,3 +76,4 @@ include JSPPalette/.*
 include HTMLPalette/.*
 include J2EE/.*
 include org-netbeans-api-project-libraries/Libraries/.*\.xml
+exclude Services/org-netbeans-modules-beans-beans.settings

@@ -230,8 +230,12 @@ public final class ElementImpl extends Element {
     public AXIType getType() {
         if(axiType != null)
             return axiType;
+        if(getTypeSchemaComponent() == null) {
+            SchemaComponent type = Util.getSchemaType((AXIModelImpl)getModel(), getPeer());
+            setTypeSchemaComponent(type);
+        }
         
-        this.axiType = Util.getAXIType(this, typeSchemaComponent);
+        this.axiType = Util.getAXIType(this, getTypeSchemaComponent());
         return axiType;
     }
     

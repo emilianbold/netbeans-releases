@@ -56,7 +56,7 @@ import org.netbeans.junit.NbTestCase;
  *
  * @author mkrauskopf
  */
-public class ProjectImporterTestCase extends NbTestCase {
+public abstract class ProjectImporterTestCase extends NbTestCase {
     
     private static final int BUFFER = 2048;
     
@@ -71,15 +71,10 @@ public class ProjectImporterTestCase extends NbTestCase {
         super(name);
     }
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         /* comment this out to see verbose info */
         // setVerbose(true);
-        clearWorkDir();
-    }
-    
-    protected void tearDown() throws Exception {
-        super.tearDown();
         clearWorkDir();
     }
     

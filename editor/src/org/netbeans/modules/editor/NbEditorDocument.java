@@ -52,8 +52,6 @@ import javax.swing.JEditorPane;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.PrintContainer;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsChangeEvent;
 import org.netbeans.editor.Utilities;
 import org.openide.text.NbDocument;
 import org.openide.text.AttributedCharacters;
@@ -64,13 +62,17 @@ import java.beans.PropertyChangeEvent;
 import java.util.Dictionary;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.prefs.Preferences;
 import javax.swing.JToolBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.editor.BaseDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.AnnotationDesc;
+import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -86,11 +88,6 @@ public class NbEditorDocument extends GuardedDocument
 implements NbDocument.PositionBiasable, NbDocument.WriteLockable,
 NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocument.Annotatable {
 
-    /** Mime type of the document. The name of this property corresponds
-     * to the property that is filled in the document by CloneableEditorSupport.
-     */
-    public static final String MIME_TYPE_PROP = "mimeType"; // NOI18N
-
     /** Indent engine for the given kitClass. */
     public static final String INDENT_ENGINE = "indentEngine"; // NOI18N
 
@@ -100,8 +97,30 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
     // #39718 hotfix
     private WeakHashMap annoBlackList;
 
+    /**
+     * Creates a new document.
+     * 
+     * @deprecated Use of editor kit's implementation classes is deprecated
+     *   in favor of mime types.
+     */
     public NbEditorDocument(Class kitClass) {
         super(kitClass);
+        init();
+    }
+    
+    /**
+     * Creates a new document.
+     * 
+     * @param mimeType The mime type for the new document.
+     * 
+     * @since 1.18
+     */
+    public NbEditorDocument(String mimeType) {
+        super(mimeType);
+        init();
+    }
+    
+    private void init() {
         addStyleToLayerMapping(NbDocument.BREAKPOINT_STYLE_NAME,
                                NbDocument.BREAKPOINT_STYLE_NAME + "Layer:10"); // NOI18N
         addStyleToLayerMapping(NbDocument.ERROR_STYLE_NAME,
@@ -112,6 +131,15 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
         
         annoMap = new HashMap(20);
         annoBlackList = new WeakHashMap();
+
+        // Fill in the indentEngine property
+        putProperty(INDENT_ENGINE, new BaseDocument.PropertyEvaluator() {
+            public Object getValue() {
+                MimePath mimePath = MimePath.parse((String) getProperty(MIME_TYPE_PROP));
+                Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
+                return SettingsConversions.callFactory(prefs, mimePath, INDENT_ENGINE, null);
+            }
+        });
     }
 
     public @Override int getShiftWidth() {
@@ -122,34 +150,7 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
         return IndentUtils.tabSize(this);
     }
 
-    public void settingsChange(SettingsChangeEvent evt) {
-        super.settingsChange(evt);
-
-        // Check whether the mimeType is set
-        Object o = getProperty(MIME_TYPE_PROP);
-        if (!(o instanceof String)) {
-            BaseKit kit = BaseKit.getKit(getKitClass());
-            putProperty(MIME_TYPE_PROP, kit.getContentType());
-        }
-
-        // Fill in the indentEngine property
-        putProperty(INDENT_ENGINE,
-            new BaseDocument.PropertyEvaluator() {
-
-                private Object cached;
-
-                public Object getValue() {
-                    if (cached == null) {
-                        cached = Settings.getValue(getKitClass(), INDENT_ENGINE);
-                    }
-                    
-                    return cached;
-                }
-            }
-        );
-    }
-
-    public void setCharacterAttributes(int offset, int length, AttributeSet s,
+    public @Override void setCharacterAttributes(int offset, int length, AttributeSet s,
                                        boolean replace) {
         if (s != null) {
             Object val = s.getAttribute(NbDocument.GUARDED);
@@ -290,9 +291,9 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
         }
     }
 
-    protected Dictionary createDocumentProperties(Dictionary origDocumentProperties) {
+    protected @Override Dictionary createDocumentProperties(Dictionary origDocumentProperties) {
         return new LazyPropertyMap(origDocumentProperties) {
-            public Object put(Object key, Object value) {
+            public @Override Object put(Object key, Object value) {
                 Object origValue = super.put(key, value);
                 if (Document.StreamDescriptionProperty.equals(key)) {
                     if (origValue == null || !origValue.equals(value)) {
@@ -327,11 +328,13 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
             // forward property changes to AnnotationDesc property changes
             l = new PropertyChangeListener() {
                 public void propertyChange (PropertyChangeEvent evt) {
-                    if (evt.getPropertyName() == Annotation.PROP_SHORT_DESCRIPTION)
+                    if (evt.getPropertyName() == null || Annotation.PROP_SHORT_DESCRIPTION.equals(evt.getPropertyName())) {
                         firePropertyChange(AnnotationDesc.PROP_SHORT_DESCRIPTION, null, null);
-                    if (evt.getPropertyName() == Annotation.PROP_MOVE_TO_FRONT)
+                    }
+                    if (evt.getPropertyName() == null || Annotation.PROP_MOVE_TO_FRONT.equals(evt.getPropertyName())) {
                         firePropertyChange(AnnotationDesc.PROP_MOVE_TO_FRONT, null, null);
-                    if (evt.getPropertyName() == Annotation.PROP_ANNOTATION_TYPE) {
+                    }
+                    if (evt.getPropertyName() == null || Annotation.PROP_ANNOTATION_TYPE.equals(evt.getPropertyName())) {
                         updateAnnotationType();
                         firePropertyChange(AnnotationDesc.PROP_ANNOTATION_TYPE, null, null);
                     }

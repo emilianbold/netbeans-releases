@@ -104,6 +104,21 @@ is the proper place.
 
   <changes>
 
+    <change id="getMimeType-added">
+      <summary>Added DocumentUtilities.getMimeType</summary>
+        <version major="1" minor="23"/>
+        <date day="10" month="1" year="2008"/>
+        <author login="vstejskal"/>
+        <compatibility addition="yes" deletion="no" modification="no" binary="compatible" semantic="compatible" />
+        <description>
+        <p>
+            Adding <code>DocumentUtilities.getMimeType(Document)</code> and
+            <code>DocumentUtilities.getMimeType(JTextComponent)</code> in order
+            to standardize access to documents' mimetype.
+        </p>
+        </description>
+    </change>
+
     <change id="CharacterConversions-added">
       <summary>Added CharacterConversions class</summary>
         <version major="1" minor="21"/>

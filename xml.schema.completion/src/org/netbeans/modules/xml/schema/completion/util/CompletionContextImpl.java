@@ -210,7 +210,7 @@ public class CompletionContextImpl extends CompletionContext {
                     }                    
                     if(chars != null && chars.equals("") &&
                        token.getPrevious().getImage().trim().equals(">")) {
-                        completionType = CompletionType.COMPLETION_TYPE_VALUE;
+                        completionType = CompletionType.COMPLETION_TYPE_ELEMENT_VALUE;
                         break;
                     }
                     if(chars != null && !chars.equals("<") &&
@@ -257,7 +257,8 @@ public class CompletionContextImpl extends CompletionContext {
                     if(element instanceof StartTag) {
                         if(token != null &&
                            token.getImage().trim().equals(">")) {
-                            completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+                            pathFromRoot = getPathFromRoot(element);
+                            completionType = CompletionType.COMPLETION_TYPE_ELEMENT_VALUE;
                             break;
                         }
                         if(element.getElementOffset() + 1 == this.completionAtOffset) {
@@ -268,7 +269,7 @@ public class CompletionContextImpl extends CompletionContext {
                         }
                     }
                     if(lastTypedChar == '>') {
-                        completionType = CompletionType.COMPLETION_TYPE_VALUE;
+                        completionType = CompletionType.COMPLETION_TYPE_ELEMENT_VALUE;
                         break;
                     }
                     completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
@@ -284,11 +285,25 @@ public class CompletionContextImpl extends CompletionContext {
 
                 //some random character
                 case XMLDefaultTokenContext.CHARACTER_ID:
+                    completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+                    break;
+                    
                 //user enters = character, we should ignore all other operators
                 case XMLDefaultTokenContext.OPERATOR_ID:
                 //user enters either ' or "
                 case XMLDefaultTokenContext.VALUE_ID:
-                    completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+                    attribute = element.getPrevious().toString();
+                    completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE_VALUE;
+                    pathFromRoot = getPathFromRoot(element);
+                    TokenItem t = token;                    
+                    while(t != null) {
+                        int nId = t.getTokenID().getNumericID();
+                        if(nId == XMLDefaultTokenContext.ARGUMENT_ID) {
+                            attribute = t.getImage();
+                            break;
+                        }
+                        t = t.getPrevious();
+                    }
                     break;
 
                 //user enters white-space character
@@ -323,6 +338,10 @@ public class CompletionContextImpl extends CompletionContext {
     
     public DocRoot getDocRoot() {
         return docRoot;
+    }
+    
+    public String getAttribute() {
+        return attribute;
     }
     
     private List<QName> getPathFromRoot(SyntaxElement se) {
@@ -650,6 +669,7 @@ public class CompletionContextImpl extends CompletionContext {
     private String typedChars;
     private TokenItem token;
     private SyntaxElement element;
+    private String attribute;
     private DocRoot docRoot;
     private char lastTypedChar;
     private CompletionType completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;

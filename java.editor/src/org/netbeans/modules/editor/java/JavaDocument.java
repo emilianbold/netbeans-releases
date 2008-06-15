@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.editor.java;
 
-import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.DrawLayer;
 import org.netbeans.editor.DrawLayerFactory;
 import org.netbeans.modules.editor.NbEditorDocument;
@@ -53,8 +51,16 @@ import org.netbeans.modules.editor.NbEditorDocument;
  */
 public class JavaDocument extends NbEditorDocument {
 
+    /**
+     * This is here only for backwards compatibility.
+     * @deprecated Use {@link #JavaDocument(String)}
+     */
     public JavaDocument(Class kitClass) {
         super(kitClass);
+    }
+    
+    public JavaDocument(String mimeType) {
+        super(mimeType);
     }
 
     @Override

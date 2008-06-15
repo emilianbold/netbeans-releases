@@ -33,7 +33,6 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -41,11 +40,13 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.KeyStroke;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.CodeTemplateDescription;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
-import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -97,13 +98,21 @@ public final class CodeTemplateSettingsImpl {
     }
 
     public KeyStroke getExpandKey() {
-        // XXX: use SimpleValueSettings or whatever other appropriate way
-        return BaseOptions_getCodeTemplateExpandKey();
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        String ks = prefs.get(CODE_TEMPLATE_EXPAND_KEY, null);
+        if (ks != null) {
+            KeyStroke keyStroke = Utilities.stringToKey(ks);
+            if (keyStroke != null) {
+                return keyStroke;
+            }
+        }
+        return DEFAULT_EXPANSION_KEY;
     }
 
     public void setExpandKey(KeyStroke expansionKey) {
-        // XXX: use SimpleValueSettings or whatever other appropriate way
-        BaseOptions_setCodeTemplateExpandKey(expansionKey);
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        prefs.put(CODE_TEMPLATE_EXPAND_KEY, Utilities.keyToString(expansionKey));
+        
         try {
             Thread.sleep(100);
         } catch (InterruptedException ex) {
@@ -138,6 +147,7 @@ public final class CodeTemplateSettingsImpl {
     // Private implementation
     // ---------------------------------------------
 
+    private static final String CODE_TEMPLATE_EXPAND_KEY = "code-template-expand-key"; // NOI18N
     private static final KeyStroke DEFAULT_EXPANSION_KEY = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
 
     private static final Map<MimePath, WeakReference<CodeTemplateSettingsImpl>> INSTANCES =
@@ -152,26 +162,4 @@ public final class CodeTemplateSettingsImpl {
         this.mimePath = mimePath;
     }
 
-    private static KeyStroke BaseOptions_getCodeTemplateExpandKey() {
-        try {
-            ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
-            Class clazz = cl.loadClass("org.netbeans.modules.editor.options.BaseOptions"); //NOI18N
-            Method m = clazz.getDeclaredMethod("getCodeTemplateExpandKey"); //NOI18N
-            return (KeyStroke) m.invoke(null);
-        } catch (Exception e) {
-            LOG.log(Level.WARNING, null, e);
-            return DEFAULT_EXPANSION_KEY;
-        }
-    }
-
-    private static void BaseOptions_setCodeTemplateExpandKey(KeyStroke keyStroke) {
-        try {
-            ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
-            Class clazz = cl.loadClass("org.netbeans.modules.editor.options.BaseOptions"); //NOI18N
-            Method m = clazz.getDeclaredMethod("setCodeTemplateExpandKey", KeyStroke.class); //NOI18N
-            m.invoke(null, keyStroke);
-        } catch (Exception e) {
-            // ignore
-        }
-    }
 }

@@ -45,6 +45,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.core.windows.ModeImpl;
+import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -114,7 +115,7 @@ public final class UndockWindowAction extends AbstractAction {
 
     public boolean isEnabled() {
         updateName();
-        return getTC2WorkWith() != null;
+        return getTC2WorkWith() != null && Switches.isTopComponentUndockingEnabled();
     }
 
     private void updateName() {
