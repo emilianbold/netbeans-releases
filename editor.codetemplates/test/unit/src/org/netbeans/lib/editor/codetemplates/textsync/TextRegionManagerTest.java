@@ -44,7 +44,6 @@ package org.netbeans.lib.editor.codetemplates.textsync;
 import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.BaseKit;
 import org.netbeans.junit.NbTestCase;
 
 
@@ -60,7 +59,7 @@ public class TextRegionManagerTest extends NbTestCase {
     }
 
     public void testAddRegions() throws Exception {
-        Document doc = new BaseDocument(BaseKit.class, false);
+        Document doc = new BaseDocument(false, "");
         TextRegionManager textRegionManager = TextRegionManager.get(doc);
         //                   0         1
         //                   01234567890123456879

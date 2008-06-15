@@ -48,6 +48,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -57,12 +62,17 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.Mnemonics;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -71,13 +81,15 @@ import org.openide.util.NbBundle;
  * @author Jan Jancura
  */
 public class IndentationPanel extends JPanel implements ChangeListener, 
-ActionListener {
+ActionListener, PreferenceChangeListener {
+
+    private static final Logger LOG = Logger.getLogger(IndentationPanel.class.getName());
     
     private IndentationModel    model;
     private String              originalText;
     private boolean             listen = false;
     private boolean             changed = false;
-
+    private Preferences prefs = null;
     
     /** 
      * Creates new form IndentationPanel.
@@ -107,6 +119,7 @@ ActionListener {
         sRightMargin.setModel (new SpinnerNumberModel (120, 1, 200, 10));
         sRightMargin.addChangeListener (this);
         epPreview.setEnabled (false);
+        epPreview.putClientProperty("HighlightsLayerIncludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.SyntaxHighlighting$"); //NOI18N
     }
     
     /** This method is called from within the constructor to
@@ -237,7 +250,7 @@ ActionListener {
         }
     }
 
-    private void updatePreview () {
+    private void updateModel () {
         model.setExpandTabs (cbExpandTabsToSpaces.isSelected ());
         model.setSpacesPerTab (
             (Integer) sNumberOfSpacesPerIndent.getValue ()
@@ -248,23 +261,26 @@ ActionListener {
         model.setRightMargin(
             (Integer) sRightMargin.getValue ()
         );
-
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            // ignore
-        }
-        
+    }
+    
+    private void refreshPreview() {
         // start formatter
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
-                epPreview.setText (originalText);
+                epPreview.setText(originalText);
 		BaseDocument doc = (BaseDocument) epPreview.getDocument();
 		Reformat reformat = Reformat.get(doc);
 		reformat.lock();
 		try {
 		    doc.atomicLock();
 		    try {
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("Refreshing preview: expandTabs=" + IndentUtils.isExpandTabs(doc) //NOI18N
+                                    + ", indentLevelSize=" + IndentUtils.indentLevelSize(doc) //NOI18N
+                                    + ", tabSize=" + IndentUtils.tabSize(doc) //NOI18N
+                                    + ", mimeType='" + doc.getProperty("mimeType") + "'" //NOI18N
+                                    + ", doc=" + doc); //NOI18N
+                        }                        
 			reformat.reformat(0, doc.getLength());
 		    } finally {
 			doc.atomicUnlock();
@@ -283,7 +299,7 @@ ActionListener {
     
     public void stateChanged (ChangeEvent e) {
         if (!listen) return;
-        updatePreview ();
+        updateModel ();
         if (changed != model.isChanged ()) {
             firePropertyChange (
                 OptionsPanelController.PROP_CHANGED,
@@ -296,7 +312,7 @@ ActionListener {
     
     public void actionPerformed (ActionEvent e) {
         if (!listen) return;
-        updatePreview ();
+        updateModel ();
         if (changed != model.isChanged ()) {
             firePropertyChange (
                 OptionsPanelController.PROP_CHANGED,
@@ -307,8 +323,24 @@ ActionListener {
         changed = model.isChanged ();
     }
 
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        if (evt.getKey() == null || SimpleValueNames.EXPAND_TABS.equals(evt.getKey())
+                || SimpleValueNames.INDENT_SHIFT_WIDTH.equals(evt.getKey())
+                || SimpleValueNames.SPACES_PER_TAB.equals(evt.getKey())
+                || SimpleValueNames.TAB_SIZE.equals(evt.getKey()))
+        {
+            // some of the formatting settings has changed, reformat the preview
+            refreshPreview();
+        }
+    }
+
     public void update () {
         model = new IndentationModel ();
+
+        if (prefs == null) {
+            prefs = MimeLookup.getLookup(MIME_TYPE).lookup(Preferences.class);
+            prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, prefs));
+        }
         
         if (originalText == null) {
             // add text to preview
@@ -335,7 +367,8 @@ ActionListener {
         listen = false;
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                epPreview.setContentType("text/xml");
+                epPreview.setEditorKit(CloneableEditorSupport.getEditorKit(MIME_TYPE)); //NOI18N
+                epPreview.setText(originalText);
                 cbExpandTabsToSpaces.setSelected(model.isExpandTabs());
                 sNumberOfSpacesPerIndent.setValue(model.getSpacesPerTab());
                 sTabSize.setValue(model.getTabSize());
@@ -343,7 +376,7 @@ ActionListener {
                 listen = true;
 
                 // update preview
-                updatePreview();
+                refreshPreview();
             }
         });
     }
@@ -371,4 +404,6 @@ ActionListener {
             return model.isChanged ();
         }
     }
+    
+    private static final String MIME_TYPE = "text/xml";
 }

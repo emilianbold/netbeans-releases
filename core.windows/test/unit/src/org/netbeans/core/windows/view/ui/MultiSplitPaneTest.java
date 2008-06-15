@@ -156,21 +156,21 @@ public class MultiSplitPaneTest extends NbTestCase {
         
         //initial resizing, children sizes must honour their initial split weights
         resizeSplit( orientation, 1000+4*DIVIDER_SIZE, 200 );
-        assertEquals( 100, views[0].getSizeInSplit() );
-        assertEquals( 100, views[1].getSizeInSplit() );
-        assertEquals( 100, views[2].getSizeInSplit() );
-        assertEquals( 100, views[3].getSizeInSplit() );
-        assertEquals( 600, views[4].getSizeInSplit() );
+        assertEquals( 101, views[0].getSizeInSplit() );
+        assertEquals( 101, views[1].getSizeInSplit() );
+        assertEquals( 101, views[2].getSizeInSplit() );
+        assertEquals( 101, views[3].getSizeInSplit() );
+        assertEquals( 596, views[4].getSizeInSplit() );
         //check that children height matches the height of the split
         checkNonSplitSizes( 200, views );
 
         //children must shrink proportionally
         resizeSplit( orientation, 100+4*DIVIDER_SIZE, 300 );
-        assertEquals( 10, views[0].getSizeInSplit() );
-        assertEquals( 10, views[1].getSizeInSplit() );
-        assertEquals( 10, views[2].getSizeInSplit() );
-        assertEquals( 10, views[3].getSizeInSplit() );
-        assertEquals( 60, views[4].getSizeInSplit() );
+        assertEquals( 15, views[0].getSizeInSplit() );
+        assertEquals( 15, views[1].getSizeInSplit() );
+        assertEquals( 15, views[2].getSizeInSplit() );
+        assertEquals( 15, views[3].getSizeInSplit() );
+        assertEquals( 40, views[4].getSizeInSplit() );
         checkNonSplitSizes( 300, views );
         
         //minimum sizes must be honoured
@@ -284,10 +284,10 @@ public class MultiSplitPaneTest extends NbTestCase {
         
         //children must shrink according to their resize weights
         resizeSplit( orientation, 100+3*DIVIDER_SIZE, 300 );
-        assertEquals( 12, views[0].getSizeInSplit() ); //this is a bug, the correct value is 25
-        assertEquals( 12, views[1].getSizeInSplit() ); //this is a bug, the correct value is 25
-        assertEquals( 39, views[2].getSizeInSplit() ); //this is a bug, the correct value is 25
-        assertEquals( 37, views[3].getSizeInSplit() ); //this is a bug, the correct value is 25
+        assertEquals( 17, views[0].getSizeInSplit() ); //this is a bug, the correct value is 25
+        assertEquals( 17, views[1].getSizeInSplit() ); //this is a bug, the correct value is 25
+        assertEquals( 34, views[2].getSizeInSplit() ); //this is a bug, the correct value is 25
+        assertEquals( 32, views[3].getSizeInSplit() ); //this is a bug, the correct value is 25
         checkNonSplitSizes( 300, views );
 
         //minimum sizes must be honoured

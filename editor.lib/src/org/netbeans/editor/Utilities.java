@@ -61,6 +61,7 @@ import javax.swing.text.Element;
 import javax.swing.text.View;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
 import org.openide.util.NbBundle;
 
 /**
@@ -478,7 +479,7 @@ public class Utilities {
 
     public static int getNextWord(BaseDocument doc, int offset)
     throws BadLocationException {
-        Finder nextWordFinder = (Finder)doc.getProperty(SettingsNames.NEXT_WORD_FINDER);
+        Finder nextWordFinder = (Finder)doc.getProperty(EditorPreferencesKeys.NEXT_WORD_FINDER);
         offset = doc.find(nextWordFinder, offset, -1);
         if (offset < 0) {
             offset = doc.getLength();
@@ -499,7 +500,7 @@ public class Utilities {
 
     public static int getPreviousWord(BaseDocument doc, int offset)
     throws BadLocationException {
-        Finder prevWordFinder = (Finder)doc.getProperty(SettingsNames.PREVIOUS_WORD_FINDER);
+        Finder prevWordFinder = (Finder)doc.getProperty(EditorPreferencesKeys.PREVIOUS_WORD_FINDER);
         offset = doc.find(prevWordFinder, offset, 0);
         if (offset < 0) {
             offset = 0;
@@ -1140,7 +1141,7 @@ public class Utilities {
             }
             
             public void actionPerformed(ActionEvent evt){}
-        };
+        }
         
         if (focusedComponentAction == null) {
             focusedComponentAction = new FocusedComponentAction();
@@ -1381,7 +1382,7 @@ public class Utilities {
      * @see NbEditorDocument#MIME_TYPE_PROP
      */
     /* package */ static String getMimeType(Document doc) {
-        return (String)doc.getProperty("mimeType"); //NOI18N
+        return (String)doc.getProperty(BaseDocument.MIME_TYPE_PROP); //NOI18N
     }
 
     /**

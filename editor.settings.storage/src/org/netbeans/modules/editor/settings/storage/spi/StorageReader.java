@@ -41,6 +41,7 @@ package org.netbeans.modules.editor.settings.storage.spi;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.editor.settings.storage.EditorSettingsImpl;
@@ -194,5 +195,15 @@ public abstract class StorageReader<K extends Object, V extends Object> extends 
     }
 
     private static final class SpiPackageAccessorImpl extends SpiPackageAccessor {
+
+        public String storageFilterGetStorageDescriptionId(StorageFilter f) {
+            return f.getStorageDescriptionId();
+        }
+        
+        @SuppressWarnings("unchecked")
+        public void storageFilterInitialize(StorageFilter f, Callable<Void> notificationCallback) {
+            f.initialize(notificationCallback);
+        }
+        
     } // End of SpiPackageAccessorImpl class
 }

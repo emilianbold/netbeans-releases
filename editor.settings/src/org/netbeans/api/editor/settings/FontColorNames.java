@@ -88,6 +88,21 @@ public final class FontColorNames {
     
     /** Coloring used to highlight the row where the caret resides */
     public static final String CARET_ROW_COLORING = "highlight-caret-row"; // NOI18N
+
+    /** 
+     * Coloring used for drawing the text limit line (eg. 80 chars boundary). 
+     * @since 1.15
+     */
+    public static final String TEXT_LIMIT_LINE_COLORING = "text-limit-line-color"; //NOI18N
+
+    /** Coloring used for the caret in the insert mode */
+    public static final String CARET_COLOR_INSERT_MODE = "caret-color-insert-mode"; // NOI18N
+    
+    /** Coloring used for the caret in the overwrite mode */
+    public static final String CARET_COLOR_OVERWRITE_MODE = "caret-color-overwrite-mode"; // NOI18N
+
+    /** Coloring for the documentation popup window, eg. javadoc popup in code completion. */
+    public static final String DOCUMENTATION_POPUP_COLORING = "documentation-popup-coloring"; //NOI18N
     
     private FontColorNames() {
         // to prevent instantialization

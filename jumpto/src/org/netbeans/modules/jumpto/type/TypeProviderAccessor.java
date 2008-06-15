@@ -61,7 +61,7 @@ public abstract class TypeProviderAccessor {
         }
     }
 
-    protected abstract Context createContext(Project p, String text, SearchType t);
+    public abstract Context createContext(Project p, String text, SearchType t);
 
-    protected abstract Result createResult(List<? super TypeDescriptor> result, String[] message);
+    public abstract Result createResult(List<? super TypeDescriptor> result, String[] message);
 }
