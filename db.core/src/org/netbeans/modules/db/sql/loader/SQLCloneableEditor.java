@@ -42,6 +42,7 @@
 package org.netbeans.modules.db.sql.loader;
 
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.KeyboardFocusManager;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -60,12 +61,14 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
-import org.netbeans.modules.db.sql.history.SQLHistory;
+import org.netbeans.modules.db.sql.execute.ui.SQLHistoryPanel;
 import org.netbeans.modules.db.sql.execute.ui.SQLResultPanel;
-import org.netbeans.modules.db.sql.history.SQLHistoryManager;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.text.CloneableEditor;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ProxyLookup;
@@ -392,8 +395,29 @@ public class SQLCloneableEditor extends CloneableEditor {
         }
 
         public void showHistory() {
-            // XXX under construction
-            
+  
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    SQLHistoryPanel panel = new SQLHistoryPanel(getEditorPane());
+                    Object[] options = new Object[]{
+                        DialogDescriptor.CLOSED_OPTION
+                    };
+                    final DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(SQLCloneableEditor.class, "LBL_SQL_HISTORY_TITLE"), true, options,
+                            DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
+                    Dialog dlg = null;
+                    try {
+                        dlg = DialogDisplayer.getDefault().createDialog(desc);
+                        dlg.getAccessibleContext().setAccessibleDescription("descr");
+                        panel.setSize(panel.getPreferredSize());
+                        dlg.pack();
+                        dlg.setVisible(true);
+                    } finally {
+                        if (dlg != null) {
+                            dlg.dispose();
+                        }
+                    }
+                }
+            });
         }
     }
 }

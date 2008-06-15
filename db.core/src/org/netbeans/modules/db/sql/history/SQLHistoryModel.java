@@ -37,32 +37,23 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.sql.editor.ui.actions;
+package org.netbeans.modules.db.sql.history;
 
-import org.netbeans.modules.db.api.sql.execute.SQLExecution;
-import org.openide.util.NbBundle;
+import java.util.List;
 
 /**
  *
- * @author test
+ * @author John Baker
  */
-public class SQLHistoryAction extends SQLExecutionBaseAction {
-    private static final String ICON_PATH = "org/netbeans/modules/db/sql/editor/resources/sql_history_16.png"; // NOI18N
-
-    protected String getIconBase() {
-        return ICON_PATH;
-    }
-
-    protected String getDisplayName(SQLExecution sqlExecution) { 
-        return NbBundle.getMessage(SQLHistoryAction.class, "LBL_SQLHistoryAction");
-    }
-
-    @Override
-    protected boolean enable(SQLExecution sqlExecution) {
-        return true;
-    }
-
-    protected void actionPerformed(SQLExecution sqlExecution) {
-        sqlExecution.showHistory();
-    }
+public interface SQLHistoryModel {
+    void initialize();
+    
+    void setFilter(String filter);
+        
+    String getFilter();
+    
+    List<SQLHistory> getSQLHistoryList();
+    
+    void setSQLHistoryList(List<SQLHistory> sqlHistoryList);
+    
 }
