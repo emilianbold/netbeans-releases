@@ -102,8 +102,6 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         } else {
             initElements(Collections.<PropertyEditorElement>singleton(this));
         }
-        
-        
     }
 
     public static final DesignPropertyEditor createInstance() {
