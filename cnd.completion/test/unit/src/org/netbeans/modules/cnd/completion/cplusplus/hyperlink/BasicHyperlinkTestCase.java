@@ -110,6 +110,21 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("main.c", 27, 17, "main.c", 27, 9); // name in name--;
         performTest("main.c", 28, 17, "main.c", 27, 9); // name in name--;        
     }
+    
+    public void testGlobalVar() throws Exception {
+        // IZ#132295: Hyperlink does not  distinguish local variable and global
+        // variable if they has same name
+        
+        // local variable
+        performTest("main.c", 33, 24, "main.c", 32, 5);
+        performTest("main.c", 34, 36, "main.c", 32, 5);
+        
+        // global variable
+        performTest("main.c", 33, 14, "main.c", 37, 1);
+        performTest("main.c", 34, 12, "main.c", 37, 1);
+        performTest("main.c", 34, 28, "main.c", 37, 1);
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // K&R style
 
