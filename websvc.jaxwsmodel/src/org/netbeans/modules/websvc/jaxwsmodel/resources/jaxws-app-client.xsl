@@ -78,7 +78,7 @@ made subject to such option by the copyright holder.
                     <condition property="wsimport-client-{$wsname}.notRequired">
                         <xsl:choose>
                             <xsl:when test="jaxws:package-name">
-                                <available file="${{build.generated.dir}}/wsimport/client/{$package_path}" type="dir"/>    
+                                <available file="${{build.generated.dir}}/wsimport/client/{$package_path}/{$wsname}.java"/>    
                             </xsl:when>
                             <xsl:otherwise>
                                 <available file="${{build.generated.dir}}/wsimport/client/dummy" type="dir"/>
