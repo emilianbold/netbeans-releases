@@ -73,11 +73,7 @@ public class CsmFontColorManager {
     /* package */ Color getColor(FontColorProvider.Entity color) {
         // completion is not aware of document type
         AttributeSet as = getCreateProvider(DEFAULT_MIME_TYPE).getColor(color);
-        if (as != null) {
-            return (Color)as.getAttribute(StyleConstants.ColorConstants.Foreground);
-        }
-        //FIXME
-        return Color.red;
+        return (Color)as.getAttribute(StyleConstants.ColorConstants.Foreground);
     }
     
     private FontColorProviderImpl getCreateProvider(String mimeType) {
@@ -85,6 +81,7 @@ public class CsmFontColorManager {
             FontColorProviderImpl fcp = providers.get(mimeType);
             if (fcp == null) {
                 fcp = new FontColorProviderImpl(mimeType);
+                providers.put(mimeType, fcp);
             }
             return fcp;
         }
@@ -119,7 +116,6 @@ public class CsmFontColorManager {
             Lookup lookup = MimeLookup.getLookup(MimePath.get(mimeType));
             Lookup.Result<FontColorSettings> result =
                     lookup.lookup(new Lookup.Template<FontColorSettings>(FontColorSettings.class));
-            Iterator it = result.allInstances().iterator(); 
             fcs = result.allInstances().iterator().next();
             result.addLookupListener(this);
         }
