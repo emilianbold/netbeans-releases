@@ -112,7 +112,7 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
 
     private void updateValidation() {
         cbKeepMarks.setEnabled(cbMarkOccurrences.isSelected());
-        cbSysMacro.setEnabled(cbMacros.isSelected());
+        cbSysMacro.setEnabled(cbMacros == null ? false : cbMacros.isSelected());
     }
 
     private void initMnemonics() {
