@@ -910,6 +910,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
         }
 
+        // Run before-save actions
+        Runnable beforeSaveRunnable = (Runnable) myDoc.getProperty("beforeSaveRunnable");
+        if (beforeSaveRunnable != null) {
+            beforeSaveRunnable.run();
+        }
+
         SaveAsReader saveAsReader = new SaveAsReader();
         myDoc.render(saveAsReader);
         saveAsReader.after();

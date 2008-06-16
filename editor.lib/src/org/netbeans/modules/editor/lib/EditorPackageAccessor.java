@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,56 +39,39 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.lib.editor.util.swing;
+package org.netbeans.modules.editor.lib;
 
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.PlainDocument;
-import org.netbeans.junit.NbTestCase;
+import javax.swing.undo.CompoundEdit;
+import org.netbeans.editor.BaseDocument;
 
-public class DocumentUtilitiesTest extends NbTestCase {
 
-    public DocumentUtilitiesTest(String testName) {
-        super(testName);
-    }
+/**
+ * Accessor for the package-private functionality in org.netbeans.api.editor.
+ *
+ * @author Miloslav Metelka
+ * @version 1.00
+ */
 
-    public void testDebugOffset() throws Exception {
-        PlainDocument doc = new PlainDocument(); // tabSize is 8
-        //                   0123 45 678 90123456 789
-        doc.insertString(0, "abc\na\tbc\nabcdefg\thij", null);
-        assertEquals("0[1:1]", DocumentUtilities.debugOffset(doc, 0));
-        assertEquals("5[2:2]", DocumentUtilities.debugOffset(doc, 5));
-        assertEquals("6[2:9]", DocumentUtilities.debugOffset(doc, 6));
-        assertEquals("7[2:10]", DocumentUtilities.debugOffset(doc, 7));
-        assertEquals("16[3:8]", DocumentUtilities.debugOffset(doc, 16));
-        assertEquals("17[3:9]", DocumentUtilities.debugOffset(doc, 17));
-        assertEquals("19[3:11]", DocumentUtilities.debugOffset(doc, 19));
-    }
+public abstract class EditorPackageAccessor {
 
-    public void testIsReadLocked() throws Exception {
-        PlainDocument doc = new PlainDocument();
-        assertFalse(DocumentUtilities.isReadLocked(doc));
-        doc.readLock();
-        try {
-            assertTrue(DocumentUtilities.isReadLocked(doc));
-        } finally {
-            doc.readUnlock();
+    private static EditorPackageAccessor INSTANCE;
+
+    public static EditorPackageAccessor get() {
+        if (INSTANCE == null) {
+            // Cause api accessor impl to get initialized
+            try {
+                Class.forName(BaseDocument.class.getName(), true, EditorPackageAccessor.class.getClassLoader());
+            } catch (ClassNotFoundException e) {
+                // Should never happen
+            }
         }
+        return INSTANCE;
     }
-    
-    public void testIsWriteLocked() throws Exception {
-        PlainDocument doc = new PlainDocument();
-        assertFalse(DocumentUtilities.isWriteLocked(doc));
-        doc.addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent evt) {
-                assertTrue(DocumentUtilities.isWriteLocked(evt.getDocument()));
-            }
-            public void removeUpdate(DocumentEvent evt) {
-            }
-            public void changedUpdate(DocumentEvent evt) {
-            }
-        });
-        doc.insertString(0, "test", null);
+
+    public static void register(EditorPackageAccessor accessor) {
+        INSTANCE = accessor;
     }
+
+    public abstract CompoundEdit markAtomicEditsNonSignificant(BaseDocument doc);
 
 }
