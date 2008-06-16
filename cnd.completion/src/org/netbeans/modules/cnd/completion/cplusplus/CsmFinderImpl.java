@@ -812,9 +812,9 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
     }
 
     public List findLabel(CsmOffsetableDeclaration contextDeclaration, String name, boolean exactMatch, boolean sort) {
+        List<CsmObject> out = new ArrayList<CsmObject>();
         if (CsmKindUtilities.isFunctionDefinition(contextDeclaration)) {
             Collection<CsmReference> res = CsmLabelResolver.getDefault().getLabels((CsmFunctionDefinition) contextDeclaration, null, CsmLabelResolver.LabelKind.Definiton);
-            List<CsmObject> out = new ArrayList<CsmObject>();
             for(CsmReference ref : res){
                 if (ref.getReferencedObject() instanceof CsmLabel){
                     CsmLabel label = (CsmLabel) ref.getReferencedObject();
@@ -823,8 +823,7 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
                     }
                 }
             }
-            return out;
         }
-        return null;
+        return out;
     }
 }
