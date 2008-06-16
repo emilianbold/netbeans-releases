@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,42 +31,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.lib.lexer.batch;
+package org.netbeans.modules.php.editor.index;
 
-import java.util.Set;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.lib.lexer.LexerInputOperation;
-import org.netbeans.lib.lexer.TextLexerInputOperation;
-import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.TokenHierarchyOperation;
-
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.php.editor.PredefinedSymbols;
 
 /**
- * Batch token list over text expressed as character sequence.
  *
- * @author Miloslav Metelka
- * @version 1.00
+ * @author tomslot
  */
+public class PredefinedSymbolElement extends PHPElement{
+    private String symbolName;
 
-public final class TextTokenList<T extends TokenId> extends BatchTokenList<T> {
-
-    private CharSequence inputText;
-
-    public TextTokenList(TokenHierarchyOperation<?,T> tokenHierarchyOperation, CharSequence inputText,
-    Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
-        super(tokenHierarchyOperation, language, skipTokenIds, inputAttributes);
-        this.inputText = inputText;
+    public PredefinedSymbolElement(String symbolName) {
+        this.symbolName = symbolName;
     }
     
-    public char childTokenCharAt(int rawOffset, int index) {
-        return inputText.charAt(rawOffset + index); // rawOffset is absolute
-    }
-    
-    protected LexerInputOperation<T> createLexerInputOperation() {
-        return new TextLexerInputOperation<T>(this, inputText);
+    @Override
+    public String getName() {
+        return symbolName;
     }
 
+    @Override
+    public ElementKind getKind() {
+        return ElementKind.VARIABLE;
+    }
+
+    public String getDoc(){
+        return PredefinedSymbols.getDocumentation(symbolName);
+    }
 }

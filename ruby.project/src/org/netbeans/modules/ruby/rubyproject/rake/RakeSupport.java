@@ -53,6 +53,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -62,6 +63,7 @@ import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
@@ -84,6 +86,8 @@ import org.openide.util.actions.SystemAction;
  * Supports Rake related operations.
  */
 public final class RakeSupport {
+
+    private static final Logger LOGGER = Logger.getLogger(RakeSupport.class.getName());
     
     /** File storing the 'rake -T' output. */
     static final String RAKE_T_OUTPUT = "nbproject/private/rake-t.txt"; // NOI18N
@@ -158,16 +162,40 @@ public final class RakeSupport {
         return false;
     }
 
-    public static void refreshTasks(Project project) {
+    /**
+     * Runs 'rake -T' and writes the output into the {@link #RAKE_T_OUTPUT} if
+     * succeed.
+     * 
+     * @param project project for which tasks are read
+     */
+    public static void refreshTasks(final Project project) {
         if (!RubyPlatform.hasValidRake(project, true)) {
             return;
         }
 
-        String rakeOutput = hiddenRakeRunner(project);
-        writeRakeTasks(project, rakeOutput);
+        try {
+            FileObject rakeT = project.getProjectDirectory().getFileObject(RAKE_T_OUTPUT);
+            // clean old content
+            if (rakeT != null && rakeT.isData()) {
+                rakeT.delete();
+            }
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+        
+        String rakeOutput = readRakeTasksOutput(project);
+        if (rakeOutput != null) {
+            writeRakeTasks(project, rakeOutput);
+        }
     }
 
-    private static String hiddenRakeRunner(Project project) {
+    /**
+     * Runs 'rake -T' and returns the output.
+     *
+     * @param project project for which tasks are read
+     * @return rake output; might be <tt>null</tt> when underlaying rake command fails.
+     */
+    private static String readRakeTasksOutput(final Project project) {
         File pwd;
         FileObject rakeFile = RakeSupport.findRakeFile(project);
         if (rakeFile == null) {
@@ -180,11 +208,9 @@ public final class RakeSupport {
         String rakeCmd = RubyPlatform.gemManagerFor(project).getRake();
         RubyPlatform platform = RubyPlatform.platformFor(project);
 
-        StringBuffer sb = new StringBuffer();
-        sb.append(hiddenRakeRunner(platform, rakeCmd, pwd, "-T"));
+        return hiddenRakeRunner(platform, rakeCmd, pwd, "-T");
         // TODO: we are not able to parse complex Rakefile (e.g. rails'), using -P argument, yet
         // sb.append(hiddenRakeRunner(cmd, rakeCmd, pwd, "-P"));
-        return sb.toString();
     }
 
     /**
@@ -236,7 +262,7 @@ public final class RakeSupport {
     private static String hiddenRakeRunner(RubyPlatform platform, String rakeCmd, File pwd, String rakeArg) {
         List<String> argList = new ArrayList<String>();
         File cmd = platform.getInterpreterFile();
-        if (!cmd.getName().startsWith("jruby") || RubyExecution.LAUNCH_JRUBY_SCRIPT) {
+        if (!cmd.getName().startsWith("jruby") || RubyExecution.LAUNCH_JRUBY_SCRIPT) { // NOI18N
             argList.add(cmd.getPath());
         }
 
@@ -259,6 +285,7 @@ public final class RakeSupport {
         StringBuilder sb = new StringBuilder(5000);
 
         try {
+            ExecutionService.logProcess(pb);
             Process process = pb.start();
 
             InputStream is = process.getInputStream();
@@ -273,7 +300,7 @@ public final class RakeSupport {
                         break;
                     }
                     sb.append(line);
-                    sb.append("\n");
+                    sb.append('\n');
                 }
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
@@ -282,21 +309,8 @@ public final class RakeSupport {
             exitCode = process.waitFor();
 
             if (exitCode != 0) {
-                try {
-                    // This might not be necessary now that I'm
-                    // calling ProcessBuilder.redirectErrorStream(true)
-                    // but better safe than sorry
-                    is = process.getErrorStream();
-                    isr = new InputStreamReader(is);
-                    br = new BufferedReader(isr);
-
-                    while ((line = br.readLine()) != null) {
-                        sb.append(line);
-                        sb.append('\n');
-                    }
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
+                LOGGER.severe("rake process failed:\n\n" + sb.toString()); // NOI18N
+                return null;
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);

@@ -106,7 +106,7 @@ public class CustomEmbeddingTest extends NbTestCase {
         assertEquals(0, etc.embeddedChangeCount());
         
         // Test the contents of the embedded sequence
-        TokenSequence<?> ets = ts.embedded();
+        TokenSequence<?> ets = ts.embedded(); // Over "// line comment"
         assertTrue(ets.moveNext());
         LexerTestUtilities.assertTokenEquals(ets,TestTokenId.IDENTIFIER, "line", 18);
         assertTrue(ets.moveNext());
@@ -158,7 +158,7 @@ public class CustomEmbeddingTest extends NbTestCase {
 
         
         // Check token sequence list
-        // Create custm embedding again
+        // Create custom embedding again
         assertTrue(ts.createEmbedding(TestTokenId.language(), 2, 2));
         LanguagePath lpe = LanguagePath.get(TestTokenId.language()).embedded(TestTokenId.language());
         List<TokenSequence<?>> tsl = hi.tokenSequenceList(lpe, 0, Integer.MAX_VALUE);

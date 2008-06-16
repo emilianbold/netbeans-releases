@@ -46,6 +46,22 @@ made subject to such option by the copyright holder.
 <apidef name="text">Text API</apidef>
 </apidefs>
 <changes>
+    <change id="beforeSaveRunnable">
+        <api name="text"/>
+        <summary>"beforeSaveRunnable" document property</summary>
+        <version major="6" minor="20"/>
+        <date day="16" month="5" year="2008"/>
+        <author login="mmetelka"/>
+        <compatibility addition="yes" deletion="no" modification="no" binary="compatible" source="compatible"/>
+        <description>
+            <p>
+            CloneableEditorSupport.saveDocument() checks document's "beforeSaveDocument" property
+            for a Runnable to be executed before the actual save will be done.
+            </p>
+        </description>
+        <class package="org.openide.text" name="CloneableEditorSupport"/>
+        <issue number="13063"/>
+    </change>
     <change id="initializeOnBackground">
         <api name="text"/>
         <summary>EditorKit, Document and co. are loaded on background by default</summary>
