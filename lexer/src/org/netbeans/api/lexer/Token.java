@@ -216,7 +216,9 @@ public abstract class Token<T extends TokenId> {
      * @return true if the token was removed from the token hierarchy
      *  or false if it's still present in the hierarchy.
      */
-    public abstract boolean isRemoved();
+    public boolean isRemoved() {
+        throw new UnsupportedOperationException("Not implemented.");
+    }
     
     /**
      * Check whether this token represents a complete token
@@ -236,7 +238,9 @@ public abstract class Token<T extends TokenId> {
      * 
      * @return complete token or null if this token is not a part of any token.
      */
-    public abstract Token<T> joinToken();
+    public Token<T> joinToken() {
+        throw new UnsupportedOperationException("Not implemented.");
+    }
     
     /**
      * Get all token parts comprising this token ordered from lowest to highest part's offset.
@@ -248,7 +252,9 @@ public abstract class Token<T extends TokenId> {
      * 
      * @return list of token parts or null if the token is continuous.
      */
-    public abstract List<? extends Token<T>> joinedParts();
+    public List<? extends Token<T>> joinedParts() {
+        throw new UnsupportedOperationException("Not implemented.");
+    }
 
     /**
      * Quickly determine whether this token has any extra properties.
