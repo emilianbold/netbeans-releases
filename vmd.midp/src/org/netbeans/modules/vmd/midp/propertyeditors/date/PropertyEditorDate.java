@@ -200,7 +200,7 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         final DesignComponent _component = component.get();
         if (databindingElement != null && databindingElement.getRadioButton().isSelected()) {
             ((DatabindingElementUI) databindingElement.getCustomEditorComponent()).saveToModel(_component);
-        } else {
+        } else if (databindingElement != null) {
             ((DatabindingElementUI) databindingElement.getCustomEditorComponent()).resetValuesInModel(_component);
         }
     }
