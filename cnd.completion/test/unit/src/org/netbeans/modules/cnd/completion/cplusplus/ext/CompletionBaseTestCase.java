@@ -62,6 +62,7 @@ public abstract class CompletionBaseTestCase extends ProjectBasedTestCase {
      */
     public CompletionBaseTestCase(String testName, boolean performInWorkDir) {
         super(testName, performInWorkDir);
+        // System.setProperty("cnd.repository.hardrefs", "true");
     }
     
     @Override

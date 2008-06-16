@@ -75,6 +75,7 @@ import org.netbeans.modules.db.sql.history.SQLHistoryModel;
 import org.netbeans.modules.db.sql.history.SQLHistoryModelImpl;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -103,6 +104,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         sqlHistoryTable.getColumnModel().getColumn(1).setHeaderValue(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_DateTableTitle"));
         // Initialize data for the Connection combo box  
         this.view.updateUrl();
+        inputWarningLabel.setVisible(false);
     }
 
     private void initSQLHistoryTableData(SQLHistoryView localSQLView) {
@@ -148,6 +150,10 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         insertSQLButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         sqlHistoryTable = new javax.swing.JTable();
+        sqlLimitLabel = new javax.swing.JLabel();
+        sqlLimitTextField = new javax.swing.JTextField();
+        sqlLimitButton = new javax.swing.JButton();
+        inputWarningLabel = new javax.swing.JLabel();
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_Connection")); // NOI18N
 
@@ -168,12 +174,25 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         sqlHistoryTable.setModel(new HistoryTableModel());
         sqlHistoryTable.setCellSelectionEnabled(true);
         sqlHistoryTable.setGridColor(java.awt.Color.lightGray);
-        sqlHistoryTable.setOpaque(false);
         sqlHistoryTable.setSelectionBackground(java.awt.Color.lightGray);
-        sqlHistoryTable.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         jScrollPane1.setViewportView(sqlHistoryTable);
         sqlHistoryTable.getColumnModel().getColumn(0).setHeaderValue(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "SQLHistoryPanel.sqlHistoryTable.columnModel.title0")); // NOI18N
         sqlHistoryTable.getColumnModel().getColumn(1).setHeaderValue(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "SQLHistoryPanel.sqlHistoryTable.columnModel.title1")); // NOI18N
+
+        sqlLimitLabel.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "SQLHistoryPanel.sqlLimitLabel.text")); // NOI18N
+
+        sqlLimitTextField.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "SQLHistoryPanel.sqlLimitTextField.text")); // NOI18N
+        sqlLimitTextField.setMinimumSize(new java.awt.Dimension(18, 22));
+
+        sqlLimitButton.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "SQLHistoryPanel.sqlLimitButton.text")); // NOI18N
+        sqlLimitButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sqlLimitButtonActionPerformed(evt);
+            }
+        });
+
+        inputWarningLabel.setForeground(java.awt.Color.red);
+        inputWarningLabel.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "SQLHistoryPanel.inputWarningLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -182,17 +201,31 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(jLabel1)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(jLabel1)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                .add(connectionComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                .add(jLabel2)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                .add(searchTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE))
+                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(insertSQLButton))
+                    .add(layout.createSequentialGroup()
+                        .add(sqlLimitLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(connectionComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(jLabel2)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(searchTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE))
-                    .add(insertSQLButton))
-                .addContainerGap())
+                        .add(sqlLimitTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 62, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(103, 103, 103)
+                                .add(inputWarningLabel))
+                            .add(layout.createSequentialGroup()
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                .add(sqlLimitButton)))
+                        .addContainerGap(301, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -204,10 +237,15 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                     .add(jLabel2)
                     .add(searchTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
-                .add(18, 18, 18)
-                .add(insertSQLButton)
-                .addContainerGap())
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(insertSQLButton)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(sqlLimitLabel)
+                    .add(inputWarningLabel)
+                    .add(sqlLimitTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(sqlLimitButton)))
         );
 
         insertSQLButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "ACSD_Search")); // NOI18N
@@ -234,14 +272,40 @@ private void insertSQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
     }
 
 }//GEN-LAST:event_insertSQLButtonActionPerformed
+
+private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sqlLimitButtonActionPerformed
+// TODO add your handling code here:
+    String limit = sqlLimitTextField.getText();
+    int iLimit = 0;
+    try {
+        iLimit = Integer.parseInt(limit);
+        NbPreferences.forModule(SQLHistoryPanel.class).put("SQL_STATEMENTS_SAVED_FOR_HISTORY", Integer.toString(iLimit));  // NOI18N               
+    } catch (NumberFormatException ne) {
+        inputWarningLabel.setVisible(true);
+        inputWarningLabel.setText(NbBundle.getMessage(SQLHistoryPanel.class, "SQLHistoryPanel.inputWarningLabel.text"));
+        sqlLimitTextField.setText("10000");  // reset user's input
+    }
+    
+    if (iLimit < 0 && iLimit > 10000) {
+        sqlLimitButton.setEnabled(true);
+        inputWarningLabel.setVisible(true);
+        inputWarningLabel.setText(NbBundle.getMessage(SQLHistoryPanel.class, "SQLHistoryPanel.sqlLimitLabel.text"));
+    }
+
+}//GEN-LAST:event_sqlLimitButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox connectionComboBox;
+    private javax.swing.JLabel inputWarningLabel;
     private javax.swing.JButton insertSQLButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField searchTextField;
     private javax.swing.JTable sqlHistoryTable;
+    private javax.swing.JButton sqlLimitButton;
+    private javax.swing.JLabel sqlLimitLabel;
+    private javax.swing.JTextField sqlLimitTextField;
     // End of variables declaration//GEN-END:variables
     private class SQLHistoryView {
         SQLHistoryModel model;
@@ -548,6 +612,7 @@ private void insertSQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
             if (null != tableData && null != toolTipData) {
                 setToolTipText("<html>" + parsedData[nRow][nCol].toString() + "</html>");
                 setText(data[nRow][nCol].toString());
+                table.getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
             }
             return this;
         }

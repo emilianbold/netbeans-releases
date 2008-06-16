@@ -39,8 +39,11 @@
 package org.netbeans.modules.vmd.midp.components.databinding;
 
 import org.netbeans.modules.vmd.midp.components.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
+import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
@@ -48,26 +51,26 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
-import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
+import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
+import org.netbeans.modules.vmd.midp.components.categories.DatabindingCategoryCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.midp.inspector.controllers.InspectorPositionControllerSupport;
+
 
 /**
  *
  * @author Karol Harezlak
  */
-public class DatabindingConnectorCD extends ComponentDescriptor {
+public class DataSetAbstractCD extends ComponentDescriptor {
 
-    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#DatabindingConnector"); //NOI18N
+    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#AbstractDataSet"); //NOI18N
+    
+    public static final String PROP_NAMES = "names"; 
 
-    public static final String PROP_COMPONENT = "dataSet"; //NOI18N
-    public static final String PROP_EXPRESSION = "expression"; //NOI18N
-    public static final String PROP_UPDATE = "databindingUpdate"; //NOI18N
-    public static final String PROP_BINDED_PROPERTY = "property";//NOI18N
-
-
+   
     @Override
     public TypeDescriptor getTypeDescriptor() {
-        return new TypeDescriptor(ClassCD.TYPEID, TYPEID, true, true);
+        return new TypeDescriptor(ClassCD.TYPEID, TYPEID, false, true);
     }
 
     @Override
@@ -75,17 +78,29 @@ public class DatabindingConnectorCD extends ComponentDescriptor {
         return MidpVersionDescriptor.MIDP_2;
     }
 
+    @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-                new PropertyDescriptor(PROP_COMPONENT, DataSetCD.TYPEID, PropertyValue.createNull(), true, false, MidpVersionable.MIDP_2),
-                new PropertyDescriptor(PROP_EXPRESSION, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, false, MidpVersionable.MIDP_2),
-                new PropertyDescriptor(PROP_UPDATE, CommandCD.TYPEID, PropertyValue.createNull(), true, false, MidpVersionable.MIDP_2),
-                new PropertyDescriptor(PROP_BINDED_PROPERTY, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, false, MidpVersionable.MIDP_2)
+                new PropertyDescriptor(PROP_NAMES, MidpTypes.TYPEID_JAVA_LANG_STRING.getArrayType(), PropertyValue.createNull(), true, false, MidpVersionable.MIDP_2)
         );
     }
 
     @Override
+    protected void gatherPresenters(ArrayList<Presenter> presenters) {
+        //DocumentSupport.removePresentersOfClass(presenters, CodeClassLevelPresenter.class);
+        super.gatherPresenters(presenters);
+    }
+
+    @Override
     protected List<? extends Presenter> createPresenters() {
-        return null;
+        
+        return Arrays.asList(
+                // code
+                MidpCodePresenterSupport.createAddImportPresenter("org.netbeans.microedition.databinding.DataBindingException", //NOI18N
+                                                                  "org.netbeans.microedition.databinding.DataBinder"), //NOI18N
+                //MIDPDataSetBodyCodePresenter.create("/org/netbeans/modules/vmd/midp/codegen/dataset_java.code"), //NOI18N
+                //inspector
+                new InspectorFolderComponentPresenter(true),
+                InspectorPositionPresenter.create(InspectorPositionControllerSupport.createHierarchical(DatabindingCategoryCD.TYPEID)));   
     }
 }

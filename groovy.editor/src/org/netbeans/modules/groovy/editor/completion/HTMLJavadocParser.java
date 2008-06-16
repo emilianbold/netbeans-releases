@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.editor;
+package org.netbeans.modules.groovy.editor.completion;
 
 import java.io.IOException;
 import java.io.InputStream;
