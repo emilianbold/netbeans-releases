@@ -51,7 +51,6 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
-import org.netbeans.modules.vmd.midp.codegen.MIDPDataSetBodyCodePresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
 import org.netbeans.modules.vmd.midp.components.categories.DatabindingCategoryCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
@@ -62,7 +61,7 @@ import org.netbeans.modules.vmd.midp.inspector.controllers.InspectorPositionCont
  *
  * @author Karol Harezlak
  */
-public class AbstractDataSetCD extends ComponentDescriptor {
+public class DataSetAbstractCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#AbstractDataSet"); //NOI18N
     
