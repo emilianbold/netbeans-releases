@@ -46,8 +46,10 @@ import org.netbeans.modules.cnd.completion.csm.CsmProjectContentResolver;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.netbeans.editor.Settings;
@@ -61,12 +63,15 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmFinder;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
@@ -289,11 +294,44 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
                 if (classes != null) {
                     ret.addAll(classes);
                 }
+            } else {
+                HashSet<CharSequence> set = new HashSet<CharSequence>();
+                for(Object o : ret){
+                    if (CsmKindUtilities.isQualified((CsmObject) o)) {
+                        set.add(((CsmQualifiedNamedElement)o).getQualifiedName());
+                    }
+                }
+                if (!ns.getProject().isArtificial()) {
+                    for (CsmProject lib : prj.getLibraries()) {
+                        CsmNamespace n = lib.getGlobalNamespace();
+                        classes = contResolver.getNamespaceClassesEnums(n, name, exactMatch, searchNested);
+                        merge(set, ret, classes);
+                        classes = contResolver.getNamespaceEnumerators(n, name, exactMatch, searchNested);
+                        merge(set, ret, classes);
+                        classes = contResolver.getNamespaceVariables(n, name, exactMatch, searchNested);
+                        merge(set, ret, classes);
+                        classes = contResolver.getNamespaceFunctions(n, name, exactMatch, searchNested);
+                        merge(set, ret, classes);
+                    }
+                }
             }
         }
         return ret;
     }
 
+    private void merge(HashSet<CharSequence> set, List ret, Collection classes) {
+        if (classes != null) {
+            for (Object o : classes) {
+                if (CsmKindUtilities.isQualified((CsmObject) o)) {
+                    if (!set.contains(((CsmQualifiedNamedElement) o).getQualifiedName())) {
+                        ret.add(o);
+                        set.add(((CsmQualifiedNamedElement) o).getQualifiedName());
+                    }
+                }
+            }
+        }
+    }
+    
     /** Find classes by name and possibly in some namespace
     * @param nmsp namespace where the classes should be searched for. It can be null
     * @param begining of the name of the class. The namespace name must be omitted.

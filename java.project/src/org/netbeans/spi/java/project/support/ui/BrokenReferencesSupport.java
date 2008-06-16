@@ -60,6 +60,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.windows.WindowManager;
 
 /**
@@ -107,6 +108,10 @@ public class BrokenReferencesSupport {
      */
     public static boolean isBroken(AntProjectHelper projectHelper, 
             ReferenceHelper referenceHelper, String[] properties, String[] platformProperties) {
+        Parameters.notNull("projectHelper", projectHelper);             //NOI18N
+        Parameters.notNull("referenceHelper", referenceHelper);         //NOI18N
+        Parameters.notNull("properties", properties);                   //NOI18N
+        Parameters.notNull("platformProperties", platformProperties);   //NOI18N
         return BrokenReferencesModel.isBroken(projectHelper, referenceHelper,
             projectHelper.getStandardPropertyEvaluator(), properties, platformProperties);
     }

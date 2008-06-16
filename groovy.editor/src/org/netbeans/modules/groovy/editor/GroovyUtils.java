@@ -191,7 +191,7 @@ public class GroovyUtils {
         return ble;
     }
     
-    static final String[] JAVA_KEYWORDS =
+    public static final String[] JAVA_KEYWORDS =
         new String[] {
             "import",
             "assert",
@@ -222,7 +222,7 @@ public class GroovyUtils {
             "while"
         };
     
-    static final String[] GROOVY_KEYWORDS =
+    public static final String[] GROOVY_KEYWORDS =
         new String[] {
             "as",
             "def",

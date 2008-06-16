@@ -193,7 +193,7 @@ public class AppClientJaxWsLookupProvider implements LookupProvider {
                         final String styleSheetResource,
                         AntBuildExtender ext) throws IOException {
         
-        TransformerUtils.transformClients(prj.getProjectDirectory(), styleSheetResource);
+        TransformerUtils.transformClients(prj.getProjectDirectory(), styleSheetResource, true);
         FileObject jaxws_build = prj.getProjectDirectory().getFileObject(TransformerUtils.JAXWS_BUILD_XML_PATH);
         assert jaxws_build!=null;
         AntBuildExtender.Extension extension = ext.getExtension(JAXWS_EXTENSION);
