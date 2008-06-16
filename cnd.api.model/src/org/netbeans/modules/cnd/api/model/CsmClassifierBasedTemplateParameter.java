@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -39,30 +39,10 @@
 
 package org.netbeans.modules.cnd.api.model;
 
-import java.util.Map;
-
 /**
- * instantiation information 
- * i.e. A<int, double> aa;
- * aa has type A<int, double> 
- * this CsmType has getClassifier method which 
- * returns classifier as CsmInstantiation object.
- * getTemplateDeclaration() will be original template declaration
- * of template class A and getInstantiationType
- * will be CsmType presenting A<int, double> 
- * @author Vladimir Voskresensky
+ *
+ * @author eu155513
  */
-public interface CsmInstantiation extends CsmObject {
-    /**
-     * returns template declaration which was instantiated 
-     * i.e. template class A for A<int, double> aa;
-     * @return
-     */
-    CsmOffsetableDeclaration getTemplateDeclaration();
-    
-    /**
-     * returns mapping of template parameters to the types
-     * @return
-     */
-    Map<CsmTemplateParameter, CsmType> getMapping();
+public interface CsmClassifierBasedTemplateParameter extends CsmTemplateParameter, CsmClassifier {
+
 }
