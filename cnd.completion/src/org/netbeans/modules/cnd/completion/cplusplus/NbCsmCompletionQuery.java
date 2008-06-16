@@ -291,8 +291,8 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
             return new NbCsmResultItem.NbNamespaceAliasResultItem(alias, displayFullNamespacePath, LIB_NAMESPACE_ALIAS_PRIORITY);
         }
 
-        public TemplateParameterResultItem createTemplateParameterResultItem(CsmTemplateParameter par) {
-            return new NbCsmResultItem.TemplateParameterResultItem(par, CLASS_ENUMERATOR_PRIORITY);
+        public CsmResultItem.TemplateParameterResultItem createTemplateParameterResultItem(CsmTemplateParameter par) {
+            return new NbCsmResultItem.NbTemplateParameterResultItem(par, CLASS_ENUMERATOR_PRIORITY);
         }
 
         public CsmResultItem createLabelResultItem(CsmLabel csmStatement) {
