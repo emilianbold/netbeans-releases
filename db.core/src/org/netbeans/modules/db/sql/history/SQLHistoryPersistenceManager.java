@@ -358,13 +358,17 @@ public class SQLHistoryPersistenceManager {
                 } catch (ParseException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-
+            } else {
+                isSql = false;
+            }
+        }
+        
+        public void endElement(String uri, String localName, String qName) {
+            if (ELEMENT_SQL.equals(qName)) {
                 if (url != null && sql != null && date != null) {
                     addHistory(url, sql, date);
                     reset();
                 }
-            } else {
-                isSql = false;
             }
         }
 
@@ -378,13 +382,14 @@ public class SQLHistoryPersistenceManager {
             sqlHistoryList.add(new SQLHistory(url, sql, date));
         }
  
-        public void characters(char buf[], int offset, int length) {    
+        public void characters(char buf[], int offset, int length) {
             if (isSql) {
                 String parsedValue = new String(buf, offset, length);
-                if (!parsedValue.trim().equals("") && sql == null) {
+                if (sql == null) {
                     sql = parsedValue;
+                } else {
+                    sql += parsedValue;
                 }
-                isSql = false;
             }
         }
 
