@@ -59,7 +59,7 @@
                     <code-name-base>org.netbeans.modules.javascript.refactoring</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.59.1</specification-version>
+                        <specification-version>0.59.2</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
