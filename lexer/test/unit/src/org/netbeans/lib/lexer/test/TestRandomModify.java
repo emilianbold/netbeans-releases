@@ -59,8 +59,6 @@ import org.netbeans.lib.editor.util.CharSequenceUtilities;
  */
 public class TestRandomModify {
     
-    private final Class hostClass;
-
     private boolean debugOperation;
 
     private boolean debugHierarchy;
@@ -79,19 +77,18 @@ public class TestRandomModify {
     
     private List<SnapshotDescription> snapshots = new ArrayList<SnapshotDescription>();
 
-    public TestRandomModify(Class hostClass) {
-        this(0, hostClass);
+    public TestRandomModify() {
+        this(0);
     }
     
-    public TestRandomModify(long seed, Class hostClass) {
-        this.hostClass = hostClass;
+    public TestRandomModify(long seed) {
         this.doc = new javax.swing.text.PlainDocument();
 
         this.random = new Random();
         if (seed == 0) { // Use currentTimeMillis() (btw nanoTime() in 1.5 instead)
             seed = System.currentTimeMillis();
         }
-        System.err.println(hostClass.getName() + " with SEED=" + seed + "L");
+        System.err.println("TestRandomModify with SEED=" + seed + "L");
         random.setSeed(seed);
     }
     
