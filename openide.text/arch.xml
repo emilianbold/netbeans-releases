@@ -391,6 +391,11 @@ in methods
 
 </api>
 
+<api type="export" group="property" name="beforeSaveRunnable" category="friend" >
+    Document property that allows to execute a runnable before save of a document is performed.
+    For example an extra whitespace accumulated during typing can be removed by exploiting this property.
+</api>
+
 </answer>
 
 
