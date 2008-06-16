@@ -40,25 +40,22 @@ package org.netbeans.modules.vmd.midp.components.databinding;
 
 import org.netbeans.modules.vmd.midp.components.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
-import org.netbeans.modules.vmd.midp.codegen.MIDPDataSetBodyCodePresenter;
 
 /**
  *
  * @author Karol Harezlak
  */
-public class DataSetCD extends ComponentDescriptor {
+public class ContactDataSetCD extends ComponentDescriptor {
 
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/dataset_16.gif"; // NOI18N
-    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.databinding.DataSet"); //NOI18N
+    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.databinding.pim.ContactDataSet"); //NOI18N
     
     public static final String PROP_NAMES = "names"; 
 
@@ -78,9 +75,7 @@ public class DataSetCD extends ComponentDescriptor {
 
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
-        return Arrays.asList(
-                new PropertyDescriptor(PROP_NAMES, MidpTypes.TYPEID_JAVA_LANG_STRING.getArrayType(), PropertyValue.createNull(), true, false, MidpVersionable.MIDP_2)
-        );
+        return null;
     }
 
     @Override
@@ -91,15 +86,27 @@ public class DataSetCD extends ComponentDescriptor {
 
     @Override
     protected List<? extends Presenter> createPresenters() {
-        
-        return Arrays.asList(
-                // code
-                //MidpCodePresenterSupport.createAddImportPresenter("org.netbeans.microedition.databinding.DataBindingException", //NOI18N
-                //                                                  "org.netbeans.microedition.databinding.DataBinder"), //NOI18N
-                MIDPDataSetBodyCodePresenter.create("/org/netbeans/modules/vmd/midp/codegen/dataset_java.code") //NOI18N
-                //inspector
-                //new InspectorFolderComponentPresenter(true),
-                //InspectorPositionPresenter.create(InspectorPositionControllerSupport.createHierarchical(DatabindingCategoryCD.TYPEID))
-                );   
+        return null;
     }
+    
+    //Runtime parameters
+    public static final String NAME                 = "name";
+    public static final String ADDRESS              = "address";
+    public static final String EMAIL                = "email";
+    public static final String FORMATTED_NAME       = "formatted_name";
+    public static final String NICKNAME             = "nickname";
+    public static final String NOTE                 = "note";
+    public static final String ORGANIZATION         = "organization";
+    public static final String TELEPHONE            = "telephone";
+    public static final String TITLE                = "title";
+    public static final String UID                  = "uid";
+    public static final String URL                  = "url";
+    public static final String BIRTHDAY             = "birthday";
+    public static final String REVISION             = "revision";
+    public static final String PHOTO                = "photo";
+    public static final String PUBLIC_KEY           = "public_key";    
+    public static final String PHOTO_URL            = "photo_url";
+    public static final String PUBLIC_KEY_STRING    = "public_key_string";        
+    public static final String CLASS                = "class";
+    
 }

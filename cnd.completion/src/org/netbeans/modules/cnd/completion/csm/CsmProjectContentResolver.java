@@ -725,14 +725,6 @@ public final class CsmProjectContentResolver {
         List res = getNamespaceMembers(ns, classKinds, strPrefix, match, searchNested, false);
         Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
         filterDeclarations(used.iterator(), res, classKinds, strPrefix, match, false);
-        if (!ns.getProject().isArtificial() && !ns.isGlobal()){
-            for(CsmProject lib : ns.getProject().getLibraries()){
-                CsmNamespace n = lib.findNamespace(ns.getQualifiedName());
-                if (n != null) {
-                    res.addAll(getNamespaceMembers(n, classKinds, strPrefix, match, searchNested, false));
-                }
-            }
-        }
         if (isSortNeeded() && res != null) {
             CsmSortUtilities.sortClasses(res, isCaseSensitive());
         }
@@ -991,6 +983,15 @@ public final class CsmProjectContentResolver {
         //it = ns.getDeclarations().iterator();
         //filterDeclarations(it, res, kinds, strPrefix, match, returnUnnamedMembers);
         filterDeclarations(ns, res, kinds, strPrefix, match, returnUnnamedMembers);
+        if (!ns.getProject().isArtificial() && !ns.isGlobal()){
+            for(CsmProject lib : ns.getProject().getLibraries()){
+                CsmNamespace n = lib.findNamespace(ns.getQualifiedName());
+                if (n != null && ! handledNS.contains(n)) {
+                    filterDeclarations(n, res, kinds, strPrefix, match, returnUnnamedMembers);
+                    handledNS.add(n);
+                }
+            }
+        }
         // handle all nested namespaces
         if (searchNested) {
             for (it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
