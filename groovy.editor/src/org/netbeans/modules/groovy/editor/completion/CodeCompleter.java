@@ -38,8 +38,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.groovy.editor;
+package org.netbeans.modules.groovy.editor.completion;
 
+import org.netbeans.modules.groovy.editor.*;
+import org.netbeans.modules.groovy.editor.completion.HTMLJavadocParser;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaMethod;
@@ -1098,7 +1100,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    private static class CompletionRequest {
+    public static class CompletionRequest {
 
         // private TokenHierarchy<Document> th;
         private CompilationInfo info;
