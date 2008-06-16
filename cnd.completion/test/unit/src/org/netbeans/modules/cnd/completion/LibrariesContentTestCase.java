@@ -68,6 +68,7 @@ public class LibrariesContentTestCase extends CompletionBaseTestCase {
     
     public void testGlobalFunsWithPrefix() throws Exception {
         super.performTest("src/main.cc", 6, 5, "f");
+        super.performTest("src/main.cc", 6, 5, "::f");
     }
 
     private void checkDir(File srcDir) {
