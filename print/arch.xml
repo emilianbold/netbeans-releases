@@ -357,7 +357,9 @@
   -->
   <answer id="deploy-packages">
   <p>
-      Yes. The module allows friends access.
+      Now the module allows friends access only for print.api/spi
+      packages. After API review it is going to have public access
+      for the packages.
   </p>
   </answer>
 
