@@ -323,12 +323,20 @@ class J2SEActionProvider implements ActionProvider {
                 if (targetNames == null) {
                     return;
                 }
-                if (COMMAND_RUN_SINGLE.equals(command) || COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_SINGLE.equals(command)) {
+                if (    (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command))
+                     && Boolean.valueOf(project.evaluator().getProperty(J2SEProjectProperties.QUICK_RUN))) {
                     bypassAntBuildScript(command, context, p);
                     
                     return ;
                 }
-                if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
+                if (    (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command))
+                     && Boolean.valueOf(project.evaluator().getProperty(J2SEProjectProperties.QUICK_RUN_SINGLE))) {
+                    bypassAntBuildScript(command, context, p);
+                    
+                    return ;
+                }
+                if (    (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command))
+                     && Boolean.valueOf(project.evaluator().getProperty(J2SEProjectProperties.QUICK_TEST_SINGLE))) {
                     FileObject[] files = findSources(context);
                     try {
                         ProjectRunner.execute(COMMAND_TEST_SINGLE.equals(command) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG, new Properties(), files[0]);

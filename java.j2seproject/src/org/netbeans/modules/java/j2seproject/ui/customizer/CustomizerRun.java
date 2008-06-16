@@ -56,6 +56,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -89,6 +90,8 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private JTextField[] data;
     private JLabel[] dataLabels;
     private String[] keys;
+    private JCheckBox[] quickRunCheckBoxes;
+    private String[] quickRunKeys;
     private Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs;
     J2SEProjectProperties uiProperties;
     
@@ -124,6 +127,18 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             J2SEProjectProperties.RUN_WORK_DIR,
         };
         assert data.length == keys.length;
+        
+        quickRunCheckBoxes = new JCheckBox[] {
+            quickRun,
+            quickRunSingle,
+            quickTestSingle,
+        };
+        
+        quickRunKeys = new String[] {
+            J2SEProjectProperties.QUICK_RUN,
+            J2SEProjectProperties.QUICK_RUN_SINGLE,
+            J2SEProjectProperties.QUICK_TEST_SINGLE,
+        };
         
         configChanged(uiProperties.activeConfig);
         
@@ -171,6 +186,25 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             });
         }
 
+        for (int i = 0; i < quickRunCheckBoxes.length; i++) {
+            final JCheckBox checkBox = quickRunCheckBoxes[i];
+            final String prop = quickRunKeys[i];
+            checkBox.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    String config = (String) configCombo.getSelectedItem();
+                    if (config.length() == 0) {
+                        config = null;
+                    }
+                    String v = Boolean.toString(checkBox.isSelected());
+                    if (v != null && config != null && v.equals(configs.get(null).get(prop))) {
+                        // default value, do not store as such
+                        v = null;
+                    }
+                    configs.get(config).put(prop, v);
+                }
+            });
+        }
+        
         jButtonMainClass.addActionListener( new MainClassListener( project.getSourceRoots(), jTextFieldMainClass ) );
     }
         
@@ -205,6 +239,12 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jLabelVMOptions = new javax.swing.JLabel();
         jTextVMOptions = new javax.swing.JTextField();
         jLabelVMOptionsExample = new javax.swing.JLabel();
+        quickRunSep = new javax.swing.JSeparator();
+        quickRunPanel = new javax.swing.JPanel();
+        quickRun = new javax.swing.JCheckBox();
+        quickRunSingle = new javax.swing.JCheckBox();
+        quickTestSingle = new javax.swing.JCheckBox();
+        jPanel1 = new javax.swing.JPanel();
         extPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -369,11 +409,55 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
         add(mainPanel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
+        add(quickRunSep, gridBagConstraints);
+
+        quickRunPanel.setLayout(new java.awt.GridBagLayout());
+
+        quickRun.setText("Quick Run");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
+        quickRunPanel.add(quickRun, gridBagConstraints);
+
+        quickRunSingle.setText("Quick Run Single");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
+        quickRunPanel.add(quickRunSingle, gridBagConstraints);
+
+        quickTestSingle.setText("Quick Test Single");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
+        quickRunPanel.add(quickTestSingle, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        quickRunPanel.add(jPanel1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
+        add(quickRunPanel, gridBagConstraints);
 
         extPanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -502,6 +586,14 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 }
                 data[i].setText(v);
             }
+            for (int i = 0; i < quickRunCheckBoxes.length; i++) {
+                String v = m.get(quickRunKeys[i]);
+                if (v == null) {
+                    // display default value
+                    v = def.get(quickRunKeys[i]);
+                }
+                quickRunCheckBoxes[i].setSelected(Boolean.valueOf(v));
+            }
         } // else ??
         configDel.setEnabled(activeConfig != null);
     }
@@ -522,11 +614,17 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private javax.swing.JLabel jLabelVMOptions;
     private javax.swing.JLabel jLabelVMOptionsExample;
     private javax.swing.JLabel jLabelWorkingDirectory;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField jTextFieldArgs;
     private javax.swing.JTextField jTextFieldMainClass;
     private javax.swing.JTextField jTextVMOptions;
     private javax.swing.JTextField jTextWorkingDirectory;
     private javax.swing.JPanel mainPanel;
+    private javax.swing.JCheckBox quickRun;
+    private javax.swing.JPanel quickRunPanel;
+    private javax.swing.JSeparator quickRunSep;
+    private javax.swing.JCheckBox quickRunSingle;
+    private javax.swing.JCheckBox quickTestSingle;
     // End of variables declaration//GEN-END:variables
     
     
