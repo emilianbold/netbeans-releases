@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.uml.drawingarea.actions;
 
+import java.awt.Point;
 import org.netbeans.api.visual.action.ConnectProvider;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -64,5 +65,5 @@ public interface ExConnectProvider extends ConnectProvider
      * 
      * @param scene The scene that will contain the new widget.
      */
-    public Widget createTargetWidget(Scene scene, Widget sourceWidget);
+    public Widget createTargetWidget(Scene scene, Widget sourceWidget, Point location);
 }

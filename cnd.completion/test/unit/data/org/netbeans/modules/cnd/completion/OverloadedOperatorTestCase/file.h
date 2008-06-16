@@ -7,6 +7,7 @@ class B {
 public:
     void boo();
     A* operator -> ();
+    A* fieldBA;
 };
 
 class C {
@@ -16,6 +17,9 @@ public:
     B operator[] (int ind);
     
     B* operator -> (void);
+
+    B* fieldCB;
+    A* fieldCA;
 };
 
 template <T> class TA {

@@ -76,32 +76,50 @@ public abstract class ActionUtils {
         
         List<Action> actions = new ArrayList<Action>();
         if(kind == Constants.MODE_KIND_EDITOR) {
-            actions.add(new CloseAllDocumentsAction(true));
-            CloseAllButThisAction allBut = new CloseAllButThisAction(tc, true);
-            if (mode != null && mode.getOpenedTopComponents().size() == 1) {
-                allBut.setEnabled(false);
+            if( Switches.isEditorTopComponentClosingEnabled() ) {
+                actions.add(new CloseAllDocumentsAction(true));
+                CloseAllButThisAction allBut = new CloseAllButThisAction(tc, true);
+                if (mode != null && mode.getOpenedTopComponents().size() == 1) {
+                    allBut.setEnabled(false);
+                }
+                actions.add(allBut);
+                actions.add(null); // Separator
             }
-            actions.add(allBut);
-            actions.add(null); // Separator
             actions.add(new SaveDocumentAction(tc));
             actions.add(new CloneDocumentAction(tc));
             actions.add(null); // Separator
-            actions.add(new CloseWindowAction(tc));
-            actions.add(new MaximizeWindowAction(tc));
-            actions.add(new UndockWindowAction(tc));
+            if( Switches.isEditorTopComponentClosingEnabled() ) {
+                actions.add(new CloseWindowAction(tc));
+            }
+            if( Switches.isTopComponentMaximizationEnabled() ) {
+                actions.add(new MaximizeWindowAction(tc));
+            }
+            if( Switches.isTopComponentUndockingEnabled() ) {
+                actions.add(new UndockWindowAction(tc));
+            }
         } else if (kind == Constants.MODE_KIND_VIEW) {
-            actions.add(new CloseWindowAction(tc));
+            if( Switches.isViewTopComponentClosingEnabled() ) {
+                actions.add(new CloseWindowAction(tc));
+            }
             // #82053: don't include maximize action for floating (separate) views
-            if (mode.getState() == Constants.MODE_STATE_JOINED) {
+            if (mode.getState() == Constants.MODE_STATE_JOINED
+                    && Switches.isTopComponentMaximizationEnabled() ) {
                 actions.add(new MaximizeWindowAction(tc));
             }
-            actions.add(new UndockWindowAction(tc));
+            if( Switches.isTopComponentUndockingEnabled() ) {
+                actions.add(new UndockWindowAction(tc));
+            }
         } else if (kind == Constants.MODE_KIND_SLIDING) {
-            actions.add(new CloseWindowAction(tc));
-            if (mode.getState() == Constants.MODE_STATE_JOINED) {
+            if( Switches.isViewTopComponentClosingEnabled() ) {
+                actions.add(new CloseWindowAction(tc));
+            }
+            if (mode.getState() == Constants.MODE_STATE_JOINED
+                    && Switches.isTopComponentMaximizationEnabled() ) {
                 actions.add(new MaximizeWindowAction(tc));
             }
-            actions.add(new UndockWindowAction(tc));
+            if( Switches.isTopComponentUndockingEnabled() ) {
+                actions.add(new UndockWindowAction(tc));
+            }
         }
         
         return actions.toArray(new Action[actions.size()]);

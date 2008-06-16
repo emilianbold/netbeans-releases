@@ -48,19 +48,12 @@
 package org.netbeans.modules.mobility.end2end;
 
 import java.io.IOException;
-import org.openide.actions.EditAction;
-import org.openide.actions.FileSystemAction;
-import org.openide.actions.OpenAction;
-import org.openide.actions.PropertiesAction;
-import org.openide.actions.SaveAction;
-import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.ExtensionList;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -86,15 +79,8 @@ public class E2EDataLoader extends UniFileLoader {
         return new E2EDataObject( primaryFile, this );
     }
     
-    protected SystemAction[] defaultActions() {
-        return new SystemAction[] {
-            SystemAction.get(OpenAction.class),
-            SystemAction.get(EditAction.class),
-            SystemAction.get(SaveAction.class),
-            SystemAction.get(FileSystemAction.class),
-            null,
-            SystemAction.get(ToolsAction.class),
-            SystemAction.get(PropertiesAction.class)
-        };
-    }
+    @Override
+    protected String actionsContext () {
+        return "Loaders/text/x-wsclient/Actions/"; // NOI18N
+    }    
 }

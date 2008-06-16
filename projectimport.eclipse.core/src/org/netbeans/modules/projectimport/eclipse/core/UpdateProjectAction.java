@@ -46,17 +46,21 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Actions;
+import org.openide.awt.DynamicMenuContent;
+import org.openide.awt.Mnemonics;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.Presenter;
 
-/**
- */
-public final class UpdateProjectAction extends AbstractAction implements ContextAwareAction  {
+public final class UpdateProjectAction extends AbstractAction implements ContextAwareAction, Presenter.Popup {
     
     private Lookup context;
     private UpgradableProject upgradable;
@@ -67,7 +71,7 @@ public final class UpdateProjectAction extends AbstractAction implements Context
     }
 
     public UpdateProjectAction(Lookup actionContext) {
-        super(NbBundle.getBundle(UpdateProjectAction.class).getString("UpdateProjectAction.Name"));
+        super(NbBundle.getMessage(UpdateProjectAction.class, "UpdateProjectAction.Name"));
         this.context = actionContext;
     }
 
@@ -80,15 +84,18 @@ public final class UpdateProjectAction extends AbstractAction implements Context
         }
         if (getUpgradableProject().isUpToDate(true)) {
             DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Message("Project are in synch and there is nothing to update."));
+                new NotifyDescriptor.Message(NbBundle.getMessage(UpdateProjectAction.class, "UpdateProjectAction.already-in-synch")));
         } else {
             try {
                 List<String> importProblems = new ArrayList<String>();
                 getUpgradableProject().update(importProblems);
                 if (importProblems.size() > 0) {
-                    importProblems.add(0, "Following problems occured during sychronization with Eclipse project "+upgradable.getEclipseProjectFolder()+":");
+                    importProblems.add(0,
+                            NbBundle.getMessage(UpdateProjectAction.class, "UpdateProjectAction.problems-occurred", upgradable.getEclipseProjectFolder()));
                 }
-                ImportProblemsPanel.showReport("Update Issues", ImportProblemsPanel.indentAllButFirst(importProblems));
+                ImportProblemsPanel.showReport(
+                        NbBundle.getMessage(UpdateProjectAction.class, "UpdateProjectAction.update-issues"),
+                        ImportProblemsPanel.indentAllButFirst(importProblems));
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -115,6 +122,31 @@ public final class UpdateProjectAction extends AbstractAction implements Context
     
     public Action createContextAwareInstance(Lookup actionContext) {
         return new UpdateProjectAction(actionContext);
+    }
+
+    public JMenuItem getPopupPresenter() {
+        return new Menu();
+    }
+
+    private class Menu extends JMenuItem implements DynamicMenuContent {
+
+        public Menu() {
+            Actions.connect(this, UpdateProjectAction.this);
+            Mnemonics.setLocalizedText(this, (String) getValue(NAME));
+        }
+
+        public JComponent[] getMenuPresenters() {
+            if (UpdateProjectAction.this.isEnabled()) {
+                return new JComponent[] {this};
+            } else {
+                return new JComponent[0];
+            }
+        }
+
+        public JComponent[] synchMenuPresenters(JComponent[] items) {
+            return getMenuPresenters();
+        }
+
     }
 
 }

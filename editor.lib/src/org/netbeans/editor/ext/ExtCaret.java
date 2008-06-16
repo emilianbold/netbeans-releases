@@ -41,12 +41,7 @@
 
 package org.netbeans.editor.ext;
 
-import java.awt.event.MouseEvent;
-import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseCaret;
-import org.netbeans.editor.Utilities;
-import org.netbeans.editor.SettingsUtil;
-import org.netbeans.editor.SettingsChangeEvent;
 
 /**
 * Extended caret implementation
@@ -161,70 +156,73 @@ public class ExtCaret extends BaseCaret {
 //
 //        super.modelChanged( oldDoc, newDoc );
 //    }
-    
-    /** Called when settings were changed. The method is called
-    * also in constructor, so the code must count with the evt being null.
-    */
-    public void settingsChange(SettingsChangeEvent evt) {
-        super.settingsChange(evt);
-        JTextComponent c = component;
-        if (c != null) {
-            Class kitClass = Utilities.getKitClass(c);
+
 // XXX: remove
-//            EditorUI editorUI = Utilities.getEditorUI(c);
-//            highlightBraceColoring = editorUI.getColoring(
-//                                           ExtSettingsNames.HIGHLIGHT_MATCH_BRACE_COLORING);
-//
-//            highlightBrace = SettingsUtil.getBoolean(kitClass,
-//                               ExtSettingsNames.HIGHLIGHT_MATCH_BRACE,
-//                               ExtSettingsDefaults.defaultHighlightMatchBrace);
-//            int highlightBraceDelay = SettingsUtil.getInteger(kitClass,
-//                                        ExtSettingsNames.HIGHLIGHT_MATCH_BRACE_DELAY,
-//                                        ExtSettingsDefaults.defaultHighlightMatchBraceDelay);
-//
-//            if (highlightBrace) {
-//                if (highlightBraceDelay > 0) {
-//                    // jdk12 compiler doesn't allow inside run()
-//                    final JTextComponent c2 = component;
-//
-//                    braceTimer = new Timer(highlightBraceDelay, null);
-//                    braceTimerListener = 
-//                         new ActionListener() {
-//                             public void actionPerformed(ActionEvent evt2) {
-//                                 SwingUtilities.invokeLater(
-//                                     new Runnable() {
-//                                         public void run() {
-//                                             if (c2 != null) {
-//                                                 BaseDocument doc = Utilities.getDocument(c2);
-//                                                 if( doc != null ) {
-//                                                     doc.readLock();
-//                                                     try {
-//                                                         updateMatchBrace();
-//                                                     } finally {
-//                                                         doc.readUnlock();
-//                                                     }
-//                                                 }
-//                                             }
-//                                         }
-//                                     }
-//                                 );
-//                             }
-//                         };
-//                         
-//                    braceTimer.addActionListener(new WeakTimerListener(braceTimerListener));
-//                    braceTimer.setRepeats(false);
-//                } else {
-//                    braceTimer = null; // signal no delay
-//                }
-//                c.repaint();
-//            }
-//
-//            simpleMatchBrace = SettingsUtil.getBoolean(kitClass,
-//                                    ExtSettingsNames.CARET_SIMPLE_MATCH_BRACE,
-//                                    ExtSettingsDefaults.defaultCaretSimpleMatchBrace);
-//            
-        }
-    }
+//    /** Called when settings were changed. The method is called
+//    * also in constructor, so the code must count with the evt being null.
+//    */
+//    public void settingsChange(SettingsChangeEvent evt) {
+//        super.settingsChange(evt);
+//        JTextComponent c = component;
+//        if (c != null) {
+//            Class kitClass = Utilities.getKitClass(c);
+//// XXX: remove
+////            EditorUI editorUI = Utilities.getEditorUI(c);
+////            highlightBraceColoring = editorUI.getColoring(
+////                                           ExtSettingsNames.HIGHLIGHT_MATCH_BRACE_COLORING);
+////
+////            highlightBrace = SettingsUtil.getBoolean(kitClass,
+////                               ExtSettingsNames.HIGHLIGHT_MATCH_BRACE,
+////                               ExtSettingsDefaults.defaultHighlightMatchBrace);
+////            int highlightBraceDelay = SettingsUtil.getInteger(kitClass,
+////                                        ExtSettingsNames.HIGHLIGHT_MATCH_BRACE_DELAY,
+////                                        ExtSettingsDefaults.defaultHighlightMatchBraceDelay);
+////
+////            if (highlightBrace) {
+////                if (highlightBraceDelay > 0) {
+////                    // jdk12 compiler doesn't allow inside run()
+////                    final JTextComponent c2 = component;
+////
+////                    braceTimer = new Timer(highlightBraceDelay, null);
+////                    braceTimerListener = 
+////                         new ActionListener() {
+////                             public void actionPerformed(ActionEvent evt2) {
+////                                 SwingUtilities.invokeLater(
+////                                     new Runnable() {
+////                                         public void run() {
+////                                             if (c2 != null) {
+////                                                 BaseDocument doc = Utilities.getDocument(c2);
+////                                                 if( doc != null ) {
+////                                                     doc.readLock();
+////                                                     try {
+////                                                         updateMatchBrace();
+////                                                     } finally {
+////                                                         doc.readUnlock();
+////                                                     }
+////                                                 }
+////                                             }
+////                                         }
+////                                     }
+////                                 );
+////                             }
+////                         };
+////                         
+////                    braceTimer.addActionListener(new WeakTimerListener(braceTimerListener));
+////                    braceTimer.setRepeats(false);
+////                } else {
+////                    braceTimer = null; // signal no delay
+////                }
+////                c.repaint();
+////            }
+////
+////            simpleMatchBrace = SettingsUtil.getBoolean(kitClass,
+////                                    ExtSettingsNames.CARET_SIMPLE_MATCH_BRACE,
+////                                    ExtSettingsDefaults.defaultCaretSimpleMatchBrace);
+////            
+//            popupMenuEnabled = SettingsUtil.getBoolean(kitClass,
+//                ExtSettingsNames.POPUP_MENU_ENABLED, true);
+//        }
+//    }
 // XXX: remove
 //    public void install(JTextComponent c) {
 //        EditorUI editorUI = Utilities.getEditorUI(c);

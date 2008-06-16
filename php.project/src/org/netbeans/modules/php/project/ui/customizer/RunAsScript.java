@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.php.project.ui.customizer;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -45,7 +47,6 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.php.project.api.PhpOptions;
-import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.NbBundle;
@@ -88,6 +89,20 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
             DocumentListener dl = new FieldUpdater(propertyNames[i], labels[i], textFields[i]);
             textFields[i].getDocument().addDocumentListener(dl);
         }
+
+        // php cli
+        loadPhpInterpreter();
+        PhpOptions.getInstance().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (PhpOptions.PROP_PHP_INTERPRETER.equals(evt.getPropertyName())) {
+                    loadPhpInterpreter();
+                    validateFields();
+                }
+            }
+        });
+    }
+
+    void loadPhpInterpreter() {
         interpreterTextField.setText(PhpOptions.getInstance().getPhpInterpreter());
     }
 
@@ -118,11 +133,10 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
     }
 
     protected void validateFields() {
+        String phpInterpreter = interpreterTextField.getText().trim();
         String indexFile = indexFileTextField.getText();
-        String err = null;
-        if (!Utils.isValidFileName(indexFile)) {
-            err = NbBundle.getMessage(RunAsScript.class, "MSG_IllegalIndexName");
-        }
+        String args = argsTextField.getText().trim();
+        String err = RunAsValidator.validateScriptFields(phpInterpreter, indexFile, args);
         category.setErrorMessage(err);
         category.setValid(err == null);
     }

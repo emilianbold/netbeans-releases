@@ -694,14 +694,23 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             case CsmCompletionExpression.DOT: // Dot expression
             case CsmCompletionExpression.ARROW: // Arrow expression
                 int parmCnt = exp.getParameterCount(); // Number of items in the dot exp
-                ExprKind kind = (exp.getExpID() == CsmCompletionExpression.ARROW || exp.getExpID() == CsmCompletionExpression.ARROW_OPEN) ?
-                                ExprKind.ARROW : ExprKind.DOT;
                 for (int i = 0; i < parmCnt && ok; i++) { // resolve all items in a dot exp
+                    ExprKind kind;
+                    if (i < exp.getTokenCount()) {
+                        kind = exp.getTokenID(i) == CCTokenContext.ARROW ? ExprKind.ARROW : ExprKind.DOT;
+                    } else {
+                        if (exp.getExpID() == CsmCompletionExpression.ARROW || 
+                                exp.getExpID() == CsmCompletionExpression.ARROW_OPEN) {
+                            kind = ExprKind.ARROW;
+                        } else {
+                            kind = ExprKind.DOT;
+                        }
+                    }
                     ok = resolveItem(exp.getParameter(i), (i == 0),
                                      (!lastDot && i == parmCnt - 1),
                                     kind);
             
-                    if ((i == 0) && lastType != null && lastType.getArrayDepth() == 0 && kind == ExprKind.ARROW) {
+                    if ((i < parmCnt || lastDot || findType) && lastType != null && lastType.getArrayDepth() == 0 && kind == ExprKind.ARROW) {
                         CsmClassifier cls = getClassifier(lastType, CsmFunction.OperatorKind.ARROW);
                         if (cls != null) {
                             lastType = CsmCompletion.getType(cls, 0);

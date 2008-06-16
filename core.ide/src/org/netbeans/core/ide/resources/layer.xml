@@ -103,12 +103,12 @@ made subject to such option by the copyright holder.
                 
             </folder>        
             
-            <folder name="Editing">
+            <!-- <folder name="Editing">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ide.resources.Bundle"/>
                 <file name="IndentationEngines.shadow">
                         <attr name="originalFile" stringvalue="Services/IndentEngine"/>
                 </file>
-            </folder> <!-- EDITING -->
+            </folder> -->
         
         </folder>
         

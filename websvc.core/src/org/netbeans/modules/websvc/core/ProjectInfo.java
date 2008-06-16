@@ -88,12 +88,14 @@ public class ProjectInfo {
                 try {
                     J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstanceId).getJ2eePlatform();               
                     WSStack wsStack = JaxWsStackProvider.getJaxWsStackForTool(j2eePlatform, WSStack.TOOL_WSIMPORT);
-                    jsr109Supported = wsStack.getServiceFeatures().contains(WSStackFeature.JSR_109);
-                    //jsr109oldSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE);
-                    //wsgenSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSGEN);
-                    wsgenSupported = wsStack.getServiceFeatures().contains(WSStack.TOOL_WSGEN);
-                    wsimportSupported = true;
-                    serverType = getServerType(project);
+                    if (wsStack != null) {
+                        jsr109Supported = wsStack.getServiceFeatures().contains(WSStackFeature.JSR_109);
+                        //jsr109oldSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE);
+                        //wsgenSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSGEN);
+                        wsgenSupported = wsStack.getServiceFeatures().contains(WSStack.TOOL_WSGEN);
+                        wsimportSupported = true;
+                        serverType = getServerType(project);
+                    }
                 } catch (InstanceRemovedException ex) {
                     Logger.getLogger(getClass().getName()).log(Level.INFO, "Failed to find J2eePlatform", ex);
                 }

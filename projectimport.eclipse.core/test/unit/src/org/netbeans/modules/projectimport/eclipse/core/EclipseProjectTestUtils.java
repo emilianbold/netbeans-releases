@@ -40,6 +40,7 @@
 package org.netbeans.modules.projectimport.eclipse.core;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
@@ -53,6 +54,7 @@ public class EclipseProjectTestUtils {
     public static EclipseProject createEclipseProject(File proj, DotClassPath cp) {
         EclipseProject ep = new EclipseProject(proj);
         ep.setClassPath(cp);
+        ep.evaluateContainers(new ArrayList<String>());
         return ep;
     }
     

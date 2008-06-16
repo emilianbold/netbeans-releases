@@ -489,7 +489,10 @@ public class WSUtils {
                         list.add(tokens1.nextToken());
                     }
                     for (int i=countTokens-1; i>=0; i--) {
-                        packageParts.add(list.get(i).toLowerCase());
+                        String part = list.get(i);
+                        if (i > 0 || !"www".equals(part)) { //NOI18N
+                            packageParts.add(list.get(i).toLowerCase());
+                        }
                     }
                 } else {
                     return DEFAULT_PACKAGE_NAME;

@@ -67,8 +67,9 @@ public class GroovyLookupProvider implements LookupProvider {
         }
         List<Object> instances = new ArrayList<Object>(3);
         instances.add(new GroovyProjectExtender(project));
-//        instances.add(LookupMergerSupport.createActionProviderLookupMerger());
-//        instances.add(new GroovyActionProvider(project));
+        instances.add(LookupMergerSupport.createActionProviderLookupMerger());
+        instances.add(new GroovyActionProvider(project));
+        instances.add(new GsfClasspathHook(project));
         return Lookups.fixed(instances.toArray(new Object[instances.size()]));
     }
 

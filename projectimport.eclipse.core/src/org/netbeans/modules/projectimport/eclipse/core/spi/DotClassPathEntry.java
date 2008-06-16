@@ -178,4 +178,12 @@ public final class DotClassPathEntry {
         this.importSuccessful = importSuccessful;
     }
     
+    /**
+     * Despite being public this method should not be called outside of 
+     * eclipse.core module.
+     */
+    public void updateVariableValue(String value) {
+        this.properties.put(ATTRIBUTE_PATH, value);
+    }
+    
 }

@@ -58,6 +58,8 @@ public class MultiviewEditorReflectionTest extends NbTestCase {
         super(name);
     }
 
+    // XXX: multiview should use MimeLookup and Preferences for accessing editor settings
+    // no need for reflection anymore, when that's done please remove this test
     public void testReflection() throws Exception {
             final ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
             Class settingsClass = Class.forName(
@@ -71,7 +73,7 @@ public class MultiviewEditorReflectionTest extends NbTestCase {
 
             Class editorBaseOption = Class.forName("org.netbeans.modules.editor.options.BaseOptions", true,
                     loader);
-            SharedClassObject option = SharedClassObject.findObject(editorBaseOption);
+            SharedClassObject option = SharedClassObject.findObject(editorBaseOption, true);
             Method is = option.getClass().getMethod("isToolbarVisible", new Class[0]);
     }
 

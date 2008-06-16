@@ -172,7 +172,7 @@ public class GroovyIndexer implements Indexer {
         public void analyze() throws IOException {
             FileObject fo = file.getFileObject();
             if (result.getInfo() != null) {
-                this.doc = NbUtilities.getBaseDocument(fo, true);
+                this.doc = AstUtilities.getBaseDocument(fo, true);
             } else {
                 // openide.loaders/src/org/openide/text/DataEditorSupport.java
                 // has an Env#inputStream method which posts a warning to the user
@@ -185,7 +185,7 @@ public class GroovyIndexer implements Indexer {
                     return;
                 }
                 
-                this.doc = NbUtilities.getBaseDocument(fo, true);
+                this.doc = AstUtilities.getBaseDocument(fo, true);
             }
 
             try {

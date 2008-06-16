@@ -38,12 +38,14 @@ import java.util.logging.LogRecord;
 public final class ProjectOp {
     private final String name;
     private final String type;
+    private final boolean startup;
     private final int number;
 
-    private ProjectOp(String name, String type, int number) {
+    private ProjectOp(String name, String type, int number, boolean startup) {
         this.name = fixName(name, true);
         this.type = fixName(type, false);
         this.number = number;
+        this.startup = startup;
     }
     
     private static String fixName(String name, boolean nameOrType) {
@@ -72,6 +74,14 @@ public final class ProjectOp {
         return number;
     }
     
+    /** Is this report of projects being opened on startup?
+     * @return true, if this is the list of projects reported on startup
+     * @since 1.16
+     */
+    public boolean isStartup() {
+        return startup;
+    }
+    
     /** Finds whether the record was an operation on projects.
      * @param rec the record to test
      * @return null if the record is of unknown format or data about the project operation
@@ -86,7 +96,7 @@ public final class ProjectOp {
             } catch (NumberFormatException numberFormatException) {
                 return null;
             }
-            return new ProjectOp(name, type, -cnt);
+            return new ProjectOp(name, type, -cnt, false);
         }
         if ("UI_OPEN_PROJECTS".equals(rec.getMessage())) {
             String type = getStringParam(rec, 0, "unknown"); // NOI18N
@@ -97,7 +107,18 @@ public final class ProjectOp {
             } catch (NumberFormatException numberFormatException) {
                 return null;
             }
-            return new ProjectOp(name, type, cnt);
+            return new ProjectOp(name, type, cnt, false);
+        }
+        if ("UI_INIT_PROJECTS".equals(rec.getMessage())) {
+            String type = getStringParam(rec, 0, "unknown"); // NOI18N
+            String name = getStringParam(rec, 1, "unknown"); // NOI18N
+            int cnt;
+            try {
+                cnt = Integer.parseInt(getStringParam(rec, 2, "0"));
+            } catch (NumberFormatException numberFormatException) {
+                return null;
+            }
+            return new ProjectOp(name, type, cnt, true);
         }
         return null;
     }

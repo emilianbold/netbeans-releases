@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.editor.indent.api;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -59,10 +61,11 @@ import org.netbeans.modules.editor.indent.IndentImpl;
 public final class IndentUtils {
     
     private static final int MAX_CACHED_INDENT = 80;
+    private static final Logger LOG = Logger.getLogger(IndentUtils.class.getName());
     
     private static final String[] cachedSpacesStrings = new String[MAX_CACHED_INDENT + 1];
     static {
-        cachedSpacesStrings[0] = "";
+        cachedSpacesStrings[0] = ""; //NOI18N
     }
     
     private static final int MAX_CACHED_TAB_SIZE = 8; // Should mostly be <= 8
@@ -86,16 +89,28 @@ public final class IndentUtils {
      */
     public static int indentLevelSize(Document doc) {
         Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
-        String isw = prefs.get(SimpleValueNames.INDENT_SHIFT_WIDTH, null);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("INDENT_SHIFT_WIDTH='" + prefs.get(SimpleValueNames.INDENT_SHIFT_WIDTH, null) //NOI18N
+                    + "', EXPAND_TABS='" + prefs.get(SimpleValueNames.EXPAND_TABS, null) //NOI18N
+                    + "', SPACES_PER_TAB='" + prefs.get(SimpleValueNames.SPACES_PER_TAB, null)//NOI18N
+                    + "', TAB_SIZE='" + prefs.get(SimpleValueNames.TAB_SIZE, null) //NOI18N
+                    + "' for " + doc //NOI18N
+            );
+        }
         
-        // spaces-per-tab and indent-shift-with got all mixed up, the only way
-        // this can work is to keep them both in sync
-        int indentLevelSize = isw != null ? 
-            prefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, 4) : 
-            prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4);
+        int indentLevel = prefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, -1);
         
-        assert indentLevelSize > 0 : "Invalid indentLevelSize " + indentLevelSize + " for " + doc; //NOI18N
-        return indentLevelSize;
+        if (indentLevel <= 0) {
+            boolean expandTabs = prefs.getBoolean(SimpleValueNames.EXPAND_TABS, true);
+            if (expandTabs) {
+                indentLevel = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4);
+            } else {
+                indentLevel = prefs.getInt(SimpleValueNames.TAB_SIZE, 8);
+            }
+        }
+
+        assert indentLevel > 0 : "Invalid indentLevelSize " + indentLevel + " for " + doc; //NOI18N
+        return indentLevel;
     }
 
     /**
@@ -147,10 +162,10 @@ public final class IndentUtils {
         while (lineStartOffset < docText.length()) {
             char ch;
             switch (ch = docText.charAt(lineStartOffset)) {
-                case '\n':
+                case '\n': //NOI18N
                     return indent;
 
-                case '\t':
+                case '\t': //NOI18N
                     if (tabSize == -1)
                         tabSize = tabSize(doc);
                     // Round to next tab stop
@@ -158,10 +173,11 @@ public final class IndentUtils {
                     break;
 
                 default:
-                    if (Character.isWhitespace(ch))
+                    if (Character.isWhitespace(ch)) {
                         indent++;
-                    else
+                    } else {
                         return indent;
+                    }
             }
             lineStartOffset++;
         }
@@ -180,8 +196,9 @@ public final class IndentUtils {
      *  settings (tab-size etc.).
      */
     public static String createIndentString(Document doc, int indent) {
-        if (indent < 0)
+        if (indent < 0) {
             throw new IllegalArgumentException("indent=" + indent + " < 0"); // NOI18N
+        }
         return cachedOrCreatedIndentString(indent, isExpandTabs(doc), tabSize(doc));
     }
     
@@ -237,7 +254,7 @@ public final class IndentUtils {
     private static String createTabIndentString(int indent, int tabSize) {
         StringBuilder sb = new StringBuilder();
         while (indent >= tabSize) {
-            sb.append('\t');
+            sb.append('\t'); //NOI18N
             indent -= tabSize;
         }
         ArrayUtilities.appendSpaces(sb, indent);

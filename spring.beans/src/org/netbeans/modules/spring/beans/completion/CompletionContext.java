@@ -320,6 +320,14 @@ public class CompletionContext {
         return existingAttributes;
     }
 
+    /**
+     * Returns the type of completion query. The returned value is one of 
+     * the query types defined in <code>CompletionProvider</code>
+     * 
+     * @see CompletionProvider
+     * 
+     * @return completion query type
+     */
     public int getQueryType() {
         return queryType;
     }

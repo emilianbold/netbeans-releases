@@ -65,13 +65,9 @@ public class EqualityAndHashCodeTest extends NbTestCase {
         
         theSameAsLink2 = new Link("link2", true, "/link2");
         
-        var2 = new Workspace.Variable();
-        var2.setLocation("/var2");
-        var2.setName("var2");
+        var2 = new Workspace.Variable("/var2", "var2");
         
-        theSameAsVar2 = new Workspace.Variable();
-        theSameAsVar2.setLocation("/var2");
-        theSameAsVar2.setName("var2");
+        theSameAsVar2 = new Workspace.Variable("/var2", "var2");
     }
     
     /** tests ClassPathContent.Link.equals() */
@@ -93,18 +89,6 @@ public class EqualityAndHashCodeTest extends NbTestCase {
                 "(var2 == theSameAsVar2)", var2, theSameAsVar2);
         assertEquals("var2 should be equal to theSameAsVar2",
                 var2, theSameAsVar2);
-        theSameAsVar2.setLocation(theSameAsVar2.getLocation() + "a");
-        assertFalse("var2 should be not be equal to theSameAsVar2",
-                var2.equals(theSameAsVar2));
     }
     
-    /** tests ClassPathContent.Variable.hashCode() */
-    public void testVariablesHashCodes() {
-        assertEquals("var2 and theSameAsVar2 should generate the same hashCode",
-                var2.hashCode(), theSameAsVar2.hashCode());
-        theSameAsVar2.setLocation(theSameAsVar2.getLocation() + "a");
-        assertFalse("var2 and theSameAsVar2 shouldn't generate the same hashCode",
-                var2.hashCode() == theSameAsLink2.hashCode());
-    }
-
 }

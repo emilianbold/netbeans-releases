@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.groovy.editor;
 
+import org.netbeans.modules.groovy.editor.completion.CodeCompleter;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyHintsProvider;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;

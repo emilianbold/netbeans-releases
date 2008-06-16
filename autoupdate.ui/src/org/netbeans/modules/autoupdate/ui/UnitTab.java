@@ -125,8 +125,8 @@ public class UnitTab extends javax.swing.JPanel {
 
     private static Boolean isWaitingForExternal = false;
     
-    private static final RequestProcessor RP = new RequestProcessor ();
-    private final RequestProcessor.Task searchTask = RP.create (new Runnable (){
+    private static final RequestProcessor SEARCH_PROCESSOR = new RequestProcessor ("search-processor");
+    private final RequestProcessor.Task searchTask = SEARCH_PROCESSOR.create (new Runnable (){
         public void run () {
             if (filter != null) {
                 int row = getSelectedRow();
@@ -146,6 +146,8 @@ public class UnitTab extends javax.swing.JPanel {
             }
         }
     });
+    private static final RequestProcessor DOWNLOAD_SIZE_PROCESSOR = new RequestProcessor ("download-size-processor", 1, true);
+    private Task getDownloadSizeTask = null;
     
     /** Creates new form UnitTab */
     public UnitTab (UnitTable table, UnitDetails details, PluginManagerUI manager) {
@@ -310,16 +312,30 @@ public class UnitTab extends javax.swing.JPanel {
     
     
     public void refreshState () {
-        Collection<Unit> units = model.getMarkedUnits ();
-        int downloadSize = model.getDownloadSize ();
+        final Collection<Unit> units = model.getMarkedUnits ();
         popupActionsSupport.tableDataChanged ();
         
         if (units.size () == 0) {
             cleanSelectionInfo ();
         } else {
-            setSelectionInfo (Utilities.getDownloadSizeAsString (downloadSize), units.size ());
+            setSelectionInfo (null, units.size ());
         }
         getDefaultAction ().setEnabled (units.size () > 0);
+        if (getDownloadSizeTask != null && ! getDownloadSizeTask.isFinished ()) {
+            getDownloadSizeTask.cancel ();
+        }
+        assert getDownloadSizeTask == null || getDownloadSizeTask.isFinished ();
+        if (units.size () > 0) {
+            getDownloadSizeTask = DOWNLOAD_SIZE_PROCESSOR.post (new Runnable () {
+                public void run () {
+                    int downloadSize = model.getDownloadSize ();
+                    if (Thread.interrupted ()) {
+                        return ;
+                    }
+                    setSelectionInfo (Utilities.getDownloadSizeAsString (downloadSize), units.size ());
+                }
+            });
+        }
     }
     
     private TabAction getDefaultAction () {
@@ -438,8 +454,12 @@ public class UnitTab extends javax.swing.JPanel {
         if (UnitCategoryTableModel.Type.INSTALLED == model.getType () || UnitCategoryTableModel.Type.LOCAL == model.getType ()) {
             lSelectionInfo.setText ((NbBundle.getMessage (UnitTab.class, key, count)));
         } else {
-            lSelectionInfo.setText (NbBundle.getMessage (UnitTab.class, "UnitTab_lHowManySelected_TextFormatWithSize",
-                    NbBundle.getMessage (UnitTab.class, key, count), downloadSize));
+            if (downloadSize == null) {
+                lSelectionInfo.setText ((NbBundle.getMessage (UnitTab.class, key, count)));
+            } else {
+                lSelectionInfo.setText (NbBundle.getMessage (UnitTab.class, "UnitTab_lHowManySelected_TextFormatWithSize",
+                        NbBundle.getMessage (UnitTab.class, key, count), downloadSize));
+            }
         }
         if (model.needsRestart ()) {
             Icon warningIcon = new ImageIcon (org.openide.util.Utilities.loadImage (

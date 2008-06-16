@@ -64,6 +64,7 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.core.filesystems.MIMEResolverImpl;
 import org.netbeans.core.startup.ManifestSection;
 import org.openide.actions.MoveDownAction;
 import org.openide.actions.MoveUpAction;
@@ -738,6 +739,16 @@ public final class LoaderPoolNode extends AbstractNode {
     }
     private static NbLoaderPool nbLoaderPool = null;
 
+    /** Returns list of extension and MIME type pairs for given MIMEResolver
+     * FileObject. The list can contain duplicates and also [null, MIME] pairs.
+     * @param fo MIMEResolver FileObject
+     * @return list of extension and MIME type pairs. The list can contain 
+     * duplicates and also [null, MIME] pairs.
+     * @since 3.9
+     */
+    public static ArrayList<String[]> getExtensionsAndMIMETypes(FileObject fo) {
+        return MIMEResolverImpl.getExtensionsAndMIMETypes(fo);
+    }
 
     /***** Inner classes **************/
 

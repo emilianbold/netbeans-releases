@@ -50,6 +50,7 @@ import org.netbeans.lib.lexer.LAState;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.lib.lexer.TokenList;
 import org.netbeans.lib.lexer.token.AbstractToken;
+import org.netbeans.lib.lexer.TokenOrEmbedding;
 
 /**
  * Description of the change in a token list.
@@ -65,22 +66,35 @@ import org.netbeans.lib.lexer.token.AbstractToken;
  * @version 1.00
  */
 
-public final class TokenListChange<T extends TokenId> {
+public class TokenListChange<T extends TokenId> {
+    
+    private static final TokenOrEmbedding<?>[] EMPTY_TOKENS = {};
+    
+    public static <T extends TokenId> TokenListChange<T> createRebuildChange(MutableTokenList<T> tokenList) {
+        TokenListChange<T> change = new TokenListChange<T>(tokenList);
+//        change.setIndex(0);
+//        change.setOffset(0);
+//        change.addedEndOffset = 0; // Tokens will be recreated lazily
+        change.matchIndex = tokenList.tokenCountCurrent(); // All tokens removed
+        return change;
+    }
     
     private final TokenChangeInfo<T> tokenChangeInfo;
     
     /**
      * The list may store either tokens or branches as well.
      */
-    private List<Object> addedTokensOrBranches;
+    private List<TokenOrEmbedding<T>> addedTokenOrEmbeddings;
 
     private LAState laState;
-
-    private int offsetGapIndex;
     
-    private int removedEndOffset;
+    int removedEndOffset;
     
-    private int addedEndOffset;
+    protected int matchIndex;
+    
+    protected int matchOffset;
+    
+    protected int addedEndOffset;
     
     public TokenListChange(MutableTokenList<T> tokenList) {
         tokenChangeInfo = new TokenChangeInfo<T>(tokenList);
@@ -94,16 +108,29 @@ public final class TokenListChange<T extends TokenId> {
         return (MutableTokenList<T>)tokenChangeInfo.currentTokenList();
     }
     
+    public void setMatchIndex(int matchIndex) {
+        this.matchIndex = matchIndex;
+    }
+
+    public void setMatchOffset(int matchOffset) {
+        this.matchOffset = matchOffset;
+    }
+
+    public int increaseMatchIndex() {
+        matchOffset += tokenList().tokenOrEmbeddingUnsync(matchIndex++).token().length();
+        return matchOffset;
+    }
+
     public LanguagePath languagePath() {
         return tokenList().languagePath();
     }
-
+    
     public int index() {
         return tokenChangeInfo.index();
     }
 
-    public void setIndex(int tokenIndex) {
-        tokenChangeInfo.setIndex(tokenIndex);
+    public void setIndex(int index) {
+        tokenChangeInfo.setIndex(index);
     }
     
     public int offset() {
@@ -112,66 +139,71 @@ public final class TokenListChange<T extends TokenId> {
 
     public void setOffset(int offset) {
         tokenChangeInfo.setOffset(offset);
-    }
-    
-    public int offsetGapIndex() {
-        return offsetGapIndex;
+        addedEndOffset = offset;
     }
 
-    public void setOffsetGapIndex(int offsetGapIndex) {
-        this.offsetGapIndex = offsetGapIndex;
+    public int removedTokenCount() {
+        return matchIndex - index();
     }
 
-    public void addToken(AbstractToken<T> token, int lookahead, Object state) {
-        if (addedTokensOrBranches == null) {
-            addedTokensOrBranches = new ArrayList<Object>(2);
-            laState = LAState.empty();
-        }
-        addedTokensOrBranches.add(token);
-        laState = laState.add(lookahead, state);
-    }
-    
-    public List<Object> addedTokensOrBranches() {
-        return addedTokensOrBranches;
-    }
-    
-    public int addedTokensOrBranchesCount() {
-        return (addedTokensOrBranches != null) ? addedTokensOrBranches.size() : 0;
-    }
-    
-    public void removeLastAddedToken() {
-        int lastIndex = addedTokensOrBranches.size() - 1;
-        addedTokensOrBranches.remove(lastIndex);
-        laState.remove(lastIndex, 1);
-    }
-    
-    public AbstractToken<T> addedToken(int index) {
-        return LexerUtilsConstants.token(addedTokensOrBranches.get(0));
-    }
-    
-    public void syncAddedTokenCount() {
-        tokenChangeInfo.setAddedTokenCount(addedTokensOrBranches.size());
-    }
-
-    public void setRemovedTokens(Object[] removedTokensOrBranches) {
-        tokenChangeInfo.setRemovedTokenList(new RemovedTokenList<T>(
-                languagePath(), removedTokensOrBranches));
-    }
-    
     public int removedEndOffset() {
-        return removedEndOffset;
+        return matchOffset; // In after-mod coordinates
     }
-    
-    public void setRemovedEndOffset(int removedEndOffset) {
-        this.removedEndOffset = removedEndOffset;
-    }
-    
+
     public int addedEndOffset() {
         return addedEndOffset;
     }
     
     public void setAddedEndOffset(int addedEndOffset) {
         this.addedEndOffset = addedEndOffset;
+    }
+
+    public void addToken(AbstractToken<T> token, int lookahead, Object state) {
+        if (addedTokenOrEmbeddings == null) {
+            addedTokenOrEmbeddings = new ArrayList<TokenOrEmbedding<T>>(2);
+            laState = LAState.empty();
+        }
+        addedTokenOrEmbeddings.add(token);
+        laState = laState.add(lookahead, state);
+        addedEndOffset += token.length();
+    }
+    
+    public List<TokenOrEmbedding<T>> addedTokenOrEmbeddings() {
+        return addedTokenOrEmbeddings;
+    }
+    
+    public int addedTokenOrEmbeddingsCount() {
+        return (addedTokenOrEmbeddings != null) ? addedTokenOrEmbeddings.size() : 0;
+    }
+    
+    public AbstractToken<T> removeLastAddedToken() {
+        int lastIndex = addedTokenOrEmbeddings.size() - 1;
+        AbstractToken<T> token = addedTokenOrEmbeddings.remove(lastIndex).token();
+        laState.remove(lastIndex, 1);
+        matchIndex--;
+        int tokenLength = token.length();
+        matchOffset -= tokenLength;
+        addedEndOffset -= tokenLength;
+        return token;
+    }
+    
+    public AbstractToken<T> addedToken(int index) {
+        return addedTokenOrEmbeddings.get(0).token();
+    }
+    
+    public void syncAddedTokenCount() {
+        tokenChangeInfo.setAddedTokenCount(addedTokenOrEmbeddings.size());
+    }
+
+    public void setRemovedTokens(TokenOrEmbedding<T>[] removedTokensOrBranches) {
+        tokenChangeInfo.setRemovedTokenList(new RemovedTokenList<T>(
+                languagePath(), removedTokensOrBranches));
+    }
+    
+    public void setRemovedTokensEmpty() {
+        @SuppressWarnings("unchecked")
+        TokenOrEmbedding<T>[] empty = (TokenOrEmbedding<T>[]) EMPTY_TOKENS;
+        setRemovedTokens(empty);
     }
     
     public boolean isBoundsChange() {
@@ -188,42 +220,44 @@ public final class TokenListChange<T extends TokenId> {
 
     @Override
     public String toString() {
-        return toString(0);
-    }
-
-    public String toString(int indent) {
         StringBuilder sb = new StringBuilder();
-        sb.append('"');
-        sb.append(languagePath().innerLanguage().mimeType());
-        sb.append("\", index=");
-        sb.append(index());
-        sb.append(", offset=");
-        sb.append(offset());
+        sb.append('"').append(languagePath().innerLanguage().mimeType());
+        sb.append("\", ind=").append(index());
+        sb.append(", off=").append(offset());
+        sb.append(", mInd=").append(matchIndex);
+        sb.append(", mOff=").append(matchOffset);
+        sb.append(", Add:").append(addedTokenOrEmbeddingsCount());
+        sb.append(", tCnt=").append(tokenList().tokenCountCurrent());
         if (isBoundsChange()) {
-            sb.append(", boundsChange");
+            sb.append(", BoChan");
         }
+        return sb.toString();
+    }
+    
+    public String toStringMods(int indent) {
+        StringBuilder sb = new StringBuilder();
         TokenList<T> removedTL = tokenChangeInfo.removedTokenList();
         if (removedTL != null && removedTL.tokenCount() > 0) {
             int digitCount = ArrayUtilities.digitCount(removedTL.tokenCount() - 1);
             for (int i = 0; i < removedTL.tokenCount(); i++) {
                 sb.append('\n');
                 ArrayUtilities.appendSpaces(sb, indent);
-                sb.append("R[");
+                sb.append("Rem[");
                 ArrayUtilities.appendIndex(sb, i, digitCount);
                 sb.append("]: ");
-                LexerUtilsConstants.appendTokenInfo(sb, removedTL, i, null, false, 0);
+                LexerUtilsConstants.appendTokenInfo(sb, removedTL, i, null, false, 0, true);
             }
         }
-        if (addedTokensOrBranches() != null) {
-            int digitCount = ArrayUtilities.digitCount(addedTokensOrBranches().size() - 1);
-            for (int i = 0; i < addedTokensOrBranches().size(); i++) {
+        if (addedTokenOrEmbeddings() != null) {
+            int digitCount = ArrayUtilities.digitCount(addedTokenOrEmbeddings().size() - 1);
+            for (int i = 0; i < addedTokenOrEmbeddings().size(); i++) {
                 sb.append('\n');
                 ArrayUtilities.appendSpaces(sb, indent);
-                sb.append("A[");
+                sb.append("Add[");
                 ArrayUtilities.appendIndex(sb, i, digitCount);
                 sb.append("]: ");
-                LexerUtilsConstants.appendTokenInfo(sb, addedTokensOrBranches.get(i),
-                        laState.lookahead(i), laState.state(i), null, false, 0);
+                LexerUtilsConstants.appendTokenInfo(sb, addedTokenOrEmbeddings.get(i),
+                        laState.lookahead(i), laState.state(i), null, false, 0, true);
             }
         }
         return sb.toString();

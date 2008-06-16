@@ -41,7 +41,6 @@ package org.netbeans.modules.projectimport.eclipse.j2se;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Icon;
@@ -103,7 +102,7 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         }
         
         // update project classpath
-        ProjectFactorySupport.updateProjectClassPath(helper, model, importProblems);
+        ProjectFactorySupport.updateProjectClassPath(helper, nbProject.getReferenceHelper(), model, importProblems);
         
         // set platform used by an Eclipse project
         if (model.getJavaPlatform() != null) {
@@ -122,8 +121,7 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         helper.putPrimaryConfigurationData(pcd, true);
         EditableProperties prop = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String ver = model.getJavaPlatform().getSpecification().getVersion().toString();
-        String normalizedName = (String) model.getJavaPlatform().getProperties().get(
-                    "platform.ant.name"); // NOI18N
+        String normalizedName = model.getJavaPlatform().getProperties().get("platform.ant.name"); // NOI18N
         prop.setProperty(J2SEProjectProperties.JAVAC_SOURCE, ver);
         prop.setProperty(J2SEProjectProperties.JAVAC_TARGET, ver);
         prop.setProperty(J2SEProjectProperties.JAVA_PLATFORM, normalizedName);
@@ -135,10 +133,16 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
     }
 
     public String update(Project project, ProjectImportModel model, String oldKey, List<String> importProblems) throws IOException {
+        if (!(project instanceof J2SEProject)) {
+            throw new IOException("is not java project: "+project.getClass().getName());
+        }
+        
         String newKey = calculateKey(model);
         
         // update project classpath
-        String actualKey = ProjectFactorySupport.synchronizeProjectClassPath(project, ((J2SEProject)project).getAntProjectHelper(), model, oldKey, newKey, importProblems);
+        String actualKey = ProjectFactorySupport.synchronizeProjectClassPath(project, 
+                ((J2SEProject)project).getAntProjectHelper(), 
+                ((J2SEProject)project).getReferenceHelper(), model, oldKey, newKey, importProblems);
         
         // TODO:
         // update source roots and platform
@@ -157,4 +161,7 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         return "Java Project";
     }
     
+    public boolean prepare() {
+        return true;
+    }
 }
