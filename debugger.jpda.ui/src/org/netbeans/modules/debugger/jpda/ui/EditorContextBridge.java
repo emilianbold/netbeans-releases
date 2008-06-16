@@ -392,6 +392,43 @@ public class EditorContextBridge {
             return s;
         }
         
+        public String getCurrentMethodSignature() {
+            String s = null;
+            try {
+                s = (String) cp1.getClass().getMethod("getCurrentMethodSignature", new Class[] {}). // NOI18N
+                        invoke(getContext(), new Object[] {});
+            } catch (java.lang.reflect.InvocationTargetException itex) {
+                Throwable tex = itex.getTargetException();
+                if (tex instanceof RuntimeException) {
+                    throw (RuntimeException) tex;
+                } else {
+                    ErrorManager.getDefault().notify(tex);
+                    return null;
+                }
+            } catch (Exception ex) {
+                // Ignore, we have another attempt with cp2
+                //ErrorManager.getDefault().notify(ex);
+            }
+            if ( (s == null) || (s.trim ().length () < 1)) {
+                try {
+                    s = (String) cp2.getClass().getMethod("getCurrentMethodSignature", new Class[] {}). // NOI18N
+                            invoke(getContext(), new Object[] {});
+                } catch (java.lang.reflect.InvocationTargetException itex) {
+                    Throwable tex = itex.getTargetException();
+                    if (tex instanceof RuntimeException) {
+                        throw (RuntimeException) tex;
+                    } else {
+                        ErrorManager.getDefault().notify(tex);
+                        return null;
+                    }
+                } catch (Exception ex) {
+                    ErrorManager.getDefault().notify(ex);
+                    return null;
+                }
+            }
+            return s;
+        }
+        
         public String getSelectedIdentifier () {
             String s = cp1.getSelectedIdentifier ();
             if ( (s == null) || (s.trim ().length () < 1))
