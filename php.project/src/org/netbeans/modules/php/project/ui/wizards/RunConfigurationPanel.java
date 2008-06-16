@@ -40,6 +40,8 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.Component;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +50,7 @@ import java.util.regex.Pattern;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.RemoteConfiguration;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
@@ -84,8 +87,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     static final String[] CFG_PROPS = new String[] {
         RUN_AS,
         URL,
-        COPY_SRC_FILES,
-        COPY_SRC_TARGET,
         REMOTE_CONNECTION,
         REMOTE_DIRECTORY,
         REMOTE_UPLOAD,
@@ -130,6 +131,15 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                 runAsScript,
             };
             runConfigurationPanelVisual = new RunConfigurationPanelVisual(this, sourcesFolderNameProvider, configManager, insidePanels);
+
+            // listen to the changes in php interpreter
+            PhpOptions.getInstance().addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (PhpOptions.PROP_PHP_INTERPRETER.equals(evt.getPropertyName())) {
+                        runAsScript.loadPhpInterpreter();
+                    }
+                }
+            });
         }
         return runConfigurationPanelVisual;
     }
@@ -162,6 +172,10 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         // and put only the valid ones
         RunAsType runAs = getRunAsType();
         settings.putProperty(RUN_AS, runAs);
+        settings.putProperty(COPY_SRC_FILES, runAsLocalWeb.isCopyFiles());
+        settings.putProperty(COPY_SRC_TARGET, runAsLocalWeb.getLocalServer());
+        settings.putProperty(COPY_SRC_TARGETS, runAsLocalWeb.getLocalServerModel());
+
         switch (runAs) {
             case LOCAL:
                 storeRunAsLocalWeb(settings);
@@ -196,9 +210,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
 
     private void storeRunAsLocalWeb(WizardDescriptor settings) {
         settings.putProperty(URL, runAsLocalWeb.getUrl());
-        settings.putProperty(COPY_SRC_FILES, runAsLocalWeb.isCopyFiles());
-        settings.putProperty(COPY_SRC_TARGET, runAsLocalWeb.getLocalServer());
-        settings.putProperty(COPY_SRC_TARGETS, runAsLocalWeb.getLocalServerModel());
     }
 
     private void storeRunAsRemoteWeb(WizardDescriptor settings) {
@@ -220,7 +231,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                 error = validateRunAsRemoteWeb();
                 break;
             case SCRIPT:
-                // nothing to validate
+                error = validateRunAsScript();
                 break;
             default:
                 assert false : "Unhandled RunAsType type: " + getRunAsType();
@@ -385,6 +396,10 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             return NbBundle.getMessage(RunAsRemoteWeb.class, "MSG_NoConfigurationSelected");
         }
         return null;
+    }
+
+    private String validateRunAsScript() {
+        return RunAsValidator.validateScriptFields(runAsScript.getPhpInterpreter(), null, null);
     }
 
     private String validateServerLocation() {
