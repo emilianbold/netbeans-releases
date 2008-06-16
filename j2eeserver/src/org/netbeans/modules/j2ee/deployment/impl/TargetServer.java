@@ -621,7 +621,11 @@ public class TargetServer {
         || acd.ejbsChanged() || acd.serverDescriptorChanged());
     }
     
-    public void notifyArtifactsUpdated(Iterable<File> artifacts) {        
+    public boolean notifyArtifactsUpdated(Iterable<File> artifacts) {        
+        if (!dtarget.getServer().getServerInstance().isRunning()) {
+            return false;
+        }
+        
         try {
             init(null, false, false);
         } catch (ServerException ex) {
@@ -631,7 +635,7 @@ public class TargetServer {
      
         // FIXME more precise check
         if (incremental == null) { 
-            return;
+            return false;
         }        
               
         TargetModule[] modules = getDeploymentDirectoryModules();
@@ -643,8 +647,13 @@ public class TargetServer {
          */
         ModuleConfigurationProvider deployment = dtarget.getModuleConfigurationProvider();
         // FIXME target
+        TargetModule targetModule = dtarget.getTargetModules()[0];
+        if (!targetModule.hasDelegate()) {
+            return false;
+        }
+        
         File dir = incremental.getDirectoryForNewApplication(dtarget.getDeploymentName(),
-                dtarget.getTargetModules()[0].getTarget(), deployment.getModuleConfiguration());            
+                targetModule.getTarget(), deployment.getModuleConfiguration());            
         LOGGER.log(Level.INFO, dir == null ? "In place deployment" : dir.getAbsolutePath());
 
         if (dir != null) {
@@ -701,6 +710,8 @@ public class TargetServer {
         } else {
             reloadArtifacts(modules, artifacts);
         }
+        
+        return true;
     }
     
     private void reloadArtifacts(TargetModule[] modules, Iterable<File> files) {

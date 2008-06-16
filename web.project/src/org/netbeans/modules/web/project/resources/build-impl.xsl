@@ -302,7 +302,9 @@ introduced by support for multiple source roots. -jglick
                 </condition>
                 
                 <!-- COS feature -->
-                <property name="ensure.built.source.roots" value="${{src.dir}}"/>                
+                <condition property="ensure.built.source.roots" value="${{src.dir}}">
+                    <istrue value="${{deploy.on.save}}"/>
+                </condition>
             </target>
             
             <target name="-post-init">
