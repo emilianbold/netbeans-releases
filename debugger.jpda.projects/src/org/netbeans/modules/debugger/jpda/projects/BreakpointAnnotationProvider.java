@@ -75,6 +75,7 @@ import org.openide.text.AnnotationProvider;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 
@@ -161,13 +162,8 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
     public void breakpointAdded(Breakpoint breakpoint) {
         if (isAnnotatable(breakpoint)) {
             JPDABreakpoint b = (JPDABreakpoint) breakpoint;
-            synchronized (breakpointToAnnotations) {
-                b.addPropertyChangeListener (this);
-                breakpointToAnnotations.put(b, new Annotation[] {});
-                for (FileObject fo : annotatedFiles) {
-                    addAnnotationTo(b, fo);
-                }
-            }
+            b.addPropertyChangeListener (this);
+            RequestProcessor.getDefault().post(new AnnotationRefresh(b, false, true));
             if (b instanceof LineBreakpoint) {
                 LineBreakpoint lb = (LineBreakpoint) b;
                 LineTranslations.getTranslations().registerForLineUpdates(lb);
@@ -178,11 +174,8 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
     public void breakpointRemoved(Breakpoint breakpoint) {
         if (isAnnotatable(breakpoint)) {
             JPDABreakpoint b = (JPDABreakpoint) breakpoint;
-            synchronized (breakpointToAnnotations) {
-                b.removePropertyChangeListener (this);
-                removeAnnotations(b);
-                breakpointToAnnotations.remove(b);
-            }
+            b.removePropertyChangeListener (this);
+            RequestProcessor.getDefault().post(new AnnotationRefresh(b, true, false));
             if (b instanceof LineBreakpoint) {
                 LineBreakpoint lb = (LineBreakpoint) b;
                 LineTranslations.getTranslations().unregisterFromLineUpdates(lb);
@@ -206,13 +199,35 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
              (!MethodBreakpoint.PROP_METHOD_SIGNATURE.equals (propertyName))
         ) return;
         JPDABreakpoint b = (JPDABreakpoint) evt.getSource ();
-        synchronized (breakpointToAnnotations) {
-            removeAnnotations(b);
-            breakpointToAnnotations.put(b, new Annotation[] {});
-            for (FileObject fo : annotatedFiles) {
-                addAnnotationTo(b, fo);
+        RequestProcessor.getDefault().post(new AnnotationRefresh(b, true, true));
+    }
+    
+    private final class AnnotationRefresh implements Runnable {
+        
+        private JPDABreakpoint b;
+        private boolean remove, add;
+        
+        public AnnotationRefresh(JPDABreakpoint b, boolean remove, boolean add) {
+            this.b = b;
+            this.remove = remove;
+            this.add = add;
+        }
+
+        public void run() {
+            synchronized (breakpointToAnnotations) {
+                if (remove) {
+                    removeAnnotations(b);
+                    if (!add) breakpointToAnnotations.remove(b);
+                }
+                if (add) {
+                    breakpointToAnnotations.put(b, new Annotation[] {});
+                    for (FileObject fo : annotatedFiles) {
+                        addAnnotationTo(b, fo);
+                    }
+                }
             }
         }
+        
     }
     
     private static boolean isAnnotatable(Breakpoint b) {

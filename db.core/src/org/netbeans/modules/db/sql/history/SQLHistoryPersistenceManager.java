@@ -65,6 +65,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.XMLDataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
 import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -343,6 +344,7 @@ public class SQLHistoryPersistenceManager {
         boolean matchingUrl = false;
         private  List<SQLHistory> sqlHistoryList = new ArrayList<SQLHistory>();
         static boolean isSql = false;
+        private int limit = 10000;
 
         public Handler(String sqlHistoryFileName) {
             this.sqlHistoryFileName = sqlHistoryFileName;
@@ -358,13 +360,17 @@ public class SQLHistoryPersistenceManager {
                 } catch (ParseException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-
+            } else {
+                isSql = false;
+            }
+        }
+        
+        public void endElement(String uri, String localName, String qName) {
+            if (ELEMENT_SQL.equals(qName)) {
                 if (url != null && sql != null && date != null) {
                     addHistory(url, sql, date);
                     reset();
                 }
-            } else {
-                isSql = false;
             }
         }
 
@@ -375,16 +381,25 @@ public class SQLHistoryPersistenceManager {
         }
         
         private void addHistory(String url, String sql, Date date) {
-            sqlHistoryList.add(new SQLHistory(url, sql, date));
+            String sqlSetting = NbPreferences.forModule(SQLHistoryPersistenceManager.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", "");
+            if (sqlSetting != "") { // NOI18N
+                limit = Integer.parseInt(NbPreferences.forModule(SQLHistoryPersistenceManager.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", ""));  // NOI18N
+            }   
+            if (sqlHistoryList.size() <= limit) {
+                sqlHistoryList.add(new SQLHistory(url, sql, date));
+            } else {
+                LOGGER.log(Level.INFO, "");
+            }
         }
  
-        public void characters(char buf[], int offset, int length) {    
+        public void characters(char buf[], int offset, int length) {
             if (isSql) {
                 String parsedValue = new String(buf, offset, length);
-                if (!parsedValue.trim().equals("") && sql == null) {
+                if (sql == null) {
                     sql = parsedValue;
+                } else {
+                    sql += parsedValue;
                 }
-                isSql = false;
             }
         }
 

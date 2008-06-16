@@ -39,63 +39,54 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.lib.lexer.batch;
+package org.netbeans.lib.editor.util.random;
 
-import java.io.Reader;
-import java.util.Set;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.lib.lexer.LexerInputOperation;
-import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.TokenHierarchyOperation;
-
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.PlainDocument;
+import javax.swing.undo.UndoManager;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 
 /**
- * Token list for situation when the input text must be copied.
- * It works together with SkimTokenList instances that act
- * as a filter over this token list.
+ * Testing document implementation.
+ * <br/>
+ * It populates modification text into the document event which is useful for the lexer.
  *
- * @author Miloslav Metelka
- * @version 1.00
+ * @author mmetelka
  */
-
-public final class CopyTextTokenList<T extends TokenId> extends BatchTokenList<T> {
+public class TestDocument extends PlainDocument {
     
-    /** Either reader or char sequence */
-    private final Object input;
-    
-    public CopyTextTokenList(TokenHierarchyOperation<?,T> tokenHierarchyOperation, Reader inputReader,
-    Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
-        super(tokenHierarchyOperation, language, skipTokenIds, inputAttributes);
-        this.input = inputReader;
-    }
-    
-    public CopyTextTokenList(TokenHierarchyOperation<?,T> tokenHierarchyOperation, CharSequence inputText,
-    Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
-        super(tokenHierarchyOperation, language, skipTokenIds, inputAttributes);
-        this.input = inputText;
-    }
-    
-    public int childTokenOffset(int rawOffset) {
-        // Cluster should be used so this method should never be called
-        throwShouldNeverBeCalled();
-        return 0; // never reached
+    public TestDocument() {
+        UndoManager undoManager = new UndoManager();
+        addUndoableEditListener(undoManager);
+        putProperty(UndoManager.class, undoManager);
     }
 
-    public char childTokenCharAt(int rawOffset, int index) {
-        // Cluster should be used so this method should never be called
-        throwShouldNeverBeCalled();
-        return ' '; // never reached
-    }
-    
-    private void throwShouldNeverBeCalled() {
-        throw new IllegalStateException("Should never be called"); // NOI18N
+    @Override
+    protected void insertUpdate(DefaultDocumentEvent chng, AttributeSet attr) {
+        super.insertUpdate(chng, attr);
+        DocumentUtilities.addEventPropertyStorage(chng);
+        try {
+            DocumentUtilities.putEventProperty(chng, String.class,
+                    getText(chng.getOffset(), chng.getLength()));
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+            throw new IllegalStateException(e.toString());
+        }
     }
 
-    protected LexerInputOperation<T> createLexerInputOperation() {
-        return (input instanceof Reader)
-            ? new SkimLexerInputOperation<T>(this, (Reader)input)
-            : new SkimLexerInputOperation<T>(this, (CharSequence)input);
+    @Override
+    protected void removeUpdate(DefaultDocumentEvent chng) {
+        super.removeUpdate(chng);
+        DocumentUtilities.addEventPropertyStorage(chng);
+        try {
+            DocumentUtilities.putEventProperty(chng, String.class,
+                    getText(chng.getOffset(), chng.getLength()));
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+            throw new IllegalStateException(e.toString());
+        }
     }
 
 }

@@ -136,6 +136,23 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
         }
     }
 
+    public final static class NbTemplateParameterPaintComponent extends CsmPaintComponent.TemplateParameterPaintComponent {
+        
+        public NbTemplateParameterPaintComponent(){
+            super();
+        }
+        
+        @Override
+        protected Icon getIcon(){
+            Icon superIcon = super.getIcon();
+            if (superIcon != null) 
+                return superIcon;
+            Icon newIcon = CsmImageLoader.getTempleteParameterIcon();
+            setIcon(newIcon);
+            return newIcon;            
+        }
+    }
+
     public final static class NbClassPaintComponent extends CsmPaintComponent.ClassPaintComponent{
         
         public NbClassPaintComponent(){
