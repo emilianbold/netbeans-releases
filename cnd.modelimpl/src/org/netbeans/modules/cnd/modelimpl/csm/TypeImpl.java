@@ -258,11 +258,18 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
             }
             sb.append(ast.getText());
         }
+        int curDepth = 0;
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             if (token.getType() == CPPTokenTypes.LESSTHAN) {
-                break;
+                curDepth++;
+                continue;
+            } else if (token.getType() == CPPTokenTypes.GREATERTHAN) {
+                curDepth--;
+                continue;
             }
-            addText(sb,  token);
+            if (curDepth == 0) {
+                addText(sb,  token);
+            }
         }
     }
 
