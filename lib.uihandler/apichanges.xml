@@ -47,6 +47,19 @@ made subject to such option by the copyright holder.
 <apidef name="uihandler">UI Handler Library</apidef>
 </apidefs>
 <changes>
+    <change id="ProjectOp.isStartup">
+      <api name="uihandler"/>
+      <summary>ProjectOp now recognizes info about startup as well</summary>
+      <version major="1" minor="16"/>
+      <date day="17" month="6" year="2008"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" modification="no" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no"/>
+      <description>
+          Recognizes info about loaded projects on startup and adds new method
+          that can query for that.
+      </description>
+      <class package="org.netbeans.lib.uihandler" name="ProjectOp"/>
+    </change>    
     <change id="LogRecords.decorate">
       <api name="uihandler"/>
       <summary>LogRecords.decorate extracts UI info about LogRecords</summary>

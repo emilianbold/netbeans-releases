@@ -191,6 +191,54 @@ public class PositionRegion {
     }
 
     /**
+     * Get text enclosed by this position region as a character sequence.
+     * 
+     * @param doc non-null document to which this position region belongs.
+     * @return non-null character sequence representing the enclosed text.
+     * @throws IndexOutOfBoundsException if the bounds are wrong
+     *  (likely positions were created for another document).
+     */
+    public CharSequence getText(Document doc) {
+        int startOffset = getStartOffset();
+        return DocumentUtilities.getText(doc).subSequence(startOffset, getEndOffset() - startOffset);
+    }
+
+    /**
+     * Get text enclosed by this position region as a String.
+     * 
+     * @param doc non-null document to which this position region belongs.
+     * @return non-null java.lang.String instance representing the enclosed text.
+     * @throws BadLocationException if the bounds are wrong
+     *  (likely positions were created for another document).
+     */
+    public String getString(Document doc) throws BadLocationException {
+        int startOffset = getStartOffset();
+        return doc.getText(startOffset, getEndOffset() - startOffset);
+    }
+
+    /**
+     * Debug info about this region that includes line and column info.
+     * 
+     * @param doc non-null document to which this position region belongs.
+     * @return debugging info describing this region (inlcuding line and column info).
+     */
+    public String toString(Document doc) {
+        return new StringBuilder(35).append('<').append(DocumentUtilities.debugOffset(doc, getStartOffset())).
+                append(',').append(DocumentUtilities.debugOffset(doc, getEndOffset())).append('>').toString();
+    }
+
+    /**
+     * Debug info about this region.
+     *
+     * @return debugging info describing this region.
+     */
+    @Override
+    public String toString() {
+        return new StringBuilder(15).append('<').append(getStartOffset()).
+                append(", ").append(getEndOffset()).append('>').toString();
+    }
+
+    /**
      * {@link MutablePositionRegion} uses this package private method
      * to set a new start position of this region.
      */

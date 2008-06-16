@@ -39,40 +39,55 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.lib.lexer.batch;
+package org.netbeans.lib.lexer.inc;
 
-import java.util.Set;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.lib.lexer.LexerInputOperation;
-import org.netbeans.lib.lexer.TextLexerInputOperation;
-import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.TokenHierarchyOperation;
-
+import org.netbeans.lib.lexer.EmbeddedTokenList;
+import org.netbeans.lib.lexer.JoinLexerInputOperation;
+import org.netbeans.lib.lexer.JoinTokenList;
 
 /**
- * Batch token list over text expressed as character sequence.
+ * Lexer input operation over multiple joined sections (embedded token lists).
+ * <br/>
+ * It produces regular tokens (to be added directly into ETL represented by
+ * {@link #activeTokenList()} and also special {@link #JoinToken} instances
+ * in case a token spans boundaries of multiple ETLs.
+ * <br/>
+ * It can either work over JoinTokenList directly or, during a modification,
+ * it simulates that certain token lists are already removed/added to underlying token list.
+ * <br/>
+ * 
+ * {@link #recognizedTokenLastInTokenList()} gives information whether the lastly
+ * produced token ends right at boundary of the activeTokenList.
  *
  * @author Miloslav Metelka
  * @version 1.00
  */
 
-public final class TextTokenList<T extends TokenId> extends BatchTokenList<T> {
-
-    private CharSequence inputText;
-
-    public TextTokenList(TokenHierarchyOperation<?,T> tokenHierarchyOperation, CharSequence inputText,
-    Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
-        super(tokenHierarchyOperation, language, skipTokenIds, inputAttributes);
-        this.inputText = inputText;
-    }
+class MutableJoinLexerInputOperation<T extends TokenId> extends JoinLexerInputOperation<T> {
     
-    public char childTokenCharAt(int rawOffset, int index) {
-        return inputText.charAt(rawOffset + index); // rawOffset is absolute
+    private TokenListListUpdate<T> tokenListListUpdate;
+
+    MutableJoinLexerInputOperation(JoinTokenList<T> joinTokenList, int relexJoinIndex, Object lexerRestartState,
+            int activeTokenListIndex, int relexOffset, TokenListListUpdate<T> tokenListListUpdate
+    ) {
+        super(joinTokenList, relexJoinIndex, lexerRestartState, activeTokenListIndex, relexOffset);
+        this.tokenListListUpdate = tokenListListUpdate;
     }
-    
-    protected LexerInputOperation<T> createLexerInputOperation() {
-        return new TextLexerInputOperation<T>(this, inputText);
+
+    @Override
+    public EmbeddedTokenList<T> tokenList(int tokenListIndex) {
+        return tokenListListUpdate.afterUpdateTokenList((JoinTokenList<T>) tokenList, tokenListIndex);
+    }
+
+    @Override
+    protected int tokenListCount() {
+        return tokenListListUpdate.afterUpdateTokenListCount((JoinTokenList<T>) tokenList);
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + ", tokenListListUpdate: " + tokenListListUpdate; // NOI18N
     }
 
 }
