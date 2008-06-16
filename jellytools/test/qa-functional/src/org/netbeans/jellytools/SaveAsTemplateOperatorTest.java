@@ -59,6 +59,12 @@ public class SaveAsTemplateOperatorTest extends JellyTestCase {
         TestRunner.run(suite());
     }
     
+    public static final String[] tests = new String[] {"testInvoke",
+        "testTree",
+        "testLblSelectTheCategory",
+        "testGetRootNode",
+        "testSelectTemplate"};
+    
     /** Method used for explicit testsuite definition
      * @return  created suite
      */
@@ -73,11 +79,7 @@ public class SaveAsTemplateOperatorTest extends JellyTestCase {
         return suite;
          */
         return createModuleTest(SaveAsTemplateOperatorTest.class, 
-        "testInvoke",
-        "testTree",
-        "testLblSelectTheCategory",
-        "testGetRootNode",
-        "testSelectTemplate");
+        tests);
     }
     
     protected void setUp() throws IOException {

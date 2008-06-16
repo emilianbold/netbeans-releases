@@ -58,6 +58,12 @@ public class NewProjectNameLocationStepOperatorTest extends JellyTestCase {
         TestRunner.run(suite());
     }
     
+    public static final String[] tests = new String[] {
+        "testJavaApplicationPanel", "testJavaAntProjectPanel",
+                "testJavaLibraryPanel", "testJavaWithExistingSourcesPanel",
+                "testWebApplication"
+    };
+    
     /** Method used for explicit testsuite definition
      * @return  created suite
      */
@@ -72,9 +78,7 @@ public class NewProjectNameLocationStepOperatorTest extends JellyTestCase {
         return suite;
          */
         return createModuleTest(NewProjectNameLocationStepOperatorTest.class, 
-                "testJavaApplicationPanel", "testJavaAntProjectPanel",
-                "testJavaLibraryPanel", "testJavaWithExistingSourcesPanel",
-                "testWebApplication");
+                tests);
     }
     
     @Override

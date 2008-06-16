@@ -62,6 +62,10 @@ public class NewProjectWizardOperatorTest extends JellyTestCase {
         TestRunner.run(suite());
     }
     
+    public static final String[] tests = new String[] {"testInvokeTitle", "testInvoke",
+                "testSelectCategoryAndProject",
+                "testVerify", "testGetDescription"};
+    
     /** Method used for explicit testsuite definition
      * @return  created suite
      */
@@ -76,9 +80,7 @@ public class NewProjectWizardOperatorTest extends JellyTestCase {
         return suite;
          */
         return createModuleTest(NewProjectWizardOperatorTest.class,
-                "testInvokeTitle", "testInvoke",
-                "testSelectCategoryAndProject",
-                "testVerify", "testGetDescription");
+                tests);
     }
     
     protected void setUp() {
