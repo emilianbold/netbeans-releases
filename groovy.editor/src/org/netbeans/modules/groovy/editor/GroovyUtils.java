@@ -190,43 +190,5 @@ public class GroovyUtils {
         ble.initCause(ex);
         return ble;
     }
-    
-    public static final String[] JAVA_KEYWORDS =
-        new String[] {
-            "import",
-            "assert",
-            "break",
-            "case",
-            "catch",
-            "try",
-            "class",
-            "continue",
-            "default",
-            "do",
-            "else",
-            "extends",
-            "finally",
-            "for",
-            "if",
-            "implements",
-            "import",
-            "instanceof",
-            "interface",
-            "new",
-            "package",
-            "return",
-            "switch",
-            "throw",
-            "throws",
-            "try",
-            "while"
-        };
-    
-    public static final String[] GROOVY_KEYWORDS =
-        new String[] {
-            "as",
-            "def",
-            "in",
-            "property"
-        };
+
 }

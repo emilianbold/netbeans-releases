@@ -36,28 +36,57 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.groovy.editor.completion;
 
 /**
  *
  * @author schmidtm
  */
-public enum CaretLocation {
+public enum GroovyKeyword {
+    // Java keywords:
+    KEYWORD_assert("assert", false, false, false),
+    KEYWORD_break("break", false, false, false),
+    KEYWORD_case("case", false, false, false),
+    KEYWORD_catch("catch", false, false, false),
+    KEYWORD_class("class", false, true, false),
+    KEYWORD_continue("continue", false, false, false),
+    KEYWORD_default("default", false, false, false),
+    KEYWORD_do("do", false, false, false),
+    KEYWORD_else("else", false, false, false),
+    KEYWORD_extends("extends", false, true, false),
+    KEYWORD_finally("finally", false, false, false),
+    KEYWORD_for("for", false, false, false),
+    KEYWORD_if("if", false, false, false),
+    KEYWORD_implements("implements", false, true, false),
+    KEYWORD_import("import", false, true, false),
+    KEYWORD_instanceof("instanceof", false, false, false),
+    KEYWORD_interface("interface", false, true, false),
+    KEYWORD_new("new", false, false, false),
+    KEYWORD_package("package", false, true, false),
+    KEYWORD_return("return", false, false, false),
+    KEYWORD_switch("switch", false, false, false),
+    KEYWORD_throw("throw", false, false, false),
+    KEYWORD_throws("throws", false, false, false),
+    KEYWORD_try("try", false, false, false),
+    KEYWORD_while("while", false, false, false),
     
-    ABOVE_PACKAGE("ABOVE_PACKAGE"),
-    BELOW_PACKAGE("BELOW_PACKAGE"),
-    OUTSIDE_CLASSES("OUTSIDE_CLASSES"),
-    INSIDE_CLASS("INSIDE_CLASS"),
-    INSIDE_METHOD("INSIDE_METHOD"),
-    INSIDE_CLOSURE("INSIDE_CLOSURE"),
-    INSIDE_PARAMETERS("INSIDE_PARAMETERS"),
-    UNDEFINED("UNDEFINED");
+    // Uniq Groovy keywords:
     
-    private String id;
+    KEYWORD_as("as", true, true, false),
+    KEYWORD_def("def", true, false, true),
+    KEYWORD_in("in", true, true, true),
+    KEYWORD_property("property", true, true, true),
+    KEYWORD_undefined("undefined", false, false, false);
+    
+    String name;
+    boolean isGroovy;
+    boolean outsideClasses;
+    boolean insideClasses;
 
-    CaretLocation(String id) {
-        this.id = id;
+    GroovyKeyword(String name, boolean isGroovy, boolean outsideClasses, boolean insideClasses) {
+        this.name = name;
+        this.isGroovy = isGroovy;
+        this.outsideClasses = outsideClasses;
+        this.insideClasses = insideClasses;
     }
-    
 }

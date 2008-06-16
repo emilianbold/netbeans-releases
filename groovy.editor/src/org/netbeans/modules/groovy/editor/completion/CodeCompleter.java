@@ -41,7 +41,6 @@
 package org.netbeans.modules.groovy.editor.completion;
 
 import org.netbeans.modules.groovy.editor.*;
-import org.netbeans.modules.groovy.editor.completion.HTMLJavadocParser;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaMethod;
@@ -85,7 +84,9 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.Variable;
+import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
@@ -212,15 +213,69 @@ public class CodeCompleter implements CodeCompletionHandler {
         LOG.log(Level.FINEST, "getDeclaringClass() : " + mm.getDeclaringClass());
     }
 
-//    private boolean startsWith(String theString, String prefix) {
-//        if (prefix.length() == 0) {
-//            return true;
-//        }
-//
-//        return caseSensitive ? theString.startsWith(prefix)
-//            : theString.toLowerCase(Locale.ENGLISH).startsWith(prefix.toLowerCase());
-//    }
+    public CaretLocation getCaretLocationFromRequest(final CompletionRequest request) {
+        AstPath path = getPathFromRequest(request);
 
+        if (path == null) {
+            LOG.log(Level.FINEST, "path == null"); // NOI18N
+            return null;
+        }
+
+        LOG.log(Level.FINEST, "CaretPath : {0}", path);
+        
+        /* here we loop from the tail of the path (innermost element)
+        up to the root to figure out where we are. Some of the trails are:
+        
+        In main method:
+        Path(4)=[ModuleNode:ClassNode:MethodNode:ConstantExpression:]
+        
+        In closure, which sits in a method:
+        Path(7)=[ModuleNode:ClassNode:MethodNode:DeclarationExpression:DeclarationExpression:VariableExpression:ClosureExpression:]
+        
+        In closure directly attached to class:
+        Path(4)=[ModuleNode:ClassNode:PropertyNode:FieldNode:]
+        
+        In a class, outside method, right behind field declaration:
+        Path(4)=[ModuleNode:ClassNode:PropertyNode:FieldNode:]
+        
+        Right after a class declaration:
+        Path(2)=[ModuleNode:ClassNode:]
+        
+        Inbetween two classes:
+        [ModuleNode:ConstantExpression:]
+        
+        Outside of any class:
+        Path(1)=[ModuleNode:]
+        
+        Start of Parameter-list:
+        Path(4)=[ModuleNode:ClassNode:MethodNode:Parameter:]
+        
+         */
+        
+        for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
+            ASTNode current = it.next();
+            if (current instanceof ClosureExpression) {
+                return CaretLocation.INSIDE_CLOSURE;
+            } else if (current instanceof FieldNode) {
+                FieldNode fn = (FieldNode)current;
+                if(fn.isClosureSharedVariable()){
+                    return CaretLocation.INSIDE_CLOSURE;
+                }
+            } else if (current instanceof MethodNode) {
+                return CaretLocation.INSIDE_METHOD;
+            } else if (current instanceof ClassNode) {
+                return CaretLocation.INSIDE_CLASS;
+            } else if (current instanceof ModuleNode) {
+                return CaretLocation.OUTSIDE_CLASSES;
+            } else if (current instanceof Parameter) {
+                return CaretLocation.INSIDE_PARAMETERS;
+            }
+        }
+        return CaretLocation.UNDEFINED;
+
+    }
+
+        
     /**
      * Get the closest ASTNode related to this request. This is used to complete
      * Methods etc later on.
@@ -337,27 +392,36 @@ public class CodeCompleter implements CodeCompletionHandler {
     /**
      * Complete Groovy or Java Keywords.
      * 
-     * @see GroovyUtils.GROOVY_KEYWORDS or GroovyUtils.JAVA_KEYWORDS
+     * @see GroovyKeyword for matrix of capabilities, scope and allowed usage.
      * @param proposals
      * @param request
      * @return
      */
     private boolean completeKeywords(List<CompletionProposal> proposals, CompletionRequest request) {
         String prefix = request.prefix;
-
-        for (String keyword : GroovyUtils.GROOVY_KEYWORDS) {
-            if (keyword.startsWith(prefix)) {
-                KeywordItem item = new KeywordItem(keyword, null, anchor, request, true);
-                item.setSymbol(true);
-                proposals.add(item);
-            }
-        }
         
-        for (String keyword : GroovyUtils.JAVA_KEYWORDS) {
-            if (keyword.startsWith(prefix)) {
-                KeywordItem item = new KeywordItem(keyword, null, anchor, request, false);
-                item.setSymbol(true);
-                proposals.add(item);
+        if (request.location == CaretLocation.INSIDE_PARAMETERS ) {
+            LOG.log(Level.FINEST, "no keywords completion inside of parameters"); // NOI18N
+            return false;
+        }
+
+        Set<GroovyKeyword> keywords = EnumSet.allOf(GroovyKeyword.class);
+
+        for (GroovyKeyword groovyKeyword : keywords) {
+            if (groovyKeyword.name.startsWith(prefix)) {
+                if (request.location == CaretLocation.OUTSIDE_CLASSES && groovyKeyword.outsideClasses == true) {
+                    KeywordItem item = new KeywordItem(groovyKeyword.name, null, anchor, request, groovyKeyword.isGroovy);
+                    item.setSymbol(true);
+                    proposals.add(item);
+                } else if ((request.location == CaretLocation.INSIDE_CLOSURE ||
+                        request.location == CaretLocation.INSIDE_METHOD) &&
+                        groovyKeyword.outsideClasses == false) {
+
+                    KeywordItem item = new KeywordItem(groovyKeyword.name, null, anchor, request, groovyKeyword.isGroovy);
+                    item.setSymbol(true);
+                    proposals.add(item);
+
+                }
             }
         }
         
@@ -366,6 +430,11 @@ public class CodeCompleter implements CodeCompletionHandler {
     
     private boolean completeFields(List<CompletionProposal> proposals, CompletionRequest request) {
         LOG.log(Level.FINEST, "-> completeFields"); // NOI18N
+        
+        if (request.location == CaretLocation.INSIDE_PARAMETERS) {
+            LOG.log(Level.FINEST, "no fields completion inside of parameters"); // NOI18N
+            return false;
+        }
 
         ClassNode surroundingClass = getSurroundingClassdNode(request);
 
@@ -400,6 +469,11 @@ public class CodeCompleter implements CodeCompletionHandler {
     private boolean completeLocalVars(List<CompletionProposal> proposals, CompletionRequest request) {
         LOG.log(Level.FINEST, "-> completeLocalVars"); // NOI18N
 
+        if(!(request.location == CaretLocation.INSIDE_CLOSURE || request.location == CaretLocation.INSIDE_METHOD)){
+            LOG.log(Level.FINEST, "not inside method or closure, bail out."); // NOI18N
+            return false;
+        }
+        
         MethodNode scope = getSurroundingMethodNode(request);
 
         if(scope == null){
@@ -727,6 +801,12 @@ public class CodeCompleter implements CodeCompletionHandler {
     private boolean completeMethods(List<CompletionProposal> proposals, CompletionRequest request) {
 
         LOG.log(Level.FINEST, "-> completeMethods"); // NOI18N
+        
+        if (request.location == CaretLocation.INSIDE_PARAMETERS) {
+            LOG.log(Level.FINEST, "no method completion inside of parameters"); // NOI18N
+            return false;
+        }
+        
 
         ASTNode closest = getClosestNode(request);
 
@@ -809,6 +889,12 @@ public class CodeCompleter implements CodeCompletionHandler {
             request.doc = doc;
             request.info = info;
             request.prefix = prefix;
+            
+            // here we figure out once for all completions, where we are inside the source
+            // (in method, in class, ouside class etc)
+            
+            request.location = getCaretLocationFromRequest(request);
+            LOG.log(Level.FINEST, "I am here in sourcecode: {0}", request.location); // NOI18N
             
             // Complete potential import statements if we're invoced from a suitable
             // position (outside method or class, right behind an import statement)
@@ -1108,10 +1194,8 @@ public class CodeCompleter implements CodeCompletionHandler {
         private int astOffset;
         private BaseDocument doc;
         private String prefix = "";
-        // private NameKind kind;
-        // private QueryType queryType;
-        // private FileObject fileObject;
         private HtmlFormatter formatter;
+        private CaretLocation location;
     }
 
     private abstract class GroovyCompletionItem implements CompletionProposal {
