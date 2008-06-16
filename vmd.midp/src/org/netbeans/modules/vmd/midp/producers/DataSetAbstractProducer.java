@@ -91,8 +91,6 @@ public abstract class DataSetAbstractProducer extends ComponentProducer {
             MidpProjectSupport.addLibraryToProject(document, "DataBindingME"); //NOI18N
             return super.postInitialize(document, mainComponent);
         }
-        
-        
     }
     
     public static final class AddressDataSetProducer extends DataSetAbstractProducer {

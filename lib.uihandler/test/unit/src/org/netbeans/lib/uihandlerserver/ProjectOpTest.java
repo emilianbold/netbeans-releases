@@ -122,7 +122,7 @@ public class ProjectOpTest extends NbTestCase {
         assertNotNull("This record is project operation", op);
         assertEquals("org.netbeans.modules.apisupport.project.NbModuleProject", op.getProjectType());
         assertEquals(-1, op.getDelta());
-        assertEquals("NbModuleProject", op.getProjectDisplayName());
+        assertEquals("NbModule", op.getProjectDisplayName());
         
         
         op = ProjectOp.valueOf(rec2);
@@ -132,7 +132,7 @@ public class ProjectOpTest extends NbTestCase {
         assertNotNull("This record is project operation", op);
         assertEquals("org.netbeans.modules.apisupport.project.NbModuleProject", op.getProjectType());
         assertEquals("One project added", 1, op.getDelta());
-        assertEquals("NbModuleProject", op.getProjectDisplayName());
+        assertEquals("NbModule", op.getProjectDisplayName());
 
     }
 
@@ -162,7 +162,7 @@ public class ProjectOpTest extends NbTestCase {
         ProjectOp op = ProjectOp.valueOf(rec);
         assertEquals("One change", 1, op.getDelta());
         assertEquals("org.netbeans.modules.ant.freeform.FreeformProject", op.getProjectType());
-        assertEquals("FreeformProject", op.getProjectDisplayName());
+        assertEquals("Freeform", op.getProjectDisplayName());
     }
 
     public void testProjectOpError() throws Exception {
@@ -196,21 +196,21 @@ public class ProjectOpTest extends NbTestCase {
             ProjectOp init = arr.get(0);
             assertEquals("One open", 1, init.getDelta());
             assertEquals("On statup", true, init.isStartup());
-            assertEquals("Type", "WebProject", init.getProjectDisplayName());
+            assertEquals("Type", "Web", init.getProjectDisplayName());
         }
 
         {
             ProjectOp close = arr.get(1);
             assertEquals("One closed", -1, close.getDelta());
             assertEquals("No statup", false, close.isStartup());
-            assertEquals("Type", "WebProject", close.getProjectDisplayName());
+            assertEquals("Type", "Web", close.getProjectDisplayName());
         }
 
         {
             ProjectOp open = arr.get(2);
             assertEquals("One opened", 1, open.getDelta());
             assertEquals("No statup", false, open.isStartup());
-            assertEquals("Type", "J2SEProject", open.getProjectDisplayName());
+            assertEquals("Type", "J2SE", open.getProjectDisplayName());
         }
         
     }

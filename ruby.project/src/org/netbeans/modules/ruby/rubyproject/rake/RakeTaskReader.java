@@ -70,7 +70,9 @@ final class RakeTaskReader {
     List<RakeTask> getRakeTaskTree() {
         try {
             String rawOutput = rawRead();
-            return parseTasks(new StringReader(rawOutput));
+            return rawOutput == null
+                    ? Collections.<RakeTask>emptyList()
+                    : parseTasks(new StringReader(rawOutput));
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
             return Collections.emptyList();
