@@ -39,42 +39,55 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.lib.lexer.token;
+package org.netbeans.lib.lexer.inc;
 
-import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.spi.lexer.TokenPropertyProvider;
+import org.netbeans.lib.lexer.EmbeddedTokenList;
+import org.netbeans.lib.lexer.JoinLexerInputOperation;
+import org.netbeans.lib.lexer.JoinTokenList;
 
 /**
- * Token that may hold custom text and also additional properties.
+ * Lexer input operation over multiple joined sections (embedded token lists).
+ * <br/>
+ * It produces regular tokens (to be added directly into ETL represented by
+ * {@link #activeTokenList()} and also special {@link #JoinToken} instances
+ * in case a token spans boundaries of multiple ETLs.
+ * <br/>
+ * It can either work over JoinTokenList directly or, during a modification,
+ * it simulates that certain token lists are already removed/added to underlying token list.
+ * <br/>
+ * 
+ * {@link #recognizedTokenLastInTokenList()} gives information whether the lastly
+ * produced token ends right at boundary of the activeTokenList.
  *
  * @author Miloslav Metelka
  * @version 1.00
  */
 
-public final class ComplexToken<T extends TokenId> extends CustomTextToken<T> {
-
-    private final TokenPropertyProvider propertyProvider; // 36 bytes
+class MutableJoinLexerInputOperation<T extends TokenId> extends JoinLexerInputOperation<T> {
     
-    public ComplexToken(T id, int length, CharSequence customText, PartType partType,
-    TokenPropertyProvider propertyProvider) {
-        super(id, length, customText, partType);
-        this.propertyProvider = propertyProvider;
-    }
+    private TokenListListUpdate<T> tokenListListUpdate;
 
-    @Override
-    public boolean hasProperties() {
-        return (propertyProvider != null);
+    MutableJoinLexerInputOperation(JoinTokenList<T> joinTokenList, int relexJoinIndex, Object lexerRestartState,
+            int activeTokenListIndex, int relexOffset, TokenListListUpdate<T> tokenListListUpdate
+    ) {
+        super(joinTokenList, relexJoinIndex, lexerRestartState, activeTokenListIndex, relexOffset);
+        this.tokenListListUpdate = tokenListListUpdate;
     }
 
     @Override
-    public Object getProperty(Object key) {
-        return (propertyProvider != null) ? propertyProvider.getValue(this, key) : null;
+    public EmbeddedTokenList<T> tokenList(int tokenListIndex) {
+        return tokenListListUpdate.afterUpdateTokenList((JoinTokenList<T>) tokenList, tokenListIndex);
     }
-    
+
     @Override
-    protected String dumpInfoTokenType() {
-        return "ComT"; // NOI18N "ComplexToken"
+    protected int tokenListCount() {
+        return tokenListListUpdate.afterUpdateTokenListCount((JoinTokenList<T>) tokenList);
     }
-    
+
+    @Override
+    public String toString() {
+        return super.toString() + ", tokenListListUpdate: " + tokenListListUpdate; // NOI18N
+    }
+
 }

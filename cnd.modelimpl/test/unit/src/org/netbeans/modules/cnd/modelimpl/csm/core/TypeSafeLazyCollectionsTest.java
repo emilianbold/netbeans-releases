@@ -57,9 +57,9 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
  * 
  * @author Vladimir Kvashin
  */
-public class TypeSafeLazyCollectionsTestFailure extends ModelImplBaseTestCase {
+public class TypeSafeLazyCollectionsTest extends ModelImplBaseTestCase {
 
-    public TypeSafeLazyCollectionsTestFailure(String testName) {
+    public TypeSafeLazyCollectionsTest(String testName) {
         super(testName);
     }
 
