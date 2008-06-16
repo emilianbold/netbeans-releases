@@ -50,6 +50,7 @@ made subject to such option by the copyright holder.
         <ext name="php5"/>		
 	<ext name="phtml"/>
 	<ext name="inc"/>
+        <ext name="phpt"/>  <!-- php tests on the php.net -->
         <resolver mime="text/x-php5"/>
     </file>
 </MIME-resolver>

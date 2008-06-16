@@ -12,7 +12,7 @@ import antlr.collections.impl.BitSet;
 public abstract class CharScanner extends MatchExceptionState implements TokenStream {
     static final char NO_CHAR = 0;
     public static final char EOF_CHAR = (char)-1;
-    protected ANTLRStringBuffer text; // text of current token
+    protected final ANTLRStringBuffer text = new ANTLRStringBuffer(); // text of current token
 
     protected boolean saveConsumedInput = true; // does consume() save characters?
     protected Class tokenObjectClass; // what kind of tokens to create?
@@ -28,9 +28,12 @@ public abstract class CharScanner extends MatchExceptionState implements TokenSt
     protected Token _returnToken = null; // used to return tokens w/o using return val.
 
     // Hash string used so we don't new one every time to check literals table
-    protected ANTLRHashString hashString;
+    protected final ANTLRHashString hashString = new ANTLRHashString(this);
 
-    protected LexerSharedInputState inputState;
+    protected final LexerSharedInputState inputState;
+    
+    protected final InputBuffer input;
+    public int guessing = 0;
 
     /** Used during filter mode to indicate that path is desired.
      *  A subsequent scan error will report an error as usual if
@@ -41,20 +44,14 @@ public abstract class CharScanner extends MatchExceptionState implements TokenSt
     /** Used to keep track of indentdepth for traceIn/Out */
     protected int traceDepth = 0;
 
-    public CharScanner() {
-        text = new ANTLRStringBuffer();
-        hashString = new ANTLRHashString(this);
+    protected CharScanner(LexerSharedInputState inputState, InputBuffer cb) {
         setTokenObjectClass("antlr.CommonToken");
+        this.inputState = inputState;
+        this.input = cb;
     }
 
     public CharScanner(InputBuffer cb) { // SAS: use generic buffer
-        this();
-        inputState = new LexerSharedInputState(cb);
-    }
-
-    public CharScanner(LexerSharedInputState sharedState) {
-        this();
-        inputState = sharedState;
+        this(new LexerSharedInputState(), cb);
     }
 
     public void append(char c) {
@@ -70,11 +67,11 @@ public abstract class CharScanner extends MatchExceptionState implements TokenSt
     }
 
     /*public void commit() {
-        inputState.input.commit();
+        input.commit();
     }*/
 
     public void consume() {
-        if (inputState.guessing == 0) {
+        if (guessing == 0) {
             char c = LA(1);
             if (caseSensitive) {
                 append(c);
@@ -82,7 +79,7 @@ public abstract class CharScanner extends MatchExceptionState implements TokenSt
             else {
                 // use input.LA(), not LA(), to get original case
                 // CharScanner.LA() would toLower it.
-                append(inputState.input.LA(1));
+                append(input.LA(1));
             }
             if (c == '\t') {
                 tab();
@@ -91,7 +88,7 @@ public abstract class CharScanner extends MatchExceptionState implements TokenSt
                 inputState.column++;
             }
         }
-        inputState.input.consume();
+        input.consume();
     }
 
     /** Consume chars until one matches the given char */
@@ -137,16 +134,16 @@ public abstract class CharScanner extends MatchExceptionState implements TokenSt
     }
 
     public InputBuffer getInputBuffer() {
-        return inputState.input;
+        return input;
     }
 
     public LexerSharedInputState getInputState() {
         return inputState;
     }
 
-    public void setInputState(LexerSharedInputState state) {
+    /*public void setInputState(LexerSharedInputState state) {
         inputState = state;
-    }
+    }*/
 
     public int getLine() {
         return inputState.line;
@@ -163,10 +160,10 @@ public abstract class CharScanner extends MatchExceptionState implements TokenSt
 
     public char LA(int i) {
         if (caseSensitive) {
-            return inputState.input.LA(i);
+            return input.LA(i);
         }
         else {
-            return toLower(inputState.input.LA(i));
+            return toLower(input.LA(i));
         }
     }
     
@@ -182,7 +179,7 @@ public abstract class CharScanner extends MatchExceptionState implements TokenSt
             tok.setType(t);
             tok.setColumn(inputState.tokenStartColumn);
             tok.setLine(inputState.tokenStartLine);
-            // tracking real start line now: tok.setLine(inputState.line);
+            // tracking real start line now: tok.setLine(line);
             return tok;
         }
         catch (InstantiationException ie) {
@@ -195,7 +192,7 @@ public abstract class CharScanner extends MatchExceptionState implements TokenSt
     }
 
     public int mark() {
-        return inputState.input.mark();
+        return input.mark();
     }
     
     public void match(char c) throws MismatchedCharException {
@@ -312,9 +309,9 @@ public abstract class CharScanner extends MatchExceptionState implements TokenSt
     }
 
     public void rewind(int pos) {
-		 inputState.input.rewind(pos);
+		 input.rewind(pos);
 		 // RK: should not be here, it is messing up column calculation
-		 // setColumn(inputState.tokenStartColumn);
+		 // setColumn(tokenStartColumn);
     }
 
     public void setCaseSensitive(boolean t) {
@@ -330,7 +327,7 @@ public abstract class CharScanner extends MatchExceptionState implements TokenSt
     }
 
     public void setLine(int line) {
-        inputState.line = line;
+        line = line;
     }
 
     public void setText(String s) {

@@ -1,12 +1,7 @@
 
 
 Document 0
-Delete:  source : <TESTURL>/20070403225818_create_posts.rb
-
-
-
-Document 1
-Indexed:
+Searchable Keys:
   class : CreatePosts
   class-ig : createposts
   extends : ActiveRecord::Migration
@@ -14,15 +9,15 @@ Indexed:
   method : down|STATIC|
   method : up|STATIC|
 
-Not Indexed:
+Not Searchable Keys:
   attrs : |CLASS|
 
 
-Document 2
-Indexed:
+Document 1
+Searchable Keys:
   dbtable : posts
 
-Not Indexed:
+Not Searchable Keys:
   dbcolumn : created_at;datetime
   dbcolumn : importance;integer
   dbcolumn : removedlater;string

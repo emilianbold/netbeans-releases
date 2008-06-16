@@ -27,7 +27,7 @@ import org.netbeans.modules.bpel.model.ext.editor.api.Source;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xam.Named;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContextHolder;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
 
@@ -40,12 +40,12 @@ public abstract class AbstractTypeCast
 
     private GlobalType mCastTo;
 
-    public AbstractTypeCast(GlobalType castTo) {
+    protected AbstractTypeCast(GlobalType castTo) {
         assert castTo != null;
         mCastTo = castTo;
     }
-    
-    public GlobalType getCastTo() {
+
+    public GlobalType getType() {
         return mCastTo;
     }
     
@@ -66,7 +66,7 @@ public abstract class AbstractTypeCast
         throw new UnsupportedOperationException("Not supported"); // NOI18N
     }
     
-    public void setCastTo(GlobalType newValue) {
+    protected void setCastTo(GlobalType newValue) {
         mCastTo = newValue;
     }
     
@@ -93,7 +93,7 @@ public abstract class AbstractTypeCast
         AbstractTypeCast comp2 = (AbstractTypeCast)obj;
         //
         // Compare cast to
-        if (getCastTo() != comp2.getCastTo()) {
+        if (getType() != comp2.getType()) {
             return false;
         }
         //
@@ -117,7 +117,7 @@ public abstract class AbstractTypeCast
 
     public String getDisplayName() {
         String sCompName = ((Named)getSComponent()).getName();
-        return "(" + getCastTo().getName() + ")" + sCompName;
+        return "(" + getType().getName() + ")" + sCompName;
     }
     
     @Override
@@ -125,12 +125,15 @@ public abstract class AbstractTypeCast
         return getDisplayName();
     }
 
-    public boolean populateCast(Cast target, 
+    public abstract boolean populateCast(Cast target, 
+            BpelEntity destination, boolean inLeftMapperTree);
+    
+    protected boolean populateCastImpl(Cast target, 
             BpelEntity destination, boolean inLeftMapperTree) {
         //
-        GlobalType castTo = getCastTo();
-        SchemaReference<GlobalType> typeRef =
-                target.createSchemaReference(castTo, GlobalType.class);
+        GlobalType type = getType();
+        SchemaReference<GlobalType> typeRef = target.createSchemaReference(
+                (GlobalType)type, GlobalType.class);
         target.setType(typeRef);
         //
         if (inLeftMapperTree) {

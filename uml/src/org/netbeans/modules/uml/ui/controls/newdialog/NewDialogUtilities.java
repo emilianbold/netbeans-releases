@@ -781,9 +781,11 @@ public class NewDialogUtilities
 //		box.addItem("Use Case Diagram");
       box.addItem(RESOURCE_BUNDLE.getString("PSK_ACTIVITY_DIAGRAM"));
       box.addItem(RESOURCE_BUNDLE.getString("PSK_CLASS_DIAGRAM"));
+      /* temporarily take out those three diagrams for 6.5 M1
       box.addItem(RESOURCE_BUNDLE.getString("PSK_COLLABORATION_DIAGRAM"));
       box.addItem(RESOURCE_BUNDLE.getString("PSK_COMPONENT_DIAGRAM"));
       box.addItem(RESOURCE_BUNDLE.getString("PSK_DEPLOYMENT_DIAGRAM"));
+       */
       box.addItem(RESOURCE_BUNDLE.getString("PSK_SEQUENCE_DIAGRAM"));
       box.addItem(RESOURCE_BUNDLE.getString("PSK_STATE_DIAGRAM"));
       box.addItem(RESOURCE_BUNDLE.getString("PSK_USE_CASE_DIAGRAM"));

@@ -83,7 +83,7 @@ public final class ActionUtils {
         if (targetNames != null && targetNames.length == 0) {
             throw new IllegalArgumentException("No targets supplied"); // NOI18N
         }
-        AntProjectCookie apc = TargetLister.getAntProjectCookie(buildXml);
+        AntProjectCookie apc = AntScriptUtils.antProjectCookieFor(buildXml);
         AntTargetExecutor.Env execenv = new AntTargetExecutor.Env();
         if (properties != null) {
             Properties p = execenv.getProperties();

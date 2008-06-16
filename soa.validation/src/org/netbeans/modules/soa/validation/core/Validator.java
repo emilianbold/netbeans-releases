@@ -56,6 +56,7 @@ import org.netbeans.modules.xml.xam.spi.ValidationResult;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 
+import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.visitor.DeepSchemaVisitor;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
@@ -65,6 +66,7 @@ import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.GlobalComplexType;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 
+import org.netbeans.modules.xml.wsdl.model.Part;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
@@ -190,6 +192,28 @@ public abstract class Validator implements org.netbeans.modules.xml.xam.spi.Vali
       return name;
     }
     return name.substring(k + 1);
+  }
+
+  protected final Component getType(Part part) {
+    NamedComponentReference<GlobalType> ref1 = part.getType();
+
+    if (ref1 != null) {
+      GlobalType type = ref1.get();
+
+      if (type != null) {
+        return getTypeOfElement(type);
+      }
+    }
+    NamedComponentReference<GlobalElement> ref2 = part.getElement();
+
+    if (ref2 != null) {
+      GlobalElement element = ref2.get();
+
+      if (element != null) {
+        return getTypeOfElement(element);
+      }
+    }
+    return null;
   }
 
   protected final Component getTypeOfElement(Component component) {

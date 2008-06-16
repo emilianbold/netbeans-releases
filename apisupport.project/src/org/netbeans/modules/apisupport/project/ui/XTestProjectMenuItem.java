@@ -57,6 +57,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.apache.tools.ant.module.api.support.AntScriptUtils;
 import org.apache.tools.ant.module.api.support.TargetLister;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -65,8 +66,6 @@ import org.openide.awt.Actions;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.Task;
@@ -289,14 +288,7 @@ public final class XTestProjectMenuItem extends AbstractAction implements Presen
         if(buildXml == null) {
             return false;
         }
-        DataObject d;
-        try {
-            d = DataObject.find(buildXml);
-        } catch (DataObjectNotFoundException ex) {
-            ErrorManager.getDefault().notify(ex);
-            return false;
-        }
-        AntProjectCookie apc = d.getCookie(AntProjectCookie.class);
+        AntProjectCookie apc = AntScriptUtils.antProjectCookieFor(buildXml);
         Iterator iter;
         try {
             iter = TargetLister.getTargets(apc).iterator();

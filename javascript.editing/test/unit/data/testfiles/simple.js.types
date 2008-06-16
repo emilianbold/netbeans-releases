@@ -1,14 +1,14 @@
 /** Method 1*/
-<Function>function method1() {
+<Function>function <void>method1</void>() {
 
 }</Function>
 
 // Method 2
-<Function>function method2() {
+<Function>function <void>method2</void>() {
 }</Function>
 
 /* Method 3 */
-<Function>function method2() {
+<Function>function <void>method2</void>() {
 }</Function>
 
 var <Foo.Bar>global1 = <Foo.Bar>new <Foo.Bar>Foo.Bar</Foo.Bar>()</Foo.Bar></Foo.Bar>;

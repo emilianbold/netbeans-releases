@@ -2283,7 +2283,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         offset = el.getEndOffset();
                     }
                 } else {
-                    offset = pos.getOffset();
+                    offset = Math.min(pos.getOffset(), doc.getLength());
                 }
 
                 caret.setDot(offset);
@@ -2295,7 +2295,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         ePane.scrollRectToVisible(r);
                     }
                 } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
+                    ERR.log(Level.WARNING, "Can't scroll to text: pos.getOffset=" + pos.getOffset() //NOI18N
+                        + ", column=" + column + ", offset=" + offset //NOI18N
+                        + ", doc.getLength=" + doc.getLength(), ex); //NOI18N
                 }
             }
         }

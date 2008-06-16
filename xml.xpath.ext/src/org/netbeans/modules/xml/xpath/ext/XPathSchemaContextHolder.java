@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.xml.xpath.ext;
 
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
+
 /**
  * A context holder is a component, which can provide type information in term 
  * of the Schema model component(s). Such information is held in the special 

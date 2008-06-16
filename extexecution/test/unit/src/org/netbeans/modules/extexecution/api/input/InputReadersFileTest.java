@@ -43,8 +43,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.concurrent.Callable;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.extexecution.api.input.InputReaders.FileInput;
 
 /**
  *
@@ -55,7 +55,7 @@ public class InputReadersFileTest extends NbTestCase {
     private static final char[] TEST_CHARS = "abcdefghij".toCharArray();
 
     private static final char[] TEST_CHARS_ROTATE = "jihgfedcba".toCharArray();
-    
+
     private static final Charset TEST_CHARSET = Charset.forName("UTF-8");
 
     private static final int MAX_RETRIES = TEST_CHARS.length * 2;
@@ -78,19 +78,20 @@ public class InputReadersFileTest extends NbTestCase {
                 "testFileRotate.txt", getWorkDir(), TEST_CHARS_ROTATE, TEST_CHARSET);
     }
 
-    public void testReadOutput() throws IOException {
-        InputReader outputReader = InputReaders.forFileGenerator(new Callable<File>() {
+    public void testReadInput() throws IOException {
+        final FileInput fileInput = new FileInput(byteFile, TEST_CHARSET);
+        InputReader reader = InputReaders.forFileInputProvider(new InputReaders.FileInput.Provider() {
 
-            public File call() throws Exception {
-                return byteFile;
+            public FileInput getFileInput() {
+                return fileInput;
             }
-        }, TEST_CHARSET);
+        });
         TestInputProcessor processor = new TestInputProcessor(false);
 
         int read = 0;
         int retries = 0;
         while (read < TEST_CHARS.length && retries < MAX_RETRIES) {
-            read += outputReader.readOutput(processor);
+            read += reader.readInput(processor);
             retries++;
         }
 
@@ -101,16 +102,15 @@ public class InputReadersFileTest extends NbTestCase {
     }
 
     public void testRotation() throws IOException {
-        TestCallable callable = new TestCallable();
-        callable.setFile(byteFile);
+        TestProvider provider = new TestProvider(byteFile, TEST_CHARSET);
 
-        InputReader outputReader = InputReaders.forFileGenerator(callable, TEST_CHARSET);
+        InputReader outputReader = InputReaders.forFileInputProvider(provider);
         TestInputProcessor processor = new TestInputProcessor(true);
 
         int read = 0;
         int retries = 0;
         while (read < TEST_CHARS.length && retries < MAX_RETRIES) {
-            read += outputReader.readOutput(processor);
+            read += outputReader.readInput(processor);
             retries++;
         }
 
@@ -120,12 +120,12 @@ public class InputReadersFileTest extends NbTestCase {
         assertTrue(Arrays.equals(TEST_CHARS, processor.getCharsProcessed()));
 
         // file rotation
-        callable.setFile(byteFileRotate);
+        provider.setFile(byteFileRotate);
 
         read = 0;
         retries = 0;
         while (read < TEST_CHARS_ROTATE.length && retries < MAX_RETRIES) {
-            read += outputReader.readOutput(processor);
+            read += outputReader.readInput(processor);
             retries++;
         }
 
@@ -145,32 +145,40 @@ public class InputReadersFileTest extends NbTestCase {
     }
 
     public void testClose() throws IOException {
-        InputReader reader = InputReaders.forFileGenerator(new Callable<File>() {
+        final FileInput fileInput = new FileInput(byteFile, TEST_CHARSET);
+        InputReader reader = InputReaders.forFileInputProvider(new InputReaders.FileInput.Provider() {
 
-            public File call() throws Exception {
-                return byteFile;
+            public FileInput getFileInput() {
+                return fileInput;
             }
-        }, TEST_CHARSET);
+        });
         reader.close();
 
         try {
-            reader.readOutput(null);
+            reader.readInput(null);
             fail("Reader not throw exception on read after closing it"); // NOI18N
         } catch (IllegalStateException ex) {
             // expected
         }
     }
 
-    private static class TestCallable implements Callable<File> {
+    private static class TestProvider implements InputReaders.FileInput.Provider {
 
-        private File file;
+        private final Charset charset;
 
-        public synchronized File call() throws Exception {
-            return file;
+        private FileInput fileInput;
+
+        public TestProvider(File file, Charset charset) {
+            this.charset = charset;
+            setFile(file);
         }
 
-        public synchronized void setFile(File file) {
-            this.file = file;
+        public final FileInput getFileInput() {
+            return fileInput;
+        }
+
+        public final void setFile(File file) {
+            this.fileInput = new FileInput(file, charset);
         }
 
     }

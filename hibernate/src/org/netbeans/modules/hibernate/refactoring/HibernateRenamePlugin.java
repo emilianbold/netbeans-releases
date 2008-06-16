@@ -60,7 +60,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
 import org.netbeans.modules.hibernate.refactoring.HibernateRefactoringUtil.OccurrenceItem;
 import org.netbeans.modules.hibernate.refactoring.HibernateRefactoringUtil.RenamedClassName;
-import org.netbeans.modules.hibernate.service.HibernateEnvironment;
+import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -126,7 +126,7 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
 
         // Find the mapping files in this project
         Project proj = org.netbeans.api.project.FileOwnerQuery.getOwner(fo);
-        HibernateEnvironment env = new HibernateEnvironment(proj);
+        HibernateEnvironment env = proj.getLookup().lookup(HibernateEnvironment.class);
         mFileObjs = env.getAllHibernateMappingFileObjects();
         if (mFileObjs == null || mFileObjs.size() == 0) {
             // OK, no mapping files at all. 

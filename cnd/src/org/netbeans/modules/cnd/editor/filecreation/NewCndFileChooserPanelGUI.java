@@ -44,15 +44,10 @@ package org.netbeans.modules.cnd.editor.filecreation;
 import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -65,7 +60,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -215,7 +209,7 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
     public String getTargetName() {
         String documentName = documentNameTextField.getText().trim();
         
-        if ( documentName.length() == 0 || documentName.charAt(documentName.length() - 1) == '.') {
+        if ( documentName.length() == 0){
             return null;
         }
         else {
@@ -320,7 +314,7 @@ class NewCndFileChooserPanelGUI extends CndPanelGUI implements ActionListener{
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jLabel3.setLabelFor(documentNameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(NewCndFileChooserPanelGUI.class, "LBL_TargetChooser_FileName_Label")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(NewCndFileChooserPanelGUI.class, "LBL_TargetChooser_ClassName_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jLabel3, gridBagConstraints);

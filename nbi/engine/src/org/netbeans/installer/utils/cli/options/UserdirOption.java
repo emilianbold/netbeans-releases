@@ -40,7 +40,7 @@ import java.io.File;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.cli.CLIArgumentsList;
-import org.netbeans.installer.utils.exceptions.CLIArgumentException;
+import org.netbeans.installer.utils.exceptions.CLIOptionException;
 
 /**
  *
@@ -49,7 +49,7 @@ import org.netbeans.installer.utils.exceptions.CLIArgumentException;
 public class UserdirOption extends CLIOptionOneArgument {
 
     @Override
-    public void execute(CLIArgumentsList arguments) throws CLIArgumentException {
+    public void execute(CLIArgumentsList arguments) throws CLIOptionException {
         System.setProperty(Installer.LOCAL_DIRECTORY_PATH_PROPERTY,
                 new File(arguments.next()).getAbsolutePath());
     }

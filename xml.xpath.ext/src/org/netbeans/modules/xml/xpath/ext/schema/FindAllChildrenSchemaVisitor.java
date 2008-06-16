@@ -47,6 +47,8 @@ public class FindAllChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
     private boolean mSupportAny;
     
     private List<SchemaComponent> myFound = new ArrayList<SchemaComponent>();
+    private boolean mHasAny = false;
+    private boolean mHasAnyAttribute = false;
     
     /**
      * 
@@ -67,6 +69,14 @@ public class FindAllChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
     
     public List<SchemaComponent> getFound() {
         return myFound;
+    }
+    
+    public boolean hasAny() {
+        return mHasAny;
+    }
+    
+    public boolean hasAnyAttribute() {
+        return mHasAnyAttribute;
     }
     
     /**
@@ -126,8 +136,17 @@ public class FindAllChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
             myFound.add(sc);
             return;
         }
-        if (mSupportAny && (sc instanceof AnyElement || sc instanceof AnyAttribute)) {
-            myFound.add(sc);
+        if (sc instanceof AnyElement) {
+            mHasAny = true;
+            if (mSupportAny) {
+                myFound.add(sc);
+            }
+        }
+        if (sc instanceof AnyAttribute) {
+            mHasAnyAttribute = true;
+            if (mSupportAny) {
+                myFound.add(sc);
+            }
         }
     }
 }

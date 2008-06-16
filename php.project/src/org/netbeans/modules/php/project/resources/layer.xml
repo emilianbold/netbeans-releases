@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
             <folder name="PHP">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/phpDescription.html"/>
-                <attr name="position" intvalue="520"/>
+                <attr name="position" intvalue="700"/>
 
                 <file name="PHPProject.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/index.php">
                     <attr name="position" intvalue="100"/>
@@ -88,7 +88,7 @@ made subject to such option by the copyright holder.
 
     <folder name="OptionsDialog">
         <folder name="Advanced">
-            <file name="ActionsPanel.instance">
+            <file name="PHP.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.ui.options.PhpAdvancedOption"/>
             </file>
         </folder>

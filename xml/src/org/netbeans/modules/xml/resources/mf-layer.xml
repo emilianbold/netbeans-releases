@@ -49,14 +49,31 @@ made subject to such option by the copyright holder.
      - All files in this section are directly mapped to UI (templates, settings,
      - menus, ...). It often requires "magical" order handling etc.
      -->
+     
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="org-netbeans-modules-xml-services-XMLMIMEResolver.xml" url="xml-mime-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/resources/xmlObject.gif"/>
+                <attr name="position" intvalue="60001"/>
+            </file>
+            <file name="org-netbeans-modules-xml-services-DTDMIMEResolver.xml" url="dtd-mime-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/resources/dtdObject.gif"/>
+                <attr name="position" intvalue="60002"/>
+            </file>
+            <file name="org-netbeans-modules-xml-services-ENTMIMEResolver.xml" url="ent-mime-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/resources/entObject.gif"/>
+                <attr name="position" intvalue="60003"/>
+            </file>
+        </folder>
+    </folder> <!-- Services --> 
 
     <!-- register templates -->  
-    <folder name="Templates">
-        
-        
-        <!-- Follow these nice template groups -->
-    
-        <folder name="XML">            
+    <folder name="Templates">                
+        <!-- Follow these nice template groups -->    
+        <folder name="XML">
             <attr name="position" intvalue="1700"/>
             <file name="XMLDocument.xml" url="templates/emptyXML.xml.template">
                 <attr name="position" intvalue="100"/>
@@ -148,12 +165,6 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-xml-XMLDataLoader.instance">
                         <attr name="position" intvalue="99771"/>
                     </file>
-                    <file name="org-netbeans-modules-xml-EntityDataLoader.instance">
-                        <attr name="position" intvalue="99791"/>
-                    </file>
-                    <file name="org-netbeans-modules-xml-DTDDataLoader.instance">
-                        <attr name="position" intvalue="99801"/>
-                    </file>
                 </folder>
             </folder>
         </folder>
@@ -169,8 +180,7 @@ made subject to such option by the copyright holder.
                 <folder name="Factories">
                     <file name="org-netbeans-modules-xml-XMLDataLoader.instance"/>
                 </folder>
-            </folder>
-            
+            </folder>            
             <folder name="x-dtd">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-xml-DTDDataLoader.instance"/>

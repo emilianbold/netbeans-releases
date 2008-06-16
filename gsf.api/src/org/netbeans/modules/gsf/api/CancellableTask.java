@@ -43,6 +43,7 @@ package org.netbeans.modules.gsf.api;
 
 /** Cancellable runnable which takes parameter of given type.
  *
+ * @param <P> The return type passed back from the task's <code>run</code> method
  * @author Petr Hrebejk
  */
 public interface CancellableTask<P> {
@@ -54,7 +55,8 @@ public interface CancellableTask<P> {
 
 
     /** Implement the functionality here.
-     *@param parameter Parameter depending on the context or null.
+     * @param parameter Parameter depending on the context or null.
+     * @throws Exception Tasks may fail for various reasons and abort.
      */
     public void run(P parameter) throws Exception;
 

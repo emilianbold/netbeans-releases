@@ -615,7 +615,7 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
     private void regenerateJavaArtifacts() {
         Project project = FileOwnerQuery.getOwner(srcRoot);
         if (project!=null) {
-            FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+            FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
             try {
                 String name = service.getName();
                 ExecutorTask wsimportTask =

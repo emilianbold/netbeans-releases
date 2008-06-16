@@ -56,12 +56,12 @@
                      myRole="inventoryService"
                      partnerRole="inventoryServiceRequester"/>
     </partnerLinks>
+
     <variables>
-        <variable name="inventoryServiceVar"
-                  messageType="invs:POMessage"></variable>
-        <variable name="inventoryServiceResponseVar"
-                  messageType="invs:InventoryMessage"></variable>
+        <variable name="inventoryServiceVar" messageType="invs:POMessage"></variable>
+        <variable name="inventoryServiceResponseVar" messageType="invs:InventoryMessage"></variable>
     </variables>
+
     <sequence>
         <receive name="inventoryService"
                  partnerLink="inventoryServicing"

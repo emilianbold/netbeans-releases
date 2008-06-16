@@ -42,7 +42,10 @@ package org.netbeans.modules.java.ui;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import org.netbeans.api.project.Project;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -50,17 +53,26 @@ import org.openide.util.Lookup;
 final class FormatingOptionsPanelController extends OptionsPanelController {
     
     FormatingOptionsPanel panel;
+    Preferences preferences;
     
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;
                     
     public void update() {
         changed = false;
-	panel.load();
+	panel.load(null);
     }
     
+    public void loadFrom(Preferences p) {
+        changed = false;
+	panel.load(p);
+    }
+
     public void applyChanges() {
 	panel.store();
+        try {
+            preferences.flush();
+        } catch (BackingStoreException bse) {}
     }
     
     public void cancel() {
@@ -82,7 +94,9 @@ final class FormatingOptionsPanelController extends OptionsPanelController {
     
     public synchronized JComponent getComponent(Lookup masterLookup) {
         if ( panel == null ) {
-            panel = new FormatingOptionsPanel(this);
+            Project p = masterLookup.lookup(Project.class);
+            preferences = p != null ? FmtOptions.getProjectPreferences(p) : FmtOptions.getGlobalPreferences();
+            panel = new FormatingOptionsPanel(this, masterLookup);
         }
         return panel;
     }

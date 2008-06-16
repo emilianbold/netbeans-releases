@@ -42,19 +42,25 @@
 package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.List;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.ruby.testrunner.TestRunnerSettings;
+import org.netbeans.modules.ruby.testrunner.TestExecutionManager;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -69,6 +75,11 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
     private final ResultPanelTree treePanel;
     /** */
     private JToggleButton btnFilter;
+    /**
+     * Rerun button for running (all) tests again.
+     */
+    private JButton rerunButton;
+    
     /**
      * Toggles between vertical and horizontal orientation.
      */
@@ -98,12 +109,14 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
      */
     private JComponent createToolbar() {
         createFilterButton();
-        createSplitOrientationButton();
+//        createSplitOrientationButton();
+        createRerunButton();
 
         JToolBar toolbar = new JToolBar(SwingConstants.VERTICAL);
         toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.Y_AXIS));
+        toolbar.add(rerunButton);
         toolbar.add(btnFilter);
-        toolbar.add(splitOrientation);
+//        toolbar.add(splitOrientation);
         toolbar.add(Box.createHorizontalGlue());
         
         toolbar.setFocusable(false);
@@ -111,6 +124,29 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
         toolbar.setBorderPainted(false);
         
         return toolbar;
+    }
+    
+    private void createRerunButton() {
+        rerunButton = new JButton(new ImageIcon(
+                Utilities.loadImage(
+                    "org/netbeans/modules/ruby/testrunner/ui/res/rerun.png", //NOI18N
+                    true)));
+        rerunButton.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(getClass(), "ACSN_RerunButton"));  //NOI18N
+        rerunButton.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                TestExecutionManager.getInstance().rerun();
+            }
+        });
+        TestExecutionManager.getInstance().addChangeListener(new ChangeListener() {
+
+            public void stateChanged(ChangeEvent e) {
+                rerunButton.setEnabled(TestExecutionManager.getInstance().isFinished());
+            }
+        });
+        rerunButton.setEnabled(TestExecutionManager.getInstance().isFinished());
+        rerunButton.setToolTipText(NbBundle.getMessage(StatisticsPanel.class, "MultiviewPanel.rerunButton.tooltip"));
     }
     
     /**

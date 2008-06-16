@@ -1,4 +1,6 @@
-Results for specified. with queryType=COMPLETION and nameKind=PREFIX
+Code completion result for source line:
+document.createAttribute("foo").specified.|
+(QueryType=COMPLETION, NameKind=PREFIX)
 METHOD     toSource() : void                          Boolean
 METHOD     toString() : String                        Boolean
 METHOD     valueOf() : void                           Boolean

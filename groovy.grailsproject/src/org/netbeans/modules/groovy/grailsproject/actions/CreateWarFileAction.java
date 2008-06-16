@@ -92,7 +92,7 @@ public class CreateWarFileAction extends AbstractAction implements LineProcessor
         }
         builder.postExecution(new RefreshProjectRunnable(prj));
 
-        ExecutionService service = new ExecutionService(callable, displayName, builder.create());
+        ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
         service.run();
     }
 

@@ -44,6 +44,8 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.api.progress.ProgressHandle;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptorBuilder;
 import org.netbeans.modules.extexecution.api.ExecutionService;
@@ -54,7 +56,7 @@ import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
 import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
-import org.openide.util.Task;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -130,10 +132,16 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
                 builder.outProcessor(InputProcessors.bridge(new ProgressSnooper(handle, 100, 2)));
                 builder.postExecution(new RefreshProjectRunnable(project));
 
-                ExecutionService service = new ExecutionService(callable, displayName, builder.create());
-
-                Task task = service.run();
-                task.waitFinished();
+                ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
+                Future<Integer> future = service.run();
+                try {
+                    // TODO handle return value
+                    future.get();
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex.getCause());
+                }
             } finally {
                 handle.progress(100);
             }

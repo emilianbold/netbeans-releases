@@ -155,6 +155,11 @@ public abstract class RestSupport {
      */
     public abstract FileObject getPersistenceXml();
     
+    /**
+     * Get web.xml file
+     */
+    public abstract FileObject getWebXml();
+    
     public FileObject findSourceRoot() {
         return findSourceRoot(getProject());
     }
@@ -564,5 +569,23 @@ public abstract class RestSupport {
         }
     }*/
     
+    /**
+     * A quick check if swdp is already part of classpath.
+     */
+    public boolean hasJTASupport(Project project) {
+        // check if swdp is already part of classpath
+        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sgs.length < 1) {
+            return false;
+        }
+        FileObject sourceRoot = sgs[0].getRootFolder();
+        ClassPath classPath = ClassPath.getClassPath(sourceRoot, ClassPath.COMPILE);
+        //this package name will change when open source, should just rely on subclass to use file names
+        FileObject utxClass = classPath.findResource("javax/transaction/UserTransaction.class"); // NOI18N
+        if (utxClass != null) {
+            return true;
+        }
+        return false;
+    }
 }
 

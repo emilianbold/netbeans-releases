@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.db.sql.history;
 
+import java.util.List;
+
 /**
  *
  * @author John Baker
@@ -50,15 +52,8 @@ public interface SQLHistoryModel {
         
     String getFilter();
     
-    void setUrl(String url);
+    List<SQLHistory> getSQLHistoryList();
     
-    String getUrl();
+    void setSQLHistoryList(List<SQLHistory> sqlHistoryList);
     
-    void registerObserver(SQLHistoryFilterObserver filterObserver);
-    
-    void removeObserver(SQLHistoryFilterObserver filterObserver);
-    
-    void registerObserver(SQLHistoryUrlObserver urlObserver);
-    
-    void removeObserver(SQLHistoryUrlObserver urlObserver);
 }

@@ -150,11 +150,11 @@ public class GrailsActionProvider implements ActionProvider {
         };
 
         ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
-        builder.controllable(true).frontWindow(true).inputVisible(true).showProgress(true).showSuspend(true);
+        builder.controllable(true).frontWindow(true).inputVisible(true).showProgress(true).showSuspended(true);
         builder.outProcessor(InputProcessors.bridge(new ServerURLProcessor(project)));
         builder.postExecution(runnable);
 
-        ExecutionService service = new ExecutionService(callable, displayName, builder.create());
+        ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
         service.run();
     }
 
@@ -165,10 +165,10 @@ public class GrailsActionProvider implements ActionProvider {
         String displayName = inf.getDisplayName() + " (shell)"; // NOI18N
 
         ExecutionDescriptorBuilder builder = new ExecutionDescriptorBuilder();
-        builder.controllable(true).frontWindow(true).inputVisible(true).showProgress(true).showSuspend(true);
+        builder.controllable(true).frontWindow(true).inputVisible(true).showProgress(true).showSuspended(true);
         builder.postExecution(new RefreshProjectRunnable(project));
 
-        ExecutionService service = new ExecutionService(callable, displayName, builder.create());
+        ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
         service.run();
     }
 
@@ -183,7 +183,7 @@ public class GrailsActionProvider implements ActionProvider {
         builder.controllable(true).frontWindow(true).inputVisible(true).showProgress(true);
         builder.postExecution(new RefreshProjectRunnable(project));
 
-        ExecutionService service = new ExecutionService(callable, displayName, builder.create());
+        ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
         service.run();
     }
 

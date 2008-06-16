@@ -662,6 +662,10 @@ public interface IDiagram extends IPresentationElement
 	 * Is this an associated element?
 	*/
 	public boolean isAssociatedElement2( IElement pElement );
+        
+        public void setNotify(boolean val);
+        
+        public boolean getNotify();
 
 //   /**
 //    * This method sets wheter the graph should be updated automatically or on

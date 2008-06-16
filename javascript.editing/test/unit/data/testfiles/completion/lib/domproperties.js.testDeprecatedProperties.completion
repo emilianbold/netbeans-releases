@@ -1,4 +1,6 @@
-Results for .s with queryType=COMPLETION and nameKind=PREFIX
+Code completion result for source line:
+$("foo").s|
+(QueryType=COMPLETION, NameKind=PREFIX)
 METHOD     scrollIntoView(alignWithTop) :             Element
 METHOD     setAttribute(String name, Stri             Element
 METHOD     ---setAttributeNS(namespace---             Element

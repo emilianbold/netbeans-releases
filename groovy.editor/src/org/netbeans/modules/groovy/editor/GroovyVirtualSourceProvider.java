@@ -143,7 +143,7 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
                 new SourceFileReader() {
                     public CharSequence read(ParserFile file)
                         throws IOException {
-                        Document doc = NbUtilities.getBaseDocument(fo, true);
+                        Document doc = AstUtilities.getBaseDocument(fo, true);
 
                         if (doc == null) {
                             return "";
@@ -215,19 +215,6 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
 
             StringWriter sw = new StringWriter();
             PrintWriter out = new PrintWriter(sw);
-
-            Verifier verifier = new Verifier() {
-
-                public void addCovariantMethods(ClassNode cn) {
-                }
-
-                protected void addTimeStamp(ClassNode node) {
-                }
-
-                protected void addInitialization(ClassNode node) {
-                }
-            };
-            verifier.visitClass(classNode);
 
             try {
                 String packageName = classNode.getPackageName();
