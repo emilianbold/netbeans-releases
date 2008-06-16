@@ -46,8 +46,8 @@ import org.netbeans.modules.performance.guitracker.LoggingRepaintManager.RegionF
 import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.editor.java.JavaKit;
-import org.netbeans.modules.editor.options.BaseOptions;
-import org.netbeans.modules.java.editor.options.JavaOptions;
+//import org.netbeans.modules.editor.options.BaseOptions;
+//import org.netbeans.modules.java.editor.options.JavaOptions;
 
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
@@ -146,7 +146,7 @@ public class JavaCompletionInEditor extends PerformanceTestCase {
     private void setCompletionForMeasuringOn(){
         // measure only paint events from QuietEditorPane
         repaintManager().addRegionFilter(COMPLETION_FILTER);
-        
+/*        
         // set large font size for Editor
         BaseOptions options = BaseOptions.getOptions (JavaKit.class);
         if (options instanceof JavaOptions) {
@@ -159,7 +159,7 @@ public class JavaCompletionInEditor extends PerformanceTestCase {
         caretBlinkRate = options.getCaretBlinkRate();
         //disable caret blinkering
         options.setCaretBlinkRate(0);
-        
+    */    
         // turn off the error hightlighting feature
         /* TODO doesn't work after retouche integration
         parsingErrors = JavaSettings.getDefault().getParsingErrors();
@@ -172,7 +172,7 @@ public class JavaCompletionInEditor extends PerformanceTestCase {
         repaintManager().resetRegionFilters();
         
         // set back the original font size for Editor
-        Class kitClass = JavaKit.class;
+/*        Class kitClass = JavaKit.class;
         BaseOptions options = BaseOptions.getOptions (kitClass);
         if (options instanceof JavaOptions) {
             ((JavaOptions)options).setCompletionAutoPopupDelay(completionAutoPopupDelay);
@@ -181,7 +181,7 @@ public class JavaCompletionInEditor extends PerformanceTestCase {
         
         // set back the original blink rate
         options.setCaretBlinkRate(caretBlinkRate);
-        
+  */      
         /* doesn't work after retouche integration
         JavaSettings.getDefault().setParsingErrors(parsingErrors);        
          */
