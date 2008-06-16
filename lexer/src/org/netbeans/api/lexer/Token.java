@@ -41,6 +41,8 @@
 
 package org.netbeans.api.lexer;
 
+import java.util.List;
+
 /**
  * Token describes a lexical element of input text.
  * <br/>
@@ -207,12 +209,46 @@ public abstract class Token<T extends TokenId> {
      * @return true if the token is flyweight or false otherwise.
      */
     public abstract boolean isFlyweight();
+
+    /**
+     * Check whether this token is no longer part of the token hierarchy.
+     * 
+     * @return true if the token was removed from the token hierarchy
+     *  or false if it's still present in the hierarchy.
+     */
+    public abstract boolean isRemoved();
     
     /**
      * Check whether this token represents a complete token
-     * or whether it's a part of a complete token.
+     * or whether it's a particular part of a complete token.
+     * <br/>
+     * Some lexers may also use this information to express an incomplete token.
+     * For example an unclosed block comment at the end of java source
+     * is represented as a BLOCK_COMMENT token id and {@link PartType#START}.
+     * 
+     * @return {@link PartType#COMPLETE} for regular token or other part types
+     *  for particular token parts.
      */
     public abstract PartType partType();
+    
+    /**
+     * Get a complete token that is joined from multiple parts (this token is one of those parts).
+     * 
+     * @return complete token or null if this token is not a part of any token.
+     */
+    public abstract Token<T> joinToken();
+    
+    /**
+     * Get all token parts comprising this token ordered from lowest to highest part's offset.
+     * <br/>
+     * It's guaranteed that each token part is continuous in the input text
+     * (there are no gaps inside the token part's text).
+     * <br/>
+     * On the other hand there may be textual gaps between two adajcent token parts.
+     * 
+     * @return list of token parts or null if the token is continuous.
+     */
+    public abstract List<? extends Token<T>> joinedParts();
 
     /**
      * Quickly determine whether this token has any extra properties.

@@ -36,37 +36,72 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.vmd.midp.producers;
+package org.netbeans.modules.vmd.midp.propertyeditors;
 
-import org.netbeans.modules.vmd.api.model.ComponentProducer;
+import java.lang.ref.WeakReference;
+import javax.swing.JComponent;
+import javax.swing.JRadioButton;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
-import org.netbeans.modules.vmd.midp.components.databinding.DataSetCD;
-import org.netbeans.modules.vmd.midp.palette.DatabindingPaletteProvider;
-import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement;
 
 /**
  *
- * @author Karol Harezlak
+ * @author karolharezlak
  */
-public class DataSetProducer extends ComponentProducer {
+public final class DatabindingElement implements PropertyEditorElement {
 
-    public static final String DATABINDING_CATEGORY = NbBundle.getMessage(DatabindingPaletteProvider.class, "vmd-midp/palette/databinding");
+    private JRadioButton radioButton;
+    private DatabindingElementUI customEditor;
+    private WeakReference<DesignComponent> component;
+    private DesignPropertyEditor propertyEditor;
 
-    public DataSetProducer() {
-        super(DataSetCD.TYPEID.toString(), DataSetCD.TYPEID, new PaletteDescriptor(DATABINDING_CATEGORY, "DataSet", "DataSet", DataSetCD.ICON_PATH, null));
+    public DatabindingElement(DesignPropertyEditor propertyEditor) {
+        assert propertyEditor != null;
+        this.propertyEditor = propertyEditor;
     }
 
-    @Override
-    public Result postInitialize(DesignDocument document, DesignComponent mainComponent) {
-        MidpProjectSupport.addLibraryToProject(document, "DataBindingME"); //NOI18N
-        return super.postInitialize(document, mainComponent);
+    public void updateState(PropertyValue value) {
+        if (component == null)
+            return;
+        final DesignComponent c = component.get();
+        if (c == null) {
+            return;
+        }
+        customEditor.updateComponent(c);
+    }
+    
+    public void updateDesignComponent(DesignComponent component) {
+        this.component = new WeakReference(component);
     }
 
-    @Override
-    public Boolean checkValidity(DesignDocument document, boolean useCachedValue) {
+    public void setTextForPropertyValue(String text) {
+    }
+
+    public String getTextForPropertyValue() {
+        return null; 
+    }
+
+    public JComponent getCustomEditorComponent() {
+        if (customEditor == null) {
+            customEditor = new DatabindingElementUI(propertyEditor, radioButton);
+        }
+        return customEditor;
+    }
+
+    public JRadioButton getRadioButton() {
+        if (radioButton == null) {
+            radioButton = new JRadioButton("Databinding"); //TODO locolized
+        }
+        return radioButton;
+    }
+
+    public boolean isInitiallySelected() {
+        return true;
+    }
+
+    public boolean isVerticallyResizable() {
         return true;
     }
 }
