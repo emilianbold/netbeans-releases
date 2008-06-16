@@ -200,17 +200,17 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     }
 
     public String getCanonicalText() {
-	return decorateText(classifierText, this, true, null).toString();
+	return decorateText(getClassifierText(), this, true, null).toString();
     }
     
     @Override
     public CharSequence getText() {
 	// TODO: resolve typedefs
-	return decorateText(classifierText, this, false, null).toString();
+	return decorateText(getClassifierText().toString() + getInstantiationText(this), this, false, null).toString();
     }
     
     protected StringBuilder getText(boolean canonical, CharSequence variableNameToInsert) {
-        return decorateText(classifierText, this, canonical, variableNameToInsert);
+        return decorateText(getClassifierText().toString()  + getInstantiationText(this), this, canonical, variableNameToInsert);
     }
     
     public StringBuilder decorateText(CharSequence classifierText, CsmType decorator, boolean canonical, CharSequence variableNameToInsert) {
@@ -248,6 +248,9 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
         }
     }
     
+    /*
+     * Add text without instantiation params
+     */
     private static void addText(StringBuilder sb, AST ast) {
         if( ! (ast instanceof FakeAST) ) {
             if( sb.length() > 0 ) {
@@ -256,6 +259,9 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
             sb.append(ast.getText());
         }
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
+            if (token.getType() == CPPTokenTypes.LESSTHAN) {
+                break;
+            }
             addText(sb,  token);
         }
     }
@@ -263,9 +269,27 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     public CsmClassifier getClassifier() {
         return getClassifier(null);
     }
+    
+    public static CharSequence getInstantiationText(CsmType type) {
+        StringBuilder sb = new StringBuilder();
+        if (!type.getInstantiationParams().isEmpty()) {
+            sb.append('<');
+            boolean first = true;
+            for (CsmType param : type.getInstantiationParams()) {
+                if (first) {
+                    first = false;
+                } else {
+                    sb.append(',');
+                }
+                sb.append(param.getText());
+            }
+            sb.append('>');
+        }
+	return sb;
+    }
 
     public CharSequence getClassifierText() {
-	return classifierText;
+        return classifierText;
     }
     
     public CsmClassifier getClassifier(Resolver parent) {
@@ -431,7 +455,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
      * (we actually need this for function pointers, where simple typeName+' '+variableName does not work.
      */
     String getVariableDisplayName(String variableName) {
-	return decorateText(classifierText, this, false, variableName).toString();
+	return decorateText(getClassifierText(), this, false, variableName).toString();
     }
     
     ////////////////////////////////////////////////////////////////////////////
