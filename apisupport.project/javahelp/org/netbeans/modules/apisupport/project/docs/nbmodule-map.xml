@@ -135,6 +135,7 @@
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerLibraries" url="csh/proj_props/SuiteCustomizerLibraries.html"/>
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerBasicBranding" url="csh/proj_props/SuiteCustomizerBasicBranding.html"/>
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerSplashBranding" url="csh/proj_props/SuiteCustomizerSplashBranding.html"/>
+    <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerWindowSystemBranding" url="csh/proj_props/SuiteCustomizerWindowSystemBranding.html"/>
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerModuleList" url="csh/proj_props/SuiteCustomizerModuleList.html"/>
 
 
